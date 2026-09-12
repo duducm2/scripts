@@ -65,7 +65,7 @@ RULES
 - type: expense | income | transfer | card_expense
 - Transfers: type=transfer, account_id = source, transfer_account_id = destination. Leave category_id empty for transfers.
 - Credit-card purchases: type=card_expense. Set card_id to the card's id (e.g. CARD_MP). Set account_id to the card's linked_account_id from credit_cards.csv (or ACC_MERCADOP if unknown). Leave transfer_account_id empty. Never put an account id in card_id or a card id in transfer_account_id.
-- installments: integer N of payments. Default 1. When the speaker says Nx / "em N vezes" / "parcelado em N", set installments=N and amount=FULL purchase total (not one parcel). Output ONE row; the importer expands into N dated parcels. Do not emit N separate CSV rows for one purchase.
+- installments: integer N of payments. **If the speaker does not mention installments / parcels / “Nx” / “em N vezes”, set installments=1.** That is the normal case — most credit-card purchases are a single charge. Only set N>1 when they explicitly say it was parcelado. When N>1: amount=FULL purchase total (not one parcel); output ONE row; the importer expands into N dated parcels. Do not emit N separate CSV rows for one purchase. Always output the installments column (use 1 when omitted).
 - Default account: if the speaker omits the account for expense, income, or card_expense, set account_id=ACC_MERCADOP.
 - Match account_id and card_id to primary keys in the attached context files (exact name preferred, ignore accents/case).
 

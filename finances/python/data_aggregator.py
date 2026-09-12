@@ -173,22 +173,45 @@ def card_installment_remaining(
                 "values": values,
             }
         )
-        ft = round(
+        next_ym = month_shift(today[:7], 1)
+        open_end = month_shift(next_ym, 1) + "-01"
+        # Forward schedule only (from today): open = this/next month, later = after that.
+        open_amt = round(
             sum(
                 u["amount"]
                 for u in unpaid
-                if u["card_id"] == cid and u["date"] >= today
+                if u["card_id"] == cid and today <= u["date"] < open_end
             ),
             2,
         )
-        from_today_total += ft
-        card_last = max((u["date"] for u in unpaid if u["card_id"] == cid), default="")
+        later_amt = round(
+            sum(
+                u["amount"]
+                for u in unpaid
+                if u["card_id"] == cid and u["date"] >= open_end
+            ),
+            2,
+        )
+        total_amt = round(open_amt + later_amt, 2)
+        from_today_total += total_amt
+        card_last = max(
+            (
+                u["date"]
+                for u in unpaid
+                if u["card_id"] == cid and u["date"] >= today
+            ),
+            default="",
+        )
+        if total_amt <= 0:
+            continue
         from_today_rows.append(
             {
                 "card_id": cid,
                 "name": card_meta.get(cid, cid),
                 "color": palette[i % len(palette)],
-                "amount": ft,
+                "amount": total_amt,
+                "open": open_amt,
+                "later": later_amt,
                 "last_date": card_last,
             }
         )
@@ -198,6 +221,8 @@ def card_installment_remaining(
         "today": today,
         "from_today": from_today_rows,
         "from_today_total": round(from_today_total, 2),
+        "open_total": round(sum(r["open"] for r in from_today_rows), 2),
+        "later_total": round(sum(r["later"] for r in from_today_rows), 2),
         "last_date": last_date,
     }
 

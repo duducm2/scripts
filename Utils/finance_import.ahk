@@ -79,7 +79,8 @@ Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
         .
         "- Re-emit with header: description,amount,type,category_id,account_id,card_id,transfer_account_id,installments`r`n"
         . "- type = expense | income | transfer | card_expense; amount always positive with comma decimals.`r`n"
-        . "- installments = N for card_expense when purchase is Nx (default 1); amount is the full purchase; importer expands.`r`n"
+        .
+        "- installments = 1 unless the speaker explicitly said Nx / parcelado (normal card use is one installment); amount is the full purchase; importer expands when N>1.`r`n"
         . "- category_id / account_id / card_id must match attached context CSVs (never invent ids)."
     }
     return "- Read the IMPORT ERROR above and reframe as one complete, valid "

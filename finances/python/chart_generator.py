@@ -185,15 +185,8 @@ def build_html(data: dict) -> str:
           <div class="panel chart-cell chart-span card-plan-panel">
             <div class="panel-head-row">
               <h2>Card installments remaining</h2>
-              <div class="panel-head-actions">
-                <div class="stat-chip"><span class="lbl">From today</span><span class="val" id="cardPlanFromTodayTotal">—</span></div>
-                <div class="budget-calc-wrap">
-                  <button type="button" class="budget-calc-btn" id="cardPlanDetailBtn"
-                    aria-describedby="cardPlanDetailTip">By card</button>
-                  <div class="budget-calc-tip" id="cardPlanDetailTip" role="tooltip"></div>
-                </div>
-              </div>
             </div>
+            <div class="card-plan-summary" id="cardPlanSummary"></div>
             <div id="lineCardPlan" class="chart chart-card-plan"></div>
           </div>"""
     reports_html = f"""
@@ -802,22 +795,36 @@ def build_html(data: dict) -> str:
       margin-top:6px; padding-top:6px; border-top:1px solid var(--border);
       font-weight:600;
     }}
-    .budget-calc-tip .card-plan-row {{
-      display:grid; grid-template-columns:10px 1fr auto; gap:8px; align-items:start;
-      margin:0 0 8px;
-    }}
-    .budget-calc-tip .card-plan-row:last-of-type {{ margin-bottom:0; }}
-    .budget-calc-tip .card-plan-row .dot {{
-      width:8px; height:8px; border-radius:50%; margin-top:4px;
-    }}
-    .budget-calc-tip .card-plan-row .card-plan-name {{ font-weight:600; color:var(--heading); }}
-    .budget-calc-tip .card-plan-row .card-plan-until {{
-      display:block; color:var(--muted2); font-size:10px; margin-top:1px;
-    }}
-    .budget-calc-tip .card-plan-row .card-plan-amt {{
-      font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap;
-    }}
     .card-plan-panel {{ overflow:visible; min-width:0; }}
+    .card-plan-summary {{
+      display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px;
+    }}
+    .card-plan-box {{
+      flex:1 1 140px; min-width:120px; max-width:220px;
+      padding:8px 10px; border:1px solid var(--border); border-radius:6px;
+      background:var(--bg);
+    }}
+    .card-plan-box.total {{
+      border-color:var(--heading); background:var(--panel);
+      max-width:200px;
+    }}
+    .card-plan-box .box-top {{
+      display:flex; align-items:center; gap:6px; margin-bottom:4px;
+    }}
+    .card-plan-box .dot {{
+      width:8px; height:8px; border-radius:50%; flex-shrink:0;
+    }}
+    .card-plan-box .box-name {{
+      font-size:11px; font-weight:600; color:var(--heading);
+      text-transform:uppercase; letter-spacing:.02em;
+    }}
+    .card-plan-box .box-total {{
+      font-size:16px; font-weight:700; font-variant-numeric:tabular-nums;
+      line-height:1.2; margin:2px 0 4px;
+    }}
+    .card-plan-box .box-split {{
+      font-size:10px; color:var(--muted2); line-height:1.35;
+    }}
     .chart-card-plan {{ height:300px; min-width:0; overflow:hidden; }}
     .budget-categories {{
       flex:1; display:flex; flex-direction:column;
@@ -1916,7 +1923,10 @@ function rebuildCardInstallmentRemaining() {{
   for (const c of RAW.cards || []) {{
     if (c.id) cardMeta[c.id] = c.name || c.id;
   }}
-  const empty = {{ months: [], series: [], today, from_today: [], from_today_total: 0, last_date: '' }};
+  const empty = {{
+    months: [], series: [], today, from_today: [], from_today_total: 0,
+    open_total: 0, later_total: 0, last_date: ''
+  }};
   if (!unpaid.length) {{
     DATA.cardInstallmentRemaining = empty;
     return;
@@ -1937,10 +1947,21 @@ function rebuildCardInstallmentRemaining() {{
   for (const u of unpaid) {{
     if (!byCard[u.card_id]) byCard[u.card_id] = true;
   }}
+  function shiftMonth(ym, delta) {{
+    let [y, m] = ym.split('-').map(Number);
+    m += delta;
+    while (m > 12) {{ m -= 12; y += 1; }}
+    while (m < 1) {{ m += 12; y -= 1; }}
+    return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0');
+  }}
+  const nextYm = shiftMonth(today.slice(0, 7), 1);
+  const openEnd = shiftMonth(nextYm, 1) + '-01';
   const palette = ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#e67e22'];
   const series = [];
   const fromToday = [];
   let fromTodayTotal = 0;
+  let openTotal = 0;
+  let laterTotal = 0;
   let lastDate = '';
   for (const u of unpaid) {{
     if (!lastDate || u.date > lastDate) lastDate = u.date;
@@ -1962,20 +1983,28 @@ function rebuildCardInstallmentRemaining() {{
       color,
       values
     }});
-    let ft = 0;
-    let cardLast = '';
+    let openAmt = 0, laterAmt = 0, cardLast = '';
     for (const u of unpaid) {{
       if (u.card_id !== cid) continue;
-      if (u.date >= today) ft += u.amount;
+      if (u.date < today) continue;
+      if (u.date < openEnd) openAmt += u.amount;
+      else laterAmt += u.amount;
       if (!cardLast || u.date > cardLast) cardLast = u.date;
     }}
-    ft = Math.round(ft * 100) / 100;
-    fromTodayTotal += ft;
+    openAmt = Math.round(openAmt * 100) / 100;
+    laterAmt = Math.round(laterAmt * 100) / 100;
+    const totalAmt = Math.round((openAmt + laterAmt) * 100) / 100;
+    if (totalAmt <= 0) {{ i += 1; continue; }}
+    fromTodayTotal += totalAmt;
+    openTotal += openAmt;
+    laterTotal += laterAmt;
     fromToday.push({{
       card_id: cid,
       name: cardMeta[cid] || cid,
       color,
-      amount: ft,
+      amount: totalAmt,
+      open: openAmt,
+      later: laterAmt,
       last_date: cardLast
     }});
     i += 1;
@@ -1986,42 +2015,42 @@ function rebuildCardInstallmentRemaining() {{
     today,
     from_today: fromToday,
     from_today_total: Math.round(fromTodayTotal * 100) / 100,
+    open_total: Math.round(openTotal * 100) / 100,
+    later_total: Math.round(laterTotal * 100) / 100,
     last_date: lastDate
   }};
 }}
 function drawCardInstallmentChart() {{
   const el = document.getElementById('lineCardPlan');
-  const totEl = document.getElementById('cardPlanFromTodayTotal');
-  const tip = document.getElementById('cardPlanDetailTip');
+  const summaryEl = document.getElementById('cardPlanSummary');
   if (!el) return;
   rebuildCardInstallmentRemaining();
-  const spec = DATA.cardInstallmentRemaining || {{ months: [], series: [], from_today: [], from_today_total: 0 }};
+  const spec = DATA.cardInstallmentRemaining || {{
+    months: [], series: [], from_today: [], from_today_total: 0, open_total: 0, later_total: 0
+  }};
   const rows = (spec.from_today || []).filter(r => r.amount > 0);
-  if (totEl) {{
-    totEl.textContent = (spec.from_today_total > 0) ? formatBrl(spec.from_today_total) : '—';
-  }}
-  if (tip) {{
+  if (summaryEl) {{
     if (!rows.length) {{
-      tip.innerHTML = '<div class="calc-line calc-muted">No unpaid installments from today onward</div>';
+      summaryEl.innerHTML = '<div class="card-plan-box"><div class="box-name">All cards</div>'
+        + '<div class="box-total">—</div>'
+        + '<div class="box-split">No unpaid installments</div></div>';
     }} else {{
-      const parts = [];
-      parts.push('<div class="calc-line calc-muted">Still to pay from today</div>');
-      for (const r of rows) {{
-        parts.push(
-          '<div class="card-plan-row">'
-          + '<span class="dot" style="background:' + (r.color || '#888') + '"></span>'
-          + '<span><span class="card-plan-name">' + r.name + '</span>'
-          + (r.last_date
-            ? '<span class="card-plan-until">Last installment ' + r.last_date + '</span>'
-            : '')
-          + '</span>'
-          + '<span class="card-plan-amt">' + formatBrl(r.amount) + '</span>'
-          + '</div>'
-        );
-      }}
-      parts.push('<div class="calc-line calc-total">Total '
-        + formatBrl(spec.from_today_total || 0) + '</div>');
-      tip.innerHTML = parts.join('');
+      let html = rows.map(r =>
+        '<div class="card-plan-box">'
+        + '<div class="box-top"><span class="dot" style="background:' + (r.color || '#888') + '"></span>'
+        + '<span class="box-name">' + r.name + '</span></div>'
+        + '<div class="box-total">' + formatBrl(r.amount) + '</div>'
+        + '<div class="box-split">Open ' + formatBrl(r.open || 0)
+        + ' · Later ' + formatBrl(r.later || 0)
+        + (r.last_date ? '<br>Until ' + r.last_date : '')
+        + '</div></div>'
+      ).join('');
+      html += '<div class="card-plan-box total">'
+        + '<div class="box-top"><span class="box-name">Total</span></div>'
+        + '<div class="box-total">' + formatBrl(spec.from_today_total || 0) + '</div>'
+        + '<div class="box-split">Open ' + formatBrl(spec.open_total || 0)
+        + ' · Later ' + formatBrl(spec.later_total || 0) + '</div></div>';
+      summaryEl.innerHTML = html;
     }}
   }}
   if (!spec.months.length || !spec.series.length) {{
