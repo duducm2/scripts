@@ -2383,6 +2383,7 @@ function drawCardInstallmentChart() {{
   }}
   // Vertical dotted lines at every closing day for each card (same style as Today).
   const shapes = [];
+  const annotations = [];
   const seenCloseLines = {{}};
   if (today) {{
     shapes.push({{
@@ -2394,13 +2395,27 @@ function drawCardInstallmentChart() {{
       yref: 'paper',
       line: {{ color: '#f1c40f', width: 1.5, dash: 'dot' }}
     }});
+    annotations.push({{
+      x: today,
+      y: 1,
+      yref: 'paper',
+      text: 'Today',
+      showarrow: false,
+      yanchor: 'bottom',
+      font: {{ size: 10, color: '#f1c40f' }},
+      xanchor: 'center'
+    }});
   }}
   for (const s of spec.series || []) {{
     const color = s.color || '#888';
-    for (const d of (s.dates || [])) {{
+    const dates = s.dates || [];
+    const values = s.values || [];
+    for (let i = 0; i < dates.length; i++) {{
+      const d = dates[i];
       if (!d) continue;
       if (!closings.includes(d)) closings.push(d);
-      const key = d + '|' + color;
+      const amt = values[i] || 0;
+      const key = d + '|' + (s.card_id || s.name || color);
       if (seenCloseLines[key]) continue;
       seenCloseLines[key] = true;
       shapes.push({{
@@ -2425,28 +2440,31 @@ function drawCardInstallmentChart() {{
           color: color,
           line: {{ width: 1, color: '#ffffff' }}
         }},
-        hovertemplate: (s.name || 'Card') + ' closing %{{x}}<extra></extra>',
+        hovertemplate: (s.name || 'Card') + ' closing %{{x}}<br>' + formatBrl(amt) + '<extra></extra>',
         cliponaxis: false,
         legendgroup: s.card_id || s.name,
         showlegend: false
       }});
+      // Amount label on top of the dotted closing line.
+      annotations.push({{
+        x: d,
+        y: 1,
+        yref: 'paper',
+        text: formatBrl(amt),
+        showarrow: false,
+        yanchor: 'bottom',
+        xanchor: 'center',
+        font: {{ size: 10, color: color }},
+        bgcolor: 'rgba(0,0,0,0)',
+        borderpad: 1
+      }});
     }}
   }}
   closings.sort();
-  const annotations = today ? [{{
-    x: today,
-    y: 1,
-    yref: 'paper',
-    text: 'Today',
-    showarrow: false,
-    yanchor: 'bottom',
-    font: {{ size: 10, color: '#f1c40f' }},
-    xanchor: 'center'
-  }}] : [];
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
     showlegend: true,
     legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
-    margin: {{ t: 52, b: 56, l: 88, r: 20 }},
+    margin: {{ t: 64, b: 56, l: 88, r: 20 }},
     shapes: shapes,
     annotations: annotations,
     yaxis: {{
