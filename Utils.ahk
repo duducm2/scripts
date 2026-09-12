@@ -107,6 +107,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\clip_angel_activate.ahk
 ; [Utils module] Clip Angel mark favorite and related flows -> Utils\clip_angel_favorite.ahk
 #include %A_ScriptDir%\Utils\clip_angel_favorite.ahk
+; [Utils module] Clip Angel Constant Pasting toggle loop -> Utils\clip_angel_constant_paste.ahk
+#include %A_ScriptDir%\Utils\clip_angel_constant_paste.ahk
 
 ; [Utils module] Handy AI model configuration map and persistence -> Utils\handy_ai_model_config.ahk
 #include %A_ScriptDir%\Utils\handy_ai_model_config.ahk
