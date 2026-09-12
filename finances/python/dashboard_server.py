@@ -79,6 +79,30 @@ def patch_budget(year_month: str, category_id: str, planned_raw) -> dict:
     return {"ok": True, "planned_amount": planned_fmt, "status": 200}
 
 
+def load_cards() -> list[dict]:
+    path = _agg.DATA / "credit_cards.csv"
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    out = []
+    for c in rows:
+        cid = (c.get("id") or "").strip()
+        if not cid:
+            continue
+        out.append(
+            {
+                "id": cid,
+                "name": c.get("name") or cid,
+                "limit": c.get("limit") or "",
+                "current_spent": c.get("current_spent") or "",
+                "closing_day": str(c.get("closing_day") or "1").strip() or "1",
+                "due_day": str(c.get("due_day") or "").strip(),
+            }
+        )
+    return out
+
+
 class DashboardHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, directory: str | None = None, **kwargs):
         super().__init__(*args, directory=directory, **kwargs)
@@ -91,6 +115,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/api/health":
             self._json(200, {"ok": True})
+            return
+        if parsed.path == "/api/cards":
+            self._json(200, {"ok": True, "cards": load_cards()})
             return
         super().do_GET()
 
