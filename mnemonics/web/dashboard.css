@@ -244,6 +244,13 @@ main {
 .study-head-row > div > p {
   margin-bottom: 0;
 }
+.study-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  flex-shrink: 0;
+}
 .btn-palace-delete {
   background: transparent;
   color: #e07070;

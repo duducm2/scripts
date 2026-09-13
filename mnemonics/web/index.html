@@ -1786,6 +1786,41 @@
         await refresh();
       }
 
+      function palaceHasImage(p) {
+        return !!(p?.image_rel_path || "").toString().trim();
+      }
+
+      function imagelessPalaces(sid) {
+        return palaces(sid).filter((p) => !palaceHasImage(p));
+      }
+
+      async function deleteImagelessPalaces() {
+        if (state.view !== "practice") return;
+        const ovOpen = document
+          .getElementById("overlay")
+          ?.classList.contains("open");
+        if (ovOpen) return;
+        const sid = state.studyId;
+        const list = imagelessPalaces(sid);
+        if (!list.length) {
+          toast("No imageless palaces in this study");
+          return;
+        }
+        const msg =
+          list.length === 1
+            ? "Delete 1 Memory Palace with no image?"
+            : `Delete ${list.length} Memory Palaces with no image in this study?`;
+        if (!confirm(msg)) return;
+        for (const p of list) {
+          await api(`/api/palaces/${p.id}`, { method: "DELETE" });
+        }
+        clearPalaceSelection();
+        toast(
+          `Deleted ${list.length} imageless palace${list.length === 1 ? "" : "s"}`,
+        );
+        await refresh();
+      }
+
       function renderPractice() {
         const sid = state.studyId;
         const st = studyById(sid);
@@ -1821,21 +1856,31 @@
         if (!grid)
           grid = `<p class="empty">No Memory Palaces in this study.</p>`;
         const delLabel = selCount === 1 ? "Delete" : `Delete (${selCount})`;
+        const noImg = imagelessPalaces(sid);
+        const noImgLabel =
+          noImg.length === 1
+            ? "Delete imageless"
+            : `Delete imageless (${noImg.length})`;
         root.innerHTML = `
           <section class="study">
             <header class="study-head">
               <div class="study-head-row">
                 <div>
                   <h2>${esc(st?.title || sid || "Study")}</h2>
-                  <p>${list.length} Memory Palace${list.length === 1 ? "" : "s"} · newest first</p>
+                  <p>${list.length} Memory Palace${list.length === 1 ? "" : "s"} · newest first${noImg.length ? ` · ${noImg.length} without image` : ""}</p>
                 </div>
-                <button type="button" id="btnDeletePalaces" class="btn-palace-delete"${selCount === 0 ? " hidden" : ""}>${delLabel}</button>
+                <div class="study-head-actions">
+                  <button type="button" id="btnDeleteImageless" class="btn-palace-delete btn-palace-imageless"${noImg.length === 0 ? " hidden" : ""} title="Delete all Memory Palaces in this study that have no image">${noImgLabel}</button>
+                  <button type="button" id="btnDeletePalaces" class="btn-palace-delete"${selCount === 0 ? " hidden" : ""}>${delLabel}</button>
+                </div>
               </div>
             </header>
             <div class="grid">${grid}</div>
           </section>`;
         const delBtn = root.querySelector("#btnDeletePalaces");
         if (delBtn) delBtn.onclick = () => deleteSelectedPalaces();
+        const imagelessBtn = root.querySelector("#btnDeleteImageless");
+        if (imagelessBtn) imagelessBtn.onclick = () => deleteImagelessPalaces();
         root.querySelectorAll(".palace").forEach((el) => {
           const open = () => {
             clearPalaceSelection();
