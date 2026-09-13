@@ -1,4 +1,4 @@
-id,date,description,amount,type,category_id,account_id,card_id,transfer_account_id,installments,installment_n,installment_group,paid
+﻿id,date,description,amount,type,category_id,account_id,card_id,transfer_account_id,installments,installment_n,installment_group,paid
 TX005,2026-08-16,Bank taxes,"45,45",expense,CAT_OPERACAO,ACC_MERCADOP,,,1,1,,0
 TX006,2026-08-15,Touristic magnet,"15,00",expense,CAT_LAZER,ACC_MERCADOP,,,1,1,,0
 TX007,2026-08-15,Lunch with boyfriend,"121,00",expense,CAT_LAZER,ACC_MERCADOP,,,1,1,,0
@@ -137,5 +137,3 @@ TX140,2026-09-10,Toll Booth,"50,00",card_expense,CAT_CARRO,,CARD_MP,,1,1,,0
 TX141,2026-09-11,Lunch,"47,15",card_expense,CAT_ALIMENTA,,CARD_MP,,1,1,,0
 TX142,2026-09-12,Dinner with mother in law,"195,25",card_expense,CAT_LAZER,,CARD_MP,,1,1,,0
 TX143,2026-09-12,Book,"40,00",card_expense,CAT_EDUCACAO,,CARD_NUBANK,,1,1,,0
-TX144,2026-09-12,Installment demo (1/2),"0,50",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,2,1,IG_EX1,0
-TX145,2026-10-09,Installment demo (2/2),"0,50",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,2,2,IG_EX1,0
