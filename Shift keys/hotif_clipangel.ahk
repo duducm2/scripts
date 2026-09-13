@@ -76,14 +76,36 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 }
 
 ; Alt + 1–5 : Move down (N-1), Enter to paste selected clip into prior text field, then minimize.
-!1:: ClipAngel_SelectClipPasteThenMinimize(0)
-!2:: ClipAngel_SelectClipPasteThenMinimize(1)
-!3:: ClipAngel_SelectClipPasteThenMinimize(2)
-!4:: ClipAngel_SelectClipPasteThenMinimize(3)
-!5:: ClipAngel_SelectClipPasteThenMinimize(4)
+!1:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
+    ClipAngel_SelectClipPasteThenMinimize(0)
+}
+!2:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
+    ClipAngel_SelectClipPasteThenMinimize(1)
+}
+!3:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
+    ClipAngel_SelectClipPasteThenMinimize(2)
+}
+!4:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
+    ClipAngel_SelectClipPasteThenMinimize(3)
+}
+!5:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
+    ClipAngel_SelectClipPasteThenMinimize(4)
+}
 
 ; Enter : paste focused list clip into prior text field, then minimize (skip when editing filters/preview).
 $Enter:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
     if ClipAngel_IsListPasteEnterContext()
         ClipAngel_SelectClipPasteThenMinimize(0)
     else
@@ -92,6 +114,8 @@ $Enter:: {
 
 ; Alt + Enter : Paste file — Clip > Paste > Paste file; then minimize (process stays running).
 !Enter:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     try {
@@ -104,22 +128,34 @@ $Enter:: {
 
 ; Ctrl+Alt+B / Ctrl+Alt+V : native paste + move selection; then minimize
 ~^!b:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
     Sleep 100
     ClipAngel_CloseAndRestoreFocus(0)
 }
 ~^!v:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
     Sleep 100
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
 ; Ctrl+Enter : native Clip Angel action; then minimize
 ~^Enter:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
     Sleep 100
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
 ; Escape : minimize (process stays running). Fallback when I10 global Escape is off.
-Escape:: ClipAngel_EscapeMinimize()
+Escape:: {
+    if ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        return
+    if ClipAngel_ConstantPaste_IsActive()
+        return
+    ClipAngel_EscapeMinimize()
+}
 
 ; Ctrl + 1–5 : Down N, F10, Select All, Copy, then minimize.
 ^1:: ClipAngel_SelectClipCopyThenMinimize(0)
@@ -533,9 +569,10 @@ ShowClipAngelFilterSelector() {
 
 #HotIf
 
-; Constant Pasting: Shift+P top→bottom, Shift+B bottom→top. Delimiter ListView before start;
-; either key stops while active (focus may be on the paste target during the 1.5s gap).
-#HotIf WinActive("ahk_exe ClipAngel.exe") || ClipAngel_ConstantPaste_IsActive()
+; Constant Pasting: Shift+P = Ctrl+Alt+V (paste+next), Shift+B = Ctrl+Alt+B (paste+prev).
+; Delimiter ListView before start; either key stops while active (focus stays on paste target).
+#HotIf WinActive("ahk_exe ClipAngel.exe") || ClipAngel_ConstantPaste_IsActive() ||
+ClipAngel_ConstantPaste_IsDelimiterPromptActive()
 #MaxThreadsPerHotkey 2
 +p:: ClipAngel_ConstantPaste_ToggleDown()
 +b:: ClipAngel_ConstantPaste_ToggleUp()

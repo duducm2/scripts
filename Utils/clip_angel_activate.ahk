@@ -352,6 +352,17 @@ ClipAngel_ShouldSkipAutoMinimize() {
         return true
     if (g_ClipAngelFilterSelectorActive)
         return true
+    ; Call by name so hosts that #include activate before constant_paste (or omit it) do not #Warn.
+    try {
+        if ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+            return true
+    } catch {
+    }
+    try {
+        if ClipAngel_ConstantPaste_IsActive()
+            return true
+    } catch {
+    }
     return false
 }
 
@@ -401,6 +412,16 @@ ClipAngel_AutoMinimizeTick(*) {
 ; Cleanup lives in Shift keys\hotif_clipangel.ahk — call by name so Utils hosts do not #Warn.
 ClipAngel_EscapeMinimize() {
     global g_ClipAngelFilterSelectorActive
+    try {
+        if ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+            return
+    } catch {
+    }
+    try {
+        if ClipAngel_ConstantPaste_IsActive()
+            return
+    } catch {
+    }
     if (g_ClipAngelFilterSelectorActive) {
         fnName := "CleanupClipAngelFilterSelector"
         try %fnName%()
