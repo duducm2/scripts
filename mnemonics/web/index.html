@@ -802,11 +802,13 @@
         <div class="sr-merge-groups" id="srMergeGroups"></div>
       </section>
       <footer class="sr-panel-foot">
-        <button type="button" id="btnSrGenerate" class="sr-btn">
+        <button
+          type="button"
+          id="btnSrGenerate"
+          class="sr-btn"
+          title="Copy context + filled story-reduction prompt"
+        >
           Generate Prompt
-        </button>
-        <button type="button" id="btnSrCopyContext" class="sr-btn">
-          Copy Context
         </button>
       </footer>
     </aside>
@@ -1367,8 +1369,6 @@
         );
 
         let out = tpl;
-        // Put the job card first so companions see staged beasts immediately.
-        out = `${manifest}\n${out}`;
         out = out.replace("[SMASH or REMOVE]", modeBlock);
         out = out.replace(
           "[SCOPE OR LEAVE BLANK FOR LATEST SEGMENT]",
@@ -1376,11 +1376,53 @@
         );
         out = out.replace(
           "[ATTACH OR PASTE]",
-          "(attach via Copy Context: README / characters / bestiary / prior study palaces — staged merge/remove lists are already filled above)",
+          "See CONTEXT block at the top of this message (prior study palaces only — read-only inventory). README, characters.json, and bestiary.json are inlined there too.",
         );
         out = out.replace("[LIST GROUPS]", mergeBlock);
         out = out.replace("[LIST PEGS]", removeBlock);
-        return { text: out, mode, hasMerge, hasDelete };
+        out = out.replace(
+          "📎 Bestiary (`@studies/technique/bestiary.json`)",
+          "📎 Bestiary — inlined in CONTEXT block above (`mnemonics/technique/bestiary.json`)",
+        );
+        out = out.replace(
+          "📎 README (`@studies/technique/README.md`)",
+          "📎 README — inlined in CONTEXT block above (`mnemonics/technique/README.md`)\n\n📎 Characters — inlined in CONTEXT block above (`mnemonics/technique/characters.json`)",
+        );
+        // Staging job card immediately before the prompt body (after context when assembled).
+        out = `${manifest}\n${out}`;
+        return {
+          text: out,
+          mode,
+          hasMerge,
+          hasDelete,
+          scope,
+          beforePalace: palaceNums[0] || 0,
+        };
+      }
+
+      function srFormatContextPreamble(ctx, beforePalace) {
+        return [
+          "=== CONTEXT (Memory Palace · story reduction attachments) ===",
+          "Read-only inventory for scope lock / ids / quotes. Do NOT re-emit out-of-scope palaces into the pack.",
+          "",
+          "=== FILE: mnemonics/technique/README.md ===",
+          ctx.readme || "(missing README)",
+          "=== END_FILE ===",
+          "",
+          "=== FILE: mnemonics/technique/characters.json ===",
+          ctx.characters || "(missing characters.json)",
+          "=== END_FILE ===",
+          "",
+          "=== FILE: mnemonics/technique/bestiary.json ===",
+          ctx.bestiary || "(missing bestiary.json)",
+          "=== END_FILE ===",
+          "",
+          `=== FILE: study practice.md (prior palaces only · palace_number < ${beforePalace}) ===`,
+          ctx.study || "(no prior palaces)",
+          "=== END_FILE ===",
+          "=== END CONTEXT ===",
+          "",
+        ].join("\n");
       }
 
       async function generateStoryReductionPrompt() {
@@ -1391,55 +1433,41 @@
           toast("Stage beasts in Delete or Merge first");
           return;
         }
-        try {
-          const r = await api("/api/reduction/prompt");
-          const tpl = r.text || r.prompt || "";
-          if (!tpl) throw new Error("Empty prompt template");
-          const { text, mode, hasMerge, hasDelete } = srFillPromptTemplate(tpl);
-          await navigator.clipboard.writeText(text);
-          if (hasMerge && hasDelete) {
-            toast(`Prompt copied (mode ${mode}; both sections filled)`);
-          } else {
-            toast(`Prompt copied (mode ${mode})`);
-          }
-        } catch (e) {
-          toast(String(e.message || e));
-        }
-      }
-
-      async function copyStoryReductionContext() {
         const { palaceNums } = srStagedBeastMeta();
         if (!palaceNums.length) {
           toast("Stage beasts first so context can exclude in-scope palaces");
           return;
         }
-        const before = palaceNums[0];
         const sid = state.studyId;
         if (!sid) {
           toast("Select a study first");
           return;
         }
+        const before = palaceNums[0];
         try {
           const q = new URLSearchParams({
             study_id: sid,
             before_palace_number: String(before),
           });
-          const r = await api(`/api/reduction/context?${q}`);
-          const parts = [
-            "=== README (mnemonics/technique/README.md) ===",
-            r.readme || "",
-            "",
-            "=== Characters (mnemonics/technique/characters.json) ===",
-            r.characters || "",
-            "",
-            "=== Bestiary (mnemonics/technique/bestiary.json) ===",
-            r.bestiary || "",
-            "",
-            `=== Study prior palaces (before Memory Palace ${before}) ===`,
-            r.study || "",
-          ];
-          await navigator.clipboard.writeText(parts.join("\n"));
-          toast(`Context copied (palaces < ${before})`);
+          const [promptRes, ctxRes] = await Promise.all([
+            api("/api/reduction/prompt"),
+            api(`/api/reduction/context?${q}`),
+          ]);
+          const tpl = promptRes.text || promptRes.prompt || "";
+          if (!tpl) throw new Error("Empty prompt template");
+          const filled = srFillPromptTemplate(tpl);
+          const preamble = srFormatContextPreamble(ctxRes, before);
+          const full = `${preamble}${filled.text}`;
+          await navigator.clipboard.writeText(full);
+          if (filled.hasMerge && filled.hasDelete) {
+            toast(
+              `Prompt+context copied (${filled.mode}; palaces < ${before})`,
+            );
+          } else {
+            toast(
+              `Prompt+context copied (${filled.mode}; palaces < ${before})`,
+            );
+          }
         } catch (e) {
           toast(String(e.message || e));
         }
@@ -3587,7 +3615,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Story Reduction</b> toggle · drag beasts to Delete/Merge · Generate Prompt / Copy Context. Overlay: <b>F</b> full image · <b>D</b> details.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Story Reduction</b> toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>D</b> details.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -3623,8 +3651,6 @@
       };
       document.getElementById("btnSrGenerate").onclick = () =>
         generateStoryReductionPrompt();
-      document.getElementById("btnSrCopyContext").onclick = () =>
-        copyStoryReductionContext();
       document.getElementById("btnPractice").onclick = () =>
         setView("practice");
       document.getElementById("btnPlans").onclick = () => togglePlansPractice();

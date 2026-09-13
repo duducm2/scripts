@@ -1146,8 +1146,7 @@ cheatSheets["Memory Palace"] := "
     === Story Reduction ===
     ✂️ Story Reduction button — toggle staging panel (bottom-right)
     🟧 Drag overlay beasts into Delete (REMOVE) or Merge groups (SMASH · max 4)
-    📋 Generate Prompt — fill story-reduction-prompt + copy
-    📎 Copy Context — README · characters · bestiary · prior study palaces
+    📋 Generate Prompt — context (README · characters · bestiary · prior study) + filled story-reduction prompt
     
     === Study links (anywhere in the app) ===
     🎬 [Shift+V] Open stored video in Chrome (new window)
@@ -1475,7 +1474,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [H] > Help (glossary · Practice / Plans GitHub)
     Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
     Practice grid: [Ctrl+Click] toggle selection (does not open) · [Delete] delete selected palace(s)
-    Story Reduction: toggle panel · drag beasts to Delete/Merge (max 4/group) · Generate Prompt · Copy Context
+    Story Reduction: toggle panel · drag beasts to Delete/Merge (max 4/group) · Generate Prompt (context + filled prompt)
     Overlay: [F] full-screen snapshot · [D] toggle Quote/Story (default Concept-only) · [Shift+C] copy prompt · ← older · → newer
     Overlay Esc: exit full-screen first, then close overlay; Esc elsewhere returns toward Practice
     [Win+Alt+Shift+→] > Show square selector (right direction)
