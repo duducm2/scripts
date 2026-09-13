@@ -49,6 +49,8 @@ Produce **one Markdown document** following this exact skeleton (same shape as v
 
 ## <Concept 1 title>
 
+Use the **formal concept/technique name** as the `##` title (the same label the Story Architect will put first in `concept` name-lead). Do not use a vague paraphrase.
+
 <Short polished explanation in full sentences (2–5 sentences). Preserve depth; remove repetition.>
 
 > "<verbatim sentence from the source that defines or exemplifies this concept>"
