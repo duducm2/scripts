@@ -1254,7 +1254,7 @@
       }
 
       function srFormatMergeGroupsText() {
-        const blocks = state.storyReduction.mergeGroups
+        return state.storyReduction.mergeGroups
           .map((g, gi) => {
             if (g.length < 2) return "";
             const pegs = g
@@ -1263,42 +1263,27 @@
                 return b?.peg_code ? `[${b.peg_code}]` : `[${id}]`;
               })
               .join("+");
-            const detail = g
+            const ids = g
               .map((id) => {
                 const b = beastById(id);
-                if (!b) return `  - ${id}`;
-                const p = palaceById(b.palace_id);
-                const ats = atoms(b.id);
-                const concept = (ats[0]?.concept || "")
-                  .toString()
-                  .replace(/\s+/g, " ")
-                  .trim()
-                  .slice(0, 160);
-                return `  - [${b.peg_code || "?"}] ${b.beast_name || ""} · palace ${p?.palace_number ?? "?"} · ${ats.length} atom(s)${concept ? `\n    Concept: ${concept}` : ""}`;
+                return b ? b.id : id;
               })
-              .join("\n");
-            return `Group ${gi + 1}: Merge ${pegs} into one beast\n${detail}`;
+              .join(", ");
+            return `Group ${gi + 1}: Merge ${pegs} into one beast (beast_ids: ${ids})`;
           })
-          .filter(Boolean);
-        return blocks.join("\n\n");
+          .filter(Boolean)
+          .join("\n");
       }
 
       function srFormatDeletePegsText() {
-        const lines = state.storyReduction.deleteIds
+        return state.storyReduction.deleteIds
           .map((id) => {
             const b = beastById(id);
             if (!b) return `- ${id}`;
-            const p = palaceById(b.palace_id);
-            const ats = atoms(b.id);
-            const concept = (ats[0]?.concept || "")
-              .toString()
-              .replace(/\s+/g, " ")
-              .trim()
-              .slice(0, 160);
-            return `- [${b.peg_code || "?"}] ${b.beast_name || ""} · palace ${p?.palace_number ?? "?"} · ${ats.length} atom(s)${concept ? `\n  Concept: ${concept}` : ""}`;
+            return `- [${b.peg_code || "?"}] ${b.beast_name || ""} (beast_id=${b.id})`;
           })
-          .filter(Boolean);
-        return lines.join("\n");
+          .filter(Boolean)
+          .join("\n");
       }
 
       function srBuildStagingManifest(mode, scope, merges, removes) {
@@ -1323,6 +1308,7 @@
         lines.push(removes || "(none)");
         lines.push(
           "",
+          "Atom Concept/Quote/Story/Sensory for in-scope beasts are in CONTEXT → In-scope working set.",
           "Use the peg letters above exactly. Prefer beast peg_code over display name when re-pegging.",
           "=== END STAGED ===",
           "",
@@ -1376,17 +1362,17 @@
         );
         out = out.replace(
           "[ATTACH OR PASTE]",
-          "See CONTEXT block at the top of this message (prior study palaces only — read-only inventory). README, characters.json, and bestiary.json are inlined there too.",
+          "See CONTEXT block at the top (bridge tip + in-scope working set only). Bestiary/characters are sliced there — not full technique dumps. Technique rules are already in this prompt.",
         );
         out = out.replace("[LIST GROUPS]", mergeBlock);
         out = out.replace("[LIST PEGS]", removeBlock);
         out = out.replace(
           "📎 Bestiary (`@studies/technique/bestiary.json`)",
-          "📎 Bestiary — inlined in CONTEXT block above (`mnemonics/technique/bestiary.json`)",
+          "📎 Bestiary — lean slice in CONTEXT (continue after bridge peg)",
         );
         out = out.replace(
           "📎 README (`@studies/technique/README.md`)",
-          "📎 README — inlined in CONTEXT block above (`mnemonics/technique/README.md`)\n\n📎 Characters — inlined in CONTEXT block above (`mnemonics/technique/characters.json`)",
+          "📎 README — omitted (rules already in this prompt)\n\n📎 Characters — names used on bridge/in-scope only (CONTEXT)",
         );
         // Staging job card immediately before the prompt body (after context when assembled).
         out = `${manifest}\n${out}`;
@@ -1400,26 +1386,24 @@
         };
       }
 
-      function srFormatContextPreamble(ctx, beforePalace) {
+      function srFormatContextPreamble(ctx, beforePalace, throughPalace) {
         return [
-          "=== CONTEXT (Memory Palace · story reduction attachments) ===",
-          "Read-only inventory for scope lock / ids / quotes. Do NOT re-emit out-of-scope palaces into the pack.",
+          "=== CONTEXT (lean · Memory Palace dashboard) ===",
+          "Enough inventory to lock scope, continue pegs, and rewrite in-scope rows.",
+          "Do NOT re-emit the bridge palace. Do NOT walk the study from peg A / palace 1.",
+          "Full README / characters.json / bestiary.json omitted on purpose — follow rules in the prompt body.",
           "",
-          "=== FILE: mnemonics/technique/README.md ===",
-          ctx.readme || "(missing README)",
-          "=== END_FILE ===",
+          "=== Bridge (last settled palace) ===",
+          ctx.bridge || `(none before palace ${beforePalace})`,
           "",
-          "=== FILE: mnemonics/technique/characters.json ===",
-          ctx.characters || "(missing characters.json)",
-          "=== END_FILE ===",
+          `=== In-scope working set (palaces ${beforePalace}–${throughPalace}) ===`,
+          ctx.inscope || "(empty)",
           "",
-          "=== FILE: mnemonics/technique/bestiary.json ===",
-          ctx.bestiary || "(missing bestiary.json)",
-          "=== END_FILE ===",
+          "=== Characters (bridge + in-scope names only) ===",
+          ctx.characters_used || "(none)",
           "",
-          `=== FILE: study practice.md (prior palaces only · palace_number < ${beforePalace}) ===`,
-          ctx.study || "(no prior palaces)",
-          "=== END_FILE ===",
+          "=== Bestiary slice (re-peg window) ===",
+          ctx.bestiary_slice || "(none)",
           "=== END CONTEXT ===",
           "",
         ].join("\n");
@@ -1444,10 +1428,12 @@
           return;
         }
         const before = palaceNums[0];
+        const through = palaceNums[palaceNums.length - 1];
         try {
           const q = new URLSearchParams({
             study_id: sid,
             before_palace_number: String(before),
+            through_palace_number: String(through),
           });
           const [promptRes, ctxRes] = await Promise.all([
             api("/api/reduction/prompt"),
@@ -1456,18 +1442,13 @@
           const tpl = promptRes.text || promptRes.prompt || "";
           if (!tpl) throw new Error("Empty prompt template");
           const filled = srFillPromptTemplate(tpl);
-          const preamble = srFormatContextPreamble(ctxRes, before);
+          const preamble = srFormatContextPreamble(ctxRes, before, through);
           const full = `${preamble}${filled.text}`;
           await navigator.clipboard.writeText(full);
-          if (filled.hasMerge && filled.hasDelete) {
-            toast(
-              `Prompt+context copied (${filled.mode}; palaces < ${before})`,
-            );
-          } else {
-            toast(
-              `Prompt+context copied (${filled.mode}; palaces < ${before})`,
-            );
-          }
+          const kb = Math.round(full.length / 1024);
+          toast(
+            `Lean prompt copied (${filled.mode}; palaces ${before}–${through}; ~${kb} KB)`,
+          );
         } catch (e) {
           toast(String(e.message || e));
         }

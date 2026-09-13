@@ -317,26 +317,187 @@ def filter_practice_md_before_palace(md: str, before_n: int) -> str:
     return body + "\n"
 
 
+def _study_palaces(
+    data: dict[str, Any], study_id: str
+) -> list[dict[str, str]]:
+    palaces = [
+        p for p in data.get("palaces", []) if p.get("study_id") == study_id
+    ]
+    palaces.sort(key=lambda p: int(p.get("palace_number") or 0))
+    return palaces
+
+
+def _beasts_for_palace(
+    data: dict[str, Any], palace_id: str
+) -> list[dict[str, str]]:
+    blist = [b for b in data.get("beasts", []) if b.get("palace_id") == palace_id]
+    blist.sort(key=lambda b: int(b.get("sort_order") or 0))
+    return blist
+
+
+def _atoms_for_beast(data: dict[str, Any], beast_id: str) -> list[dict[str, str]]:
+    al = [a for a in data.get("atoms", []) if a.get("beast_id") == beast_id]
+    al.sort(key=lambda a: int(a.get("sort_order") or 0))
+    return al
+
+
+def synthesize_bridge_tip(
+    store: PalaceStore, study_id: str, before_n: int
+) -> tuple[str, str]:
+    """One settled palace before the reduction scope — peg continuity tip only."""
+    data = store._load_tree()
+    palaces = [
+        p
+        for p in _study_palaces(data, study_id)
+        if int(p.get("palace_number") or 0) < before_n
+    ]
+    if not palaces:
+        return (
+            f"Bridge: none (reduction starts at palace {before_n}; no prior peg tip).\n",
+            "",
+        )
+    p = palaces[-1]
+    blist = _beasts_for_palace(data, p.get("id") or "")
+    last_peg = ""
+    beast_lines: list[str] = []
+    for b in blist:
+        peg = (b.get("peg_code") or "").strip()
+        if peg:
+            last_peg = peg
+        beast_lines.append(
+            f"  - [{peg or '?'}] {b.get('beast_name') or ''} · "
+            f"{len(_atoms_for_beast(data, b.get('id') or ''))} atom(s)"
+        )
+    lines = [
+        "Bridge palace (last settled before scope · do NOT re-emit in pack):",
+        f"Memory Palace {p.get('palace_number')}: {p.get('title') or ''}",
+        f"Character: {p.get('character_name') or '(none)'}",
+        f"Last peg (continue after this): [{last_peg or '?'}]",
+        f"Beasts ({len(blist)}):",
+        *(beast_lines or ["  (none)"]),
+    ]
+    return "\n".join(lines) + "\n", last_peg
+
+
+def synthesize_inscope_inventory(
+    store: PalaceStore, study_id: str, lo: int, hi: int
+) -> str:
+    """Full atom inventory for the reduction working set (palace_number lo..hi)."""
+    data = store._load_tree()
+    palaces = [
+        p
+        for p in _study_palaces(data, study_id)
+        if lo <= int(p.get("palace_number") or 0) <= hi
+    ]
+    lines = [
+        f"In-scope working set (palaces {lo}–{hi}) — resolve ids/quotes here; "
+        "emit ONLY these (post-reduction) in the pack:",
+        "",
+    ]
+    if not palaces:
+        lines.append("_No in-scope palaces found._")
+        return "\n".join(lines) + "\n"
+    for p in palaces:
+        blist = _beasts_for_palace(data, p.get("id") or "")
+        lines.append(
+            f"## Memory Palace {p.get('palace_number')}: {p.get('title') or ''} "
+            f"[{p.get('id')}]"
+        )
+        lines.append(f"Character: {p.get('character_name') or '(none)'}")
+        for b in blist:
+            peg = b.get("peg_code") or "?"
+            lines.append(
+                f"### [{peg}] {b.get('beast_name') or ''} · beast_id={b.get('id')}"
+            )
+            for i, a in enumerate(_atoms_for_beast(data, b.get("id") or ""), 1):
+                zone = " · ".join(
+                    x for x in (a.get("zone") or "", a.get("zone_label") or "") if x
+                )
+                head = f"Atom {i}" + (f" [{zone}]" if zone else "")
+                lines.append(f"- {head} id={a.get('id') or '?'}")
+                lines.append(f"  Concept: {(a.get('concept') or '').strip() or '—'}")
+                lines.append(f"  Quote: {(a.get('quote') or '').strip() or '—'}")
+                lines.append(f"  Story: {(a.get('story') or '').strip() or '—'}")
+                sens = (
+                    a.get("sensory_channel") or a.get("sensory") or ""
+                ).strip() or "—"
+                lines.append(f"  Sensory: {sens}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def load_bestiary_slice(
+    technique_dir: Path, after_code: str, limit: int = 40
+) -> str:
+    """Compact bestiary window starting after the bridge peg (for re-pegging)."""
+    path = technique_dir / "bestiary.json"
+    if not path.is_file():
+        return "(missing bestiary.json)\n"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return f"(invalid bestiary.json: {e})\n"
+    items = payload.get("items") or []
+    if not isinstance(items, list):
+        return "(bestiary items missing)\n"
+    start = 0
+    code = (after_code or "").strip()
+    if code:
+        for i, it in enumerate(items):
+            if str(it.get("code") or "").strip() == code:
+                start = i + 1
+                break
+    window = items[start : start + max(1, limit)]
+    lines = [
+        f"Bestiary slice (continue after [{code or 'start'}] · {len(window)} entries):",
+    ]
+    for it in window:
+        lines.append(
+            f"- [{it.get('code')}] {it.get('name')} (order {it.get('order')})"
+        )
+    if not window:
+        lines.append("(no further bestiary entries)")
+    return "\n".join(lines) + "\n"
+
+
+def characters_used_for_range(
+    store: PalaceStore, study_id: str, lo: int, hi: int, before_n: int
+) -> str:
+    data = store._load_tree()
+    names: list[str] = []
+    seen: set[str] = set()
+    for p in _study_palaces(data, study_id):
+        n = int(p.get("palace_number") or 0)
+        if n == before_n - 1 or (lo <= n <= hi):
+            name = (p.get("character_name") or "").strip()
+            if name and name not in seen:
+                seen.add(name)
+                names.append(name)
+    if not names:
+        return "Characters in bridge/in-scope: (none assigned)\n"
+    return (
+        "Characters in bridge/in-scope (names only):\n"
+        + "\n".join(f"- {n}" for n in names)
+        + "\n"
+    )
+
+
 def synthesize_prior_palace_inventory(
     store: PalaceStore, study_id: str, before_n: int
 ) -> str:
+    """Legacy full prior list (kept for fallbacks). Prefer bridge tip + in-scope."""
     data = store._load_tree()
     lines = [f"# Prior palaces for {study_id} (palace_number < {before_n})", ""]
     palaces = [
         p
-        for p in data.get("palaces", [])
-        if p.get("study_id") == study_id and int(p.get("palace_number") or 0) < before_n
+        for p in _study_palaces(data, study_id)
+        if int(p.get("palace_number") or 0) < before_n
     ]
-    palaces.sort(key=lambda p: int(p.get("palace_number") or 0))
     if not palaces:
         lines.append("_No prior Memory Palaces._")
         return "\n".join(lines) + "\n"
-    beasts = data.get("beasts", [])
-    atoms = data.get("atoms", [])
     for p in palaces:
-        pid = p.get("id")
-        blist = [b for b in beasts if b.get("palace_id") == pid]
-        blist.sort(key=lambda b: int(b.get("sort_order") or 0))
+        blist = _beasts_for_palace(data, p.get("id") or "")
         lines.append(
             f"## Memory Palace {p.get('palace_number')}: {p.get('title') or ''}"
         )
@@ -344,7 +505,7 @@ def synthesize_prior_palace_inventory(
         for b in blist:
             peg = b.get("peg_code") or ""
             name = b.get("beast_name") or ""
-            al = [a for a in atoms if a.get("beast_id") == b.get("id")]
+            al = _atoms_for_beast(data, b.get("id") or "")
             lines.append(f"- [{peg}] {name} · {len(al)} atom(s)")
         lines.append("")
     return "\n".join(lines)
@@ -403,12 +564,12 @@ class PalaceHandler(BaseHTTPRequestHandler):
         return PalaceStore(self.data_dir, self.output_dir, self.studies_root)
 
     def _reduction_context(self, parsed: urllib.parse.ParseResult) -> dict[str, Any]:
-        from study_practice_md import practice_md_path  # noqa: E402
         from technique_renderer import default_technique_dir  # noqa: E402
 
         qs = urllib.parse.parse_qs(parsed.query)
         study_id = (qs.get("study_id") or [""])[0].strip()
         before_raw = (qs.get("before_palace_number") or [""])[0].strip()
+        through_raw = (qs.get("through_palace_number") or [""])[0].strip()
         if not study_id:
             return {"ok": False, "error": "study_id required"}
         try:
@@ -417,48 +578,50 @@ class PalaceHandler(BaseHTTPRequestHandler):
             return {"ok": False, "error": "before_palace_number must be an integer"}
         if before_n < 1:
             return {"ok": False, "error": "before_palace_number must be >= 1"}
+        try:
+            through_n = int(through_raw) if through_raw else before_n
+        except ValueError:
+            return {"ok": False, "error": "through_palace_number must be an integer"}
+        if through_n < before_n:
+            through_n = before_n
 
         technique_dir = default_technique_dir(Path(__file__).resolve().parent)
         if not technique_dir.is_dir():
             technique_dir = MNEMONICS_ROOT / "technique"
 
-        def _read(path: Path) -> str:
-            if not path.is_file():
-                return f"(missing: {path.name})"
-            return path.read_text(encoding="utf-8")
-
-        readme = _read(technique_dir / "README.md")
-        characters = _read(technique_dir / "characters.json")
-        bestiary = _read(technique_dir / "bestiary.json")
-
         store = self._store()
-        data = store._load_tree()
-        study = next(
-            (s for s in data.get("studies", []) if s.get("id") == study_id),
-            None,
-        )
-        slug = ((study or {}).get("notes_rel_path") or "").strip() or study_id
-        practice_dir = self.output_dir / "practice"
-        study_text = ""
-        try:
-            md_path = practice_md_path(practice_dir, slug)
-            if md_path.is_file():
-                study_text = filter_practice_md_before_palace(
-                    md_path.read_text(encoding="utf-8"), before_n
-                )
-        except Exception as e:
-            study_text = f"(could not read practice md: {e})"
+        bridge, last_peg = synthesize_bridge_tip(store, study_id, before_n)
+        inscope = synthesize_inscope_inventory(store, study_id, before_n, through_n)
 
-        if not study_text.strip() or study_text.strip().startswith("(could not"):
-            study_text = synthesize_prior_palace_inventory(store, study_id, before_n)
+        # Enough pegs for survivors + smash compression headroom.
+        data = store._load_tree()
+        inscope_beast_n = 0
+        for p in _study_palaces(data, study_id):
+            n = int(p.get("palace_number") or 0)
+            if before_n <= n <= through_n:
+                inscope_beast_n += len(_beasts_for_palace(data, p.get("id") or ""))
+        slice_n = max(24, inscope_beast_n + 12)
+        bestiary = load_bestiary_slice(technique_dir, last_peg, slice_n)
+        characters = characters_used_for_range(
+            store, study_id, before_n, through_n, before_n
+        )
+
         return {
             "ok": True,
-            "readme": readme,
-            "characters": characters,
-            "bestiary": bestiary,
-            "study": study_text,
-            "before_palace_number": before_n,
+            "lean": True,
             "study_id": study_id,
+            "before_palace_number": before_n,
+            "through_palace_number": through_n,
+            "last_out_of_scope_peg": last_peg,
+            "bridge": bridge,
+            "inscope": inscope,
+            "bestiary_slice": bestiary,
+            "characters_used": characters,
+            # Keep empty legacy keys so older clients don't crash if any linger.
+            "readme": "",
+            "characters": "",
+            "bestiary": "",
+            "study": "",
         }
 
     def do_OPTIONS(self) -> None:
