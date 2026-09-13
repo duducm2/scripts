@@ -569,7 +569,7 @@ ShowClipAngelFilterSelector() {
 
 #HotIf
 
-; Constant Pasting: Shift+P = Ctrl+Alt+V (paste+next), Shift+B = Ctrl+Alt+B (paste+prev).
+; Constant Pasting: Shift+P ↓ = Ctrl+Alt+B (paste+previous), Shift+B ↑ = Ctrl+Alt+V (paste+next).
 ; Delimiter ListView before start; either key stops while active (focus stays on paste target).
 #HotIf WinActive("ahk_exe ClipAngel.exe") || ClipAngel_ConstantPaste_IsActive() ||
 ClipAngel_ConstantPaste_IsDelimiterPromptActive()

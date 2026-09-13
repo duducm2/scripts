@@ -4,8 +4,8 @@
 ; (All or Favorites; no Row-0 jump), 1.5s interruptible gap.
 ; Directions: "down" (Shift+P) / "up" (Shift+B). Before start, name ListView picks
 ; interstitial delimiter (Enter / Space / Shift+Enter / None); letter = first-word jump.
-; Hot path: native Ctrl+Alt+V (paste+next) / Ctrl+Alt+B (paste+previous) via
-; ClipAngel_PostHotkey — paste target stays foreground; no per-clip Activate/UIA walk.
+; Hot path: native Ctrl+Alt+B (paste+previous = down list) / Ctrl+Alt+V (paste+next = toward top)
+; via ClipAngel_PostHotkey — paste target stays foreground; no per-clip Activate/UIA walk.
 ; Efficiency: WM_HOTKEY post (efficiency-canon §15); bounded gap; light UIA only for end-of-list.
 ; Loaded via #include into Utils.ahk after clip_angel_favorite / activate.
 ; =============================================================================
@@ -718,8 +718,8 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
     direction := (direction = "up") ? "up" : "down"
     stopHint := (direction = "up") ? "Shift+B" : "Shift+P"
     dirLabel := (direction = "up") ? "↑" : "↓"
-    ; ClipAngel settings: Ctrl+Alt+V = paste+select next; Ctrl+Alt+B = paste+select previous.
-    nativeVk := (direction = "up") ? "b" : "v"
+    ; List order newest@top: Shift+P ↓ uses paste+previous (^!b); Shift+B ↑ uses paste+next (^!v).
+    nativeVk := (direction = "up") ? "v" : "b"
 
     priorHwnd := ClipAngel_ConstantPaste_ResolveTargetHwnd()
     if (!priorHwnd) {
@@ -836,7 +836,7 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
     return false
 }
 
-; Ctrl+Alt+V (next) / Ctrl+Alt+B (previous) without stealing focus from the paste target.
+; Ctrl+Alt+B (previous/down) / Ctrl+Alt+V (next/up) without stealing focus from the paste target.
 ClipAngel_ConstantPaste_FireNativePaste(vkChar) {
     vkChar := StrLower(Trim(vkChar))
     if (vkChar != "v" && vkChar != "b")
