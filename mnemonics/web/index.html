@@ -1057,6 +1057,20 @@
         );
       }
 
+      function srRemoveMergeGroup(groupIndex) {
+        const groups = state.storyReduction.mergeGroups;
+        if (groups.length <= 1) {
+          groups[0] = [];
+          renderStoryReductionPanel();
+          bindStoryReductionDrag();
+          return;
+        }
+        if (groupIndex < 0 || groupIndex >= groups.length) return;
+        groups.splice(groupIndex, 1);
+        renderStoryReductionPanel();
+        bindStoryReductionDrag();
+      }
+
       function srChipLabel(beastId) {
         const b = beastById(beastId);
         if (!b) return beastId;
@@ -1092,11 +1106,22 @@
               )
               .join("");
             return `<div class="sr-merge-group" data-sr-drop="merge" data-sr-group="${gi}">
-              <div class="sr-group-label">Group ${gi + 1} · ${g.length}/${SR_MERGE_MAX}</div>
+              <div class="sr-group-head">
+                <div class="sr-group-label">Group ${gi + 1} · ${g.length}/${SR_MERGE_MAX}</div>
+                <button type="button" class="sr-btn-ghost sr-btn-remove-group" data-sr-remove-group="${gi}" title="${state.storyReduction.mergeGroups.length <= 1 ? "Clear group" : "Remove group"}">${state.storyReduction.mergeGroups.length <= 1 ? "Clear" : "Remove"}</button>
+              </div>
               <div class="sr-chip-list">${chips || '<span class="sr-hint">Drop beasts here</span>'}</div>
             </div>`;
           })
           .join("");
+
+        panel.querySelectorAll("[data-sr-remove-group]").forEach((el) => {
+          el.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            srRemoveMergeGroup(Number(el.dataset.srRemoveGroup));
+          };
+        });
 
         panel.querySelectorAll("[data-sr-unstage]").forEach((el) => {
           el.onclick = () => {
@@ -1227,28 +1252,80 @@
       }
 
       function srFormatMergeGroupsText() {
-        return state.storyReduction.mergeGroups
-          .filter((g) => g.length >= 2)
-          .map((g) => {
+        const blocks = state.storyReduction.mergeGroups
+          .map((g, gi) => {
+            if (g.length < 2) return "";
             const pegs = g
               .map((id) => {
                 const b = beastById(id);
-                return b?.peg_code ? `[${b.peg_code}]` : id;
+                return b?.peg_code ? `[${b.peg_code}]` : `[${id}]`;
               })
               .join("+");
-            return `Merge ${pegs} into one beast`;
+            const detail = g
+              .map((id) => {
+                const b = beastById(id);
+                if (!b) return `  - ${id}`;
+                const p = palaceById(b.palace_id);
+                const ats = atoms(b.id);
+                const concept = (ats[0]?.concept || "")
+                  .toString()
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .slice(0, 160);
+                return `  - [${b.peg_code || "?"}] ${b.beast_name || ""} · palace ${p?.palace_number ?? "?"} · ${ats.length} atom(s)${concept ? `\n    Concept: ${concept}` : ""}`;
+              })
+              .join("\n");
+            return `Group ${gi + 1}: Merge ${pegs} into one beast\n${detail}`;
           })
-          .join("; ");
+          .filter(Boolean);
+        return blocks.join("\n\n");
       }
 
       function srFormatDeletePegsText() {
-        return state.storyReduction.deleteIds
+        const lines = state.storyReduction.deleteIds
           .map((id) => {
             const b = beastById(id);
-            return b?.peg_code || id;
+            if (!b) return `- ${id}`;
+            const p = palaceById(b.palace_id);
+            const ats = atoms(b.id);
+            const concept = (ats[0]?.concept || "")
+              .toString()
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 160);
+            return `- [${b.peg_code || "?"}] ${b.beast_name || ""} · palace ${p?.palace_number ?? "?"} · ${ats.length} atom(s)${concept ? `\n  Concept: ${concept}` : ""}`;
           })
-          .filter(Boolean)
-          .join(", ");
+          .filter(Boolean);
+        return lines.join("\n");
+      }
+
+      function srBuildStagingManifest(mode, scope, merges, removes) {
+        const hasMerge = !!merges;
+        const hasDelete = !!removes;
+        const lines = [
+          "=== STAGED FROM MEMORY PALACE UI (authoritative — do not ignore) ===",
+          `Reduction mode: ${mode}`,
+          `Reduction scope: ${scope || "(derive from staged pegs/palaces below)"}`,
+          "",
+        ];
+        if (hasMerge && hasDelete) {
+          lines.push(
+            "Apply BOTH actions in one pack: SMASH the merge groups, then REMOVE the listed pegs (or remove them as part of the same in-scope rewrite).",
+            "",
+          );
+        }
+        lines.push("MERGE GROUPS (SMASH):");
+        lines.push(merges || "(none)");
+        lines.push("");
+        lines.push("PEGS / BEASTS TO REMOVE (REMOVE):");
+        lines.push(removes || "(none)");
+        lines.push(
+          "",
+          "Use the peg letters above exactly. Prefer beast peg_code over display name when re-pegging.",
+          "=== END STAGED ===",
+          "",
+        );
+        return lines.join("\n");
       }
 
       function srFillPromptTemplate(tpl) {
@@ -1256,7 +1333,10 @@
           (g) => g.length >= 2,
         );
         const hasDelete = state.storyReduction.deleteIds.length > 0;
-        const mode = hasMerge ? "SMASH" : hasDelete ? "REMOVE" : "REMOVE";
+        let mode = hasMerge ? "SMASH" : "REMOVE";
+        if (hasMerge && hasDelete) {
+          mode = "SMASH";
+        }
         const { palaceNums, pegs } = srStagedBeastMeta();
         let scope = "";
         if (palaceNums.length) {
@@ -1271,20 +1351,35 @@
               ? `pegs ${pegs.join(", ")}`
               : `pegs ${pegs[0]}…${pegs[pegs.length - 1]}`);
         }
-        const merges = srFormatMergeGroupsText() || "(none)";
-        const removes = srFormatDeletePegsText() || "(none)";
+        const merges = srFormatMergeGroupsText();
+        const removes = srFormatDeletePegsText();
+        const modeBlock =
+          hasMerge && hasDelete
+            ? `${mode}\n(Also REMOVE every peg listed under Peg letters to remove below.)`
+            : mode;
+        const mergeBlock = merges || "(none — no SMASH groups staged)";
+        const removeBlock = removes || "(none — no REMOVE pegs staged)";
+        const manifest = srBuildStagingManifest(
+          modeBlock,
+          scope,
+          merges,
+          removes,
+        );
+
         let out = tpl;
-        out = out.replace("[SMASH or REMOVE]", mode);
+        // Put the job card first so companions see staged beasts immediately.
+        out = `${manifest}\n${out}`;
+        out = out.replace("[SMASH or REMOVE]", modeBlock);
         out = out.replace(
           "[SCOPE OR LEAVE BLANK FOR LATEST SEGMENT]",
-          scope || "(latest staged segment)",
+          scope || "(latest staged segment from Memory Palace UI)",
         );
         out = out.replace(
           "[ATTACH OR PASTE]",
-          "(use Copy Context for README / characters / bestiary / prior study palaces)",
+          "(attach via Copy Context: README / characters / bestiary / prior study palaces — staged merge/remove lists are already filled above)",
         );
-        out = out.replace("[LIST GROUPS]", merges);
-        out = out.replace("[LIST PEGS]", removes);
+        out = out.replace("[LIST GROUPS]", mergeBlock);
+        out = out.replace("[LIST PEGS]", removeBlock);
         return { text: out, mode, hasMerge, hasDelete };
       }
 

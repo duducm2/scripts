@@ -1823,7 +1823,9 @@ a.btn-gallery {
   padding: 0.55rem 0.6rem;
   min-height: 4.5rem;
   background: rgba(18, 20, 26, 0.9);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .sr-drop.sr-drag-over,
 .sr-merge-group.sr-drag-over {
@@ -1833,9 +1835,25 @@ a.btn-gallery {
 .sr-delete h3,
 .sr-merge-head h3,
 .sr-merge-group .sr-group-label {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font-size: 0.88rem;
   color: var(--text);
+}
+.sr-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  margin-bottom: 0.25rem;
+}
+.sr-btn-remove-group {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+.sr-btn-remove-group:hover {
+  color: #e07070;
+  border-color: #e07070;
 }
 .sr-merge-head {
   display: flex;
