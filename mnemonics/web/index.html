@@ -507,6 +507,13 @@
         </button>
         <button
           type="button"
+          id="btnStoryReduction"
+          title="Toggle Story Reduction Mode"
+        >
+          Story Reduction
+        </button>
+        <button
+          type="button"
           id="btnPractice"
           class="active"
           title="Practice (Esc)"
@@ -758,6 +765,52 @@
       </div>
     </div>
 
+    <aside
+      id="storyReductionPanel"
+      class="story-reduction-panel"
+      hidden
+      aria-label="Story Reduction staging"
+    >
+      <header class="sr-panel-head">
+        <h2>Story Reduction</h2>
+        <button
+          type="button"
+          id="btnSrClear"
+          class="sr-btn-ghost"
+          title="Clear staging"
+        >
+          Clear
+        </button>
+      </header>
+      <section
+        class="sr-drop sr-delete"
+        id="srDeleteZone"
+        data-sr-drop="delete"
+      >
+        <h3>Delete</h3>
+        <p class="sr-hint">Drop beasts to remove (REMOVE)</p>
+        <div class="sr-chip-list" id="srDeleteList"></div>
+      </section>
+      <section class="sr-merge" id="srMergeSection">
+        <div class="sr-merge-head">
+          <h3>Merge</h3>
+          <button type="button" id="btnSrAddGroup" class="sr-btn-ghost">
+            + Group
+          </button>
+        </div>
+        <p class="sr-hint">Drop into a group (max 4 · SMASH)</p>
+        <div class="sr-merge-groups" id="srMergeGroups"></div>
+      </section>
+      <footer class="sr-panel-foot">
+        <button type="button" id="btnSrGenerate" class="sr-btn">
+          Generate Prompt
+        </button>
+        <button type="button" id="btnSrCopyContext" class="sr-btn">
+          Copy Context
+        </button>
+      </footer>
+    </aside>
+
     <div id="toast"></div>
 
     <div
@@ -786,6 +839,12 @@
         browse: { studyId: "", palaceId: "", beastId: "" },
         overlayPalaceId: "",
         pendingHeroPalaceId: "",
+        selectedPalaceIds: new Set(),
+        storyReduction: {
+          active: false,
+          deleteIds: [],
+          mergeGroups: [[]],
+        },
         notesTimer: null,
         planCheckSnapshot: null,
         studyPickerPending: true,
@@ -969,6 +1028,327 @@
       function palaceById(id) {
         return (state.data?.palaces || []).find((p) => p.id === id);
       }
+      function beastById(id) {
+        return (state.data?.beasts || []).find((b) => b.id === id);
+      }
+
+      const SR_MERGE_MAX = 4;
+
+      function srAllStagedIds() {
+        const ids = new Set(state.storyReduction.deleteIds);
+        for (const g of state.storyReduction.mergeGroups) {
+          for (const id of g) ids.add(id);
+        }
+        return ids;
+      }
+
+      function srRemoveFromMerge(beastId) {
+        state.storyReduction.mergeGroups = state.storyReduction.mergeGroups.map(
+          (g) => g.filter((id) => id !== beastId),
+        );
+        if (!state.storyReduction.mergeGroups.length) {
+          state.storyReduction.mergeGroups = [[]];
+        }
+      }
+
+      function srRemoveFromDelete(beastId) {
+        state.storyReduction.deleteIds = state.storyReduction.deleteIds.filter(
+          (id) => id !== beastId,
+        );
+      }
+
+      function srChipLabel(beastId) {
+        const b = beastById(beastId);
+        if (!b) return beastId;
+        const peg = (b.peg_code || "").trim();
+        const name = (b.beast_name || "").trim();
+        return peg ? `[${peg}] ${name || peg}` : name || beastId;
+      }
+
+      function renderStoryReductionPanel() {
+        const panel = document.getElementById("storyReductionPanel");
+        const btn = document.getElementById("btnStoryReduction");
+        if (!panel || !btn) return;
+        const on = state.storyReduction.active;
+        panel.hidden = !on;
+        btn.classList.toggle("active", on);
+        if (!on) return;
+
+        const delList = document.getElementById("srDeleteList");
+        delList.innerHTML = state.storyReduction.deleteIds
+          .map(
+            (id) =>
+              `<button type="button" class="sr-chip" data-sr-unstage="${escAttr(id)}" data-sr-from="delete" title="Remove from Delete">${esc(srChipLabel(id))}</button>`,
+          )
+          .join("");
+
+        const groupsEl = document.getElementById("srMergeGroups");
+        groupsEl.innerHTML = state.storyReduction.mergeGroups
+          .map((g, gi) => {
+            const chips = g
+              .map(
+                (id) =>
+                  `<button type="button" class="sr-chip sr-chip-merge" data-sr-unstage="${escAttr(id)}" data-sr-from="merge" title="Remove from merge">${esc(srChipLabel(id))}</button>`,
+              )
+              .join("");
+            return `<div class="sr-merge-group" data-sr-drop="merge" data-sr-group="${gi}">
+              <div class="sr-group-label">Group ${gi + 1} · ${g.length}/${SR_MERGE_MAX}</div>
+              <div class="sr-chip-list">${chips || '<span class="sr-hint">Drop beasts here</span>'}</div>
+            </div>`;
+          })
+          .join("");
+
+        panel.querySelectorAll("[data-sr-unstage]").forEach((el) => {
+          el.onclick = () => {
+            const id = el.dataset.srUnstage;
+            if (el.dataset.srFrom === "delete") srRemoveFromDelete(id);
+            else srRemoveFromMerge(id);
+            renderStoryReductionPanel();
+            bindStoryReductionDrag();
+          };
+        });
+
+        panel.querySelectorAll("[data-sr-drop]").forEach((zone) => {
+          zone.ondragover = (e) => {
+            e.preventDefault();
+            zone.classList.add("sr-drag-over");
+          };
+          zone.ondragleave = () => zone.classList.remove("sr-drag-over");
+          zone.ondrop = (e) => {
+            e.preventDefault();
+            zone.classList.remove("sr-drag-over");
+            const beastId =
+              e.dataTransfer.getData("text/beast-id") ||
+              e.dataTransfer.getData("text/plain");
+            if (!beastId) return;
+            if (zone.dataset.srDrop === "delete") {
+              srStageDelete(beastId);
+            } else {
+              const gi = Number(zone.dataset.srGroup || 0);
+              srStageMerge(beastId, gi);
+            }
+          };
+        });
+      }
+
+      function srStageDelete(beastId) {
+        if (!beastById(beastId)) return;
+        srRemoveFromMerge(beastId);
+        if (!state.storyReduction.deleteIds.includes(beastId)) {
+          state.storyReduction.deleteIds.push(beastId);
+        }
+        renderStoryReductionPanel();
+        bindStoryReductionDrag();
+      }
+
+      function srStageMerge(beastId, groupIndex) {
+        if (!beastById(beastId)) return;
+        const groups = state.storyReduction.mergeGroups;
+        let gi = groupIndex;
+        if (gi < 0 || gi >= groups.length) gi = groups.length - 1;
+        if (groups[gi].includes(beastId)) {
+          renderStoryReductionPanel();
+          return;
+        }
+        if (groups[gi].length >= SR_MERGE_MAX) {
+          toast(`Merge group max is ${SR_MERGE_MAX} beasts (Z1–Z4)`);
+          return;
+        }
+        srRemoveFromDelete(beastId);
+        srRemoveFromMerge(beastId);
+        // after remove, groups array may have changed references — re-resolve
+        const g2 = state.storyReduction.mergeGroups;
+        if (gi >= g2.length) gi = g2.length - 1;
+        if (g2[gi].length >= SR_MERGE_MAX) {
+          toast(`Merge group max is ${SR_MERGE_MAX} beasts (Z1–Z4)`);
+          return;
+        }
+        g2[gi].push(beastId);
+        renderStoryReductionPanel();
+        bindStoryReductionDrag();
+      }
+
+      function setStoryReductionActive(on) {
+        state.storyReduction.active = !!on;
+        renderStoryReductionPanel();
+        bindStoryReductionDrag();
+      }
+
+      function toggleStoryReduction() {
+        setStoryReductionActive(!state.storyReduction.active);
+      }
+
+      function clearStoryReductionStaging() {
+        state.storyReduction.deleteIds = [];
+        state.storyReduction.mergeGroups = [[]];
+        renderStoryReductionPanel();
+        bindStoryReductionDrag();
+      }
+
+      function bindStoryReductionDrag() {
+        const root = document.getElementById("ovAtoms");
+        if (!root) return;
+        const staged = srAllStagedIds();
+        root.querySelectorAll(".beast-cluster[data-beast-id]").forEach((el) => {
+          const id = el.dataset.beastId;
+          const active = state.storyReduction.active;
+          el.classList.toggle("sr-draggable", active);
+          el.classList.toggle("sr-staged", staged.has(id));
+          el.draggable = active;
+          if (!active) {
+            el.ondragstart = null;
+            el.ondragend = null;
+            return;
+          }
+          el.ondragstart = (e) => {
+            e.dataTransfer.setData("text/beast-id", id);
+            e.dataTransfer.setData("text/plain", id);
+            e.dataTransfer.effectAllowed = "copyMove";
+            el.classList.add("sr-dragging");
+          };
+          el.ondragend = () => el.classList.remove("sr-dragging");
+        });
+      }
+
+      function srStagedBeastMeta() {
+        const ids = [...srAllStagedIds()];
+        const beastsMeta = ids.map((id) => beastById(id)).filter(Boolean);
+        const palaceIds = [
+          ...new Set(beastsMeta.map((b) => b.palace_id).filter(Boolean)),
+        ];
+        const palaceNums = palaceIds
+          .map((pid) => Number(palaceById(pid)?.palace_number || 0))
+          .filter((n) => n > 0)
+          .sort((a, b) => a - b);
+        const pegs = beastsMeta
+          .map((b) => (b.peg_code || "").trim())
+          .filter(Boolean);
+        return { beastsMeta, palaceIds, palaceNums, pegs };
+      }
+
+      function srFormatMergeGroupsText() {
+        return state.storyReduction.mergeGroups
+          .filter((g) => g.length >= 2)
+          .map((g) => {
+            const pegs = g
+              .map((id) => {
+                const b = beastById(id);
+                return b?.peg_code ? `[${b.peg_code}]` : id;
+              })
+              .join("+");
+            return `Merge ${pegs} into one beast`;
+          })
+          .join("; ");
+      }
+
+      function srFormatDeletePegsText() {
+        return state.storyReduction.deleteIds
+          .map((id) => {
+            const b = beastById(id);
+            return b?.peg_code || id;
+          })
+          .filter(Boolean)
+          .join(", ");
+      }
+
+      function srFillPromptTemplate(tpl) {
+        const hasMerge = state.storyReduction.mergeGroups.some(
+          (g) => g.length >= 2,
+        );
+        const hasDelete = state.storyReduction.deleteIds.length > 0;
+        const mode = hasMerge ? "SMASH" : hasDelete ? "REMOVE" : "REMOVE";
+        const { palaceNums, pegs } = srStagedBeastMeta();
+        let scope = "";
+        if (palaceNums.length) {
+          const lo = palaceNums[0];
+          const hi = palaceNums[palaceNums.length - 1];
+          scope = `palaces ${lo}${lo !== hi ? `–${hi}` : ""}`;
+        }
+        if (pegs.length) {
+          scope +=
+            (scope ? " · " : "") +
+            (pegs.length <= 12
+              ? `pegs ${pegs.join(", ")}`
+              : `pegs ${pegs[0]}…${pegs[pegs.length - 1]}`);
+        }
+        const merges = srFormatMergeGroupsText() || "(none)";
+        const removes = srFormatDeletePegsText() || "(none)";
+        let out = tpl;
+        out = out.replace("[SMASH or REMOVE]", mode);
+        out = out.replace(
+          "[SCOPE OR LEAVE BLANK FOR LATEST SEGMENT]",
+          scope || "(latest staged segment)",
+        );
+        out = out.replace(
+          "[ATTACH OR PASTE]",
+          "(use Copy Context for README / characters / bestiary / prior study palaces)",
+        );
+        out = out.replace("[LIST GROUPS]", merges);
+        out = out.replace("[LIST PEGS]", removes);
+        return { text: out, mode, hasMerge, hasDelete };
+      }
+
+      async function generateStoryReductionPrompt() {
+        if (
+          !state.storyReduction.deleteIds.length &&
+          !state.storyReduction.mergeGroups.some((g) => g.length >= 2)
+        ) {
+          toast("Stage beasts in Delete or Merge first");
+          return;
+        }
+        try {
+          const r = await api("/api/reduction/prompt");
+          const tpl = r.text || r.prompt || "";
+          if (!tpl) throw new Error("Empty prompt template");
+          const { text, mode, hasMerge, hasDelete } = srFillPromptTemplate(tpl);
+          await navigator.clipboard.writeText(text);
+          if (hasMerge && hasDelete) {
+            toast(`Prompt copied (mode ${mode}; both sections filled)`);
+          } else {
+            toast(`Prompt copied (mode ${mode})`);
+          }
+        } catch (e) {
+          toast(String(e.message || e));
+        }
+      }
+
+      async function copyStoryReductionContext() {
+        const { palaceNums } = srStagedBeastMeta();
+        if (!palaceNums.length) {
+          toast("Stage beasts first so context can exclude in-scope palaces");
+          return;
+        }
+        const before = palaceNums[0];
+        const sid = state.studyId;
+        if (!sid) {
+          toast("Select a study first");
+          return;
+        }
+        try {
+          const q = new URLSearchParams({
+            study_id: sid,
+            before_palace_number: String(before),
+          });
+          const r = await api(`/api/reduction/context?${q}`);
+          const parts = [
+            "=== README (mnemonics/technique/README.md) ===",
+            r.readme || "",
+            "",
+            "=== Characters (mnemonics/technique/characters.json) ===",
+            r.characters || "",
+            "",
+            "=== Bestiary (mnemonics/technique/bestiary.json) ===",
+            r.bestiary || "",
+            "",
+            `=== Study prior palaces (before Memory Palace ${before}) ===`,
+            r.study || "",
+          ];
+          await navigator.clipboard.writeText(parts.join("\n"));
+          toast(`Context copied (palaces < ${before})`);
+        } catch (e) {
+          toast(String(e.message || e));
+        }
+      }
 
       function fillStudySelect() {
         const sel = document.getElementById("study");
@@ -992,8 +1372,13 @@
           .join("");
       }
 
+      function clearPalaceSelection() {
+        state.selectedPalaceIds.clear();
+      }
+
       function rememberStudy(id) {
         if (!id) return;
+        if (id !== state.studyId) clearPalaceSelection();
         state.studyId = id;
         try {
           localStorage.setItem(LAST_STUDY_KEY, id);
@@ -1206,6 +1591,7 @@
 
       function setView(v) {
         if (v !== "images") closeImagesFs();
+        if (v !== "practice") clearPalaceSelection();
         state.view = v;
         setChromeActive();
         showPanel(v);
@@ -1255,11 +1641,57 @@
         );
       }
 
+      function syncPracticeSelectionUi() {
+        const root = document.getElementById("practicePanel");
+        if (!root) return;
+        const n = state.selectedPalaceIds.size;
+        root.querySelectorAll(".palace").forEach((el) => {
+          el.classList.toggle(
+            "selected",
+            state.selectedPalaceIds.has(el.dataset.palaceId),
+          );
+        });
+        const btn = root.querySelector("#btnDeletePalaces");
+        if (!btn) return;
+        btn.hidden = n === 0;
+        btn.textContent = n === 1 ? "Delete" : `Delete (${n})`;
+      }
+
+      function togglePalaceSelection(id) {
+        if (!id) return;
+        if (state.selectedPalaceIds.has(id)) state.selectedPalaceIds.delete(id);
+        else state.selectedPalaceIds.add(id);
+        syncPracticeSelectionUi();
+      }
+
+      async function deleteSelectedPalaces() {
+        if (state.view !== "practice") return;
+        const ovOpen = document
+          .getElementById("overlay")
+          ?.classList.contains("open");
+        if (ovOpen) return;
+        const ids = [...state.selectedPalaceIds];
+        if (!ids.length) return;
+        const msg =
+          ids.length === 1 ? "Delete palace?" : `Delete ${ids.length} palaces?`;
+        if (!confirm(msg)) return;
+        for (const id of ids) {
+          await api(`/api/palaces/${id}`, { method: "DELETE" });
+        }
+        clearPalaceSelection();
+        await refresh();
+      }
+
       function renderPractice() {
         const sid = state.studyId;
         const st = studyById(sid);
         const list = palaces(sid);
         const root = document.getElementById("practicePanel");
+        const validIds = new Set(list.map((p) => p.id));
+        for (const id of [...state.selectedPalaceIds]) {
+          if (!validIds.has(id)) state.selectedPalaceIds.delete(id);
+        }
+        const selCount = state.selectedPalaceIds.size;
         let grid = list
           .map((p) => {
             const nb = beasts(p.id).length;
@@ -1268,7 +1700,10 @@
             const img = src
               ? `<img src="${escAttr(src)}" alt="Memory Palace ${escAttr(p.palace_number)}" loading="lazy"/>`
               : `<div class="missing">No image</div>`;
-            return `<article class="palace" data-palace-id="${escAttr(p.id)}" tabindex="0" role="button">
+            const selected = state.selectedPalaceIds.has(p.id)
+              ? " selected"
+              : "";
+            return `<article class="palace${selected}" data-palace-id="${escAttr(p.id)}" tabindex="0" role="button">
             ${img}
             <div class="meta">
               <h3>Memory Palace ${esc(p.palace_number)}: ${esc(p.title)}</h3>
@@ -1281,17 +1716,36 @@
           .join("");
         if (!grid)
           grid = `<p class="empty">No Memory Palaces in this study.</p>`;
+        const delLabel = selCount === 1 ? "Delete" : `Delete (${selCount})`;
         root.innerHTML = `
           <section class="study">
             <header class="study-head">
-              <h2>${esc(st?.title || sid || "Study")}</h2>
-              <p>${list.length} Memory Palace${list.length === 1 ? "" : "s"} · newest first</p>
+              <div class="study-head-row">
+                <div>
+                  <h2>${esc(st?.title || sid || "Study")}</h2>
+                  <p>${list.length} Memory Palace${list.length === 1 ? "" : "s"} · newest first</p>
+                </div>
+                <button type="button" id="btnDeletePalaces" class="btn-palace-delete"${selCount === 0 ? " hidden" : ""}>${delLabel}</button>
+              </div>
             </header>
             <div class="grid">${grid}</div>
           </section>`;
+        const delBtn = root.querySelector("#btnDeletePalaces");
+        if (delBtn) delBtn.onclick = () => deleteSelectedPalaces();
         root.querySelectorAll(".palace").forEach((el) => {
-          const open = () => openPalace(el.dataset.palaceId);
-          el.onclick = open;
+          const open = () => {
+            clearPalaceSelection();
+            syncPracticeSelectionUi();
+            openPalace(el.dataset.palaceId);
+          };
+          el.onclick = (e) => {
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              togglePalaceSelection(el.dataset.palaceId);
+              return;
+            }
+            open();
+          };
           el.onkeydown = (e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -1477,7 +1931,7 @@
             const cards =
               ats.map((a) => renderAtomCard(a, !sensoryOnBeast)).join("") ||
               '<p class="empty">No atoms</p>';
-            return `<section class="beast-cluster" style="--beast-cols: ${innerCols}">
+            return `<section class="beast-cluster" data-beast-id="${escAttr(b.id)}" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">
               <span class="lbl">Beast</span>
               <div class="beast-head-row">
@@ -1557,6 +2011,7 @@
         overlay.setAttribute("aria-hidden", "false");
         const imgPane = document.getElementById("ovImage");
         imgPane.onclick = () => toggleOverlayImageExpand();
+        bindStoryReductionDrag();
       }
 
       function syncExpandImageButton() {
@@ -3037,7 +3492,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Overlay: <b>F</b> full image · <b>D</b> details.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Story Reduction</b> toggle · drag beasts to Delete/Merge · Generate Prompt / Copy Context. Overlay: <b>F</b> full image · <b>D</b> details.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -3063,6 +3518,18 @@
       };
       document.getElementById("btnLatest").onclick = () =>
         goLatestPalaceShortcut();
+      document.getElementById("btnStoryReduction").onclick = () =>
+        toggleStoryReduction();
+      document.getElementById("btnSrClear").onclick = () =>
+        clearStoryReductionStaging();
+      document.getElementById("btnSrAddGroup").onclick = () => {
+        state.storyReduction.mergeGroups.push([]);
+        renderStoryReductionPanel();
+      };
+      document.getElementById("btnSrGenerate").onclick = () =>
+        generateStoryReductionPrompt();
+      document.getElementById("btnSrCopyContext").onclick = () =>
+        copyStoryReductionContext();
       document.getElementById("btnPractice").onclick = () =>
         setView("practice");
       document.getElementById("btnPlans").onclick = () => togglePlansPractice();
@@ -3311,6 +3778,16 @@
         const ovOpen = document
           .getElementById("overlay")
           .classList.contains("open");
+        if (
+          e.key === "Delete" &&
+          !ovOpen &&
+          state.view === "practice" &&
+          state.selectedPalaceIds.size > 0
+        ) {
+          e.preventDefault();
+          deleteSelectedPalaces();
+          return;
+        }
         if (ovOpen) {
           if (e.key === "Escape") {
             const ov = document.getElementById("overlay");

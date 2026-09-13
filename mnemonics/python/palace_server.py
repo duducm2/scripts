@@ -276,6 +276,80 @@ def study_link_clipboard_and_set(key: str) -> dict[str, Any]:
     return {"ok": True, "url": url, "key": key}
 
 
+_DETAILS_BLOCK_RE = re.compile(
+    r"<details\b[^>]*>.*?</details>",
+    re.IGNORECASE | re.DOTALL,
+)
+_PALACE_NUM_IN_SUMMARY_RE = re.compile(
+    r"Memory Palace\s+(\d+)\s*:",
+    re.IGNORECASE,
+)
+
+
+def filter_practice_md_before_palace(md: str, before_n: int) -> str:
+    """Keep study MD header + Memory Palace sections with number < before_n."""
+    if before_n <= 1:
+        # Nothing prior — keep title/header only (strip all palace details).
+        first = _DETAILS_BLOCK_RE.search(md)
+        if first:
+            return md[: first.start()].rstrip() + "\n"
+        return md
+
+    kept: list[str] = []
+    pos = 0
+    header_end = None
+    for m in _DETAILS_BLOCK_RE.finditer(md):
+        if header_end is None:
+            header_end = m.start()
+            kept.append(md[:header_end])
+        block = m.group(0)
+        num_m = _PALACE_NUM_IN_SUMMARY_RE.search(block)
+        if num_m and int(num_m.group(1)) < before_n:
+            kept.append(block)
+        pos = m.end()
+    if header_end is None:
+        return md
+    trailing = md[pos:].strip()
+    body = "".join(kept).rstrip()
+    if trailing and not _DETAILS_BLOCK_RE.search(trailing):
+        # ignore leftover non-details noise after last block
+        pass
+    return body + "\n"
+
+
+def synthesize_prior_palace_inventory(
+    store: PalaceStore, study_id: str, before_n: int
+) -> str:
+    data = store._load_tree()
+    lines = [f"# Prior palaces for {study_id} (palace_number < {before_n})", ""]
+    palaces = [
+        p
+        for p in data.get("palaces", [])
+        if p.get("study_id") == study_id and int(p.get("palace_number") or 0) < before_n
+    ]
+    palaces.sort(key=lambda p: int(p.get("palace_number") or 0))
+    if not palaces:
+        lines.append("_No prior Memory Palaces._")
+        return "\n".join(lines) + "\n"
+    beasts = data.get("beasts", [])
+    atoms = data.get("atoms", [])
+    for p in palaces:
+        pid = p.get("id")
+        blist = [b for b in beasts if b.get("palace_id") == pid]
+        blist.sort(key=lambda b: int(b.get("sort_order") or 0))
+        lines.append(
+            f"## Memory Palace {p.get('palace_number')}: {p.get('title') or ''}"
+        )
+        lines.append(f"Character: {p.get('character_name') or '(none)'}")
+        for b in blist:
+            peg = b.get("peg_code") or ""
+            name = b.get("beast_name") or ""
+            al = [a for a in atoms if a.get("beast_id") == b.get("id")]
+            lines.append(f"- [{peg}] {name} · {len(al)} atom(s)")
+        lines.append("")
+    return "\n".join(lines)
+
+
 class PalaceHandler(BaseHTTPRequestHandler):
     data_dir: Path
     output_dir: Path
@@ -327,6 +401,65 @@ class PalaceHandler(BaseHTTPRequestHandler):
 
     def _store(self) -> PalaceStore:
         return PalaceStore(self.data_dir, self.output_dir, self.studies_root)
+
+    def _reduction_context(self, parsed: urllib.parse.ParseResult) -> dict[str, Any]:
+        from study_practice_md import practice_md_path  # noqa: E402
+        from technique_renderer import default_technique_dir  # noqa: E402
+
+        qs = urllib.parse.parse_qs(parsed.query)
+        study_id = (qs.get("study_id") or [""])[0].strip()
+        before_raw = (qs.get("before_palace_number") or [""])[0].strip()
+        if not study_id:
+            return {"ok": False, "error": "study_id required"}
+        try:
+            before_n = int(before_raw)
+        except ValueError:
+            return {"ok": False, "error": "before_palace_number must be an integer"}
+        if before_n < 1:
+            return {"ok": False, "error": "before_palace_number must be >= 1"}
+
+        technique_dir = default_technique_dir(Path(__file__).resolve().parent)
+        if not technique_dir.is_dir():
+            technique_dir = MNEMONICS_ROOT / "technique"
+
+        def _read(path: Path) -> str:
+            if not path.is_file():
+                return f"(missing: {path.name})"
+            return path.read_text(encoding="utf-8")
+
+        readme = _read(technique_dir / "README.md")
+        characters = _read(technique_dir / "characters.json")
+        bestiary = _read(technique_dir / "bestiary.json")
+
+        store = self._store()
+        data = store._load_tree()
+        study = next(
+            (s for s in data.get("studies", []) if s.get("id") == study_id),
+            None,
+        )
+        slug = ((study or {}).get("notes_rel_path") or "").strip() or study_id
+        practice_dir = self.output_dir / "practice"
+        study_text = ""
+        try:
+            md_path = practice_md_path(practice_dir, slug)
+            if md_path.is_file():
+                study_text = filter_practice_md_before_palace(
+                    md_path.read_text(encoding="utf-8"), before_n
+                )
+        except Exception as e:
+            study_text = f"(could not read practice md: {e})"
+
+        if not study_text.strip() or study_text.strip().startswith("(could not"):
+            study_text = synthesize_prior_palace_inventory(store, study_id, before_n)
+        return {
+            "ok": True,
+            "readme": readme,
+            "characters": characters,
+            "bestiary": bestiary,
+            "study": study_text,
+            "before_palace_number": before_n,
+            "study_id": study_id,
+        }
 
     def do_OPTIONS(self) -> None:
         self.send_response(204)
@@ -464,6 +597,28 @@ class PalaceHandler(BaseHTTPRequestHandler):
 
         if path == "/api/glossary":
             self._json(200, {"ok": True, "items": GLOSSARY})
+            return
+
+        if path == "/api/reduction/prompt":
+            from technique_renderer import default_technique_dir  # noqa: E402
+
+            technique_dir = default_technique_dir(Path(__file__).resolve().parent)
+            if not technique_dir.is_dir():
+                technique_dir = MNEMONICS_ROOT / "technique"
+            prompt_path = technique_dir / "prompts" / "story-reduction-prompt.txt"
+            if not prompt_path.is_file():
+                self._json(
+                    404, {"ok": False, "error": "story-reduction-prompt.txt not found"}
+                )
+                return
+            self._json(
+                200,
+                {"ok": True, "text": prompt_path.read_text(encoding="utf-8")},
+            )
+            return
+
+        if path == "/api/reduction/context":
+            self._json(200, self._reduction_context(parsed))
             return
 
         if path == "/api/method":
