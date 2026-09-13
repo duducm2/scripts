@@ -2,8 +2,8 @@
 ; Utils module: clip_angel_constant_paste.ahk
 ; Constant Pasting: toggle loop pastes from current Clip Angel selection
 ; (All or Favorites; no Row-0 jump), 1.5s interruptible gap.
-; Directions: "down" (Shift+P) / "up" (Shift+B). Before start, name ListView picks
-; interstitial delimiter (Enter / Space / Shift+Enter / None); letter = first-word jump.
+; Directions: "down" (Shift+P) / "up" (Shift+B). Before start, Char ListView picks
+; interstitial delimiter (E/S/H/N); Char key selects that option immediately.
 ; Hot path: native Ctrl+Alt+B (paste+previous = down list) / Ctrl+Alt+V (paste+next = toward top)
 ; via ClipAngel_PostHotkey — paste target stays foreground; no per-clip Activate/UIA walk.
 ; Efficiency: WM_HOTKEY post (efficiency-canon §15); bounded gap; light UIA only for end-of-list.
@@ -28,25 +28,12 @@ global g_ClipAngelConstantPasteDelimiterGui := false
 global g_ClipAngelConstantPasteDelimiterLv := false
 global g_ClipAngelConstantPasteDelimiterEscPollPrev := false
 global g_ClipAngelConstantPasteDelimiterHotkeys := []
-global g_ClipAngelConstantPasteDelimiterRows := []
 
-; Delimiter options: jump by first character of the first word of name (no Char column).
+; Char-first delimiter options; pressing Char selects that option immediately.
 ClipAngel_ConstantPaste_DelimiterOptions() {
-    return [{ name: "Enter", send: "{Enter}" }, { name: "Space", send: "{Space}" }, { name: "Shift+Enter", send: "+{Enter}" }, { name: "None",
-        send: "" }]
-}
-
-; First word of the name — letter jump uses its first character (same as rename picker / Audio BT).
-ClipAngel_ConstantPaste_DelimiterNameForJump(row) {
-    if (!IsObject(row))
-        return ""
-    name := row.HasProp("name") ? Trim(row.name) : ""
-    if (name = "")
-        return ""
-    name := Trim(RegExReplace(name, "[ \t]+", " "))
-    if (name = "")
-        return ""
-    return StrSplit(name, " ")[1]
+    return [{ char: "E", label: "Enter", send: "{Enter}" }, { char: "S", label: "Space", send: "{Space}" }, { char: "H",
+        label: "Shift+Enter", send: "+{Enter}" }, { char: "N", label: "None", send: "" }
+    ]
 }
 
 ClipAngel_ConstantPaste_IsActive() {
@@ -372,7 +359,7 @@ ClipAngel_ConstantPaste_EnsureGridReadyForPaste(hwnd, &root, &dataGrid) {
 }
 
 ; ---------------------------------------------------------------------------
-; Delimiter picker (name list + first-word letter jump; Enter confirms; no timeout)
+; Delimiter picker (Utility Shortcuts Char-first ListView; Char selects; no timeout)
 ; ---------------------------------------------------------------------------
 
 ClipAngel_ConstantPaste_DelimiterGuiHwnd() {
@@ -417,17 +404,12 @@ ClipAngel_ConstantPaste_DelimiterBindHotkeys() {
         return
     }
 
-    loop 26 {
-        ch := Chr(96 + A_Index)
-        cb := ClipAngel_ConstantPaste_DelimiterFocusChar.Bind(ch)
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions() {
+        ch := StrLower(opt.char)
+        cb := ClipAngel_ConstantPaste_DelimiterSelectChar.Bind(ch)
         try {
             Hotkey(ch, cb, "On")
             g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: ch, handler: cb })
-        } catch {
-        }
-        try {
-            Hotkey(StrUpper(ch), cb, "On")
-            g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: StrUpper(ch), handler: cb })
         } catch {
         }
     }
@@ -447,25 +429,23 @@ ClipAngel_ConstantPaste_DelimiterBindHotkeys() {
     }
 }
 
-ClipAngel_ConstantPaste_DelimiterFocusChar(char, *) {
-    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterLv
-    global g_ClipAngelConstantPasteDelimiterRows
-    if (!g_ClipAngelConstantPasteDelimiterPromptActive || !IsObject(g_ClipAngelConstantPasteDelimiterLv))
+ClipAngel_ConstantPaste_DelimiterSelectChar(char, *) {
+    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterResult
+    if (!g_ClipAngelConstantPasteDelimiterPromptActive)
         return
-    after := 0
-    try after := g_ClipAngelConstantPasteDelimiterLv.GetNext()
-    catch {
-        after := 0
+    ch := StrUpper(SubStr(char, 1, 1))
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions() {
+        if (StrUpper(opt.char) = ch) {
+            g_ClipAngelConstantPasteDelimiterResult := opt.send
+            ClipAngel_ConstantPaste_DelimiterClose()
+            return
+        }
     }
-    rowNum := ModalList_FindNextByStartingLetter(g_ClipAngelConstantPasteDelimiterRows, char, after,
-        ClipAngel_ConstantPaste_DelimiterNameForJump)
-    if (rowNum > 0)
-        ListView_SelectRowFocused(g_ClipAngelConstantPasteDelimiterLv, rowNum)
 }
 
 ClipAngel_ConstantPaste_DelimiterFocusedSend() {
-    global g_ClipAngelConstantPasteDelimiterLv, g_ClipAngelConstantPasteDelimiterRows
-    if (!IsObject(g_ClipAngelConstantPasteDelimiterLv) || !IsObject(g_ClipAngelConstantPasteDelimiterRows))
+    global g_ClipAngelConstantPasteDelimiterLv
+    if (!IsObject(g_ClipAngelConstantPasteDelimiterLv))
         return false
     row := 0
     try row := g_ClipAngelConstantPasteDelimiterLv.GetNext(0, "Focused")
@@ -478,12 +458,18 @@ ClipAngel_ConstantPaste_DelimiterFocusedSend() {
             row := 0
         }
     }
-    if (row < 1 || row > g_ClipAngelConstantPasteDelimiterRows.Length)
+    if (row < 1)
         return false
-    opt := g_ClipAngelConstantPasteDelimiterRows[row]
-    if (!IsObject(opt) || !opt.HasProp("send"))
+    ch := ""
+    try ch := StrUpper(Trim(g_ClipAngelConstantPasteDelimiterLv.GetText(row, 1)))
+    catch {
         return false
-    return opt.send
+    }
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions() {
+        if (StrUpper(opt.char) = ch)
+            return opt.send
+    }
+    return false
 }
 
 ClipAngel_ConstantPaste_DelimiterOnEnter(*) {
@@ -571,7 +557,7 @@ ClipAngel_ConstantPaste_DelimiterEscapePoll() {
 
 ClipAngel_ConstantPaste_DelimiterClose() {
     global g_ClipAngelConstantPasteDelimiterGui, g_ClipAngelConstantPasteDelimiterLv
-    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterRows
+    global g_ClipAngelConstantPasteDelimiterPromptActive
     if (!g_ClipAngelConstantPasteDelimiterPromptActive)
         return
     g_ClipAngelConstantPasteDelimiterPromptActive := false
@@ -584,7 +570,6 @@ ClipAngel_ConstantPaste_DelimiterClose() {
     }
     g_ClipAngelConstantPasteDelimiterGui := false
     g_ClipAngelConstantPasteDelimiterLv := false
-    g_ClipAngelConstantPasteDelimiterRows := []
 }
 
 ; WinActivate + SetForegroundWindow so ToolWindow modal gets keyboard focus without a click.
@@ -636,7 +621,6 @@ ClipAngel_ConstantPaste_DelimiterForceForeground() {
 ClipAngel_ConstantPaste_PromptDelimiter() {
     global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterResult
     global g_ClipAngelConstantPasteDelimiterGui, g_ClipAngelConstantPasteDelimiterLv
-    global g_ClipAngelConstantPasteDelimiterRows
 
     if (g_ClipAngelConstantPasteDelimiterPromptActive)
         return false
@@ -646,23 +630,23 @@ ClipAngel_ConstantPaste_PromptDelimiter() {
 
     g_ClipAngelConstantPasteDelimiterResult := false
     g_ClipAngelConstantPasteDelimiterPromptActive := true
-    g_ClipAngelConstantPasteDelimiterRows := ClipAngel_ConstantPaste_DelimiterOptions()
 
     g_ClipAngelConstantPasteDelimiterGui := Gui("+AlwaysOnTop +ToolWindow", "Constant Pasting — delimiter")
     g_ClipAngelConstantPasteDelimiterGui.SetFont("s10", "Segoe UI")
     g_ClipAngelConstantPasteDelimiterGui.Add("Text", "w420",
-        "Letter = jump by first word   Enter/double-click = confirm   Esc = cancel")
+        "Char = select   Enter/double-click = select   Esc = cancel")
     g_ClipAngelConstantPasteDelimiterLv := g_ClipAngelConstantPasteDelimiterGui.Add("ListView",
-        "w420 h140 -Multi", ["Delimiter"])
+        "w420 h140 -Multi", ["Char", "Delimiter"])
     g_ClipAngelConstantPasteDelimiterLv.OnEvent("DoubleClick", ClipAngel_ConstantPaste_DelimiterOnListActivate)
     g_ClipAngelConstantPasteDelimiterGui.Add("Button", "w100", "Close").OnEvent("Click",
         ClipAngel_ConstantPaste_DelimiterCancel)
     g_ClipAngelConstantPasteDelimiterGui.OnEvent("Close", ClipAngel_ConstantPaste_DelimiterCancel)
     g_ClipAngelConstantPasteDelimiterGui.OnEvent("Escape", ClipAngel_ConstantPaste_DelimiterCancel)
 
-    for opt in g_ClipAngelConstantPasteDelimiterRows
-        g_ClipAngelConstantPasteDelimiterLv.Add("", opt.name)
-    try g_ClipAngelConstantPasteDelimiterLv.ModifyCol(1, "AutoHdr")
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions()
+        g_ClipAngelConstantPasteDelimiterLv.Add("", opt.char, opt.label)
+    try g_ClipAngelConstantPasteDelimiterLv.ModifyCol(1, 50)
+    try g_ClipAngelConstantPasteDelimiterLv.ModifyCol(2, 340)
     if (g_ClipAngelConstantPasteDelimiterLv.GetCount() > 0)
         ListView_SelectRowFocused(g_ClipAngelConstantPasteDelimiterLv, 1)
 
