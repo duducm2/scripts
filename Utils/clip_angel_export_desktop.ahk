@@ -404,7 +404,98 @@ ClipAngelExport_FindDesktopExplorerHwnd() {
     return WinExist("Desktop ahk_class CabinetWClass")
 }
 
-; Activate Explorer showing Desktop (same target as #!+7 hold with Desktop focused).
+; True when hwnd can receive ClipAngel "Paste file" (Explorer, Desktop shell, Cursor/VS Code).
+ClipAngelExport_IsPasteFileTarget(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    try {
+        if !WinExist("ahk_id " hwnd)
+            return false
+        cls := WinGetClass("ahk_id " hwnd)
+        if (cls = "CabinetWClass" || cls = "ExploreWClass" || cls = "Progman" || cls = "WorkerW")
+            return true
+        exe := WinGetProcessName("ahk_id " hwnd)
+        if (exe = "Cursor.exe" || exe = "Code.exe")
+            return true
+    } catch {
+    }
+    return false
+}
+
+ClipAngelExport_GetExplorerFolderPath(explorerHwnd) {
+    if !(explorerHwnd is Integer) || explorerHwnd <= 0
+        return ""
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (!window || Integer(window.hwnd) != explorerHwnd)
+                    continue
+                path := window.Document.Folder.Self.Path
+                return path != "" ? path : ""
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+; Short label for overlays (#!+7 hold).
+ClipAngelExport_DescribePasteTarget(hwnd) {
+    if !ClipAngelExport_IsPasteFileTarget(hwnd)
+        return "Desktop"
+    try {
+        cls := WinGetClass("ahk_id " hwnd)
+        if (cls = "Progman" || cls = "WorkerW")
+            return "Desktop"
+        if (cls = "CabinetWClass" || cls = "ExploreWClass") {
+            path := ClipAngelExport_GetExplorerFolderPath(hwnd)
+            if (path != "") {
+                SplitPath(path, &name)
+                if (name != "")
+                    return name
+                return path
+            }
+            return "Explorer"
+        }
+        exe := WinGetProcessName("ahk_id " hwnd)
+        if (exe = "Cursor.exe")
+            return "Cursor Explorer"
+        if (exe = "Code.exe")
+            return "VS Code Explorer"
+    } catch {
+    }
+    return "folder"
+}
+
+; Activate target and, for Cursor/VS Code, focus the Files Explorer sidebar for paste.
+; Returns prepared hwnd or 0.
+ClipAngelExport_PreparePasteTarget(hwnd) {
+    if !ClipAngelExport_IsPasteFileTarget(hwnd)
+        return 0
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            WinRestore("ahk_id " hwnd)
+        WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 1)
+            return 0
+    } catch {
+        return 0
+    }
+    try {
+        exe := WinGetProcessName("ahk_id " hwnd)
+        if (exe = "Cursor.exe" || exe = "Code.exe") {
+            if !DesktopCutNewest_EnsureFilesExplorerSidebarFocused(hwnd)
+                return 0
+        }
+    } catch {
+        return 0
+    }
+    return hwnd
+}
+
+; Activate Explorer showing Desktop (fallback when no Explorer/editor folder target).
 ClipAngelExport_ActivateDesktopForPaste() {
     hwnd := ClipAngelExport_FindDesktopExplorerHwnd()
     if (hwnd) {
@@ -440,6 +531,39 @@ ClipAngelExport_ActivateDesktopForPaste() {
     return 0
 }
 
+; ClipAngel Clip > Paste > Paste file into an already-prepared pasteHwnd.
+ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd) {
+    if !(pasteHwnd is Integer) || pasteHwnd <= 0
+        return false
+    ClipAngel_ActivateNativeFirstClip(pasteHwnd)
+    hwnd := ClipAngel_MainHwnd()
+    if (!hwnd)
+        return false
+    ClipAngel_EnsureWindowActive(hwnd)
+    if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true)
+        return false
+    if !ClipAngel_InvokePasteEnter(hwnd)
+        return false
+    ClipAngel_CloseAndRestoreFocus(pasteHwnd)
+    return true
+}
+
+; Paste top clip into focused Explorer / Desktop / Cursor·VS Code Files Explorer.
+; Unsupported focus falls back to Desktop Explorer. Returns true/false.
+ClipAngelExport_PasteFirstClipToActiveTarget(targetHwnd := 0) {
+    pasteHwnd := 0
+    if (targetHwnd && ClipAngelExport_IsPasteFileTarget(targetHwnd)) {
+        pasteHwnd := ClipAngelExport_PreparePasteTarget(targetHwnd)
+        if (!pasteHwnd)
+            return false
+    } else {
+        pasteHwnd := ClipAngelExport_ActivateDesktopForPaste()
+    }
+    if (!pasteHwnd)
+        return false
+    return ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd)
+}
+
 ; ClipAngel Clip > Paste > Paste file onto Desktop; returns path or "".
 ClipAngelExport_PasteFirstClipToDesktop() {
     desktopPath := AiQuickDownload_ResolveDesktopPath()
@@ -456,16 +580,8 @@ ClipAngelExport_PasteFirstClipToDesktop() {
     desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
     if (!desktopHwnd)
         return ""
-    ClipAngel_ActivateNativeFirstClip(desktopHwnd)
-    hwnd := ClipAngel_MainHwnd()
-    if (!hwnd)
+    if !ClipAngelExport_PasteFirstClipIntoHwnd(desktopHwnd)
         return ""
-    ClipAngel_EnsureWindowActive(hwnd)
-    if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true)
-        return ""
-    if !ClipAngel_InvokePasteEnter(hwnd)
-        return ""
-    ClipAngel_CloseAndRestoreFocus(desktopHwnd)
     outPath := ""
     try outPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp)
     catch {

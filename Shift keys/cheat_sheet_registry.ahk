@@ -648,8 +648,8 @@ cheatSheets["ClipAngel.exe"] := "
     🔗 [M][M]erge clips
     📥 [I][I]mport clips
     🔍 [Y]File t[Y]pe filter (Quick Wizard)
-    🔁 [P]Constant [P]asting ↓ (toggle; top→bottom; Enter on text only)
-    🔁 [B]Constant pasting ↑ ([B]ottom-up; toggle; Enter on text only)
+    🔁 [P]Constant [P]asting ↓ (delimiter pick then toggle; top→bottom; Enter on text only)
+    🔁 [B]Constant pasting ↑ ([B]ottom-up; delimiter pick then toggle; Enter on text only)
     ⌨️ [Esc] Minimize window
     ⌨️ [Alt+1] Paste current item, then minimize
     ⌨️ [Alt+2] Down 1, paste, then minimize
@@ -1342,7 +1342,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Alt+B] AHK: open + Show only favorite (Ctrl+2) + select first clip
     [Esc] (Clip Angel focused) Minimize
     [Win+Alt+Shift+1] > Send top list item from Clip Angel
-    [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file then hide
+    [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file into focused Explorer / Cursor·VS Code Files Explorer (Desktop fallback), then hide
     
     === AI CHAT (Chrome) ===
     [Win+Alt+Shift+I] > Opens {AI_PROVIDER}

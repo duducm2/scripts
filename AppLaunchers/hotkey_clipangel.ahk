@@ -1,6 +1,6 @@
 ; =============================================================================
 ; AppLaunchers module: hotkey_clipangel.ahk
-; #!+. Clip Angel paste and favorite flow; #!+7 tap/hold edit / paste-file
+; #!+. Clip Angel paste and favorite flow; #!+7 tap/hold edit / paste-file (active folder)
 ; Extracted verbatim from AppLaunchers.ahk; loaded via #include into the
 ; AppLaunchers.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
@@ -29,7 +29,8 @@ CLIPANGEL_WAS7_HOLD_MS := 200
 }
 
 ; =============================================================================
-; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: save clipboard to Desktop (or ClipAngel Paste file fallback)
+; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Paste file into
+; focused Explorer / Desktop / Cursor·VS Code Files Explorer (Desktop fallback).
 ; =============================================================================
 #!+7::
 {
@@ -86,9 +87,18 @@ CLIPANGEL_WAS7_HOLD_MS := 200
         return
     }
 
-    ; Hold: paste top clip as file onto Desktop (shared export helper).
-    try ShowCenteredOverlay_Utils("📎 Paste clip to Desktop", 1500, BANNER_ACCENT_INFO)
+    ; Hold: paste top clip as file into focused folder target (shared export helper).
+    destLabel := "Desktop"
+    try destLabel := ClipAngelExport_DescribePasteTarget(priorHwnd)
+    catch {
+        destLabel := "Desktop"
+    }
+    try ShowCenteredOverlay_Utils("📎 Paste clip → " destLabel, 1500, BANNER_ACCENT_INFO)
     catch {
     }
-    ClipAngelExport_PasteFirstClipToDesktop()
+    if !ClipAngelExport_PasteFirstClipToActiveTarget(priorHwnd) {
+        try ShowCenteredOverlay_Utils("❌ Paste file failed", 2000, BANNER_ACCENT_ERROR)
+        catch {
+        }
+    }
 }

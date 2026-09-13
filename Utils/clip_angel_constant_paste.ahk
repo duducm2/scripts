@@ -2,8 +2,10 @@
 ; Utils module: clip_angel_constant_paste.ahk
 ; Constant Pasting: toggle loop pastes from current Clip Angel selection
 ; (All or Favorites; no Row-0 jump), Enter only for text, 1.5s interruptible gap.
-; Directions: "down" (Shift+P) / "up" (Shift+B). After paste, Clip Angel moves the
-; used clip to Row 0 — bottom-up next target is former N-1 at new index N.
+; Directions: "down" (Shift+P) / "up" (Shift+B). Before start, Char ListView picks
+; interstitial delimiter (Enter / Space / Shift+Enter / None); no timeout.
+; After paste, Clip Angel moves the used clip to Row 0 — bottom-up next target is
+; former N-1 at new index N.
 ; Efficiency: one UIA refresh per phase; SelectionPattern-first; bounded polls.
 ; Loaded via #include into Utils.ahk after clip_angel_favorite / activate.
 ; =============================================================================
@@ -18,10 +20,29 @@ global g_ClipAngelConstantPasteActive := false
 global g_ClipAngelConstantPasteStopRequested := false
 global g_ClipAngelConstantPasteDirection := "down"
 global g_ClipAngelConstantPasteStopHint := "Shift+P"
+global g_ClipAngelConstantPasteDelimiter := ""
+global g_ClipAngelConstantPasteDelimiterPromptActive := false
+global g_ClipAngelConstantPasteDelimiterResult := false
+global g_ClipAngelConstantPasteDelimiterGui := false
+global g_ClipAngelConstantPasteDelimiterLv := false
+global g_ClipAngelConstantPasteDelimiterEscPollPrev := false
+global g_ClipAngelConstantPasteDelimiterHotkeys := []
+
+; Char-first delimiter options for interstitial separator between clips.
+ClipAngel_ConstantPaste_DelimiterOptions() {
+    return [{ char: "E", label: "Enter", send: "{Enter}" }, { char: "S", label: "Space", send: "{Space}" }, { char: "H",
+        label: "Shift+Enter", send: "+{Enter}" }, { char: "N", label: "None", send: "" }
+    ]
+}
 
 ClipAngel_ConstantPaste_IsActive() {
     global g_ClipAngelConstantPasteActive
     return !!g_ClipAngelConstantPasteActive
+}
+
+ClipAngel_ConstantPaste_IsDelimiterPromptActive() {
+    global g_ClipAngelConstantPasteDelimiterPromptActive
+    return !!g_ClipAngelConstantPasteDelimiterPromptActive
 }
 
 ; When started from Clip Angel, pick the top z-order non-CA window.
@@ -312,6 +333,282 @@ ClipAngel_ConstantPaste_EnsureGridReadyForPaste(hwnd, &root, &dataGrid) {
     return ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid)
 }
 
+; ---------------------------------------------------------------------------
+; Delimiter picker (Utility Shortcuts Char-first ListView; no timeout)
+; ---------------------------------------------------------------------------
+
+ClipAngel_ConstantPaste_DelimiterGuiHwnd() {
+    global g_ClipAngelConstantPasteDelimiterGui
+    if (!IsObject(g_ClipAngelConstantPasteDelimiterGui))
+        return 0
+    try
+        return g_ClipAngelConstantPasteDelimiterGui.Hwnd
+    catch
+        return 0
+}
+
+ClipAngel_ConstantPaste_DelimiterUnbindHotkeys() {
+    global g_ClipAngelConstantPasteDelimiterHotkeys
+    hwnd := ClipAngel_ConstantPaste_DelimiterGuiHwnd()
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+        }
+    }
+    for handler in g_ClipAngelConstantPasteDelimiterHotkeys {
+        try Hotkey(handler.key, "Off")
+        catch {
+        }
+    }
+    if (hwnd) {
+        try HotIf()
+        catch {
+        }
+    }
+    g_ClipAngelConstantPasteDelimiterHotkeys := []
+}
+
+ClipAngel_ConstantPaste_DelimiterBindHotkeys() {
+    global g_ClipAngelConstantPasteDelimiterHotkeys
+    ClipAngel_ConstantPaste_DelimiterUnbindHotkeys()
+    hwnd := ClipAngel_ConstantPaste_DelimiterGuiHwnd()
+    if (!hwnd)
+        return
+    try HotIfWinActive("ahk_id " hwnd)
+    catch {
+        return
+    }
+
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions() {
+        ch := StrLower(opt.char)
+        cb := ClipAngel_ConstantPaste_DelimiterFocusChar.Bind(ch)
+        try {
+            Hotkey(ch, cb, "On")
+            g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: ch, handler: cb })
+        } catch {
+        }
+    }
+    try {
+        Hotkey("Enter", ClipAngel_ConstantPaste_DelimiterOnEnter, "On")
+        g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: "Enter", handler: ClipAngel_ConstantPaste_DelimiterOnEnter })
+    } catch {
+    }
+    try {
+        Hotkey("Escape", ClipAngel_ConstantPaste_DelimiterCancel, "On")
+        g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: "Escape", handler: ClipAngel_ConstantPaste_DelimiterCancel })
+    } catch {
+    }
+
+    try HotIf()
+    catch {
+    }
+}
+
+ClipAngel_ConstantPaste_DelimiterFocusChar(char, *) {
+    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterLv
+    if (!g_ClipAngelConstantPasteDelimiterPromptActive || !IsObject(g_ClipAngelConstantPasteDelimiterLv))
+        return
+    ch := StrUpper(SubStr(char, 1, 1))
+    row := 0
+    loop g_ClipAngelConstantPasteDelimiterLv.GetCount() {
+        try {
+            if (StrUpper(g_ClipAngelConstantPasteDelimiterLv.GetText(A_Index, 1)) = ch) {
+                row := A_Index
+                break
+            }
+        } catch {
+        }
+    }
+    if (row > 0)
+        ListView_SelectRowFocused(g_ClipAngelConstantPasteDelimiterLv, row)
+}
+
+ClipAngel_ConstantPaste_DelimiterFocusedSend() {
+    global g_ClipAngelConstantPasteDelimiterLv
+    if (!IsObject(g_ClipAngelConstantPasteDelimiterLv))
+        return false
+    row := 0
+    try row := g_ClipAngelConstantPasteDelimiterLv.GetNext(0, "Focused")
+    catch {
+        row := 0
+    }
+    if (row < 1) {
+        try row := g_ClipAngelConstantPasteDelimiterLv.GetNext(0, "Selected")
+        catch {
+            row := 0
+        }
+    }
+    if (row < 1)
+        return false
+    ch := ""
+    try ch := StrUpper(Trim(g_ClipAngelConstantPasteDelimiterLv.GetText(row, 1)))
+    catch {
+        return false
+    }
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions() {
+        if (StrUpper(opt.char) = ch)
+            return opt.send
+    }
+    return false
+}
+
+ClipAngel_ConstantPaste_DelimiterOnEnter(*) {
+    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterResult
+    if (!g_ClipAngelConstantPasteDelimiterPromptActive)
+        return
+    sendStr := ClipAngel_ConstantPaste_DelimiterFocusedSend()
+    if (sendStr = false)
+        return
+    g_ClipAngelConstantPasteDelimiterResult := sendStr
+    ClipAngel_ConstantPaste_DelimiterClose()
+}
+
+ClipAngel_ConstantPaste_DelimiterOnListActivate(*) {
+    ClipAngel_ConstantPaste_DelimiterOnEnter()
+}
+
+ClipAngel_ConstantPaste_DelimiterCancel(*) {
+    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterResult
+    if (!g_ClipAngelConstantPasteDelimiterPromptActive)
+        return
+    g_ClipAngelConstantPasteDelimiterResult := false
+    ClipAngel_ConstantPaste_DelimiterClose()
+}
+
+ClipAngel_ConstantPaste_DelimiterBindRobustEscape() {
+    global g_ClipAngelConstantPasteDelimiterGui, g_OnEscapePressed, g_ClipAngelConstantPasteDelimiterEscPollPrev
+    SetTimer(ClipAngel_ConstantPaste_DelimiterEscapePoll, 0)
+    if (!ClipAngel_ConstantPaste_DelimiterGuiHwnd())
+        return
+    try g_ClipAngelConstantPasteDelimiterGui.OnEvent("Escape", ClipAngel_ConstantPaste_DelimiterCancel)
+    catch {
+    }
+    try Hotkey("$*Escape", ClipAngel_ConstantPaste_DelimiterEscapeFromHotkey, "On")
+    catch {
+    }
+    g_OnEscapePressed := ClipAngel_ConstantPaste_DelimiterGlobalEscapeCallback
+    try Utils_EnsureGlobalEscapeHotkey()
+    catch {
+    }
+    g_ClipAngelConstantPasteDelimiterEscPollPrev := false
+    SetTimer(ClipAngel_ConstantPaste_DelimiterEscapePoll, 50)
+}
+
+ClipAngel_ConstantPaste_DelimiterUnbindRobustEscape() {
+    global g_OnEscapePressed, g_ClipAngelConstantPasteDelimiterEscPollPrev
+    SetTimer(ClipAngel_ConstantPaste_DelimiterEscapePoll, 0)
+    g_ClipAngelConstantPasteDelimiterEscPollPrev := false
+    try Hotkey("$*Escape", ClipAngel_ConstantPaste_DelimiterEscapeFromHotkey, "Off")
+    catch {
+    }
+    if (g_OnEscapePressed = ClipAngel_ConstantPaste_DelimiterGlobalEscapeCallback)
+        g_OnEscapePressed := ""
+    try Utils_EnsureGlobalEscapeHotkey()
+    catch {
+    }
+}
+
+ClipAngel_ConstantPaste_DelimiterEscapeFromHotkey(*) {
+    ClipAngel_ConstantPaste_DelimiterCancel()
+}
+
+ClipAngel_ConstantPaste_DelimiterGlobalEscapeCallback(*) {
+    ClipAngel_ConstantPaste_DelimiterCancel()
+}
+
+ClipAngel_ConstantPaste_DelimiterEscapePoll() {
+    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterEscPollPrev
+    if (!g_ClipAngelConstantPasteDelimiterPromptActive) {
+        SetTimer(ClipAngel_ConstantPaste_DelimiterEscapePoll, 0)
+        return
+    }
+    escSync := GetKeyState("Escape", "P")
+    escAsync := (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000) != 0
+    escDown := escSync || escAsync
+    if (escDown) {
+        if (!g_ClipAngelConstantPasteDelimiterEscPollPrev) {
+            g_ClipAngelConstantPasteDelimiterEscPollPrev := true
+            ClipAngel_ConstantPaste_DelimiterCancel()
+        }
+    } else {
+        g_ClipAngelConstantPasteDelimiterEscPollPrev := false
+    }
+}
+
+ClipAngel_ConstantPaste_DelimiterClose() {
+    global g_ClipAngelConstantPasteDelimiterGui, g_ClipAngelConstantPasteDelimiterLv
+    global g_ClipAngelConstantPasteDelimiterPromptActive
+    if (!g_ClipAngelConstantPasteDelimiterPromptActive)
+        return
+    g_ClipAngelConstantPasteDelimiterPromptActive := false
+    ClipAngel_ConstantPaste_DelimiterUnbindHotkeys()
+    ClipAngel_ConstantPaste_DelimiterUnbindRobustEscape()
+    if (IsObject(g_ClipAngelConstantPasteDelimiterGui)) {
+        try g_ClipAngelConstantPasteDelimiterGui.Destroy()
+        catch {
+        }
+    }
+    g_ClipAngelConstantPasteDelimiterGui := false
+    g_ClipAngelConstantPasteDelimiterLv := false
+}
+
+; Blocking: returns send string (may be "") on confirm, or false on cancel. No timeout.
+ClipAngel_ConstantPaste_PromptDelimiter() {
+    global g_ClipAngelConstantPasteDelimiterPromptActive, g_ClipAngelConstantPasteDelimiterResult
+    global g_ClipAngelConstantPasteDelimiterGui, g_ClipAngelConstantPasteDelimiterLv
+
+    if (g_ClipAngelConstantPasteDelimiterPromptActive)
+        return false
+
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
+    g_ClipAngelConstantPasteDelimiterResult := false
+    g_ClipAngelConstantPasteDelimiterPromptActive := true
+
+    g_ClipAngelConstantPasteDelimiterGui := Gui("+AlwaysOnTop +ToolWindow", "Constant Pasting — delimiter")
+    g_ClipAngelConstantPasteDelimiterGui.SetFont("s10", "Segoe UI")
+    g_ClipAngelConstantPasteDelimiterGui.Add("Text", "w420",
+        "Char = jump   Enter/double-click = confirm   Esc = cancel")
+    g_ClipAngelConstantPasteDelimiterLv := g_ClipAngelConstantPasteDelimiterGui.Add("ListView",
+        "w420 h140 -Multi", ["Char", "Delimiter"])
+    g_ClipAngelConstantPasteDelimiterLv.OnEvent("DoubleClick", ClipAngel_ConstantPaste_DelimiterOnListActivate)
+    g_ClipAngelConstantPasteDelimiterGui.Add("Button", "w100", "Close").OnEvent("Click",
+        ClipAngel_ConstantPaste_DelimiterCancel)
+    g_ClipAngelConstantPasteDelimiterGui.OnEvent("Close", ClipAngel_ConstantPaste_DelimiterCancel)
+    g_ClipAngelConstantPasteDelimiterGui.OnEvent("Escape", ClipAngel_ConstantPaste_DelimiterCancel)
+
+    for opt in ClipAngel_ConstantPaste_DelimiterOptions()
+        g_ClipAngelConstantPasteDelimiterLv.Add("", opt.char, opt.label)
+    try g_ClipAngelConstantPasteDelimiterLv.ModifyCol(1, 50)
+    try g_ClipAngelConstantPasteDelimiterLv.ModifyCol(2, 340)
+    if (g_ClipAngelConstantPasteDelimiterLv.GetCount() > 0)
+        ListView_SelectRowFocused(g_ClipAngelConstantPasteDelimiterLv, 1)
+
+    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    g_ClipAngelConstantPasteDelimiterGui.Show("AutoSize Hide")
+    g_ClipAngelConstantPasteDelimiterGui.GetPos(, , &gw, &gh)
+    cx := ml + ((mr - ml) - gw) // 2
+    cy := mt + ((mb - mt) - gh) // 2
+    if (cx < ml)
+        cx := ml
+    if (cy < mt)
+        cy := mt
+    g_ClipAngelConstantPasteDelimiterGui.Show("x" . cx . " y" . cy)
+    try WinActivate(g_ClipAngelConstantPasteDelimiterGui.Hwnd)
+    try g_ClipAngelConstantPasteDelimiterLv.Focus()
+    catch {
+    }
+
+    ClipAngel_ConstantPaste_DelimiterBindHotkeys()
+    ClipAngel_ConstantPaste_DelimiterBindRobustEscape()
+
+    while (g_ClipAngelConstantPasteDelimiterPromptActive)
+        Sleep 50
+
+    return g_ClipAngelConstantPasteDelimiterResult
+}
+
 ClipAngel_ConstantPaste_ToggleDown(*) {
     ClipAngel_ConstantPaste_Toggle("down")
 }
@@ -323,6 +620,8 @@ ClipAngel_ConstantPaste_ToggleUp(*) {
 ; Either Shift+P or Shift+B stops an active run; direction applies only when starting.
 ClipAngel_ConstantPaste_Toggle(direction := "down") {
     global g_ClipAngelConstantPasteActive, g_ClipAngelConstantPasteStopRequested
+    if (ClipAngel_ConstantPaste_IsDelimiterPromptActive())
+        return
     if (g_ClipAngelConstantPasteActive) {
         g_ClipAngelConstantPasteStopRequested := true
         g_ClipAngelConstantPasteActive := false
@@ -334,7 +633,8 @@ ClipAngel_ConstantPaste_Toggle(direction := "down") {
 ClipAngel_ConstantPaste_Run(direction := "down") {
     global g_ClipAngelConstantPasteActive, g_ClipAngelConstantPasteStopRequested
     global g_ClipAngelConstantPasteDirection, g_ClipAngelConstantPasteStopHint
-    if (g_ClipAngelConstantPasteActive)
+    global g_ClipAngelConstantPasteDelimiter
+    if (g_ClipAngelConstantPasteActive || ClipAngel_ConstantPaste_IsDelimiterPromptActive())
         return false
 
     direction := (direction = "up") ? "up" : "down"
@@ -348,6 +648,12 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
             2500, BANNER_ACCENT_ERROR)
         return false
     }
+
+    delim := ClipAngel_ConstantPaste_PromptDelimiter()
+    if (delim = false)
+        return false
+    g_ClipAngelConstantPasteDelimiter := delim
+
     if !ClipAngel_TryAcquireAutomationLock()
         return false
 
@@ -397,6 +703,13 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
             if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
                 stopReason := "clip list not ready"
                 break
+            }
+
+            ; Interstitial separator before each clip after the first.
+            if (pastedCount > 0 && g_ClipAngelConstantPasteDelimiter != "") {
+                ClipAngel_RestorePriorFocus(priorHwnd)
+                ClipAngel_ReleaseChordModifiersForSend()
+                Send g_ClipAngelConstantPasteDelimiter
             }
 
             rowBefore := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root, dataGrid)
@@ -467,6 +780,7 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
     } finally {
         g_ClipAngelConstantPasteActive := false
         g_ClipAngelConstantPasteStopRequested := false
+        g_ClipAngelConstantPasteDelimiter := ""
         try StandardLoadingBar_Hide(0)
         catch {
         }
