@@ -702,7 +702,7 @@
           <button
             type="button"
             id="btnCopyPrompt"
-            title="Copy image prompt (Shift+C)"
+            title="Copy preserve-background + README + street image prompt (Shift+C)"
             disabled
           >
             Copy prompt
@@ -1906,7 +1906,7 @@
           btn.onclick = (e) => {
             e.stopPropagation();
             const p = palaceById(btn.dataset.copyId);
-            copyPrompt(p?.image_prompt || "", btn);
+            copyImageComposePrompt(p?.image_prompt || "", btn);
           };
         });
       }
@@ -1921,6 +1921,44 @@
           } else toast("Prompt copied");
         } catch {
           toast("Copy failed");
+        }
+      }
+
+      /** Clipboard: technique README + preserve-background prompt + palace image_prompt. */
+      async function copyImageComposePrompt(imagePrompt, btn) {
+        const street = String(imagePrompt || "").trim();
+        if (!street) {
+          toast("No image prompt for this palace");
+          return;
+        }
+        try {
+          const bundle = await api("/api/image-compose/bundle");
+          const preserve = String(bundle.preserve_prompt || "").trim();
+          const readme = String(bundle.readme || "").trim();
+          if (!preserve) throw new Error("Empty preserve-background prompt");
+          if (!readme) throw new Error("Empty technique README");
+          const full = [
+            "=== CONTEXT (technique README) ===",
+            readme,
+            "=== END CONTEXT ===",
+            "",
+            preserve,
+            "",
+            "---",
+            "📎 Mnemonic image prompt for this street",
+            "",
+            street,
+          ].join("\n");
+          await navigator.clipboard.writeText(full);
+          const kb = Math.round(full.length / 1024);
+          if (btn) {
+            const o = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(() => (btn.textContent = o), 1200);
+          }
+          toast(`Compose prompt copied (~${kb} KB)`);
+        } catch (e) {
+          toast(String(e.message || e || "Copy failed"));
         }
       }
 
@@ -2119,12 +2157,12 @@
           .getElementById("ovPrompt")
           .querySelectorAll(".btn-copy")
           .forEach((btn) => {
-            btn.onclick = () => copyPrompt(p.image_prompt, btn);
+            btn.onclick = () => copyImageComposePrompt(p.image_prompt, btn);
           });
         const btnCopy = document.getElementById("btnCopyPrompt");
         const hasPrompt = !!(p.image_prompt || "").trim();
         btnCopy.disabled = !hasPrompt;
-        btnCopy.onclick = () => copyPrompt(p.image_prompt, btnCopy);
+        btnCopy.onclick = () => copyImageComposePrompt(p.image_prompt, btnCopy);
         document.getElementById("ovAtoms").innerHTML = renderPalaceAtoms(id);
         const ovAtoms = document.getElementById("ovAtoms");
         const beastN = ovAtoms.querySelectorAll(
@@ -3641,7 +3679,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Story Reduction</b> toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>D</b> details.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Story Reduction</b> toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>

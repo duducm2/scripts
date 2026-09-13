@@ -317,19 +317,13 @@ def filter_practice_md_before_palace(md: str, before_n: int) -> str:
     return body + "\n"
 
 
-def _study_palaces(
-    data: dict[str, Any], study_id: str
-) -> list[dict[str, str]]:
-    palaces = [
-        p for p in data.get("palaces", []) if p.get("study_id") == study_id
-    ]
+def _study_palaces(data: dict[str, Any], study_id: str) -> list[dict[str, str]]:
+    palaces = [p for p in data.get("palaces", []) if p.get("study_id") == study_id]
     palaces.sort(key=lambda p: int(p.get("palace_number") or 0))
     return palaces
 
 
-def _beasts_for_palace(
-    data: dict[str, Any], palace_id: str
-) -> list[dict[str, str]]:
+def _beasts_for_palace(data: dict[str, Any], palace_id: str) -> list[dict[str, str]]:
     blist = [b for b in data.get("beasts", []) if b.get("palace_id") == palace_id]
     blist.sort(key=lambda b: int(b.get("sort_order") or 0))
     return blist
@@ -426,9 +420,7 @@ def synthesize_inscope_inventory(
     return "\n".join(lines)
 
 
-def load_bestiary_slice(
-    technique_dir: Path, after_code: str, limit: int = 40
-) -> str:
+def load_bestiary_slice(technique_dir: Path, after_code: str, limit: int = 40) -> str:
     """Compact bestiary window starting after the bridge peg (for re-pegging)."""
     path = technique_dir / "bestiary.json"
     if not path.is_file():
@@ -452,9 +444,7 @@ def load_bestiary_slice(
         f"Bestiary slice (continue after [{code or 'start'}] · {len(window)} entries):",
     ]
     for it in window:
-        lines.append(
-            f"- [{it.get('code')}] {it.get('name')} (order {it.get('order')})"
-        )
+        lines.append(f"- [{it.get('code')}] {it.get('name')} (order {it.get('order')})")
     if not window:
         lines.append("(no further bestiary entries)")
     return "\n".join(lines) + "\n"
@@ -777,6 +767,38 @@ class PalaceHandler(BaseHTTPRequestHandler):
             self._json(
                 200,
                 {"ok": True, "text": prompt_path.read_text(encoding="utf-8")},
+            )
+            return
+
+        if path == "/api/image-compose/bundle":
+            from technique_renderer import default_technique_dir  # noqa: E402
+
+            technique_dir = default_technique_dir(Path(__file__).resolve().parent)
+            if not technique_dir.is_dir():
+                technique_dir = MNEMONICS_ROOT / "technique"
+            preserve_path = (
+                technique_dir / "prompts" / "image-background-preservation-prompt.txt"
+            )
+            readme_path = technique_dir / "README.md"
+            if not preserve_path.is_file():
+                self._json(
+                    404,
+                    {
+                        "ok": False,
+                        "error": "image-background-preservation-prompt.txt not found",
+                    },
+                )
+                return
+            if not readme_path.is_file():
+                self._json(404, {"ok": False, "error": "technique README.md not found"})
+                return
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "preserve_prompt": preserve_path.read_text(encoding="utf-8"),
+                    "readme": readme_path.read_text(encoding="utf-8"),
+                },
             )
             return
 

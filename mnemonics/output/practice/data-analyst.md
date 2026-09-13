@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 12: Location Probes & Rearrangement</strong> · Character: Maurice Ravel · 2 beasts · 2 atoms</summary>
 
-_No image_
+![Memory Palace 12](images/data-analyst/12.jpg)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
@@ -62,7 +62,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 11: Hybrid Marks & View Transforms</strong> · Character: Claude Debussy · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 11](images/data-analyst/11.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
@@ -181,7 +181,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 10: Multivariate Line & Table Views</strong> · Character: Wolfgang Amadeus Mozart · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 10](images/data-analyst/10.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
@@ -300,7 +300,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 9: Encoding & Perception Basics</strong> · Character: Ludwig van Beethoven · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 9](images/data-analyst/9.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
@@ -419,7 +419,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 8: Schema & Visual Structure Core</strong> · Character: Johann Sebastian Bach · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 8](images/data-analyst/8.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
