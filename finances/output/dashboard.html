@@ -339,10 +339,14 @@
     }
     .funds-legend-swatch.available { background:#3498db; }
     .funds-legend-swatch.planned { background:#2ecc71; }
+    .funds-legend-swatch.save { background:#9b59b6; }
     .funds-compare.deficit .funds-legend-swatch.planned { background:#e74c3c; }
+    .funds-compare.deficit .funds-legend-swatch.save { background:#e74c3c; }
     .funds-compare-amounts {
       font-weight:600; font-variant-numeric:tabular-nums; color:var(--text);
     }
+    .funds-compare.ok #fundsProjectedSaveVal { color:#2ecc71; }
+    .funds-compare.deficit #fundsProjectedSaveVal { color:#e74c3c; }
     .funds-compare-track {
       position:relative; height:16px; background:var(--track);
       border-radius:4px; overflow:visible;
@@ -572,6 +576,11 @@
                 <span class="funds-legend-item">
                   <span class="funds-legend-swatch planned"></span>
                   Planned <span class="funds-compare-amounts" id="fundsPlannedVal">—</span>
+                </span>
+                <span class="funds-legend-item" id="fundsProjectedSaveItem">
+                  <span class="funds-legend-swatch save"></span>
+                  <span id="fundsProjectedSaveLbl">Projected save</span>
+                  <span class="funds-compare-amounts" id="fundsProjectedSaveVal">—</span>
                 </span>
               </div>
             </div>
@@ -1201,6 +1210,8 @@ function refreshFundsCompare() {
   root.classList.toggle('ok', !deficit);
   const availEl = document.getElementById('fundsAvailableVal');
   const planEl = document.getElementById('fundsPlannedVal');
+  const saveEl = document.getElementById('fundsProjectedSaveVal');
+  const saveLbl = document.getElementById('fundsProjectedSaveLbl');
   const barAvail = document.getElementById('fundsBarAvailable');
   const barPlan = document.getElementById('fundsBarPlanned');
   const markAvail = document.getElementById('fundsMarkAvailable');
@@ -1209,14 +1220,20 @@ function refreshFundsCompare() {
   const tip = document.getElementById('budgetCalcTip');
   if (availEl) availEl.textContent = formatBrl(avail);
   if (planEl) planEl.textContent = formatBrl(planned);
+  if (saveEl) {
+    saveEl.textContent = deficit
+      ? ('−' + formatBrl(-headroom))
+      : formatBrl(headroom);
+  }
+  if (saveLbl) saveLbl.textContent = deficit ? 'Shortfall' : 'Projected save';
   if (barAvail) barAvail.style.width = availPct.toFixed(1) + '%';
   if (barPlan) barPlan.style.width = planPct.toFixed(1) + '%';
   if (markAvail) markAvail.style.left = availPct.toFixed(1) + '%';
   if (markPlan) markPlan.style.left = planPct.toFixed(1) + '%';
   if (meta) {
     meta.textContent = deficit
-      ? ('Over by ' + formatBrl(-headroom) + ' · reduce planned spending')
-      : ('Headroom ' + formatBrl(headroom));
+      ? 'Over planned · reduce spending or raise available'
+      : 'Available covers planned · leftover is projected save';
   }
   if (tip) {
     const accRows = Array.isArray(RAW.liquidAccounts) ? RAW.liquidAccounts : [];
