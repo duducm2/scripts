@@ -44,6 +44,7 @@
 ;          advancing slides), then native Shift+F5 (From Current Slide).
 ;   Exit:  remember SlideShowView slide index, Esc, then GotoSlide in Normal so we
 ;          stay on the slide you navigated to (not the slide where the show started).
+; Loading: StandardLoadingBar_Show / Hide (⏳) around enter and exit transitions.
 ;
 ; ppShowTypeWindow=2
 ;
@@ -285,36 +286,68 @@ PowerPoint_ExitFocusedSlideView(pp, &savedShowType) {
     }
 }
 
+PowerPoint_FocusBusyShow(msg, hwnd := 0) {
+    if !hwnd {
+        try hwnd := WinExist("A")
+    }
+    try StandardLoadingBar_Show(msg, BANNER_ACCENT_INTERMEDIATE, {
+        centerOnHwnd: hwnd,
+        passive: false
+    })
+}
+
+PowerPoint_FocusBusyHide() {
+    try StandardLoadingBar_Hide(0)
+}
+
 PowerPoint_ToggleFocusedSlideView() {
     static savedShowType := -1
+    hwnd := 0
+    try hwnd := WinExist("A")
+    barShown := false
 
-    ; Full-screen show chrome
+    showBar(msg) {
+        PowerPoint_FocusBusyShow(msg, hwnd)
+        barShown := true
+    }
+    hideBar(*) {
+        if !barShown
+            return
+        barShown := false
+        PowerPoint_FocusBusyHide()
+    }
+
     try {
-        if (WinGetClass("A") = "screenClass") {
-            pp := 0
-            try pp := ComObjActive("PowerPoint.Application")
-            if (pp)
-                PowerPoint_ExitFocusedSlideView(pp, &savedShowType)
-            else
-                Send("{Escape}")
+        ; Full-screen show chrome
+        try {
+            if (WinGetClass("A") = "screenClass") {
+                showBar("⏳ Returning to Normal view…")
+                pp := 0
+                try pp := ComObjActive("PowerPoint.Application")
+                if (pp)
+                    PowerPoint_ExitFocusedSlideView(pp, &savedShowType)
+                else
+                    Send("{Escape}")
+                return
+            }
+        } catch {
+        }
+
+        try {
+            pp := ComObjActive("PowerPoint.Application")
+        } catch {
+            hideBar()
+            ShowCenteredOverlay_Utils("❌ PowerPoint COM unavailable", 2200, BANNER_ACCENT_ERROR)
             return
         }
-    } catch {
-    }
 
-    try {
-        pp := ComObjActive("PowerPoint.Application")
-    } catch {
-        ShowCenteredOverlay_Utils("❌ PowerPoint COM unavailable", 2200, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    try {
         if (PowerPoint_IsFocusedSlideView(pp)) {
+            showBar("⏳ Returning to Normal view…")
             PowerPoint_ExitFocusedSlideView(pp, &savedShowType)
             return
         }
 
+        showBar("⏳ Focusing current slide…")
         sss := pp.ActivePresentation.SlideShowSettings
         savedShowType := sss.ShowType
         sss.ShowType := 2              ; ppShowTypeWindow — stay in this frame
@@ -322,8 +355,11 @@ PowerPoint_ToggleFocusedSlideView() {
         ; Explicit From Current (do not rely on physical Shift still being down).
         Send("+{F5}")
     } catch Error as e {
+        hideBar()
         savedShowType := -1
         ShowCenteredOverlay_Utils("❌ Focus view failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+    } finally {
+        hideBar()
     }
 }
 
