@@ -609,7 +609,7 @@
       .column.bento.habits-column {
         margin-top: 0;
       }
-      /* Project focus (Shift+5): cool studio look; sections as bento tiles */
+      /* Project focus (Shift+Z): cool studio look; sections as bento tiles */
       body.project-focus-mode {
         --pf-bg: #0c1218;
         --pf-panel: #15202b;
@@ -1102,7 +1102,7 @@
           emojiFilter: null, // null = off; "" = none; else emoji char
           envDefaultFocus: envDefaultFocus(), // work | personal from launcher (?focus= / environment.txt)
           sectionFocus: envDefaultFocus(), // "" | work | personal | habits
-          projectFocusId: "", // project id when Shift+5 focus is on
+          projectFocusId: "", // project id when Shift+Z focus is on
           sectionFocusBeforeProject: "", // column focus to restore on exit
           search: "",
           pwSide: envDefaultFocus() === "work" ? "work" : "personal",
@@ -1961,7 +1961,7 @@
           return `<section class="column panel project-focus" id="sec-project-focus">
       <div class="project-focus-head">
         <h2 class="project-focus-title">${highlightTitle(p.title)}</h2>
-        <span class="project-focus-hint"><kbd>Shift+5</kbd> exit</span>
+        <span class="project-focus-hint"><kbd>Shift+Z</kbd> exit</span>
       </div>
       <details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
@@ -2077,17 +2077,15 @@
           if (code === "Digit2" || code === "Numpad2") return "2";
           if (code === "Digit3" || code === "Numpad3") return "3";
           if (code === "Digit4" || code === "Numpad4") return "4";
-          if (code === "Digit5" || code === "Numpad5") return "5";
           if (code.startsWith("Key") && code.length === 4)
             return code.slice(3).toLowerCase();
           const k = (e.key || "").toLowerCase();
           if (k.length === 1 && /[a-z0-9]/.test(k)) return k;
-          if (k === "!" || k === "@" || k === "#" || k === "$" || k === "%") {
+          if (k === "!" || k === "@" || k === "#" || k === "$") {
             if (k === "!") return "1";
             if (k === "@") return "2";
             if (k === "#") return "3";
             if (k === "$") return "4";
-            if (k === "%") return "5";
           }
           return "";
         }
@@ -2721,7 +2719,7 @@
             applySectionFocus("");
             return;
           }
-          if (k === "5") {
+          if (k === "z") {
             applyProjectFocus(selectedProjectId(), { toggle: true });
             return;
           }
