@@ -255,19 +255,13 @@ def render_markdown(
         )
         lines.append("")
 
-        for pid in pids:
-            p = palaces[pid]
-            num = (p.get("palace_number") or "").strip()
-            ptitle = (p.get("title") or "").strip()
-            heading = f"### Memory Palace {num}: {ptitle}".rstrip(": ").rstrip()
-            if not ptitle:
-                heading = f"### Memory Palace {num}".rstrip()
-            lines.append(heading)
-            lines.append("")
+        for i, pid in enumerate(pids):
+            if i > 0:
+                lines.append("")
             for beast in beasts_by_palace.get(pid, []):
                 for atom in atoms_by_beast.get(beast["id"], []):
                     lines.append(render_atom_line(beast, atom))
-            lines.append("")
+        lines.append("")
 
         lines.append("</details>")
         lines.append("")
