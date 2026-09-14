@@ -354,12 +354,14 @@ ClipAngel_ShouldSkipAutoMinimize() {
         return true
     ; Call by name so hosts that #include activate before constant_paste (or omit it) do not #Warn.
     try {
-        if ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        fnName := "ClipAngel_ConstantPaste_IsDelimiterPromptActive"
+        if %fnName%()
             return true
     } catch {
     }
     try {
-        if ClipAngel_ConstantPaste_IsActive()
+        fnName := "ClipAngel_ConstantPaste_IsActive"
+        if %fnName%()
             return true
     } catch {
     }
@@ -413,12 +415,14 @@ ClipAngel_AutoMinimizeTick(*) {
 ClipAngel_EscapeMinimize() {
     global g_ClipAngelFilterSelectorActive
     try {
-        if ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+        fnName := "ClipAngel_ConstantPaste_IsDelimiterPromptActive"
+        if %fnName%()
             return
     } catch {
     }
     try {
-        if ClipAngel_ConstantPaste_IsActive()
+        fnName := "ClipAngel_ConstantPaste_IsActive"
+        if %fnName%()
             return
     } catch {
     }
