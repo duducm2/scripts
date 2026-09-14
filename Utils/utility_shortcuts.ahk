@@ -180,6 +180,62 @@ ToggleAICompanionChromeTab() {
     ShowSingleCharTabBanner_Utils(targetTab)
 }
 
+; Map ResolveGlobalAICompanion() → AI_COMPANION_* ids for AiCompanionModels_*.
+GlobalAICompanionModelsId() {
+    switch ResolveGlobalAICompanion() {
+        case "enterprise":
+            return AI_COMPANION_ENTERPRISE
+        case "copilot":
+            return AI_COMPANION_COPILOT
+        default:
+            return AI_COMPANION_GEMINI
+    }
+}
+
+; Resolve companion hwnd + label (same pattern as ToggleAICompanionChromeTab).
+GlobalAICompanionHwndAndLabel(&hwnd, &label) {
+    hwnd := 0
+    label := "Gemini"
+    switch ResolveGlobalAICompanion() {
+        case "enterprise":
+            hwnd := GetGeminiEnterpriseWindowHwnd()
+            label := "Gemini Enterprise"
+        case "copilot":
+            hwnd := GetCopilotWebWindowHwnd()
+            label := "Copilot"
+        default:
+            hwnd := FindGeminiChromeHwnd()
+            label := "Gemini"
+    }
+}
+
+; Global Fast / Deep — same as in-app Shift+Q / Shift+M via AiCompanionModels_SelectRole.
+GlobalAICompanionSelectRole(role) {
+    hwnd := 0
+    label := "Gemini"
+    GlobalAICompanionHwndAndLabel(&hwnd, &label)
+    if (!hwnd) {
+        ShowCenteredOverlay_Utils("❌ " . label . " is not open.", 1800, BANNER_ACCENT_ERROR)
+        return false
+    }
+    return AiCompanionModels_SelectRole(GlobalAICompanionModelsId(), role)
+}
+
+MacroAICompanionQuickModel(*) {
+    GlobalAICompanionSelectRole("fast")
+}
+
+MacroAICompanionDeepModel(*) {
+    GlobalAICompanionSelectRole("deep")
+}
+
+; Win+Alt+Q / Win+Alt+M — OS-wide Quick / Deep model on the resolved AI companion
+#!q:: MacroAICompanionQuickModel()
+#!m:: MacroAICompanionDeepModel()
+
+RegisterMacro(MacroAICompanionQuickModel, "⚡ AI companion Quick / Fast model", "q")
+RegisterMacro(MacroAICompanionDeepModel, "🔄 AI companion Deep model", "m")
+
 ; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()

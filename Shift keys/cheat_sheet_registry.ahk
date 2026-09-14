@@ -1230,6 +1230,7 @@ cheatSheets["Gemini"] := "
     
     === Alt (ahk) ===
     ⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+    ⚡ [Win+Alt+Q] / 🔄 [Win+Alt+M] Global Fast / Deep (same roles; any app)
 )"
 
 ; --- Gemini Enterprise (web, Chrome) — same Shift mnemonics where UI maps ---
@@ -1252,6 +1253,7 @@ cheatSheets["Gemini Enterprise"] := "
     
     === Alt (ahk) ===
     ⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+    ⚡ [Win+Alt+Q] / 🔄 [Win+Alt+M] Global Fast / Deep (same roles; any app)
 )"
 
 ; --- M365 Copilot web (Chrome) — same Shift keys as Gemini -----------------
@@ -1277,6 +1279,7 @@ cheatSheets["Copilot Web"] := "
     
     === Alt (ahk) ===
     ⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+    ⚡ [Win+Alt+Q] / 🔄 [Win+Alt+M] Global Fast / Deep (same roles; any app)
 )"
 
 ; --- Mobills ---------------------------------------------------------------
@@ -1449,9 +1452,11 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === GENERAL ===
     [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes)
-    [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M); [1]/[2]/[3] set video/article/favorite from clipboard; [V]/[A]/[F] open stored video/article/favorite in new Chrome
+    [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M); [1]/[2]/[3] set video/article/favorite from clipboard; [V]/[A]/[F] open stored video/article/favorite in new Chrome; [Q]/[M] AI companion Quick / Deep model
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
+    [Win+Alt+Q] > AI companion Quick / Fast model (global; resolved companion)
+    [Win+Alt+M] > AI companion Deep model (global; resolved companion)
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Import Management (same as Utility Shortcuts [J]; [Q]=Palace quick image)
     [Win+Alt+Shift+D] > tap=Tasks :8766 · 2×=Finance · hold=Memory Palace :8767 ([T]/[F]/[N])
