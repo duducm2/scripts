@@ -820,12 +820,21 @@
       aria-hidden="true"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="studyModalTitle"
+      aria-labelledby="quickRecallTitle"
     >
       <div class="modal-panel">
-        <h2 id="studyModalTitle">Select a study</h2>
-        <p class="hint" id="studyModalHint"></p>
-        <ul class="pick-list" id="studyModalList"></ul>
+        <section class="study-picker" aria-labelledby="studyModalTitle">
+          <h2 id="studyModalTitle">Select a study</h2>
+          <p class="hint" id="studyModalHint"></p>
+          <ul class="pick-list" id="studyModalList"></ul>
+        </section>
+        <section class="quick-recall" aria-labelledby="quickRecallTitle">
+          <h2 id="quickRecallTitle">Quick Recall</h2>
+          <p class="qr-hint" id="quickRecallHint">
+            Recent knowledge atoms · click a line to open that palace
+          </p>
+          <div class="qr-list" id="quickRecallList"></div>
+        </section>
         <p class="modal-foot" id="studyModalFoot"></p>
       </div>
     </div>
@@ -1546,8 +1555,133 @@
           li.appendChild(btn);
           ul.appendChild(li);
         });
-        const firstBtn = ul.querySelector("button");
-        if (firstBtn) requestAnimationFrame(() => firstBtn.focus());
+        renderQuickRecall();
+        const firstQr = document.querySelector("#quickRecallList .qr-line");
+        const firstStudy = ul.querySelector("button");
+        const focusEl = firstQr || firstStudy;
+        if (focusEl) requestAnimationFrame(() => focusEl.focus());
+      }
+
+      function collapseConceptLine(raw) {
+        return String(raw || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function formatQuickRecallConcept(concept, keywords) {
+        const t = collapseConceptLine(concept);
+        if (!t) return "";
+        return boldKeywordTermsHtml(t, keywordDisplayTerms(keywords));
+      }
+
+      function buildQuickRecallGroups() {
+        const included = state.data?.quick_recall?.included_palace_ids || [];
+        const palaceByIdMap = new Map(
+          (state.data?.palaces || []).map((p) => [p.id, p]),
+        );
+        const studyByIdMap = new Map(
+          (state.data?.studies || []).map((s) => [s.id, s]),
+        );
+        const studyOrder = [];
+        const byStudy = new Map();
+        for (const pid of included) {
+          const p = palaceByIdMap.get(pid);
+          if (!p) continue;
+          const sid = p.study_id || "";
+          if (!sid) continue;
+          if (!byStudy.has(sid)) {
+            byStudy.set(sid, []);
+            studyOrder.push(sid);
+          }
+          byStudy.get(sid).push(p);
+        }
+        return studyOrder.map((sid) => {
+          const study = studyByIdMap.get(sid);
+          const pals = byStudy
+            .get(sid)
+            .slice()
+            .sort(
+              (a, b) =>
+                Number(b.palace_number || 0) - Number(a.palace_number || 0),
+            );
+          return {
+            studyId: sid,
+            title: (study && study.title) || sid,
+            palaces: pals,
+          };
+        });
+      }
+
+      function renderQuickRecall() {
+        const host = document.getElementById("quickRecallList");
+        if (!host) return;
+        host.innerHTML = "";
+        const groups = buildQuickRecallGroups();
+        let atomCount = 0;
+        if (!groups.length) {
+          host.innerHTML =
+            '<p class="qr-empty">No Quick Recall palaces yet. Import or sync to seed the list.</p>';
+          const hint = document.getElementById("quickRecallHint");
+          if (hint)
+            hint.textContent =
+              "Recent knowledge atoms · click a line to open that palace";
+          return;
+        }
+        for (const g of groups) {
+          const studyHead = document.createElement("div");
+          studyHead.className = "qr-study";
+          studyHead.textContent = g.title;
+          host.appendChild(studyHead);
+          g.palaces.forEach((p, pi) => {
+            if (pi > 0) {
+              const gap = document.createElement("div");
+              gap.className = "qr-palace-gap";
+              gap.setAttribute("aria-hidden", "true");
+              host.appendChild(gap);
+            }
+            for (const b of beasts(p.id)) {
+              for (const a of atoms(b.id)) {
+                atomCount += 1;
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "qr-line";
+                btn.dataset.palaceId = p.id;
+                btn.dataset.atomId = a.id;
+                const peg = String(b.peg_code || "").trim();
+                const name = String(b.beast_name || "").trim();
+                const conceptHtml = formatQuickRecallConcept(
+                  a.concept,
+                  a.keywords,
+                );
+                const parts = ['<span aria-hidden="true">🟧</span>'];
+                if (peg) parts.push(`[${esc(peg)}]`);
+                if (name) parts.push(esc(name));
+                if (conceptHtml) parts.push(conceptHtml);
+                btn.innerHTML = parts.join(" ");
+                btn.addEventListener("click", () =>
+                  pickQuickRecallPalace(p.id),
+                );
+                host.appendChild(btn);
+              }
+            }
+          });
+        }
+        const hint = document.getElementById("quickRecallHint");
+        if (hint) {
+          const nPal = groups.reduce((n, g) => n + g.palaces.length, 0);
+          hint.textContent = `${atomCount} atom${atomCount === 1 ? "" : "s"} · ${nPal} palace${nPal === 1 ? "" : "s"} · click a line to open that palace`;
+        }
+      }
+
+      function pickQuickRecallPalace(palaceId) {
+        const p = palaceById(palaceId);
+        if (!p) return;
+        rememberStudy(p.study_id);
+        closeStudyModal({ focusLatest: false });
+        setView("practice");
+        requestAnimationFrame(() => openPalace(palaceId));
       }
 
       function openStudyModal() {

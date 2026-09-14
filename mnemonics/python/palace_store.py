@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -291,6 +292,19 @@ class PalaceStore:
 
     def state(self) -> dict[str, Any]:
         data = self._load_tree()
+        quick_recall = {"included_palace_ids": []}
+        qr_path = self.data_dir / "quick_recall.json"
+        if qr_path.exists():
+            try:
+                raw = json.loads(qr_path.read_text(encoding="utf-8"))
+                ids = [
+                    str(x).strip()
+                    for x in (raw.get("included_palace_ids") or [])
+                    if str(x).strip()
+                ]
+                quick_recall = {"included_palace_ids": ids}
+            except (OSError, json.JSONDecodeError, TypeError):
+                pass
         return {
             "ok": True,
             "studies": data["studies"],
@@ -302,6 +316,7 @@ class PalaceStore:
             "plans": data["plans"],
             "plan_items": data["plan_items"],
             "plan_resources": data["plan_resources"],
+            "quick_recall": quick_recall,
             "meta": {
                 "practice_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice",
                 "plans_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans",
