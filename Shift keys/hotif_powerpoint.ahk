@@ -39,14 +39,15 @@
 ;
 ; Shift+O — Toggle focused view of current slide (same window)
 ; -------------------------------------------------------------
-; Do NOT use SlideShowSettings.Run() — that always creates a new top-level
-; SlideShowWindow HWND, which AutoSlot treats as a new place candidate.
+; Crash-safe path (no SlideShowSettings.Run / View.Exit / ViewType / GotoSlide):
+;   Enter: set ShowType = ppShowTypeWindow (2) so the show stays in the existing
+;          PowerPoint frame, then native Shift+F5 (From Current Slide).
+;   Exit:  native Esc only. Restore prior ShowType after a short settle.
 ;
-; Enter: CommandBars.ExecuteMso("ViewSlideShowReadingView") switches the
-;        existing PPTFrameClass document window in place, then GotoSlide.
-; Exit:  SlideShowWindows.View.Exit (or ActiveWindow → ppViewNormal).
+; Why: Run()/ExecuteMso+GotoSlide+ViewType left PPT unstable — closing the show
+; then editing shapes could tear down the process.
 ;
-; ppViewNormal=9
+; ppShowTypeWindow=2
 ;
 ; =============================================================================
 
@@ -220,52 +221,47 @@ PowerPoint_CenterOnSlide() {
 ; Focused view toggle (Shift+O)
 ;-------------------------------------------------------------------
 
-PowerPoint_CurrentSlideIndex(pp) {
-    try {
-        return pp.ActiveWindow.View.Slide.SlideIndex
-    } catch {
-    }
-    try {
-        return pp.ActiveWindow.Selection.SlideRange.Item(1).SlideIndex
-    } catch {
-    }
-    return 0
-}
-
 PowerPoint_IsFocusedSlideView(pp) {
     try {
         if (pp.SlideShowWindows.Count > 0)
             return true
     } catch {
     }
+    try {
+        if (WinGetClass("A") = "screenClass")
+            return true
+    } catch {
+    }
     return false
 }
 
-PowerPoint_GotoSlideInFocusedView(pp, idx) {
-    if (!idx)
+PowerPoint_RestoreShowType(prev) {
+    if (prev < 0)
         return
     try {
-        if (pp.SlideShowWindows.Count > 0) {
-            pp.SlideShowWindows.Item(1).View.GotoSlide(idx)
-            return
-        }
+        pp := ComObjActive("PowerPoint.Application")
+        pp.ActivePresentation.SlideShowSettings.ShowType := prev
     } catch {
     }
-    try pp.ActiveWindow.View.GotoSlide(idx)
-}
-
-PowerPoint_ExitFocusedSlideView(pp) {
-    try {
-        if (pp.SlideShowWindows.Count > 0) {
-            pp.SlideShowWindows.Item(1).View.Exit
-            return
-        }
-    } catch {
-    }
-    try pp.ActiveWindow.ViewType := 9  ; ppViewNormal
 }
 
 PowerPoint_ToggleFocusedSlideView() {
+    static savedShowType := -1
+
+    ; Full-screen show chrome — Esc only (never COM Exit/ViewType).
+    try {
+        if (WinGetClass("A") = "screenClass") {
+            Send("{Escape}")
+            if (savedShowType >= 0) {
+                prev := savedShowType
+                savedShowType := -1
+                SetTimer(() => PowerPoint_RestoreShowType(prev), -500)
+            }
+            return
+        }
+    } catch {
+    }
+
     try {
         pp := ComObjActive("PowerPoint.Application")
     } catch {
@@ -275,21 +271,23 @@ PowerPoint_ToggleFocusedSlideView() {
 
     try {
         if (PowerPoint_IsFocusedSlideView(pp)) {
-            PowerPoint_ExitFocusedSlideView(pp)
-            try pp.ActiveWindow.ViewType := 9  ; ppViewNormal
+            Send("{Escape}")
+            if (savedShowType >= 0) {
+                prev := savedShowType
+                savedShowType := -1
+                SetTimer(() => PowerPoint_RestoreShowType(prev), -500)
+            }
             return
         }
 
-        idx := PowerPoint_CurrentSlideIndex(pp)
-        if !idx {
-            ShowCenteredOverlay_Utils("❌ No active slide", 1800, BANNER_ACCENT_ERROR)
-            return
-        }
-
-        ; In-place Reading View on the existing document window (no new HWND/process).
-        pp.CommandBars.ExecuteMso("ViewSlideShowReadingView")
-        PowerPoint_GotoSlideInFocusedView(pp, idx)
+        sss := pp.ActivePresentation.SlideShowSettings
+        savedShowType := sss.ShowType
+        sss.ShowType := 2              ; ppShowTypeWindow — stay in this frame
+        try sss.ShowPresenterView := 0
+        ; Native From Current Slide — no Run(), no GotoSlide, no ViewType.
+        Send("+{F5}")
     } catch Error as e {
+        savedShowType := -1
         ShowCenteredOverlay_Utils("❌ Focus view failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
