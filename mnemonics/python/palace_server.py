@@ -680,6 +680,10 @@ class PalaceHandler(BaseHTTPRequestHandler):
                         self._bytes(200, asset.read_bytes(), ctype)
                         return
 
+        if path == "/api/bootstrap":
+            self._json(200, self._store().bootstrap())
+            return
+
         if path == "/api/state":
             self._json(200, self._store().state())
             return

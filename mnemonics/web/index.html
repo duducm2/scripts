@@ -844,6 +844,8 @@
       const PALACE_SPA_FULL_REFRESH = false;
       const state = {
         data: null,
+        fullDataLoaded: false,
+        _fullDataPromise: null,
         _practiceIndex: null,
         view: "practice",
         studyId: "",
@@ -903,9 +905,69 @@
 
       function updateStatsHeader() {
         if (!state.data) return;
+        if (!state.fullDataLoaded) {
+          const nStudies = (state.data.studies || []).length;
+          const nQr = (state.data.quick_recall?.included_palace_ids || [])
+            .length;
+          document.getElementById("stats").textContent =
+            `${nStudies} studies · Quick Recall (${nQr} palaces)`;
+          return;
+        }
         document.getElementById("stats").textContent =
           `${state.data.studies.length} studies · ${state.data.palaces.length} Memory Palaces · ` +
           `${state.data.beasts.length} beasts · ${state.data.atoms.length} Knowledge Atoms`;
+      }
+
+      function applyFullState(full) {
+        state.data = full;
+        state.fullDataLoaded = true;
+        invalidateDataIndex();
+        updateStatsHeader();
+        const gh = state.data.meta?.plans_github || "#";
+        const plansGh = document.getElementById("plansGithub");
+        if (plansGh) plansGh.href = gh;
+        fillStudySelect();
+      }
+
+      function prefetchFullData() {
+        if (state.fullDataLoaded) return Promise.resolve();
+        if (state._fullDataPromise) return state._fullDataPromise;
+        state._fullDataPromise = api("/api/state")
+          .then((full) => {
+            applyFullState(full);
+          })
+          .catch((e) => {
+            console.warn("Full palace state prefetch failed", e);
+            throw e;
+          })
+          .finally(() => {
+            state._fullDataPromise = null;
+          });
+        return state._fullDataPromise;
+      }
+
+      async function ensureFullData() {
+        if (state.fullDataLoaded) return;
+        await prefetchFullData();
+        if (!state.fullDataLoaded) {
+          throw new Error("Failed to load Memory Palace data");
+        }
+      }
+
+      async function boot() {
+        const bootData = await api("/api/bootstrap");
+        state.data = bootData;
+        state.fullDataLoaded = false;
+        invalidateDataIndex();
+        updateStatsHeader();
+        fillStudySelect();
+        // Study picker + Quick Recall only — do not render practice engines yet.
+        if (state.studyPickerPending) {
+          state.studyPickerPending = false;
+          openStudyModal();
+        }
+        // Warm full dataset in background for after study selection.
+        prefetchFullData().catch(() => {});
       }
 
       function mergeApiRow(entityKey, row, { removeId } = {}) {
@@ -1733,7 +1795,13 @@
         btn.scrollIntoView({ block: "nearest", inline: "nearest" });
       }
 
-      function pickQuickRecallPalace(palaceId) {
+      async function pickQuickRecallPalace(palaceId) {
+        try {
+          await ensureFullData();
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+          return;
+        }
         const p = palaceById(palaceId);
         if (!p) return;
         rememberStudy(p.study_id);
@@ -1750,7 +1818,13 @@
         renderStudyModal();
       }
 
-      function pickStudyItem(id) {
+      async function pickStudyItem(id) {
+        try {
+          await ensureFullData();
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+          return;
+        }
         rememberStudy(id);
         closeStudyModal({ focusLatest: false });
         setView("practice");
@@ -1758,19 +1832,33 @@
         requestAnimationFrame(() => openLatestPalace());
       }
 
-      function togglePlansPractice() {
-        const ovOpen = document
-          .getElementById("overlay")
-          .classList.contains("open");
-        if (ovOpen) closeOverlay();
-        if (state.view === "plans") setView("practice");
-        else setView("plans");
+      async function withFullData(fn) {
+        try {
+          await ensureFullData();
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+          return;
+        }
+        return fn();
       }
 
       function goLatestPalaceShortcut() {
-        if (state.view !== "practice") setView("practice");
-        openLatestPalace();
-        if (!palaces(state.studyId).length) toast("No palaces");
+        withFullData(() => {
+          if (state.view !== "practice") setView("practice");
+          openLatestPalace();
+          if (!palaces(state.studyId).length) toast("No palaces");
+        });
+      }
+
+      function togglePlansPractice() {
+        withFullData(() => {
+          const ovOpen = document
+            .getElementById("overlay")
+            .classList.contains("open");
+          if (ovOpen) closeOverlay();
+          if (state.view === "plans") setView("practice");
+          else setView("plans");
+        });
       }
 
       function studyModalColumnCount(buttons) {
@@ -1937,21 +2025,24 @@
 
       async function refresh(opts = {}) {
         state.data = await api("/api/state");
+        state.fullDataLoaded = true;
         invalidateDataIndex();
         updateStatsHeader();
         const gh = state.data.meta?.plans_github || "#";
         document.getElementById("plansGithub").href = gh;
         fillStudySelect();
-        render();
-        if (opts.links) refreshLinkStatus().catch(() => {});
         if (state.studyPickerPending) {
           state.studyPickerPending = false;
           openStudyModal();
+          // Keep engines idle until an explicit study/palace choice.
+          return;
         }
+        render();
+        if (opts.links) refreshLinkStatus().catch(() => {});
       }
 
       function render() {
-        if (!state.data) return;
+        if (!state.data || !state.fullDataLoaded) return;
         setChromeActive();
         showPanel(state.view);
         if (state.view === "practice") renderPractice();
@@ -3929,11 +4020,13 @@
 
       /* ---------- Wiring ---------- */
       document.getElementById("study").onchange = (e) => {
-        rememberStudy(e.target.value);
-        if (state.view === "browse") {
-          state.browse = { studyId: "", palaceId: "", beastId: "" };
-        }
-        render();
+        withFullData(() => {
+          rememberStudy(e.target.value);
+          if (state.view === "browse") {
+            state.browse = { studyId: "", palaceId: "", beastId: "" };
+          }
+          render();
+        });
       };
       document.getElementById("btnLatest").onclick = () =>
         goLatestPalaceShortcut();
@@ -3948,10 +4041,12 @@
       document.getElementById("btnSrGenerate").onclick = () =>
         generateStoryReductionPrompt();
       document.getElementById("btnPractice").onclick = () =>
-        setView("practice");
+        withFullData(() => setView("practice"));
       document.getElementById("btnPlans").onclick = () => togglePlansPractice();
-      document.getElementById("btnImages").onclick = () => setView("images");
-      document.getElementById("btnMethod").onclick = () => setView("method");
+      document.getElementById("btnImages").onclick = () =>
+        withFullData(() => setView("images"));
+      document.getElementById("btnMethod").onclick = () =>
+        withFullData(() => setView("method"));
       document.getElementById("btnStudyImagesAdd").onclick = () =>
         document.getElementById("studyImagesFileInput").click();
       document.getElementById("btnImagesFsClose").onclick = () =>
@@ -4095,7 +4190,7 @@
       };
 
       document.querySelectorAll("#appMore [data-view]").forEach((b) => {
-        b.onclick = () => setView(b.dataset.view);
+        b.onclick = () => withFullData(() => setView(b.dataset.view));
       });
 
       document.getElementById("atomSearch").oninput = (e) => {
@@ -4295,7 +4390,10 @@
           }
           return;
         }
-        if (e.key === "b" || e.key === "B") setView("browse");
+        if (e.key === "b" || e.key === "B") {
+          withFullData(() => setView("browse"));
+          return;
+        }
         if (
           (e.key === "p" || e.key === "P") &&
           !e.ctrlKey &&
@@ -4313,7 +4411,7 @@
           !e.altKey
         ) {
           e.preventDefault();
-          setView("images");
+          withFullData(() => setView("images"));
           return;
         }
         if (
@@ -4326,12 +4424,21 @@
           goLatestPalaceShortcut();
           return;
         }
-        if (e.key === "m" || e.key === "M") setView("method");
-        if (e.key === "h" || e.key === "H") setView("help");
-        if (e.key === "1") setView("links");
+        if (e.key === "m" || e.key === "M") {
+          withFullData(() => setView("method"));
+          return;
+        }
+        if (e.key === "h" || e.key === "H") {
+          withFullData(() => setView("help"));
+          return;
+        }
+        if (e.key === "1") {
+          withFullData(() => setView("links"));
+          return;
+        }
       });
 
-      refresh().catch((e) => {
+      boot().catch((e) => {
         document.getElementById("stats").textContent = "Failed to load";
         toast(String(e.message || e), 5000);
       });

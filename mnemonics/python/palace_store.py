@@ -290,23 +290,86 @@ class PalaceStore:
     def _sync_plans(self, study_id: str) -> None:
         self._schedule_sync_plans(study_id)
 
-    def state(self) -> dict[str, Any]:
-        data = self._load_tree()
-        quick_recall = {"included_palace_ids": []}
+    def _quick_recall_included_ids(self, palaces: list[dict[str, str]]) -> list[str]:
         qr_path = self.data_dir / "quick_recall.json"
+        included: list[str] = []
         if qr_path.exists():
             try:
                 raw = json.loads(qr_path.read_text(encoding="utf-8"))
-                ids = [
+                included = [
                     str(x).strip()
                     for x in (raw.get("included_palace_ids") or [])
                     if str(x).strip()
                 ]
-                quick_recall = {"included_palace_ids": ids}
             except (OSError, json.JSONDecodeError, TypeError):
-                pass
+                included = []
+        palace_by_id = {p.get("id"): p for p in palaces if p.get("id")}
+        included = [pid for pid in included if pid in palace_by_id]
+        if included:
+            return included
+        # Match study_quick_recall_md seed when JSON missing/empty
+        seed_specs = (("STUDY_DATAANALYST", 7), ("STUDY_PIANO", 4))
+        by_study: dict[str, list[dict[str, str]]] = {}
+        for p in palaces:
+            sid = (p.get("study_id") or "").strip()
+            if sid:
+                by_study.setdefault(sid, []).append(p)
+        out: list[str] = []
+        seen: set[str] = set()
+        for study_id, count in seed_specs:
+            rows = sorted(
+                by_study.get(study_id, []),
+                key=lambda r: int(r.get("palace_number") or 0),
+                reverse=True,
+            )[:count]
+            for p in rows:
+                pid = p.get("id") or ""
+                if pid and pid not in seen:
+                    seen.add(pid)
+                    out.append(pid)
+        return out
+
+    def bootstrap(self) -> dict[str, Any]:
+        """Slim payload for study picker + Quick Recall only (no full engines)."""
+        data = self._load_tree()
+        studies = [
+            s for s in data.get("studies", []) if s.get("active", "1") != "0"
+        ]
+        included = self._quick_recall_included_ids(data.get("palaces", []))
+        included_set = set(included)
+        palaces = [p for p in data.get("palaces", []) if p.get("id") in included_set]
+        palace_ids = {p.get("id") for p in palaces}
+        beasts = [
+            b for b in data.get("beasts", []) if b.get("palace_id") in palace_ids
+        ]
+        beast_ids = {b.get("id") for b in beasts}
+        atoms = [a for a in data.get("atoms", []) if a.get("beast_id") in beast_ids]
         return {
             "ok": True,
+            "bootstrap": True,
+            "studies": studies,
+            "palaces": palaces,
+            "palace_images": [],
+            "study_images": [],
+            "beasts": beasts,
+            "atoms": atoms,
+            "plans": [],
+            "plan_items": [],
+            "plan_resources": [],
+            "quick_recall": {"included_palace_ids": included},
+            "meta": {
+                "practice_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice",
+                "plans_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans",
+                "server_port": 8767,
+            },
+        }
+
+    def state(self) -> dict[str, Any]:
+        data = self._load_tree()
+        included = self._quick_recall_included_ids(data.get("palaces", []))
+        return {
+            "ok": True,
+            "bootstrap": False,
             "studies": data["studies"],
             "palaces": data["palaces"],
             "palace_images": data.get("palace_images", []),
@@ -316,7 +379,7 @@ class PalaceStore:
             "plans": data["plans"],
             "plan_items": data["plan_items"],
             "plan_resources": data["plan_resources"],
-            "quick_recall": quick_recall,
+            "quick_recall": {"included_palace_ids": included},
             "meta": {
                 "practice_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice",
                 "plans_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans",
