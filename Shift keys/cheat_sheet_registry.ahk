@@ -1195,7 +1195,8 @@ cheatSheets["Google"] := "
     Google (Shift)
     🔍 [S][S]earch box focus
     🥇 [U][U]se first result
-)" 44
+    🖼️ [I][I]mages tab
+)"
 
 ; --- ChatGPT ---------------------------------------------------------------
 cheatSheets["ChatGPT"] := "

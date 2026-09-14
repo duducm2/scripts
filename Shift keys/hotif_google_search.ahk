@@ -54,4 +54,34 @@
     SetTimer(() => ToolTip(), -2000)
 }
 
+; Shift + I : Click Images tab (keeps current search query)
++i:: {
+    try {
+        uia := UIA_Browser()
+        Sleep 200
+
+        imagesBtn := uia.FindFirst({ Name: "Images", Type: "Link" })
+        if !imagesBtn
+            imagesBtn := uia.FindFirst({ Name: "Imagens", Type: "Link" })
+        if !imagesBtn
+            imagesBtn := uia.FindFirst({ Name: "Images" })
+        if !imagesBtn
+            imagesBtn := uia.FindFirst({ Name: "Imagens" })
+
+        if (imagesBtn) {
+            try {
+                imagesBtn.Invoke()
+            } catch {
+                imagesBtn.Click()
+            }
+            return
+        }
+        ToolTip("Images button not found")
+        SetTimer(() => ToolTip(), -2000)
+    } catch {
+        ToolTip("Images button not found")
+        SetTimer(() => ToolTip(), -2000)
+    }
+}
+
 #HotIf
