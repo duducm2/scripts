@@ -12,6 +12,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import load_all  # noqa: E402
+from schemas import bold_keyword_terms, keyword_display_terms  # noqa: E402
 
 STATE_NAME = "quick_recall.json"
 OUT_NAME = "Quick Recall.md"
@@ -197,6 +198,10 @@ def render_atom_line(beast: dict[str, str], atom: dict[str, str]) -> str:
     peg = (beast.get("peg_code") or "").strip()
     name = (beast.get("beast_name") or "").strip()
     concept = collapse_concept(atom.get("concept"))
+    if concept:
+        concept = bold_keyword_terms(
+            concept, keyword_display_terms(atom.get("keywords"))
+        )
     parts = ["🟧"]
     if peg:
         parts.append(f"[{peg}]")

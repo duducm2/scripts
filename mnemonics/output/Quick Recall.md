@@ -5,53 +5,53 @@
 
 ### Memory Palace 12: Location Probes & Rearrangement
 
-🟧 [Ay] aye-aye [Viewpoint Controls: I show two windows together] [overview plus enlarged detail of one area]
-🟧 [Az] Aztec [Rearrangement: I change marks and axis values] [so the new layout can change what I understand]
+🟧 [Ay] aye-aye [<kbd><strong><u>Viewpoint</u></strong></kbd> Controls: I show two windows together] [<kbd><strong><u>overview</u></strong></kbd> plus enlarged <kbd><strong><u>detail</u></strong></kbd> of one area]
+🟧 [Az] Aztec [<kbd><strong><u>Rearrangement</u></strong></kbd>: I change marks and <kbd><strong><u>axis</u></strong></kbd> values] [so the new layout can change what I <kbd><strong><u>understand</u></strong></kbd>]
 
 ### Memory Palace 11: Hybrid Marks & View Transforms
 
-🟧 [At] atlas [Glyph: a graphic entity] [whose attributes are driven by data attributes]
-🟧 [Au] auroch [Dense Pixel Displays: I map each value to individual pixels] [and form a polygon per data dimension]
-🟧 [Av] avocet [View Transformation: creates new views] [of the visual structure] [for my needs]
-🟧 [Aw] awassi sheep [Location Investigations: I use a data mark's location] [to reveal extra table information]
-🟧 [Ax] axolotl [Distortions: show focus and context] [in the same visual structure at once]
+🟧 [At] atlas [<kbd><strong><u>Glyph</u></strong></kbd>: a graphic entity] [whose <kbd><strong><u>attributes</u></strong></kbd> are <kbd><strong><u>driven</u></strong></kbd> by data <kbd><strong><u>attributes</u></strong></kbd>]
+🟧 [Au] auroch [Dense <kbd><strong><u>Pixel</u></strong></kbd> Displays: I <kbd><strong><u>map</u></strong></kbd> each value to individual pixels] [and form a <kbd><strong><u>polygon</u></strong></kbd> per data dimension]
+🟧 [Av] avocet [View <kbd><strong><u>Transformation</u></strong></kbd>: creates new <kbd><strong><u>views</u></strong></kbd>] [of the visual structure] [for my <kbd><strong><u>needs</u></strong></kbd>]
+🟧 [Aw] awassi sheep [<kbd><strong><u>Location</u></strong></kbd> Investigations: I use a data mark's <kbd><strong><u>location</u></strong></kbd>] [to <kbd><strong><u>reveal</u></strong></kbd> extra table <kbd><strong><u>information</u></strong></kbd>]
+🟧 [Ax] axolotl [<kbd><strong><u>Distortions</u></strong></kbd>: show focus and <kbd><strong><u>context</u></strong></kbd>] [in the <kbd><strong><u>same</u></strong></kbd> visual structure at once]
 
 ### Memory Palace 10: Multivariate Line & Table Views
 
-🟧 [Ao] aoudad [Multivariate Line Charts: I tell dimensions apart] [by color, width, or line style]
-🟧 [Ap] ape [Parallel Coordinates: I draw each variable as a parallel axis] [and turn each tuple into a polyline]
-🟧 [Aq] aquatic leech [Radial Axis Techniques: I use polar axes] [to study cyclical events and seasonality]
-🟧 [Ar] armadillo [Table Lens: I combine reordering, bar-sized marks, and semantic zoom] [by row and column]
-🟧 [As] asp [Parallel Sets: like Parallel Coordinates] [but focused on nominal variables]
+🟧 [Ao] aoudad [<kbd><strong><u>Multivariate</u></strong></kbd> Line Charts: I tell dimensions apart] [by color, <kbd><strong><u>width</u></strong></kbd>, or line <kbd><strong><u>style</u></strong></kbd>]
+🟧 [Ap] ape [<kbd><strong><u>Parallel</u></strong></kbd> Coordinates: I draw each variable as a <kbd><strong><u>parallel</u></strong></kbd> axis] [and turn each <kbd><strong><u>tuple</u></strong></kbd> into a <kbd><strong><u>polyline</u></strong></kbd>]
+🟧 [Aq] aquatic leech [<kbd><strong><u>Radial</u></strong></kbd> Axis Techniques: I use polar axes] [to study <kbd><strong><u>cyclical</u></strong></kbd> events and <kbd><strong><u>seasonality</u></strong></kbd>]
+🟧 [Ar] armadillo [Table <kbd><strong><u>Lens</u></strong></kbd>: I combine reordering, bar-sized <kbd><strong><u>marks</u></strong></kbd>, and semantic <kbd><strong><u>zoom</u></strong></kbd>] [by row and column]
+🟧 [As] asp [Parallel <kbd><strong><u>Sets</u></strong></kbd>: like Parallel Coordinates] [but focused on <kbd><strong><u>nominal</u></strong></kbd> variables]
 
 ### Memory Palace 9: Encoding & Perception Basics
 
-🟧 [Aj] Ajax [Visual Mapping: I link each data-table variable] [to a graphical or spatial property]
-🟧 [Ak] Akita (dog breed) [Automatic Visual Processing: I aid search and pattern detection] [with automatically processed properties] [like color and size]
-🟧 [Al] alligator [Expressiveness: my visual mapping must express all table data] [and only that data]
-🟧 [Am] amulet [Effectiveness: fast easy distinction of data] [with as few interpretation errors as possible]
-🟧 [An] angel [RadViz: I place N anchors on a circle] [and pull points by Hooke spring balance]
+🟧 [Aj] Ajax [Visual <kbd><strong><u>Mapping</u></strong></kbd>: I link each data-table <kbd><strong><u>variable</u></strong></kbd>] [to a graphical or spatial <kbd><strong><u>property</u></strong></kbd>]
+🟧 [Ak] Akita (dog breed) [<kbd><strong><u>Automatic</u></strong></kbd> Visual Processing: I aid search and pattern detection] [with automatically <kbd><strong><u>processed</u></strong></kbd> properties] [like <kbd><strong><u>color</u></strong></kbd> and size]
+🟧 [Al] alligator [<kbd><strong><u>Expressiveness</u></strong></kbd>: my visual mapping must express all table <kbd><strong><u>data</u></strong></kbd>] [and <kbd><strong><u>only</u></strong></kbd> that <kbd><strong><u>data</u></strong></kbd>]
+🟧 [Am] amulet [<kbd><strong><u>Effectiveness</u></strong></kbd>: fast easy <kbd><strong><u>distinction</u></strong></kbd> of data] [with as few interpretation <kbd><strong><u>errors</u></strong></kbd> as possible]
+🟧 [An] angel [<kbd><strong><u>RadViz</u></strong></kbd>: I place N anchors on a circle] [and <kbd><strong><u>pull</u></strong></kbd> points by <kbd><strong><u>Hooke</u></strong></kbd> spring balance]
 
 ### Memory Palace 8: Schema & Visual Structure Core
 
-🟧 [Ae] aerialist [Database Schema: I treat it as the structural blueprint] [of my database] [including tables, fields, relationships, and constraints]
-🟧 [Af] Afghan hound [Visual Structure: the set of visual elements] [that represent a dataset]
-🟧 [Ag] Agaric fungi [Spatial Substrate: the area available] [to display the dataset]
-🟧 [Ah] Ah!—a sigh [Marks: objects present] [in the chart space] — Note: Marks use graphical and spatial properties to show data values.
-🟧 [Ai] Airedale terrier [Small Multiples: they force visual comparison] [of changes, differences, and alternatives]
+🟧 [Ae] aerialist [<kbd><strong><u>Database</u></strong></kbd> <kbd><strong><u>Schema</u></strong></kbd>: I treat it as the structural blueprint] [of my <kbd><strong><u>database</u></strong></kbd>] [including tables, fields, <kbd><strong><u>relationships</u></strong></kbd>, and constraints]
+🟧 [Af] Afghan hound [Visual <kbd><strong><u>Structure</u></strong></kbd>: the set of visual elements] [that <kbd><strong><u>represent</u></strong></kbd> a <kbd><strong><u>dataset</u></strong></kbd>]
+🟧 [Ag] Agaric fungi [Spatial <kbd><strong><u>Substrate</u></strong></kbd>: the area available] [to <kbd><strong><u>display</u></strong></kbd> the <kbd><strong><u>dataset</u></strong></kbd>]
+🟧 [Ah] Ah!—a sigh [<kbd><strong><u>Marks</u></strong></kbd>: objects present] [in the <kbd><strong><u>chart</u></strong></kbd> <kbd><strong><u>space</u></strong></kbd>] — Note: <kbd><strong><u>Marks</u></strong></kbd> use graphical and spatial properties to show data values.
+🟧 [Ai] Airedale terrier [Small <kbd><strong><u>Multiples</u></strong></kbd>: they force visual <kbd><strong><u>comparison</u></strong></kbd>] [of changes, differences, and <kbd><strong><u>alternatives</u></strong></kbd>]
 
 ### Memory Palace 7: M Code Pipeline & Database Architectures
 
-🟧 [Ad] adder [I store data without fixed tables] [using flexible formats] [for horizontal scaling] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
+🟧 [Ad] adder [I store data without fixed <kbd><strong><u>tables</u></strong></kbd>] [using flexible <kbd><strong><u>formats</u></strong></kbd>] [for horizontal <kbd><strong><u>scaling</u></strong></kbd>] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
 
 ### Memory Palace 6: Power Query Transformations & Step Reuse
 
-🟧 [Y] yak [I unpivot multiple columns into rows] [to model my data more easily] — Note: Column headers become an attribute column paired with a single value column.
-🟧 [Z] Zeus [My unpivot step automatically deletes all rows] [with null values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
-🟧 [Aa] aardvark [I replace nulls with a temporary placeholder] [before unpivoting] [to swap them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
-🟧 [Ab] Abyssinian cat [I reuse my query steps] [across different files] [sharing the exact same table structure] — Note: Identical column headers and data formats are required so the query steps run without error.
-🟧 [Ab] Abyssinian cat [I copy all transformation steps] [below the initial source line] [from the Advanced Editor] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
-🟧 [Ac] acorn [I store data] [in rigid tables of rows and columns] [linked by predefined relationships] — Note: Enforces schemas and data integrity using SQL validation rules.
+🟧 [Y] yak [I unpivot multiple <kbd><strong><u>columns</u></strong></kbd> into rows] [to <kbd><strong><u>model</u></strong></kbd> my data more easily] — Note: Column headers become an attribute column paired with a single value column.
+🟧 [Z] Zeus [My unpivot step automatically <kbd><strong><u>deletes</u></strong></kbd> all rows] [with <kbd><strong><u>null</u></strong></kbd> values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
+🟧 [Aa] aardvark [I replace nulls with a temporary <kbd><strong><u>placeholder</u></strong></kbd>] [before <kbd><strong><u>unpivoting</u></strong></kbd>] [to <kbd><strong><u>swap</u></strong></kbd> them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
+🟧 [Ab] Abyssinian cat [I <kbd><strong><u>reuse</u></strong></kbd> my query steps] [across different <kbd><strong><u>files</u></strong></kbd>] [sharing the exact same table <kbd><strong><u>structure</u></strong></kbd>] — Note: Identical column headers and data formats are required so the query steps run without error.
+🟧 [Ab] Abyssinian cat [I <kbd><strong><u>copy</u></strong></kbd> all transformation steps] [below the initial <kbd><strong><u>source</u></strong></kbd> line] [from the Advanced <kbd><strong><u>Editor</u></strong></kbd>] — Note: The first line contains the specific file <kbd><strong><u>source</u></strong></kbd> path that must not overwrite the new table's connection.
+🟧 [Ac] acorn [I <kbd><strong><u>store</u></strong></kbd> data] [in rigid <kbd><strong><u>tables</u></strong></kbd> of rows and columns] [linked by predefined <kbd><strong><u>relationships</u></strong></kbd>] — Note: Enforces schemas and data integrity using SQL validation rules.
 
 </details>
 
