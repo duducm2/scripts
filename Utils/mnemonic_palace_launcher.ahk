@@ -7,6 +7,31 @@ global g_PalaceDashboardHwnd := 0
 global g_PalaceServerPid := 0
 global PALACE_LEGACY_DASHBOARD := false
 
+; Picker chrome (mirrors Desktop Preview: 50% size / opacity 220, AutoSlot-excluded).
+global PALACE_PICKER_AUTOSLOT_PROP := "PalacePickerTempExclude"
+global PALACE_PICKER_PREVIEW_SCALE := 0.5
+global PALACE_PICKER_PREVIEW_OPACITY := 220
+global PALACE_PICKER_TITLE_NEEDLE := "Select a Study and Quick Recall"
+global g_PalacePickerWatchHwnd := 0
+global g_PalacePickerWatchTimer := ""
+global g_PalacePickerAnchorHwnd := 0
+global g_PalacePickerSawTitle := false
+global g_PalacePickerPlaceX := 0
+global g_PalacePickerPlaceY := 0
+global g_PalacePickerPlaceW := 0
+global g_PalacePickerPlaceH := 0
+
+; #region agent log
+Palace_DebugLog(hypothesisId, location, message, dataJson := "{}") {
+    logPath := A_ScriptDir "\debug-f610c4.log"
+    line := "{`"sessionId`":`"f610c4`",`"hypothesisId`":`"" . hypothesisId . "`",`"location`":`"" . location
+        . "`",`"message`":`"" . message . "`",`"data`":" . dataJson . ",`"timestamp`":" . A_TickCount . "}`n"
+    try FileAppend(line, logPath, "UTF-8")
+    catch {
+    }
+}
+; #endregion
+
 Palace_ServerPort() {
     return 8767
 }
@@ -325,6 +350,9 @@ Palace_IsChromeWindowTitle(title) {
         return true
     if (InStr(t, "Memory Palace") = 1)
         return true
+    ; Study picker sentinel title (set while Quick Recall modal is open).
+    if (InStr(t, "Select a Study and Quick Recall"))
+        return true
     ; Title still on the localhost URL (tab not fully titled yet, or URL bar mode).
     port := String(Palace_ServerPort())
     if (InStr(t, "127.0.0.1:" . port) || InStr(t, "localhost:" . port))
@@ -455,6 +483,26 @@ Palace_OpenWebInChrome(url) {
         Palace_ActivateWeb(existing)
         return true
     }
+    anchorHwnd := 0
+    try anchorHwnd := WinExist("A")
+    catch {
+        anchorHwnd := 0
+    }
+    global g_PalacePickerAnchorHwnd
+    g_PalacePickerAnchorHwnd := anchorHwnd
+    ; #region agent log
+    _aTitle := ""
+    _ax := _ay := _aw := _ah := 0
+    try _aTitle := WinGetTitle("ahk_id " anchorHwnd)
+    catch {
+    }
+    try WinGetPos(&_ax, &_ay, &_aw, &_ah, "ahk_id " anchorHwnd)
+    catch {
+    }
+    Palace_DebugLog("A", "Palace_OpenWebInChrome:anchor", "anchor before Run",
+        "{`"hwnd`":" . Integer(anchorHwnd) . ",`"title`":`"" . StrReplace(_aTitle, "`"", "'")
+        . "`",`"x`":" . _ax . ",`"y`":" . _ay . ",`"w`":" . _aw . ",`"h`":" . _ah . "}")
+    ; #endregion
     try Run('chrome.exe --new-window "' . url . '"')
     catch {
         try Run(url)
@@ -466,7 +514,14 @@ Palace_OpenWebInChrome(url) {
     prev := A_TitleMatchMode
     try {
         SetTitleMatchMode(2)
-        if WinWait("Memory Palace ahk_exe chrome.exe", , 10) {
+        ; Prefer picker sentinel (set early on boot) or classic Memory Palace title.
+        if WinWait("Select a Study and Quick Recall ahk_exe chrome.exe", , 8) {
+            try newHwnd := WinExist("Select a Study and Quick Recall ahk_exe chrome.exe")
+            catch {
+                newHwnd := 0
+            }
+        }
+        if (!newHwnd && WinWait("Memory Palace ahk_exe chrome.exe", , 4)) {
             try newHwnd := WinExist("Memory Palace ahk_exe chrome.exe")
             catch {
                 newHwnd := 0
@@ -492,14 +547,246 @@ Palace_OpenWebInChrome(url) {
                 break
         }
     }
+    ; #region agent log
+    if (!newHwnd) {
+        Palace_DebugLog("C", "Palace_OpenWebInChrome:miss", "no chrome hwnd after wait", "{}")
+    }
+    ; #endregion
     if (newHwnd) {
+        ; #region agent log
+        _nx := _ny := _nw := _nh := 0
+        _nTitle := ""
+        try _nTitle := WinGetTitle("ahk_id " newHwnd)
+        catch {
+        }
+        try WinGetPos(&_nx, &_ny, &_nw, &_nh, "ahk_id " newHwnd)
+        catch {
+        }
+        _propBefore := 0
+        try _propBefore := DllCall("GetPropW", "ptr", newHwnd, "wstr", "PalacePickerTempExclude")
+        catch {
+        }
+        Palace_DebugLog("C", "Palace_OpenWebInChrome:found", "chrome hwnd before place",
+            "{`"hwnd`":" . Integer(newHwnd) . ",`"title`":`"" . StrReplace(_nTitle, "`"", "'")
+            . "`",`"x`":" . _nx . ",`"y`":" . _ny . ",`"w`":" . _nw . ",`"h`":" . _nh
+            . ",`"propBefore`":" . Integer(_propBefore) . "}")
+        ; #endregion
+        ; Mark AutoSlot exclude BEFORE activate/place to beat SHOW race.
+        Palace_PickerMarkAutoSlotExclude(newHwnd)
         Palace_WebHwndCacheSet(newHwnd)
         try WinActivate("ahk_id " newHwnd)
         catch {
         }
+        Palace_BeginPickerPreviewSession(newHwnd, anchorHwnd)
         return true
     }
     return true
+}
+
+; --- Picker preview placement (Desktop Preview parity) ---
+
+Palace_PickerMarkAutoSlotExclude(hwnd) {
+    global PALACE_PICKER_AUTOSLOT_PROP
+    if (!hwnd)
+        return
+    try DllCall("SetPropW", "ptr", hwnd, "wstr", PALACE_PICKER_AUTOSLOT_PROP, "ptr", 1)
+    catch {
+    }
+}
+
+Palace_PickerClearAutoSlotExclude(hwnd) {
+    global PALACE_PICKER_AUTOSLOT_PROP
+    if (!hwnd)
+        return
+    try DllCall("RemovePropW", "ptr", hwnd, "wstr", PALACE_PICKER_AUTOSLOT_PROP)
+    catch {
+    }
+}
+
+Palace_PickerForceMoveHwnd(hwnd, x, y, w, h) {
+    if (!hwnd || w < 1 || h < 1)
+        return false
+    okMove := DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", 0, "int", 0, "uint",
+        0x0015)
+    okSize := DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", 0, "int", 0, "int", w, "int", h, "uint",
+        0x0016)
+    if (okMove && okSize)
+        return true
+    try {
+        WinMove(x, y, w, h, "ahk_id " hwnd)
+        return true
+    } catch {
+        return false
+    }
+}
+
+Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom) {
+    global PALACE_PICKER_PREVIEW_SCALE, PALACE_PICKER_PREVIEW_OPACITY
+    global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    monW := workRight - workLeft
+    monH := workBottom - workTop
+    if (monW < 1 || monH < 1)
+        return false
+    w := Max(200, Round(monW * PALACE_PICKER_PREVIEW_SCALE))
+    h := Max(150, Round(monH * PALACE_PICKER_PREVIEW_SCALE))
+    x := Round(workLeft + (monW - w) / 2)
+    y := Round(workTop + (monH - h) / 2)
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = -1 || mm = 1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    if (!Palace_PickerForceMoveHwnd(hwnd, x, y, w, h))
+        return false
+    rx := ry := rw := rh := -1
+    try WinGetPos(&rx, &ry, &rw, &rh, "ahk_id " hwnd)
+    catch {
+    }
+    if (rw > 0 && rh > 0 && (Abs(rw - w) > 40 || Abs(rh - h) > 40 || Abs(rx - x) > 40 || Abs(ry - y) > 40))
+        Palace_PickerForceMoveHwnd(hwnd, x, y, w, h)
+    g_PalacePickerPlaceX := x
+    g_PalacePickerPlaceY := y
+    g_PalacePickerPlaceW := w
+    g_PalacePickerPlaceH := h
+    try WinSetTransparent(PALACE_PICKER_PREVIEW_OPACITY, "ahk_id " hwnd)
+    catch {
+    }
+    Palace_PickerMarkAutoSlotExclude(hwnd)
+    return true
+}
+
+Palace_PlacePickerPreview(hwnd, anchorHwnd := 0) {
+    if (!hwnd)
+        return false
+    workLeft := workTop := workRight := workBottom := 0
+    source := "none"
+    if (anchorHwnd) {
+        try {
+            wa := GetWorkAreaForWindow_StandardBar(anchorHwnd)
+            if (IsObject(wa)) {
+                workLeft := wa.left
+                workTop := wa.top
+                workRight := wa.right
+                workBottom := wa.bottom
+                source := "anchor"
+            }
+        } catch {
+        }
+    }
+    if (workRight <= workLeft || workBottom <= workTop) {
+        try {
+            GetActiveMonitorWorkArea_StandardBar(&workLeft, &workTop, &workRight, &workBottom)
+            source := "active_fallback"
+        } catch {
+            try {
+                MonitorGetWorkArea(1, &workLeft, &workTop, &workRight, &workBottom)
+                source := "monitor1_fallback"
+            } catch {
+                return false
+            }
+        }
+    }
+    ; #region agent log
+    Palace_DebugLog("A", "Palace_PlacePickerPreview", "resolved work area",
+        "{`"source`":`"" . source . "`",`"anchor`":" . Integer(anchorHwnd)
+        . ",`"l`":" . workLeft . ",`"t`":" . workTop . ",`"r`":" . workRight . ",`"b`":" . workBottom . "}")
+    ; #endregion
+    ok := Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
+    ; #region agent log
+    _px := _py := _pw := _ph := 0
+    try WinGetPos(&_px, &_py, &_pw, &_ph, "ahk_id " hwnd)
+    catch {
+    }
+    _prop := 0
+    try _prop := DllCall("GetPropW", "ptr", hwnd, "wstr", "PalacePickerTempExclude")
+    catch {
+    }
+    Palace_DebugLog("D", "Palace_PlacePickerPreview:after", "pos after place",
+        "{`"ok`":" . (ok ? "true" : "false") . ",`"x`":" . _px . ",`"y`":" . _py
+        . ",`"w`":" . _pw . ",`"h`":" . _ph . ",`"prop`":" . Integer(_prop) . "}")
+    ; #endregion
+    return ok
+}
+
+Palace_StopPickerWatch() {
+    global g_PalacePickerWatchTimer, g_PalacePickerWatchHwnd, g_PalacePickerSawTitle
+    if (g_PalacePickerWatchTimer != "") {
+        try SetTimer(g_PalacePickerWatchTimer, 0)
+        catch {
+        }
+        g_PalacePickerWatchTimer := ""
+    }
+    g_PalacePickerWatchHwnd := 0
+    g_PalacePickerSawTitle := false
+}
+
+Palace_RestorePickerChrome(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    try WinSetTransparent("Off", "ahk_id " hwnd)
+    catch {
+    }
+    Palace_PickerClearAutoSlotExclude(hwnd)
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) != 1)
+            WinMaximize("ahk_id " hwnd)
+    } catch {
+    }
+}
+
+Palace_PickerWatchTick(*) {
+    global g_PalacePickerWatchHwnd, PALACE_PICKER_TITLE_NEEDLE, g_PalacePickerSawTitle
+    global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
+    global PALACE_PICKER_PREVIEW_OPACITY
+    hwnd := g_PalacePickerWatchHwnd
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+        Palace_StopPickerWatch()
+        return
+    }
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+        title := ""
+    }
+    if (InStr(title, PALACE_PICKER_TITLE_NEEDLE)) {
+        g_PalacePickerSawTitle := true
+        Palace_PickerMarkAutoSlotExclude(hwnd)
+        try WinSetTransparent(PALACE_PICKER_PREVIEW_OPACITY, "ahk_id " hwnd)
+        catch {
+        }
+        if (g_PalacePickerPlaceW > 0 && g_PalacePickerPlaceH > 0) {
+            rx := ry := rw := rh := -1
+            try WinGetPos(&rx, &ry, &rw, &rh, "ahk_id " hwnd)
+            catch {
+            }
+            if (rw > 0 && (Abs(rw - g_PalacePickerPlaceW) > 40 || Abs(rh - g_PalacePickerPlaceH) > 40
+            || Abs(rx - g_PalacePickerPlaceX) > 40 || Abs(ry - g_PalacePickerPlaceY) > 40)) {
+                Palace_PickerForceMoveHwnd(hwnd, g_PalacePickerPlaceX, g_PalacePickerPlaceY,
+                    g_PalacePickerPlaceW, g_PalacePickerPlaceH)
+            }
+        }
+        return
+    }
+    ; Only restore after the picker title was observed (avoid racing boot title).
+    if (g_PalacePickerSawTitle && InStr(title, "Memory Palace")) {
+        Palace_RestorePickerChrome(hwnd)
+        Palace_StopPickerWatch()
+    }
+}
+
+Palace_BeginPickerPreviewSession(hwnd, anchorHwnd := 0) {
+    global g_PalacePickerWatchHwnd, g_PalacePickerWatchTimer, g_PalacePickerSawTitle
+    if (!hwnd)
+        return
+    Palace_StopPickerWatch()
+    g_PalacePickerSawTitle := false
+    Palace_PlacePickerPreview(hwnd, anchorHwnd)
+    g_PalacePickerWatchHwnd := hwnd
+    g_PalacePickerWatchTimer := Palace_PickerWatchTick
+    SetTimer(g_PalacePickerWatchTimer, 200)
 }
 
 Palace_ShowMainMenu() {

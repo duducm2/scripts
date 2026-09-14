@@ -1630,6 +1630,39 @@ AutoSlot_Schedule(hwnd) {
         AutoSlot_PerfLog(0, "Schedule_skip", "invalid_hwnd")
         return
     }
+    ; #region agent log
+    try {
+        _t := ""
+        try _t := WinGetTitle("ahk_id " hwnd)
+        catch {
+        }
+        _ex := ""
+        try _ex := StrLower(WinGetProcessName("ahk_id " hwnd))
+        catch {
+        }
+        if (_ex = "chrome.exe") {
+            _prop := 0
+            try _prop := DllCall("GetPropW", "ptr", hwnd, "wstr", "PalacePickerTempExclude")
+            catch {
+            }
+            _px := _py := _pw := _ph := 0
+            try WinGetPos(&_px, &_py, &_pw, &_ph, "ahk_id " hwnd)
+            catch {
+            }
+            _excl := AutoSlot_IsExcludedExeOrTitle(hwnd) ? 1 : 0
+            logPath := A_ScriptDir "\..\debug-f610c4.log"
+            line :=
+                "{`"sessionId`":`"f610c4`",`"hypothesisId`":`"B`",`"location`":`"AutoSlot_Schedule`",`"message`":`"chrome schedule`",`"data`":{`"hwnd`":"
+                . Integer(hwnd) . ",`"title`":`"" . StrReplace(_t, "`"", "'") . "`",`"prop`":" . Integer(_prop)
+                . ",`"excluded`":" . _excl . ",`"x`":" . _px . ",`"y`":" . _py . ",`"w`":" . _pw . ",`"h`":" . _ph
+                . "},`"timestamp`":" . A_TickCount . "}`n"
+            try FileAppend(line, logPath, "UTF-8")
+            catch {
+            }
+        }
+    } catch {
+    }
+    ; #endregion
     if (MonitorGetCount() <= 1) {
         AutoSlot_PerfLog(hwnd, "Schedule_skip", "single_monitor")
         return
@@ -1912,6 +1945,12 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     ; Temporary Desktop-to-Recycle preview Explorer (Utils sets window prop + suppress ini).
     try {
         if (DllCall("GetPropW", "ptr", hwnd, "wstr", "DesktopToRecycleTempExclude"))
+            return true
+    } catch {
+    }
+    ; Memory Palace study-picker Chrome (50% / translucent cold-open session).
+    try {
+        if (DllCall("GetPropW", "ptr", hwnd, "wstr", "PalacePickerTempExclude"))
             return true
     } catch {
     }

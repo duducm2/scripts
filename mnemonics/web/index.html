@@ -1569,6 +1569,13 @@
         if (list.length) openPalace(list[0].id);
       }
 
+      const PALACE_PAGE_TITLE = "Memory Palace";
+      const PALACE_PICKER_TITLE = "Select a Study and Quick Recall";
+
+      function setPalacePickerTitle(active) {
+        document.title = active ? PALACE_PICKER_TITLE : PALACE_PAGE_TITLE;
+      }
+
       function studyModalIsOpen() {
         return document.getElementById("studyModal").classList.contains("open");
       }
@@ -1577,6 +1584,7 @@
         const modal = document.getElementById("studyModal");
         modal.classList.remove("open");
         modal.setAttribute("aria-hidden", "true");
+        setPalacePickerTitle(false);
         if (focusLatest) {
           requestAnimationFrame(() =>
             document.getElementById("btnLatest")?.focus(),
@@ -1594,9 +1602,9 @@
         document.getElementById("studyModalTitle").textContent =
           "Select a study";
         document.getElementById("studyModalHint").textContent =
-          "Press a letter to choose a study (1–9 also work for the first nine). Arrow keys + Enter to move and select.";
+          "Press a letter to choose a study (1–9 also work for the first nine). Enter opens the focused study · Esc closes the window.";
         document.getElementById("studyModalFoot").textContent =
-          "Esc keeps the current study";
+          "Esc closes Memory Palace";
         const ul = document.getElementById("studyModalList");
         ul.innerHTML = "";
         list.forEach((st, idx) => {
@@ -1815,6 +1823,7 @@
         const modal = document.getElementById("studyModal");
         modal.classList.add("open");
         modal.setAttribute("aria-hidden", "false");
+        setPalacePickerTitle(true);
         renderStudyModal();
       }
 
@@ -1826,6 +1835,7 @@
           return;
         }
         rememberStudy(id);
+        setPalacePickerTitle(false);
         closeStudyModal({ focusLatest: false });
         setView("practice");
         // Defer so Practice grid paints, then open newest palace (same as old dashboard).
@@ -1877,7 +1887,16 @@
         if (!studyModalIsOpen()) return false;
         if (e.key === "Escape") {
           e.preventDefault();
-          closeStudyModal({ focusLatest: true });
+          setPalacePickerTitle(false);
+          try {
+            window.close();
+          } catch {
+            /* ignore */
+          }
+          // Fallback if the browser blocks window.close().
+          setTimeout(() => {
+            if (!window.closed) closeStudyModal({ focusLatest: true });
+          }, 50);
           return true;
         }
         const qrButtons = quickRecallButtons();
@@ -1887,10 +1906,16 @@
         const focused = document.activeElement;
         const qrIdx = qrButtons.indexOf(focused);
         const studyIdx = studyButtons.indexOf(focused);
-        const onQr = qrIdx >= 0 || (studyIdx < 0 && qrButtons.length > 0);
+        // Prefer focused study for Enter; QR only when a QR line is focused.
+        const onQrNav =
+          qrIdx >= 0 ||
+          (studyIdx < 0 &&
+            qrButtons.length > 0 &&
+            e.key !== "Enter" &&
+            e.key !== " ");
 
         if (
-          onQr &&
+          onQrNav &&
           qrButtons.length &&
           (e.key === "ArrowRight" ||
             e.key === "ArrowLeft" ||
@@ -1957,6 +1982,12 @@
           if (focusIdx >= 0) {
             e.preventDefault();
             pickStudyItem(studyButtons[focusIdx].dataset.studyId);
+            return true;
+          }
+          // No study focused: Enter opens first study (or selected QR already handled).
+          if (studyButtons[0]?.dataset.studyId) {
+            e.preventDefault();
+            pickStudyItem(studyButtons[0].dataset.studyId);
             return true;
           }
         }
