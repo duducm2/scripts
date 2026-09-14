@@ -1,7 +1,34 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_practice_md.ahk
 ; Practice Markdown sync (Python study_practice_md.py)
+; Quick Recall sync (Python study_quick_recall_md.py) after successful practice sync
 ; =============================================================================
+
+; Soft-fail: Drive/Python issues must not abort practice sync or git push.
+Palace_SyncQuickRecallMd(showUi := false) {
+    py := Palace_PythonDir() . "\study_quick_recall_md.py"
+    if (!FileExist(py)) {
+        if (showUi)
+            Palace_Notify("study_quick_recall_md.py not found", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        if (showUi)
+            Palace_Notify("Python not found for Quick Recall sync", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    dataDir := Palace_DataDir()
+    outDir := Palace_OutputDir()
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    } catch {
+        return false
+    }
+    return (exitCode = 0)
+}
 
 Palace_PracticeDir() {
     dir := Palace_OutputDir() . "\practice"
@@ -107,6 +134,9 @@ Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "") {
         Palace_Notify("Practice sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
         return false
     }
+    try Palace_SyncQuickRecallMd(false)
+    catch {
+    }
     try StandardLoadingBar_Hide(0)
     catch {
     }
@@ -158,6 +188,9 @@ Palace_SyncAllPracticeMd(showUi := true) {
             Palace_Notify("Practice sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
         }
         return false
+    }
+    try Palace_SyncQuickRecallMd(false)
+    catch {
     }
     if (showUi) {
         try StandardLoadingBar_Hide(400)
