@@ -2146,19 +2146,8 @@ ClipAngel_UnfavoriteAllClips() {
         return false
     }
 
-    ownerOpt := " Owner" . hwnd
-    response := MsgBox(
-        "Remove favorite status from ALL currently favorited clips?`n`n"
-        . "Clips stay in history; only the favorite mark is cleared.",
-        "Clip Angel — unfavorite all",
-        "YesNo Icon! Default2" . ownerOpt
-    )
-    if (response != "Yes") {
-        ; Even on cancel, put Clip Angel back if the modal dropped it.
-        ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
-        return false
-    }
-
+    ; MUST lock before MsgBox: auto-minimize-on-deactivate hides Clip Angel when the
+    ; dialog steals focus, and Owner'd MsgBox minimizes with its owner.
     if !ClipAngel_TryAcquireAutomationLock()
         return false
 
@@ -2166,10 +2155,21 @@ ClipAngel_UnfavoriteAllClips() {
     errMsg := ""
     loadingShown := false
     try {
+        ownerOpt := " Owner" . hwnd
+        response := MsgBox(
+            "Remove favorite status from ALL currently favorited clips?`n`n"
+            . "Clips stay in history; only the favorite mark is cleared.",
+            "Clip Angel — unfavorite all",
+            "YesNo Icon! Default2" . ownerOpt
+        )
+        if (response != "Yes") {
+            ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
+            return false
+        }
+
         ClipAngel_WaitChordModifiersReleased()
         ClipAngel_ReleaseChordModifiersForSend()
 
-        ; Modal may minimize / defocus Clip Angel — restore immediately, then keep focus.
         if !ClipAngel_ReassertFocusAfterDialog(hwnd, 1000) {
             errMsg := "❌ Clip Angel lost focus after confirm."
             return false
@@ -2182,7 +2182,6 @@ ClipAngel_UnfavoriteAllClips() {
         })
         loadingShown := true
 
-        ; Re-assert after loading GUI (AlwaysOnTop can steal activation briefly).
         if !ClipAngel_ReassertFocusAfterDialog(hwnd, 800) {
             errMsg := "❌ Clip Angel did not stay active."
             return false
@@ -2195,7 +2194,6 @@ ClipAngel_UnfavoriteAllClips() {
 
         StandardLoadingBar_Update("⏳ Opening favorites...", BANNER_ACCENT_INTERMEDIATE)
         if !ClipAngel_ApplyMarkFilterMode(false, hwnd, root) {
-            ; Filter apply can drop focus; restore and retry once.
             if (!ClipAngel_ReassertFocusAfterDialog(hwnd, 800)
             || !ClipAngel_ApplyMarkFilterMode(false, hwnd, root)) {
                 errMsg := "❌ Could not open favorites filter."
@@ -2256,3 +2254,5 @@ ClipAngel_UnfavoriteAllClips() {
         ShowCenteredOverlay_Utils(errMsg, 2500, BANNER_ACCENT_ERROR)
     return ok
 }
+
+
