@@ -624,3 +624,75 @@ Excel_SaveCsvUtf8FromClipboardPath() {
 +n:: {
     Excel_NormalizeColumnWidths()
 }
+
+; Resolve http(s) URL from the active cell: Hyperlinks collection, =HYPERLINK()
+; formula, or plain cell text. Returns Map("ok", "err", "url").
+Excel_ResolveActiveCellUrl() {
+    try {
+        xl := ComObjActive("Excel.Application")
+        cell := xl.ActiveCell
+    } catch {
+        return Map("ok", false, "err", "Excel COM unavailable", "url", "")
+    }
+    if !cell
+        return Map("ok", false, "err", "No active cell", "url", "")
+
+    try {
+        if (cell.Hyperlinks.Count >= 1) {
+            addr := Trim(String(cell.Hyperlinks(1).Address))
+            if StudyLink_IsValidHttpUrl(addr)
+                return Map("ok", true, "err", "", "url", addr)
+            extracted := StudyLink_ExtractUrlFromClipboardText(addr)
+            if (extracted != "")
+                return Map("ok", true, "err", "", "url", extracted)
+        }
+    } catch {
+    }
+
+    try {
+        formula := Trim(String(cell.Formula))
+        if RegExMatch(formula, 'i)HYPERLINK\s*\(\s*"([^"]+)"', &m) {
+            cand := Trim(m[1])
+            if StudyLink_IsValidHttpUrl(cand)
+                return Map("ok", true, "err", "", "url", cand)
+            extracted := StudyLink_ExtractUrlFromClipboardText(cand)
+            if (extracted != "")
+                return Map("ok", true, "err", "", "url", extracted)
+        }
+    } catch {
+    }
+
+    try {
+        val := ""
+        try val := Trim(String(cell.Value2))
+        catch {
+            try val := Trim(String(cell.Text))
+            catch {
+                val := ""
+            }
+        }
+        extracted := StudyLink_ExtractUrlFromClipboardText(val)
+        if (extracted != "")
+            return Map("ok", true, "err", "", "url", extracted)
+    } catch {
+    }
+
+    return Map("ok", false, "err", "No http(s) link in active cell", "url", "")
+}
+
+; Shift + L : Open active cell hyperlink / URL in a new Chrome window (COM + StudyLink)
+Excel_OpenActiveCellHyperlinkInChrome() {
+    r := Excel_ResolveActiveCellUrl()
+    if !r["ok"] {
+        ShowCenteredOverlay_Utils("❌ " . r["err"], 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if !StudyLink_OpenUrlInChrome(r["url"], true) {
+        ShowCenteredOverlay_Utils("❌ Could not open Chrome.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    ShowCenteredOverlay_Utils("🌐 Opening link in new Chrome…", 1800, BANNER_ACCENT_SUCCESS)
+    return true
+}
+
++l:: Excel_OpenActiveCellHyperlinkInChrome()

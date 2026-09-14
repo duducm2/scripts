@@ -887,6 +887,7 @@ cheatSheets["EXCEL.EXE"] := "
     🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
     📅 [P]Type [P]revious day date
     📏 [N][N]arrow oversized columns (autofit, cap >15→5, zoom row 1)
+    🌐 [L]Open cell [L]ink in new Chrome
 )"
 
 ; --- PowerPoint --------------------------------------------------------
