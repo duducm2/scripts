@@ -39,13 +39,11 @@
 ;
 ; Shift+O — Toggle focused view of current slide (same window)
 ; -------------------------------------------------------------
-; Crash-safe path (no SlideShowSettings.Run / View.Exit / ViewType / GotoSlide):
-;   Enter: set ShowType = ppShowTypeWindow (2) so the show stays in the existing
-;          PowerPoint frame, then native Shift+F5 (From Current Slide).
-;   Exit:  native Esc only. Restore prior ShowType after a short settle.
-;
-; Why: Run()/ExecuteMso+GotoSlide+ViewType left PPT unstable — closing the show
-; then editing shapes could tear down the process.
+; Crash-safe path (no SlideShowSettings.Run / View.Exit / ViewType during show):
+;   Enter: set ShowType = ppShowTypeWindow (2), wait for O release (avoids key-bleed
+;          advancing slides), then native Shift+F5 (From Current Slide).
+;   Exit:  remember SlideShowView slide index, Esc, then GotoSlide in Normal so we
+;          stay on the slide you navigated to (not the slide where the show started).
 ;
 ; ppShowTypeWindow=2
 ;
@@ -235,28 +233,70 @@ PowerPoint_IsFocusedSlideView(pp) {
     return false
 }
 
+PowerPoint_ShowViewSlideIndex(pp) {
+    try {
+        return pp.SlideShowWindows.Item(1).View.Slide.SlideIndex
+    } catch {
+    }
+    try {
+        pos := pp.SlideShowWindows.Item(1).View.CurrentShowPosition
+        if (pos >= 1)
+            return pos
+    } catch {
+    }
+    return 0
+}
+
 PowerPoint_RestoreShowType(prev) {
     if (prev < 0)
         return
     try {
         pp := ComObjActive("PowerPoint.Application")
+        if (pp.SlideShowWindows.Count > 0)
+            return
         pp.ActivePresentation.SlideShowSettings.ShowType := prev
     } catch {
+    }
+}
+
+; After Esc, PPT often returns to the slide where the show *started*.
+; Sync Normal view to the slide that was visible when we exited.
+PowerPoint_SyncNormalToSlide(idx) {
+    if (idx < 1)
+        return
+    try {
+        pp := ComObjActive("PowerPoint.Application")
+        if (pp.SlideShowWindows.Count > 0)
+            return
+        pp.ActiveWindow.View.GotoSlide(idx)
+    } catch {
+    }
+}
+
+PowerPoint_ExitFocusedSlideView(pp, &savedShowType) {
+    idx := PowerPoint_ShowViewSlideIndex(pp)
+    Send("{Escape}")
+    if (idx >= 1)
+        SetTimer(() => PowerPoint_SyncNormalToSlide(idx), -350)
+    if (savedShowType >= 0) {
+        prev := savedShowType
+        savedShowType := -1
+        SetTimer(() => PowerPoint_RestoreShowType(prev), -500)
     }
 }
 
 PowerPoint_ToggleFocusedSlideView() {
     static savedShowType := -1
 
-    ; Full-screen show chrome — Esc only (never COM Exit/ViewType).
+    ; Full-screen show chrome
     try {
         if (WinGetClass("A") = "screenClass") {
-            Send("{Escape}")
-            if (savedShowType >= 0) {
-                prev := savedShowType
-                savedShowType := -1
-                SetTimer(() => PowerPoint_RestoreShowType(prev), -500)
-            }
+            pp := 0
+            try pp := ComObjActive("PowerPoint.Application")
+            if (pp)
+                PowerPoint_ExitFocusedSlideView(pp, &savedShowType)
+            else
+                Send("{Escape}")
             return
         }
     } catch {
@@ -271,12 +311,7 @@ PowerPoint_ToggleFocusedSlideView() {
 
     try {
         if (PowerPoint_IsFocusedSlideView(pp)) {
-            Send("{Escape}")
-            if (savedShowType >= 0) {
-                prev := savedShowType
-                savedShowType := -1
-                SetTimer(() => PowerPoint_RestoreShowType(prev), -500)
-            }
+            PowerPoint_ExitFocusedSlideView(pp, &savedShowType)
             return
         }
 
@@ -284,7 +319,7 @@ PowerPoint_ToggleFocusedSlideView() {
         savedShowType := sss.ShowType
         sss.ShowType := 2              ; ppShowTypeWindow — stay in this frame
         try sss.ShowPresenterView := 0
-        ; Native From Current Slide — no Run(), no GotoSlide, no ViewType.
+        ; Explicit From Current (do not rely on physical Shift still being down).
         Send("+{F5}")
     } catch Error as e {
         savedShowType := -1
@@ -301,7 +336,11 @@ PowerPoint_ToggleFocusedSlideView() {
 +p:: PowerPoint_SaveAsPdf()
 
 ; --- Focused view (current slide ↔ Normal) ---
-+o:: PowerPoint_ToggleFocusedSlideView()
+; Wait for O release so the key cannot leak into the show and advance slides.
+$+o:: {
+    KeyWait("o")
+    PowerPoint_ToggleFocusedSlideView()
+}
 
 ; --- Align (relative to slide) ---
 +c:: PowerPoint_CenterOnSlide()          ; Center (H+V)
