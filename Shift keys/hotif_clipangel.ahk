@@ -58,6 +58,9 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 ; Shift + U : Unmark as favorite (Unmark) (Alt+W)
 +u:: Send "!w"
 
+; Shift + R : Remove favorite status from ALL favorited clips (confirm → favorites → Ctrl+A → Alt+W)
++r:: ClipAngel_UnfavoriteAllClips()
+
 ; Shift + E : Edit text (F4)
 +e:: Send "{F4}"
 

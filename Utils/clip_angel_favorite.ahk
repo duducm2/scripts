@@ -2107,3 +2107,89 @@ MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
                 BANNER_ACCENT_ERROR)
     }
 }
+
+; =============================================================================
+; Clip Angel: Remove favorite status from all currently favorited clips
+; =============================================================================
+; Confirm → favorites filter (Ctrl+2) → select all → unmark (Alt+W / Shift+U).
+ClipAngel_UnfavoriteAllClips() {
+    response := MsgBox(
+        "Remove favorite status from ALL currently favorited clips?`n`n"
+        . "Clips stay in history; only the favorite mark is cleared.",
+        "Clip Angel — unfavorite all",
+        "YesNo Icon! Default2"
+    )
+    if (response != "Yes")
+        return false
+
+    if !ClipAngel_TryAcquireAutomationLock()
+        return false
+
+    ok := false
+    try {
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd {
+            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        if !ClipAngel_EnsureWindowActive(hwnd, 800) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+
+        root := 0
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+
+        StandardLoadingBar_Show("⏳ Opening favorites...", BANNER_ACCENT_INTERMEDIATE, {
+            passive: false,
+            fontSize: 17
+        })
+        try {
+            if !ClipAngel_ApplyMarkFilterMode(false, hwnd, root) {
+                StandardLoadingBar_Hide(0)
+                ShowCenteredOverlay_Utils("❌ Could not open favorites filter.", 2000, BANNER_ACCENT_ERROR)
+                return false
+            }
+            if !root {
+                try root := UIA.ElementFromHandle(hwnd)
+                catch
+                    root := 0
+            }
+            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+            if dataGrid
+                ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+
+            StandardLoadingBar_Update("⏳ Unfavoriting all...", BANNER_ACCENT_INTERMEDIATE)
+            priorSendLevel := A_SendLevel
+            SendLevel 0
+            ClipAngel_ReleaseChordModifiersForSend()
+            ; Select all favorited rows, then native unmark (same as Shift+U → Alt+W).
+            SendInput "^a"
+            Sleep 80
+            SendInput "!w"
+            SendLevel priorSendLevel
+            ok := true
+        } finally {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+        }
+    } catch Error as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ShowCenteredOverlay_Utils("❌ Unfavorite all failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ok := false
+    } finally {
+        ClipAngel_ReleaseAutomationLock()
+    }
+
+    if ok
+        ShowCenteredOverlay_Utils("✅ Favorite marks cleared from selection.", 1500, BANNER_ACCENT_SUCCESS)
+    return ok
+}

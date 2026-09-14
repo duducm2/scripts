@@ -18,10 +18,10 @@ Dictation **[W]** uses the same deferred focus+paste path as `#!+L` so INI-mappe
 
 ### After window pick (auto-send banner)
 
-Immediately after you press a **slot key** in the picker (before focus/paste), an Interactive Input banner appears:
+Immediately after you press a **slot key** in the picker (before focus/paste), **Y** / **N** / **Esc** are armed so an immediate keypress is not lost during picker teardown. An Interactive Input banner then appears (skipped if you already chose during teardown):
 
 - `❓ Paste to window? (3s)`
-- **[Y]** — paste (`^v`) then **Enter**
+- **[Y]** — paste (`^v`) then **Enter** (safe to press in the same breath as the slot key)
 - **[N]** — paste only (no Enter); same outcome as waiting out the timeout
 - **[Esc]** — abort; no paste (distinct from picker **Esc**, which cancels the picker before a window is chosen)
 - ~3s timeout — paste only (no Enter)
@@ -113,7 +113,7 @@ Delete the relevant `[Mapping_N]` block via picker **[M]** (or edit the INI), th
 
 - Picker scan (before grid modal): **Loading Indication** — `StandardLoadingBar_Show` `⏳ Scanning visible windows...` during `Dictation_BuildMonitorGrid`, then `Hide(0)` before the picker or the no-windows overlay (`Dictation_ShowVisiblePasteSelector` in `dictation_visible_paste.ahk`).
 - Post-pick automation (after auto-send choice): **Loading Indication** — `Show` → `Update` → completion hold in `_FinishDeferredPaste` (`d2c_flow_manager.ahk`): `⏳ Activating window...`, `⏳ Focusing main field...` (when mapped), `⏳ Pasting...`, `⏳ Sending...` (when **Y**); then a **dynamic terminal hold** (progress bar filled, animation stopped) until it is safe to continue: `✅ Pasted — you can continue` / `✅ Sent — you can continue` / brief `✅ Pasted — save main field?` before the learn prompt / `❌` on failure. Mapped flows hold ~900 ms (paste) or ~1400 ms (send); unmapped holds ~500 ms then the learn **Interactive Input** banner.
-- Auto-send (post-pick): **Interactive Input** — `StandardLoadingBar_ShowWithKeys` with `promptKeys` `[Y] Send after paste  [N] Paste only  [Esc] Cancel`, `BANNER_ACCENT_INTERMEDIATE` (see `PasteWindow_ShowAutoSendOptionsAndWait` in `d2c_flow_manager.ahk`).
+- Auto-send (post-pick): **Interactive Input** — `PasteWindow_PreArmAutoSend` at slot pick, then `StandardLoadingBar_ShowWithKeys` with `promptKeys` `[Y] Send after paste  [N] Paste only  [Esc] Cancel`, `BANNER_ACCENT_INTERMEDIATE` (see `PasteWindow_ShowAutoSendOptionsAndWait` in `d2c_flow_manager.ahk`). Rapid **Y** after the slot key is armed during picker teardown.
 - Learn prompt: **Interactive Input** — `StandardLoadingBar_ShowWithKeys` with `promptKeys` `[Y] Yes  [N] No`, `BANNER_ACCENT_INTERMEDIATE`.
 - Save success: **Information Only** — `ShowCenteredOverlay_Utils` + `BANNER_ACCENT_SUCCESS`.
 

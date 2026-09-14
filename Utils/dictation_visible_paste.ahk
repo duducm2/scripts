@@ -985,7 +985,12 @@ Dictation_VisiblePasteHandleChar(char, *) {
             return
         }
         g_DictationVisiblePasteResult := hwnd
+        ; Close picker first (unbinds slot/Esc), then arm Y/N/Esc so rapid auto-send is not lost
+        ; during teardown → banner ShowWithKeys (see PasteWindow_PreArmAutoSend).
         Dictation_VisiblePasteClose()
+        try PasteWindow_PreArmAutoSend()
+        catch {
+        }
     } finally {
         Dictation_VisiblePasteReleaseCharActionLock()
     }

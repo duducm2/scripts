@@ -6,15 +6,95 @@
 ; =============================================================================
 
 ; After visible-window pick (#!+L / D2C [W]): Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
+; PreArm registers Y/N/Esc at picker commit so rapid Y is not lost during modal teardown / banner setup.
 global g_PasteWindowAutoSendChoice := ""
 global g_PasteWindowAutoSendActive := false
+global g_PasteWindowAutoSendPreArmed := false
+global g_PasteWindowAutoSendPreArmHotkeys := []
+
+PasteWindow_DisarmAutoSend() {
+    global g_PasteWindowAutoSendPreArmHotkeys, g_PasteWindowAutoSendPreArmed
+    for key in g_PasteWindowAutoSendPreArmHotkeys {
+        try Hotkey(key, "Off")
+        catch {
+        }
+    }
+    g_PasteWindowAutoSendPreArmHotkeys := []
+    g_PasteWindowAutoSendPreArmed := false
+}
+
+PasteWindow_PreArmKeyWrapper(cb, *) {
+    if (cb) {
+        try cb.Call()
+        catch {
+        }
+    }
+}
+
+PasteWindow_RegisterPreArmKey(key, cb) {
+    global g_PasteWindowAutoSendPreArmHotkeys
+    if (!cb)
+        return
+    keyToReg := key
+    knL := StrLower(Trim(key))
+    if (knL = "escape" || knL = "*escape")
+        keyToReg := "$*Escape"
+    else if (StrLen(key) = 1)
+        keyToReg := "$*" . key
+    fn := PasteWindow_PreArmKeyWrapper.Bind(cb)
+    try {
+        #InputLevel 10
+        Hotkey(keyToReg, fn, "On")
+        #InputLevel 0
+        g_PasteWindowAutoSendPreArmHotkeys.Push(keyToReg)
+    } catch {
+    }
+}
+
+; Level-detect held Y/N (not Esc) after arming so a key held across registration is not dropped.
+PasteWindow_LevelCheckAutoSend() {
+    global g_PasteWindowAutoSendActive
+    if (!g_PasteWindowAutoSendActive)
+        return
+    try {
+        if (GetKeyState("Y", "P")) {
+            PasteWindow_FinishAutoSendWait("send")
+            return
+        }
+        if (GetKeyState("N", "P")) {
+            PasteWindow_FinishAutoSendWait("paste")
+            return
+        }
+    } catch {
+    }
+}
+
+; Arm Y/N/Esc immediately after a visible-window slot pick (before banner ShowWithKeys).
+PasteWindow_PreArmAutoSend() {
+    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive, g_PasteWindowAutoSendPreArmed
+    PasteWindow_DisarmAutoSend()
+    g_PasteWindowAutoSendChoice := ""
+    g_PasteWindowAutoSendActive := true
+    g_PasteWindowAutoSendPreArmed := true
+    try HotIf()
+    catch {
+    }
+    PasteWindow_RegisterPreArmKey("Y", PasteWindow_OnAutoSendY)
+    PasteWindow_RegisterPreArmKey("y", PasteWindow_OnAutoSendY)
+    PasteWindow_RegisterPreArmKey("N", PasteWindow_OnAutoSendN)
+    PasteWindow_RegisterPreArmKey("n", PasteWindow_OnAutoSendN)
+    PasteWindow_RegisterPreArmKey("Escape", PasteWindow_OnAutoSendEsc)
+    PasteWindow_LevelCheckAutoSend()
+}
 
 PasteWindow_FinishAutoSendWait(choice) {
-    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive
+    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive, g_PasteWindowAutoSendPreArmed
     if (!g_PasteWindowAutoSendActive)
         return
     g_PasteWindowAutoSendChoice := choice
     g_PasteWindowAutoSendActive := false
+    if (g_PasteWindowAutoSendPreArmed)
+        PasteWindow_DisarmAutoSend()
 }
 
 PasteWindow_OnAutoSendY(*) {
@@ -34,10 +114,42 @@ PasteWindow_OnAutoSendTimeout(*) {
 }
 
 ; Show banner immediately; block until Y / N / Esc / timeout. Returns "send", "cancel", or "paste".
+; Honors PasteWindow_PreArmAutoSend: early choice skips the banner; otherwise hand off to ShowWithKeys.
 PasteWindow_ShowAutoSendOptionsAndWait() {
-    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive
-    g_PasteWindowAutoSendChoice := ""
-    g_PasteWindowAutoSendActive := true
+    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive, g_PasteWindowAutoSendPreArmed
+    ; PreArm already decided during picker teardown — do not reset or re-show.
+    if (!g_PasteWindowAutoSendActive && g_PasteWindowAutoSendChoice != "") {
+        PasteWindow_DisarmAutoSend()
+        return g_PasteWindowAutoSendChoice
+    }
+    if (g_PasteWindowAutoSendPreArmed && g_PasteWindowAutoSendActive) {
+        PasteWindow_LevelCheckAutoSend()
+        if (!g_PasteWindowAutoSendActive && g_PasteWindowAutoSendChoice != "") {
+            PasteWindow_DisarmAutoSend()
+            return g_PasteWindowAutoSendChoice
+        }
+        ; Handoff: drop pre-arm hooks so ShowWithKeys owns Y/N/Esc + timeout lifecycle.
+        PasteWindow_DisarmAutoSend()
+        ; If Y/N still held across disarm, accept now (ShowWithKeys treats entry-down as non-edge).
+        try {
+            if (GetKeyState("Y", "P")) {
+                g_PasteWindowAutoSendChoice := "send"
+                g_PasteWindowAutoSendActive := false
+                return "send"
+            }
+            if (GetKeyState("N", "P")) {
+                g_PasteWindowAutoSendChoice := "paste"
+                g_PasteWindowAutoSendActive := false
+                return "paste"
+            }
+        } catch {
+        }
+        g_PasteWindowAutoSendChoice := ""
+        g_PasteWindowAutoSendActive := true
+    } else {
+        g_PasteWindowAutoSendChoice := ""
+        g_PasteWindowAutoSendActive := true
+    }
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     keyCallbacks := Map(

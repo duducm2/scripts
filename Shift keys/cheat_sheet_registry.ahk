@@ -644,6 +644,7 @@ cheatSheets["ClipAngel.exe"] := "
     🧹 [X]E[X]it filters (Clear)
     ⭐ [F]Mark as [F]avorite
     ⭐ [U][U]nmark as favorite
+    ⭐ [R][R]emove all favorites (confirm → filter → select all → unmark)
     ✏️ [E][E]dit Text (F4)
     💾 [S][S]ave as file
     🔗 [M][M]erge clips
