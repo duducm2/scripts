@@ -21,17 +21,6 @@ global g_PalacePickerPlaceY := 0
 global g_PalacePickerPlaceW := 0
 global g_PalacePickerPlaceH := 0
 
-; #region agent log
-Palace_DebugLog(hypothesisId, location, message, dataJson := "{}") {
-    logPath := A_ScriptDir "\debug-f610c4.log"
-    line := "{`"sessionId`":`"f610c4`",`"hypothesisId`":`"" . hypothesisId . "`",`"location`":`"" . location
-        . "`",`"message`":`"" . message . "`",`"data`":" . dataJson . ",`"timestamp`":" . A_TickCount . "}`n"
-    try FileAppend(line, logPath, "UTF-8")
-    catch {
-    }
-}
-; #endregion
-
 Palace_ServerPort() {
     return 8767
 }
@@ -490,19 +479,6 @@ Palace_OpenWebInChrome(url) {
     }
     global g_PalacePickerAnchorHwnd
     g_PalacePickerAnchorHwnd := anchorHwnd
-    ; #region agent log
-    _aTitle := ""
-    _ax := _ay := _aw := _ah := 0
-    try _aTitle := WinGetTitle("ahk_id " anchorHwnd)
-    catch {
-    }
-    try WinGetPos(&_ax, &_ay, &_aw, &_ah, "ahk_id " anchorHwnd)
-    catch {
-    }
-    Palace_DebugLog("A", "Palace_OpenWebInChrome:anchor", "anchor before Run",
-        "{`"hwnd`":" . Integer(anchorHwnd) . ",`"title`":`"" . StrReplace(_aTitle, "`"", "'")
-        . "`",`"x`":" . _ax . ",`"y`":" . _ay . ",`"w`":" . _aw . ",`"h`":" . _ah . "}")
-    ; #endregion
     try Run('chrome.exe --new-window "' . url . '"')
     catch {
         try Run(url)
@@ -547,30 +523,7 @@ Palace_OpenWebInChrome(url) {
                 break
         }
     }
-    ; #region agent log
-    if (!newHwnd) {
-        Palace_DebugLog("C", "Palace_OpenWebInChrome:miss", "no chrome hwnd after wait", "{}")
-    }
-    ; #endregion
     if (newHwnd) {
-        ; #region agent log
-        _nx := _ny := _nw := _nh := 0
-        _nTitle := ""
-        try _nTitle := WinGetTitle("ahk_id " newHwnd)
-        catch {
-        }
-        try WinGetPos(&_nx, &_ny, &_nw, &_nh, "ahk_id " newHwnd)
-        catch {
-        }
-        _propBefore := 0
-        try _propBefore := DllCall("GetPropW", "ptr", newHwnd, "wstr", "PalacePickerTempExclude")
-        catch {
-        }
-        Palace_DebugLog("C", "Palace_OpenWebInChrome:found", "chrome hwnd before place",
-            "{`"hwnd`":" . Integer(newHwnd) . ",`"title`":`"" . StrReplace(_nTitle, "`"", "'")
-            . "`",`"x`":" . _nx . ",`"y`":" . _ny . ",`"w`":" . _nw . ",`"h`":" . _nh
-            . ",`"propBefore`":" . Integer(_propBefore) . "}")
-        ; #endregion
         ; Mark AutoSlot exclude BEFORE activate/place to beat SHOW race.
         Palace_PickerMarkAutoSlotExclude(newHwnd)
         Palace_WebHwndCacheSet(newHwnd)
@@ -662,7 +615,6 @@ Palace_PlacePickerPreview(hwnd, anchorHwnd := 0) {
     if (!hwnd)
         return false
     workLeft := workTop := workRight := workBottom := 0
-    source := "none"
     if (anchorHwnd) {
         try {
             wa := GetWorkAreaForWindow_StandardBar(anchorHwnd)
@@ -671,7 +623,6 @@ Palace_PlacePickerPreview(hwnd, anchorHwnd := 0) {
                 workTop := wa.top
                 workRight := wa.right
                 workBottom := wa.bottom
-                source := "anchor"
             }
         } catch {
         }
@@ -679,36 +630,15 @@ Palace_PlacePickerPreview(hwnd, anchorHwnd := 0) {
     if (workRight <= workLeft || workBottom <= workTop) {
         try {
             GetActiveMonitorWorkArea_StandardBar(&workLeft, &workTop, &workRight, &workBottom)
-            source := "active_fallback"
         } catch {
             try {
                 MonitorGetWorkArea(1, &workLeft, &workTop, &workRight, &workBottom)
-                source := "monitor1_fallback"
             } catch {
                 return false
             }
         }
     }
-    ; #region agent log
-    Palace_DebugLog("A", "Palace_PlacePickerPreview", "resolved work area",
-        "{`"source`":`"" . source . "`",`"anchor`":" . Integer(anchorHwnd)
-        . ",`"l`":" . workLeft . ",`"t`":" . workTop . ",`"r`":" . workRight . ",`"b`":" . workBottom . "}")
-    ; #endregion
-    ok := Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
-    ; #region agent log
-    _px := _py := _pw := _ph := 0
-    try WinGetPos(&_px, &_py, &_pw, &_ph, "ahk_id " hwnd)
-    catch {
-    }
-    _prop := 0
-    try _prop := DllCall("GetPropW", "ptr", hwnd, "wstr", "PalacePickerTempExclude")
-    catch {
-    }
-    Palace_DebugLog("D", "Palace_PlacePickerPreview:after", "pos after place",
-        "{`"ok`":" . (ok ? "true" : "false") . ",`"x`":" . _px . ",`"y`":" . _py
-        . ",`"w`":" . _pw . ",`"h`":" . _ph . ",`"prop`":" . Integer(_prop) . "}")
-    ; #endregion
-    return ok
+    return Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
 }
 
 Palace_StopPickerWatch() {
