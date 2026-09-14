@@ -7,10 +7,10 @@ global g_PalaceDashboardHwnd := 0
 global g_PalaceServerPid := 0
 global PALACE_LEGACY_DASHBOARD := false
 
-; Picker chrome (mirrors Desktop Preview: 50% size / opacity 220, AutoSlot-excluded).
+; Picker chrome (80% work-area coverage / opacity ~246, AutoSlot-excluded; hide until placed).
 global PALACE_PICKER_AUTOSLOT_PROP := "PalacePickerTempExclude"
-global PALACE_PICKER_PREVIEW_SCALE := 0.5
-global PALACE_PICKER_PREVIEW_OPACITY := 220
+global PALACE_PICKER_PREVIEW_SCALE := 0.8
+global PALACE_PICKER_PREVIEW_OPACITY := 246
 global PALACE_PICKER_TITLE_NEEDLE := "Select a Study and Quick Recall"
 global g_PalacePickerWatchHwnd := 0
 global g_PalacePickerWatchTimer := ""
@@ -20,6 +20,71 @@ global g_PalacePickerPlaceX := 0
 global g_PalacePickerPlaceY := 0
 global g_PalacePickerPlaceW := 0
 global g_PalacePickerPlaceH := 0
+
+; #region agent log
+Palace_DebugLog(hypothesisId, location, message, dataJson := "{}") {
+    logPath := A_ScriptDir "\debug-f610c4.log"
+    line := "{`"sessionId`":`"f610c4`",`"runId`":`"post-fix`",`"hypothesisId`":`"" . hypothesisId .
+        "`",`"location`":`""
+        . location . "`",`"message`":`"" . message . "`",`"data`":" . dataJson . ",`"timestamp`":" . A_TickCount .
+        "}`n"
+    try FileAppend(line, logPath, "UTF-8")
+    catch {
+    }
+}
+; #endregion
+
+Palace_AutoSlotSuppressPath() {
+    return A_ScriptDir "\assets\data\palace_autoslot_suppress.ini"
+}
+
+; Call BEFORE Run chrome so AutoSlot debounce cannot Place the new window.
+Palace_BeginAutoSlotSuppress(durationMs := 12000) {
+    path := Palace_AutoSlotSuppressPath()
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    suppressUntilTick := DllCall("GetTickCount", "UInt") + durationMs
+    try {
+        IniWrite(suppressUntilTick, path, "Suppress", "Until")
+        IniWrite(1, path, "Suppress", "Active")
+    } catch {
+    }
+}
+
+Palace_EndAutoSlotSuppress() {
+    path := Palace_AutoSlotSuppressPath()
+    try {
+        IniWrite(0, path, "Suppress", "Until")
+        IniWrite(0, path, "Suppress", "Active")
+    } catch {
+    }
+}
+
+Palace_AutoSlotSuppressActive() {
+    path := Palace_AutoSlotSuppressPath()
+    try {
+        active := Integer(IniRead(path, "Suppress", "Active", 0))
+        suppressUntilTick := Integer(IniRead(path, "Suppress", "Until", 0))
+    } catch {
+        return false
+    }
+    if (!active || suppressUntilTick < 1)
+        return false
+    return DllCall("GetTickCount", "UInt") < suppressUntilTick
+}
+
+; Untitled / boot titles AutoSlot sees before picker sentinel is set.
+Palace_IsChromeSuppressTitle(title) {
+    t := Trim(title)
+    if (t = "")
+        return true
+    if (Palace_IsChromeWindowTitle(t))
+        return true
+    if (InStr(t, "Sem título") || InStr(t, "Untitled"))
+        return true
+    return false
+}
 
 Palace_ServerPort() {
     return 8767
@@ -64,9 +129,50 @@ Palace_LaunchApp() {
     catch {
     }
     ok := Palace_OpenWebInChrome(url)
-    try StandardLoadingBar_Hide(300)
+    ; #region agent log
+    _fgAfterOpen := 0
+    try _fgAfterOpen := DllCall("GetForegroundWindow", "ptr")
     catch {
     }
+    Palace_DebugLog("D", "Palace_LaunchApp:afterOpen", "fg after OpenWeb before Hide bar",
+        "{`"ok`":" . (ok ? "true" : "false") . ",`"fg`":" . Integer(_fgAfterOpen) . "}")
+    ; #endregion
+    ; Hide immediately so the bar cannot keep intercepting keys after picker reveal.
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    hwndFinal := Palace_WebHwndCacheGet()
+    if (hwndFinal) {
+        Palace_ForceActivatePicker(hwndFinal)
+        Palace_FocusPickerDocument(hwndFinal)
+        Palace_ForceActivatePicker(hwndFinal)
+        global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
+        if (g_PalacePickerPlaceW > 0 && g_PalacePickerPlaceH > 0)
+            Palace_PickerForceMoveHwnd(hwndFinal, g_PalacePickerPlaceX, g_PalacePickerPlaceY,
+                g_PalacePickerPlaceW, g_PalacePickerPlaceH)
+        ; Absolute last: activate again so nothing after place keeps foreign FG.
+        Palace_ForceActivatePicker(hwndFinal)
+    }
+    ; #region agent log
+    _fgAfterHide := 0
+    try _fgAfterHide := DllCall("GetForegroundWindow", "ptr")
+    catch {
+    }
+    _fx := _fy := _fw := _fh := -1
+    if (hwndFinal) {
+        try WinGetPos(&_fx, &_fy, &_fw, &_fh, "ahk_id " hwndFinal)
+        catch {
+            _fx := -1
+            _fy := -1
+            _fw := -1
+            _fh := -1
+        }
+    }
+    Palace_DebugLog("D", "Palace_LaunchApp:afterHideBar", "fg after Hide+ForceActivate",
+        "{`"fg`":" . Integer(_fgAfterHide) . ",`"hwnd`":" . Integer(hwndFinal)
+        . ",`"fgMatch`":" . (_fgAfterHide = hwndFinal ? "true" : "false")
+        . ",`"x`":" . _fx . ",`"y`":" . _fy . ",`"w`":" . _fw . ",`"h`":" . _fh . "}")
+    ; #endregion
     if (!ok)
         Palace_Notify("Chrome failed to open Memory Palace", 2500, BANNER_ACCENT_ERROR)
 }
@@ -479,10 +585,17 @@ Palace_OpenWebInChrome(url) {
     }
     global g_PalacePickerAnchorHwnd
     g_PalacePickerAnchorHwnd := anchorHwnd
+    ; #region agent log
+    Palace_DebugLog("A", "Palace_OpenWebInChrome:beforeRun", "about to Run chrome",
+        "{`"anchor`":" . Integer(anchorHwnd) . ",`"tick`":" . A_TickCount . "}")
+    ; #endregion
+    ; Suppress AutoSlot BEFORE Run — SHOW/Schedule races SetProp by hundreds of ms.
+    Palace_BeginAutoSlotSuppress(12000)
     try Run('chrome.exe --new-window "' . url . '"')
     catch {
         try Run(url)
         catch {
+            Palace_EndAutoSlotSuppress()
             return false
         }
     }
@@ -524,10 +637,24 @@ Palace_OpenWebInChrome(url) {
         }
     }
     if (newHwnd) {
-        ; Mark AutoSlot exclude BEFORE activate/place to beat SHOW race.
+        ; Mark AutoSlot exclude BEFORE place to beat SHOW race; stay hidden until final geometry.
         Palace_PickerMarkAutoSlotExclude(newHwnd)
         Palace_WebHwndCacheSet(newHwnd)
-        try WinActivate("ahk_id " newHwnd)
+        ; #region agent log
+        _prop := 0
+        try _prop := DllCall("GetPropW", "ptr", newHwnd, "wstr", "PalacePickerTempExclude")
+        catch {
+        }
+        _px := _py := _pw := _ph := 0
+        try WinGetPos(&_px, &_py, &_pw, &_ph, "ahk_id " newHwnd)
+        catch {
+        }
+        Palace_DebugLog("A", "Palace_OpenWebInChrome:hwnd", "hwnd found prop set before hide",
+            "{`"hwnd`":" . Integer(newHwnd) . ",`"prop`":" . Integer(_prop) . ",`"x`":" . _px
+            . ",`"y`":" . _py . ",`"w`":" . _pw . ",`"h`":" . _ph . ",`"tick`":" . A_TickCount . "}")
+        ; #endregion
+        ; Invisible via Transparent(0) only — WinHide drops Chrome document focus (no web key events).
+        try WinSetTransparent(0, "ahk_id " newHwnd)
         catch {
         }
         Palace_BeginPickerPreviewSession(newHwnd, anchorHwnd)
@@ -573,8 +700,144 @@ Palace_PickerForceMoveHwnd(hwnd, x, y, w, h) {
     }
 }
 
+; Reveal after hide-until-place. previewOpacity:=true applies picker translucency; false clears invisibility.
+Palace_RevealPickerChrome(hwnd, previewOpacity := true, activate := true) {
+    global PALACE_PICKER_PREVIEW_OPACITY
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    if (previewOpacity) {
+        try WinSetTransparent(PALACE_PICKER_PREVIEW_OPACITY, "ahk_id " hwnd)
+        catch {
+        }
+    } else {
+        try WinSetTransparent("Off", "ahk_id " hwnd)
+        catch {
+        }
+    }
+    if (activate) {
+        Palace_ForceActivatePicker(hwnd)
+        Palace_FocusPickerDocument(hwnd)
+        Palace_ForceActivatePicker(hwnd)
+    }
+    ; Re-assert preview geometry after activate (activate must not leave full-screen).
+    global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
+    if (g_PalacePickerPlaceW > 0 && g_PalacePickerPlaceH > 0)
+        Palace_PickerForceMoveHwnd(hwnd, g_PalacePickerPlaceX, g_PalacePickerPlaceY,
+            g_PalacePickerPlaceW, g_PalacePickerPlaceH)
+    ; #region agent log
+    _fg := 0
+    try _fg := DllCall("GetForegroundWindow", "ptr")
+    catch {
+    }
+    _vis := DllCall("IsWindowVisible", "ptr", hwnd)
+    _rx := _ry := _rw := _rh := -1
+    try WinGetPos(&_rx, &_ry, &_rw, &_rh, "ahk_id " hwnd)
+    catch {
+        _rx := -1
+        _ry := -1
+        _rw := -1
+        _rh := -1
+    }
+    Palace_DebugLog("C", "Palace_RevealPickerChrome", "after show/activate",
+        "{`"hwnd`":" . Integer(hwnd) . ",`"fg`":" . Integer(_fg) . ",`"fgMatch`":"
+        . (_fg = hwnd ? "true" : "false") . ",`"visible`":" . Integer(_vis)
+        . ",`"activate`":" . (activate ? "true" : "false") . ",`"opacityMode`":"
+        . (previewOpacity ? "preview" : "off") . ",`"x`":" . _rx . ",`"y`":" . _ry
+        . ",`"w`":" . _rw . ",`"h`":" . _rh . ",`"targetW`":" . g_PalacePickerPlaceW
+        . ",`"targetH`":" . g_PalacePickerPlaceH . "}")
+    ; #endregion
+}
+
+; Foreground lock–resistant activate (same pattern as Desktop preview).
+; Do not WinRestore here — restore already ran during place; Restore after size
+; undoes 80% geometry (post-fix log: 3840x2160 vs target 3072x1728).
+Palace_ForceActivatePicker(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    try WinActivate("ahk_id " hwnd)
+    catch {
+    }
+    try {
+        fg := DllCall("GetForegroundWindow", "ptr")
+        if (fg != hwnd) {
+            curTid := DllCall("GetCurrentThreadId", "UInt")
+            fgTid := DllCall("GetWindowThreadProcessId", "ptr", fg, "ptr", 0, "UInt")
+            tgtTid := DllCall("GetWindowThreadProcessId", "ptr", hwnd, "ptr", 0, "UInt")
+            if (fgTid && tgtTid && fgTid != curTid)
+                DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 1)
+            if (tgtTid && tgtTid != curTid)
+                DllCall("AttachThreadInput", "UInt", curTid, "UInt", tgtTid, "Int", 1)
+            DllCall("SetForegroundWindow", "ptr", hwnd)
+            DllCall("BringWindowToTop", "ptr", hwnd)
+            if (fgTid && tgtTid && fgTid != curTid)
+                DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 0)
+            if (tgtTid && tgtTid != curTid)
+                DllCall("AttachThreadInput", "UInt", curTid, "UInt", tgtTid, "Int", 0)
+        }
+    } catch {
+    }
+    try WinWaitActive("ahk_id " hwnd, , 0.4)
+    catch {
+    }
+    _fg2 := 0
+    try _fg2 := DllCall("GetForegroundWindow", "ptr")
+    catch {
+    }
+    ; #region agent log
+    Palace_DebugLog("C", "Palace_ForceActivatePicker", "force activate result",
+        "{`"hwnd`":" . Integer(hwnd) . ",`"fg`":" . Integer(_fg2) . ",`"fgMatch`":"
+        . (_fg2 = hwnd ? "true" : "false") . "}")
+    ; #endregion
+    return (_fg2 = hwnd)
+}
+
+; WinHide/Show leaves Chrome FG without document focus. Do NOT Click — post-fix
+; logs showed Click moved FG back to the anchor hwnd (fgMatch false).
+Palace_FocusPickerDocument(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    focused := ""
+    try {
+        for ctrl in WinGetControls("ahk_id " hwnd) {
+            if (InStr(ctrl, "Chrome_RenderWidgetHostHWND") = 1
+            || InStr(ctrl, "Intermediate D3D Window") = 1) {
+                try {
+                    ControlFocus(ctrl, "ahk_id " hwnd)
+                    focused := ctrl
+                    break
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    if (focused = "") {
+        try {
+            ControlFocus("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+            focused := "Chrome_RenderWidgetHostHWND1"
+        } catch {
+        }
+    }
+    ; #region agent log
+    _fg := 0
+    try _fg := DllCall("GetForegroundWindow", "ptr")
+    catch {
+    }
+    Palace_DebugLog("F", "Palace_FocusPickerDocument", "ControlFocus render widget",
+        "{`"hwnd`":" . Integer(hwnd) . ",`"ctrl`":`"" . focused . "`",`"fg`":" . Integer(_fg)
+        . ",`"fgMatch`":" . (_fg = hwnd ? "true" : "false") . "}")
+    ; #endregion
+    return (focused != "")
+}
+
 Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom) {
-    global PALACE_PICKER_PREVIEW_SCALE, PALACE_PICKER_PREVIEW_OPACITY
+    global PALACE_PICKER_PREVIEW_SCALE
     global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return false
@@ -594,9 +857,16 @@ Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBott
     }
     if (!Palace_PickerForceMoveHwnd(hwnd, x, y, w, h))
         return false
-    rx := ry := rw := rh := -1
+    rx := -1
+    ry := -1
+    rw := -1
+    rh := -1
     try WinGetPos(&rx, &ry, &rw, &rh, "ahk_id " hwnd)
     catch {
+        rx := -1
+        ry := -1
+        rw := -1
+        rh := -1
     }
     if (rw > 0 && rh > 0 && (Abs(rw - w) > 40 || Abs(rh - h) > 40 || Abs(rx - x) > 40 || Abs(ry - y) > 40))
         Palace_PickerForceMoveHwnd(hwnd, x, y, w, h)
@@ -604,10 +874,17 @@ Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBott
     g_PalacePickerPlaceY := y
     g_PalacePickerPlaceW := w
     g_PalacePickerPlaceH := h
-    try WinSetTransparent(PALACE_PICKER_PREVIEW_OPACITY, "ahk_id " hwnd)
+    Palace_PickerMarkAutoSlotExclude(hwnd)
+    Palace_RevealPickerChrome(hwnd, true, true)
+    ; #region agent log
+    _ax := _ay := _aw := _ah := 0
+    try WinGetPos(&_ax, &_ay, &_aw, &_ah, "ahk_id " hwnd)
     catch {
     }
-    Palace_PickerMarkAutoSlotExclude(hwnd)
+    Palace_DebugLog("B", "Palace_PlacePickerPreviewOnWorkArea:done", "final place before return",
+        "{`"hwnd`":" . Integer(hwnd) . ",`"x`":" . _ax . ",`"y`":" . _ay . ",`"w`":" . _aw . ",`"h`":" . _ah
+        . ",`"targetW`":" . w . ",`"targetH`":" . h . "}")
+    ; #endregion
     return true
 }
 
@@ -688,9 +965,16 @@ Palace_PickerWatchTick(*) {
         catch {
         }
         if (g_PalacePickerPlaceW > 0 && g_PalacePickerPlaceH > 0) {
-            rx := ry := rw := rh := -1
+            rx := -1
+            ry := -1
+            rw := -1
+            rh := -1
             try WinGetPos(&rx, &ry, &rw, &rh, "ahk_id " hwnd)
             catch {
+                rx := -1
+                ry := -1
+                rw := -1
+                rh := -1
             }
             if (rw > 0 && (Abs(rw - g_PalacePickerPlaceW) > 40 || Abs(rh - g_PalacePickerPlaceH) > 40
             || Abs(rx - g_PalacePickerPlaceX) > 40 || Abs(ry - g_PalacePickerPlaceY) > 40)) {
@@ -713,7 +997,10 @@ Palace_BeginPickerPreviewSession(hwnd, anchorHwnd := 0) {
         return
     Palace_StopPickerWatch()
     g_PalacePickerSawTitle := false
-    Palace_PlacePickerPreview(hwnd, anchorHwnd)
+    if (!Palace_PlacePickerPreview(hwnd, anchorHwnd)) {
+        ; Fail-safe: never leave Chrome stuck hidden/transparent-0.
+        Palace_RevealPickerChrome(hwnd, false, true)
+    }
     g_PalacePickerWatchHwnd := hwnd
     g_PalacePickerWatchTimer := Palace_PickerWatchTick
     SetTimer(g_PalacePickerWatchTimer, 200)
