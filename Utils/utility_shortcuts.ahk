@@ -210,7 +210,14 @@ GlobalAICompanionHwndAndLabel(&hwnd, &label) {
 }
 
 ; Global Fast / Deep — same as in-app Shift+Q / Shift+M via AiCompanionModels_SelectRole.
+; Captures the focused window first and reactivates it after the model switch
+; (Macros menu restores the pre-selector window before calling us; #!q/#!m use the live foreground).
 GlobalAICompanionSelectRole(role) {
+    prevHwnd := 0
+    try prevHwnd := WinGetID("A")
+    catch {
+        prevHwnd := 0
+    }
     hwnd := 0
     label := "Gemini"
     GlobalAICompanionHwndAndLabel(&hwnd, &label)
@@ -218,7 +225,9 @@ GlobalAICompanionSelectRole(role) {
         ShowCenteredOverlay_Utils("❌ " . label . " is not open.", 1800, BANNER_ACCENT_ERROR)
         return false
     }
-    return AiCompanionModels_SelectRole(GlobalAICompanionModelsId(), role)
+    ok := AiCompanionModels_SelectRole(GlobalAICompanionModelsId(), role)
+    Handy_RestorePrevWindow(prevHwnd, hwnd)
+    return ok
 }
 
 MacroAICompanionQuickModel(*) {
