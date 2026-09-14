@@ -1639,24 +1639,6 @@
         setTimeout(() => ensureStudyModalKeyboardFocus(true), 600);
       }
 
-      function agentDebugLog(hypothesisId, location, message, data) {
-        // #region agent log
-        fetch("/api/debug-log", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: "f610c4",
-            runId: "post-fix",
-            hypothesisId,
-            location,
-            message,
-            data: data || {},
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
-      }
-
       function ensureStudyModalKeyboardFocus(force = false) {
         if (!studyModalIsOpen()) return;
         const modal = document.getElementById("studyModal");
@@ -1668,25 +1650,12 @@
           modal.contains(ae) &&
           ae.tagName === "BUTTON"
         );
-        // Transparent-0 / early focus can leave a stale DOM focus without keyboard.
+        // Early focus while translucent can leave a stale DOM focus without keyboard.
         if (!force && aeInModal && pageHasFocus) return;
         const firstQr = document.querySelector("#quickRecallList .qr-line");
         const firstStudy = document.querySelector("#studyModalList button");
         if (firstQr) selectQuickRecallLine(firstQr);
         else if (firstStudy) firstStudy.focus({ preventScroll: true });
-        agentDebugLog(
-          "F",
-          "index.html:ensureStudyModalKeyboardFocus",
-          "restored modal keyboard focus",
-          {
-            force: !!force,
-            pageHasFocus,
-            aeInModal,
-            activeTag: document.activeElement?.tagName || "",
-            activeClass: String(document.activeElement?.className || ""),
-            hadQr: !!firstQr,
-          },
-        );
       }
 
       window.addEventListener("focus", () => {
@@ -4350,20 +4319,6 @@
       }
 
       document.addEventListener("keydown", (e) => {
-        if (
-          studyModalIsOpen() &&
-          (e.key === "Escape" ||
-            e.key === "ArrowDown" ||
-            e.key === "ArrowUp" ||
-            e.key === "Enter")
-        ) {
-          agentDebugLog("H", "index.html:keydown", "modal key received", {
-            key: e.key,
-            pageHasFocus: document.hasFocus(),
-            activeTag: document.activeElement?.tagName || "",
-            activeClass: String(document.activeElement?.className || ""),
-          });
-        }
         if (
           e.altKey &&
           !e.ctrlKey &&

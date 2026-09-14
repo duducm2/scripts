@@ -913,19 +913,6 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 self._json(200, {"ok": True, "message": "cache invalidated"})
                 return
 
-            if path == "/api/debug-log":
-                # Agent debug NDJSON → scripts/debug-f610c4.log (browser ingest was silent).
-                log_path = MNEMONICS_ROOT.parent / "debug-f610c4.log"
-                try:
-                    line = json.dumps(payload, ensure_ascii=False) + "\n"
-                    with log_path.open("a", encoding="utf-8") as fh:
-                        fh.write(line)
-                except OSError:
-                    self._json(500, {"ok": False, "error": "log write failed"})
-                    return
-                self._json(200, {"ok": True})
-                return
-
             if path == "/api/quick-image":
                 desk = payload.get("desktop")
                 desktop = Path(desk) if desk else None

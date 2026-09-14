@@ -1630,40 +1630,6 @@ AutoSlot_Schedule(hwnd) {
         AutoSlot_PerfLog(0, "Schedule_skip", "invalid_hwnd")
         return
     }
-    ; #region agent log
-    try {
-        _ex := ""
-        try _ex := StrLower(WinGetProcessName("ahk_id " hwnd))
-        catch {
-        }
-        if (_ex = "chrome.exe") {
-            _t := ""
-            try _t := WinGetTitle("ahk_id " hwnd)
-            catch {
-            }
-            _prop := 0
-            try _prop := DllCall("GetPropW", "ptr", hwnd, "wstr", "PalacePickerTempExclude")
-            catch {
-            }
-            _excl := AutoSlot_IsExcludedExeOrTitle(hwnd) ? 1 : 0
-            _elig := AutoSlot_IsEligibleNewWindow(hwnd) ? 1 : 0
-            _px := _py := _pw := _ph := 0
-            try WinGetPos(&_px, &_py, &_pw, &_ph, "ahk_id " hwnd)
-            catch {
-            }
-            logPath := A_ScriptDir "\debug-f610c4.log"
-            line :=
-                "{`"sessionId`":`"f610c4`",`"runId`":`"post-fix`",`"hypothesisId`":`"A`",`"location`":`"AutoSlot_Schedule`",`"message`":`"chrome schedule`",`"data`":{`"hwnd`":"
-                . Integer(hwnd) . ",`"title`":`"" . StrReplace(_t, "`"", "'") . "`",`"prop`":" . Integer(_prop)
-                . ",`"excluded`":" . _excl . ",`"eligible`":" . _elig . ",`"x`":" . _px . ",`"y`":" . _py
-                . ",`"w`":" . _pw . ",`"h`":" . _ph . "},`"timestamp`":" . A_TickCount . "}`n"
-            try FileAppend(line, logPath, "UTF-8")
-            catch {
-            }
-        }
-    } catch {
-    }
-    ; #endregion
     if (MonitorGetCount() <= 1) {
         AutoSlot_PerfLog(hwnd, "Schedule_skip", "single_monitor")
         return
@@ -1891,38 +1857,6 @@ AutoSlot_ProcessPending(hwnd) {
     }
     AutoSlot_ClearEligRetry(hwnd)
     AutoSlot_PerfLog(hwnd, "ProcessPending_elig_ok")
-    ; #region agent log
-    try {
-        _ex2 := ""
-        try _ex2 := StrLower(WinGetProcessName("ahk_id " hwnd))
-        catch {
-        }
-        if (_ex2 = "chrome.exe") {
-            _t2 := ""
-            try _t2 := WinGetTitle("ahk_id " hwnd)
-            catch {
-            }
-            _prop2 := 0
-            try _prop2 := DllCall("GetPropW", "ptr", hwnd, "wstr", "PalacePickerTempExclude")
-            catch {
-            }
-            _px2 := _py2 := _pw2 := _ph2 := 0
-            try WinGetPos(&_px2, &_py2, &_pw2, &_ph2, "ahk_id " hwnd)
-            catch {
-            }
-            logPath := A_ScriptDir "\debug-f610c4.log"
-            line :=
-                "{`"sessionId`":`"f610c4`",`"runId`":`"post-fix`",`"hypothesisId`":`"B`",`"location`":`"AutoSlot_ProcessPending`",`"message`":`"chrome place will run`",`"data`":{`"hwnd`":"
-                . Integer(hwnd) . ",`"title`":`"" . StrReplace(_t2, "`"", "'") . "`",`"prop`":" . Integer(_prop2)
-                . ",`"x`":" . _px2 . ",`"y`":" . _py2 . ",`"w`":" . _pw2 . ",`"h`":" . _ph2
-                . "},`"timestamp`":" . A_TickCount . "}`n"
-            try FileAppend(line, logPath, "UTF-8")
-            catch {
-            }
-        }
-    } catch {
-    }
-    ; #endregion
     g_AutoSlotRecent[hwnd] := A_TickCount
     AutoSlot_PruneRecent()
     AutoSlot_BeginPlaceCritical()
