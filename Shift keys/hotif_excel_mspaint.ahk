@@ -696,3 +696,66 @@ Excel_OpenActiveCellHyperlinkInChrome() {
 }
 
 +l:: Excel_OpenActiveCellHyperlinkInChrome()
+
+; Shift + F : Fill series downward (fill-handle equivalent) to sheet UsedRange last row.
+; Selection = seed pattern (1 cell, or 2+ for step); COM AutoFill xlFillDefault — no mouse drag.
+Excel_FillSeriesToUsedRange() {
+    static XL_FILL_DEFAULT := 0
+    try {
+        xl := ComObjActive("Excel.Application")
+        ws := xl.ActiveSheet
+        sel := xl.Selection
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Excel COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    try {
+        src := sel
+        try {
+            if (sel.Areas.Count > 1)
+                src := sel.Areas(1)
+        } catch {
+        }
+        startRow := src.Row
+        startCol := src.Column
+        srcRows := src.Rows.Count
+        srcCols := src.Columns.Count
+        srcEndRow := startRow + srcRows - 1
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Select cells to fill from", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    try {
+        ur := ws.UsedRange
+        lastRow := ur.Row + ur.Rows.Count - 1
+    } catch {
+        ShowCenteredOverlay_Utils("❌ No used range on sheet", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    if (lastRow <= srcEndRow) {
+        ShowCenteredOverlay_Utils("❌ Nothing to fill — already at last used row", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    prevScreen := true
+    try prevScreen := xl.ScreenUpdating
+    try {
+        dest := ws.Range(ws.Cells(startRow, startCol), ws.Cells(lastRow, startCol + srcCols - 1))
+        xl.ScreenUpdating := false
+        src.AutoFill(dest, XL_FILL_DEFAULT)
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ Fill failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+        return false
+    } finally {
+        try xl.ScreenUpdating := prevScreen
+    }
+
+    filled := lastRow - srcEndRow
+    ShowCenteredOverlay_Utils("🔢 Filled series +" . filled . " row(s)", 1600, BANNER_ACCENT_SUCCESS)
+    return true
+}
+
++f:: Excel_FillSeriesToUsedRange()

@@ -888,6 +888,7 @@ cheatSheets["EXCEL.EXE"] := "
     📅 [P]Type [P]revious day date
     📏 [N][N]arrow oversized columns (autofit, cap >15→5, zoom row 1)
     🌐 [L]Open cell [L]ink in new Chrome
+    🔢 [F][F]ill series down to last used row
 )"
 
 ; --- PowerPoint --------------------------------------------------------
