@@ -1,4 +1,4 @@
-year_month,category_id,planned_amount,spent_amount
+﻿year_month,category_id,planned_amount,spent_amount
 2026-01,CAT_MERCADO,"3000,00","0,00"
 2026-01,CAT_ALIMENTA,"300,00","0,00"
 2026-01,CAT_BELEZA,"150,00","0,00"
@@ -82,7 +82,7 @@ year_month,category_id,planned_amount,spent_amount
 2026-09,CAT_ALIMENTA,"250,00","87,15"
 2026-09,CAT_BELEZA,"150,00","60,00"
 2026-09,CAT_LAZER,"1500,00","1327,63"
-2026-09,CAT_SAUDE,"251,00","251,87"
+2026-09,CAT_SAUDE,"251,00","266,72"
 2026-09,CAT_CARRO,"270,00","468,00"
 2026-09,CAT_CONTASDE,"700,00","0,00"
 2026-09,CAT_EDUCACAO,"1,00","320,33"

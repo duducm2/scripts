@@ -138,3 +138,4 @@ TX141,2026-09-11,Lunch,"47,15",card_expense,CAT_ALIMENTA,,CARD_MP,,1,1,,0
 TX142,2026-09-12,Dinner with mother in law,"195,25",card_expense,CAT_LAZER,,CARD_MP,,1,1,,0
 TX143,2026-09-12,Book,"40,00",card_expense,CAT_EDUCACAO,,CARD_NUBANK,,1,1,,0
 TX144,2026-09-14,Salary,"3546,10",income,CAT_SALARIO,ACC_MERCADOP,,,1,1,,0
+TX145,2026-09-14,Gym protector,"14,85",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0

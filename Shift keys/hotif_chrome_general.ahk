@@ -18,6 +18,18 @@
     }
 }
 
+; Ctrl + Alt + D : Fork current URL into a new tab; stay on the original (preserve history)
+; Native omnibox Alt+Enter opens the address in a new tab; Ctrl+Shift+Tab returns focus.
+^!d:: Chrome_ForkUrlToNewTabKeepFocus()
+
+Chrome_ForkUrlToNewTabKeepFocus() {
+    Send "^l"
+    Sleep 40
+    Send "!{Enter}"
+    Sleep 80
+    Send "^+{Tab}"
+}
+
 ; Function to rename ChatGPT window (can be called directly or via hotkey)
 RenameChatGPTWindowToChatGPT() {
     try {

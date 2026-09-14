@@ -333,6 +333,7 @@ cheatSheets["chrome.exe"] := "
 (
     Chrome (Shift)
     🪟 [W]Pop current tab to new [W]indow
+    📑 [Ctrl+Alt+D] [D]uplicate URL to new tab (keep current / history)
     🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
 )"  ; end Chrome
 
