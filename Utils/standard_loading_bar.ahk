@@ -793,7 +793,7 @@ StandardLoadingBar_KeysEscapeDismiss(*) {
 ; preserveUserFocus: when true, keep the current active window focused (do not activate overlay GUI).
 ; overlayBgColor: optional main banner panel color (default dark 1E1E2E); use for themed banners e.g. blackout countdown.
 ; skipEscapeDismiss: when true, do not register $*Escape / poll (fragile UIs e.g. Command Palette bookmark prompt).
-; Keys register before GUI show / wait-for-release so rapid presses during setup are not dropped.
+; Show GUI first (Show calls CloseKeysOverlay — must not run after arming), then register keys before wait-for-release.
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
     "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false, overlayBgColor := "",
@@ -816,12 +816,30 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     } catch {
     }
 
+    ; Show first: CloseKeysOverlay inside Show clears any prior overlay; no keys registered yet.
+    opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
+    if (showProgress)
+        opts.manualProgress := true
+    if (overlayBgColor != "")
+        opts.overlayBgColor := overlayBgColor
+    if (passiveBgColor != "")
+        opts.passiveBgColor := passiveBgColor
+    if (noBorder)
+        opts.noBorder := true
+    if (promptKeys != "")
+        opts.promptKeys := promptKeys
+    if (trackActiveMonitor)
+        opts.trackActiveMonitor := true
+    StandardLoadingBar_Show(state, barColor, opts)
+    if (showProgress)
+        StandardLoadingBar_StartTimedProgress(timeoutMs)
+
     g_StandardLoadingBarIsKeysOverlay := true
     g_StandardLoadingBarKeysHotkeys := []
     escCb := StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks)
     g_StandardLoadingBarKeysEscapeActive := false
 
-    ; Register selection hotkeys as GLOBAL before GUI / wait helpers so rapid keys are not lost.
+    ; Register selection hotkeys as GLOBAL before wait-for-release so rapid keys are not lost.
     ; Critical: the overlay may fail to activate immediately, and we still need the keys (e.g. "N") to be captured
     ; instead of falling through to the underlying app. Also, clear any caller #HotIf context before registering.
     try HotIf()
@@ -860,8 +878,12 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
         g_OnEscapePressed := StandardLoadingBar_KeysEscapeDismiss
         Utils_EnsureGlobalEscapeHotkey()
-        g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int",
-            0x1B) &
+        try {
+            if IsObject(g_StandardLoadingBarGui)
+                g_StandardLoadingBarGui.OnEvent("Escape", StandardLoadingBar_KeysEscapeDismiss)
+        } catch {
+        }
+        g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) &
         0x8000)
         SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
         g_StandardLoadingBarKeysEscapeActive := true
@@ -869,7 +891,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
 
     StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks)
 
-    ; Consume mid-setup presses: down now but was up at entry — user pressed during arming.
+    ; Consume mid-setup presses: down now but was up at entry — user pressed during GUI create / arming.
     if (!StandardLoadingBar_KeysSelectionModifiersDown()) {
         try {
             for keyName, cb in keyCallbacks {
@@ -890,35 +912,10 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
     }
 
-    opts := { passive: !showProgress, centerOnHwnd: centerOnHwnd, textWidth: textWidth, fontSize: fontSize }
-    if (showProgress)
-        opts.manualProgress := true
-    if (overlayBgColor != "")
-        opts.overlayBgColor := overlayBgColor
-    if (passiveBgColor != "")
-        opts.passiveBgColor := passiveBgColor
-    if (noBorder)
-        opts.noBorder := true
-    if (promptKeys != "")
-        opts.promptKeys := promptKeys
-    if (trackActiveMonitor)
-        opts.trackActiveMonitor := true
-    StandardLoadingBar_Show(state, barColor, opts)
-    if (showProgress)
-        StandardLoadingBar_StartTimedProgress(timeoutMs)
-
     ; Chord safety: wait for trigger/modifiers and held digits after keys are already armed.
-    ; Poll ignores edges while Win/Ctrl/Alt are held.
+    ; Poll / KeyWrapper ignore edges while Win/Ctrl/Alt are held.
     StandardLoadingBar_WaitForTriggerKeyRelease()
     StandardLoadingBar_WaitForSelectionKeysRelease(keyCallbacks)
-
-    if (!skipEscapeDismiss) {
-        try {
-            if IsObject(g_StandardLoadingBarGui)
-                g_StandardLoadingBarGui.OnEvent("Escape", StandardLoadingBar_KeysEscapeDismiss)
-        } catch {
-        }
-    }
 
     ; Default behavior keeps key capture reliable by activating the overlay.
     ; Some flows (e.g. dictation E/V paste target) must preserve the user's current text-field focus.
