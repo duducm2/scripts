@@ -66,109 +66,14 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
 }
 
 ; Shift + I : From Text/CSV ← clipboard path → shared import pipeline → Save CSV UTF-8
+; (includes former Shift+U save step — U left free for a future Excel shortcut)
 +i:: {
     Excel_ImportCsvFromClipboardPath()
-}
-
-; Shift + U : F12 Save As ← clipboard path → CSV UTF-8 save pipeline
-+u:: {
-    Excel_SaveCsvUtf8FromClipboardPath()
-}
-
-; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns)
-+v:: {
-    Excel_AddMultipleRows()    ; Add multiple rows first
-    Sleep 200
-    Send "^{Up}"
-    Sleep 300
-    Send "{Down}"
-    Sleep 200
-    Send "^v"           ; Ctrl+V (Paste action)
-    Sleep 200
-    Excel_CSVToColumns(true)    ; Auto-select semicolon, bypass dialog
-    Sleep 200
-    Send "^{Down}"
-    Send "{Down}"
-    Send "{Shift down}"
-    Send "^{Down}"
-    Send "{Shift up}"
-    Send "{Alt}"
-    Send "3"
-    Send "r"
-    ; Send "{Down}"
-    ; Excel_RemoveRows(10)
-    ; Sleep 200
-    ; Send "^{Up}"
 }
 
 ; Shift + C : Turn CSV delimited by semicolon into columns (Alt, 0, 5, D, Enter, M, Enter, Enter)
 +c:: {
     Excel_CSVToColumns()
-}
-
-; Helper function: Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
-Excel_AddMultipleRows(count := 15) {
-    ShowSmallLoadingIndicator_ChatGPT("Adding " . count . " rows...")
-    ; Extra initial delay so the first Alt+0,2 sequence isn't too fast
-    Sleep 300
-    loop count {
-        Send "{Alt down}"
-        Send "{Alt up}"
-        Sleep 100
-        Send "0"
-        Sleep 50
-        Send "2"
-        Sleep 50
-    }
-    HideSmallLoadingIndicator_ChatGPT()
-}
-
-; Shift + A : Add multiple rows (repeat Alt, Alt, 0, 2 with delays)
-+a:: {
-    Excel_AddMultipleRows()    ; Call function directly
-}
-
-; Helper function: Row removal workflow (remove row, down arrow, repeat)
-; Pre-condition: Place cursor in starting cell
-; Step 1: Execute REMOVE ROW SHORTCUT (Alt, Alt, 3, R)
-; Step 2: Press DOWN ARROW
-; Step 3: Repeat Step 1 and Step 2 for specified iterations
-; Purpose: Remove alternating sequences of empty and populated rows
-Excel_RemoveRows(iterations := 8) {
-    ShowSmallLoadingIndicator_ChatGPT("Removing rows...")
-    loop iterations {
-        ; Execute Remove Row shortcut (Alt, Alt, 3, R)
-        Send "{Alt down}"
-        Send "{Alt up}"
-        Sleep 150
-        Send "3"
-        Sleep 100
-        Send "r"
-        Sleep 150
-        ; Press Down Arrow
-        Send "{Down}"
-        Sleep 150
-    }
-    HideSmallLoadingIndicator_ChatGPT()
-}
-
-; Shift + R : Row removal workflow (remove row, down arrow, repeat 5-7 times)
-+r:: {
-    Excel_RemoveRows()    ; Call function directly
-}
-
-; Shift + P : Type previous day date
-+p:: {
-    ; Calculate yesterday's date
-    ; Get current date/time and subtract exactly 24 hours (86400 seconds)
-    currentTime := A_Now
-    yesterdayTime := DateAdd(currentTime, -86400, "Seconds")
-    ; Format as MM/dd/yyyy (MM/DD/YYYY format)
-    dateStr := FormatTime(yesterdayTime, "MM/dd/yyyy")
-    ; Small delay to ensure Excel is ready
-    Sleep 50
-    ; Type the date as a whole word at once
-    SendText dateStr
 }
 
 ; Convert 1-based column index to A1 letter(s) (1 -> A, 27 -> AA).
@@ -759,3 +664,66 @@ Excel_FillSeriesToUsedRange() {
 }
 
 +f:: Excel_FillSeriesToUsedRange()
+
+; Shift + O : Quick organize — select all (table incl. headers, else UsedRange),
+; center align, font size 11. COM only (no Ctrl+A / ribbon).
+Excel_QuickOrganizeCenterFont11() {
+    static XL_CENTER := -4108
+    try {
+        xl := ComObjActive("Excel.Application")
+        ws := xl.ActiveSheet
+        cell := xl.ActiveCell
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Excel COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    rng := ""
+    try {
+        loCount := 0
+        try loCount := ws.ListObjects.Count
+        catch {
+        }
+        loop loCount {
+            lo := ws.ListObjects(A_Index)
+            try {
+                if xl.Intersect(cell, lo.Range) {
+                    rng := lo.Range
+                    break
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    if (rng = "") {
+        try rng := ws.UsedRange
+        catch {
+            ShowCenteredOverlay_Utils("❌ Nothing to format on sheet", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+    }
+    if !rng {
+        ShowCenteredOverlay_Utils("❌ Nothing to format on sheet", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    prevScreen := true
+    try prevScreen := xl.ScreenUpdating
+    try {
+        xl.ScreenUpdating := false
+        rng.HorizontalAlignment := XL_CENTER
+        rng.Font.Size := 11
+        rng.Select()
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ Organize failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+        return false
+    } finally {
+        try xl.ScreenUpdating := prevScreen
+    }
+
+    ShowCenteredOverlay_Utils("📐 Centered · font 11", 1600, BANNER_ACCENT_SUCCESS)
+    return true
+}
+
++o:: Excel_QuickOrganizeCenterFont11()

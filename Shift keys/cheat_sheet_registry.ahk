@@ -879,16 +879,12 @@ cheatSheets["EXCEL.EXE"] := "
     Excel (Shift)
     ⚪ [W]Select [W]hite Color
     ✏️ [E]Enable [E]diting
-    📥 [I][I]mport CSV (clipboard path → From Text/CSV → format → shade → save UTF-8)
-    💾 [U]Save CSV [U]TF-8 (clipboard path → F12 Save As)
+    📥 [I][I]mport CSV (From Text/CSV → format → shade → save UTF-8)
     📊 [C][C]SV to columns (semicolon delimited)
-    📋 [V]Quickly [V]aste and extract CSV
-    ➕ [A][A]dd multiple rows (10 rows)
-    🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
-    📅 [P]Type [P]revious day date
     📏 [N][N]arrow oversized columns (autofit, cap >15→5, zoom row 1)
     🌐 [L]Open cell [L]ink in new Chrome
     🔢 [F][F]ill series down to last used row
+    📐 [O][O]rganize (select all · center · font 11)
 )"
 
 ; --- PowerPoint --------------------------------------------------------
