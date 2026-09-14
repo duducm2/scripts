@@ -157,7 +157,7 @@ class GeminiAsyncReadAloud {
             }
             ; Only show "Switching to Gemini" when another window is foreground — not when already in Gemini.
             if (!WinActive("ahk_id " this.GeminiHwnd)) {
-                ; Loading Indication (not Hands off overlay): per standard_information_display.md
+                ; Loading Indication: per standard_information_display.md
                 StandardLoadingBar_Show("⏳ Switching to Gemini…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: this.GeminiHwnd ?
                     this.GeminiHwnd : 0 })
                 if !GeminiActivateWindow(this.GeminiHwnd, GEMINI_ACTIVATE_WAIT_MS) {

@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: handy_selector_entry.ahk
-; SelectAiModelInHandy entry and pre-movement warning
+; SelectAiModelInHandy entry and ShowCenteredOverlay_Utils
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
@@ -34,13 +34,4 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTER
     ; Hard max (5s default) so a missed/raced hide cannot leave the banner stuck.
     ; Keys overlays use ShowWithKeys and do not call this path.
     StandardLoadingBar_ArmForceHide()
-}
-
-; =============================================================================
-; Helper: Pre-movement warning (sound + 2s delay) before automated window changes.
-; =============================================================================
-PlayPreMovementWarning(targetName) {
-    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\pre-movement.wav")
-    ShowCenteredOverlay_Utils("✋ Hands off! Moving to " . targetName . "...", 2000, BANNER_ACCENT_INTERMEDIATE)
-    Sleep 2000
 }

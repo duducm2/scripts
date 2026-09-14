@@ -48,7 +48,7 @@ GEMINI_READ_ALOUD_START_MAX_RETRIES := 8
 GEMINI_READ_ALOUD_LISTEN_PHASE_MAX := 3
 ; Dictation "Copy + Read" path: response just finished streaming, so TTS engine is cold.
 ; Use the pre-optimization budget (10 * 150ms = 1500ms) so the Pause button has time to render
-; without triggering RetryLaunch (which would emit a second "Hands off!" cue).
+; without triggering RetryLaunch.
 GEMINI_DICTATION_READ_ALOUD_MAX_RETRIES := 10
 GEMINI_COPY_MAX_RETRIES := 3
 ; Minimum clipboard length for Gemini-to-Cursor transfer (same as bridge validation)

@@ -57,9 +57,6 @@
     ; 2. Wait 14s for message generation to complete; user can interact with any window
     Sleep 14000
 
-    ; Handoff Stop Sign: warn + play pre-movement cue before returning to VS Code
-    PlayPreMovementWarning("VS Code")
-
     ; 3. Focus back to VS Code (save current foreground to return later)
     prevHwnd := WinExist("A")
     WinActivate("ahk_id " hwnd)
@@ -104,4 +101,3 @@
         }
     }
 }
-

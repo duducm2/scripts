@@ -109,7 +109,7 @@ class GeminiAsyncTTS {
         } catch {
             PlayCopyCompletedChime()
         }
-        ; Allow DOM to finish rendering, then hand off read aloud without keeping focus on Gemini.
+        ; Allow DOM to finish rendering, then trigger read aloud without keeping focus on Gemini.
         Sleep(GeminiAsyncTTS.PostStreamingDelayMs)
         GeminiTriggerReadAloud(false, true, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd })
     }

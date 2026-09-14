@@ -161,7 +161,7 @@ class D2C_FlowManager {
         }
         this.Reset()
         this.OriginHwnd := WinActive("A")
-        this.ExecuteGeminiSubmit(true, "", true)
+        this.ExecuteGeminiSubmit(true)
     }
 
     ; --- Phase 1: Submit Prompt ---
@@ -757,17 +757,11 @@ class D2C_FlowManager {
     ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
     ; Finance daily / registry presets: attach context files then paste prompt + dictation.
     ; Finance daily sends only (no wait / download / import); user finishes manually.
-    ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
-    ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
+    ExecuteGeminiSubmit(autoSubmit := true, presetMode := "") {
         this.CurrentPhase := "Submitting"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
-
-        aiLabel := GetGlobalAIProviderLabel()
-        ; For explicit first-banner choices (Y/G/A/T/D/S), skip the handoff cue: user intentionally chose the AI target.
-        if (showPreMovementWarning)
-            PlayPreMovementWarning(aiLabel)
 
         optionalSnippet := ""
         registryPrompt := false
@@ -1302,7 +1296,6 @@ class D2C_FlowManager {
 
         aiLabel := GetGlobalAIProviderLabel()
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        PlayPreMovementWarning(aiLabel)
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
@@ -1310,8 +1303,7 @@ class D2C_FlowManager {
             return false
         }
 
-        ; By the time DoCopyCore runs, Gemini should already be active. If it is not,
-        ; just activate it without a pre-movement warning (source is no longer Original).
+        ; By the time DoCopyCore runs, Gemini should already be active. If it is not, activate it.
         if (!WinActive("ahk_id " this.GeminiHwnd)) {
             try WinActivate("ahk_id " this.GeminiHwnd)
             catch {

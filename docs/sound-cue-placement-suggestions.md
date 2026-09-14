@@ -24,7 +24,6 @@ Fill in filenames you keep locally if they differ from the list.
 | `gemini-completion.wav`                           | Task / copy / completion                                                         |
 | `copy.wav`                                        | Copy actions                                                                     |
 | `handy-model-chosen.mp3`                          | Handy model selection                                                            |
-| `pre-movement.wav`                                | Before mouse move / “hands off” style flows                                      |
 | `cleaning-desktop.wav`                            | Clipboard-clean / desktop-clean confirm (Y)                                      |
 | `robots-are-working.wav` / `no-robot-working.wav` | AI working check                                                                 |
 | `quick-update-success.wav`                        | After Quick Update (`/Updated`)                                                  |

@@ -101,8 +101,6 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        ; Hands off cue before activating Gemini to copy the last response (manual Y/R/F and timeout).
-        PlayPreMovementWarning("Gemini")
         ; If Gemini is not active when the monitor fires, activate it now.
         if !WinActive("ahk_id " this.GeminiHwnd) {
             try {

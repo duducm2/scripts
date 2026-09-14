@@ -1976,10 +1976,23 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     ; All Win32 common dialogs (MessageBox, Open/Save, Confirm, Print, Properties, etc.).
     if (class = "#32770")
         return true
-    ; PowerPoint: keep only the main edit frame (PPTFrameClass).
-    ; Slide show (screenClass) and Presenter View (PodiumParent) stay out of Place/occupancy/fill.
-    if (exe = "powerpnt.exe" && class != "" && class != "pptframeclass")
-        return true
+    ; PowerPoint: only the main edit frame (PPTFrameClass) may Place/occupy/fill.
+    ; Slide show (screenClass), Presenter View (PodiumParent), and any other satellite
+    ; HWND — including empty class on early SHOW (elig retry will re-check) — must not slot.
+    ; Title needles catch Slide Show / Reading View chrome that still reports PPTFrameClass.
+    if (exe = "powerpnt.exe") {
+        if (class = "" || class != "pptframeclass")
+            return true
+        try {
+            pptTitle := StrLower(WinGetTitle(hwnd))
+        } catch {
+            pptTitle := ""
+        }
+        if (pptTitle != "" && (InStr(pptTitle, "slide show")
+        || InStr(pptTitle, "apresentação de slide") || InStr(pptTitle, "apresentacao de slide")
+        || InStr(pptTitle, "reading view") || InStr(pptTitle, "modo de leitura")))
+            return true
+    }
     ; Teams share picker / sharing control bar / presenter toolbar — never resize.
     if (AutoSlot_IsTeamsShareUiHwnd(hwnd))
         return true

@@ -7,13 +7,13 @@
 3. **After dictation stops (Gemini path):** `dictation-selection-menu.wav` plays, then a **2-second** standard loading bar fills **linearly from 0% to 100%** (buffer against accidental keys), then **Send dictation?** appears.
 4. **First banner — Send dictation?**  
    **Y** = paste and auto-send (Enter) to Gemini (uses your Clip Angel first snippet, same as before). **G** / **A** / **T** = Utility Shortcuts prompts by char (`1` grammar / `3` aiopt / **`k` Convert to Task pack** → `TASK_PACK.txt`) via Prompt Manager (metadata + optional context attach), plus dictated text, then auto-send. Legacy emoji-line **`mtask`** remains Prompts Char **`2`** (not on this menu). **D** = Finance daily (char `d` / `finance-daily-transactions.txt`) via Prompt Manager — applies `ExpectsDataOutput` / `DataOutputFormat` (injected DATA OUTPUT CONTRACT), attaches context CSVs, shows a Loading Indication while attaching and waiting until Send is enabled, then auto-sends (**send-only**; finish download/import manually). **S** = paste only to Gemini (no Enter). **V** = paste dictated text into the window active when **V** is pressed (**Ctrl+V**) and end the flow. **W** = open a **visible windows** modal: a fixed **4 monitors × 2 panes** grid (left-to-right monitor columns; row 0 = left/top pane, row 1 = right/bottom), live DWM previews, grid keys **A/S/D/F** (row 0) and **Z/X/C/V** (row 1) per monitor, extra windows below keyed **1, 2, 3…**, pick one, activate it, paste the OS clipboard (**Ctrl+V**), and end the flow. **O** = open Clip Angel with focus on the newest clip (Row 0), then open **Edit text** (**F4**, same as **Shift+E** when `Shift keys.ahk` Clip Angel hotkeys are active); flow ends. **B** = toggle Handy transcription model (Parakeet Unified EN ↔ Cohere Transcribe), re-transcribe the newest History entry, copy the corrected text to the clipboard, then re-open this menu. **N** = cancel (flow ends).  
-   If no action is taken within 6 seconds, **Y** (yes) is selected by default—the same as pressing **Y** (first-snippet paste, not the **G**, **A**, **T**, or **D** preset path). When the script moves focus from the original window to Gemini to perform this paste, it first shows a **2-second “✋ Hands off!” pre-movement cue** so you can stop typing before the automated transition.
+   If no action is taken within 6 seconds, **Y** (yes) is selected by default—the same as pressing **Y** (first-snippet paste, not the **G**, **A**, **T**, or **D** preset path). The script then moves focus from the original window to Gemini to perform this paste.
 
 5. **If the flow sent your text to Gemini** (you chose **Y**, **G**, **A**, **T**, or let the first banner time out), after Gemini responds you see **Response ready — what next?** (same destination keys as `#\!+P` intent banner).  
    (**D** does not show this banner: send-only; finish manually.)  
    Each destination key **copies the reply first**, then runs the same action as `#\!+p`: **P** = Copy only, **Y** = Desktop export, **F** = Favorite, **R** = Read aloud (omitted for Gemini Enterprise), **W** = Paste to a visible window, **O** = Clip Angel Edit, **N** / **Esc** / timeout = dismiss with **no** copy.  
    Copy success requires the same quality gates as `#\!+P` / bridge: clipboard change, min length ≥ 10, and (for Gemini/Copilot IPC) `gemini_copy_result.txt` = `1`.  
-   Pressing a destination key plays the 2-second **“✋ Hands off!”** cue before `DoCopyCore` (same as other copy paths).  
+   Pressing a destination key runs `DoCopyCore` immediately (same as other copy paths).  
    If no action is taken within the menu timeout, the flow ends with **no** copy (aligned with `#\!+P`; not auto-copy).
 
 Pressing **N** at any banner terminates the whole flow.
@@ -77,19 +77,6 @@ flowchart TB
 - After paste + Enter into a selected target window (e.g. via `CursorTransfer_ActivateFocusPaste`), the script waits briefly so the target can apply the paste and process Enter (`CURSOR_TRANSFER_POST_PASTE_BEFORE_ENTER_MS`, `CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS` in `Utils.ahk`) before **OS focus returns** to the **anchored window** (`OriginHwnd` / `OriginalHwnd`) when a restore hwnd was supplied.
 - **Do not** assume the user stays in the target chat window.
 - Prefer **minimal** changes to automation code when adjusting this behavior; avoid broad refactors.
-
-## Pre-movement cue behavior
-
-- **When the cue plays**:
-  - A 2-second pre-movement cue (sound + centered overlay \"✋ Hands off!\" warning) plays when the flow first moves focus from the original trigger window to Gemini (Original → Gemini) to submit the prompt.
-  - The same 2-second cue also plays right before copying Gemini's last response when you press a destination key (**P** / **Y** / **F** / **R** / **W** / **O**) on **Response ready**. Timeout / **N** / **Esc** do **not** copy and do **not** play the cue.
-- **When the cue does not play**:
-  - **Returns** from Gemini or Cursor back to the original trigger window are **immediate** (no sound cue, no added delay).
-  - Transitions between non-original windows also run **without** the pre-movement cue.
-
-These cues are synchronization guard rails that appear only when the script is about to take control of focus for a significant action (sending to Gemini or copying Gemini's response); they do **not** change which windows are ultimately activated or the order in which they are activated.
-
-For a complete list of where Hand Off audio cues are used, see `docs/hand_off_warning_cues.md` (including **Win+Alt+Shift+7** TTS from selection, which skips the cue on the first move to Gemini for submit but plays it before the second move for read aloud after the response completes).
 
 ## Where the user can stop the flow
 

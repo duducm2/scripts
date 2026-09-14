@@ -104,9 +104,6 @@ global g_CursorShortcutMenuPrevHwnd := 0
 
     ; 2. Wait 15s; user can interact with any window
     Sleep 14000
-    ; Handoff Stop Sign: warn + play pre-movement cue right before we
-    ; regain focus on Cursor and finalize the commit submission.
-    PlayPreMovementWarning("Cursor")
 
     ; 3. Focus Cursor IDE (save current foreground to return later)
     prevHwnd := WinExist("A")

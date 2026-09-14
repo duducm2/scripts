@@ -37,13 +37,16 @@
 ; msoBringToFront=0  msoSendToBack=1  msoBringForward=2  msoSendBackward=3
 ; msoTrue=-1
 ;
-; Shift+O — Toggle focused view of current slide
-; -----------------------------------------------
-; Enter: Slide Show from the active slide (COM Run + GotoSlide).
-; Exit:  same shortcut while a SlideShowWindow is open → View.Exit → Normal.
-; Avoids Reading View (often starts at slide 1).
+; Shift+O — Toggle focused view of current slide (same window)
+; -------------------------------------------------------------
+; Do NOT use SlideShowSettings.Run() — that always creates a new top-level
+; SlideShowWindow HWND, which AutoSlot treats as a new place candidate.
 ;
-; ppShowTypeSpeaker=1  ppShowAll=1  msoFalse=0
+; Enter: CommandBars.ExecuteMso("ViewSlideShowReadingView") switches the
+;        existing PPTFrameClass document window in place, then GotoSlide.
+; Exit:  SlideShowWindows.View.Exit (or ActiveWindow → ppViewNormal).
+;
+; ppViewNormal=9
 ;
 ; =============================================================================
 
@@ -229,6 +232,39 @@ PowerPoint_CurrentSlideIndex(pp) {
     return 0
 }
 
+PowerPoint_IsFocusedSlideView(pp) {
+    try {
+        if (pp.SlideShowWindows.Count > 0)
+            return true
+    } catch {
+    }
+    return false
+}
+
+PowerPoint_GotoSlideInFocusedView(pp, idx) {
+    if (!idx)
+        return
+    try {
+        if (pp.SlideShowWindows.Count > 0) {
+            pp.SlideShowWindows.Item(1).View.GotoSlide(idx)
+            return
+        }
+    } catch {
+    }
+    try pp.ActiveWindow.View.GotoSlide(idx)
+}
+
+PowerPoint_ExitFocusedSlideView(pp) {
+    try {
+        if (pp.SlideShowWindows.Count > 0) {
+            pp.SlideShowWindows.Item(1).View.Exit
+            return
+        }
+    } catch {
+    }
+    try pp.ActiveWindow.ViewType := 9  ; ppViewNormal
+}
+
 PowerPoint_ToggleFocusedSlideView() {
     try {
         pp := ComObjActive("PowerPoint.Application")
@@ -238,8 +274,9 @@ PowerPoint_ToggleFocusedSlideView() {
     }
 
     try {
-        if (pp.SlideShowWindows.Count > 0) {
-            pp.SlideShowWindows.Item(1).View.Exit
+        if (PowerPoint_IsFocusedSlideView(pp)) {
+            PowerPoint_ExitFocusedSlideView(pp)
+            try pp.ActiveWindow.ViewType := 9  ; ppViewNormal
             return
         }
 
@@ -249,12 +286,9 @@ PowerPoint_ToggleFocusedSlideView() {
             return
         }
 
-        sss := pp.ActivePresentation.SlideShowSettings
-        sss.ShowType := 1              ; ppShowTypeSpeaker
-        try sss.ShowPresenterView := 0 ; msoFalse — single-slide canvas
-        sss.RangeType := 1             ; ppShowAll
-        showWin := sss.Run()
-        showWin.View.GotoSlide(idx)
+        ; In-place Reading View on the existing document window (no new HWND/process).
+        pp.CommandBars.ExecuteMso("ViewSlideShowReadingView")
+        PowerPoint_GotoSlideInFocusedView(pp, idx)
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Focus view failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
     }

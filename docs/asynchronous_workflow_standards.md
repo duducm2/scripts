@@ -10,11 +10,11 @@ This document defines the architectural pattern and implementation guidelines fo
 
 The pattern has three distinct phases. Window focus changes only during **submission** and **retrieval**; the user remains in the source window for the entire **monitoring** phase.
 
-| Phase | Purpose | Focus behavior |
-|-------|---------|----------------|
-| **Submission** | Send the task to the external process (e.g., paste prompt, submit). | Switch to external window only for the time required to submit; then return immediately to the source window. |
-| **Background processing / Monitoring** | Wait for the external process to finish. | No window switching. User keeps working in the source application. |
-| **Retrieval** | Get the result (e.g., copy response). | Switch to external window once, perform all copy/verification steps, then return to the source window once. |
+| Phase                                  | Purpose                                                             | Focus behavior                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Submission**                         | Send the task to the external process (e.g., paste prompt, submit). | Switch to external window only for the time required to submit; then return immediately to the source window. |
+| **Background processing / Monitoring** | Wait for the external process to finish.                            | No window switching. User keeps working in the source application.                                            |
+| **Retrieval**                          | Get the result (e.g., copy response).                               | Switch to external window once, perform all copy/verification steps, then return to the source window once.   |
 
 **Principles:**
 
@@ -50,7 +50,7 @@ The pattern has three distinct phases. Window focus changes only during **submis
 
 - Use a **timer** (e.g. `SetTimer(callback, 500)`) to run a **completion check** periodically (e.g. every 500 ms). The main thread is not blocked; the user can keep using the source window.
 - The callback should:
-  - **Not activate any window.** It must only *observe* the external process (e.g. via UI Automation or other APIs that work on a window by handle).
+  - **Not activate any window.** It must only _observe_ the external process (e.g. via UI Automation or other APIs that work on a window by handle).
   - Determine “still running” vs “finished” (e.g. “Stop streaming” button present vs absent).
   - When “finished” is detected: stop the timer (`SetTimer(callback, 0)`), then run the **retrieval** phase (which is the only place that may activate the external window again).
 
@@ -99,15 +99,15 @@ The Win+Alt+Shift+8 pronunciation workflow in `Gemini.ahk` follows this pattern:
 - **CheckCompletion():** Uses `UIA.ElementFromHandle(this.GeminiHwnd)` and `root.FindElement` / `root.ElementExist` only; no `WinActivate`, no `UIA_Browser` (to avoid its internal activation fallbacks). On completion: stops timer, plays sound, calls `RetrieveResponse()`.
 - **RetrieveResponse():** Activates Gemini once, runs copy (with optional retries using `alreadyActive: true`), then `WinActivate(OriginalHwnd)` once, hides loading, shows result banner.
 
-The **Win+Alt+Shift+7** TTS-from-selection workflow (`GeminiAsyncTTS` in `Gemini.ahk`) follows the same submit → monitor → retrieve shape: **no** `WinActivate` during monitoring, and retrieval only after completion. Unlike the first activation for submit, the **retrieval** activation (switch to Gemini for read aloud) is preceded by the shared **Hand Off** pre-movement cue (`PlayPreMovementWarning("Gemini")`) so you get a 2-second warning before focus leaves the original window again. See `docs/hand_off_warning_cues.md` for the exact cue rules.
+The **Win+Alt+Shift+7** TTS-from-selection workflow (`GeminiAsyncTTS` in `Gemini.ahk`) follows the same submit → monitor → retrieve shape: **no** `WinActivate` during monitoring, and retrieval only after completion. The retrieval activation switches to Gemini for read aloud immediately after streaming finishes (plus a short DOM settle delay).
 
 ---
 
 ## Summary
 
-| Concern | Guideline |
-|--------|-----------|
-| **Asynchronous logic** | Submission → immediate return → background monitoring (timer) → retrieval only after completion. |
-| **Context retention** | Store source and external HWNDs at start; use them for all restore and targeting. |
-| **State monitoring** | Timer-driven polling only; use APIs that do not activate the window (e.g. `UIA.ElementFromHandle` + tree search). |
+| Concern                  | Guideline                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Asynchronous logic**   | Submission → immediate return → background monitoring (timer) → retrieval only after completion.                                                             |
+| **Context retention**    | Store source and external HWNDs at start; use them for all restore and targeting.                                                                            |
+| **State monitoring**     | Timer-driven polling only; use APIs that do not activate the window (e.g. `UIA.ElementFromHandle` + tree search).                                            |
 | **Ping-pong prevention** | One focus switch to external and one back per phase; no delayed restores; no activation during monitoring; single activation and single return in retrieval. |

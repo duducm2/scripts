@@ -893,7 +893,7 @@ cheatSheets["POWERPNT.EXE"] := "
 (
     PowerPoint (Shift)
     📄 [P]Save as [P]DF on Desktop (COM)
-    🔍 [O]F[O]cus current slide (toggle show ↔ Normal)
+    🔍 [O]F[O]cus current slide (Reading View in-place ↔ Normal)
     🎯 [C]enter on slide (center + middle)
     ⬅️ [L]Align [L]eft
     ➡️ [R]Align [R]ight
