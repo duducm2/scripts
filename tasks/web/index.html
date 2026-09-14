@@ -609,6 +609,188 @@
       .column.bento.habits-column {
         margin-top: 0;
       }
+      /* Project focus (Shift+5): cool studio look; sections as bento tiles */
+      body.project-focus-mode {
+        --pf-bg: #0c1218;
+        --pf-panel: #15202b;
+        --pf-card: #1a2836;
+        --pf-line: #2a3d52;
+        --pf-accent: #5ec8d8;
+        --pf-accent-dim: rgba(94, 200, 216, 0.14);
+        --pf-muted: #8aa0b4;
+        background: var(--pf-bg);
+        color: #e8eef4;
+      }
+      body.project-focus-mode footer {
+        background: rgba(12, 18, 24, 0.94);
+        border-top-color: var(--pf-line);
+      }
+      body.project-focus-mode .ftr-stats {
+        color: var(--pf-muted);
+      }
+      body.project-focus-mode #toast {
+        background: var(--pf-card);
+        border-color: var(--pf-accent);
+      }
+      body.project-focus-mode .search-bar {
+        background: rgba(21, 32, 43, 0.97);
+        border-color: var(--pf-line);
+      }
+      body.project-focus-mode #globalSearch {
+        background: var(--pf-card);
+        border-color: var(--pf-line);
+        color: #e8eef4;
+      }
+      body.project-focus-mode #globalSearch:focus {
+        border-color: var(--pf-accent);
+      }
+      body.project-focus-mode .btn,
+      body.project-focus-mode button.btn {
+        background: var(--pf-card);
+        border-color: var(--pf-line);
+        color: #e8eef4;
+      }
+      body.project-focus-mode .btn:hover,
+      body.project-focus-mode .btn.active {
+        border-color: var(--pf-accent);
+        color: var(--pf-accent);
+      }
+      body.project-focus-mode .kb-selected,
+      body.project-focus-mode details.project.kb-selected > summary,
+      body.project-focus-mode .task.kb-selected,
+      body.project-focus-mode .plain-row.kb-selected,
+      body.project-focus-mode .task-section.kb-selected > .task-section-label {
+        outline-color: var(--pf-accent);
+        background: var(--pf-accent-dim);
+      }
+      .column.project-focus {
+        background: var(--pf-panel);
+        border-color: var(--pf-line);
+        border-radius: 16px;
+        padding: 18px 20px 22px;
+        min-height: calc(100vh - 56px);
+      }
+      .project-focus-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px 16px;
+        margin: 0 0 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--pf-line);
+      }
+      .project-focus-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+        color: var(--pf-accent);
+      }
+      .project-focus-hint {
+        font-size: 12px;
+        color: var(--pf-muted);
+      }
+      .project-focus-hint kbd {
+        color: var(--pf-accent);
+        border-color: var(--pf-line);
+        background: var(--pf-card);
+      }
+      .column.project-focus > details.project {
+        border: none;
+        background: transparent;
+        margin: 0;
+        border-radius: 0;
+      }
+      .column.project-focus > details.project > summary {
+        display: none;
+      }
+      .column.project-focus > details.project > .proj-actions {
+        display: flex;
+        margin: 0 0 14px;
+        padding: 0;
+      }
+      .section-bento {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+        align-items: stretch;
+      }
+      @media (min-width: 1400px) {
+        .section-bento {
+          grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        }
+      }
+      .section-bento > .task-section {
+        margin: 0;
+        padding: 10px 12px 12px;
+        border: 1px solid var(--pf-line);
+        border-radius: 12px;
+        background: var(--pf-card);
+        border-top: 3px solid var(--pf-accent);
+        min-width: 0;
+        align-self: stretch;
+        height: 100%;
+      }
+      .section-bento > .task-section.is-general {
+        margin: 0;
+        padding: 10px 12px 12px;
+        border: 1px solid var(--pf-line);
+        border-top: 3px solid var(--pf-accent);
+        border-radius: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(94, 200, 216, 0.08) 0%,
+          var(--pf-card) 48%
+        );
+      }
+      @media (min-width: 900px) {
+        .section-bento > .task-section.is-general {
+          grid-column: span 2;
+        }
+      }
+      .section-bento > .task-section.is-general > .task-section-label {
+        opacity: 0.85;
+        color: var(--pf-muted);
+        border-bottom-color: var(--pf-line);
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .section-bento > .task-section:not(.is-general) > .task-section-label {
+        color: #d5e4ef;
+      }
+      .section-bento > .task-section.kb-selected > .task-section-label {
+        color: var(--pf-accent);
+      }
+      .section-bento > .task-section.is-general.kb-selected {
+        border-color: var(--pf-accent);
+      }
+      .section-bento
+        > .task-section.is-general.kb-selected
+        > .task-section-label {
+        border-bottom-color: var(--pf-accent);
+      }
+      .section-bento > .task-list,
+      .section-bento > .task-section > .task-list {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+      .section-bento > .is-inline-create,
+      .section-bento > .empty {
+        grid-column: 1 / -1;
+      }
+      .section-bento > .is-inline-create {
+        border: 1px dashed var(--pf-line);
+        border-radius: 12px;
+        background: transparent;
+        padding: 8px 12px;
+      }
+      body.project-focus-mode .task,
+      body.project-focus-mode .plain-row {
+        border-top-color: var(--pf-line);
+      }
       .search-wrap {
         display: flex;
         align-items: center;
@@ -920,6 +1102,8 @@
           emojiFilter: null, // null = off; "" = none; else emoji char
           envDefaultFocus: envDefaultFocus(), // work | personal from launcher (?focus= / environment.txt)
           sectionFocus: envDefaultFocus(), // "" | work | personal | habits
+          projectFocusId: "", // project id when Shift+5 focus is on
+          sectionFocusBeforeProject: "", // column focus to restore on exit
           search: "",
           pwSide: envDefaultFocus() === "work" ? "work" : "personal",
           inlineCreate: null, // { project_id, section_id, filter, kind }
@@ -1512,6 +1696,13 @@
         }
 
         function syncDocumentTitle() {
+          if (state.projectFocusId) {
+            const p = (state.data?.projects || []).find(
+              (x) => x.id === state.projectFocusId,
+            );
+            document.title = p ? `Tasks · ${p.title}` : "Tasks";
+            return;
+          }
           document.title = focusViewLabel(state.sectionFocus) || "Tasks";
         }
 
@@ -1756,11 +1947,60 @@
           return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits")}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
 
+        function renderProjectFocusHtml() {
+          const pid = state.projectFocusId;
+          const p = (state.data.projects || []).find((x) => x.id === pid);
+          if (!p) return "";
+          const filt = p.filter || "work";
+          const allPts =
+            filt === "habits"
+              ? habitTasksList().filter((t) => t.project_id === pid)
+              : openTasks().filter((t) => t.project_id === pid);
+          const plan = projectSearchPlan(p, allPts);
+          const pThumbs = thumbsHtml("project", p.id);
+          return `<section class="column panel project-focus" id="sec-project-focus">
+      <div class="project-focus-head">
+        <h2 class="project-focus-title">${highlightTitle(p.title)}</h2>
+        <span class="project-focus-hint"><kbd>Shift+5</kbd> exit</span>
+      </div>
+      <details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
+        <div class="proj-actions row-actions">
+          <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
+          <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
+          <button class="btn" data-act="edit-project">Edit</button>
+          <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
+          <button class="btn danger" data-act="del-project">Del</button>
+        </div>
+        ${pThumbs}
+        <div class="section-bento">${projectTasksHtml(p, allPts, plan)}</div>
+      </details>
+    </section>`;
+        }
+
         function renderDashboard() {
           rebuildTaskIdsWithInfo();
-          $("#view").innerHTML = `
+          if (state.projectFocusId) {
+            const p = (state.data.projects || []).find(
+              (x) => x.id === state.projectFocusId,
+            );
+            if (!p) {
+              state.projectFocusId = "";
+              state.sectionFocusBeforeProject = "";
+            }
+          }
+          document.body.classList.toggle(
+            "project-focus-mode",
+            !!state.projectFocusId,
+          );
+          if (state.projectFocusId) {
+            $("#view").innerHTML = renderProjectFocusHtml();
+          } else {
+            $("#view").innerHTML = `
       <div class="${focusTopRowClass()}">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${renderHabitsColumn()}`;
+          }
           applyEmojiFilter(state.emojiFilter);
           applySelection(false);
           syncInlineCreateUi();
@@ -1837,15 +2077,17 @@
           if (code === "Digit2" || code === "Numpad2") return "2";
           if (code === "Digit3" || code === "Numpad3") return "3";
           if (code === "Digit4" || code === "Numpad4") return "4";
+          if (code === "Digit5" || code === "Numpad5") return "5";
           if (code.startsWith("Key") && code.length === 4)
             return code.slice(3).toLowerCase();
           const k = (e.key || "").toLowerCase();
           if (k.length === 1 && /[a-z0-9]/.test(k)) return k;
-          if (k === "!" || k === "@" || k === "#" || k === "$") {
+          if (k === "!" || k === "@" || k === "#" || k === "$" || k === "%") {
             if (k === "!") return "1";
             if (k === "@") return "2";
             if (k === "#") return "3";
             if (k === "$") return "4";
+            if (k === "%") return "5";
           }
           return "";
         }
@@ -1873,12 +2115,66 @@
           window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
         }
 
+        function clearProjectFocus(opts = {}) {
+          if (!state.projectFocusId) return false;
+          const restore = state.sectionFocusBeforeProject;
+          state.projectFocusId = "";
+          state.sectionFocusBeforeProject = "";
+          document.body.classList.remove("project-focus-mode");
+          if (opts.restoreFocus !== false) state.sectionFocus = restore || "";
+          if (opts.render !== false && state.view === "dashboard" && state.data)
+            renderDashboard();
+          else syncDocumentTitle();
+          if (opts.selectScroll !== false) applySelection(true);
+          return true;
+        }
+
+        function applyProjectFocus(pid, opts = {}) {
+          const toggle = opts.toggle !== false;
+          if (!pid) {
+            toast("Select a project first");
+            return;
+          }
+          if (toggle && state.projectFocusId === pid) {
+            clearProjectFocus();
+            return;
+          }
+          const p = (state.data?.projects || []).find((x) => x.id === pid);
+          if (!p) {
+            toast("Project not found");
+            return;
+          }
+          if (!state.projectFocusId)
+            state.sectionFocusBeforeProject = state.sectionFocus || "";
+          state.projectFocusId = pid;
+          document.body.classList.add("project-focus-mode");
+          if (state.view === "dashboard" && state.data) renderDashboard();
+          if (opts.scrollHeader !== false) scrollToPageHeader();
+          applySelection(opts.selectScroll !== false);
+          syncDocumentTitle();
+        }
+
         function applySectionFocus(filt, opts = {}) {
           const toggle = !!opts.toggle;
-          if (toggle && filt && state.sectionFocus === filt) filt = "";
+          const fromProject = !!state.projectFocusId;
+          if (fromProject) {
+            state.projectFocusId = "";
+            state.sectionFocusBeforeProject = "";
+            document.body.classList.remove("project-focus-mode");
+          }
+          if (toggle && filt && state.sectionFocus === filt && !fromProject)
+            filt = "";
           const prev = state.sectionFocus || "";
           state.sectionFocus = filt || "";
           const f = state.sectionFocus;
+          if (fromProject) {
+            if (state.view === "dashboard" && state.data) renderDashboard();
+            else syncDocumentTitle();
+            if (opts.scrollHeader !== false && f && f !== prev)
+              scrollToPageHeader();
+            applySelection(opts.selectScroll !== false);
+            return;
+          }
           const personal = document.getElementById("sec-personal");
           const work = document.getElementById("sec-work");
           const habits = document.getElementById("sec-habits");
@@ -1917,7 +2213,9 @@
             out.push({ kind: "project", id, title, el: proj });
             if (!proj.open) return;
             proj
-              .querySelectorAll(":scope > .task-section:not(.emoji-hidden)")
+              .querySelectorAll(
+                ":scope > .task-section:not(.emoji-hidden), :scope > .section-bento > .task-section:not(.emoji-hidden)",
+              )
               .forEach((sec) => {
                 if (sec.hasAttribute("data-inline-create")) return;
                 const sid = sec.getAttribute("data-id");
@@ -1966,7 +2264,12 @@
                 });
               });
           };
-          ["sec-personal", "sec-work", "sec-habits"].forEach((sid) => {
+          [
+            "sec-personal",
+            "sec-work",
+            "sec-habits",
+            "sec-project-focus",
+          ].forEach((sid) => {
             const sec = document.getElementById(sid);
             if (!sec || sec.classList.contains("section-hidden")) return;
             sec
@@ -2418,6 +2721,10 @@
             applySectionFocus("");
             return;
           }
+          if (k === "5") {
+            applyProjectFocus(selectedProjectId(), { toggle: true });
+            return;
+          }
           if (k === "e") {
             const nodes = document.querySelectorAll("details.project");
             const openAll = Array.from(nodes).some((n) => !n.open);
@@ -2658,6 +2965,11 @@
           state.infoCtx = null;
           state.infoSelId = "";
           state.view = "dashboard";
+          if (state.projectFocusId) {
+            state.projectFocusId = "";
+            state.sectionFocusBeforeProject = "";
+            document.body.classList.remove("project-focus-mode");
+          }
           if (!keepSearch && searchNeedle()) clearSearch();
           if (state.emojiFilter !== null) applyEmojiFilter(null);
           const homeFocus = state.envDefaultFocus || "work";
@@ -2719,6 +3031,10 @@
             return;
           }
           state.lastEscAt = now;
+          if (state.projectFocusId) {
+            clearProjectFocus();
+            return;
+          }
           if (state.sel) {
             setSelection(null, null, false);
             return;
@@ -2736,6 +3052,10 @@
           if (state.emojiFilter !== null) {
             applyEmojiFilter(null);
             applySelection(false);
+            return true;
+          }
+          if (state.projectFocusId) {
+            clearProjectFocus();
             return true;
           }
           if (state.sectionFocus) {
