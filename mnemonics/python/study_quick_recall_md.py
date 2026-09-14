@@ -248,7 +248,7 @@ def render_markdown(
         )
         palace_label = "palace" if n_palaces == 1 else "palaces"
         atom_label = "atom" if n_atoms == 1 else "atoms"
-        lines.append("<details>")
+        lines.append("<details open>")
         lines.append(
             f"<summary><strong>{title}</strong> · {n_palaces} {palace_label}"
             f" · {n_atoms} {atom_label}</summary>"

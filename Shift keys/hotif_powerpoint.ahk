@@ -37,6 +37,14 @@
 ; msoBringToFront=0  msoSendToBack=1  msoBringForward=2  msoSendBackward=3
 ; msoTrue=-1
 ;
+; Shift+O — Toggle focused view of current slide
+; -----------------------------------------------
+; Enter: Slide Show from the active slide (COM Run + GotoSlide).
+; Exit:  same shortcut while a SlideShowWindow is open → View.Exit → Normal.
+; Avoids Reading View (often starts at slide 1).
+;
+; ppShowTypeSpeaker=1  ppShowAll=1  msoFalse=0
+;
 ; =============================================================================
 
 ; ppFixedFormatTypePDF = 2; ppSaveAsPDF = 32
@@ -206,12 +214,62 @@ PowerPoint_CenterOnSlide() {
 }
 
 ;-------------------------------------------------------------------
+; Focused view toggle (Shift+O)
+;-------------------------------------------------------------------
+
+PowerPoint_CurrentSlideIndex(pp) {
+    try {
+        return pp.ActiveWindow.View.Slide.SlideIndex
+    } catch {
+    }
+    try {
+        return pp.ActiveWindow.Selection.SlideRange.Item(1).SlideIndex
+    } catch {
+    }
+    return 0
+}
+
+PowerPoint_ToggleFocusedSlideView() {
+    try {
+        pp := ComObjActive("PowerPoint.Application")
+    } catch {
+        ShowCenteredOverlay_Utils("❌ PowerPoint COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    try {
+        if (pp.SlideShowWindows.Count > 0) {
+            pp.SlideShowWindows.Item(1).View.Exit
+            return
+        }
+
+        idx := PowerPoint_CurrentSlideIndex(pp)
+        if !idx {
+            ShowCenteredOverlay_Utils("❌ No active slide", 1800, BANNER_ACCENT_ERROR)
+            return
+        }
+
+        sss := pp.ActivePresentation.SlideShowSettings
+        sss.ShowType := 1              ; ppShowTypeSpeaker
+        try sss.ShowPresenterView := 0 ; msoFalse — single-slide canvas
+        sss.RangeType := 1             ; ppShowAll
+        showWin := sss.Run()
+        showWin.View.GotoSlide(idx)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Focus view failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+    }
+}
+
+;-------------------------------------------------------------------
 ; PowerPoint Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
 ; --- PDF ---
 +p:: PowerPoint_SaveAsPdf()
+
+; --- Focused view (current slide ↔ Normal) ---
++o:: PowerPoint_ToggleFocusedSlideView()
 
 ; --- Align (relative to slide) ---
 +c:: PowerPoint_CenterOnSlide()          ; Center (H+V)

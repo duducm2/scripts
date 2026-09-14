@@ -1558,8 +1558,11 @@
         renderQuickRecall();
         const firstQr = document.querySelector("#quickRecallList .qr-line");
         const firstStudy = ul.querySelector("button");
-        const focusEl = firstQr || firstStudy;
-        if (focusEl) requestAnimationFrame(() => focusEl.focus());
+        if (firstQr) {
+          requestAnimationFrame(() => selectQuickRecallLine(firstQr));
+        } else if (firstStudy) {
+          requestAnimationFrame(() => firstStudy.focus());
+        }
       }
 
       function collapseConceptLine(raw) {
@@ -1577,7 +1580,11 @@
       }
 
       function buildQuickRecallGroups() {
-        const included = state.data?.quick_recall?.included_palace_ids || [];
+        let included = state.data?.quick_recall?.included_palace_ids || [];
+        if (!included.length) {
+          // Fallback seed when API predates quick_recall or JSON not yet written
+          included = seedQuickRecallPalaceIds();
+        }
         const palaceByIdMap = new Map(
           (state.data?.palaces || []).map((p) => [p.id, p]),
         );
@@ -1614,6 +1621,31 @@
         });
       }
 
+      function seedQuickRecallPalaceIds() {
+        const seeds = [
+          ["STUDY_DATAANALYST", 7],
+          ["STUDY_PIANO", 4],
+        ];
+        const out = [];
+        const seen = new Set();
+        for (const [studyId, count] of seeds) {
+          const list = (state.data?.palaces || [])
+            .filter((p) => p.study_id === studyId)
+            .slice()
+            .sort(
+              (a, b) =>
+                Number(b.palace_number || 0) - Number(a.palace_number || 0),
+            )
+            .slice(0, count);
+          for (const p of list) {
+            if (!p.id || seen.has(p.id)) continue;
+            seen.add(p.id);
+            out.push(p.id);
+          }
+        }
+        return out;
+      }
+
       function renderQuickRecall() {
         const host = document.getElementById("quickRecallList");
         if (!host) return;
@@ -1630,16 +1662,20 @@
           return;
         }
         for (const g of groups) {
+          const block = document.createElement("div");
+          block.className = "qr-study-block";
           const studyHead = document.createElement("div");
           studyHead.className = "qr-study";
           studyHead.textContent = g.title;
-          host.appendChild(studyHead);
+          block.appendChild(studyHead);
+          const bento = document.createElement("div");
+          bento.className = "qr-bento";
           g.palaces.forEach((p, pi) => {
             if (pi > 0) {
               const gap = document.createElement("div");
-              gap.className = "qr-palace-gap";
+              gap.className = "qr-palace-break";
               gap.setAttribute("aria-hidden", "true");
-              host.appendChild(gap);
+              bento.appendChild(gap);
             }
             for (const b of beasts(p.id)) {
               for (const a of atoms(b.id)) {
@@ -1655,24 +1691,46 @@
                   a.concept,
                   a.keywords,
                 );
-                const parts = ['<span aria-hidden="true">🟧</span>'];
-                if (peg) parts.push(`[${esc(peg)}]`);
-                if (name) parts.push(esc(name));
-                if (conceptHtml) parts.push(conceptHtml);
-                btn.innerHTML = parts.join(" ");
+                const marks = ['<span aria-hidden="true">🟧</span>'];
+                if (a.zone || a.zone_label) {
+                  marks.push('<span aria-hidden="true">🟦</span>');
+                }
+                const bodyParts = [];
+                if (peg) bodyParts.push(`[${esc(peg)}]`);
+                if (name) bodyParts.push(esc(name));
+                if (conceptHtml) bodyParts.push(conceptHtml);
+                btn.innerHTML =
+                  `<span class="qr-marks">${marks.join("")}</span>` +
+                  `<span class="qr-body">${bodyParts.join(" ")}</span>`;
                 btn.addEventListener("click", () =>
                   pickQuickRecallPalace(p.id),
                 );
-                host.appendChild(btn);
+                btn.addEventListener("focus", () => selectQuickRecallLine(btn));
+                bento.appendChild(btn);
               }
             }
           });
+          block.appendChild(bento);
+          host.appendChild(block);
         }
         const hint = document.getElementById("quickRecallHint");
         if (hint) {
           const nPal = groups.reduce((n, g) => n + g.palaces.length, 0);
-          hint.textContent = `${atomCount} atom${atomCount === 1 ? "" : "s"} · ${nPal} palace${nPal === 1 ? "" : "s"} · click a line to open that palace`;
+          hint.textContent = `${atomCount} atom${atomCount === 1 ? "" : "s"} · ${nPal} palace${nPal === 1 ? "" : "s"} · arrows move · Enter opens palace`;
         }
+      }
+
+      function quickRecallButtons() {
+        return [...document.querySelectorAll("#quickRecallList .qr-line")];
+      }
+
+      function selectQuickRecallLine(btn) {
+        if (!btn) return;
+        quickRecallButtons().forEach((el) => {
+          el.classList.toggle("selected", el === btn);
+        });
+        if (document.activeElement !== btn) btn.focus({ preventScroll: true });
+        btn.scrollIntoView({ block: "nearest", inline: "nearest" });
       }
 
       function pickQuickRecallPalace(palaceId) {
@@ -1734,43 +1792,83 @@
           closeStudyModal({ focusLatest: true });
           return true;
         }
-        const buttons = [
+        const qrButtons = quickRecallButtons();
+        const studyButtons = [
           ...document.querySelectorAll("#studyModalList button"),
         ];
-        if (!buttons.length) return true;
         const focused = document.activeElement;
-        const focusIdx = buttons.indexOf(focused);
-        const cols = studyModalColumnCount(buttons);
+        const qrIdx = qrButtons.indexOf(focused);
+        const studyIdx = studyButtons.indexOf(focused);
+        const onQr = qrIdx >= 0 || (studyIdx < 0 && qrButtons.length > 0);
+
+        if (
+          onQr &&
+          qrButtons.length &&
+          (e.key === "ArrowRight" ||
+            e.key === "ArrowLeft" ||
+            e.key === "ArrowDown" ||
+            e.key === "ArrowUp" ||
+            e.key === "Enter" ||
+            e.key === " ")
+        ) {
+          let idx = qrIdx;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+            e.preventDefault();
+            idx = idx < 0 ? 0 : Math.min(qrButtons.length - 1, idx + 1);
+            selectQuickRecallLine(qrButtons[idx]);
+            return true;
+          }
+          if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+            e.preventDefault();
+            idx = idx < 0 ? 0 : Math.max(0, idx - 1);
+            selectQuickRecallLine(qrButtons[idx]);
+            return true;
+          }
+          if (e.key === "Enter" || e.key === " ") {
+            const btn = idx >= 0 ? qrButtons[idx] : qrButtons[0];
+            if (btn?.dataset.palaceId) {
+              e.preventDefault();
+              pickQuickRecallPalace(btn.dataset.palaceId);
+              return true;
+            }
+          }
+        }
+
+        if (!studyButtons.length) return true;
+        const focusIdx = studyIdx;
+        const cols = studyModalColumnCount(studyButtons);
         if (e.key === "ArrowRight") {
           e.preventDefault();
           const next =
-            focusIdx < 0 ? 0 : Math.min(buttons.length - 1, focusIdx + 1);
-          buttons[next].focus();
+            focusIdx < 0 ? 0 : Math.min(studyButtons.length - 1, focusIdx + 1);
+          studyButtons[next].focus();
           return true;
         }
         if (e.key === "ArrowLeft") {
           e.preventDefault();
           const prev = focusIdx < 0 ? 0 : Math.max(0, focusIdx - 1);
-          buttons[prev].focus();
+          studyButtons[prev].focus();
           return true;
         }
         if (e.key === "ArrowDown") {
           e.preventDefault();
           const next =
-            focusIdx < 0 ? 0 : Math.min(buttons.length - 1, focusIdx + cols);
-          buttons[next].focus();
+            focusIdx < 0
+              ? 0
+              : Math.min(studyButtons.length - 1, focusIdx + cols);
+          studyButtons[next].focus();
           return true;
         }
         if (e.key === "ArrowUp") {
           e.preventDefault();
           const prev = focusIdx < 0 ? 0 : Math.max(0, focusIdx - cols);
-          buttons[prev].focus();
+          studyButtons[prev].focus();
           return true;
         }
         if (e.key === "Enter" || e.key === " ") {
           if (focusIdx >= 0) {
             e.preventDefault();
-            pickStudyItem(buttons[focusIdx].dataset.studyId);
+            pickStudyItem(studyButtons[focusIdx].dataset.studyId);
             return true;
           }
         }

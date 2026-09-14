@@ -1,6 +1,6 @@
 # Quick Recall
 
-<details>
+<details open>
 <summary><strong>Data Analyst</strong> · 7 palaces · 29 atoms</summary>
 
 🟧 [Ay] aye-aye [<kbd><strong><u>Viewpoint</u></strong></kbd> Controls: I show two windows together] [<kbd><strong><u>overview</u></strong></kbd> plus enlarged <kbd><strong><u>detail</u></strong></kbd> of one area]
@@ -41,7 +41,7 @@
 
 </details>
 
-<details>
+<details open>
 <summary><strong>Piano</strong> · 4 palaces · 11 atoms</summary>
 
 🟧 [Al] alligator Bass F sits on the second line from the top and acts as a symmetrical mirror image to Treble G around Middle C.
