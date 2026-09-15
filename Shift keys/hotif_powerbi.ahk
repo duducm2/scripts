@@ -1,4 +1,4 @@
-; =============================================================================
+﻿; =============================================================================
 ; Shift keys module: hotif_powerbi.ahk
 ; Power BI hotkeys
 ; Extracted verbatim from Shift keys.ahk; loaded via #include into the
@@ -25,7 +25,7 @@
             homeTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Home' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -56,10 +56,10 @@
         if getDataBtn {
             getDataBtn.Click()
         } else {
-            MsgBox "Could not find the 'Get data' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Get data' button.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error triggering Get data: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Get data: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -82,7 +82,7 @@
             homeTab.Click()
             Sleep 120
         } else {
-            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Home' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -117,10 +117,10 @@
         if transformBtn {
             transformBtn.Click()
         } else {
-            MsgBox "Could not find the 'Transform data' menu item.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Transform data' menu item.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error triggering Transform data: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Transform data: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -155,10 +155,10 @@
         if reportTab {
             reportTab.Click()
         } else {
-            MsgBox "Could not find the 'Report view' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Report view' tab.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error switching to Report view: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error switching to Report view: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -177,10 +177,10 @@
         if tableTab {
             tableTab.Click()
         } else {
-            MsgBox "Could not find the 'Table view' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Table view' tab.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error switching to Table view: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error switching to Table view: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -199,10 +199,10 @@
         if modelTab {
             modelTab.Click()
         } else {
-            MsgBox "Could not find the 'Model view' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Model view' tab.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error switching to Model view: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error switching to Model view: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -267,10 +267,10 @@
         if buildTab {
             buildTab.Click()
         } else {
-            MsgBox "Could not find the 'Build visual' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Build visual' tab.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error switching to Build visual: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error switching to Build visual: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -340,10 +340,10 @@
         if formatTab {
             formatTab.Click()
         } else {
-            MsgBox "Could not find the 'Format visual' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Format visual' tab.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error switching to Format visual: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error switching to Format visual: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -368,7 +368,7 @@
         }
 
         if !dataBtn {
-            MsgBox "Could not locate the Data button anchor.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not locate the Data button anchor.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -385,7 +385,7 @@
         }
 
         if !focused {
-            MsgBox "Could not focus the Data button anchor.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not focus the Data button anchor.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -394,7 +394,7 @@
         Sleep 120
         Send "^a"
     } catch Error as e {
-        MsgBox "Error selecting the Power BI search field: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error selecting the Power BI search field: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -682,7 +682,7 @@
             homeTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Home' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -701,10 +701,10 @@
         if newMeasureBtn {
             newMeasureBtn.Click()
         } else {
-            MsgBox "Could not find the 'New measure' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'New measure' button.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error triggering New measure: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering New measure: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -727,7 +727,7 @@
             homeTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Home' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -743,10 +743,10 @@
         if refreshBtn {
             refreshBtn.Click()
         } else {
-            MsgBox "Could not find the 'Refresh' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Refresh' button.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error triggering Refresh: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Refresh: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -769,7 +769,7 @@
             homeTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Home' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -785,10 +785,10 @@
         if publishBtn {
             publishBtn.Click()
         } else {
-            MsgBox "Could not find the 'Publish' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Publish' button.", 2200, BANNER_ACCENT_ERROR)
         }
     } catch Error as e {
-        MsgBox "Error triggering Publish: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Publish: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -811,7 +811,7 @@
             formatTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Format' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -832,7 +832,7 @@
         }
 
         if !bringForwardBtn {
-            MsgBox "Could not find the 'Bring forward' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Bring forward' button.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -850,7 +850,7 @@
         HideSmallLoadingIndicator_ChatGPT()
     } catch Error as e {
         HideSmallLoadingIndicator_ChatGPT()
-        MsgBox "Error triggering Bring forward: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Bring forward: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -873,7 +873,7 @@
             formatTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Format' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -894,7 +894,7 @@
         }
 
         if !sendBackwardBtn {
-            MsgBox "Could not find the 'Send backward' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Send backward' button.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -912,7 +912,7 @@
         HideSmallLoadingIndicator_ChatGPT()
     } catch Error as e {
         HideSmallLoadingIndicator_ChatGPT()
-        MsgBox "Error triggering Send backward: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Send backward: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -935,7 +935,7 @@
             formatTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Format' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -962,14 +962,14 @@
         }
 
         if !alignBtn {
-            MsgBox "Could not find the 'Align' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Align' button.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
         ; Click the Align button
         alignBtn.Click()
     } catch Error as e {
-        MsgBox "Error triggering Align: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Align: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -1002,14 +1002,14 @@
         }
 
         if !fitToPageBtn {
-            MsgBox "Could not find the 'Fit to page' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Fit to page' button.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
         ; Click the Fit to page button
         fitToPageBtn.Click()
     } catch Error as e {
-        MsgBox "Error triggering Fit to page: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Fit to page: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -1071,14 +1071,14 @@
         }
 
         if !formatPainterBtn {
-            MsgBox "Could not find the 'Format painter' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Format painter' button.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
         ; Click the Format painter button
         formatPainterBtn.Click()
     } catch Error as e {
-        MsgBox "Error triggering Format painter: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Format painter: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -1101,7 +1101,7 @@
             formatTab.Click()
             Sleep 200
         } else {
-            MsgBox "Could not find the 'Format' tab.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Format' tab.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -1158,14 +1158,14 @@
         }
 
         if !groupBtn {
-            MsgBox "Could not find the 'Group' button.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find the 'Group' button.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
         ; Click the Group button
         groupBtn.Click()
     } catch Error as e {
-        MsgBox "Error triggering Group: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error triggering Group: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -1212,7 +1212,7 @@
         ToolTip msg
         SetTimer(() => ToolTip(), -1500)
     } catch Error as e {
-        MsgBox "Error closing Power BI drawers: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error closing Power BI drawers: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -1258,7 +1258,7 @@
         ToolTip msg
         SetTimer(() => ToolTip(), -1500)
     } catch Error as e {
-        MsgBox "Error opening Power BI drawers: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error opening Power BI drawers: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -1284,7 +1284,7 @@
         try items := root.FindElements(targetCond, UIA.TreeScope.Descendants)
 
         if !items {
-            MsgBox "Could not find any Power BI tables to collapse.", "Power BI", "IconX"
+            ShowCenteredOverlay_Utils("❌ Could not find any Power BI tables to collapse.", 2200, BANNER_ACCENT_ERROR)
             return
         }
 
@@ -1323,7 +1323,7 @@
         }
         SetTimer(() => ToolTip(), -1200)
     } catch Error as e {
-        MsgBox "Error collapsing Power BI tables: " e.Message, "Power BI Error", "IconX"
+        ShowCenteredOverlay_Utils("❌ Error collapsing Power BI tables: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
