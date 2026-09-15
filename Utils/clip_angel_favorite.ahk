@@ -931,8 +931,13 @@ ClipAngel_SendIncrementalPaste() {
     Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
 }
 
+; End suppress (opacity/geometry) when active, then minimize and restore prior focus.
 ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
-    if hwnd := ClipAngel_MainHwnd()
+    global g_ClipAngelFavoriteSuppressActive
+    hwnd := ClipAngel_MainHwnd()
+    if (hwnd && g_ClipAngelFavoriteSuppressActive)
+        ClipAngel_EndFavoriteSuppress(hwnd)
+    else if (hwnd)
         ClipAngel_HideWindow(hwnd)
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
@@ -956,8 +961,8 @@ ClipAngel_ClearFavoriteSessionOpacity(hwnd := 0) {
     }
 }
 
-; Park Clip Angel off-screen at opacity 0 for MarkLastClipAsFavorite (no visible flash).
-; Does not activate the window — caller keeps prior focus; UIA / ControlSend still work.
+; Park Clip Angel off-screen at opacity 0 for transient automation (favorite, paste, merge, paste-file).
+; Does not activate the window — caller keeps prior focus; UIA / ControlSend / PostHotkey still work.
 ClipAngel_BeginFavoriteSuppress(hwnd) {
     global g_ClipAngelFavoriteSuppressActive, g_ClipAngelFavoriteHadSavedPos
     global g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY
@@ -1180,8 +1185,9 @@ ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
 }
 
 ; Open Clip Angel on all marks + Row 0, then restore prior focus for paste.
+; suppressVisual (default true): park off-screen like MarkLastClipAsFavorite — no maximize flash.
 ; Replaces native Alt+P + fixed 200×3 settles.
-ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
+ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := true) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     targetMon := 0
@@ -1199,9 +1205,10 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
 }
 
 ; Open once via OpenForAutomation, wait for grid, then incremental paste (^!b).
-ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
-    ClipAngel_ActivateNativeFirstClip(priorHwnd)
-    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+; suppressVisual (default true): keepTransparent list wait so layout never maximizes on-screen.
+ClipAngel_SendNativeTopItemKeys(priorHwnd := 0, suppressVisual := true) {
+    ClipAngel_ActivateNativeFirstClip(priorHwnd, suppressVisual)
+    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, suppressVisual)
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
         ClipAngel_EnsureWindowActive(priorHwnd)
@@ -2254,5 +2261,3 @@ ClipAngel_UnfavoriteAllClips() {
         ShowCenteredOverlay_Utils(errMsg, 2500, BANNER_ACCENT_ERROR)
     return ok
 }
-
-

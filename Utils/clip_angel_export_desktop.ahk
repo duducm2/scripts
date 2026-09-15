@@ -532,15 +532,15 @@ ClipAngelExport_ActivateDesktopForPaste() {
 }
 
 ; ClipAngel Clip > Paste > Paste file into an already-prepared pasteHwnd.
+; Opens Clip Angel suppressed (off-screen/transparent); paste target keeps focus.
 ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd) {
     if !(pasteHwnd is Integer) || pasteHwnd <= 0
         return false
-    ClipAngel_ActivateNativeFirstClip(pasteHwnd)
+    ClipAngel_ActivateNativeFirstClip(pasteHwnd, true)
     hwnd := ClipAngel_MainHwnd()
     if (!hwnd)
         return false
-    ClipAngel_EnsureWindowActive(hwnd)
-    if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true)
+    if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, true)
         return false
     if !ClipAngel_InvokePasteEnter(hwnd)
         return false

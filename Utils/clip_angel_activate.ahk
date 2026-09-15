@@ -124,7 +124,7 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
 }
 
 ; Shared open for paste / export / merge / suppress paths: show+layout, MarkFilter, Row 0.
-; suppressVisual: park off-screen (favorite) — no foreground activate / loading bar.
+; suppressVisual: park off-screen (favorite/paste/merge/export) — no foreground activate / loading bar.
 ; Returns true and sets &outHwnd / &outRoot when provided.
 ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0) {
     wantAll := (mode = "all" || mode = "")

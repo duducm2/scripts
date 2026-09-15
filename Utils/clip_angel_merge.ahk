@@ -73,7 +73,7 @@ MergeNonFavoriteClips_ViaUI() {
         hwnd := 0
         root := 0
         ; Start on favorites to capture the first favorite title (Row 0).
-        if !ClipAngel_OpenForAutomation("favorites", 0, false, &hwnd, &root) {
+        if !ClipAngel_OpenForAutomation("favorites", 0, true, &hwnd, &root) {
             try StandardLoadingBar_Hide(0)
             catch {
             }
@@ -105,7 +105,7 @@ MergeNonFavoriteClips_ViaUI() {
         favoriteClipTitle := ParseRTFToPlainText(rtfValue)
 
         StandardLoadingBar_Update("⏳ Searching all marks...", BANNER_ACCENT_INTERMEDIATE)
-        if !ClipAngel_OpenForAutomation("all", 0, false, &hwnd, &root) {
+        if !ClipAngel_OpenForAutomation("all", 0, true, &hwnd, &root) {
             try StandardLoadingBar_Hide(0)
             catch {
             }
