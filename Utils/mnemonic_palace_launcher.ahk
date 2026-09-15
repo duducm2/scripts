@@ -385,14 +385,8 @@ Palace_EnsureServer(forceRestart := false) {
     return false
 }
 
-; Kill orphaned :8767 when Utils.ahk exits / reloads (#SingleInstance Force; not Act warmup).
-Palace_OnExitStopServer(*) {
-    try Palace_StopServer()
-    catch {
-    }
-}
-if (!IsSet(g_PalaceLauncherSkipOnExit) || !g_PalaceLauncherSkipOnExit)
-    OnExit(Palace_OnExitStopServer, -1)
+; Do NOT stop :8767 on Utils exit/reload — web_servers_warmup.ahk keeps servers warm.
+; Force-restart still available via Palace_EnsureServer(true) / Palace_StopServer().
 
 Palace_IsChromeWindowTitle(title) {
     t := Trim(title)

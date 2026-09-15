@@ -334,6 +334,12 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\task_import.ahk
 ; CRUD lives in tasks/web + task_server.py; pack import is Import Management [T]
 
+; Persistent keep-alive: Tasks (:8766), Memory Palace (:8767), Finance (:8765).
+; #SingleInstance Force — safe to Run on every Utils/AppLaunchers load.
+try Run('"' . A_AhkPath . '" /ErrorStdOut "' . A_ScriptDir . '\Utils\web_servers_warmup.ahk"', , "Hide")
+catch {
+}
+
 ; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
 #include %A_ScriptDir%\Utils\prompt_context_picker.ahk
 

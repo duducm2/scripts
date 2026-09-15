@@ -172,15 +172,25 @@ Finance_OpenDashboard() {
         Finance_Notify("dashboard_server.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    ; Restart localhost server so Close/Due edits and API routes are fresh.
-    Finance_StopDashboardServer()
-    srvCmd := pyCmd . ' "' . serverPy . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
-    try Run(A_ComSpec . ' /c ' . srvCmd, A_ScriptDir, "Hide")
-    catch as e {
-        Finance_Notify("Dashboard server failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-        return
+    ; Reuse warm :8765 when healthy (static HTML is re-read per request after chart regen).
+    if (!Finance_IsDashboardServerRunning()) {
+        srvCmd := pyCmd . ' -u "' . serverPy . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+        try Run(srvCmd, A_ScriptDir, "Hide")
+        catch as e {
+            Finance_Notify("Dashboard server failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        deadline := A_TickCount + 4000
+        while (A_TickCount < deadline) {
+            if (Finance_IsDashboardServerRunning())
+                break
+            Sleep 150
+        }
+        if (!Finance_IsDashboardServerRunning()) {
+            Finance_Notify("Dashboard server did not start", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
     }
-    Sleep(600)
     dashUrl := "http://127.0.0.1:8765/dashboard.html?t=" . A_TickCount
     try Run('chrome.exe --new-window "' . dashUrl . '"')
     catch as e {
@@ -188,6 +198,27 @@ Finance_OpenDashboard() {
         return
     }
     Finance_CloseGui()
+}
+
+Finance_IsDashboardServerRunning(port := 8765) {
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", "http://127.0.0.1:" . port . "/health", false)
+        whr.SetTimeouts(400, 400, 1200, 1200)
+        whr.Send()
+        if (whr.Status = 200)
+            return true
+    } catch {
+    }
+    try {
+        whr2 := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr2.Open("GET", "http://127.0.0.1:" . port . "/api/health", false)
+        whr2.SetTimeouts(400, 400, 1200, 1200)
+        whr2.Send()
+        return (whr2.Status = 200)
+    } catch {
+        return false
+    }
 }
 
 Finance_StopDashboardServer() {

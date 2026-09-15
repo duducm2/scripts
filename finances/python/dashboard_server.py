@@ -143,7 +143,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/api/health":
+        # /health matches Tasks/Palace; /api/health kept for older clients.
+        if parsed.path in ("/health", "/api/health"):
             self._json(200, {"ok": True})
             return
         if parsed.path == "/api/cards":

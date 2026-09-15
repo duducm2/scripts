@@ -881,7 +881,7 @@ cheatSheets["EXCEL.EXE"] := "
     ✏️ [E]Enable [E]diting
     📥 [I][I]mport CSV (From Text/CSV → format → shade → save UTF-8)
     📊 [C][C]SV to columns (semicolon delimited)
-    📏 [N][N]arrow oversized columns (autofit, cap >15→5, zoom row 1)
+    📐 [N]Cycle layout pillars (Balanced·Scan·Narrative·Reference·Titles·Triage·Immersive)
     🌐 [L]Open cell [L]ink in new Chrome
     🔢 [F][F]ill series down to last used row
     📐 [O][O]rganize (select all · center · font 11)

@@ -89,7 +89,7 @@ Task_CloseWebApp() {
         }
     }
     Task_DashboardHwndCacheClear()
-    Task_StopServer()
+    ; Keep :8766 warm — web_servers_warmup.ahk owns server lifecycle.
 }
 
 Task_PidPath() {
@@ -338,14 +338,8 @@ Task_IsServerRunning(port := 0) {
     }
 }
 
-; Kill orphaned :8766 when Utils.ahk exits / reloads (not Act warmup — see web_servers_warmup.ahk).
-Task_OnExitStopServer(*) {
-    try Task_StopServer()
-    catch {
-    }
-}
-if (!IsSet(g_TaskLauncherSkipOnExit) || !g_TaskLauncherSkipOnExit)
-    OnExit(Task_OnExitStopServer, -1)
+; Do NOT stop :8766 on Utils exit/reload — web_servers_warmup.ahk keeps servers warm.
+; Force-restart still available via Task_EnsureServer(true) / Task_StopServer().
 
 Task_IsChromeWindowTitle(title) {
     t := Trim(title)

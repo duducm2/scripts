@@ -96,7 +96,8 @@ GitInRepoOrFail(notesFolder, "fetch --prune", 900000)
 GitInRepoOrFail(notesFolder, "pull", 900000)
 ; MyNotes technique prompts are read from disk when you use them in Utility Shortcuts (Utils.ahk), not by Act.
 StandardLoadingBar_Update("🚀 Launching apps...")
-; Pre-start Tasks (:8766) and Memory Palace (:8767) via self-contained Utils\web_servers_warmup.ahk.
+; Persistent keep-alive: Tasks (:8766), Memory Palace (:8767), Finance dashboard (:8765).
+; Heartbeats every 30s; Utils reload no longer kills these Python servers.
 Run GetScriptPath("Utils\web_servers_warmup.ahk")
 Sleep 10000
 

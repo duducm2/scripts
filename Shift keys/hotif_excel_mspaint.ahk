@@ -241,44 +241,567 @@ Excel_PromoteGenericHeaders() {
     }
 }
 
-; Helper: Autofit used columns, then cap any width greater than maxWidth to cappedWidth.
-; Ends by selecting row 1 (A through last used column) and Alt, 0, 6 (Zoom to Selection).
-Excel_NormalizeColumnWidths(maxWidth := 15, cappedWidth := 5) {
-    ShowSmallLoadingIndicator_ChatGPT("Normalizing column widths...")
+; Shift + N : Cycle layout pillars
+; Balanced · Scan · Narrative · Reference · Titles · Triage · Immersive
+global Excel_LayoutPillarIndex := -1
+global Excel_LayoutPillarCount := 7
+
+Excel_ReadableLayout_CellStrLen(v) {
+    if (v = "")
+        return 0
+    try return StrLen(Trim(String(v)))
+    catch {
+        return 0
+    }
+}
+
+Excel_ReadableLayout_ResolveRange(xl, ws, cell) {
+    try {
+        loCount := 0
+        try loCount := ws.ListObjects.Count
+        catch {
+        }
+        loop loCount {
+            lo := ws.ListObjects(A_Index)
+            try {
+                if xl.Intersect(cell, lo.Range)
+                    return lo.Range
+            } catch {
+            }
+        }
+    } catch {
+    }
+    try return ws.UsedRange
+    catch {
+        return 0
+    }
+}
+
+Excel_Layout_PillarName(pillar) {
+    switch pillar {
+        case 0: return "Balanced"
+        case 1: return "Scan"
+        case 2: return "Narrative"
+        case 3: return "Reference"
+        case 4: return "Titles"
+        case 5: return "Triage"
+        case 6: return "Immersive"
+        default: return "Balanced"
+    }
+}
+
+; Returns array of Maps: header, headerLen, maxLen, isUrlish, kind ("short"|"wrap"|"single")
+Excel_Layout_Measure(ws, tableRange) {
+    static SHORT_MAX_LEN := 18
+    static WRAP_MAX_LEN := 160
+
+    startRow := tableRange.Row
+    startCol := tableRange.Column
+    rowCount := tableRange.Rows.Count
+    colCount := tableRange.Columns.Count
+    endRow := startRow + rowCount - 1
+    metrics := []
+
+    loop colCount {
+        c := startCol + A_Index - 1
+        headerText := ""
+        headerLen := 0
+        maxLen := 0
+        try {
+            headerText := Trim(String(ws.Cells(startRow, c).Text))
+            headerLen := StrLen(headerText)
+            maxLen := headerLen
+        } catch {
+        }
+        r := startRow
+        while (r <= endRow) {
+            try {
+                len := Excel_ReadableLayout_CellStrLen(ws.Cells(r, c).Text)
+                if (len > maxLen)
+                    maxLen := len
+            } catch {
+            }
+            r++
+        }
+
+        headerLower := StrLower(headerText)
+        isUrlish := InStr(headerLower, "url") || InStr(headerLower, "link")
+        if !isUrlish {
+            sampleR := startRow + (rowCount > 1 ? 1 : 0)
+            try {
+                sample := Trim(String(ws.Cells(sampleR, c).Text))
+                if (SubStr(sample, 1, 7) = "http://" || SubStr(sample, 1, 8) = "https://")
+                    isUrlish := true
+            } catch {
+            }
+        }
+
+        kind := "wrap"
+        if (isUrlish || maxLen > WRAP_MAX_LEN)
+            kind := "single"
+        else if (maxLen <= SHORT_MAX_LEN)
+            kind := "short"
+
+        metrics.Push(Map(
+            "header", headerText,
+            "headerLen", headerLen,
+            "maxLen", maxLen,
+            "isUrlish", isUrlish,
+            "kind", kind
+        ))
+    }
+    return metrics
+}
+
+Excel_Layout_BasePrefer(m) {
+    static SHORT_FLOOR := 4
+    static SHORT_CAP := 14
+    static WRAP_TARGET_MIN := 28
+    static WRAP_TARGET_MAX := 45
+    static SINGLE_WIDTH := 28
+
+    kind := m["kind"]
+    if (kind = "single")
+        return SINGLE_WIDTH
+    if (kind = "short") {
+        snug := Max(m["maxLen"] + 2, m["headerLen"] + 1)
+        return Min(SHORT_CAP, Max(SHORT_FLOOR, snug))
+    }
+    return Min(WRAP_TARGET_MAX, Max(WRAP_TARGET_MIN, Round(m["maxLen"] / 4)))
+}
+
+; Returns Map(prefer, doWrap, wrapCount, shortCount, singleCount, focusHeader, maxRowHeight)
+Excel_Layout_PrefsForPillar(metrics, pillar) {
+    static SCAN_ROW_HEIGHT := 22
+    static DEFAULT_ROW_HEIGHT := 72
+
+    colCount := metrics.Length
+    prefer := []
+    doWrap := []
+    wrapCount := 0
+    shortCount := 0
+    singleCount := 0
+    focusHeader := ""
+    maxRowHeight := DEFAULT_ROW_HEIGHT
+
+    ; Balanced base prefs
+    loop colCount {
+        m := metrics[A_Index]
+        base := Excel_Layout_BasePrefer(m)
+        prefer.Push(base)
+        wrap := (m["kind"] = "wrap")
+        doWrap.Push(wrap)
+        if (m["kind"] = "single")
+            singleCount++
+        else if (m["kind"] = "short")
+            shortCount++
+        else
+            wrapCount++
+    }
+
+    if (pillar = 0) {
+        ; Balanced — already set
+        return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", wrapCount,
+            "shortCount", shortCount, "singleCount", singleCount,
+            "focusHeader", "", "maxRowHeight", maxRowHeight)
+    }
+
+    if (pillar = 1) {
+        ; Scan — all single-line, snug, compact rows
+        prefer := []
+        doWrap := []
+        wrapCount := 0
+        shortCount := 0
+        singleCount := 0
+        loop colCount {
+            m := metrics[A_Index]
+            snug := Max(m["maxLen"] + 1, m["headerLen"] + 1)
+            prefer.Push(Min(16, Max(3.5, snug)))
+            doWrap.Push(false)
+            shortCount++
+        }
+        return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", 0,
+            "shortCount", shortCount, "singleCount", 0,
+            "focusHeader", "", "maxRowHeight", SCAN_ROW_HEIGHT)
+    }
+
+    if (pillar = 2) {
+        ; Narrative — focus longest wrap-eligible column
+        focusIdx := 0
+        focusLen := -1
+        loop colCount {
+            m := metrics[A_Index]
+            if (m["kind"] = "wrap" && m["maxLen"] > focusLen) {
+                focusLen := m["maxLen"]
+                focusIdx := A_Index
+            }
+        }
+        if (focusIdx = 0) {
+            return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", wrapCount,
+                "shortCount", shortCount, "singleCount", singleCount,
+                "focusHeader", "", "maxRowHeight", maxRowHeight)
+        }
+        prefer2 := []
+        doWrap2 := []
+        wrapCount := 0
+        shortCount := 0
+        singleCount := 0
+        loop colCount {
+            m := metrics[A_Index]
+            base := Excel_Layout_BasePrefer(m)
+            if (A_Index = focusIdx) {
+                prefer2.Push(base * 3.5)
+                doWrap2.Push(true)
+                wrapCount++
+            } else {
+                prefer2.Push(base * 0.55)
+                doWrap2.Push(false)
+                if (m["kind"] = "single")
+                    singleCount++
+                else
+                    shortCount++
+            }
+        }
+        focusHeader := metrics[focusIdx]["header"]
+        return Map("prefer", prefer2, "doWrap", doWrap2, "wrapCount", wrapCount,
+            "shortCount", shortCount, "singleCount", singleCount,
+            "focusHeader", focusHeader, "maxRowHeight", maxRowHeight)
+    }
+
+    if (pillar = 3) {
+        ; Reference — focus largest URL/extreme column
+        focusIdx := 0
+        focusLen := -1
+        loop colCount {
+            m := metrics[A_Index]
+            if (m["kind"] = "single" && m["maxLen"] > focusLen) {
+                focusLen := m["maxLen"]
+                focusIdx := A_Index
+            }
+        }
+        if (focusIdx = 0) {
+            return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", wrapCount,
+                "shortCount", shortCount, "singleCount", singleCount,
+                "focusHeader", "", "maxRowHeight", maxRowHeight)
+        }
+        prefer3 := []
+        doWrap3 := []
+        wrapCount := 0
+        shortCount := 0
+        singleCount := 0
+        loop colCount {
+            m := metrics[A_Index]
+            base := Excel_Layout_BasePrefer(m)
+            if (A_Index = focusIdx) {
+                prefer3.Push(base * 2.5)
+                doWrap3.Push(false)
+                singleCount++
+            } else if (m["kind"] = "wrap") {
+                prefer3.Push(base * 0.7)
+                doWrap3.Push(true)
+                wrapCount++
+            } else {
+                prefer3.Push(base)
+                doWrap3.Push(false)
+                if (m["kind"] = "single")
+                    singleCount++
+                else
+                    shortCount++
+            }
+        }
+        focusHeader := metrics[focusIdx]["header"]
+        return Map("prefer", prefer3, "doWrap", doWrap3, "wrapCount", wrapCount,
+            "shortCount", shortCount, "singleCount", singleCount,
+            "focusHeader", focusHeader, "maxRowHeight", maxRowHeight)
+    }
+
+    if (pillar = 4) {
+        ; Titles — focus shortest wrap-eligible column (role/title skimming)
+        focusIdx := 0
+        focusLen := 0x7FFFFFFF
+        loop colCount {
+            m := metrics[A_Index]
+            if (m["kind"] = "wrap" && m["maxLen"] < focusLen) {
+                focusLen := m["maxLen"]
+                focusIdx := A_Index
+            }
+        }
+        if (focusIdx = 0) {
+            return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", wrapCount,
+                "shortCount", shortCount, "singleCount", singleCount,
+                "focusHeader", "", "maxRowHeight", maxRowHeight)
+        }
+        prefer4 := []
+        doWrap4 := []
+        wrapCount := 0
+        shortCount := 0
+        singleCount := 0
+        loop colCount {
+            m := metrics[A_Index]
+            base := Excel_Layout_BasePrefer(m)
+            if (A_Index = focusIdx) {
+                prefer4.Push(base * 3.0)
+                doWrap4.Push(true)
+                wrapCount++
+            } else if (m["kind"] = "short") {
+                prefer4.Push(base * 1.15)
+                doWrap4.Push(false)
+                shortCount++
+            } else {
+                prefer4.Push(base * 0.45)
+                doWrap4.Push(false)
+                if (m["kind"] = "single")
+                    singleCount++
+                else
+                    wrapCount++
+            }
+        }
+        focusHeader := metrics[focusIdx]["header"]
+        return Map("prefer", prefer4, "doWrap", doWrap4, "wrapCount", wrapCount,
+            "shortCount", shortCount, "singleCount", singleCount,
+            "focusHeader", focusHeader, "maxRowHeight", maxRowHeight)
+    }
+
+    if (pillar = 5) {
+        ; Triage — boost short/categorical cols; one title readable; crush extremes
+        titleIdx := 0
+        titleLen := -1
+        loop colCount {
+            m := metrics[A_Index]
+            if (m["kind"] = "wrap" && m["maxLen"] > titleLen) {
+                titleLen := m["maxLen"]
+                titleIdx := A_Index
+            }
+        }
+        ; Prefer shorter wrap as title label when multiple exist
+        if (titleIdx > 0) {
+            shortestWrap := 0x7FFFFFFF
+            loop colCount {
+                m := metrics[A_Index]
+                if (m["kind"] = "wrap" && m["maxLen"] < shortestWrap) {
+                    shortestWrap := m["maxLen"]
+                    titleIdx := A_Index
+                }
+            }
+        }
+        prefer5 := []
+        doWrap5 := []
+        wrapCount := 0
+        shortCount := 0
+        singleCount := 0
+        loop colCount {
+            m := metrics[A_Index]
+            base := Excel_Layout_BasePrefer(m)
+            if (m["kind"] = "short") {
+                prefer5.Push(base * 2.4)
+                doWrap5.Push(false)
+                shortCount++
+            } else if (A_Index = titleIdx) {
+                prefer5.Push(base * 2.0)
+                doWrap5.Push(true)
+                wrapCount++
+            } else {
+                prefer5.Push(Max(3.5, base * 0.35))
+                doWrap5.Push(false)
+                if (m["kind"] = "single")
+                    singleCount++
+                else
+                    shortCount++
+            }
+        }
+        focusHeader := (titleIdx > 0) ? metrics[titleIdx]["header"] : ""
+        return Map("prefer", prefer5, "doWrap", doWrap5, "wrapCount", wrapCount,
+            "shortCount", shortCount, "singleCount", singleCount,
+            "focusHeader", focusHeader, "maxRowHeight", SCAN_ROW_HEIGHT + 8)
+    }
+
+    if (pillar = 6) {
+        ; Immersive — deep-read longest non-URL prose (incl. extreme); force wrap
+        focusIdx := 0
+        focusLen := -1
+        loop colCount {
+            m := metrics[A_Index]
+            if (m["isUrlish"])
+                continue
+            if (m["maxLen"] > focusLen && m["maxLen"] > 18) {
+                focusLen := m["maxLen"]
+                focusIdx := A_Index
+            }
+        }
+        if (focusIdx = 0) {
+            return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", wrapCount,
+                "shortCount", shortCount, "singleCount", singleCount,
+                "focusHeader", "", "maxRowHeight", maxRowHeight)
+        }
+        prefer6 := []
+        doWrap6 := []
+        wrapCount := 0
+        shortCount := 0
+        singleCount := 0
+        loop colCount {
+            m := metrics[A_Index]
+            base := Excel_Layout_BasePrefer(m)
+            if (A_Index = focusIdx) {
+                prefer6.Push(Max(base, 36) * 5.0)
+                doWrap6.Push(true)
+                wrapCount++
+            } else {
+                prefer6.Push(base * 0.4)
+                doWrap6.Push(false)
+                if (m["kind"] = "single")
+                    singleCount++
+                else
+                    shortCount++
+            }
+        }
+        focusHeader := metrics[focusIdx]["header"]
+        return Map("prefer", prefer6, "doWrap", doWrap6, "wrapCount", wrapCount,
+            "shortCount", shortCount, "singleCount", singleCount,
+            "focusHeader", focusHeader, "maxRowHeight", 96)
+    }
+
+    ; Unknown pillar → Balanced
+    return Map("prefer", prefer, "doWrap", doWrap, "wrapCount", wrapCount,
+        "shortCount", shortCount, "singleCount", singleCount,
+        "focusHeader", "", "maxRowHeight", maxRowHeight)
+}
+
+Excel_Layout_Apply(xl, ws, tableRange, prefer, doWrap, maxRowHeight) {
+    static MIN_COL_CHARS := 3.5
+    static GUTTER_PTS := 36
+
+    startRow := tableRange.Row
+    startCol := tableRange.Column
+    rowCount := tableRange.Rows.Count
+    colCount := tableRange.Columns.Count
+    endRow := startRow + rowCount - 1
+
+    ptsPerChar := 7.0
+    try {
+        probe := ws.Columns(startCol)
+        cw := probe.ColumnWidth
+        pw := probe.Width
+        if (cw > 0 && pw > 0)
+            ptsPerChar := pw / cw
+    } catch {
+    }
+
+    usablePts := 0
+    try usablePts := xl.ActiveWindow.UsableWidth
+    catch {
+        try usablePts := xl.UsableWidth
+        catch {
+            usablePts := 0
+        }
+    }
+    budgetPts := Max(120.0, usablePts - GUTTER_PTS)
+
+    sumPrefer := 0.0
+    for w in prefer
+        sumPrefer += w
+    if (sumPrefer <= 0)
+        sumPrefer := colCount * 10.0
+
+    scale := budgetPts / (sumPrefer * ptsPerChar)
+    allocated := []
+    sumAlloc := 0.0
+    wrapCount := 0
+    loop colCount {
+        w := Max(MIN_COL_CHARS, prefer[A_Index] * scale)
+        allocated.Push(w)
+        sumAlloc += w
+        if doWrap[A_Index]
+            wrapCount++
+    }
+    leftoverChars := (budgetPts / ptsPerChar) - sumAlloc
+    if (leftoverChars > 0.5 && wrapCount > 0) {
+        addEach := leftoverChars / wrapCount
+        loop colCount {
+            if doWrap[A_Index]
+                allocated[A_Index] += addEach
+        }
+    } else if (leftoverChars > 0.5) {
+        addEach := leftoverChars / colCount
+        loop colCount
+            allocated[A_Index] += addEach
+    }
+
+    prevScreen := true
+    try prevScreen := xl.ScreenUpdating
+    try {
+        xl.ScreenUpdating := false
+        loop colCount {
+            c := startCol + A_Index - 1
+            colRng := ws.Range(ws.Cells(startRow, c), ws.Cells(endRow, c))
+            colRng.WrapText := doWrap[A_Index]
+            ws.Columns(c).ColumnWidth := allocated[A_Index]
+        }
+        tableRange.Rows.AutoFit()
+        r := startRow
+        while (r <= endRow) {
+            try {
+                if (ws.Rows(r).RowHeight > maxRowHeight)
+                    ws.Rows(r).RowHeight := maxRowHeight
+            } catch {
+            }
+            r++
+        }
+        tableRange.Select()
+    } finally {
+        try xl.ScreenUpdating := prevScreen
+    }
+    return true
+}
+
+Excel_Layout_CyclePillar() {
+    global Excel_LayoutPillarIndex, Excel_LayoutPillarCount
+
     try {
         xl := ComObjActive("Excel.Application")
         ws := xl.ActiveSheet
-        ur := ws.UsedRange
-        if (!ur) {
-            HideSmallLoadingIndicator_ChatGPT()
-            MsgBox("No used range on the active sheet.")
-            return
-        }
-        ur.Columns.AutoFit()
-        colCount := ur.Columns.Count
-        startCol := ur.Column
-        lastCol := startCol + colCount - 1
-        loop colCount {
-            col := ws.Columns(startCol + A_Index - 1)
-            if (col.ColumnWidth > maxWidth)
-                col.ColumnWidth := cappedWidth
-        }
-        ; First cell, then first row across used columns
-        ws.Range("A1").Select()
-        ws.Range(ws.Cells(1, 1), ws.Cells(1, lastCol)).Select()
-    } catch Error as err {
-        HideSmallLoadingIndicator_ChatGPT()
-        MsgBox("Could not normalize column widths:`n" err.Message)
-        return
+        cell := xl.ActiveCell
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Excel COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return false
     }
-    HideSmallLoadingIndicator_ChatGPT()
-    ; QAT: Zoom to Selection (Alt, 0, 6)
-    Sleep 100
-    Send "{Alt}"
-    Sleep 100
-    Send "0"
-    Sleep 100
-    Send "6"
+
+    tableRange := Excel_ReadableLayout_ResolveRange(xl, ws, cell)
+    if !tableRange {
+        ShowCenteredOverlay_Utils("❌ Nothing to layout on sheet", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    try {
+        if (tableRange.Columns.Count < 1 || tableRange.Rows.Count < 1) {
+            ShowCenteredOverlay_Utils("❌ Nothing to layout on sheet", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ Layout range failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    n := Excel_LayoutPillarCount
+    if (n < 1)
+        n := 7
+    Excel_LayoutPillarIndex := Mod(Excel_LayoutPillarIndex + 1, n)
+    pillar := Excel_LayoutPillarIndex
+    name := Excel_Layout_PillarName(pillar)
+
+    try {
+        metrics := Excel_Layout_Measure(ws, tableRange)
+        prefs := Excel_Layout_PrefsForPillar(metrics, pillar)
+        Excel_Layout_Apply(xl, ws, tableRange, prefs["prefer"], prefs["doWrap"], prefs["maxRowHeight"])
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ Layout failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    msg := "📐 " . (pillar + 1) . "/" . n . " " . name
+    if (prefs["focusHeader"] != "")
+        msg .= " · " . prefs["focusHeader"]
+    ShowCenteredOverlay_Utils(msg, 1800, BANNER_ACCENT_SUCCESS)
+    return true
 }
 
 ; After CSV Load: autofit, cap widths >20 → 20, wrap text, center H/V on imported table.
@@ -525,9 +1048,9 @@ Excel_SaveCsvUtf8FromClipboardPath() {
     FileDialog_SaveAsCsvUtf8()
 }
 
-; Shift + N : Narrow oversized columns (autofit, then cap width >15 → 5)
+; Shift + N : Cycle layout pillars (7 views)
 +n:: {
-    Excel_NormalizeColumnWidths()
+    Excel_Layout_CyclePillar()
 }
 
 ; Resolve http(s) URL from the active cell: Hyperlinks collection, =HYPERLINK()
