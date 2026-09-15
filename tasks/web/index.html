@@ -2724,6 +2724,20 @@
             return;
           }
           if (k === "e") {
+            if (state.projectFocusId) {
+              const secs = document.querySelectorAll(
+                "#sec-project-focus .task-section",
+              );
+              const expandAll = Array.from(secs).some((s) =>
+                s.classList.contains("collapsed"),
+              );
+              secs.forEach((s) => {
+                const id = s.getAttribute("data-id");
+                if (id) setSectionExpanded(id, expandAll);
+              });
+              applySelection(false);
+              return;
+            }
             const nodes = document.querySelectorAll("details.project");
             const openAll = Array.from(nodes).some((n) => !n.open);
             if (openAll) {
