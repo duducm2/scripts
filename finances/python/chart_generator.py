@@ -1523,6 +1523,12 @@ function plannedTotalForCurrentMonth() {{
   }}
   return total;
 }}
+/** Same headroom as Available vs planned (available − planned). */
+function projectedSaveHeadroom() {{
+  const available = Number(RAW.liquidAfterCard);
+  const avail = Number.isFinite(available) ? available : 0;
+  return avail - plannedTotalForCurrentMonth();
+}}
 function refreshFundsCompare() {{
   const root = document.getElementById('fundsCompare');
   if (!root) return;
@@ -1533,7 +1539,7 @@ function refreshFundsCompare() {{
   const availPct = Math.max(0, (avail / scale) * 100);
   const planPct = Math.max(0, (planned / scale) * 100);
   const deficit = planned > avail + 0.001;
-  const headroom = avail - planned;
+  const headroom = projectedSaveHeadroom();
   root.classList.toggle('deficit', deficit);
   root.classList.toggle('ok', !deficit);
   const availEl = document.getElementById('fundsAvailableVal');
@@ -1603,6 +1609,7 @@ function refreshFundsCompare() {{
       + ' = ' + formatBrl(avail) + '</div>');
     tip.innerHTML = parts.join('');
   }}
+  if (DATA.recurringVs) drawRecurringTreemap();
 }}
 function refreshBudgetVisuals(ym) {{
   const rows = budgetsForMonth(ym);
@@ -1853,12 +1860,24 @@ function drawRecurringTreemap() {{
     custom.push(formatBrl(r.periodAmt) + ' · ' + pInc.toFixed(0) + '% of income');
   }}
   const leftover = vs.income - vs.bills;
-  if (leftover > 0) {{
+  const headroom = projectedSaveHeadroom();
+  const projectedSave = headroom > 0.001 ? headroom : 0;
+  if (projectedSave > 0) {{
+    labels.push('Projected save');
+    values.push(projectedSave);
+    colors.push('#f1c40f');
+    const pInc = vs.income > 0 ? (projectedSave / vs.income * 100) : 0;
+    custom.push(formatBrl(projectedSave)
+      + (vs.income > 0 ? (' · ' + pInc.toFixed(0) + '% of income') : '')
+      + ' · available − planned');
+  }}
+  const remainder = leftover - projectedSave;
+  if (remainder > 0.001) {{
     labels.push('Remainder');
-    values.push(leftover);
+    values.push(remainder);
     colors.push('#2ecc71');
-    const pInc = vs.income > 0 ? (leftover / vs.income * 100) : 0;
-    custom.push(formatBrl(leftover) + ' · ' + pInc.toFixed(0) + '% of income');
+    const pInc = vs.income > 0 ? (remainder / vs.income * 100) : 0;
+    custom.push(formatBrl(remainder) + ' · ' + pInc.toFixed(0) + '% of income');
   }}
   if (!values.length) {{
     el.innerHTML = '<p class="empty">No data</p>';
