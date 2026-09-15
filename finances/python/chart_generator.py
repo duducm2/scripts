@@ -129,19 +129,45 @@ def build_html(data: dict) -> str:
         prev_b = data["prev_totals"]["balance"]
         cur_b = data["totals"]["balance"]
         vs = ((cur_b - prev_b) / abs(prev_b) * 100) if prev_b else 0
-        top = (
-            " · ".join(
-                f"{name} {format_brl(amt)}" for name, amt, _ in data["top_expenses"][:4]
-            )
-            or "No expenses"
-        )
         multi = data.get("period_multi")
-        prev_lbl = "Prior period" if multi else "Saved last month"
+        prev_lbl = "Prior period" if multi else "Last month"
         cur_lbl = "This period" if multi else "This month"
+        vs_cls = "pos" if vs >= 0 else "neg"
+        prev_cls = "pos" if prev_b >= 0 else "neg"
+        cur_cls = "pos" if cur_b >= 0 else "neg"
+        vs_txt = f"{vs:+.0f}%"
+        top_items = data["top_expenses"][:4]
+        if top_items:
+            top_html = "".join(
+                f'<li class="perf-top-item"><span class="perf-top-name">{name}</span>'
+                f'<span class="perf-top-amt">{format_brl(amt)}</span></li>'
+                for name, amt, _ in top_items
+            )
+            top_block = (
+                f'<div class="perf-top"><div class="perf-top-title">Top expenses</div>'
+                f'<ul class="perf-top-list">{top_html}</ul></div>'
+            )
+        else:
+            top_block = (
+                '<div class="perf-top"><div class="perf-empty">No expenses</div></div>'
+            )
         perf_body = (
-            f'<div class="perf-line" id="perfLine">{prev_lbl} {format_brl(prev_b)}'
-            f" · {cur_lbl} {format_brl(cur_b)} ({vs:+.0f}%)"
-            f" · Kept {data['saved_pct']:.0f}% · Top: {top}</div>"
+            f'<div class="perf-line" id="perfLine">'
+            f'<div class="perf-metrics">'
+            f'<div class="perf-metric">'
+            f'<span class="perf-lbl">{prev_lbl}</span>'
+            f'<span class="perf-val {prev_cls}">{format_brl(prev_b)}</span>'
+            f"</div>"
+            f'<div class="perf-metric">'
+            f'<span class="perf-lbl">{cur_lbl}</span>'
+            f'<span class="perf-val {cur_cls}">{format_brl(cur_b)}'
+            f'<span class="perf-delta {vs_cls}">{vs_txt}</span></span>'
+            f"</div>"
+            f'<div class="perf-metric">'
+            f'<span class="perf-lbl">Kept</span>'
+            f'<span class="perf-val">{data["saved_pct"]:.0f}%</span>'
+            f"</div></div>"
+            f"{top_block}</div>"
         )
 
     pie_exp_html = ""
@@ -264,9 +290,7 @@ def build_html(data: dict) -> str:
             total_spent += sp
             rem = p - sp
             pct = (sp / p * 100) if p > 0 else (100.0 if sp > 0 else 0.0)
-            width = min(pct, 100.0)
             over = sp > p and p > 0
-            fill = "#e74c3c" if over else "#2ecc71"
             cap = (
                 f"Exceeded {format_brl(-rem)}" if over else f"Remain {format_brl(rem)}"
             )
@@ -274,7 +298,6 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-row">'
                 f'<div class="bar-head"><span>{name}</span>'
                 f"<span>{format_brl(sp)} / {format_brl(p)} · {pct:.0f}%</span></div>"
-                f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
                 f'<div class="bar-meta">{cap}</div>'
                 f"</div>"
             )
@@ -284,9 +307,7 @@ def build_html(data: dict) -> str:
             if total_planned > 0
             else (100.0 if total_spent > 0 else 0.0)
         )
-        tot_width = min(tot_pct, 100.0)
         tot_over = total_spent > total_planned and total_planned > 0
-        tot_fill = "#e74c3c" if tot_over else "#f1c40f"
         if items:
             bud_hint = (
                 f"Exceeded {format_brl(-tot_rem)}"
@@ -297,8 +318,6 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-head"><span>Total</span>'
                 f"<span>{format_brl(total_spent)} / {format_brl(total_planned)}"
                 f" · {tot_pct:.0f}%</span></div>"
-                f'<div class="bar-track"><div class="bar-fill" style="width:{tot_width:.1f}%;'
-                f'background:{tot_fill}"></div></div>'
                 f'<div class="bar-meta">{bud_hint}</div>'
             )
         else:
@@ -340,6 +359,10 @@ def build_html(data: dict) -> str:
                   <span class="funds-legend-swatch planned"></span>
                   Planned <span class="funds-compare-amounts" id="fundsPlannedVal">—</span>
                 </span>
+                <span class="funds-legend-item">
+                  <span class="funds-legend-swatch spent"></span>
+                  Spent <span class="funds-compare-amounts" id="fundsSpentVal">—</span>
+                </span>
                 <span class="funds-legend-item" id="fundsProjectedSaveItem">
                   <span class="funds-legend-swatch save"></span>
                   <span id="fundsProjectedSaveLbl">Projected save</span>
@@ -350,8 +373,10 @@ def build_html(data: dict) -> str:
             <div class="funds-compare-track">
               <div class="funds-bar funds-bar-available" id="fundsBarAvailable" style="width:0%"></div>
               <div class="funds-bar funds-bar-planned" id="fundsBarPlanned" style="width:0%"></div>
+              <div class="funds-bar funds-bar-spent" id="fundsBarSpent" style="width:0%"></div>
               <span class="funds-marker funds-marker-available" id="fundsMarkAvailable" style="left:0%"></span>
               <span class="funds-marker funds-marker-planned" id="fundsMarkPlanned" style="left:0%"></span>
+              <span class="funds-marker funds-marker-spent" id="fundsMarkSpent" style="left:0%"></span>
             </div>
             <div class="funds-compare-meta" id="fundsCompareMeta"></div>
             {card_avail_block}
@@ -630,7 +655,7 @@ def build_html(data: dict) -> str:
       flex:0 0 auto; min-height:0;
     }}
     .perf-panel-slim .perf-line {{
-      margin:0; white-space:normal; line-height:1.45;
+      margin:0; white-space:normal; line-height:1.35;
     }}
     .perf-notif-stack {{
       display:flex; flex-direction:column; gap:10px; min-width:0; min-height:0;
@@ -647,6 +672,53 @@ def build_html(data: dict) -> str:
     .perf-notif-stack > .notif-col #notificationsBody {{
       flex:1 1 auto; min-height:0; overflow:auto;
     }}
+    .perf-metrics {{
+      display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px 8px;
+      margin:0 0 6px;
+    }}
+    .perf-metric {{
+      min-width:0; display:flex; flex-direction:column; gap:1px;
+    }}
+    .perf-lbl {{
+      font-size:10px; color:var(--muted); text-transform:uppercase;
+      letter-spacing:.03em; line-height:1.2;
+    }}
+    .perf-val {{
+      font-size:12px; font-weight:600; color:var(--text);
+      font-variant-numeric:tabular-nums; line-height:1.25;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }}
+    .perf-val.pos {{ color:#2ecc71; }}
+    .perf-val.neg {{ color:#e74c3c; }}
+    .perf-delta {{
+      font-size:11px; font-weight:600; margin-left:4px;
+      font-variant-numeric:tabular-nums;
+    }}
+    .perf-delta.pos {{ color:#2ecc71; }}
+    .perf-delta.neg {{ color:#e74c3c; }}
+    .perf-top {{
+      border-top:1px solid var(--border); padding-top:5px; min-width:0;
+    }}
+    .perf-top-title {{
+      font-size:10px; color:var(--muted); text-transform:uppercase;
+      letter-spacing:.03em; margin:0 0 3px;
+    }}
+    .perf-top-list {{
+      display:flex; flex-direction:column; gap:2px; margin:0; padding:0;
+      list-style:none;
+    }}
+    .perf-top-item {{
+      display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+      font-size:11px; line-height:1.3; min-width:0;
+    }}
+    .perf-top-name {{
+      color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis;
+      white-space:nowrap;
+    }}
+    .perf-top-amt {{
+      color:var(--muted); font-variant-numeric:tabular-nums; flex-shrink:0;
+    }}
+    .perf-empty {{ color:var(--muted2); font-size:11px; }}
     .pie-exp-cell {{
       display:flex; flex-direction:column; min-height:0; min-width:0;
       flex:1.6 1 0; height:auto;
@@ -752,7 +824,7 @@ def build_html(data: dict) -> str:
       flex:1 1 auto; min-height:0; overflow:hidden; margin-bottom:0;
     }}
     .perf-panel .perf-line {{
-      flex:1; margin:0; white-space:normal; line-height:1.45;
+      flex:1; margin:0; white-space:normal; line-height:1.35;
     }}
     .budget-panel {{
       display:flex; flex-direction:column; min-width:0; min-height:0;
@@ -823,14 +895,17 @@ def build_html(data: dict) -> str:
     }}
     .funds-legend-swatch.available {{ background:#3498db; }}
     .funds-legend-swatch.planned {{ background:#2ecc71; }}
+    .funds-legend-swatch.spent {{ background:#f1c40f; }}
     .funds-legend-swatch.save {{ background:#9b59b6; }}
     .funds-compare.deficit .funds-legend-swatch.planned {{ background:#e74c3c; }}
     .funds-compare.deficit .funds-legend-swatch.save {{ background:#e74c3c; }}
+    .funds-compare.overspent .funds-legend-swatch.spent {{ background:#e74c3c; }}
     .funds-compare-amounts {{
       font-weight:600; font-variant-numeric:tabular-nums; color:var(--text);
     }}
     .funds-compare.ok #fundsProjectedSaveVal {{ color:#2ecc71; }}
     .funds-compare.deficit #fundsProjectedSaveVal {{ color:#e74c3c; }}
+    .funds-compare.overspent #fundsSpentVal {{ color:#e74c3c; }}
     .funds-compare-track {{
       position:relative; height:16px; background:var(--track);
       border-radius:4px; overflow:visible;
@@ -845,12 +920,16 @@ def build_html(data: dict) -> str:
     .funds-bar-planned {{
       top:0; height:16px; background:#2ecc71; opacity:.55; z-index:2;
     }}
+    .funds-bar-spent {{
+      top:3px; height:10px; background:#f1c40f; opacity:.9; z-index:3;
+    }}
     .funds-compare.deficit .funds-bar-planned {{ background:#e74c3c; opacity:.65; }}
+    .funds-compare.overspent .funds-bar-spent {{ background:#e74c3c; opacity:.85; }}
     .funds-marker {{
       position:absolute; top:-3px; width:0; height:0;
       border-left:5px solid transparent; border-right:5px solid transparent;
       border-top:7px solid #3498db;
-      transform:translateX(-50%); z-index:3; pointer-events:none;
+      transform:translateX(-50%); z-index:4; pointer-events:none;
       transition:left .15s ease, border-top-color .15s ease;
     }}
     .funds-marker-available {{ border-top-color:#3498db; }}
@@ -858,7 +937,11 @@ def build_html(data: dict) -> str:
       top:auto; bottom:-3px; border-top:none;
       border-bottom:7px solid #2ecc71;
     }}
+    .funds-marker-spent {{
+      border-top-color:#f1c40f;
+    }}
     .funds-compare.deficit .funds-marker-planned {{ border-bottom-color:#e74c3c; }}
+    .funds-compare.overspent .funds-marker-spent {{ border-top-color:#e74c3c; }}
     .funds-compare-meta {{
       color:var(--muted2); font-size:11px; margin-top:6px;
     }}
@@ -952,7 +1035,7 @@ def build_html(data: dict) -> str:
     .chart-invest {{ grid-column:span 1; }}
     .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
     .note.ok {{ background:var(--note-ok-bg); color:var(--note-ok-fg); }}
-    .perf-line {{ color:var(--perf); font-size:12px; line-height:1.4; }}
+    .perf-line {{ color:var(--perf); font-size:12px; line-height:1.35; }}
     .bar-row {{ margin:6px 0 8px; }}
     .bar-row-total {{
       margin:4px 0 12px; padding:8px 0 10px; border-bottom:1px solid var(--border);
@@ -1523,6 +1606,15 @@ function plannedTotalForCurrentMonth() {{
   }}
   return total;
 }}
+function spentTotalForCurrentMonth() {{
+  const ym = RAW.currentMonth || '';
+  let total = 0;
+  for (const b of (RAW.budgets || [])) {{
+    if (b.year_month !== ym) continue;
+    total += parseDecimal(b.spent_amount);
+  }}
+  return total;
+}}
 /** Same headroom as Available vs planned (available − planned). */
 function projectedSaveHeadroom() {{
   const available = Number(RAW.liquidAfterCard);
@@ -1535,25 +1627,33 @@ function refreshFundsCompare() {{
   const available = Number(RAW.liquidAfterCard);
   const avail = Number.isFinite(available) ? available : 0;
   const planned = plannedTotalForCurrentMonth();
-  const scale = Math.max(avail, planned, 0.01);
+  const spent = spentTotalForCurrentMonth();
+  const scale = Math.max(avail, planned, spent, 0.01);
   const availPct = Math.max(0, (avail / scale) * 100);
   const planPct = Math.max(0, (planned / scale) * 100);
+  const spentPct = Math.max(0, (spent / scale) * 100);
   const deficit = planned > avail + 0.001;
+  const overspent = spent > planned + 0.001 && planned > 0;
   const headroom = projectedSaveHeadroom();
   root.classList.toggle('deficit', deficit);
   root.classList.toggle('ok', !deficit);
+  root.classList.toggle('overspent', overspent);
   const availEl = document.getElementById('fundsAvailableVal');
   const planEl = document.getElementById('fundsPlannedVal');
+  const spentEl = document.getElementById('fundsSpentVal');
   const saveEl = document.getElementById('fundsProjectedSaveVal');
   const saveLbl = document.getElementById('fundsProjectedSaveLbl');
   const barAvail = document.getElementById('fundsBarAvailable');
   const barPlan = document.getElementById('fundsBarPlanned');
+  const barSpent = document.getElementById('fundsBarSpent');
   const markAvail = document.getElementById('fundsMarkAvailable');
   const markPlan = document.getElementById('fundsMarkPlanned');
+  const markSpent = document.getElementById('fundsMarkSpent');
   const meta = document.getElementById('fundsCompareMeta');
   const tip = document.getElementById('budgetCalcTip');
   if (availEl) availEl.textContent = formatBrl(avail);
   if (planEl) planEl.textContent = formatBrl(planned);
+  if (spentEl) spentEl.textContent = formatBrl(spent);
   if (saveEl) {{
     saveEl.textContent = deficit
       ? ('−' + formatBrl(-headroom))
@@ -1562,12 +1662,17 @@ function refreshFundsCompare() {{
   if (saveLbl) saveLbl.textContent = deficit ? 'Shortfall' : 'Projected save';
   if (barAvail) barAvail.style.width = availPct.toFixed(1) + '%';
   if (barPlan) barPlan.style.width = planPct.toFixed(1) + '%';
+  if (barSpent) barSpent.style.width = spentPct.toFixed(1) + '%';
   if (markAvail) markAvail.style.left = availPct.toFixed(1) + '%';
   if (markPlan) markPlan.style.left = planPct.toFixed(1) + '%';
+  if (markSpent) markSpent.style.left = spentPct.toFixed(1) + '%';
   if (meta) {{
+    const spentHint = overspent
+      ? ' · overspent ' + formatBrl(spent - planned)
+      : (planned > 0 ? (' · spent ' + (spent / planned * 100).toFixed(0) + '% of planned') : '');
     meta.textContent = deficit
-      ? 'Over planned · reduce spending or raise available'
-      : 'Available covers planned · leftover is projected save';
+      ? ('Over planned · reduce spending or raise available' + spentHint)
+      : ('Available covers planned · leftover is projected save' + spentHint);
   }}
   if (tip) {{
     const accRows = Array.isArray(RAW.liquidAccounts) ? RAW.liquidAccounts : [];
@@ -1576,7 +1681,7 @@ function refreshFundsCompare() {{
     const cardSpent = Number(RAW.liquidCardSpent);
     const cardLimit = Number(RAW.liquidCardLimit);
     const bal = Number.isFinite(accBal) ? accBal : 0;
-    const spent = Number.isFinite(cardSpent) ? cardSpent : 0;
+    const cardSpend = Number.isFinite(cardSpent) ? cardSpent : 0;
     const limit = Number.isFinite(cardLimit) ? cardLimit : 0;
     const parts = [];
     if (accRows.length) {{
@@ -1601,11 +1706,11 @@ function refreshFundsCompare() {{
           + ' · avail ' + formatBrl(cAvail) + '</div>');
       }}
     }} else {{
-      parts.push('<div class="calc-line">Cards · spent ' + formatBrl(spent)
+      parts.push('<div class="calc-line">Cards · spent ' + formatBrl(cardSpend)
         + ' · limit ' + formatBrl(limit) + '</div>');
     }}
     parts.push('<div class="calc-line calc-total">Available = checking '
-      + formatBrl(bal) + ' − card spent ' + formatBrl(spent)
+      + formatBrl(bal) + ' − card spent ' + formatBrl(cardSpend)
       + ' = ' + formatBrl(avail) + '</div>');
     tip.innerHTML = parts.join('');
   }}
@@ -1621,17 +1726,13 @@ function refreshBudgetVisuals(ym) {{
   }}
   const totRem = totalPlanned - totalSpent;
   const totPct = totalPlanned > 0 ? (totalSpent / totalPlanned * 100) : (totalSpent > 0 ? 100 : 0);
-  const totWidth = Math.min(totPct, 100);
   const totOver = totalSpent > totalPlanned && totalPlanned > 0;
-  const totFill = totOver ? '#e74c3c' : '#f1c40f';
   const budHint = totOver ? ('Exceeded ' + formatBrl(-totRem)) : ('Remain ' + formatBrl(totRem));
   if (sumEl) {{
     sumEl.style.display = rows.length ? '' : 'none';
     if (rows.length) {{
       sumEl.innerHTML = '<div class="bar-head"><span>Total</span><span>'
         + formatBrl(totalSpent) + ' / ' + formatBrl(totalPlanned) + ' · ' + totPct.toFixed(0) + '%</span></div>'
-        + '<div class="bar-track"><div class="bar-fill" style="width:' + totWidth.toFixed(1)
-        + '%;background:' + totFill + '"></div></div>'
         + '<div class="bar-meta">' + budHint + '</div>';
     }} else {{
       sumEl.innerHTML = '';
@@ -1643,11 +1744,6 @@ function refreshBudgetVisuals(ym) {{
     const st = budgetRowStats(b.planned, b.spent);
     const pctEl = row.querySelector('.budget-pct');
     if (pctEl) pctEl.textContent = '· ' + st.pct.toFixed(0) + '%';
-    const fillEl = row.querySelector('.bar-fill');
-    if (fillEl) {{
-      fillEl.style.width = st.width.toFixed(1) + '%';
-      fillEl.style.background = st.fill;
-    }}
     const meta = row.querySelector('.bar-meta');
     if (meta) meta.textContent = st.cap;
   }}
@@ -1739,16 +1835,12 @@ function renderBudgets(rows) {{
   }}
   const totRem = totalPlanned - totalSpent;
   const totPct = totalPlanned > 0 ? (totalSpent / totalPlanned * 100) : (totalSpent > 0 ? 100 : 0);
-  const totWidth = Math.min(totPct, 100);
   const totOver = totalSpent > totalPlanned && totalPlanned > 0;
-  const totFill = totOver ? '#e74c3c' : '#f1c40f';
   const budHint = totOver ? ('Exceeded ' + formatBrl(-totRem)) : ('Remain ' + formatBrl(totRem));
   if (sumEl) {{
     sumEl.style.display = '';
     sumEl.innerHTML = '<div class="bar-head"><span>Total</span><span>'
       + formatBrl(totalSpent) + ' / ' + formatBrl(totalPlanned) + ' · ' + totPct.toFixed(0) + '%</span></div>'
-      + '<div class="bar-track"><div class="bar-fill" style="width:' + totWidth.toFixed(1)
-      + '%;background:' + totFill + '"></div></div>'
       + '<div class="bar-meta">' + budHint + '</div>';
   }}
   const byId = catById();
@@ -1763,7 +1855,6 @@ function renderBudgets(rows) {{
       + 'data-category-id="' + b.category_id + '" value="' + plannedVal + '"'
       + (canEdit ? '' : ' disabled') + '/>'
       + '<span class="budget-pct">· ' + st.pct.toFixed(0) + '%</span></div>'
-      + '<div class="bar-track"><div class="bar-fill" style="width:' + st.width.toFixed(1) + '%;background:' + st.fill + '"></div></div>'
       + '<div class="bar-meta">' + st.cap + '</div></div>';
   }}).join('');
   el.querySelectorAll('.budget-planned-input').forEach(inp => {{
@@ -1970,11 +2061,32 @@ function applyPeriod() {{
   if (perf) {{
     const vs = prev.balance ? ((tot.balance - prev.balance) / Math.abs(prev.balance) * 100) : 0;
     const saved = tot.income ? (tot.balance / tot.income * 100) : 0;
-    const top = expRows.slice(0,4).map(r => r.name + ' ' + formatBrl(r.value)).join(' · ') || 'No expenses';
-    const prevLbl = multi ? 'Prior period' : 'Saved last month';
+    const prevLbl = multi ? 'Prior period' : 'Last month';
     const curLbl = multi ? 'This period' : 'This month';
-    perf.textContent = prevLbl + ' ' + formatBrl(prev.balance) + ' · ' + curLbl + ' ' + formatBrl(tot.balance)
-      + ' (' + (vs >= 0 ? '+' : '') + vs.toFixed(0) + '%) · Kept ' + saved.toFixed(0) + '% · Top: ' + top;
+    const vsCls = vs >= 0 ? 'pos' : 'neg';
+    const prevCls = prev.balance >= 0 ? 'pos' : 'neg';
+    const curCls = tot.balance >= 0 ? 'pos' : 'neg';
+    const vsTxt = (vs >= 0 ? '+' : '') + vs.toFixed(0) + '%';
+    const topRows = expRows.slice(0, 4);
+    const topBlock = topRows.length
+      ? ('<div class="perf-top"><div class="perf-top-title">Top expenses</div>'
+        + '<ul class="perf-top-list">'
+        + topRows.map(r =>
+          '<li class="perf-top-item"><span class="perf-top-name">' + r.name + '</span>'
+          + '<span class="perf-top-amt">' + formatBrl(r.value) + '</span></li>'
+        ).join('')
+        + '</ul></div>')
+      : '<div class="perf-top"><div class="perf-empty">No expenses</div></div>';
+    perf.innerHTML =
+      '<div class="perf-metrics">'
+      + '<div class="perf-metric"><span class="perf-lbl">' + prevLbl + '</span>'
+      + '<span class="perf-val ' + prevCls + '">' + formatBrl(prev.balance) + '</span></div>'
+      + '<div class="perf-metric"><span class="perf-lbl">' + curLbl + '</span>'
+      + '<span class="perf-val ' + curCls + '">' + formatBrl(tot.balance)
+      + '<span class="perf-delta ' + vsCls + '">' + vsTxt + '</span></span></div>'
+      + '<div class="perf-metric"><span class="perf-lbl">Kept</span>'
+      + '<span class="perf-val">' + saved.toFixed(0) + '%</span></div>'
+      + '</div>' + topBlock;
   }}
   renderBudgets(budgetsForMonth(syncBudgetMonthSelect(months)));
   renderRecurring(months, tot.income);
