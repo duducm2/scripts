@@ -9,7 +9,7 @@
 ; Google Keep Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && (WinActive("Google Keep") || WinActive("keep.google.com") || InStr(
-    WinGetTitle("A"), "Google Keep"))
+    SafeWinGetTitle(), "Google Keep"))
 
 ; Shift + S : Search and select note
 +s::

@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "YouTube")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(SafeWinGetTitle(), "YouTube")
 
 ; Shift + S : Focus search box
 +s:: {

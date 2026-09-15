@@ -11,9 +11,12 @@ IsFileDialogActive() {
         return false
     }
 
-    winClass := WinGetClass("ahk_id " hwnd)
-    winTitle := WinGetTitle("ahk_id " hwnd)
-    winExe := WinGetProcessName("ahk_id " hwnd)
+    winClass := ""
+    winTitle := ""
+    winExe := ""
+    try winClass := WinGetClass("ahk_id " hwnd)
+    try winTitle := WinGetTitle("ahk_id " hwnd)
+    try winExe := WinGetProcessName("ahk_id " hwnd)
     if winClass != "#32770" {
         return false
     }

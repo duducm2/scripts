@@ -12,6 +12,8 @@
 
 - [✅] Visual Information Class PDFs
 
+- [ ] data bricks
+
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
 ### 1. Interface and Navigation

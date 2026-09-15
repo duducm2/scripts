@@ -366,7 +366,7 @@ PowerPoint_ToggleFocusedSlideView() {
 ;-------------------------------------------------------------------
 ; PowerPoint Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
+#HotIf WinActive("ahk_exe POWERPNT.EXE") && SafeWinGetClass() != "#32770"
 
 ; --- PDF ---
 +p:: PowerPoint_SaveAsPdf()

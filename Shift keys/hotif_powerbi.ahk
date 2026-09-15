@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf (WinActive("ahk_exe PBIDesktop.exe") || InStr(WinGetTitle("A"), "powerbi", false)) && !IsFileDialogActive()
+#HotIf IsPowerBIActive() && !IsFileDialogActive()
 
 ; Shift + C : Get data (Click Home tab, then Get data primary button)
 +c:: {

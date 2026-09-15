@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf IsEditorActive() && WinGetClass("A") != "#32770"
+#HotIf IsEditorActive() && SafeWinGetClass() != "#32770"
 
 Cursor_ContextMenuSelectByDownAndVerify(targetText, openKey := "{AppsKey}", maxSteps := 28, expectedFileName :=
     "") {

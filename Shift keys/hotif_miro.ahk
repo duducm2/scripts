@@ -7,7 +7,7 @@
 
 ; Miro Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Miro", false)
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(SafeWinGetTitle(), "Miro", false)
 
 ; (removed) Shift + Y : Command palette (Ctrl+K)
 

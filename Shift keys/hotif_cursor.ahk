@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf IsCursorActive() && WinGetClass("A") != "#32770"
+#HotIf IsCursorActive() && SafeWinGetClass() != "#32770"
 
 ; Alt + M : Quick shortcut menu for Cursor
 ; Utility Shortcuts ListView aesthetic (Char-first ListView).

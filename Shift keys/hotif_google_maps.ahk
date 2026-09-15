@@ -212,7 +212,7 @@ Maps_CaptureRectToDesktop(x, y, w, h, outPath := "") {
     return outPath
 }
 
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google Maps")
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(SafeWinGetTitle(), "Google Maps")
 
 ; Shift + S : Focus "Search Google Maps" field
 +s:: {

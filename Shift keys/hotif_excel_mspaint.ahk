@@ -15,7 +15,7 @@
 ;-------------------------------------------------------------------
 ; Excel Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe EXCEL.EXE") && WinGetClass("A") != "#32770"
+#HotIf WinActive("ahk_exe EXCEL.EXE") && SafeWinGetClass() != "#32770"
 
 ; Helper function: Convert CSV delimited by semicolon into columns
 ; autoSelectSemicolon: If true, automatically selects semicolon without showing dialog. If false, shows confirmation dialog.

@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Wikipedia", false)
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(SafeWinGetTitle(), "Wikipedia", false)
 
 ; Shift + S: Focus the Wikipedia search field (prefer the field; if hidden, click the Search toggle first)
 +s::

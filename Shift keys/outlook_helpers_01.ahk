@@ -11,7 +11,7 @@
 
 IsOutlookMessageActive() {
     return (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
-    && RegExMatch(WinGetTitle("A"), "i) - Message \(")
+    && RegExMatch(SafeWinGetTitle(), "i) - Message \(")
 }
 
 IsOutlookAppointmentActive() {
@@ -20,8 +20,7 @@ IsOutlookAppointmentActive() {
     if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
         return false
 
-    t := ""
-    try t := WinGetTitle("A")
+    t := SafeWinGetTitle()
     if RegExMatch(t, "i)(Appointment|Meeting|Event)")
         return true
 
@@ -44,7 +43,7 @@ IsOutlookAppointmentActive() {
 
 IsOutlookReminderActive() {
     return (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
-    && RegExMatch(WinGetTitle("A"), "i)Reminders?")
+    && RegExMatch(SafeWinGetTitle(), "i)Reminders?")
 }
 
 IsOutlookComposeActive() {
@@ -72,10 +71,8 @@ IsOutlookComposeActive() {
 IsOutlookMainActive() {
     if !(WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
         return false
-    t := ""
-    cls := ""
-    try t := WinGetTitle("A")
-    try cls := WinGetClass("A")
+    t := SafeWinGetTitle()
+    cls := SafeWinGetClass()
     ; Exclude inspectors and reminders
     if RegExMatch(t, "i) - Message \(")
         return false

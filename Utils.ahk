@@ -55,6 +55,9 @@ WindowExists(windowTitle) {
     return exists
 }
 
+; [Utils module] Safe WinGetTitle/Class + IsPowerBIActive for #HotIf (never throw)
+#include %A_ScriptDir%\Utils\safe_window.ahk
+
 ; =============================================================================
 ; Semantic banner accents (must be defined early)
 ; Some startup/update helpers call ShowCenteredOverlay_Utils / StandardLoadingBar_Show

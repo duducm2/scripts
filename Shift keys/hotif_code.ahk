@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf IsCodeActive() && WinGetClass("A") != "#32770"
+#HotIf IsCodeActive() && SafeWinGetClass() != "#32770"
 
 ; Alt + M : Quick shortcut menu for VS Code (empty placeholder for future actions)
 !m:: {

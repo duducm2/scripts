@@ -1303,7 +1303,7 @@ Palace_IsMemoryPalaceChromeActive() {
     try {
         if (WinGetProcessName("A") != "chrome.exe")
             return false
-        return Palace_IsDashboardChromeWindowTitle(WinGetTitle("A"))
+        return Palace_IsDashboardChromeWindowTitle(SafeWinGetTitle())
     } catch {
         return false
     }
