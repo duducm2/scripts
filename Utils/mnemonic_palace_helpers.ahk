@@ -439,13 +439,13 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         chunk := Trim(rawPart)
         sep := InStr(chunk, "|")
         if (chunk = "" || !sep || InStr(chunk, "|", false, sep + 1)) {
-            out["error"] := "keyword pair " . i . " must be `Keyword | RecognizableWord`"
+            out["error"] := "keyword pair " . i . " must be Keyword | RecognizableWord"
             return out
         }
         left := Trim(SubStr(chunk, 1, sep - 1))
         right := Trim(SubStr(chunk, sep + 1))
         if (left = "" || right = "") {
-            out["error"] := "keyword pair " . i . " must be `Keyword | RecognizableWord`"
+            out["error"] := "keyword pair " . i . " must be Keyword | RecognizableWord"
             return out
         }
         pairs.Push(Map("left", left, "right", right))
