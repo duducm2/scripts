@@ -823,14 +823,16 @@ Palace_StopPickerWatch() {
 Palace_RestorePickerChrome(hwnd) {
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
-    try WinSetTransparent("Off", "ahk_id " hwnd)
-    catch {
-    }
-    Palace_PickerClearAutoSlotExclude(hwnd)
+    ; Re-assert exclusion before maximizing so AutoSlot cannot claim the transition.
+    Palace_PickerMarkAutoSlotExclude(hwnd)
     try {
         if (WinGetMinMax("ahk_id " hwnd) != 1)
             WinMaximize("ahk_id " hwnd)
     } catch {
+    }
+    ; Fully opaque study mode (remove the picker translucency/layered effect).
+    try WinSetTransparent("Off", "ahk_id " hwnd)
+    catch {
     }
 }
 
