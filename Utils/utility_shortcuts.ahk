@@ -231,7 +231,7 @@ GlobalAICompanionSelectRole(role) {
 }
 
 MacroAICompanionQuickModel(*) {
-    GlobalAICompanionSelectRole("fast")
+    return GlobalAICompanionSelectRole("fast")
 }
 
 MacroAICompanionDeepModel(*) {
