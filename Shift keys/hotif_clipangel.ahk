@@ -26,18 +26,35 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 
 #HotIf WinActive("ahk_exe ClipAngel.exe")
 
-; Shift + C : Select filtered content and copy
-+c:: {
+; Copy the focused clip's filtered content and return focus to the list.
+; The clipboard sequence check prevents callers from changing favorite state after a failed copy.
+ClipAngel_CopyFocusedFilteredContent() {
     Send "{Tab}"
     Sleep 100
     Send "{Tab}"
     Sleep 300
     Send "^a"  ; Select all
     Sleep 100
+    seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
     Send "^c"  ; Copy
-    Sleep 100
+    copied := false
+    deadline := A_TickCount + 500
+    while (A_TickCount < deadline) {
+        seqNow := DllCall("GetClipboardSequenceNumber", "uint")
+        if (seqNow && seqNow != seqBefore) {
+            copied := true
+            break
+        }
+        Sleep 15
+    }
     Send "{F10}"
     Sleep 50
+    return copied
+}
+
+; Shift + C : Select filtered content, copy, minimize, and paste.
++c:: {
+    ClipAngel_CopyFocusedFilteredContent()
     Send "{Escape}"
     Sleep 50
     Send "^v"
@@ -143,12 +160,39 @@ $Enter:: {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
-; Ctrl+Enter : native Clip Angel action; then minimize
-~^Enter:: {
-    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive()
+; Ctrl+Enter in Favorites: copy first, unmark (the row disappears), then paste to the prior app.
+; Everywhere else, preserve Clip Angel's native Ctrl+Enter behavior.
+$^Enter:: {
+    if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive() {
+        SendInput "^Enter"
         return
-    Sleep 100
+    }
+    hwnd := ClipAngel_MainHwnd()
+    if (!hwnd || !ClipAngel_IsListPasteEnterContext(hwnd)
+    || !ClipAngel_MarkFilterMatchesMode(false, ClipAngel_UiaGetMarkFilterValue(hwnd))) {
+        SendInput "^Enter"
+        Sleep 100
+        ClipAngel_CloseAndRestoreFocus(0)
+        return
+    }
+
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    if !ClipAngel_CopyFocusedFilteredContent() {
+        ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    if (dataGrid)
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+    SendInput "!w"
+    Sleep 50
     ClipAngel_CloseAndRestoreFocus(0)
+    try WinWaitNotActive("ahk_id " hwnd, , 0.5)
+    catch {
+    }
+    SendInput "^v"
 }
 
 ; Escape : minimize (process stays running). Fallback when I10 global Escape is off.
