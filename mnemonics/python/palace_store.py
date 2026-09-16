@@ -26,6 +26,7 @@ from schemas import (
     STUDIES_HEADERS,
     STUDY_IMAGES_HEADERS,
     ensure_data_dir,
+    validate_atom_mnemonics,
     validate_beast_atoms,
 )
 import csv as _csv
@@ -636,6 +637,22 @@ class PalaceStore:
             .strip()
             .lower()
         )
+        concept = str(payload.get("concept", (existing or {}).get("concept", "")))
+        raw_keywords = str(
+            payload.get("keywords", (existing or {}).get("keywords", ""))
+        )
+        mnemonic_content_changed = not existing or (
+            concept != str(existing.get("concept", ""))
+            or raw_keywords != str(existing.get("keywords", ""))
+        )
+        if mnemonic_content_changed:
+            mnemonic_error = validate_atom_mnemonics(concept, raw_keywords)
+            if mnemonic_error:
+                return {"ok": False, "error": mnemonic_error}
+            keywords = normalize_atom_keywords(raw_keywords)
+        else:
+            # Editing unrelated fields must not rewrite or reject a legacy atom.
+            keywords = str(existing.get("keywords", ""))
         row = {
             "id": rid,
             "beast_id": beast_id,
@@ -644,10 +661,8 @@ class PalaceStore:
             "zone_label": str(
                 payload.get("zone_label", (existing or {}).get("zone_label", ""))
             ),
-            "concept": str(payload.get("concept", (existing or {}).get("concept", ""))),
-            "keywords": normalize_atom_keywords(
-                str(payload.get("keywords", (existing or {}).get("keywords", "")))
-            ),
+            "concept": concept,
+            "keywords": keywords,
             "quote": str(payload.get("quote", (existing or {}).get("quote", ""))),
             "story": str(payload.get("story", (existing or {}).get("story", ""))),
             "sensory": str(payload.get("sensory", (existing or {}).get("sensory", ""))),

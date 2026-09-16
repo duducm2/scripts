@@ -205,24 +205,27 @@ Rules:
 - `zoned`: `zone` = `Z1`–`Z4`; short hook in `zone_label`.
 - Field mapping from technique prose (`README §Knowledge Atom Structure`):
   - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. Write the compressed **core** (before any Note) in **first person singular** (`I` / `me` / `my`) when the knowledge is something the learner does, uses, or holds; skip first person when it would distort meaning. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>` (Note stays **impersonal**—not first person). Otherwise omit the Note. After compression, apply **Concept chunking (square brackets)** to the compressed core (see below).
-  - **Concept name lead (HARD):** The compressed `concept` core MUST open with the atom’s formal concept/technique name **before** the description. Place that name at the start of the **first** thought-group chunk, followed by a colon, then the compressed definition (first person when it fits). Shape: `[Name: …] […optional further chunks…]`. Use the source’s standard label (section title, named technique, or established term). NEVER emit a description-only core when a clear name exists.
+  - **Concept name lead (HARD):** The compressed `concept` core MUST open with the atom’s formal concept/technique name in its own square-bracket group **before** the description. Shape: `[Name] [definition group] […optional further groups…]`. Use the source’s standard label (section title, named technique, or established term). NEVER combine the name and definition as `[Name: definition]`, and NEVER emit a description-only core when a clear name exists.
   - **Concept chunking (square brackets)** — applies to the compressed **core** of `concept` only:
     - Segment the sentence into cognitive units by grammatical function so each chunk is a complete, self-contained idea.
-    - **Core clause:** Subject + Verb + Object as one foundation chunk (after the Concept name lead in the first chunk).
+    - **Core clause:** Subject + Verb + Object as one foundation chunk immediately after the dedicated Concept name group.
     - **Prepositional phrases:** separate adverbial modifiers (origin, destination, time, etc.) that begin with a preposition.
     - **Participial phrases:** separate instrument/method/condition phrases beginning with participles or conjunctions that introduce them.
-    - **Output:** wrap each thought group in square brackets, separated by a single space: `[chunk] [chunk]`. NEVER use `|` inside `concept` to mark thought groups.
+    - **Output:** wrap the dedicated Concept name and every thought group in square brackets, separated by a single space: `[Name] [chunk] [chunk]`. Keep at most six bracket groups by compressing/re-chunking without information loss. NEVER use `|` inside `concept` to mark thought groups.
     - **Note suffix:** when present, append ` — Note: …` **after** the fully chunked core; do **not** wrap the Note in thought-group brackets.
     - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `sensory`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
     - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
-    - **Example (core):** `I retrieve raw data from various origin systems during the first pipeline phase` → `[Extract Phase: I retrieve raw data] [from various origin systems] [during the first pipeline phase]`
-    - **Example (with Note):** `[ETL Pipeline: I move raw data] [from multiple sources] [into a centralized target] — Note: The target is typically a Data Warehouse or Data Mart.`
-  - **Keyword pairs HARD MANDATE** — fill `keywords` from concept thought groups:
-    - Each `[…]` chunk of the compressed **core** (never the Note) is one thought group.
-    - For each thought group, extract one **prominent recognizable word** (everyday, highly recognizable; prefer a short punchy form when several candidates exist).
+    - **Example (core):** `Extract Phase; I retrieve raw data from various origin systems during the first pipeline phase` → `[Extract Phase] [I retrieve raw data] [from various origin systems] [during the first pipeline phase]`
+    - **Example (with Note):** `[ETL Pipeline] [I move raw data] [from multiple sources] [into a centralized target] — Note: The target is typically a Data Warehouse or Data Mart.`
+  - **Keyword pairs HARD MANDATE** — fill `keywords` from the dedicated Concept name group and all concept thought groups:
+    - Every `[…]` group of the compressed **core** (never the Note) MUST receive at least one and at most two key pairs.
+    - Generate **3–6 pairs total per atom**. When only two groups are needed, assign a second pair to the group containing another retention-critical term. Do not add filler groups or filler pairs.
+    - For each pair, extract one **prominent recognizable word or short term from that same group** (everyday and highly recognizable where possible). Use two only when two complicated/primordial terms are independently necessary for retention.
     - Pair it with a tangible **Keyword** memory anchor: a physical object, action, actor, or cartoon character (highly recognizable and concrete).
-    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes). Example: `pencil | retrieve || sword | pipeline`.
-    - Cap **at most 10** pairs per atom (fewer chunks → fewer pairs). Never invent pairs for Note text. Leave `keywords` empty only if the core has no usable chunks.
+    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes), in exact left-to-right group order and word order within each group. Visible Markdown and web output must preserve this sequence.
+    - **Forced separation:** the dedicated Concept name group and the first definition group always yield separate pairs even when their wording repeats. Never merge or deduplicate repeated terms across groups.
+    - Example: `[Parallel Coordinates] [I draw each variable as a parallel axis] [and turn each tuple into a polyline]` → `fence | Parallel Coordinates || easel | draw || axis | parallel axis || bead | tuple` (four pairs, every group covered, source order preserved).
+    - Never invent pairs for Note text. `keywords` MUST NOT be empty for a generated atom.
     - Do **not** put Keywords into PREVIEW lines (CSV `keywords` column is SSOT for import).
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
   - **story** ← Narrative (bizarre action encoding). MUST pass the Bizarreness Gate **and** PLAIN ENGLISH HARD MANDATE (`README §Language & IPA`): everyday words; no archaic / old-fashioned / literary diction.
@@ -260,7 +263,7 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 
 - Map each concept to one beast — one Knowledge Atom per beast by default.
 - Peg letters only; independent beast beats; Bizarreness Gate on every story; **PLAIN ENGLISH HARD MANDATE** / `README §Language & IPA` on every authored field.
-- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning) in plain everyday words. NEVER drop essential conceptual logic. Prefer **first person singular** on the compressed core when it fits; skip when it would distort (`README §Knowledge Atom Structure`). Apply **Concept name lead (HARD)** so the first chunk opens with the formal name. If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal and plain). NEVER put the Note on `quote`. After the compressed core is final, apply **Concept chunking (square brackets)** before any optional Note suffix.
+- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning) in plain everyday words. NEVER drop essential conceptual logic. Prefer **first person singular** on the compressed definition groups when it fits; skip when it would distort (`README §Knowledge Atom Structure`). Apply **Concept name lead (HARD)** as a dedicated first `[Name]` group before all definition groups. If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal and plain). NEVER put the Note on `quote`. After the compressed core is final, apply **Concept chunking (square brackets)** before any optional Note suffix.
 - Story–video alignment: Quote is verbatim only; optional Note lives on `concept`; Story encodes meaning via bizarre action linked to a concrete video cue — in easy plain English (curious-teenager test).
 - Dual-access recall: peg → compressed concept (+ optional Note) → keywords → quote; palace image → encoding action → quote.
 

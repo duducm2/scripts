@@ -76,7 +76,7 @@ def format_sensory(value: str | None) -> str:
 
 
 def format_keywords_lines(value: str | None) -> list[str]:
-    """One [concept word] -> [tangible keyword] pair per line; empty if none."""
+    """Render pairs in stored concept-group order, one pair per line."""
     out: list[str] = []
     for left, right in iter_keyword_pairs(value):
         out.append(f"[**{right}**] \u2192 [{left}]")

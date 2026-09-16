@@ -58,8 +58,11 @@ ATOMS_HEADERS = [
     "sort_order",
 ]
 
-# Max Keyword | Recognizable Word pairs per Knowledge Atom (CSV `keywords` column).
+# Legacy read cap. New or rewritten atoms use the stricter 3–6 contract below.
 ATOM_KEYWORDS_MAX_PAIRS = 10
+ATOM_KEYWORDS_MIN_PAIRS = 3
+ATOM_KEYWORDS_NEW_MAX_PAIRS = 6
+ATOM_CONCEPT_MAX_GROUPS = 6
 
 
 _CONCEPT_NOTE_SEPS = (" — Note:", " – Note:", " - Note:")
@@ -93,6 +96,43 @@ def format_concept_thought_groups(raw: str | None) -> str:
     return f"{core}{note}"
 
 
+def concept_bracket_groups(raw: str | None) -> list[str] | None:
+    """Return top-level concept groups, or None when the core is not only groups."""
+    core, _note = split_concept_note(raw or "")
+    groups: list[str] = []
+    outside: list[str] = []
+    current: list[str] = []
+    depth = 0
+    for char in core:
+        if char == "[":
+            if depth == 0:
+                if "".join(outside).strip():
+                    return None
+                outside = []
+                current = []
+            else:
+                current.append(char)
+            depth += 1
+        elif char == "]":
+            if depth == 0:
+                return None
+            depth -= 1
+            if depth == 0:
+                group = "".join(current).strip()
+                if not group:
+                    return None
+                groups.append(group)
+            else:
+                current.append(char)
+        elif depth:
+            current.append(char)
+        else:
+            outside.append(char)
+    if depth or "".join(outside).strip():
+        return None
+    return groups
+
+
 def normalize_atom_keywords(raw: str | None) -> str:
     """Normalize `keywords` to `Keyword | Word || …` with at most ATOM_KEYWORDS_MAX_PAIRS pairs."""
     text = (raw or "").strip()
@@ -114,6 +154,88 @@ def normalize_atom_keywords(raw: str | None) -> str:
         if len(pairs) >= ATOM_KEYWORDS_MAX_PAIRS:
             break
     return " || ".join(pairs)
+
+
+def _strict_keyword_pairs(raw: str | None) -> tuple[list[tuple[str, str]], str | None]:
+    text = (raw or "").strip()
+    if not text:
+        return [], "keywords are required"
+    pairs: list[tuple[str, str]] = []
+    for index, chunk in enumerate(re.split(r"\s*\|\|\s*", text), start=1):
+        if not chunk.strip():
+            return [], f"keyword pair {index} is empty"
+        fields = [part.strip() for part in chunk.split("|")]
+        if len(fields) != 2 or not all(fields):
+            return [], (
+                f"keyword pair {index} must be `Keyword | RecognizableWord`"
+            )
+        pairs.append((fields[0], fields[1]))
+    return pairs, None
+
+
+def _terms_in_group_order(group: str, terms: list[str]) -> bool:
+    folded = group.casefold()
+    cursor = 0
+    for term in terms:
+        pos = folded.find(term.casefold(), cursor)
+        if pos < 0:
+            return False
+        cursor = pos + len(term)
+    return True
+
+
+def _pairs_cover_groups(
+    groups: list[str], pairs: list[tuple[str, str]], group_index: int = 0, pair_index: int = 0
+) -> bool:
+    """Assign one or two consecutive pairs to every group without reordering."""
+    if group_index == len(groups):
+        return pair_index == len(pairs)
+    groups_left = len(groups) - group_index
+    pairs_left = len(pairs) - pair_index
+    for count in (1, 2):
+        remaining = pairs_left - count
+        if remaining < groups_left - 1 or remaining > 2 * (groups_left - 1):
+            continue
+        selected = pairs[pair_index : pair_index + count]
+        if len(selected) != count:
+            continue
+        terms = [right for _left, right in selected]
+        if _terms_in_group_order(groups[group_index], terms) and _pairs_cover_groups(
+            groups, pairs, group_index + 1, pair_index + count
+        ):
+            return True
+    return False
+
+
+def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | None:
+    """Validate the bracket/key contract for a new or rewritten atom."""
+    groups = concept_bracket_groups(concept)
+    if groups is None:
+        return (
+            "concept core must contain only square-bracket groups followed by an "
+            "optional unbracketed ` — Note:`"
+        )
+    if len(groups) < 2:
+        return "concept must start with a dedicated [Name] group followed by a definition group"
+    if len(groups) > ATOM_CONCEPT_MAX_GROUPS:
+        return f"concept may contain at most {ATOM_CONCEPT_MAX_GROUPS} bracket groups"
+
+    pairs, error = _strict_keyword_pairs(keywords)
+    if error:
+        return error
+    if not ATOM_KEYWORDS_MIN_PAIRS <= len(pairs) <= ATOM_KEYWORDS_NEW_MAX_PAIRS:
+        return (
+            f"keywords must contain {ATOM_KEYWORDS_MIN_PAIRS}–"
+            f"{ATOM_KEYWORDS_NEW_MAX_PAIRS} pairs"
+        )
+    if len(pairs) < len(groups) or len(pairs) > 2 * len(groups):
+        return "every concept bracket group must have one or two keyword pairs"
+    if not _pairs_cover_groups(groups, pairs):
+        return (
+            "keyword RecognizableWords must cover every bracket group with one or "
+            "two pairs in left-to-right source order"
+        )
+    return None
 
 
 def iter_keyword_pairs(raw: str | None) -> list[tuple[str, str]]:

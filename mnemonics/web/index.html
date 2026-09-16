@@ -2352,6 +2352,7 @@
         return t ? esc(t) : "—";
       }
       function parseKeywordPairs(raw) {
+        // Never sort this list: storage order is concept-group source order.
         const text = String(raw || "").trim();
         if (!text) return [];
         return text
@@ -3900,10 +3901,13 @@
       function editAtom(a, beastId) {
         const kind =
           prompt("Kind (single/zoned)", a?.kind || "single") || "single";
-        const concept = prompt("Concept", a?.concept || "");
+        const concept = prompt(
+          "Concept ([Name] [definition group] […]; max 6 groups)",
+          a?.concept || "",
+        );
         if (concept == null) return;
         const keywordsRaw = prompt(
-          "Keywords (Keyword | Word || …; max 10; optional)",
+          "Keywords (1–2 ordered pairs per [group], 3–6 total; Keyword | Word || …)",
           a?.keywords || "",
         );
         if (keywordsRaw == null) return;

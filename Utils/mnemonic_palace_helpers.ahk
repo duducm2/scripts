@@ -321,7 +321,7 @@ Palace_CsvEscape(val) {
     return s
 }
 
-; Normalize atom keywords to `Keyword | Word || …` (max 10 pairs). Empty if none valid.
+; Legacy-safe normalization to `Keyword | Word || …` (read cap: 10 pairs).
 Palace_NormalizeAtomKeywords(raw) {
     text := Trim(String(raw))
     if (text = "")
@@ -361,6 +361,136 @@ Palace_NormalizeAtomKeywords(raw) {
         out .= pr
     }
     return out
+}
+
+; Strict contract for newly generated/imported atoms. Legacy stored rows are not passed here.
+Palace_ValidateAtomMnemonics(concept, keywords) {
+    out := Map("ok", false, "error", "")
+    core := Trim(String(concept))
+    for sep in [" — Note:", " – Note:", " - Note:"] {
+        pos := InStr(core, sep)
+        if (pos) {
+            core := RTrim(SubStr(core, 1, pos - 1))
+            break
+        }
+    }
+
+    groups := []
+    outside := ""
+    current := ""
+    depth := 0
+    Loop Parse core {
+        ch := A_LoopField
+        if (ch = "[") {
+            if (depth = 0) {
+                if (Trim(outside) != "") {
+                    out["error"] := "concept core must contain only square-bracket groups"
+                    return out
+                }
+                outside := ""
+                current := ""
+            } else {
+                current .= ch
+            }
+            depth += 1
+        } else if (ch = "]") {
+            if (depth = 0) {
+                out["error"] := "concept has an unmatched closing bracket"
+                return out
+            }
+            depth -= 1
+            if (depth = 0) {
+                if (Trim(current) = "") {
+                    out["error"] := "concept bracket groups cannot be empty"
+                    return out
+                }
+                groups.Push(Trim(current))
+            } else {
+                current .= ch
+            }
+        } else if (depth) {
+            current .= ch
+        } else {
+            outside .= ch
+        }
+    }
+    if (depth || Trim(outside) != "") {
+        out["error"] := "concept core must contain complete square-bracket groups"
+        return out
+    }
+    if (groups.Length < 2) {
+        out["error"] := "concept needs a dedicated [Name] group followed by a definition group"
+        return out
+    }
+    if (groups.Length > 6) {
+        out["error"] := "concept may contain at most 6 bracket groups"
+        return out
+    }
+
+    text := Trim(String(keywords))
+    if (text = "") {
+        out["error"] := "keywords are required"
+        return out
+    }
+    rawParts := StrSplit(RegExReplace(text, "\s*\|\|\s*", " || "), " || ")
+    pairs := []
+    for i, rawPart in rawParts {
+        chunk := Trim(rawPart)
+        sep := InStr(chunk, "|")
+        if (chunk = "" || !sep || InStr(chunk, "|", false, sep + 1)) {
+            out["error"] := "keyword pair " . i . " must be `Keyword | RecognizableWord`"
+            return out
+        }
+        left := Trim(SubStr(chunk, 1, sep - 1))
+        right := Trim(SubStr(chunk, sep + 1))
+        if (left = "" || right = "") {
+            out["error"] := "keyword pair " . i . " must be `Keyword | RecognizableWord`"
+            return out
+        }
+        pairs.Push(Map("left", left, "right", right))
+    }
+    if (pairs.Length < 3 || pairs.Length > 6) {
+        out["error"] := "keywords must contain 3–6 pairs"
+        return out
+    }
+    if (pairs.Length < groups.Length || pairs.Length > groups.Length * 2) {
+        out["error"] := "every concept bracket group must have one or two keyword pairs"
+        return out
+    }
+    if (!Palace_KeywordGroupsMatch(groups, pairs, 1, 1)) {
+        out["error"] := "keyword RecognizableWords must cover every bracket group in source order"
+        return out
+    }
+    out["ok"] := true
+    return out
+}
+
+Palace_KeywordGroupsMatch(groups, pairs, groupIndex, pairIndex) {
+    if (groupIndex > groups.Length)
+        return pairIndex > pairs.Length
+    groupsLeft := groups.Length - groupIndex + 1
+    pairsLeft := pairs.Length - pairIndex + 1
+    for count in [1, 2] {
+        remaining := pairsLeft - count
+        if (remaining < groupsLeft - 1 || remaining > 2 * (groupsLeft - 1))
+            continue
+        if (pairIndex + count - 1 > pairs.Length)
+            continue
+        cursor := 1
+        matched := true
+        Loop count {
+            term := pairs[pairIndex + A_Index - 1]["right"]
+            pos := InStr(groups[groupIndex], term, false, cursor)
+            if (!pos) {
+                matched := false
+                break
+            }
+            cursor := pos + StrLen(term)
+        }
+        if (matched && Palace_KeywordGroupsMatch(groups, pairs, groupIndex + 1, pairIndex + count))
+            return true
+    }
+    return false
 }
 
 Palace_ReadCsvFromText(text, strict := false, skipNotes := 0) {

@@ -1015,11 +1015,19 @@ Palace_ValidateImportAtoms(atomRows, beastRows := "") {
             return out
         }
     }
-    ; Normalize/truncate keywords (missing OK; >10 pairs truncated; never fail import).
+    ; New imports must satisfy the bracket/key contract; fail instead of dropping pairs.
     for r in atomRows {
         if (!IsObject(r))
             continue
+        concept := r.Has("concept") ? r["concept"] : (r.Has("context") ? r["context"] : "")
         kw := r.Has("keywords") ? r["keywords"] : ""
+        mnemonicCheck := Palace_ValidateAtomMnemonics(concept, kw)
+        if (!mnemonicCheck["ok"]) {
+            atomLabel := r.Has("id") && Trim(r["id"]) != "" ? " " . Trim(r["id"]) : ""
+            out["ok"] := false
+            out["error"] := "Atom" . atomLabel . ": " . mnemonicCheck["error"]
+            return out
+        }
         r["keywords"] := Palace_NormalizeAtomKeywords(kw)
     }
     return out
