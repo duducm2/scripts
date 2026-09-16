@@ -2167,7 +2167,7 @@ ClipAngel_UnfavoriteAllClips() {
             "Remove favorite status from ALL currently favorited clips?`n`n"
             . "Clips stay in history; only the favorite mark is cleared.",
             "Clip Angel — unfavorite all",
-            "YesNo Icon! Default2" . ownerOpt
+            "YesNo Icon! Default1" . ownerOpt
         )
         if (response != "Yes") {
             ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
