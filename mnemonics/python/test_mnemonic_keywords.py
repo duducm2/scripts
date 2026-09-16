@@ -45,9 +45,7 @@ def test_every_group_needs_a_pair_in_source_order() -> None:
         validate_atom_mnemonics(PARALLEL_CONCEPT, missing_group) or ""
     )
 
-    wrong_order = (
-        "easel | draw || fence | Parallel Coordinates || bead | tuple"
-    )
+    wrong_order = "easel | draw || fence | Parallel Coordinates || bead | tuple"
     assert "source order" in (
         validate_atom_mnemonics(PARALLEL_CONCEPT, wrong_order) or ""
     )

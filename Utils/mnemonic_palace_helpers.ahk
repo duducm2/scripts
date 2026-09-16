@@ -145,7 +145,8 @@ Palace_EnsureSettings() {
 Palace_EnsureData() {
     Palace_DataDir()
     Palace_EnsureSettings()
-    for kind in ["studies", "palaces", "palace_images", "study_images", "beasts", "atoms", "plans", "plan_items", "plan_resources"] {
+    for kind in ["studies", "palaces", "palace_images", "study_images", "beasts", "atoms", "plans", "plan_items",
+        "plan_resources"] {
         path := Palace_DataDir() . "\" . kind . ".csv"
         if (!FileExist(path))
             Palace_Save(kind, [])
@@ -379,7 +380,7 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
     outside := ""
     current := ""
     depth := 0
-    Loop Parse core {
+    loop parse core {
         ch := A_LoopField
         if (ch = "[") {
             if (depth = 0) {
@@ -478,7 +479,7 @@ Palace_KeywordGroupsMatch(groups, pairs, groupIndex, pairIndex) {
             continue
         cursor := 1
         matched := true
-        Loop count {
+        loop count {
             term := pairs[pairIndex + A_Index - 1]["right"]
             pos := InStr(groups[groupIndex], term, false, cursor)
             if (!pos) {

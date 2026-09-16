@@ -333,16 +333,12 @@ class PalaceStore:
     def bootstrap(self) -> dict[str, Any]:
         """Slim payload for study picker + Quick Recall only (no full engines)."""
         data = self._load_tree()
-        studies = [
-            s for s in data.get("studies", []) if s.get("active", "1") != "0"
-        ]
+        studies = [s for s in data.get("studies", []) if s.get("active", "1") != "0"]
         included = self._quick_recall_included_ids(data.get("palaces", []))
         included_set = set(included)
         palaces = [p for p in data.get("palaces", []) if p.get("id") in included_set]
         palace_ids = {p.get("id") for p in palaces}
-        beasts = [
-            b for b in data.get("beasts", []) if b.get("palace_id") in palace_ids
-        ]
+        beasts = [b for b in data.get("beasts", []) if b.get("palace_id") in palace_ids]
         beast_ids = {b.get("id") for b in beasts}
         atoms = [a for a in data.get("atoms", []) if a.get("beast_id") in beast_ids]
         return {

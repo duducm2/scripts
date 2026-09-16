@@ -166,9 +166,7 @@ def _strict_keyword_pairs(raw: str | None) -> tuple[list[tuple[str, str]], str |
             return [], f"keyword pair {index} is empty"
         fields = [part.strip() for part in chunk.split("|")]
         if len(fields) != 2 or not all(fields):
-            return [], (
-                f"keyword pair {index} must be `Keyword | RecognizableWord`"
-            )
+            return [], (f"keyword pair {index} must be `Keyword | RecognizableWord`")
         pairs.append((fields[0], fields[1]))
     return pairs, None
 
@@ -185,7 +183,10 @@ def _terms_in_group_order(group: str, terms: list[str]) -> bool:
 
 
 def _pairs_cover_groups(
-    groups: list[str], pairs: list[tuple[str, str]], group_index: int = 0, pair_index: int = 0
+    groups: list[str],
+    pairs: list[tuple[str, str]],
+    group_index: int = 0,
+    pair_index: int = 0,
 ) -> bool:
     """Assign one or two consecutive pairs to every group without reordering."""
     if group_index == len(groups):
