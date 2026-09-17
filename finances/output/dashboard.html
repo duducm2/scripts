@@ -361,7 +361,7 @@
     }
     .funds-compare-title-row {
       display:flex; align-items:center; justify-content:space-between;
-      gap:8px; margin-bottom:6px;
+      gap:8px; margin-bottom:8px;
     }
     .funds-compare-actions {
       display:flex; align-items:center; gap:8px; flex-shrink:0;
@@ -370,12 +370,10 @@
       font-size:11px; font-weight:600; color:var(--heading);
       text-transform:uppercase; letter-spacing:.03em; margin:0;
     }
-    .funds-compare-head {
-      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      font-size:12px; margin-bottom:6px;
-    }
-    .funds-compare-legend {
-      display:flex; align-items:center; gap:12px; flex-wrap:wrap; color:var(--muted);
+    .funds-block { margin:0 0 10px; }
+    .funds-block-head {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-bottom:4px;
     }
     .funds-legend-item {
       display:inline-flex; align-items:center; gap:5px;
@@ -388,7 +386,6 @@
     .funds-legend-swatch.planned { background:#2ecc71; }
     .funds-legend-swatch.spent { background:#f1c40f; }
     .funds-legend-swatch.save { background:#9b59b6; }
-    .funds-compare.deficit .funds-legend-swatch.planned { background:#e74c3c; }
     .funds-compare.deficit .funds-legend-swatch.save { background:#e74c3c; }
     .funds-compare.overspent .funds-legend-swatch.spent { background:#e74c3c; }
     .funds-compare-amounts {
@@ -398,46 +395,27 @@
     .funds-compare.deficit #fundsProjectedSaveVal { color:#e74c3c; }
     .funds-compare.overspent #fundsSpentVal { color:#e74c3c; }
     .funds-compare-track {
-      position:relative; height:16px; background:var(--track);
-      border-radius:4px; overflow:visible;
+      position:relative; height:10px; background:var(--track);
+      border-radius:4px; overflow:hidden;
     }
     .funds-bar {
       position:absolute; left:0; top:0; height:100%; border-radius:4px;
       transition:width .15s ease, background-color .15s ease;
     }
     .funds-bar-available {
-      top:3px; height:10px; background:#3498db; opacity:.85; z-index:1;
+      background:#3498db; opacity:.9; z-index:1;
     }
     .funds-bar-planned {
-      top:0; height:16px; background:#2ecc71; opacity:.55; z-index:2;
+      background:#2ecc71; opacity:.28; z-index:1;
     }
     .funds-bar-spent {
-      top:3px; height:10px; background:#f1c40f; opacity:.9; z-index:3;
+      background:#f1c40f; opacity:.95; z-index:2;
     }
-    .funds-compare.deficit .funds-bar-planned { background:#e74c3c; opacity:.65; }
-    .funds-compare.overspent .funds-bar-spent { background:#e74c3c; opacity:.85; }
-    .funds-marker {
-      position:absolute; top:-3px; width:0; height:0;
-      border-left:5px solid transparent; border-right:5px solid transparent;
-      border-top:7px solid #3498db;
-      transform:translateX(-50%); z-index:4; pointer-events:none;
-      transition:left .15s ease, border-top-color .15s ease;
-    }
-    .funds-marker-available { border-top-color:#3498db; }
-    .funds-marker-planned {
-      top:auto; bottom:-3px; border-top:none;
-      border-bottom:7px solid #2ecc71;
-    }
-    .funds-marker-spent {
-      border-top-color:#f1c40f;
-    }
-    .funds-compare.deficit .funds-marker-planned { border-bottom-color:#e74c3c; }
-    .funds-compare.overspent .funds-marker-spent { border-top-color:#e74c3c; }
+    .funds-compare.overspent .funds-bar-spent { background:#e74c3c; opacity:.9; }
     .funds-compare-meta {
-      color:var(--muted2); font-size:11px; margin-top:6px;
+      color:var(--muted2); font-size:11px; margin-top:4px;
     }
-    .funds-compare.deficit .funds-compare-meta { color:#e74c3c; font-weight:600; }
-    .funds-compare.ok .funds-compare-meta { color:#2ecc71; }
+    .funds-compare.overspent #fundsBudgetMeta { color:#e74c3c; font-weight:600; }
     .budget-calc-wrap {
       position:relative; flex-shrink:0;
     }
@@ -615,7 +593,7 @@
           </div>
           <div class="funds-compare" id="fundsCompare" aria-live="polite">
             <div class="funds-compare-title-row">
-              <div class="funds-compare-title">Available vs planned</div>
+              <div class="funds-compare-title">Funds</div>
               <div class="funds-compare-actions">
                 
                 <div class="budget-calc-wrap">
@@ -625,12 +603,20 @@
                 </div>
               </div>
             </div>
-            <div class="funds-compare-head">
-              <div class="funds-compare-legend">
+            <div class="funds-block" id="fundsAvailableBlock">
+              <div class="funds-block-head">
                 <span class="funds-legend-item">
                   <span class="funds-legend-swatch available"></span>
-                  Available <span class="funds-compare-amounts" id="fundsAvailableVal">—</span>
+                  Available cash <span class="funds-compare-amounts" id="fundsAvailableVal">—</span>
                 </span>
+              </div>
+              <div class="funds-compare-track">
+                <div class="funds-bar funds-bar-available" id="fundsBarAvailable" style="width:0%"></div>
+              </div>
+              <div class="funds-compare-meta" id="fundsAvailableMeta"></div>
+            </div>
+            <div class="funds-block" id="fundsBudgetBlock">
+              <div class="funds-block-head">
                 <span class="funds-legend-item">
                   <span class="funds-legend-swatch planned"></span>
                   Planned <span class="funds-compare-amounts" id="fundsPlannedVal">—</span>
@@ -645,16 +631,12 @@
                   <span class="funds-compare-amounts" id="fundsProjectedSaveVal">—</span>
                 </span>
               </div>
+              <div class="funds-compare-track">
+                <div class="funds-bar funds-bar-planned" id="fundsBarPlanned" style="width:100%"></div>
+                <div class="funds-bar funds-bar-spent" id="fundsBarSpent" style="width:0%"></div>
+              </div>
+              <div class="funds-compare-meta" id="fundsBudgetMeta"></div>
             </div>
-            <div class="funds-compare-track">
-              <div class="funds-bar funds-bar-available" id="fundsBarAvailable" style="width:0%"></div>
-              <div class="funds-bar funds-bar-planned" id="fundsBarPlanned" style="width:0%"></div>
-              <div class="funds-bar funds-bar-spent" id="fundsBarSpent" style="width:0%"></div>
-              <span class="funds-marker funds-marker-available" id="fundsMarkAvailable" style="left:0%"></span>
-              <span class="funds-marker funds-marker-planned" id="fundsMarkPlanned" style="left:0%"></span>
-              <span class="funds-marker funds-marker-spent" id="fundsMarkSpent" style="left:0%"></span>
-            </div>
-            <div class="funds-compare-meta" id="fundsCompareMeta"></div>
             
             <div class="funds-card-avail" id="fundsCardAvail">
               
@@ -1266,28 +1248,31 @@ function spentTotalForCurrentMonth() {
   }
   return total;
 }
-/** Same headroom as Available vs planned (available − planned). */
+/** Unspent plan (planned − spent). Positive = projected save; negative = shortfall. */
 function projectedSaveHeadroom() {
-  const available = Number(RAW.liquidAfterCard);
-  const avail = Number.isFinite(available) ? available : 0;
-  return avail - plannedTotalForCurrentMonth();
+  return plannedTotalForCurrentMonth() - spentTotalForCurrentMonth();
 }
 function refreshFundsCompare() {
   const root = document.getElementById('fundsCompare');
   if (!root) return;
   const available = Number(RAW.liquidAfterCard);
   const avail = Number.isFinite(available) ? available : 0;
+  const checkingRaw = Number(RAW.liquidAccountBal);
+  const checking = Number.isFinite(checkingRaw) ? checkingRaw : 0;
+  const cardSpentRaw = Number(RAW.liquidCardSpent);
+  const cardSpend = Number.isFinite(cardSpentRaw) ? cardSpentRaw : 0;
   const planned = plannedTotalForCurrentMonth();
   const spent = spentTotalForCurrentMonth();
-  const scale = Math.max(avail, planned, spent, 0.01);
-  const availPct = Math.max(0, (avail / scale) * 100);
-  const planPct = Math.max(0, (planned / scale) * 100);
-  const spentPct = Math.max(0, (spent / scale) * 100);
-  const deficit = planned > avail + 0.001;
-  const overspent = spent > planned + 0.001 && planned > 0;
+  const availScale = Math.max(checking, Math.abs(avail), 0.01);
+  const availPct = Math.max(0, Math.min(100, (Math.max(0, avail) / availScale) * 100));
+  const spentPct = planned > 0
+    ? Math.min(100, (spent / planned) * 100)
+    : (spent > 0 ? 100 : 0);
   const headroom = projectedSaveHeadroom();
-  root.classList.toggle('deficit', deficit);
-  root.classList.toggle('ok', !deficit);
+  const overspent = headroom < -0.001 && planned > 0;
+  const onTrack = !overspent;
+  root.classList.toggle('deficit', overspent);
+  root.classList.toggle('ok', onTrack && planned > 0);
   root.classList.toggle('overspent', overspent);
   const availEl = document.getElementById('fundsAvailableVal');
   const planEl = document.getElementById('fundsPlannedVal');
@@ -1297,33 +1282,35 @@ function refreshFundsCompare() {
   const barAvail = document.getElementById('fundsBarAvailable');
   const barPlan = document.getElementById('fundsBarPlanned');
   const barSpent = document.getElementById('fundsBarSpent');
-  const markAvail = document.getElementById('fundsMarkAvailable');
-  const markPlan = document.getElementById('fundsMarkPlanned');
-  const markSpent = document.getElementById('fundsMarkSpent');
-  const meta = document.getElementById('fundsCompareMeta');
+  const availMeta = document.getElementById('fundsAvailableMeta');
+  const budgetMeta = document.getElementById('fundsBudgetMeta');
   const tip = document.getElementById('budgetCalcTip');
   if (availEl) availEl.textContent = formatBrl(avail);
   if (planEl) planEl.textContent = formatBrl(planned);
   if (spentEl) spentEl.textContent = formatBrl(spent);
   if (saveEl) {
-    saveEl.textContent = deficit
+    saveEl.textContent = overspent
       ? ('−' + formatBrl(-headroom))
-      : formatBrl(headroom);
+      : formatBrl(Math.max(0, headroom));
   }
-  if (saveLbl) saveLbl.textContent = deficit ? 'Shortfall' : 'Projected save';
+  if (saveLbl) saveLbl.textContent = overspent ? 'Shortfall' : 'Projected save';
   if (barAvail) barAvail.style.width = availPct.toFixed(1) + '%';
-  if (barPlan) barPlan.style.width = planPct.toFixed(1) + '%';
+  if (barPlan) barPlan.style.width = planned > 0 || spent > 0 ? '100%' : '0%';
   if (barSpent) barSpent.style.width = spentPct.toFixed(1) + '%';
-  if (markAvail) markAvail.style.left = availPct.toFixed(1) + '%';
-  if (markPlan) markPlan.style.left = planPct.toFixed(1) + '%';
-  if (markSpent) markSpent.style.left = spentPct.toFixed(1) + '%';
-  if (meta) {
-    const spentHint = overspent
-      ? ' · overspent ' + formatBrl(spent - planned)
-      : (planned > 0 ? (' · spent ' + (spent / planned * 100).toFixed(0) + '% of planned') : '');
-    meta.textContent = deficit
-      ? ('Over planned · reduce spending or raise available' + spentHint)
-      : ('Available covers planned · leftover is projected save' + spentHint);
+  if (availMeta) {
+    availMeta.textContent = 'Checking ' + formatBrl(checking)
+      + ' − card spent ' + formatBrl(cardSpend);
+  }
+  if (budgetMeta) {
+    if (planned <= 0 && spent <= 0) {
+      budgetMeta.textContent = 'No planned budget this month';
+    } else if (overspent) {
+      budgetMeta.textContent = 'Exceeded planned by ' + formatBrl(-headroom)
+        + ' · ' + (planned > 0 ? (spent / planned * 100).toFixed(0) + '% of planned' : 'no plan');
+    } else {
+      budgetMeta.textContent = 'Unspent plan ' + formatBrl(headroom)
+        + (planned > 0 ? (' · spent ' + (spent / planned * 100).toFixed(0) + '% of planned') : '');
+    }
   }
   if (tip) {
     const accRows = Array.isArray(RAW.liquidAccounts) ? RAW.liquidAccounts : [];
@@ -1332,7 +1319,7 @@ function refreshFundsCompare() {
     const cardSpent = Number(RAW.liquidCardSpent);
     const cardLimit = Number(RAW.liquidCardLimit);
     const bal = Number.isFinite(accBal) ? accBal : 0;
-    const cardSpend = Number.isFinite(cardSpent) ? cardSpent : 0;
+    const tipCardSpend = Number.isFinite(cardSpent) ? cardSpent : 0;
     const limit = Number.isFinite(cardLimit) ? cardLimit : 0;
     const parts = [];
     if (accRows.length) {
@@ -1357,11 +1344,11 @@ function refreshFundsCompare() {
           + ' · avail ' + formatBrl(cAvail) + '</div>');
       }
     } else {
-      parts.push('<div class="calc-line">Cards · spent ' + formatBrl(cardSpend)
+      parts.push('<div class="calc-line">Cards · spent ' + formatBrl(tipCardSpend)
         + ' · limit ' + formatBrl(limit) + '</div>');
     }
     parts.push('<div class="calc-line calc-total">Available = checking '
-      + formatBrl(bal) + ' − card spent ' + formatBrl(cardSpend)
+      + formatBrl(bal) + ' − card spent ' + formatBrl(tipCardSpend)
       + ' = ' + formatBrl(avail) + '</div>');
     tip.innerHTML = parts.join('');
   }
@@ -1618,7 +1605,7 @@ function drawRecurringTreemap() {
     const pInc = vs.income > 0 ? (projectedSave / vs.income * 100) : 0;
     custom.push(formatBrl(projectedSave)
       + (vs.income > 0 ? (' · ' + pInc.toFixed(0) + '% of income') : '')
-      + ' · available − planned');
+      + ' · planned − spent');
   }
   const remainder = leftover - projectedSave;
   if (remainder > 0.001) {
