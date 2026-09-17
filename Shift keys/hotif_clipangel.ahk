@@ -52,6 +52,25 @@ ClipAngel_CopyFocusedFilteredContent() {
     return copied
 }
 
+; Copy the selected list row through ClipAngel itself so every clip type is preserved.
+ClipAngel_CopyFocusedListClip(hwnd) {
+    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    if (!dataGrid)
+        return false
+    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+
+    seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
+    SendInput "^c"
+    deadline := A_TickCount + 500
+    while (A_TickCount < deadline) {
+        seqNow := DllCall("GetClipboardSequenceNumber", "uint")
+        if (seqNow && seqNow != seqBefore)
+            return true
+        Sleep 15
+    }
+    return false
+}
+
 ; Shift + C : Select filtered content, copy, minimize, and paste.
 +c:: {
     ClipAngel_CopyFocusedFilteredContent()
@@ -178,14 +197,11 @@ $^Enter:: {
 
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
-    if !ClipAngel_CopyFocusedFilteredContent() {
+    if !ClipAngel_CopyFocusedListClip(hwnd) {
         ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
         return
     }
 
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
-    if (dataGrid)
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
     SendInput "!w"
     Sleep 50
     ClipAngel_CloseAndRestoreFocus(0)
