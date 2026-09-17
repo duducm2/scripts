@@ -89,14 +89,14 @@ def build_html(data: dict) -> str:
             f'<div class="kpi-card-mini">'
             f'<div class="bar-head"><span>{name}</span>'
             f'<span><span class="kpi-card-avail-amt">{format_brl(avail)}</span>'
-            f' <span class="dim">{pct:.0f}%</span></span></div>'
+            f' <span class="dim">· spent {format_brl(spent)} · {pct:.0f}%</span></span></div>'
             f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;'
             f'background:{fill}"></div></div></div>'
         )
     mini_html = "".join(mini_rows)
     card_avail_inner = f"""
             <div class="lbl">Card avail.</div>
-            <div class="val" id="kpiCard">{format_brl(data['card_available'])} <span class="dim">/ {format_brl(data['card_limit'])}</span></div>
+            <div class="val" id="kpiCard">{format_brl(data['card_available'])} <span class="dim">/ {format_brl(data['card_limit'])} · spent {format_brl(data['card_spent'])}</span></div>
             <div class="kpi-util-row" title="Credit limit utilization">
               <div class="bar-track kpi-util-track"><div class="bar-fill" id="kpiCardUtilFill" style="width:{util_width:.1f}%;background:{util_fill}"></div></div>
               <span class="kpi-util-pct" id="kpiCardUtilPct">{util_pct:.0f}%</span>
@@ -290,7 +290,9 @@ def build_html(data: dict) -> str:
             total_spent += sp
             rem = p - sp
             pct = (sp / p * 100) if p > 0 else (100.0 if sp > 0 else 0.0)
+            width = min(pct, 100.0)
             over = sp > p and p > 0
+            fill = "#e74c3c" if over else "#2ecc71"
             cap = (
                 f"Exceeded {format_brl(-rem)}" if over else f"Remain {format_brl(rem)}"
             )
@@ -298,6 +300,8 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-row">'
                 f'<div class="bar-head"><span>{name}</span>'
                 f"<span>{format_brl(sp)} / {format_brl(p)} · {pct:.0f}%</span></div>"
+                f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;'
+                f'background:{fill}"></div></div>'
                 f'<div class="bar-meta">{cap}</div>'
                 f"</div>"
             )
@@ -1744,6 +1748,11 @@ function refreshBudgetVisuals(ym) {{
     const st = budgetRowStats(b.planned, b.spent);
     const pctEl = row.querySelector('.budget-pct');
     if (pctEl) pctEl.textContent = '· ' + st.pct.toFixed(0) + '%';
+    const fill = row.querySelector('.bar-fill');
+    if (fill) {{
+      fill.style.width = st.width.toFixed(1) + '%';
+      fill.style.background = st.fill;
+    }}
     const meta = row.querySelector('.bar-meta');
     if (meta) meta.textContent = st.cap;
   }}
@@ -1855,6 +1864,8 @@ function renderBudgets(rows) {{
       + 'data-category-id="' + b.category_id + '" value="' + plannedVal + '"'
       + (canEdit ? '' : ' disabled') + '/>'
       + '<span class="budget-pct">· ' + st.pct.toFixed(0) + '%</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + st.width.toFixed(1)
+      + '%;background:' + st.fill + '"></div></div>'
       + '<div class="bar-meta">' + st.cap + '</div></div>';
   }}).join('');
   el.querySelectorAll('.budget-planned-input').forEach(inp => {{
