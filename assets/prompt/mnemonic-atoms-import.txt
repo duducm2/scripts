@@ -23,13 +23,13 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 10. Leave `id` empty if unknown (the importer will assign `ATOM_####`).
 11. Pegs stay on beasts (not in this file). Never invent numeric pegs.
 12. Do **not** invent `beast_id` values — only use IDs from the attached context.
-13. `concept` — the formal concept name MUST be its own first square-bracket group, followed by bracketed definition groups: `[Name] [definition group] […optional groups…]`. Keep at most six groups; optional ` — Note:` text stays unbracketed.
-14. `keywords` — required for new rows. Format: ordered `Keyword | RecognizableWord` pairs joined by ` || `. Generate 1–2 pairs from every concept bracket group and 3–6 pairs total. A RecognizableWord must come from its group; use a second only for another independently retention-critical term. Preserve left-to-right group and word order. Never merge or deduplicate the dedicated name-group pair with the first definition-group pair, even when wording repeats. Never key Note text.
+13. `concept` — the formal concept name MUST be its own first square-bracket group, followed by bracketed definition groups: `[Name] [definition group] […optional groups…]`. Keep **3–6** groups; optional ` — Note:` text stays unbracketed.
+14. `keywords` — required for new rows. Format: ordered `Keyword | RecognizableWord` pairs joined by ` || `. Generate **exactly one** pair from every concept bracket group and **3–6 pairs total** matching the group count. A RecognizableWord must come from its group. Preserve left-to-right group order. Never merge or deduplicate the dedicated name-group pair with the first definition-group pair, even when wording repeats. Never put two keys in one group. Never key Note text.
 
 ## Knowledge Atom fields
 
-- **Concept** — rehearsal definition (`[Name] [thought group]` chunks on the compressed core + optional unbracketed Note; at most six groups)
-- **Keywords** — 1–2 tangible Keyword/RecognizableWord pairs per bracket group, 3–6 ordered pairs total (`Keyword | Word || …`)
+- **Concept** — rehearsal definition (`[Name] [thought group]` chunks on the compressed core + optional unbracketed Note; 3–6 groups)
+- **Keywords** — exactly one tangible Keyword/RecognizableWord pair per bracket group, 3–6 ordered pairs total (`Keyword | Word || …`)
 - **Quote** — verbatim source quote
 - **Story** — mnemonic narrative / action
 - **Sensory** — modality the story emphasizes (visual, auditory, tactile, …)

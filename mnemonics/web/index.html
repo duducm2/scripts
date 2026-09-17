@@ -3902,12 +3902,12 @@
         const kind =
           prompt("Kind (single/zoned)", a?.kind || "single") || "single";
         const concept = prompt(
-          "Concept ([Name] [definition group] […]; max 6 groups)",
+          "Concept ([Name] [definition group] […]; 3–6 groups)",
           a?.concept || "",
         );
         if (concept == null) return;
         const keywordsRaw = prompt(
-          "Keywords (1–2 ordered pairs per [group], 3–6 total; Keyword | Word || …)",
+          "Keywords (exactly 1 pair per [group], 3–6 total; Keyword | Word || …)",
           a?.keywords || "",
         );
         if (keywordsRaw == null) return;

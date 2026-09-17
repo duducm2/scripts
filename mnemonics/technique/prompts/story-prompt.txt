@@ -211,20 +211,20 @@ Rules:
     - **Core clause:** Subject + Verb + Object as one foundation chunk immediately after the dedicated Concept name group.
     - **Prepositional phrases:** separate adverbial modifiers (origin, destination, time, etc.) that begin with a preposition.
     - **Participial phrases:** separate instrument/method/condition phrases beginning with participles or conjunctions that introduce them.
-    - **Output:** wrap the dedicated Concept name and every thought group in square brackets, separated by a single space: `[Name] [chunk] [chunk]`. Keep at most six bracket groups by compressing/re-chunking without information loss. NEVER use `|` inside `concept` to mark thought groups.
+    - **Output:** wrap the dedicated Concept name and every thought group in square brackets, separated by a single space: `[Name] [chunk] [chunk]`. Keep **3–6** bracket groups (exactly one key per group). If meaning would need only two chunks, re-chunk to at least three groups; if more than six would be needed, compress/re-chunk without information loss. NEVER use `|` inside `concept` to mark thought groups.
     - **Note suffix:** when present, append ` — Note: …` **after** the fully chunked core; do **not** wrap the Note in thought-group brackets.
     - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `sensory`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
     - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
     - **Example (core):** `Extract Phase; I retrieve raw data from various origin systems during the first pipeline phase` → `[Extract Phase] [I retrieve raw data] [from various origin systems] [during the first pipeline phase]`
     - **Example (with Note):** `[ETL Pipeline] [I move raw data] [from multiple sources] [into a centralized target] — Note: The target is typically a Data Warehouse or Data Mart.`
   - **Keyword pairs HARD MANDATE** — fill `keywords` from the dedicated Concept name group and all concept thought groups:
-    - Every `[…]` group of the compressed **core** (never the Note) MUST receive at least one and at most two key pairs.
-    - Generate **3–6 pairs total per atom**. When only two groups are needed, assign a second pair to the group containing another retention-critical term. Do not add filler groups or filler pairs.
-    - For each pair, extract one **prominent recognizable word or short term from that same group** (everyday and highly recognizable where possible). Use two only when two complicated/primordial terms are independently necessary for retention.
+    - Every `[…]` group of the compressed **core** (never the Note) MUST receive **exactly one** key pair — never zero, never two.
+    - Generate **3–6 pairs total per atom**, matching the group count one-to-one. Do not add filler groups or filler pairs; re-chunk instead of stuffing a second key into one group.
+    - For each pair, extract one **prominent recognizable word or short term from that same group** (everyday and highly recognizable where possible).
     - Pair it with a tangible **Keyword** memory anchor: a physical object, action, actor, or cartoon character (highly recognizable and concrete).
-    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes), in exact left-to-right group order and word order within each group. Visible Markdown and web output must preserve this sequence.
+    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes), in exact left-to-right group order. Visible Markdown and web output must preserve this sequence.
     - **Forced separation:** the dedicated Concept name group and the first definition group always yield separate pairs even when their wording repeats. Never merge or deduplicate repeated terms across groups.
-    - Example: `[Parallel Coordinates] [I draw each variable as a parallel axis] [and turn each tuple into a polyline]` → `fence | Parallel Coordinates || easel | draw || axis | parallel axis || bead | tuple` (four pairs, every group covered, source order preserved).
+    - Example: `[Parallel Coordinates] [I draw each variable as a parallel axis] [and turn each tuple into a polyline]` → `fence | Parallel Coordinates || easel | draw || bead | tuple` (three pairs, one per group, source order preserved).
     - Never invent pairs for Note text. `keywords` MUST NOT be empty for a generated atom.
     - Do **not** put Keywords into PREVIEW lines (CSV `keywords` column is SSOT for import).
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
@@ -311,7 +311,7 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 | Compressed `concept` core is first person singular when it fits; skip when it would distort | Yes |
 | ` — Note:` on `concept` only when nuance was stripped from the compressed core; Note impersonal; `quote` verbatim only | Yes |
 | Each `concept` compressed core uses square-bracket thought groups per Concept chunking rule; Note unchunked; quote/story/sensory never wrapped as concept thought groups | Yes |
-| Each `concept` core leads with the formal concept/technique name in the first `[…]` chunk (`Name: …`) | Yes |
+| Each `concept` core leads with a dedicated `[Name]` group, then definition groups; exactly one keyword pair per `[…]` group (3–6 total) | Yes |
 | image_prompt filled per new palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 

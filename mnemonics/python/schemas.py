@@ -171,41 +171,19 @@ def _strict_keyword_pairs(raw: str | None) -> tuple[list[tuple[str, str]], str |
     return pairs, None
 
 
-def _terms_in_group_order(group: str, terms: list[str]) -> bool:
-    folded = group.casefold()
-    cursor = 0
-    for term in terms:
-        pos = folded.find(term.casefold(), cursor)
-        if pos < 0:
-            return False
-        cursor = pos + len(term)
-    return True
+def _term_in_group(group: str, term: str) -> bool:
+    return term.casefold() in group.casefold()
 
 
-def _pairs_cover_groups(
-    groups: list[str],
-    pairs: list[tuple[str, str]],
-    group_index: int = 0,
-    pair_index: int = 0,
+def _pairs_match_groups_one_to_one(
+    groups: list[str], pairs: list[tuple[str, str]]
 ) -> bool:
-    """Assign one or two consecutive pairs to every group without reordering."""
-    if group_index == len(groups):
-        return pair_index == len(pairs)
-    groups_left = len(groups) - group_index
-    pairs_left = len(pairs) - pair_index
-    for count in (1, 2):
-        remaining = pairs_left - count
-        if remaining < groups_left - 1 or remaining > 2 * (groups_left - 1):
-            continue
-        selected = pairs[pair_index : pair_index + count]
-        if len(selected) != count:
-            continue
-        terms = [right for _left, right in selected]
-        if _terms_in_group_order(groups[group_index], terms) and _pairs_cover_groups(
-            groups, pairs, group_index + 1, pair_index + count
-        ):
-            return True
-    return False
+    """Exactly one pair per group; RecognizableWord must appear in that group."""
+    if len(groups) != len(pairs):
+        return False
+    return all(
+        _term_in_group(group, right) for group, (_left, right) in zip(groups, pairs)
+    )
 
 
 def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | None:
@@ -216,25 +194,27 @@ def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | 
             "concept core must contain only square-bracket groups followed by an "
             "optional unbracketed ` — Note:`"
         )
-    if len(groups) < 2:
-        return "concept must start with a dedicated [Name] group followed by a definition group"
-    if len(groups) > ATOM_CONCEPT_MAX_GROUPS:
-        return f"concept may contain at most {ATOM_CONCEPT_MAX_GROUPS} bracket groups"
+    if not ATOM_KEYWORDS_MIN_PAIRS <= len(groups) <= ATOM_CONCEPT_MAX_GROUPS:
+        return (
+            f"concept must contain {ATOM_KEYWORDS_MIN_PAIRS}–"
+            f"{ATOM_CONCEPT_MAX_GROUPS} bracket groups "
+            "(dedicated [Name] plus definition groups)"
+        )
 
     pairs, error = _strict_keyword_pairs(keywords)
     if error:
         return error
+    if len(pairs) != len(groups):
+        return "exactly one keyword pair is required per concept bracket group"
     if not ATOM_KEYWORDS_MIN_PAIRS <= len(pairs) <= ATOM_KEYWORDS_NEW_MAX_PAIRS:
         return (
             f"keywords must contain {ATOM_KEYWORDS_MIN_PAIRS}–"
             f"{ATOM_KEYWORDS_NEW_MAX_PAIRS} pairs"
         )
-    if len(pairs) < len(groups) or len(pairs) > 2 * len(groups):
-        return "every concept bracket group must have one or two keyword pairs"
-    if not _pairs_cover_groups(groups, pairs):
+    if not _pairs_match_groups_one_to_one(groups, pairs):
         return (
-            "keyword RecognizableWords must cover every bracket group with one or "
-            "two pairs in left-to-right source order"
+            "each keyword RecognizableWord must appear in its matching bracket group "
+            "in left-to-right source order"
         )
     return None
 

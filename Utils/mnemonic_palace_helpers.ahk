@@ -419,12 +419,8 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         out["error"] := "concept core must contain complete square-bracket groups"
         return out
     }
-    if (groups.Length < 2) {
-        out["error"] := "concept needs a dedicated [Name] group followed by a definition group"
-        return out
-    }
-    if (groups.Length > 6) {
-        out["error"] := "concept may contain at most 6 bracket groups"
+    if (groups.Length < 3 || groups.Length > 6) {
+        out["error"] := "concept must contain 3–6 bracket groups (dedicated [Name] plus definition groups)"
         return out
     }
 
@@ -450,48 +446,31 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         }
         pairs.Push(Map("left", left, "right", right))
     }
+    if (pairs.Length != groups.Length) {
+        out["error"] := "exactly one keyword pair is required per concept bracket group"
+        return out
+    }
     if (pairs.Length < 3 || pairs.Length > 6) {
         out["error"] := "keywords must contain 3–6 pairs"
         return out
     }
-    if (pairs.Length < groups.Length || pairs.Length > groups.Length * 2) {
-        out["error"] := "every concept bracket group must have one or two keyword pairs"
-        return out
-    }
-    if (!Palace_KeywordGroupsMatch(groups, pairs, 1, 1)) {
-        out["error"] := "keyword RecognizableWords must cover every bracket group in source order"
+    if (!Palace_KeywordGroupsMatch(groups, pairs)) {
+        out["error"] := "each keyword RecognizableWord must appear in its matching bracket group in source order"
         return out
     }
     out["ok"] := true
     return out
 }
 
-Palace_KeywordGroupsMatch(groups, pairs, groupIndex, pairIndex) {
-    if (groupIndex > groups.Length)
-        return pairIndex > pairs.Length
-    groupsLeft := groups.Length - groupIndex + 1
-    pairsLeft := pairs.Length - pairIndex + 1
-    for count in [1, 2] {
-        remaining := pairsLeft - count
-        if (remaining < groupsLeft - 1 || remaining > 2 * (groupsLeft - 1))
-            continue
-        if (pairIndex + count - 1 > pairs.Length)
-            continue
-        cursor := 1
-        matched := true
-        loop count {
-            term := pairs[pairIndex + A_Index - 1]["right"]
-            pos := InStr(groups[groupIndex], term, false, cursor)
-            if (!pos) {
-                matched := false
-                break
-            }
-            cursor := pos + StrLen(term)
-        }
-        if (matched && Palace_KeywordGroupsMatch(groups, pairs, groupIndex + 1, pairIndex + count))
-            return true
+Palace_KeywordGroupsMatch(groups, pairs) {
+    if (groups.Length != pairs.Length)
+        return false
+    for i, group in groups {
+        term := pairs[i]["right"]
+        if (!InStr(group, term, false))
+            return false
     }
-    return false
+    return true
 }
 
 Palace_ReadCsvFromText(text, strict := false, skipNotes := 0) {

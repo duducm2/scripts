@@ -14,10 +14,7 @@ PARALLEL_CONCEPT = (
     "[Parallel Coordinates] [I draw each variable as a parallel axis] "
     "[and turn each tuple into a polyline]"
 )
-PARALLEL_KEYWORDS = (
-    "fence | Parallel Coordinates || easel | draw || "
-    "axis | parallel axis || bead | tuple"
-)
+PARALLEL_KEYWORDS = "fence | Parallel Coordinates || easel | draw || bead | tuple"
 
 
 def test_parallel_coordinates_contract_and_render_order() -> None:
@@ -25,34 +22,41 @@ def test_parallel_coordinates_contract_and_render_order() -> None:
     assert format_keywords_lines(PARALLEL_KEYWORDS) == [
         "[**Parallel Coordinates**] → [fence]",
         "[**draw**] → [easel]",
-        "[**parallel axis**] → [axis]",
         "[**tuple**] → [bead]",
     ]
 
 
 def test_repeated_term_stays_separate_across_groups() -> None:
-    concept = "[Parallel] [I draw a parallel axis]"
-    keywords = "fence | Parallel || easel | draw || rails | parallel"
+    concept = "[Parallel] [I draw a parallel axis] [as one line]"
+    keywords = "fence | Parallel || rails | parallel || pen | line"
     assert validate_atom_mnemonics(concept, keywords) is None
     assert len(iter_keyword_pairs(keywords)) == 3
 
 
-def test_every_group_needs_a_pair_in_source_order() -> None:
-    missing_group = (
-        "fence | Parallel Coordinates || axis | parallel axis || easel | draw"
+def test_second_pair_on_one_group_fails() -> None:
+    two_on_second = (
+        "fence | Parallel Coordinates || easel | draw || "
+        "axis | parallel axis || bead | tuple"
     )
-    assert "cover every bracket group" in (
+    assert "exactly one keyword pair" in (
+        validate_atom_mnemonics(PARALLEL_CONCEPT, two_on_second) or ""
+    )
+
+
+def test_pair_count_must_equal_group_count() -> None:
+    missing_group = "fence | Parallel Coordinates || easel | draw"
+    assert "exactly one keyword pair" in (
         validate_atom_mnemonics(PARALLEL_CONCEPT, missing_group) or ""
     )
 
     wrong_order = "easel | draw || fence | Parallel Coordinates || bead | tuple"
-    assert "source order" in (
+    assert "matching bracket group" in (
         validate_atom_mnemonics(PARALLEL_CONCEPT, wrong_order) or ""
     )
 
 
 def test_pair_and_group_limits_are_enforced() -> None:
-    assert "3–6 pairs" in (
+    assert "3–6 bracket groups" in (
         validate_atom_mnemonics("[Name] [I define it]", "tag | Name || die | define")
         or ""
     )
@@ -61,15 +65,15 @@ def test_pair_and_group_limits_are_enforced() -> None:
         "tag | Name || 1 | one || 2 | two || 3 | three || "
         "4 | four || 5 | five || 6 | six"
     )
-    assert "at most 6 bracket groups" in (
+    assert "3–6 bracket groups" in (
         validate_atom_mnemonics(seven_groups, seven_pairs) or ""
     )
 
 
 def test_note_is_not_a_keyword_source() -> None:
-    concept = "[Name] [I define it] — Note: supplemental nuance"
+    concept = "[Name] [I define it] [clearly] — Note: supplemental nuance"
     keywords = "tag | Name || die | define || net | nuance"
-    assert "cover every bracket group" in (
+    assert "matching bracket group" in (
         validate_atom_mnemonics(concept, keywords) or ""
     )
 
