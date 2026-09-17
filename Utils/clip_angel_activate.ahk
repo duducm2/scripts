@@ -860,6 +860,9 @@ ClipAngel_RestartHard(*) {
             if ClipAngel_RestartAttempt(exePath, oldPid, A_Index, &failReason) {
                 StandardLoadingBar_Hide(0)
                 ShowCenteredOverlay_Utils("✅ Clip Angel restarted", 1500, BANNER_ACCENT_SUCCESS)
+                try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-restart-success.wav")
+                catch {
+                }
                 return true
             }
             if (A_Index < CLIPANGEL_RESTART_MAX_ATTEMPTS) {
