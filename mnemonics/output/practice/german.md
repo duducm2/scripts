@@ -20,9 +20,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -56,9 +53,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -71,9 +65,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -90,9 +81,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -107,9 +95,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -122,9 +107,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -160,9 +142,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -175,9 +154,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -194,9 +170,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -209,9 +182,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -247,9 +217,6 @@ _No keywords yet_
 **Quote**
 “Uvular trill: Can be used as a free variant of the voiced uvular fricative.”
 
-**Sensory**
-—
-
 **Story**
 On the next street, an adder snake slithers around freely. It meets a tall villain in black armor, who points to the deep back of his throat. The snake vibrates its tail far back on a throat model, sliding around as a free and flexible option.
 
@@ -263,9 +230,6 @@ _No keywords yet_
 
 **Quote**
 “Voiced velar fricative: A more fronted variant.”
-
-**Sensory**
-—
 
 **Story**
 An aerialist swings on a trapeze above the snake. She swings her body forward to reach the front part of the villain's throat model. She rubs the surface to make a smooth, vibrating friction sound that sits more to the front.
@@ -281,9 +245,6 @@ An aerialist swings on a trapeze above the snake. She swings her body forward to
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -319,9 +280,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 A yak stands at the corner of the street. It holds a large sign with the word Symbol [zʏmˈboːl]. It tries to make a buzzing sound at the very beginning, but a giant red "X" stops it. A spiky-haired martial artist steps in to help the yak, showing that the buzz cannot start the word. "The alveolar fricative /z/ never occurs word-initially in Standard German. A word like "symbol" is pronounced with a voiced alveolar fricative: Symbol." IPA: Symbol [zʏmˈboːl]
 
@@ -336,9 +294,6 @@ _No keywords yet_
 **Quote**
 “The velar nasal /ŋ/ only occurs at the end of syllables (syllable coda).”
 
-**Sensory**
-—
-
 **Story**
 Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grabs a singing block, representing the /ŋ/ sound, and forces it to sit at the absolute tail end of the broken piece. He yells at the yak that the sound is trapped at the end.
 
@@ -351,9 +306,6 @@ Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grab
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -370,9 +322,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak letter 'e' in the word großem [ˈɡʁoːsəm]. The cat pushes the weak letter into a hole in the street, dropping it entirely so it vanishes. "In words like großem, the schwa can be dropped entirely." IPA: großem [ˈɡʁoːsəm]
 
@@ -386,9 +335,6 @@ _No keywords yet_
 
 **Quote**
 “Alveolar trill: Mostly used in southern dialects (Bavarian, Franconian) and in singing.”
-
-**Sensory**
-—
 
 **Story**
 A giant acorn rolls out of the hole the cat made. It bounces fast on the front of a tongue model, rolling loudly. The acorn wears a southern alpine hat and sings a loud opera song to the cat and the yak.
@@ -423,9 +369,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -438,9 +381,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -476,9 +416,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -491,9 +428,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -510,9 +444,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -527,9 +458,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -542,9 +470,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -580,9 +505,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -595,9 +517,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -614,9 +533,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -629,9 +545,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -667,9 +580,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -682,9 +592,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -701,9 +608,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -718,9 +622,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -733,9 +634,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -771,9 +669,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -788,9 +683,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -803,9 +695,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -841,9 +730,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -856,9 +742,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -875,9 +758,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -892,9 +772,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -907,9 +784,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**

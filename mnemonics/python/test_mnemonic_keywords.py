@@ -105,7 +105,6 @@ def test_unrelated_edit_preserves_legacy_keywords_byte_for_byte(tmp_path) -> Non
         "keywords": legacy_keywords,
         "quote": "",
         "story": "old",
-        "sensory": "visual",
         "ipa": "",
         "sort_order": "1",
     }

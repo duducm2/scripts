@@ -46,14 +46,14 @@ STUDY_… · N palaces · N beasts · N atoms
 Packing: 5+5+…+remainder (remainder only on last **new** palace in this pack)
 
 PALACE N+1 — <title> (<character>) [<palace_id>]
-  [U] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [V] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [W] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [X] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [Y] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [U] <beast> — Concept: … | Quote: "…" | Story: …
+  [V] <beast> — Concept: … | Quote: "…" | Story: …
+  [W] <beast> — Concept: … | Quote: "…" | Story: …
+  [X] <beast> — Concept: … | Quote: "…" | Story: …
+  [Y] <beast> — Concept: … | Quote: "…" | Story: …
 PALACE N+2 — <title> (<character>) [<palace_id>]   ← last new palace in this pack may have 1–4
-  [Z] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [Aa] <beast> Z1 — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [Z] <beast> — Concept: … | Quote: "…" | Story: …
+  [Aa] <beast> Z1 — Concept: … | Quote: "…" | Story: …
   [Aa] <beast> Z2 — …
 
 Discard candidates: none | list pegs / palace ids with one-line why (incl. already-known skipped from inventory)
@@ -116,12 +116,12 @@ Software vocabulary (use in CSV fields and chat notes):
 - **Memory Palace** — location / former "street"; one image prompt per palace
 - **Character** — exactly one per Memory Palace
 - **Beast** — peg holder
-- **Knowledge Atom** — Concept + Quote + Story + Sensory on a beast
+- **Knowledge Atom** — Concept + Quote + Story on a beast
 
 Technique README may still say "street"; map **Street → Memory Palace** when filling CSVs.
 
 PLAIN ENGLISH HARD MANDATE (read before any story / concept / image_prompt — `README §Language & IPA`)
-- All AI-authored prose uses **easy plain English**: short everyday words, concrete images, zero fluff. Applies to `story`, `concept` (including optional Note), `sensory`, `image_prompt`, and PREVIEW Concept/Story lines.
+- All AI-authored prose uses **easy plain English**: short everyday words, concrete images, zero fluff. Applies to `story`, `concept` (including optional Note), `image_prompt`, and PREVIEW Concept/Story lines.
 - Write Narrative/`story` and image prompts as if explaining to a **curious teenager**, not an academic paper or period novel.
 - **Banned in authored prose:** archaic, old-fashioned, literary, rare, or show-off vocabulary; stiff textbook diction; Latin/French roots where a common Anglo-Saxon word works; idioms that need a dictionary. Discipline jargon only when the transcript requires it — keep the exact term in `quote`; compress the idea in `concept` (optional impersonal ` — Note:`).
 - **Replacement rule:** swap hard words for simple ones (e.g. _use_ not _utilize_, _end_ not _terminate_, _try_ not _endeavor_, _show_ not _demonstrate_ unless that word is in the quote; _eat_ not _devour_ when eating is not the bizarre lever).
@@ -180,7 +180,7 @@ Rules:
 - `palace_id` must match an `id` in this pack’s palaces file (new palaces only — never attach beasts to an inventory palace id).
 - Prefer `id` like `BEAST_<palace slug>_<peg>`.
 - `peg_code` — bestiary letter codes only (no numeric pegs); unbroken sequence **continuing after the last inventory peg** (do not restart at `A` unless the study has no beasts yet).
-- `beast_name` / `beast_source` from bestiary; `sensory_channel` from the atom’s topic sensory (visual, auditory, …).
+- `beast_name` / `beast_source` from bestiary; `sensory_channel` = topic modality on this beast (visual, auditory, …).
 - `is_smashed` — `0` for single-atom beasts; `1` when the beast carries zoned atoms.
 - `sort_order` — order within the palace (1…).
 - Max **5 beasts per Memory Palace** (`README §Streets and Depth Slots`).
@@ -194,7 +194,7 @@ Rules:
 Header (exact):
 
 ```
-id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
 ```
 
 Rules:
@@ -213,8 +213,8 @@ Rules:
     - **Participial phrases:** separate instrument/method/condition phrases beginning with participles or conjunctions that introduce them.
     - **Output:** wrap the dedicated Concept name and every thought group in square brackets, separated by a single space: `[Name] [chunk] [chunk]`. Keep **3–6** bracket groups (exactly one key per group). If meaning would need only two chunks, re-chunk to at least three groups; if more than six would be needed, compress/re-chunk without information loss. NEVER use `|` inside `concept` to mark thought groups.
     - **Note suffix:** when present, append ` — Note: …` **after** the fully chunked core; do **not** wrap the Note in thought-group brackets.
-    - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `sensory`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
-    - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
+    - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
+    - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
     - **Example (core):** `Extract Phase; I retrieve raw data from various origin systems during the first pipeline phase` → `[Extract Phase] [I retrieve raw data] [from various origin systems] [during the first pipeline phase]`
     - **Example (with Note):** `[ETL Pipeline] [I move raw data] [from multiple sources] [into a centralized target] — Note: The target is typically a Data Warehouse or Data Mart.`
   - **Keyword pairs HARD MANDATE** — fill `keywords` from the dedicated Concept name group and all concept thought groups:
@@ -229,7 +229,6 @@ Rules:
     - Do **not** put Keywords into PREVIEW lines (CSV `keywords` column is SSOT for import).
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
   - **story** ← Narrative (bizarre action encoding). MUST pass the Bizarreness Gate **and** PLAIN ENGLISH HARD MANDATE (`README §Language & IPA`): everyday words; no archaic / old-fashioned / literary diction.
-  - **sensory** ← modality emphasized (plain English label)
   - **ipa** ← German IPA when needed; else empty
 - Leave `id` empty if unknown (`ATOM_####` assigned on import).
 
@@ -284,7 +283,7 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 - NEVER under-fill a **pack** palace (1–4 beasts) when ≥5 new beasts remain to place in this pack.
 - NEVER leave a sparse **pack** palace (1–4 beasts) unless it is the **last new** palace in this pack (no higher-numbered pack palace may exist while an earlier pack palace is under-filled).
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
-- NEVER use archaic, old-fashioned, literary, rare/show-off, or stiff textbook diction in authored prose (`story`, `concept`/Note, `sensory`, `image_prompt`, PREVIEW Concept/Story). Keep bizarreness; simplify the words.
+- NEVER use archaic, old-fashioned, literary, rare/show-off, or stiff textbook diction in authored prose (`story`, `concept`/Note, `image_prompt`, PREVIEW Concept/Story). Keep bizarreness; simplify the words.
 - NEVER simplify or rewrite a verbatim `quote` to make it “plainer.”
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
@@ -306,11 +305,11 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 | Pack has only NEW palaces / beasts / atoms; inventory left untouched; already-known skipped in Discard candidates | Yes |
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
-| Plain everyday English on story / concept (+ Note) / sensory / image_prompt / PREVIEW Concept+Story; no archaic/old-fashioned/literary diction; quotes untouched | Yes |
+| Plain everyday English on story / concept (+ Note) / image_prompt / PREVIEW Concept+Story; no archaic/old-fashioned/literary diction; quotes untouched | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
 | Compressed `concept` core is first person singular when it fits; skip when it would distort | Yes |
 | ` — Note:` on `concept` only when nuance was stripped from the compressed core; Note impersonal; `quote` verbatim only | Yes |
-| Each `concept` compressed core uses square-bracket thought groups per Concept chunking rule; Note unchunked; quote/story/sensory never wrapped as concept thought groups | Yes |
+| Each `concept` compressed core uses square-bracket thought groups per Concept chunking rule; Note unchunked; quote/story never wrapped as concept thought groups | Yes |
 | Each `concept` core leads with a dedicated `[Name]` group, then definition groups; exactly one keyword pair per `[…]` group (3–6 total) | Yes |
 | image_prompt filled per new palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |

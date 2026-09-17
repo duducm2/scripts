@@ -20,9 +20,6 @@ _No keywords yet_
 **Quote**
 “The consonant essentially takes over the role of the vowel, like in bottle or apple.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -37,9 +34,6 @@ _No keywords yet_
 **Quote**
 “In American English, when a /t/ precedes a syllabic /n/, the /t/ is typically pronounced as a glottal stop, like in button.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -53,9 +47,6 @@ _No keywords yet_
 
 **Quote**
 “Syllabic M regularly occurs in words ending in 'thm' or 'sm', such as rhythm and chasm.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -90,9 +81,6 @@ _No keywords yet_
 **Quote**
 “Sounds are added, there's intrusion from a new sound.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -106,9 +94,6 @@ _No keywords yet_
 
 **Quote**
 “There are usually only three sounds that can be added. We either have a 'w', a 'y', or an 'r' sound added.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -143,9 +128,6 @@ _No keywords yet_
 **Quote**
 “What happens in connected speech is that sounds change, sounds are lost, and sounds are added.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -159,9 +141,6 @@ _No keywords yet_
 
 **Quote**
 “A sound changes to become more similar, so more similar, assimilation.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -177,9 +156,6 @@ _No keywords yet_
 **Quote**
 “Because we get ready to say 'Barcelona' we close our lips already, and instead of an 'n' sound we say 'm'.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -194,9 +170,6 @@ _No keywords yet_
 **Quote**
 “When sounds are lost they're deleted, so we call this elision.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -210,9 +183,6 @@ _No keywords yet_
 
 **Quote**
 “Most of the time in English, that means that a final 't' or 'd' sound is lost.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -247,9 +217,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -262,9 +229,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -281,9 +245,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -296,9 +257,6 @@ _No keywords yet_
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -334,9 +292,6 @@ _No keywords yet_
 **Quote**
 “It is their relative values, not their absolute values, that matter linguistically.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -350,9 +305,6 @@ _No keywords yet_
 
 **Quote**
 “The instructor points out that the International Phonetic Alphabet (IPA) chart provides a completely separate set of symbols specifically for suprasegmentals.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -387,9 +339,6 @@ _No keywords yet_
 **Quote**
 “You can look at language as a building and think of consonants as the bricks and the vowels as a mortar that connects the bricks together.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -403,9 +352,6 @@ _No keywords yet_
 
 **Quote**
 “Suprasegmental is a word made of supra, the prefix beyond, and segment: beyond the segment level. You will get to super segmental features when you compare segments to each other, you put them in a contrast.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -421,9 +367,6 @@ _No keywords yet_
 **Quote**
 “In English, stress can affect length.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -438,9 +381,6 @@ _No keywords yet_
 **Quote**
 “Stress in English can also result in exaggerated pitch; it can make a low pitch lower and it can make a high pitch higher.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -454,9 +394,6 @@ _No keywords yet_
 
 **Quote**
 “Pitch pattern at sentence level is called intonation. Voice pitch can change with the rate of vibration of the vocal folds independently of stress.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -491,9 +428,6 @@ _No keywords yet_
 **Quote**
 “Dis talks about the negation, the opposite of something.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -507,9 +441,6 @@ _No keywords yet_
 
 **Quote**
 “Miss, think of it like a mistake.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -525,9 +456,6 @@ _No keywords yet_
 **Quote**
 “Use im with words that begin with P, M, or B.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -542,9 +470,6 @@ _No keywords yet_
 **Quote**
 “Insecure says that you are not confident about yourself.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -558,9 +483,6 @@ _No keywords yet_
 
 **Quote**
 “When you want to say repeat something, do it again, add re before the verb.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -595,9 +517,6 @@ _No keywords yet_
 **Quote**
 “A prefix is something that goes before a word." and "Suffixes are things that go afterwards.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -611,9 +530,6 @@ _No keywords yet_
 
 **Quote**
 “Any verb plus able, it's possible to do this thing.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -629,9 +545,6 @@ _No keywords yet_
 **Quote**
 “Ish with a time means not exactly this time.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -646,9 +559,6 @@ _No keywords yet_
 **Quote**
 “Un means not, but more like not complete.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -662,9 +572,6 @@ _No keywords yet_
 
 **Quote**
 “Un can also mean to reverse an action.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -699,9 +606,6 @@ _No keywords yet_
 **Quote**
 “Nominalization means turning words into nouns.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -715,9 +619,6 @@ _No keywords yet_
 
 **Quote**
 “Jane shares the enjoyment of Indian food with her husband.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -733,9 +634,6 @@ _No keywords yet_
 **Quote**
 “The beauty of London is why I am going there.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -750,9 +648,6 @@ _No keywords yet_
 **Quote**
 “The engineers are discussing the development of the building.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -766,9 +661,6 @@ _No keywords yet_
 
 **Quote**
 “The writing of books for pleasure leads to the provision of a passive income.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -803,9 +695,6 @@ _No keywords yet_
 **Quote**
 “Having been fined for speeding before, she is now a careful driver.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -819,9 +708,6 @@ _No keywords yet_
 
 **Quote**
 “Reading the newspaper, the cat jumped onto the table.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -856,9 +742,6 @@ _No keywords yet_
 **Quote**
 “He slammed the door waking the baby.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -872,9 +755,6 @@ _No keywords yet_
 
 **Quote**
 “Singing loudly, I met a girl.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -890,9 +770,6 @@ _No keywords yet_
 **Quote**
 “Having thanked the hosts, the guests left the party.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -907,9 +784,6 @@ _No keywords yet_
 **Quote**
 “Surrounded by water, Venice is built on over a 100 islands.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -923,9 +797,6 @@ _No keywords yet_
 
 **Quote**
 “Used correctly, participle clauses make your writing more concise.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -960,9 +831,6 @@ _No keywords yet_
 **Quote**
 “A participle clause is a type of subordinate or dependent adverbial clause. It uses a participle to give extra information about time, reason, result, manner, or condition.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -976,9 +844,6 @@ _No keywords yet_
 
 **Quote**
 “The subject of the participle clause and the main clause must be the same.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -994,9 +859,6 @@ _No keywords yet_
 **Quote**
 “Leaving in a hurry, John forgot to collect his coat.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -1011,9 +873,6 @@ _No keywords yet_
 **Quote**
 “Hoping to improve my French, I joined a class.”
 
-**Sensory**
-—
-
 **Story**
 —
 
@@ -1027,9 +886,6 @@ _No keywords yet_
 
 **Quote**
 “Not wanting to wake him, I left quietly.”
-
-**Sensory**
-—
 
 **Story**
 —
@@ -1064,9 +920,6 @@ _No keywords yet_
 **Quote**
 “It was hot, so I took off my jacket.”
 
-**Sensory**
-—
-
 **Story**
 A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
 
@@ -1080,9 +933,6 @@ _No keywords yet_
 
 **Quote**
 “I regret to inform you that you have failed your C1 English exam; therefore, we are unable to offer you the job.”
-
-**Sensory**
-—
 
 **Story**
 A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
@@ -1098,9 +948,6 @@ _No keywords yet_
 **Quote**
 “We have therefore decided not to offer you the job.”
 
-**Sensory**
-—
-
 **Story**
 A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
 
@@ -1114,9 +961,6 @@ _No keywords yet_
 
 **Quote**
 “As she never replies, I'd stop writing to her.”
-
-**Sensory**
-—
 
 **Story**
 A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
@@ -1151,9 +995,6 @@ _No keywords yet_
 **Quote**
 “He might come today, but I doubt it.”
 
-**Sensory**
-—
-
 **Story**
 A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
 
@@ -1167,9 +1008,6 @@ _No keywords yet_
 
 **Quote**
 “It just makes your writing much more concise and it makes it flow better as well.”
-
-**Sensory**
-—
 
 **Story**
 A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
@@ -1204,9 +1042,6 @@ _No keywords yet_
 **Quote**
 “Ellipsis just means you're deleting words from sentences—unnecessary words or redundant words.”
 
-**Sensory**
-—
-
 **Story**
 It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
 
@@ -1220,9 +1055,6 @@ _No keywords yet_
 
 **Quote**
 “The more words you use in a sentence, the more confusing the sentence gets.”
-
-**Sensory**
-—
 
 **Story**
 A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
@@ -1238,9 +1070,6 @@ _No keywords yet_
 **Quote**
 “She can play the guitar and he can too.”
 
-**Sensory**
-—
-
 **Story**
 An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
 
@@ -1255,9 +1084,6 @@ _No keywords yet_
 **Quote**
 “Substitution is exactly what it says it is: you're substituting words, you're replacing words in a phrase or even part of a phrase as well to avoid repeating the same words.”
 
-**Sensory**
-—
-
 **Story**
 A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
 
@@ -1271,9 +1097,6 @@ _No keywords yet_
 
 **Quote**
 “The auxiliary verb needs to correspond with the types of verbs that you're using... it also needs to correspond in tense as well.”
-
-**Sensory**
-—
 
 **Story**
 The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
@@ -1308,9 +1131,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
 
@@ -1323,9 +1143,6 @@ A small Kitten sleeps at the bottom of a black stone. It does not want toys or f
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -1361,9 +1178,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your relative pronoun, you can take it out.
 
@@ -1376,9 +1190,6 @@ A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the 
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -1395,9 +1206,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Clefts.
 
@@ -1412,9 +1220,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 Example: "What they need is more time." (Not "are"—use is even though "they" is plural.)
 
@@ -1427,9 +1232,6 @@ Example: "What they need is more time." (Not "are"—use is even though "they" i
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -1465,9 +1267,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
 
@@ -1480,9 +1279,6 @@ Arachne hangs from the stone. She is making a big web. She does not finish it. I
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**
@@ -1499,9 +1295,6 @@ _No keywords yet_
 **Quote**
 —
 
-**Sensory**
-—
-
 **Story**
 A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are plural (two people). But the Dragon uses fire to make them use a singular verb. He shouts: "It is Matt and Jessica who are having the party, not me." The rule is: Use the singular "Be," even for plural subjects.
 
@@ -1514,9 +1307,6 @@ A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are p
 _No keywords yet_
 
 **Quote**
-—
-
-**Sensory**
 —
 
 **Story**

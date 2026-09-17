@@ -52,14 +52,14 @@ Packing: 5+5+…+remainder (remainder only on last in-scope palace)
 Changes: merges / removals / peg map (short)
 
 PALACE N — <title> (<character>) [<palace_id>]
-  [U] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [V] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [W] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [X] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [Y] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [U] <beast> — Concept: … | Quote: "…" | Story: …
+  [V] <beast> — Concept: … | Quote: "…" | Story: …
+  [W] <beast> — Concept: … | Quote: "…" | Story: …
+  [X] <beast> — Concept: … | Quote: "…" | Story: …
+  [Y] <beast> — Concept: … | Quote: "…" | Story: …
 PALACE N+1 — <title> (<character>) [<palace_id>]   ← last in-scope may have 1–4
-  [Z] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [Aa] <beast> Z1 — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [Z] <beast> — Concept: … | Quote: "…" | Story: …
+  [Aa] <beast> Z1 — Concept: … | Quote: "…" | Story: …
 
 Discard candidates: none | list pegs / palace ids with one-line why
 ===END_PREVIEW===
@@ -79,7 +79,7 @@ Discard candidates: none | list pegs / palace ids with one-line why
 
 PREVIEW rules (mandatory — inside the pack only, for the **resulting in-scope** set after reduction):
 - Plain text only. Start with `Scope:` (palace numbers / peg range) then `Changes:` (merges / removals / peg map). Prefer a `Packing:` line with the beast counts (e.g. `5+5+2`).
-- Then the same palace → peg → Concept/Quote/Story/Sensory outline as story generation — **only for in-scope palaces**.
+- Then the same palace → peg → Concept/Quote/Story outline as story generation — **only for in-scope palaces**.
 - One line per Knowledge Atom in the atoms FILE section (zoned: show `Z1`–`Z4` after the peg).
 - Failed delivery if PREVIEW is missing from the pack, only counts/titles, omits any surviving **in-scope** atom, or lists out-of-scope palaces from earlier in the study (e.g. dumping from peg A / palace 1 when the job was only the latest segment).
 - Failed delivery if PREVIEW shows a sparse in-scope palace (1–4 beasts) that is **not** the last in-scope palace.
@@ -113,7 +113,7 @@ If **Reduction mode** is missing or ambiguous, ask before generating.
 Output MUST be a `PALACE_PACK` containing **only in-scope palace / beast / atom rows** (upsert patch for that segment). NEVER emit a whole-study dump from the first letter `A` / first Memory Palace unless the human explicitly says reduce the **entire study**.
 
 PLAIN ENGLISH HARD MANDATE (read before any rewrite of story / concept / image_prompt — `README §Language & IPA`)
-- All AI-authored prose uses **easy plain English**: short everyday words, concrete images, zero fluff. Applies to rewritten `story`, `concept` (including optional Note), `sensory`, refreshed `image_prompt`, and PREVIEW Concept/Story lines.
+- All AI-authored prose uses **easy plain English**: short everyday words, concrete images, zero fluff. Applies to rewritten `story`, `concept` (including optional Note), refreshed `image_prompt`, and PREVIEW Concept/Story lines.
 - Write Narrative/`story` and image prompts as if explaining to a **curious teenager**, not an academic paper or period novel.
 - **Banned in authored prose:** archaic, old-fashioned, literary, rare, or show-off vocabulary; stiff textbook diction; Latin/French roots where a common Anglo-Saxon word works; idioms that need a dictionary. Discipline jargon only when the transcript requires it — keep the exact term in `quote`; compress the idea in `concept` (optional impersonal ` — Note:`).
 - **Replacement rule:** swap hard words for simple ones (e.g. _use_ not _utilize_, _end_ not _terminate_, _try_ not _endeavor_, _show_ not _demonstrate_ unless that word is in the quote; _eat_ not _devour_ when eating is not the bizarre lever).
@@ -155,7 +155,7 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 ### `PALACE_ATOMS.csv`
 
 ```
-id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
 ```
 
 - Preserve every remaining atom’s knowledge payload (no knowledge drops). Re-apply `README §Knowledge Atom Structure` compression **and** PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`: keep or tighten `concept` to maximal brevity with full semantic fidelity in everyday words; never expand concepts during re-peg. Rewrite the compressed **core** into **first person singular** when it fits; skip when it would distort. Add or adjust the optional ` — Note: <stripped nuance>` suffix on `concept` only when compression requires it (Note stays impersonal and plain). Do not invent new factual content in Notes. When tightening concepts, **preserve or re-apply** square-bracket thought groups on the compressed core (never strip `[…]` chunks unless fixing a bad split).
@@ -167,8 +167,8 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
   - **Participial phrases:** separate instrument/method/condition phrases beginning with participles or conjunctions that introduce them.
   - **Output:** wrap the dedicated Concept name and every thought group in square brackets, separated by a single space: `[Name] [chunk] [chunk]`. Keep **3–6** bracket groups (exactly one key per group). If meaning would need only two chunks, re-chunk to at least three groups; if more than six would be needed, compress/re-chunk without information loss. NEVER use `|` inside `concept` to mark thought groups.
   - **Note suffix:** when present, append ` — Note: …` **after** the fully chunked core; do **not** wrap the Note in thought-group brackets.
-  - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `sensory`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
-  - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
+  - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
+  - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
   - **Example (core):** `Extract Phase; I retrieve raw data from various origin systems during the first pipeline phase` → `[Extract Phase] [I retrieve raw data] [from various origin systems] [during the first pipeline phase]`
   - **Example (with Note):** `[ETL Pipeline] [I move raw data] [from multiple sources] [into a centralized target] — Note: The target is typically a Data Warehouse or Data Mart.`
 - **Keyword pairs:** Preserve `keywords` byte-for-byte when the concept core is unchanged. When you re-chunk or rewrite the concept core, **re-derive** `keywords` from every bracket group: **exactly one** `Keyword | RecognizableWord` pair per group, **3–6 pairs total** matching the group count one-to-one, joined by ` || `. Emit pairs in exact left-to-right group order; never merge or deduplicate repeated terms across the dedicated name and first definition groups. Never put two keys in one group — re-chunk instead. Notes receive no pairs, and `keywords` must not be empty. Example: `[Parallel Coordinates] [I draw each variable as a parallel axis] [and turn each tuple into a polyline]` → `fence | Parallel Coordinates || easel | draw || bead | tuple`. Do not silently wipe or normalize `keywords` if the concept is unchanged. CSV `keywords` is SSOT (not required in PREVIEW).
@@ -193,7 +193,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 - NEVER add new factual content or NEW Knowledge Atoms beyond user-specified merges/removals on the in-scope set.
 - NEVER drop remaining **in-scope** atoms' knowledge or verbatim quote excerpts (optional ` — Note:` may be added/adjusted on `concept` for compression only).
 - NEVER expand `concept` during reduction; keep maximal compression with zero information loss (`README §Knowledge Atom Structure`).
-- NEVER wrap `quote`, `story`, `sensory`, or Note text as concept thought groups; NEVER use labeled PREVIEW delimiters (` | Quote:`, etc.) inside concept.
+- NEVER wrap `quote`, `story`, or Note text as concept thought groups; NEVER use labeled PREVIEW delimiters (` | Quote:`, etc.) inside concept.
 - NEVER emit 5+ zoned atoms on one beast.
 - NEVER leave peg gaps **inside the scope**, or >5 beasts per palace.
 - NEVER under-fill an in-scope palace (1–4 beasts) when ≥5 **in-scope** beasts remain after reduction.
@@ -204,7 +204,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving **in-scope** palaces.
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
-- NEVER use archaic, old-fashioned, literary, rare/show-off, or stiff textbook diction in authored prose (`story`, `concept`/Note, `sensory`, `image_prompt`, PREVIEW Concept/Story). Keep bizarreness; simplify the words. Do not “upgrade” diction on rewrite.
+- NEVER use archaic, old-fashioned, literary, rare/show-off, or stiff textbook diction in authored prose (`story`, `concept`/Note, `image_prompt`, PREVIEW Concept/Story). Keep bizarreness; simplify the words. Do not “upgrade” diction on rewrite.
 - NEVER simplify or rewrite a verbatim `quote` to make it “plainer.”
 
 ---
@@ -243,9 +243,9 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | Scope locked; PREVIEW starts with Scope:; pack has only in-scope rows (no whole-study dump from A; no out-of-scope atoms from inventory) | Yes |
 | Unbroken peg sequence **in scope**; pack 5/palace with remainder < 5 only on highest **in-scope** palace_number; no sparse-then-full; ≤4 zones/beast | Yes |
 | No knowledge drops for in-scope survivors; verbatim quote excerpts intact | Yes |
-| Plain everyday English on rewritten story / concept (+ Note) / sensory / image_prompt / PREVIEW Concept+Story; no archaic/old-fashioned/literary diction; no diction upgrades; quotes untouched | Yes |
+| Plain everyday English on rewritten story / concept (+ Note) / image_prompt / PREVIEW Concept+Story; no archaic/old-fashioned/literary diction; no diction upgrades; quotes untouched | Yes |
 | Each surviving `concept` maximal compression with first-person core when it fits; ` — Note:` on `concept` only when nuance stripped (Note impersonal); `quote` verbatim only | Yes |
-| Each surviving `concept` compressed core uses square-bracket thought groups per Concept chunking rule; Note unchunked; quote/story/sensory never wrapped as concept thought groups | Yes |
+| Each surviving `concept` compressed core uses square-bracket thought groups per Concept chunking rule; Note unchunked; quote/story never wrapped as concept thought groups | Yes |
 | Each surviving `concept` core leads with a dedicated `[Name]` group, then definition groups; exactly one keyword pair per `[…]` group (3–6 total) | Yes |
 | image_prompt refreshed per surviving **in-scope** palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |

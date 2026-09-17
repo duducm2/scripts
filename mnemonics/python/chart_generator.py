@@ -2266,14 +2266,13 @@ def build_html(
         + formatSensory(sensory) + '</p>';
     }}
 
-    function renderAtomCard(a, focusAtomId, {{ sensoryOnCard = true }} = {{}}) {{
+    function renderAtomCard(a, focusAtomId) {{
       const zone = (a.zone || a.zone_label)
         ? '<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> '
           + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
         : '';
-      const sensory = sensoryOnCard ? sensoryChipHtml(a.sensory) : '';
-      const head = (zone || sensory)
-        ? '<div class="atom-card-head">' + zone + sensory + '</div>'
+      const head = zone
+        ? '<div class="atom-card-head">' + zone + '</div>'
         : '';
       const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
       return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
@@ -2294,11 +2293,7 @@ def build_html(
         const n = g.atoms.length;
         const span = Math.min(Math.max(n, 1), maxCols);
         const innerCols = Math.min(n, maxCols);
-        const sensoryOnBeast = n === 1;
-        const headSensory = sensoryOnBeast ? sensoryChipHtml(g.atoms[0].sensory) : '';
-        const cards = g.atoms.map(a => renderAtomCard(a, focusAtomId, {{
-          sensoryOnCard: !sensoryOnBeast
-        }})).join('');
+        const cards = g.atoms.map(a => renderAtomCard(a, focusAtomId)).join('');
         return '<section class="beast-cluster" style="grid-column: span ' + span
           + '; --beast-cols: ' + innerCols + '">'
           + '<header class="beast-cluster-head">'
@@ -2306,7 +2301,6 @@ def build_html(
           + '<div class="beast-head-row">'
           + '<p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> '
           + dash(g.beast) + '</p>'
-          + headSensory
           + '</div>'
           + '</header>'
           + '<div class="beast-cluster-atoms">' + cards + '</div>'
@@ -3358,7 +3352,7 @@ def build_html(
       Object.values(PALACE_DATA).forEach(st => {{
         if (studyId && st.study_id !== studyId) return;
         (st.atoms || []).forEach(a => {{
-          const blob = [a.beast, a.concept, a.quote, a.story, a.sensory, a.zone, a.zone_label]
+          const blob = [a.beast, a.concept, a.quote, a.story, a.zone, a.zone_label]
             .map(x => (x || '').toString().toLowerCase()).join(' ');
           if (blob.includes(query)) {{
             hits.push({{ palaceId: st.id, palaceNumber: st.number, atom: a }});

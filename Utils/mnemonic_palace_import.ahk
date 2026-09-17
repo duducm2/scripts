@@ -480,7 +480,7 @@ Palace_AiCompanionFixGuidance(errorMsg) {
     if (InStr(e, "empty pack") || InStr(e, "no rows")) {
         return "- The pack parsed but had no usable palace/beast/atom rows.`r`n"
         . "- Re-emit with exact CSV headers and real data rows in all three FILE sections.`r`n"
-        . "- PREVIEW must list every atom (Concept | Quote | Story | Sensory)."
+        . "- PREVIEW must list every atom (Concept | Quote | Story)."
     }
     if (InStr(e, "0 imported")) {
         return "- Rows were present but none imported (likely bad study_id / palace_id / beast_id links).`r`n"
@@ -518,7 +518,8 @@ Palace_FinishImportSuccess() {
 }
 
 ; Build beasts+atoms from PREVIEW outline when FILE CSV sections are truncated.
-; preview lines: PALACE N — Title (Char) [PALACE_ID] then [Peg] name — Concept: … | Quote: "…" | Story: … | Sensory: …
+; preview lines: PALACE N — Title (Char) [PALACE_ID] then [Peg] name — Concept: … | Quote: "…" | Story: …
+; Optional legacy `| Sensory:` is accepted and applied only to beast sensory_channel.
 Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
     out := Map("ok", false, "beasts", [], "atoms", [], "note", "")
     preview := Trim(preview)
@@ -558,6 +559,14 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
                 quote := SubStr(quote, 2, StrLen(quote) - 2)
             else if (SubStr(quote, 1, 1) = '"')
                 quote := SubStr(quote, 2)
+        } else if (RegExMatch(rest, "i)^(.*?)\s*\|\s*Quote:\s*(.*?)\s*\|\s*Story:\s*(.*?)\s*$", &am2)) {
+            concept := Trim(am2[1])
+            quote := Trim(am2[2])
+            story := Trim(am2[3])
+            if (SubStr(quote, 1, 1) = '"' && SubStr(quote, -1) = '"')
+                quote := SubStr(quote, 2, StrLen(quote) - 2)
+            else if (SubStr(quote, 1, 1) = '"')
+                quote := SubStr(quote, 2)
         }
         if (peg = "" || name = "")
             continue
@@ -590,7 +599,6 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
             "keywords", "",
             "quote", quote,
             "story", story,
-            "sensory", sensory,
             "ipa", "",
             "sort_order", "1"
         ))
@@ -1396,7 +1404,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
             scratchAtoms.Push(Map("id", id))
             concept := r.Has("concept") ? r["concept"] : (r.Has("context") ? r["context"] : "")
             story := r.Has("story") ? r["story"] : (r.Has("narrative") ? r["narrative"] : "")
-            sensory := r.Has("sensory") ? r["sensory"] : (r.Has("sensory_channel") ? r["sensory_channel"] : "")
             keywords := Palace_NormalizeAtomKeywords(r.Has("keywords") ? r["keywords"] : "")
             row := Map(
                 "id", id,
@@ -1409,7 +1416,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "quote", r.Has("quote") ? r["quote"] : "",
                 "story", story,
                 "ipa", r.Has("ipa") ? r["ipa"] : "",
-                "sensory", sensory,
                 "sort_order", r.Has("sort_order") ? r["sort_order"] : "1"
             )
             if (!pendingByBeast.Has(beastId))

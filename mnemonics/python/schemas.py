@@ -53,7 +53,6 @@ ATOMS_HEADERS = [
     "keywords",
     "quote",
     "story",
-    "sensory",
     "ipa",
     "sort_order",
 ]

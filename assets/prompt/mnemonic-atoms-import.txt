@@ -8,7 +8,7 @@ You are producing a **strict CSV** for the Memory Palace importer.
 2. First line MUST be exactly this header:
 
 ```
-id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
 ```
 
 3. Save guidance for the user (they will do this manually): Desktop file named `PALACE_ATOMS.csv`.
@@ -32,7 +32,6 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 - **Keywords** — exactly one tangible Keyword/RecognizableWord pair per bracket group, 3–6 ordered pairs total (`Keyword | Word || …`)
 - **Quote** — verbatim source quote
 - **Story** — mnemonic narrative / action
-- **Sensory** — modality the story emphasizes (visual, auditory, tactile, …)
 - **Beast** — comes from the parent beast row (`beast_id`), not a column in this CSV
 
 ## Vocabulary (software)
@@ -41,7 +40,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 - **Memory Palace** — location; one image per palace.
 - **Character** — one per Memory Palace (canon characters.json).
 - **Beast** — bestiary peg holder.
-- **Knowledge Atom** — discrete information on a beast (Concept + Keywords + Quote + Story + Sensory).
+- **Knowledge Atom** — discrete information on a beast (Concept + Keywords + Quote + Story).
 
 ## Attachments
 

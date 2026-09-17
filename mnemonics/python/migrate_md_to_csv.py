@@ -497,9 +497,6 @@ def migrate(
                             "quote": atom.get("quote", ""),
                             "story": atom.get("story", atom.get("narrative", "")),
                             "ipa": atom.get("ipa", ""),
-                            "sensory": atom.get(
-                                "sensory", atom.get("sensory_channel", "")
-                            ),
                             "sort_order": str(ai),
                         }
                     )

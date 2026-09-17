@@ -20,9 +20,6 @@ _No keywords yet_
 **Quote**
 “"your ideas are like your children and you don't want them to go into the world in rags"”
 
-**Sensory**
-auditory 👂
-
 **Story**
 A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a five-part harmony that magically weaves luxurious silk suits out of thin air for its floating kittens. Doc Brown cheers at the booming song, listening as the rich, melodic notes dress the naked ideas in perfectly tailored, unforgettable clothing.
 
@@ -36,9 +33,6 @@ _No keywords yet_
 
 **Quote**
 “"when you say thank you even worse thank you for listening it suggests that everybody has stayed that long out of politeness and that they had a profound desire to be somewhere else"”
-
-**Sensory**
-olfactory 👃
 
 **Story**
 A skeletal acorn rolls into the MidgroundRight alleyway, exhaling a toxic cloud that smells of rotting garbage every time it squeaks a polite apology. Doc Brown covers his nose and strictly commands the nut to deliver a sharp military salute instead, instantly clearing the foul stench of weakness from the air.
@@ -73,9 +67,6 @@ _No keywords yet_
 **Quote**
 “"Your success in life will be determined largely by your ability to speak your ability to write and the quality of your ideas in that order"”
 
-**Sensory**
-tactile ✋
-
 **Story**
 A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving microscopic formulas into a steel beam with its heavy claws. Sherlock Holmes runs his bare hands over the deep, jagged scratches, feeling the physical weight of knowledge and practice overwhelming the tiny speck of talent etched at the end.
 
@@ -89,9 +80,6 @@ _No keywords yet_
 
 **Quote**
 “"You want to tell people what they're going to know at the end of the hour that they didn't know at the beginning of the hour it's an empowerment promise"”
-
-**Sensory**
-auditory 👂
 
 **Story**
 Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic battle cry that instantly materializes as solid glowing armor on the people around her. Sherlock Holmes listens as the empowering soundwaves loudly promise unbreakable strength, echoing down the street until the hour ends.
@@ -107,9 +95,6 @@ _No keywords yet_
 **Quote**
 “"at any given moment about 20% of you will be fogged out no matter what the lecture is so if you want to ensure that the probability that everybody gets it is high you need to say it three times"”
 
-**Sensory**
-visual 👁️
-
 **Story**
 A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence that circles its body exactly three times to trap a cloud of thick fog. Sherlock Holmes peers through his magnifying glass, watching the intensely bright, repeating cycles of light completely burn away the 20 percent of fog blocking the street.
 
@@ -124,9 +109,6 @@ _No keywords yet_
 **Quote**
 “"you need to provide some Landmark places where you're announcing that it's a good time to get back on"”
 
-**Sensory**
-olfactory 👃
-
 **Story**
 Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell intensely of burning ozone to mark specific landing zones on the pavement. Sherlock Holmes sniffs the sharp, electrical punctuation in the air, using the distinct scent as a landmark to safely step back onto the scorched pathway.
 
@@ -140,9 +122,6 @@ _No keywords yet_
 
 **Quote**
 “"people in your audience know how to read and reading will just annoy them"”
-
-**Sensory**
-gustatory 👅
 
 **Story**
 A colossal aardvark clings to the ForegroundRight lamp post, loudly vomiting thousands of tiny, bitter-tasting alphabet soup letters onto the pavement. Sherlock Holmes scoops up the messy text and eats it, gagging on the sour, annoying flavor of too many written words crowding his mouth instead of a clear voice.
@@ -177,9 +156,6 @@ _No keywords yet_
 **Quote**
 “Achieving bedrock clarity requires stripping away unnecessary details (like Picasso's bull sketches) by continuously generating "bad output" until it becomes sharp.”
 
-**Sensory**
-👁️ visual
-
 **Story**
 A microscopic rat sits on the iron gate in the ForegroundLeft, furiously erasing a massive, chaotic bull painting with its tail. Ada Lovelace cranks a brass gear, and the rat rips away thick layers of canvas until only a shockingly sharp, glowing neon outline of a bull remains in the air.
 
@@ -193,9 +169,6 @@ _No keywords yet_
 
 **Quote**
 “You must consciously move evocative words from your passive understanding (deep lexicon) to your automatic retrieval (surface lexicon) through repetition, replacing generic phrases with vivid ones.”
-
-**Sensory**
-👂 auditory
 
 **Story**
 A colossal, floating bone skull hovers by the MidgroundRight lamp post, vomiting out heavy, rusted iron words from its deep jaw. Ada Lovelace hits them repeatedly with a tuning fork, transforming the heavy metal into weightless, blazing surface flares that shoot instantly to the top of the cranium for automatic use.
@@ -211,9 +184,6 @@ _No keywords yet_
 **Quote**
 “To give your words "blood and bone," populate your speech using: Time, Audio, Kinesthetic (feeling/touch), Eyes (sight), Smell.”
 
-**Sensory**
-✋ tactile
-
 **Story**
 A giant toucan crashes into the BackgroundCenter facade, regurgitating a ticking clock, a booming drum, and a stinking fish onto the pavement. Ada Lovelace touches the visceral mess, feeling the blood and bone materialize as the abstract words mutate into living, screaming sensory organs.
 
@@ -228,9 +198,6 @@ _No keywords yet_
 **Quote**
 “You must align three pillars: Body: Regulate your nervous system (e.g., diaphragmatic/box breathing). Mind: Shift your focus to serving the audience with a mental primer. Spirit: Speak honestly and strictly in alignment with your core values.”
 
-**Sensory**
-🌡️ thermal
-
 **Story**
 An ethereal unicorn balances on the Aerial roof, exhaling a perfect, glowing box-breathing square to calm its shivering body. Ada Lovelace peers through the box, seeing the unicorn's mind physically laser-focused on a cheering crowd while its spirit radiates a blinding, honest light that burns away the roof tiles.
 
@@ -244,9 +211,6 @@ _No keywords yet_
 
 **Quote**
 “You cannot think or speak clearly if your hardware is compromised. Tracking and optimizing diet and sleep are essential rhetoric tools, as they directly dictate mental clarity.”
-
-**Sensory**
-👅 gustatory
 
 **Story**
 A featherless vulture squats on the ForegroundRight parked car, aggressively shoving handfuls of raw broccoli and alarm clocks down its own throat. Ada Lovelace injects a digital tracking cable into the bird's spine, instantly rebooting its compromised biological hardware so the vulture shrieks with crystal-clear, deafening mental sharpness.
@@ -281,9 +245,6 @@ _No keywords yet_
 **Quote**
 “clear speaking is the result of clear thinking”
 
-**Sensory**
-auditory 👂
-
 **Story**
 A colossal marmoset balances on a street lamp, scrubbing its glowing transparent brain with a giant wire brush. Alan Turing feeds it a complex math puzzle, and the beast screams out perfectly articulated, crystal-clear answers that shatter the nearby windows.
 
@@ -297,9 +258,6 @@ _No keywords yet_
 
 **Quote**
 “the formula for clarity on any idea is clarity equals bad output times frequency”
-
-**Sensory**
-visual 👁️
 
 **Story**
 A brutish Neanderthal stands near the front left gate, relentlessly smashing a broken stone tablet over and over. Alan Turing watches closely as the high frequency of bad, clumsy strikes miraculously polishes the stone into a perfectly clear, flawless diamond lens.
@@ -315,9 +273,6 @@ _No keywords yet_
 **Quote**
 “texture is the ability to bend twist and and gum words together in creative ways to be able to say phrases that just strike like a lightning bolt”
 
-**Sensory**
-tactile ✋
-
 **Story**
 A skyscraper-sized owl perches on a midground brick wall, aggressively chewing thick rubber dictionary pages into a sticky paste. It forcefully spits the chewed, gummed words out, which instantly harden and strike the pavement like a dazzling, crackling lightning bolt.
 
@@ -332,9 +287,6 @@ _No keywords yet_
 **Quote**
 “populate or color your speech with your life use your life and your experiences to color in the outline”
 
-**Sensory**
-visual 👁️
-
 **Story**
 A sleek panther paces at the far end of the street, bleeding vibrant, dripping neon paint from its paws. As it walks, it fills in a giant hollow chalk outline on the road with the vivid, wet colors of its own life experiences.
 
@@ -348,9 +300,6 @@ _No keywords yet_
 
 **Quote**
 “the vocal ego is a representation of the elite version of you that 2% version of you”
-
-**Sensory**
-auditory 👂
 
 **Story**
 A microscopic rat wearing a tiny gold crown struts on the right-side curb, screaming with the deep, booming voice of an elite opera singer. It commands the dirt and pebbles to form a shining podium, representing the absolute pinnacle of its arrogant vocal ego.
@@ -385,9 +334,6 @@ _No keywords yet_
 **Quote**
 “Define a agenda de negócios para a própria área.”
 
-**Sensory**
-👁️ visual
-
 **Story**
 A colossal dragon lands heavily on the gate post, and Goku desperately grabs its scaled tail. The beast breathes a massive, glowing business agenda made of bright neon fire into the sky, forcing everyone to clearly see the defined direction.
 
@@ -401,9 +347,6 @@ _No keywords yet_
 
 **Quote**
 “Cria valor para a empresa de acordo com o interesse geral da Bosch.”
-
-**Sensory**
-✋ tactile
 
 **Story**
 An impossibly heavy eagle crashes onto a parked car, crushing its steel roof like paper to hand Goku solid gold bars. The tangible, crushing weight of these delivered results physically alters the vehicle, showing immense value creation.
@@ -419,9 +362,6 @@ _No keywords yet_
 **Quote**
 “Fomenta uma organização colaborativa e de aprendizagem. Impulsiona um negócio sustentável e digital.”
 
-**Sensory**
-👂 auditory
-
 **Story**
 A skyscraper-sized frog squats at the far end of the street, croaking with a deafening electronic baseline. Goku plugs futuristic digital cables directly into the frog's warty skin, causing the loud croaks to instantly build a collaborative digital city out of soundwaves.
 
@@ -436,9 +376,6 @@ _No keywords yet_
 **Quote**
 “Cria um ambiente onde as pessoas se sentem à vontade para expressar as suas opiniões e participar em debates saudáveis.”
 
-**Sensory**
-👃 olfactory
-
 **Story**
 A floating goat balances perfectly on top of a street lamp, emitting a highly concentrated, comforting scent of warm cinnamon. Goku breathes in the trusting aroma and shouts his deepest secrets to the goat, feeling completely safe to express opinions in the sweet-smelling air.
 
@@ -452,9 +389,6 @@ _No keywords yet_
 
 **Quote**
 “Incentiva os outros a assumir responsabilidade e alcançar resultados excepcionais. Cria autonomia e estimula a motivação intrínseca.”
-
-**Sensory**
-👅 gustatory
 
 **Story**
 A multi-headed Hydra bursts out of a tiny metal mailbox, biting into shockingly sour lemons. Goku forces the heads to chew the sour fruit, making them taste the bitter shock of responsibility before they autonomously spit out exceptional golden trophies onto the pavement.
@@ -489,9 +423,6 @@ _No keywords yet_
 **Quote**
 “Ethos: A credibilidade e a autoridade do orador.”
 
-**Sensory**
-—
-
 **Story**
 Arachne (a woman with the lower body of a spider) crawls down onto the street. She wears a tiny judge's wig and holds a shiny gold badge. She waves her many arms to show the crowd her badge, proving she is honest and making everyone respect her high authority.
 
@@ -506,9 +437,6 @@ _No keywords yet_
 **Quote**
 “Pathos: O apelo emocional utilizado para envolver o público.”
 
-**Sensory**
-—
-
 **Story**
 A bright bird of paradise flutters down to perch on Arachne's badge and starts crying with giant, sad eyes. It looks so pathetic and cute that the entire crowd starts weeping with it. The bird actively uses these strong, sad feelings to steal everyone's attention and engage the audience completely.
 
@@ -522,9 +450,6 @@ _No keywords yet_
 
 **Quote**
 “Logos: A estrutura lógica e as evidências que sustentam o argumento.”
-
-**Sensory**
-—
 
 **Story**
 A small cat jumps down onto the pavement, completely ignoring the crying bird. Instead, it carefully builds a strong, perfectly straight wall out of heavy stone blocks. The cat points at the solid bricks to show the strict, logical structure and the hard evidence that supports its point.

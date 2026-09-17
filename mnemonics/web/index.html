@@ -1379,7 +1379,7 @@
         lines.push(removes || "(none)");
         lines.push(
           "",
-          "Atom Concept/Quote/Story/Sensory for in-scope beasts are in CONTEXT → In-scope working set.",
+          "Atom Concept/Quote/Story for in-scope beasts are in CONTEXT → In-scope working set.",
           "Use the peg letters above exactly. Prefer beast peg_code over display name when re-pegging.",
           "=== END STAGED ===",
           "",
@@ -2447,18 +2447,12 @@
         );
       }
 
-      function renderAtomCard(a, sensoryOnCard = true) {
+      function renderAtomCard(a) {
         const zone =
           a.zone || a.zone_label
             ? `<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> ${dash(a.zone)}${a.zone_label ? " · " + dash(a.zone_label) : ""}</p>`
             : "";
-        const sensory = sensoryOnCard
-          ? sensoryChipHtml(a.sensory_channel || a.sensory)
-          : "";
-        const head =
-          zone || sensory
-            ? `<div class="atom-card-head">${zone}${sensory}</div>`
-            : "";
+        const head = zone ? `<div class="atom-card-head">${zone}</div>` : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
           <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept, a.keywords)}</p>
           ${formatKeywords(a.keywords)}
@@ -2497,12 +2491,9 @@
             const ats = atoms(b.id);
             const n = Math.max(ats.length, 1);
             const innerCols = Math.min(n, 3);
-            const sensoryOnBeast = ats.length === 1;
-            const headSensory = sensoryOnBeast
-              ? sensoryChipHtml(ats[0].sensory_channel || b.sensory_channel)
-              : sensoryChipHtml(b.sensory_channel);
+            const headSensory = sensoryChipHtml(b.sensory_channel);
             const cards =
-              ats.map((a) => renderAtomCard(a, !sensoryOnBeast)).join("") ||
+              ats.map((a) => renderAtomCard(a)).join("") ||
               '<p class="empty">No atoms</p>';
             return `<section class="beast-cluster" data-beast-id="${escAttr(b.id)}" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">

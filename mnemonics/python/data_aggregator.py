@@ -10,26 +10,21 @@ from typing import Any
 from schemas import HEADERS, validate_dataset
 
 # Legacy Story Architect / smash lines often append channel to concept, e.g.
-# "... · sensory: gustatory 👅" while leaving the sensory column empty.
+# "... · sensory: gustatory 👅". Strip that tail from concept only (no atom sensory column).
 _SENSORY_TAIL_RE = re.compile(
     r"\s*[·•]\s*sensory:\s*([A-Za-z]+)(?:\s+\S+)?\s*$",
     re.IGNORECASE,
 )
 
 
-def normalize_atom_concept_sensory(row: dict[str, str]) -> dict[str, str]:
-    """Move trailing `· sensory: channel [emoji]` from concept into sensory."""
+def strip_concept_sensory_tail(row: dict[str, str]) -> dict[str, str]:
+    """Remove trailing `· sensory: channel [emoji]` from concept text."""
     concept = (row.get("concept") or row.get("context") or "").strip()
-    sensory = (row.get("sensory") or row.get("sensory_channel") or "").strip()
     m = _SENSORY_TAIL_RE.search(concept)
     if not m:
         return row
-    channel = m.group(1).strip().lower()
-    cleaned = concept[: m.start()].rstrip()
     out = dict(row)
-    out["concept"] = cleaned
-    if not sensory:
-        out["sensory"] = channel
+    out["concept"] = concept[: m.start()].rstrip()
     return out
 
 
@@ -65,7 +60,7 @@ def load_all(data_dir: Path) -> dict[str, list[dict[str, str]]]:
             "atoms",
         )
     }
-    data["atoms"] = [normalize_atom_concept_sensory(a) for a in data["atoms"]]
+    data["atoms"] = [strip_concept_sensory_tail(a) for a in data["atoms"]]
     return data
 
 
@@ -151,7 +146,6 @@ def snapshot(
                             "keywords": a.get("keywords", ""),
                             "quote": a.get("quote", ""),
                             "story": a.get("story", a.get("narrative", "")),
-                            "sensory": a.get("sensory", a.get("sensory_channel", "")),
                             "beast": f"[{b.get('peg_code', '')}] {b.get('beast_name', '')}".strip(),
                             "sort_order": a.get("sort_order", ""),
                         }

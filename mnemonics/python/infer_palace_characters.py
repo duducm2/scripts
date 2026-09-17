@@ -106,7 +106,6 @@ def main(argv: list[str] | None = None) -> int:
                 parts.append(a.get("concept", ""))
                 parts.append(a.get("quote", ""))
                 parts.append(a.get("story", ""))
-                parts.append(a.get("sensory", ""))
         return "\n".join(parts)
 
     headers = [

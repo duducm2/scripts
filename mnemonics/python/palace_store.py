@@ -661,7 +661,6 @@ class PalaceStore:
             "keywords": keywords,
             "quote": str(payload.get("quote", (existing or {}).get("quote", ""))),
             "story": str(payload.get("story", (existing or {}).get("story", ""))),
-            "sensory": str(payload.get("sensory", (existing or {}).get("sensory", ""))),
             "ipa": str(payload.get("ipa", (existing or {}).get("ipa", ""))),
             "sort_order": str(
                 payload.get("sort_order")

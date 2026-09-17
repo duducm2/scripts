@@ -48,7 +48,7 @@ GLOSSARY = [
     },
     {"term": "Character", "def": "Exactly one canon character per palace."},
     {"term": "Beast", "def": "Bestiary peg holder for knowledge atoms."},
-    {"term": "Knowledge Atom", "def": "Concept + Quote + Story + Sensory on a beast."},
+    {"term": "Knowledge Atom", "def": "Concept + Quote + Story on a beast."},
     {"term": "Peg", "def": "Letter code from bestiary (never numeric)."},
     {"term": "Plan", "def": "Study checklist (plans / plan_items / plan_resources)."},
     {
@@ -412,10 +412,6 @@ def synthesize_inscope_inventory(
                 lines.append(f"  Concept: {(a.get('concept') or '').strip() or '—'}")
                 lines.append(f"  Quote: {(a.get('quote') or '').strip() or '—'}")
                 lines.append(f"  Story: {(a.get('story') or '').strip() or '—'}")
-                sens = (
-                    a.get("sensory_channel") or a.get("sensory") or ""
-                ).strip() or "—"
-                lines.append(f"  Sensory: {sens}")
         lines.append("")
     return "\n".join(lines)
 

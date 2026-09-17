@@ -15,15 +15,6 @@ from schemas import (
     keyword_display_terms,
 )
 
-SENSORY_EMOJI = {
-    "visual": "👁️",
-    "auditory": "👂",
-    "tactile": "✋",
-    "olfactory": "👃",
-    "gustatory": "👅",
-    "thermal": "🌡️",
-}
-
 
 def md_escape(text: str) -> str:
     if not text:
@@ -63,16 +54,6 @@ def format_quote(value: str | None) -> str:
     if not t:
         return "—"
     return f"\u201c{t}\u201d"
-
-
-def format_sensory(value: str | None) -> str:
-    """Dashboard chip order: emoji then channel word (e.g. 👁️ visual)."""
-    t = (value or "").strip()
-    if not t:
-        return "—"
-    emoji = SENSORY_EMOJI.get(t.lower(), "")
-    body = md_escape(t)
-    return f"{emoji} {body}".strip() if emoji else body
 
 
 def format_keywords_lines(value: str | None) -> list[str]:
@@ -116,7 +97,6 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
         lines.append("_No keywords yet_")
         lines.append("")
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
-    lines.extend(format_field_block("Sensory", format_sensory(atom.get("sensory"))))
     lines.extend(format_field_block("Story", dash(atom.get("story"))))
     return lines
 

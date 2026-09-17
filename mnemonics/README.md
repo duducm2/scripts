@@ -36,11 +36,11 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 | **Memory Palace**  | Location; **one** generated image per palace.                               |
 | **Character**      | From `characters.json`; one per Memory Palace.                              |
 | **Beast**          | From `bestiary.json`; peg animal that carries a Knowledge Atom.             |
-| **Knowledge Atom** | Discrete information on a Beast, made of Concept + Quote + Story + Sensory. |
+| **Knowledge Atom** | Discrete information on a Beast, made of Concept + Quote + Story.           |
 | **Concept**        | Rehearsal definition of the fact.                                           |
 | **Quote**          | Verbatim source payload.                                                    |
 | **Story**          | Bizarre mnemonic narrative / action.                                        |
-| **Sensory**        | Visual, auditory, tactile, olfactory, gustatory, or thermal channel.        |
+| **Sensory channel**| Beast-level modality on `sensory_channel` (visual, auditory, …).            |
 | **Mapping**        | One atom per beast, or up to four zoned atoms (Z1–Z4).                      |
 
 ## Web app views
@@ -105,7 +105,7 @@ py -3 mnemonics\python\sync_technique.py `
 
 Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images under `mnemonics/output/practice/images/`. Files sync after browse CRUD, Import Management palace pack import **[P]**, Import Management quick image **[Q]**, and Utility Shortcuts **Push `[G]`** (when `mnemonics/data` is dirty).
 
-**Layout (GitHub mobile):** Collapsible Memory Palaces (`<details>`; newest open by default). Beasts as flat headings with **Concept / Quote / Story / Sensory**. Emoji markers match technique canon. Image prompts are omitted (recall-only).
+**Layout (GitHub mobile):** Collapsible Memory Palaces (`<details>`; newest open by default). Beasts as flat headings with **Concept / Quote / Story**. Emoji markers match technique canon. Image prompts are omitted (recall-only).
 
 Each palace block ends with **Notes** and **Gallery**. Hero scene images (`image_rel_path`, Import Management → **[Q]** Quick image) are unchanged.
 
