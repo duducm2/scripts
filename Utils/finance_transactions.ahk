@@ -163,10 +163,8 @@ Finance_TxForm(existing) {
     Finance_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit transaction" : "Add transaction")
     g.SetFont("s10", "Segoe UI")
-    g.Add("Text", "x10 y10", "Description")
-    eDesc := g.Add("Edit", "x10 y28 w420", isEdit ? existing["description"] : "")
-    g.Add("Text", "x10 y58", "Amount (comma decimal)")
-    eAmt := g.Add("Edit", "x10 y76 w200", isEdit ? existing["amount"] : "")
+    g.Add("Text", "x10 y10", "Amount (comma decimal)")
+    eAmt := g.Add("Edit", "x10 y28 w200", isEdit ? existing["amount"] : "")
     types := ["expense", "income", "transfer", "card_expense", "adjustment"]
     curType := isEdit ? existing["type"] : "expense"
     typeIdx := 1
@@ -174,9 +172,11 @@ Finance_TxForm(existing) {
         if (types[A_Index] = curType)
             typeIdx := A_Index
     }
-    g.Add("Text", "x230 y58", "Type")
-    ddType := g.Add("DropDownList", "x230 y76 w200 Choose" . typeIdx, ["Expense", "Income", "Transfer", "Credit card",
+    g.Add("Text", "x230 y10", "Type")
+    ddType := g.Add("DropDownList", "x230 y28 w200 Choose" . typeIdx, ["Expense", "Income", "Transfer", "Credit card",
         "Adjustment"])
+    g.Add("Text", "x10 y58", "Description")
+    eDesc := g.Add("Edit", "x10 y76 w420", isEdit ? existing["description"] : "")
 
     y1 := 112
     y1c := 130
@@ -373,18 +373,18 @@ Finance_TxForm(existing) {
         txs := Finance_Load("transactions")
         newTx := Map(
             "id", isEdit ? existing["id"] : Finance_NextId("TX", txs),
-            "date", date,
-            "description", desc,
-            "amount", Finance_FormatCsvDecimal(amt),
-            "type", t,
-            "category_id", catId,
-            "account_id", accId,
-            "card_id", cardId,
-            "transfer_account_id", destId,
-            "installments", isEdit && existing.Has("installments") ? existing["installments"] : "1",
-            "installment_n", isEdit && existing.Has("installment_n") ? existing["installment_n"] : "1",
-            "installment_group", isEdit && existing.Has("installment_group") ? existing["installment_group"] : "",
-            "paid", isEdit && existing.Has("paid") ? existing["paid"] : "0")
+        "date", date,
+        "description", desc,
+        "amount", Finance_FormatCsvDecimal(amt),
+        "type", t,
+        "category_id", catId,
+        "account_id", accId,
+        "card_id", cardId,
+        "transfer_account_id", destId,
+        "installments", isEdit && existing.Has("installments") ? existing["installments"] : "1",
+        "installment_n", isEdit && existing.Has("installment_n") ? existing["installment_n"] : "1",
+        "installment_group", isEdit && existing.Has("installment_group") ? existing["installment_group"] : "",
+        "paid", isEdit && existing.Has("paid") ? existing["paid"] : "0")
         if (isEdit) {
             Finance_NormalizeTxInstallmentFields(newTx)
             out := []
@@ -422,7 +422,7 @@ Finance_TxForm(existing) {
             loop nInst {
                 ym := SubStr(Finance_InstallmentDate(date, A_Index,
                     (Finance_FindById(cards, cardId)
-                    ? Finance_FindById(cards, cardId)["closing_day"] : 1)), 1, 7)
+                        ? Finance_FindById(cards, cardId)["closing_day"] : 1)), 1, 7)
                 if (ym != ymNew)
                     Finance_RecomputeBudgetSpent(ym)
             }

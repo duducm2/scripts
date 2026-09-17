@@ -20,6 +20,9 @@ global g_PalacePickerPlaceX := 0
 global g_PalacePickerPlaceY := 0
 global g_PalacePickerPlaceW := 0
 global g_PalacePickerPlaceH := 0
+global g_PalaceStudyModeHwnd := 0
+global g_PalaceStudyModeAssertTimer := ""
+global g_PalaceStudyModeAssertLeft := 0
 
 Palace_AutoSlotSuppressPath() {
     return A_ScriptDir "\assets\data\palace_autoslot_suppress.ini"
@@ -125,10 +128,13 @@ Palace_LaunchApp() {
         Palace_ForceActivatePicker(hwndFinal)
         Palace_FocusPickerDocument(hwndFinal)
         Palace_ForceActivatePicker(hwndFinal)
-        global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
-        if (g_PalacePickerPlaceW > 0 && g_PalacePickerPlaceH > 0)
-            Palace_PickerForceMoveHwnd(hwndFinal, g_PalacePickerPlaceX, g_PalacePickerPlaceY,
-                g_PalacePickerPlaceW, g_PalacePickerPlaceH)
+        ; Never re-apply picker geometry after study selection (title left the picker needle).
+        if (Palace_ChromeTitleLooksLikePicker(hwndFinal)) {
+            global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
+            if (g_PalacePickerPlaceW > 0 && g_PalacePickerPlaceH > 0)
+                Palace_PickerForceMoveHwnd(hwndFinal, g_PalacePickerPlaceX, g_PalacePickerPlaceY,
+                    g_PalacePickerPlaceW, g_PalacePickerPlaceH)
+        }
         ; Absolute last: activate again so nothing after place keeps foreign FG.
         Palace_ForceActivatePicker(hwndFinal)
     }
@@ -820,20 +826,75 @@ Palace_StopPickerWatch() {
     g_PalacePickerSawTitle := false
 }
 
-Palace_RestorePickerChrome(hwnd) {
+Palace_ChromeTitleLooksLikePicker(hwnd) {
+    global PALACE_PICKER_TITLE_NEEDLE
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+        title := ""
+    }
+    return (title != "" && InStr(title, PALACE_PICKER_TITLE_NEEDLE))
+}
+
+Palace_StopStudyModeAssert() {
+    global g_PalaceStudyModeAssertTimer, g_PalaceStudyModeAssertLeft, g_PalaceStudyModeHwnd
+    if (g_PalaceStudyModeAssertTimer != "") {
+        try SetTimer(g_PalaceStudyModeAssertTimer, 0)
+        catch {
+        }
+        g_PalaceStudyModeAssertTimer := ""
+    }
+    g_PalaceStudyModeAssertLeft := 0
+    g_PalaceStudyModeHwnd := 0
+}
+
+Palace_StudyModeAssertTick(*) {
+    global g_PalaceStudyModeHwnd, g_PalaceStudyModeAssertLeft
+    hwnd := g_PalaceStudyModeHwnd
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd) || g_PalaceStudyModeAssertLeft < 1) {
+        Palace_StopStudyModeAssert()
+        return
+    }
+    ; If the picker title returned, abandon study-mode asserts.
+    if (Palace_ChromeTitleLooksLikePicker(hwnd)) {
+        Palace_StopStudyModeAssert()
+        return
+    }
+    Palace_ApplyStudyModeChrome(hwnd)
+    g_PalaceStudyModeAssertLeft -= 1
+    if (g_PalaceStudyModeAssertLeft < 1)
+        Palace_StopStudyModeAssert()
+}
+
+Palace_ApplyStudyModeChrome(hwnd) {
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
-    ; Re-assert exclusion before maximizing so AutoSlot cannot claim the transition.
     Palace_PickerMarkAutoSlotExclude(hwnd)
-    try {
-        if (WinGetMinMax("ahk_id " hwnd) != 1)
-            WinMaximize("ahk_id " hwnd)
-    } catch {
+    try WinRestore("ahk_id " hwnd)
+    catch {
+    }
+    try WinMaximize("ahk_id " hwnd)
+    catch {
     }
     ; Fully opaque study mode (remove the picker translucency/layered effect).
     try WinSetTransparent("Off", "ahk_id " hwnd)
     catch {
     }
+}
+
+Palace_RestorePickerChrome(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    global g_PalaceStudyModeHwnd, g_PalaceStudyModeAssertTimer, g_PalaceStudyModeAssertLeft
+    Palace_StopStudyModeAssert()
+    Palace_ApplyStudyModeChrome(hwnd)
+    ; Chrome often fights the first maximize after SetWindowPos preview placement.
+    g_PalaceStudyModeHwnd := hwnd
+    g_PalaceStudyModeAssertLeft := 6
+    g_PalaceStudyModeAssertTimer := Palace_StudyModeAssertTick
+    SetTimer(g_PalaceStudyModeAssertTimer, 150)
 }
 
 Palace_PickerWatchTick(*) {
@@ -876,8 +937,8 @@ Palace_PickerWatchTick(*) {
         }
         return
     }
-    ; Only restore after the picker title was observed (avoid racing boot title).
-    if (g_PalacePickerSawTitle && InStr(title, "Memory Palace")) {
+    ; Leave picker for study mode as soon as the picker title is gone (any study/QR choice).
+    if (g_PalacePickerSawTitle) {
         Palace_RestorePickerChrome(hwnd)
         Palace_StopPickerWatch()
     }
@@ -887,6 +948,7 @@ Palace_BeginPickerPreviewSession(hwnd, anchorHwnd := 0) {
     global g_PalacePickerWatchHwnd, g_PalacePickerWatchTimer, g_PalacePickerSawTitle
     if (!hwnd)
         return
+    Palace_StopStudyModeAssert()
     Palace_StopPickerWatch()
     g_PalacePickerSawTitle := false
     if (!Palace_PlacePickerPreview(hwnd, anchorHwnd)) {

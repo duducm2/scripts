@@ -1844,6 +1844,7 @@
         const p = palaceById(palaceId);
         if (!p) return;
         rememberStudy(p.study_id);
+        setPalacePickerTitle(false);
         closeStudyModal({ focusLatest: false });
         setView("practice");
         requestAnimationFrame(() => openPalace(palaceId));
