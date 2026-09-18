@@ -8,32 +8,48 @@ global g_FinanceTxFilter := "all"
 global g_FinanceTxHeader := false
 global g_FinanceTxHint := false
 global g_FinanceTxRows := []
+global g_FinanceTxCatFilterEdit := false
+global g_FinanceTxCatFilterLabel := false
+global g_FinanceTxCatFilterHelp := false
+global g_FinanceTxCatNeedle := ""
+global g_FinanceTxCatFilterVisible := false
 
 Finance_ShowTransactions() {
     global g_FinanceGui, g_FinanceMonth, g_FinanceTxLv, g_FinanceTxFilter, g_FinanceTxHeader, g_FinanceTxHint
+    global g_FinanceTxCatFilterEdit, g_FinanceTxCatFilterLabel, g_FinanceTxCatFilterHelp
+    global g_FinanceTxCatNeedle, g_FinanceTxCatFilterVisible
     Finance_CloseGui()
     Finance_EnsureData()
     if (g_FinanceMonth = "")
         g_FinanceMonth := Finance_CurrentYearMonth()
+    g_FinanceTxCatNeedle := ""
+    g_FinanceTxCatFilterVisible := false
 
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Transactions")
     g_FinanceGui.SetFont("s10", "Segoe UI")
-    g_FinanceTxHeader := g_FinanceGui.Add("Text", "x12 y10 w880 h36")
-    g_FinanceTxHint := g_FinanceGui.Add("Text", "x12 y48 w880",
-        "[Shift+G] all  [Shift+X] expenses  [Shift+C] card  [Shift+N] incomes  [Shift+F] transfers  [,] prev month  [.] next  [Shift+A]/Insert add  [Shift+E] edit  Delete  Backspace menu"
+    g_FinanceTxHeader := g_FinanceGui.Add("Text", "x12 y8 w896 h32")
+    g_FinanceTxHint := g_FinanceGui.Add("Text", "x12 y42 w896 h20",
+        "[Shift+G] all  [X] expenses  [C] card  [N] incomes  [T] transfers  [F] category  [,] [.] month  [A]/Ins add  [E] edit  Del  Bksp"
     )
-    g_FinanceTxLv := g_FinanceGui.Add("ListView", "x12 y74 w896 h500 Grid",
+    ; List first; filter controls are added after so they paint above the list when shown.
+    g_FinanceTxLv := g_FinanceGui.Add("ListView", "x12 y68 w896 h506 Grid",
         ["Amount", "Account", "Category", "Description", "Date", "Type"])
     g_FinanceTxLv.OnEvent("DoubleClick", (*) => Finance_TxEdit())
+    g_FinanceTxCatFilterLabel := g_FinanceGui.Add("Text", "x12 y68 w70 h22 Hidden", "Category")
+    g_FinanceTxCatFilterEdit := g_FinanceGui.Add("Edit", "x84 y64 w320 h26 Hidden")
+    g_FinanceTxCatFilterEdit.OnEvent("Change", Finance_TxOnCatFilterChange)
+    g_FinanceTxCatFilterHelp := g_FinanceGui.Add("Text", "x414 y68 w494 h22 Hidden",
+        "First letters · Esc closes")
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
-    g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
+    g_FinanceGui.OnEvent("Escape", (*) => Finance_TxOnEscape())
     Finance_TxRefresh()
     Finance_BindHotkeys([
         ["+g", (*) => Finance_TxSetFilter("all")],
         ["+x", (*) => Finance_TxSetFilter("expense")],
         ["+c", (*) => Finance_TxSetFilter("card")],
         ["+n", (*) => Finance_TxSetFilter("income")],
-        ["+f", (*) => Finance_TxSetFilter("transfer")],
+        ["+t", (*) => Finance_TxSetFilter("transfer")],
+        ["+f", (*) => Finance_TxShowCatFilter()],
         ["vkBC", (*) => Finance_TxShiftMonth(-1)],
         ["vkBE", (*) => Finance_TxShiftMonth(1)],
         ["+a", (*) => Finance_TxAdd()],
@@ -41,9 +57,76 @@ Finance_ShowTransactions() {
         ["+e", (*) => Finance_TxEdit()],
         ["Delete", (*) => Finance_TxDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
-        ["Escape", (*) => Finance_ShowMainMenu()]
+        ["Escape", (*) => Finance_TxOnEscape()]
     ])
     Finance_CenterGui(g_FinanceGui, 920, 600)
+}
+
+Finance_TxApplyCatFilterLayout(show) {
+    global g_FinanceTxCatFilterEdit, g_FinanceTxCatFilterLabel, g_FinanceTxCatFilterHelp
+    global g_FinanceTxCatFilterVisible, g_FinanceTxLv
+    g_FinanceTxCatFilterVisible := !!show
+    vis := show ? 1 : 0
+    try {
+        if (IsObject(g_FinanceTxCatFilterLabel))
+            g_FinanceTxCatFilterLabel.Visible := vis
+    } catch {
+    }
+    try {
+        if (IsObject(g_FinanceTxCatFilterEdit))
+            g_FinanceTxCatFilterEdit.Visible := vis
+    } catch {
+    }
+    try {
+        if (IsObject(g_FinanceTxCatFilterHelp))
+            g_FinanceTxCatFilterHelp.Visible := vis
+    } catch {
+    }
+    if (!IsObject(g_FinanceTxLv))
+        return
+    ; Leave a clear gap under the filter row so the edit never sits on the ListView.
+    if (show)
+        g_FinanceTxLv.Move(12, 98, 896, 476)
+    else
+        g_FinanceTxLv.Move(12, 68, 896, 506)
+}
+
+Finance_TxShowCatFilter(*) {
+    global g_FinanceTxCatFilterEdit, g_FinanceTxCatFilterVisible
+    if (!IsObject(g_FinanceTxCatFilterEdit))
+        return
+    if (!g_FinanceTxCatFilterVisible)
+        Finance_TxApplyCatFilterLayout(true)
+    g_FinanceTxCatFilterEdit.Focus()
+}
+
+Finance_TxHideCatFilter() {
+    global g_FinanceTxCatFilterEdit, g_FinanceTxCatNeedle
+    g_FinanceTxCatNeedle := ""
+    if (IsObject(g_FinanceTxCatFilterEdit))
+        g_FinanceTxCatFilterEdit.Value := ""
+    Finance_TxApplyCatFilterLayout(false)
+    Finance_TxRefresh()
+}
+
+Finance_TxOnCatFilterChange(*) {
+    global g_FinanceTxCatFilterEdit, g_FinanceTxCatNeedle
+    g_FinanceTxCatNeedle := IsObject(g_FinanceTxCatFilterEdit) ? Trim(g_FinanceTxCatFilterEdit.Value) : ""
+    Finance_TxRefresh()
+}
+
+Finance_TxOnEscape(*) {
+    global g_FinanceTxCatFilterVisible, g_FinanceTxLv
+    if (g_FinanceTxCatFilterVisible) {
+        Finance_TxHideCatFilter()
+        try {
+            if (IsObject(g_FinanceTxLv))
+                g_FinanceTxLv.Focus()
+        } catch {
+        }
+        return
+    }
+    Finance_ShowMainMenu()
 }
 
 Finance_TxSetFilter(f) {
@@ -73,8 +156,24 @@ Finance_TxMatchesFilter(tx, filt) {
     return true
 }
 
+; Prefix match on category name (case-insensitive). Empty needle = all.
+Finance_TxCatNeedleMatches(cats, categoryId, needle) {
+    needle := StrLower(Trim(needle))
+    if (needle = "")
+        return true
+    if (categoryId = "")
+        return false
+    row := Finance_FindById(cats, categoryId)
+    name := ""
+    if (row && row.Has("name"))
+        name := row["name"]
+    else
+        name := categoryId
+    return (InStr(StrLower(name), needle) = 1)
+}
+
 Finance_TxRefresh() {
-    global g_FinanceTxLv, g_FinanceTxFilter, g_FinanceMonth, g_FinanceTxHeader, g_FinanceTxRows
+    global g_FinanceTxLv, g_FinanceTxFilter, g_FinanceMonth, g_FinanceTxHeader, g_FinanceTxRows, g_FinanceTxCatNeedle
     if (!IsObject(g_FinanceTxLv))
         return
     accs := Finance_Load("accounts")
@@ -84,7 +183,8 @@ Finance_TxRefresh() {
     filtLabel := Map("all", "General", "expense", "Expenses", "card", "Credit card", "income", "Incomes", "transfer",
         "Transfers")
     fl := filtLabel.Has(g_FinanceTxFilter) ? filtLabel[g_FinanceTxFilter] : g_FinanceTxFilter
-    g_FinanceTxHeader.Value := Finance_MonthLabel(g_FinanceMonth) . "  ·  " . fl
+    catHint := Trim(g_FinanceTxCatNeedle) != "" ? ("  ·  Cat " . Trim(g_FinanceTxCatNeedle) . "*") : ""
+    g_FinanceTxHeader.Value := Finance_MonthLabel(g_FinanceMonth) . "  ·  " . fl . catHint
     . "  ·  In " . Finance_FormatBrl(tot.income)
     . "  ·  Out " . Finance_FormatBrl(tot.expense)
     . "  ·  Balance " . Finance_FormatBrl(tot.balance)
@@ -97,6 +197,8 @@ Finance_TxRefresh() {
         if (!Finance_TxInMonth(tx, g_FinanceMonth))
             continue
         if (!Finance_TxMatchesFilter(tx, g_FinanceTxFilter))
+            continue
+        if (!Finance_TxCatNeedleMatches(cats, tx["category_id"], g_FinanceTxCatNeedle))
             continue
         g_FinanceTxRows.Push(tx)
         cat := Finance_CatName(cats, tx["category_id"])
