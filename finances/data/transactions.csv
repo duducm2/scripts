@@ -151,7 +151,7 @@ TX155,2026-09-17,Water container for house construction,"40,85",card_expense,CAT
 TX156,2026-09-17,Residue container for house construction,"310,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX157,2026-09-17,Construction materials for new house,"1964,51",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX158,2026-09-17,Transfer to checking account,"4550,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
-TX159,2026-09-17,Cake for sibling,"47,92",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX159,2026-09-17,Cake for sibling,"47,92",card_expense,CAT_NEWHOUSE,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX160,2026-09-17,Dog food,"25,89",card_expense,CAT_NEWHOUSE,,CARD_MP,,1,1,,0
 TX161,2026-09-17,German Shepherd dog,"2550,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX162,2026-09-17,Dog items for new house,"210,43",card_expense,CAT_NEWHOUSE,ACC_MERCADOP,CARD_MP,,1,1,,0
