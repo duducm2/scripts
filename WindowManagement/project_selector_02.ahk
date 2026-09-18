@@ -352,7 +352,7 @@ HandlePreviewWindowSelection(*) {
                 ; This window is already active, just center mouse
                 WMAutomation_SuppressCursorCentering("preview_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                WM_MaybeCenterMouse(window.hwnd, "preview_activate_existing")
+                WM_MaybeCenterMouse(window.hwnd, "preview_activate_existing", true)
                 return
             }
         }
@@ -368,7 +368,7 @@ HandlePreviewWindowSelection(*) {
             WMAutomation_SuppressCursorCentering("preview_activate_target", 1600)
             WinActivate("ahk_id " targetWindow.hwnd)
             WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-            WM_MaybeCenterMouse(targetWindow.hwnd, "preview_activate_target")
+            WM_MaybeCenterMouse(targetWindow.hwnd, "preview_activate_target", true)
         } catch {
             ShowNotification_WM("Failed to activate preview window.")
         }

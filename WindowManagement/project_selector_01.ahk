@@ -933,7 +933,7 @@ FindAndActivateVSCodeWindow(projectPath) {
             if (window.hwnd = activeHwnd) {
                 WMAutomation_SuppressCursorCentering("vscode_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                WM_MaybeCenterMouse(window.hwnd, "vscode_activate_existing")
+                WM_MaybeCenterMouse(window.hwnd, "vscode_activate_existing", true)
                 return window.hwnd
             }
         }
@@ -945,7 +945,7 @@ FindAndActivateVSCodeWindow(projectPath) {
         WMAutomation_SuppressCursorCentering("vscode_activate_target", 1600)
         WinActivate("ahk_id " targetWindow.hwnd)
         WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-        WM_MaybeCenterMouse(targetWindow.hwnd, "vscode_activate_target")
+        WM_MaybeCenterMouse(targetWindow.hwnd, "vscode_activate_target", true)
         return targetWindow.hwnd
     } catch {
         return 0
@@ -981,7 +981,7 @@ VSCode_TryActivateAfterLaunch() {
         if (hwnd && Integer(hwnd) != 0) {
             WMAutomation_SuppressCursorCentering("vscode_activate_after_launch", 1600)
             WinActivate("ahk_id " hwnd)
-            WM_MaybeCenterMouse(hwnd, "vscode_activate_after_launch")
+            WM_MaybeCenterMouse(hwnd, "vscode_activate_after_launch", true)
             g_VSCodeLaunchActivate.active := false
             SetTimer(VSCode_TryActivateAfterLaunch, 0)
             return
@@ -1044,7 +1044,7 @@ FindAndActivateCursorWindow(projectPath) {
             if (window.hwnd = activeHwnd) {
                 WMAutomation_SuppressCursorCentering("cursor_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                WM_MaybeCenterMouse(window.hwnd, "cursor_activate_existing")
+                WM_MaybeCenterMouse(window.hwnd, "cursor_activate_existing", true)
                 return window.hwnd
             }
         }
@@ -1056,7 +1056,7 @@ FindAndActivateCursorWindow(projectPath) {
         WMAutomation_SuppressCursorCentering("cursor_activate_target", 1600)
         WinActivate("ahk_id " targetWindow.hwnd)
         WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-        WM_MaybeCenterMouse(targetWindow.hwnd, "cursor_activate_target")
+        WM_MaybeCenterMouse(targetWindow.hwnd, "cursor_activate_target", true)
         return targetWindow.hwnd
     } catch {
         return 0
