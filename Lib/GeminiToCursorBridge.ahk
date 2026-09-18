@@ -53,9 +53,9 @@ Bridge_MoveMouseToCenter(hwnd) {
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 }
 
-Bridge_MaybeCenterMouse(hwnd, reason := "") {
+Bridge_MaybeCenterMouse(hwnd, reason := "", force := false) {
     try {
-        return WM_MaybeCenterMouse(hwnd, reason)
+        return WM_MaybeCenterMouse(hwnd, reason, force)
     } catch {
         Bridge_MoveMouseToCenter(hwnd)
         return true
@@ -175,7 +175,7 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
             if (window.hwnd = activeHwnd) {
                 try WMAutomation_SuppressCursorCentering("bridge_activate_existing", 1600)
                 WinActivate("ahk_id " window.hwnd)
-                Bridge_MaybeCenterMouse(window.hwnd, "bridge_activate_existing")
+                Bridge_MaybeCenterMouse(window.hwnd, "bridge_activate_existing", true)
                 ; #region agent log
                 Bridge_Log("GeminiToCursorBridge.ahk:FindAndActivate", "picked active", '{"hwnd":' . window.hwnd .
                     ',"titleStart":"' . SubStr(StrReplace(window.title, '"', "'"), 1, 50) . '"}', "H2")
@@ -194,7 +194,7 @@ Bridge_FindAndActivateCursorWindow(projectPath) {
         try WMAutomation_SuppressCursorCentering("bridge_activate_target", 1600)
         WinActivate("ahk_id " targetWindow.hwnd)
         WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
-        Bridge_MaybeCenterMouse(targetWindow.hwnd, "bridge_activate_target")
+        Bridge_MaybeCenterMouse(targetWindow.hwnd, "bridge_activate_target", true)
         return targetWindow.hwnd
     } catch {
         return 0

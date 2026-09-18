@@ -189,6 +189,7 @@ WMAutomation_CursorCenteringSuppressed(hwnd := 0) {
     return false
 }
 
+; After SuppressCursorCentering, pass force := true if jump+flash is still desired.
 WM_MaybeCenterMouse(hwnd, reason := "", force := false) {
     if (!hwnd)
         return false
