@@ -344,11 +344,6 @@
         font-size: 0.9rem;
         line-height: 1.25;
       }
-      #overlay:not(.image-expanded) .beast-cluster-head .sensory-chip {
-        font-size: 0.72rem;
-        max-width: min(12rem, 48%);
-        white-space: normal;
-      }
       #overlay:not(.image-expanded) .beast-cluster-atoms {
         display: grid !important;
         grid-template-columns: 1fr !important;
@@ -2348,10 +2343,6 @@
         }
       }
 
-      function formatSensory(s) {
-        const t = String(s || "").trim();
-        return t ? esc(t) : "—";
-      }
       function parseKeywordPairs(raw) {
         // Never sort this list: storage order is concept-group source order.
         const text = String(raw || "").trim();
@@ -2440,14 +2431,6 @@
         return t ? esc(t) : "—";
       }
 
-      function sensoryChipHtml(sensory) {
-        return (
-          '<p class="sensory-chip"><span class="lbl">Sensory</span>' +
-          formatSensory(sensory) +
-          "</p>"
-        );
-      }
-
       function renderAtomCard(a) {
         const zone =
           a.zone || a.zone_label
@@ -2492,7 +2475,6 @@
             const ats = atoms(b.id);
             const n = Math.max(ats.length, 1);
             const innerCols = Math.min(n, 3);
-            const headSensory = sensoryChipHtml(b.sensory_channel);
             const cards =
               ats.map((a) => renderAtomCard(a)).join("") ||
               '<p class="empty">No atoms</p>';
@@ -2501,7 +2483,6 @@
               <span class="lbl">Beast</span>
               <div class="beast-head-row">
                 <p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> ${dash(b.beast_name || b.peg_code)}</p>
-                ${headSensory}
               </div>
             </header>
             <div class="beast-cluster-atoms">${cards}</div>
@@ -3747,12 +3728,12 @@
               <button class="spa-btn" id="changeImg">Change image</button>
               <button class="spa-btn" id="addB">Add beast</button>
               <button class="spa-btn" id="practice">Practice overlay</button></div>
-            <div class="spa-panel"><table class="spa-table"><thead><tr><th>Peg</th><th>Name</th><th>Sensory</th><th></th></tr></thead>
+            <div class="spa-panel"><table class="spa-table"><thead><tr><th>Peg</th><th>Name</th><th></th></tr></thead>
             <tbody>${list
               .map(
                 (
                   x,
-                ) => `<tr><td>${esc(x.peg_code)}</td><td>${esc(x.beast_name)}</td><td>${esc(x.sensory_channel)}</td>
+                ) => `<tr><td>${esc(x.peg_code)}</td><td>${esc(x.beast_name)}</td>
               <td><button class="spa-btn" data-open="${escAttr(x.id)}">Atoms</button>
               <button class="spa-btn" data-edit="${escAttr(x.id)}">Edit</button>
               <button class="spa-btn danger" data-del="${escAttr(x.id)}">Del</button></td></tr>`,
@@ -3877,13 +3858,11 @@
         const peg_code = prompt("Peg code (non-numeric)", b?.peg_code || "");
         if (peg_code == null || !String(peg_code).trim()) return;
         const beast_name = prompt("Beast name", b?.beast_name || "") || "";
-        const sensory_channel =
-          prompt("Sensory", b?.sensory_channel || "visual") || "visual";
         const body = {
           palace_id: palaceId,
           peg_code: String(peg_code).trim(),
           beast_name,
-          sensory_channel,
+          sensory_channel: "",
         };
         if (b?.id) body.id = b.id;
         api("/api/beasts", { method: "POST", body: JSON.stringify(body) })

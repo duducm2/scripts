@@ -745,28 +745,6 @@ def build_html(
     .beast-cluster-head .beast-name .emoji {{
       margin-right: 0.28rem;
     }}
-    .beast-cluster-head .sensory-chip {{
-      flex-shrink: 0;
-      margin: 0;
-      max-width: min(14rem, 48%);
-      color: var(--text);
-      font-size: 0.82rem;
-      font-weight: 600;
-      line-height: 1.3;
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .beast-cluster-head .sensory-chip .lbl {{
-      display: inline;
-      margin: 0 0.35rem 0 0;
-      color: var(--gold);
-      font-size: 0.68rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      vertical-align: baseline;
-    }}
     .beast-cluster-atoms {{
       display: grid;
       grid-template-columns: repeat(var(--beast-cols, 1), minmax(0, 1fr));
@@ -840,26 +818,6 @@ def build_html(
     }}
     .atom-card .zone-tag .emoji {{
       margin-right: 0.28rem;
-    }}
-    .atom-card .sensory-chip {{
-      flex-shrink: 0;
-      margin-left: auto;
-      max-width: 45%;
-      color: var(--text);
-      font-size: 0.82rem;
-      font-weight: 600;
-      line-height: 1.3;
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .atom-card .sensory-chip .lbl {{
-      display: inline;
-      margin: 0 0.35rem 0 0;
-      font-size: 0.68rem;
-      letter-spacing: 0.03em;
-      vertical-align: baseline;
     }}
     #btnMethod {{
       background: transparent;
@@ -1945,28 +1903,6 @@ def build_html(
       return t ? esc(t) : '—';
     }}
 
-    function sensoryEmoji(v) {{
-      const k = (v ?? '').toString().trim().toLowerCase();
-      const map = {{
-        visual: '👁️',
-        auditory: '👂',
-        tactile: '✋',
-        olfactory: '👃',
-        gustatory: '👅',
-        thermal: '🌡️'
-      }};
-      return map[k] || '';
-    }}
-
-    function formatSensory(v) {{
-      const t = (v ?? '').toString().trim();
-      if (!t) return '—';
-      const emoji = sensoryEmoji(t);
-      return emoji
-        ? '<span class="emoji" aria-hidden="true">' + emoji + '</span>' + esc(t)
-        : esc(t);
-    }}
-
     function formatConcept(v) {{
       const t = (v ?? '').toString().trim();
       if (!t) return '—';
@@ -2259,11 +2195,6 @@ def build_html(
         seen.get(key).atoms.push(a);
       }});
       return groups;
-    }}
-
-    function sensoryChipHtml(sensory) {{
-      return '<p class="sensory-chip"><span class="lbl">Sensory</span>'
-        + formatSensory(sensory) + '</p>';
     }}
 
     function renderAtomCard(a, focusAtomId) {{

@@ -40,7 +40,6 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 | **Concept**        | Rehearsal definition of the fact.                                           |
 | **Quote**          | Verbatim source payload.                                                    |
 | **Story**          | Bizarre mnemonic narrative / action.                                        |
-| **Sensory channel**| Beast-level modality on `sensory_channel` (visual, auditory, …).            |
 | **Mapping**        | One atom per beast, or up to four zoned atoms (Z1–Z4).                      |
 
 ## Web app views

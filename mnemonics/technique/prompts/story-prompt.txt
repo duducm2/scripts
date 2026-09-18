@@ -180,7 +180,7 @@ Rules:
 - `palace_id` must match an `id` in this pack’s palaces file (new palaces only — never attach beasts to an inventory palace id).
 - Prefer `id` like `BEAST_<palace slug>_<peg>`.
 - `peg_code` — bestiary letter codes only (no numeric pegs); unbroken sequence **continuing after the last inventory peg** (do not restart at `A` unless the study has no beasts yet).
-- `beast_name` / `beast_source` from bestiary; `sensory_channel` = topic modality on this beast (visual, auditory, …).
+- `beast_name` / `beast_source` from bestiary; leave `sensory_channel` empty (legacy column; do not fill topic modality).
 - `is_smashed` — `0` for single-atom beasts; `1` when the beast carries zoned atoms.
 - `sort_order` — order within the palace (1…).
 - Max **5 beasts per Memory Palace** (`README §Streets and Depth Slots`).

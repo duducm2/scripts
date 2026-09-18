@@ -519,7 +519,7 @@ Palace_FinishImportSuccess() {
 
 ; Build beasts+atoms from PREVIEW outline when FILE CSV sections are truncated.
 ; preview lines: PALACE N — Title (Char) [PALACE_ID] then [Peg] name — Concept: … | Quote: "…" | Story: …
-; Optional legacy `| Sensory:` is accepted and applied only to beast sensory_channel.
+; Optional legacy `| Sensory:` is accepted but ignored (beast sensory_channel stays empty).
 Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
     out := Map("ok", false, "beasts", [], "atoms", [], "note", "")
     preview := Trim(preview)
@@ -549,12 +549,11 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
         concept := rest
         quote := ""
         story := ""
-        sensory := ""
         if (RegExMatch(rest, "i)^(.*?)\s*\|\s*Quote:\s*(.*?)\s*\|\s*Story:\s*(.*?)\s*\|\s*Sensory:\s*(.*?)\s*$", &am)) {
             concept := Trim(am[1])
             quote := Trim(am[2])
             story := Trim(am[3])
-            sensory := Trim(am[4])
+            ; legacy Sensory value intentionally discarded
             if (SubStr(quote, 1, 1) = '"' && SubStr(quote, -1) = '"')
                 quote := SubStr(quote, 2, StrLen(quote) - 2)
             else if (SubStr(quote, 1, 1) = '"')
@@ -585,7 +584,7 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
             "peg_code", peg,
             "beast_name", name,
             "beast_source", "Lynne Kelly",
-            "sensory_channel", sensory,
+            "sensory_channel", "",
             "is_smashed", "0",
             "sort_order", String(sortOrder)
         ))

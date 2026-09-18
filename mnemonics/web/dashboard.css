@@ -886,28 +886,6 @@ a.btn-gallery {
 .beast-cluster-head .beast-name .emoji {
   margin-right: 0.28rem;
 }
-.beast-cluster-head .sensory-chip {
-  flex-shrink: 0;
-  margin: 0;
-  max-width: min(14rem, 48%);
-  color: var(--text);
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.3;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.beast-cluster-head .sensory-chip .lbl {
-  display: inline;
-  margin: 0 0.35rem 0 0;
-  color: var(--gold);
-  font-size: 0.68rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  vertical-align: baseline;
-}
 .beast-cluster-atoms {
   display: grid;
   grid-template-columns: repeat(var(--beast-cols, 1), minmax(0, 1fr));
@@ -983,26 +961,6 @@ a.btn-gallery {
 }
 .atom-card .zone-tag .emoji {
   margin-right: 0.28rem;
-}
-.atom-card .sensory-chip {
-  flex-shrink: 0;
-  margin-left: auto;
-  max-width: 45%;
-  color: var(--text);
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.3;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.atom-card .sensory-chip .lbl {
-  display: inline;
-  margin: 0 0.35rem 0 0;
-  font-size: 0.68rem;
-  letter-spacing: 0.03em;
-  vertical-align: baseline;
 }
 #btnMethod {
   background: transparent;

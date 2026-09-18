@@ -122,11 +122,6 @@ new_css = r"""      /* Palace overlay: large snapshot on top + beast row below *
         font-size: 0.9rem;
         line-height: 1.25;
       }
-      #overlay:not(.image-expanded) .beast-cluster-head .sensory-chip {
-        font-size: 0.72rem;
-        max-width: min(12rem, 48%);
-        white-space: normal;
-      }
       #overlay:not(.image-expanded) .beast-cluster-atoms {
         display: grid !important;
         grid-template-columns: 1fr !important;

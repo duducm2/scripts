@@ -144,6 +144,7 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
 ```
 
+- Leave `sensory_channel` empty (legacy column; do not fill topic modality).
 - Re-peg **only inside the reduction scope** with bestiary shifting (`README §Bestiary Shifting Logic`): close gaps among in-scope pegs; keep an unbroken sequence **continuing after the last out-of-scope peg** (e.g. if earlier study ends at `T`, scoped survivors stay in the `U…` range — do **not** restart at `A`).
 - `is_smashed=1` when the beast has zoned atoms; else `0`.
 - Max 5 beasts per Memory Palace.
