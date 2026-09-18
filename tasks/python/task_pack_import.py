@@ -33,7 +33,16 @@ TASK_IMPORT_BATCH_SECTIONS = True
 
 
 def desktop_dir() -> Path:
-    return Path.home() / "Desktop"
+    """Resolve the real Windows Desktop (OneDrive-aware).
+
+    AHK uses A_Desktop, which points at OneDrive\\Desktop when folder redirection
+    is on. Path.home()/Desktop is a separate folder and misses TASK_PACK.txt.
+    """
+    home = Path.home()
+    for candidate in (home / "OneDrive" / "Desktop", home / "Desktop"):
+        if candidate.is_dir():
+            return candidate
+    return home / "Desktop"
 
 
 def newest_match(patterns: list[str]) -> Path | None:

@@ -1,0 +1,39 @@
+﻿===PREVIEW===
+1 project(s) · 18 task(s) · 5 info · Parsed the vaccination schedule, shopping list, and owner action items into actionable tasks and context notes under the existing "Dog" project.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+Dog,personal,
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Dog,personal,1st Dose V10,🩺,punctual,,2026-09-19,,Vaccination Timetable
+Dog,personal,2nd Dose V10,🩺,punctual,,2026-10-19,,Vaccination Timetable
+Dog,personal,3rd Dose V10,🩺,punctual,,2026-11-19,,Vaccination Timetable
+Dog,personal,4th Dose V10 + Raiva,🩺,punctual,,2026-12-19,,Vaccination Timetable
+Dog,personal,Buy Large Breed Puppy Kibble,🛒,punctual,,,,Essential Shopping List
+Dog,personal,"Buy Stainless Steel Bowls (Slow feeder)",🛒,punctual,,,,Essential Shopping List
+Dog,personal,Buy Training Treats,🛒,punctual,,,,Essential Shopping List
+Dog,personal,Buy Wire Crate or Heavy Duty Playpen,🛒,punctual,,,,Essential Shopping List
+Dog,personal,Buy Puppy Pads and Enzymatic Cleaner,🛒,punctual,,,,Essential Shopping List
+Dog,personal,"Buy Chew Toys (KONG, thick rubber bones)",🛒,punctual,,,,Essential Shopping List
+Dog,personal,"Buy Deshedding Brush (slicker, metal comb)",🛒,punctual,,,,Essential Shopping List
+Dog,personal,"Buy Collar, ID Tag, and Leash",🛒,punctual,,,,Essential Shopping List
+Dog,personal,Schedule a baseline wellness exam,📞,punctual,,,,Owner Action Items
+Dog,personal,Establish schedule for deworming and parasite prevention,🩺,punctual,,,,Owner Action Items
+Dog,personal,"Set up safe, separated territory for the puppy",🔲,punctual,,,,Owner Action Items
+Dog,personal,Allow Baby and the orange cat to smell puppy under door,🔲,punctual,,,,Owner Action Items
+Dog,personal,"Begin crate, potty training, and basic commands",🔲,punctual,,,,Owner Action Items
+Dog,personal,"Expose to household sounds, surfaces, and handling",🔲,punctual,,2026-11-30,,Owner Action Items
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,filter,title,body,section_path
+task,1st Dose V10,personal,Isolation Warning,"Keep the puppy entirely isolated from public streets, parks, and unknown animals.",Vaccination Timetable
+task,3rd Dose V10,personal,Socialization,"Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.",Vaccination Timetable
+task,4th Dose V10 + Raiva,personal,Outdoor Walks,"She will be fully protected and ready for public outdoor walks 15 days after this final round.",Vaccination Timetable
+task,Allow Baby and the orange cat to smell puppy under door,personal,Prey Drive Caution,"Keep Baby and the orange cat in their own secure zones. German Shepherds have high prey drives, making a slow, structured introduction critical for long term household peace.",Owner Action Items
+task,"Begin crate, potty training, and basic commands",personal,Working Dog Needs,"German Shepherds are working dogs that require strict boundaries and daily mental stimulation to prevent destructive anxiety.",Owner Action Items
+===END_FILE===

@@ -126,3 +126,21 @@ TASK_0260,PROJ_0015,SEC_0015,Pay Gelson,🔲,punctual,,,,,personal,4330,,2026-09
 TASK_0261,PROJ_0029,SEC_0137,Vacinação V-10 Internacional,🔲,punctual,,,,,personal,4340,,2026-09-17 16:55:41,1
 TASK_0262,PROJ_0029,SEC_0137,Vacinação contra a raiva,🔲,punctual,,,,,personal,4350,,2026-09-17 16:56:33,1
 TASK_0263,PROJ_0029,SEC_0137,Send the name of your puppy. So the seller can send you the pedgree,🔲,punctual,,,,,personal,4360,,2026-09-17 21:48:01,1
+TASK_0264,PROJ_0029,SEC_0138,1st Dose V10,🩺,punctual,,2026-09-19,,Vaccination Timetable,personal,4370,,2026-09-17 22:16:13,1
+TASK_0265,PROJ_0029,SEC_0138,2nd Dose V10,🩺,punctual,,2026-10-19,,Vaccination Timetable,personal,4380,,2026-09-17 22:16:13,1
+TASK_0266,PROJ_0029,SEC_0138,3rd Dose V10,🩺,punctual,,2026-11-19,,Vaccination Timetable,personal,4390,,2026-09-17 22:16:13,1
+TASK_0267,PROJ_0029,SEC_0138,4th Dose V10 + Raiva,🩺,punctual,,2026-12-19,,Vaccination Timetable,personal,4400,,2026-09-17 22:16:13,1
+TASK_0268,PROJ_0029,SEC_0139,Buy Large Breed Puppy Kibble,🛒,punctual,,,,Essential Shopping List,personal,4410,,2026-09-17 22:16:13,1
+TASK_0269,PROJ_0029,SEC_0139,Buy Stainless Steel Bowls (Slow feeder),🛒,punctual,,,,Essential Shopping List,personal,4420,,2026-09-17 22:16:13,1
+TASK_0270,PROJ_0029,SEC_0139,Buy Training Treats,🛒,punctual,,,,Essential Shopping List,personal,4430,,2026-09-17 22:16:13,1
+TASK_0271,PROJ_0029,SEC_0139,Buy Wire Crate or Heavy Duty Playpen,🛒,punctual,,,,Essential Shopping List,personal,4440,,2026-09-17 22:16:13,1
+TASK_0272,PROJ_0029,SEC_0139,Buy Puppy Pads and Enzymatic Cleaner,🛒,punctual,,,,Essential Shopping List,personal,4450,,2026-09-17 22:16:13,1
+TASK_0273,PROJ_0029,SEC_0139,"Buy Chew Toys (KONG, thick rubber bones)",🛒,punctual,,,,Essential Shopping List,personal,4460,,2026-09-17 22:16:13,1
+TASK_0274,PROJ_0029,SEC_0139,"Buy Deshedding Brush (slicker, metal comb)",🛒,punctual,,,,Essential Shopping List,personal,4470,,2026-09-17 22:16:13,1
+TASK_0275,PROJ_0029,SEC_0139,"Buy Collar, ID Tag, and Leash",🛒,punctual,,,,Essential Shopping List,personal,4480,,2026-09-17 22:16:13,1
+TASK_0276,PROJ_0029,SEC_0140,Schedule a baseline wellness exam,📞,punctual,,,,Owner Action Items,personal,4490,,2026-09-17 22:16:13,1
+TASK_0277,PROJ_0029,SEC_0140,Establish schedule for deworming and parasite prevention,🩺,punctual,,,,Owner Action Items,personal,4500,,2026-09-17 22:16:13,1
+TASK_0278,PROJ_0029,SEC_0140,"Set up safe, separated territory for the puppy",🔲,punctual,,,,Owner Action Items,personal,4510,,2026-09-17 22:16:13,1
+TASK_0279,PROJ_0029,SEC_0140,Allow Baby and the orange cat to smell puppy under door,🔲,punctual,,,,Owner Action Items,personal,4520,,2026-09-17 22:16:13,1
+TASK_0280,PROJ_0029,SEC_0140,"Begin crate, potty training, and basic commands",🔲,punctual,,,,Owner Action Items,personal,4530,,2026-09-17 22:16:13,1
+TASK_0281,PROJ_0029,SEC_0140,"Expose to household sounds, surfaces, and handling",🔲,punctual,,2026-11-30,,Owner Action Items,personal,4540,,2026-09-17 22:16:13,1
