@@ -1,0 +1,16 @@
+﻿===PREVIEW===
+9 rows · New house construction, transfer, cake, and guard dog expenses
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Water container for house construction,"40,85",card_expense,CAT_NEWHOUSE,ACC_MERCADOP,CARD_MP,,1
+Residue container for house construction,"310,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Construction materials for new house,"1964,51",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Transfer to checking account,"4550,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+Cake for sibling,"47,92",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Dog food,"25,89",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1
+German Shepherd dog,"2550,00",expense,CAT_PETS,ACC_MERCADOP,,,1
+Dog items for new house,"210,43",card_expense,CAT_NEWHOUSE,ACC_MERCADOP,CARD_MP,,1
+V10 vaccine for dog,"100,00",expense,CAT_PETS,ACC_MERCADOP,,,1
+===END_FILE===
