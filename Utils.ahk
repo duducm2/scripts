@@ -253,7 +253,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\click_sequence_runner.ahk
 ; [Utils module] Click sequence CRUD GUI -> Utils\click_sequence_gui.ahk
 #include %A_ScriptDir%\Utils\click_sequence_gui.ahk
-; [Utils module] AI Companion Quick Download (#!+9 single-tap) -> Utils\ai_quick_download.ahk
+; [Utils module] AI Companion Quick Download (#!+9 hold) -> Utils\ai_quick_download.ahk
 #include %A_ScriptDir%\Utils\ai_quick_download.ahk
 ; [Utils module] Click sequence Hardcoded Script registry -> Utils\click_sequence_scripts.ahk
 #include %A_ScriptDir%\Utils\click_sequence_scripts.ahk

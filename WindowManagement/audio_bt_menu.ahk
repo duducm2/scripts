@@ -1,9 +1,9 @@
 ; =============================================================================
 ; WindowManagement module: audio_bt_menu.ahk
 ; Win+Alt+Shift+9 tap-dance:
-;   1× AI Quick Download (name pick → click sequences → Desktop wait → rename → cut)
+;   1× Push scripts+notes (Utility Shortcuts [G])
 ;   2× Bluetooth audio / Windows sound devices menu
-;   hold 700ms+ Push scripts+notes (Utility Shortcuts [G])
+;   hold 700ms+ AI Quick Download (name pick → click sequences → Desktop wait → rename → cut)
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
 ; Device lists: M marks a custom emoji label (persisted in assets\data\audio_bt_emoji.ini).
 ; Loaded via #include into the WindowManagement.ahk process.
@@ -1661,9 +1661,9 @@ AudioBt_Show() {
 }
 
 ; Win+Alt+Shift+9 tap / double-tap / hold (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
-;   1× = AI Companion Quick Download (#!+P name list first → click sequences → Desktop wait → rename → cut)
+;   1× = Utility_GitSyncPush (Utility Shortcuts [G])
 ;   2× = Audio / Bluetooth quick selector (toggle)
-;   hold 700ms+ = Utility_GitSyncPush (Utility Shortcuts [G])
+;   hold 700ms+ = AI Companion Quick Download (#!+P name list first → click sequences → Desktop wait → rename → cut)
 AUDIO_BT_HOLD_MS := 700
 global g_AudioBt_DoubleTapArmed := false
 global g_AudioBt_LastPressTick := 0
@@ -1676,7 +1676,10 @@ class AudioBt_DoubleTapTimerObj {
             return
         g_AudioBt_DoubleTapArmed := false
         g_AudioBt_DoubleTapTimer := 0
-        AiQuickDownload_Run()
+        try ShowCenteredOverlay_Utils("⬆ Push scripts + notes", 1500, BANNER_ACCENT_INFO)
+        catch {
+        }
+        Utility_GitSyncPush()
     }
 }
 
@@ -1696,7 +1699,7 @@ AudioBt_DisarmDoubleTap() {
     global g_AudioBtActive, g_AudioBtGui
 
     ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
-    ; released (those start with 9 already up and would otherwise arm single-tap QD).
+    ; released (those start with 9 already up and would otherwise arm single-tap push).
     if !GetKeyState("9", "P")
         return
 
@@ -1716,10 +1719,7 @@ AudioBt_DisarmDoubleTap() {
 
     if (isHold) {
         AudioBt_DisarmDoubleTap()
-        try ShowCenteredOverlay_Utils("⬆ Push scripts + notes", 1500, BANNER_ACCENT_INFO)
-        catch {
-        }
-        Utility_GitSyncPush()
+        AiQuickDownload_Run()
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.
         KeyWait "9"

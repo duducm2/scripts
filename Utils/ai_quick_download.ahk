@@ -2,7 +2,7 @@
 ; Utils module: ai_quick_download.ahk
 ; Quick Download: name pick first (same list as #!+p [Y]) → focus companion →
 ; configured click sequences → Desktop wait → rename staging → cut newest.
-; Trigger: single-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
+; Trigger: hold Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
 ; Slot chain lives in click_sequences.ini; name is chosen before any download.
 ; =============================================================================
 
@@ -20,7 +20,7 @@ AI_QD_FINANCE_GATE_ATTEMPTS := 4
 
 global g_AiQuickDownloadBusy := false
 
-; Win+Alt+Shift+9 single-tap entry (called from audio_bt_menu.ahk).
+; Win+Alt+Shift+9 hold entry (called from audio_bt_menu.ahk).
 AiQuickDownload_Run() {
     global g_AiQuickDownloadBusy
     if (g_AiQuickDownloadBusy) {
