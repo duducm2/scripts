@@ -100,7 +100,7 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ; [WM module] Cursor AI composer focus -> WindowManagement\cursor_composer.ahk
 #include %A_ScriptDir%\WindowManagement\cursor_composer.ahk
 
-; [WM module] Project selector preview / Copy-from-Gemini handlers -> WindowManagement\project_selector_02.ahk
+; [WM module] . preview / Copy-from-Gemini handlers -> WindowManagement\project_selector_02.ahk
 #include %A_ScriptDir%\WindowManagement\project_selector_02.ahk
 ; [WM module] Cursor window selection (within project selector) -> WindowManagement\cursor_window_select.ahk
 #include %A_ScriptDir%\WindowManagement\cursor_window_select.ahk
