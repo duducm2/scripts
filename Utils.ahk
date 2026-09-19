@@ -358,6 +358,9 @@ catch {
 ; [Utils module] Utility shortcuts #!+U / #!+W Macros and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 
+; [Utils module] Reading Mode macro (#!+W → k) Left/Right→PgUp/PgDn + line highlight -> Utils\reading_mode.ahk
+#include %A_ScriptDir%\Utils\reading_mode.ahk
+
 ; [Utils module] Focus mode (#!+Y 1×) + Main Repos (#!+Y 2×) -> Utils\focus_mode.ahk
 #include %A_ScriptDir%\Utils\focus_mode.ahk
 
