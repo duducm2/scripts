@@ -123,11 +123,10 @@ TASK_0257,PROJ_0015,SEC_0015,Estorno Bradesco,⚡,punctual,,,,,personal,4300,,20
 TASK_0258,PROJ_0027,SEC_0131,Job openings,⚡,punctual,,,,,personal,4310,,2026-09-15 15:52:03,1
 TASK_0259,PROJ_0027,SEC_0131,You should continue or cancel your LinkedIn premium subscription that finishes on October 15th,⏳,punctual,,,,,personal,4320,,2026-09-15 16:21:27,1
 TASK_0260,PROJ_0015,SEC_0015,Pay Gelson,🔲,punctual,,,,,personal,4330,,2026-09-16 14:18:14,1
-TASK_0264,PROJ_0029,SEC_0138,1st Dose V10,🩺,punctual,,2026-09-19,,Vaccination Timetable,personal,4380,,2026-09-17 22:16:13,1
-TASK_0265,PROJ_0029,SEC_0138,2nd Dose V10,🩺,punctual,,2026-10-19,,Vaccination Timetable,personal,4390,,2026-09-17 22:16:13,1
-TASK_0266,PROJ_0029,SEC_0138,3rd Dose V10,🩺,punctual,,2026-11-19,,Vaccination Timetable,personal,4400,,2026-09-17 22:16:13,1
-TASK_0267,PROJ_0029,SEC_0138,4th Dose V10 + Raiva,🩺,punctual,,2026-12-19,,Vaccination Timetable,personal,4690,,2026-09-17 22:16:13,1
-TASK_0272,PROJ_0029,SEC_0139,Enzymatic Cleaner,⏳,punctual,,,,Essential Shopping List,personal,4460,,2026-09-17 22:16:13,1
+TASK_0264,PROJ_0029,SEC_0138,1st Dose V10,,punctual,,2026-09-19,,Vaccination Timetable,personal,4380,,2026-09-17 22:16:13,1
+TASK_0265,PROJ_0029,SEC_0138,2nd Dose V10,🔲,punctual,,2026-10-19,,Vaccination Timetable,personal,4390,,2026-09-17 22:16:13,1
+TASK_0266,PROJ_0029,SEC_0138,3rd Dose V10,⏳,punctual,,2026-11-19,,Vaccination Timetable,personal,4400,,2026-09-17 22:16:13,1
+TASK_0267,PROJ_0029,SEC_0138,4th Dose V10 + Raiva,⏳,punctual,,2026-12-19,,Vaccination Timetable,personal,4690,,2026-09-17 22:16:13,1
 TASK_0274,PROJ_0029,SEC_0139,"Buy Deshedding Brush (slicker, metal comb)",⏳,punctual,,,,Essential Shopping List,personal,4470,,2026-09-17 22:16:13,1
 TASK_0275,PROJ_0029,SEC_0139,"Buy Collar, ID Tag, and Leash",⏳,punctual,,,,Essential Shopping List,personal,4480,,2026-09-17 22:16:13,1
 TASK_0282,PROJ_0019,SEC_0086,🐕 Early rabies vaccine for my dog,🔲,habitual,,,,Yearly,habits,4550,,2026-09-17 22:21:30,1
@@ -144,4 +143,5 @@ TASK_0292,PROJ_0019,SEC_0083,"🐈 Flea and Tick Prevention: Administered topica
 TASK_0293,PROJ_0019,SEC_0085,🐈 Intestinal Deworming (Vermífugo): Administered every 3 to 6 months depending on their exposure to outdoor environments or prey.,🔲,habitual,,,2026-09-18,Bi-yearly (Every 6 months),habits,4660,,2026-09-17 22:29:43,1
 TASK_0294,PROJ_0019,SEC_0083,"🐈 Heartworm Prevention (Dirofilariose): Administered monthly. Products like Revolution provide inclusive protection against fleas, heartworms, and ear mites, which is beneficial if you travel to coastal areas.",🔲,habitual,,,2026-09-18,Monthly,habits,4670,,2026-09-17 22:30:12,1
 TASK_0295,PROJ_0030,SEC_0140,"Pastor alemão Capa Preta, nascida em dia dezenove de julho de dois mil e vinte e seis.",🔲,habitual,,,2026-09-18,,habits,4680,,2026-09-18 11:32:24,1
-TASK_0296,PROJ_0029,SEC_0138,We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.,🔲,punctual,,,,Vaccination Timetable,personal,4370,,2026-09-18 11:48:27,1
+TASK_0296,PROJ_0029,SEC_0138,We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.,,punctual,,,,Vaccination Timetable,personal,4370,,2026-09-18 11:48:27,1
+TASK_0297,PROJ_0029,SEC_0137,Check if you have already received the pedigree,🔲,punctual,,,,,personal,4700,,2026-09-19 16:21:18,1

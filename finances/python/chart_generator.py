@@ -1485,7 +1485,7 @@ function monthsWithBudgets(months) {{
   if (RAW.currentMonth && have.has(RAW.currentMonth)) return [RAW.currentMonth];
   return [...have].sort();
 }}
-let budgetSaveTimer = null;
+const budgetSaveTimers = Object.create(null);
 let budgetSaveClearTimer = null;
 let budgetApiOk = null;
 function setBudgetSaveStatus(text, cls) {{
@@ -1511,6 +1511,22 @@ async function checkBudgetApi() {{
     budgetApiOk = false;
   }}
   return budgetApiOk;
+}}
+async function loadBudgetsFromApi() {{
+  try {{
+    const r = await fetch('/api/budgets', {{ cache: 'no-store' }});
+    if (!r.ok) return false;
+    const data = await r.json();
+    if (!data || !data.ok || !Array.isArray(data.budgets)) return false;
+    RAW.budgets = data.budgets;
+    for (const b of data.budgets) {{
+      const key = budgetSaveKey(b.year_month, b.category_id);
+      lastSavedBudgetPlanned[key] = parseDecimal(b.planned_amount);
+    }}
+    return true;
+  }} catch (e) {{
+    return false;
+  }}
 }}
 async function refreshCardsFromApi() {{
   try {{
@@ -1571,8 +1587,12 @@ function applyLiveBudgetPlanned(ym, cid, inputEl) {{
   refreshBudgetVisuals(ym);
 }}
 function scheduleBudgetSave(ym, cid, inputEl) {{
-  if (budgetSaveTimer) clearTimeout(budgetSaveTimer);
-  budgetSaveTimer = setTimeout(() => saveBudgetPlanned(ym, cid, inputEl), 400);
+  const key = budgetSaveKey(ym, cid);
+  if (budgetSaveTimers[key]) clearTimeout(budgetSaveTimers[key]);
+  budgetSaveTimers[key] = setTimeout(() => {{
+    delete budgetSaveTimers[key];
+    saveBudgetPlanned(ym, cid, inputEl);
+  }}, 400);
 }}
 function budgetRowStats(planned, spent) {{
   const rem = planned - spent;
@@ -2970,7 +2990,9 @@ function applyTheme(theme) {{
       }}
     }}, 120);
   }});
-  checkBudgetApi().then(() => refreshCardsFromApi()).then(() => {{
+  checkBudgetApi().then(ok => {{
+    if (ok) return loadBudgetsFromApi();
+  }}).then(() => refreshCardsFromApi()).then(() => {{
     applyPeriod();
     if (budgetApiOk === false) {{
       setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');

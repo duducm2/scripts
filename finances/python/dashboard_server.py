@@ -147,6 +147,10 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         if parsed.path in ("/health", "/api/health"):
             self._json(200, {"ok": True})
             return
+        if parsed.path == "/api/budgets":
+            path = _agg.DATA / "budgets.csv"
+            self._json(200, {"ok": True, "budgets": load_budgets(path)})
+            return
         if parsed.path == "/api/cards":
             self._json(200, {"ok": True, "cards": load_cards()})
             return
