@@ -33,6 +33,20 @@ def load_general_notes() -> str:
         return ""
 
 
+def budget_bar_fill(planned: float, spent: float) -> str:
+    """Green under plan; soft→dark red as overspend grows (full dark at 3× planned)."""
+    if not (spent > planned and planned > 0):
+        return "#2ecc71"
+    # t=0 just over budget, t=1 at 3× planned
+    t = min(1.0, max(0.0, (spent / planned - 1.0) / 2.0))
+    soft = (0xE7, 0x4C, 0x3C)  # #e74c3c
+    dark = (0x4A, 0x0A, 0x0A)  # #4a0a0a
+    r = int(soft[0] + (dark[0] - soft[0]) * t)
+    g = int(soft[1] + (dark[1] - soft[1]) * t)
+    b = int(soft[2] + (dark[2] - soft[2]) * t)
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
 def pie_spec(rows):
     # rows: (name, amount, color) — category id comes from client-side rebuild
     return {
@@ -292,7 +306,7 @@ def build_html(data: dict) -> str:
             pct = (sp / p * 100) if p > 0 else (100.0 if sp > 0 else 0.0)
             width = min(pct, 100.0)
             over = sp > p and p > 0
-            fill = "#e74c3c" if over else "#2ecc71"
+            fill = budget_bar_fill(p, sp)
             cap = (
                 f"Exceeded {format_brl(-rem)}" if over else f"Remain {format_brl(rem)}"
             )
@@ -1594,12 +1608,23 @@ function scheduleBudgetSave(ym, cid, inputEl) {{
     saveBudgetPlanned(ym, cid, inputEl);
   }}, 400);
 }}
+function budgetOverspendFill(planned, spent) {{
+  if (!(spent > planned && planned > 0)) return '#2ecc71';
+  // t=0 just over budget, t=1 at 3× planned → soft red → dark red
+  const t = Math.min(1, Math.max(0, (spent / planned - 1) / 2));
+  const soft = [0xe7, 0x4c, 0x3c];
+  const dark = [0x4a, 0x0a, 0x0a];
+  const hex = (n) => Math.round(n).toString(16).padStart(2, '0');
+  return '#' + hex(soft[0] + (dark[0] - soft[0]) * t)
+    + hex(soft[1] + (dark[1] - soft[1]) * t)
+    + hex(soft[2] + (dark[2] - soft[2]) * t);
+}}
 function budgetRowStats(planned, spent) {{
   const rem = planned - spent;
   const pct = planned > 0 ? (spent / planned * 100) : (spent > 0 ? 100 : 0);
   const width = Math.min(pct, 100);
   const over = spent > planned && planned > 0;
-  const fill = over ? '#e74c3c' : '#2ecc71';
+  const fill = budgetOverspendFill(planned, spent);
   const cap = over ? ('Exceeded ' + formatBrl(-rem)) : ('Remain ' + formatBrl(rem));
   return {{ rem, pct, width, over, fill, cap }};
 }}
