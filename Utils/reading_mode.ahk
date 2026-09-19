@@ -2,7 +2,7 @@
 ; Utils module: reading_mode.ahk
 ; Reading Mode — Left/Right → PgUp/PgDn + last fully visible line highlight.
 ; Toggle via Macros (#!+W → k). Process-local state (same as Focus Mode).
-; Locate pipeline: UIA TextPattern → browser JS → PDF best-effort (soft fail).
+; Locate: UIA TextPattern only (no address-bar javascript: injection).
 ; =============================================================================
 
 global g_ReadingModeOn := false
@@ -20,20 +20,6 @@ global g_ReadingModePageOverlapFrac := 0.12
 global g_ReadingModeBrowserSettleMs := 120
 global g_ReadingModeSnapLineH := 0
 global g_ReadingModeSnapCorrect := false
-global g_ReadingModeJsCallCount := 0
-
-; #region agent log
-ReadingMode_DebugLog(hypothesisId, location, message, dataJson := "{}") {
-    try {
-        logPath := A_ScriptDir "\debug-289db7.log"
-        loc := StrReplace(location, '"', "'")
-        msg := StrReplace(message, '"', "'")
-        line := '{"sessionId":"289db7","hypothesisId":"' hypothesisId '","location":"' loc '","message":"' msg '","data":' dataJson ',"timestamp":' A_TickCount '}`n'
-        FileAppend(line, logPath, "UTF-8")
-    } catch {
-    }
-}
-; #endregion
 
 ReadingMode_IsActive() {
     global g_ReadingModeOn
@@ -102,10 +88,6 @@ ReadingMode_ContextMonitor(*) {
     }
 
     if (fg != g_ReadingModeTrackedHwnd) {
-        ; #region agent log
-        ReadingMode_DebugLog("B", "ContextMonitor", "auto-off hwnd", '{"fg":' fg ',"tracked":' g_ReadingModeTrackedHwnd '}'
-        )
-        ; #endregion
         DisableReadingMode()
         return
     }
@@ -115,13 +97,8 @@ ReadingMode_ContextMonitor(*) {
     catch {
         return
     }
-    if (title != g_ReadingModeTrackedTitle) {
-        ; #region agent log
-        ReadingMode_DebugLog("B", "ContextMonitor", "auto-off title", '{"trackedLen":' StrLen(g_ReadingModeTrackedTitle
-        ) ',"newLen":' StrLen(title) '}')
-        ; #endregion
+    if (title != g_ReadingModeTrackedTitle)
         DisableReadingMode()
-    }
 }
 
 ReadingMode_ClearOverlay() {
@@ -212,13 +189,7 @@ ReadingMode_ContinuityBar(beforeRect, direction, hwnd) {
     newY := bar.y + (direction > 0 ? -shift : shift)
     ; Keep the continuity mark on-screen
     newY := Max(vp.t + 2, Min(newY, vp.b - bar.h - 2))
-    out := { x: bar.x, y: newY, w: bar.w, h: bar.h }
-    ; #region agent log
-    ReadingMode_DebugLog("F", "ContinuityBar", "placed", '{"beforeY":' (IsObject(beforeRect) ? beforeRect.y : -1) ',"beforeH":' (
-        IsObject(beforeRect) ? beforeRect.h : -1) ',"newY":' newY ',"shift":' shift ',"vpT":' vp.t ',"vpB":' vp.b ',"vpH":' vp
-    .h ',"dir":' direction '}')
-    ; #endregion
-    return out
+    return { x: bar.x, y: newY, w: bar.w, h: bar.h }
 }
 
 ; After hold: blink, then snap mark to the current last two rows.
@@ -226,9 +197,6 @@ ReadingMode_AfterHoldBlink(*) {
     global g_ReadingModeBlinkStep
     if (!ReadingMode_IsActive())
         return
-    ; #region agent log
-    ReadingMode_DebugLog("C", "AfterHoldBlink", "blink start", '{}')
-    ; #endregion
     g_ReadingModeBlinkStep := 0
     SetTimer(ReadingMode_BlinkTick, 100)
 }
@@ -247,9 +215,6 @@ ReadingMode_BlinkTick(*) {
         catch {
         }
         g_ReadingModeBlinkStep := 0
-        ; #region agent log
-        ReadingMode_DebugLog("C", "BlinkTick", "snap RefreshMark", '{}')
-        ; #endregion
         ReadingMode_RefreshMark()
         return
     }
@@ -329,10 +294,6 @@ ReadingMode_ToMarkBar(rect) {
 
 ReadingMode_RefreshMark() {
     global g_ReadingModeSnapCorrect
-    ; #region agent log
-    ReadingMode_DebugLog("A", "RefreshMark", "entry", '{"snapCorrect":' (g_ReadingModeSnapCorrect ? "true" : "false") '}'
-    )
-    ; #endregion
     hwnd := WinExist("A")
     if (!hwnd)
         return
@@ -342,12 +303,6 @@ ReadingMode_RefreshMark() {
         bar := ReadingMode_CorrectSnapOvershoot(bar, hwnd)
         g_ReadingModeSnapCorrect := false
     }
-    ; #region agent log
-    if (IsObject(bar))
-        ReadingMode_DebugLog("H", "RefreshMark", "bar", '{"x":' bar.x ',"y":' bar.y ',"w":' bar.w ',"h":' bar.h '}')
-    else
-        ReadingMode_DebugLog("H", "RefreshMark", "no bar", '{}')
-    ; #endregion
     if (IsObject(bar))
         ReadingMode_ShowAnchor(bar)
 }
@@ -409,9 +364,6 @@ ReadingMode_Page(direction) {
     global g_ReadingModeSettleMs, g_ReadingModeHoldMs, g_ReadingModeBrowserSettleMs,
         g_ReadingModeSnapLineH, g_ReadingModeSnapCorrect
     ReadingMode_CancelHoldSequence()
-    ; #region agent log
-    ReadingMode_DebugLog("D", "Page", "entry", '{"dir":' direction '}')
-    ; #endregion
 
     hwnd := WinExist("A")
 
@@ -460,24 +412,13 @@ ReadingMode_GetAnchorRect(hwnd) {
     if (!hwnd)
         return false
 
-    ; Always prefer UIA TextPattern. Do NOT use UIA_Browser JSReturnThroughClipboard /
-    ; SetURL("javascript:…") — that pastes a long script into the address bar, blanks the
-    ; tab, and can loop with omnibox focus (confirmed runtime logs + user report).
+    ; UIA TextPattern only. Do not use UIA_Browser JSReturnThroughClipboard /
+    ; SetURL("javascript:…") — that dumps script into the address bar.
     rect := ReadingMode_TryUiaAnchor(hwnd)
-    if (ReadingMode_IsReasonableAnchor(rect)) {
-        ; #region agent log
-        ReadingMode_DebugLog("A", "GetAnchorRect", "uia ok", '{"browser":' (ReadingMode_IsBrowserHwnd(hwnd) ? "true" :
-            "false") '}')
-        ; #endregion
+    if (ReadingMode_IsReasonableAnchor(rect))
         return rect
-    }
 
-    ; #region agent log
-    ReadingMode_DebugLog("A", "GetAnchorRect", "uia failed", '{"browser":' (ReadingMode_IsBrowserHwnd(hwnd) ? "true" :
-        "false") '}')
-    ; #endregion
-
-    ; PDF / other soft-fail — remaps still work
+    ; Soft-fail — remaps still work
     return false
 }
 
@@ -542,7 +483,7 @@ ReadingMode_IsSolidBottomLine(r, vt, vb, vpH) {
 }
 
 ; ---------------------------------------------------------------------------
-; Layer 1 — UIA TextPattern
+; UIA TextPattern
 ; ---------------------------------------------------------------------------
 ReadingMode_FindTextElement(root) {
     if (!IsObject(root))
@@ -574,7 +515,7 @@ ReadingMode_FindTextElement(root) {
     } catch {
     }
 
-    for typeId in [50030, 50004, 50033] { ; Document, Edit, Document-ish / Pane sometimes
+    for typeId in [50030, 50004, 50033] { ; Document, Edit, Pane
         try {
             el := root.FindFirst({ Type: typeId })
             if (IsObject(el)) {
@@ -686,24 +627,8 @@ ReadingMode_TryUiaAnchor(hwnd) {
         }
     }
 
-    if (IsObject(best)) {
-        out := ReadingMode_TwoRowRect(best, prev)
-        ; #region agent log
-        try {
-            elType := el.Type
-            elName := SubStr(el.Name, 1, 40)
-            elName := StrReplace(elName, '"', "'")
-            elName := StrReplace(elName, "`n", " ")
-        } catch {
-            elType := -1
-            elName := "?"
-        }
-        ReadingMode_DebugLog("G", "TryUiaAnchor", "hit RangeFromPoint", '{"elType":' elType ',"elName":"' elName '","vt":' vt ',"vb":' vb ',"bestY":' best
-            .y ',"bestH":' best.h ',"outY":' (IsObject(out) ? out.y : -1) ',"outH":' (IsObject(out) ? out.h : -1) ',"runId":"post-fix"}'
-        )
-        ; #endregion
-        return out
-    }
+    if (IsObject(best))
+        return ReadingMode_TwoRowRect(best, prev)
 
     try {
         ranges := tp.GetVisibleRanges()
@@ -759,27 +684,7 @@ ReadingMode_TryUiaAnchor(hwnd) {
                 break
         }
     }
-    out2 := IsObject(best) ? ReadingMode_TwoRowRect(best, prev) : false
-    ; #region agent log
-    ReadingMode_DebugLog("G", "TryUiaAnchor", "hit GetVisibleRanges", '{"vt":' vt ',"vb":' vb ',"outY":' (IsObject(out2
-    ) ? out2.y : -1) ',"outH":' (IsObject(out2) ? out2.h : -1) ',"ok":' (IsObject(out2) ? "true" : "false") ',"runId":"post-fix"}'
-    )
-    ; #endregion
-    return out2
-}
-
-; ---------------------------------------------------------------------------
-; Browser JS locator — DISABLED (do not call JSReturnThroughClipboard / SetURL javascript:)
-; Confirmed: that path dumps the locator script into Chrome's address bar.
-; ---------------------------------------------------------------------------
-ReadingMode_TryBrowserJsAnchor(hwnd) {
-    global g_ReadingModeJsCallCount
-    g_ReadingModeJsCallCount += 1
-    ; #region agent log
-    ReadingMode_DebugLog("A", "TryBrowserJsAnchor", "disabled skip address-bar JS", '{"n":' g_ReadingModeJsCallCount '}'
-    )
-    ; #endregion
-    return false
+    return IsObject(best) ? ReadingMode_TwoRowRect(best, prev) : false
 }
 
 ; ---------------------------------------------------------------------------
