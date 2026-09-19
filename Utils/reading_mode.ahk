@@ -1,4 +1,4 @@
-; =============================================================================
+﻿; =============================================================================
 ; Utils module: reading_mode.ahk
 ; Reading Mode — Left/Right → PgUp/PgDn + last fully visible line highlight.
 ; Toggle via Macros (#!+W → k). Process-local state (same as Focus Mode).
@@ -17,6 +17,10 @@ global g_ReadingModeBarWidth := 10
 global g_ReadingModeHoldMs := 3000
 global g_ReadingModeBlinkStep := 0
 global g_ReadingModePageOverlapFrac := 0.12
+global g_ReadingModeBrowserSettleMs := 120
+global g_ReadingModeSnapLineH := 0
+global g_ReadingModeSnapCorrect := false
+global g_ReadingModeJsCallCount := 0
 
 ; #region agent log
 ReadingMode_DebugLog(hypothesisId, location, message, dataJson := "{}") {
@@ -28,11 +32,6 @@ ReadingMode_DebugLog(hypothesisId, location, message, dataJson := "{}") {
         FileAppend(line, logPath, "UTF-8")
     } catch {
     }
-}
-ReadingMode_RectJson(r) {
-    if (!IsObject(r))
-        return "null"
-    return '{"x":' r.x ',"y":' r.y ',"w":' r.w ',"h":' r.h '}'
 }
 ; #endregion
 
@@ -104,7 +103,7 @@ ReadingMode_ContextMonitor(*) {
 
     if (fg != g_ReadingModeTrackedHwnd) {
         ; #region agent log
-        ReadingMode_DebugLog("D", "reading_mode.ahk:ContextMonitor", "auto-off hwnd change", '{"fg":' fg ',"tracked":' g_ReadingModeTrackedHwnd '}'
+        ReadingMode_DebugLog("B", "ContextMonitor", "auto-off hwnd", '{"fg":' fg ',"tracked":' g_ReadingModeTrackedHwnd '}'
         )
         ; #endregion
         DisableReadingMode()
@@ -118,7 +117,8 @@ ReadingMode_ContextMonitor(*) {
     }
     if (title != g_ReadingModeTrackedTitle) {
         ; #region agent log
-        ReadingMode_DebugLog("D", "reading_mode.ahk:ContextMonitor", "auto-off title change", '{}')
+        ReadingMode_DebugLog("B", "ContextMonitor", "auto-off title", '{"trackedLen":' StrLen(g_ReadingModeTrackedTitle
+        ) ',"newLen":' StrLen(title) '}')
         ; #endregion
         DisableReadingMode()
     }
@@ -138,7 +138,7 @@ ReadingMode_ClearOverlay() {
 }
 
 ReadingMode_CancelHoldSequence() {
-    global g_ReadingModeBlinkStep
+    global g_ReadingModeBlinkStep, g_ReadingModeSnapCorrect
     try SetTimer(ReadingMode_AfterHoldBlink, 0)
     catch {
     }
@@ -146,10 +146,27 @@ ReadingMode_CancelHoldSequence() {
     catch {
     }
     g_ReadingModeBlinkStep := 0
+    g_ReadingModeSnapCorrect := false
 }
 
-; Text-element viewport if available; else window bounds.
+; Prefer Chrome render widget (true page pixels) over Document BR (often full window).
 ReadingMode_GetViewport(hwnd) {
+    if (ReadingMode_IsBrowserHwnd(hwnd)) {
+        try {
+            ControlGetPos(&cx, &cy, &cw, &ch, "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+            if (cw > 40 && ch > 40) {
+                pt := Buffer(8, 0)
+                NumPut("int", cx, pt, 0)
+                NumPut("int", cy, pt, 4)
+                if (DllCall("ClientToScreen", "ptr", hwnd, "ptr", pt)) {
+                    sx := NumGet(pt, 0, "int")
+                    sy := NumGet(pt, 4, "int")
+                    return { l: sx, t: sy, r: sx + cw, b: sy + ch, h: ch }
+                }
+            }
+        } catch {
+        }
+    }
     try {
         root := UIA.ElementFromHandle(hwnd)
         el := ReadingMode_FindTextElement(root)
@@ -167,6 +184,21 @@ ReadingMode_GetViewport(hwnd) {
     return false
 }
 
+; Intersect text-element BR with content viewport so probes stay in the visible page.
+ReadingMode_IntersectViewport(elVp, contentVp) {
+    if (!IsObject(contentVp))
+        return elVp
+    if (!IsObject(elVp))
+        return contentVp
+    l := Max(elVp.l, contentVp.l)
+    t := Max(elVp.t, contentVp.t)
+    r := Min(elVp.r, contentVp.r)
+    b := Min(elVp.b, contentVp.b)
+    if (r - l < 40 || b - t < 40)
+        return contentVp
+    return { l: l, t: t, r: r, b: b, h: b - t }
+}
+
 ; After PgDn/PgUp, place the mark on the same two rows (now shifted up/down).
 ReadingMode_ContinuityBar(beforeRect, direction, hwnd) {
     global g_ReadingModePageOverlapFrac
@@ -180,7 +212,13 @@ ReadingMode_ContinuityBar(beforeRect, direction, hwnd) {
     newY := bar.y + (direction > 0 ? -shift : shift)
     ; Keep the continuity mark on-screen
     newY := Max(vp.t + 2, Min(newY, vp.b - bar.h - 2))
-    return { x: bar.x, y: newY, w: bar.w, h: bar.h }
+    out := { x: bar.x, y: newY, w: bar.w, h: bar.h }
+    ; #region agent log
+    ReadingMode_DebugLog("F", "ContinuityBar", "placed", '{"beforeY":' (IsObject(beforeRect) ? beforeRect.y : -1) ',"beforeH":' (
+        IsObject(beforeRect) ? beforeRect.h : -1) ',"newY":' newY ',"shift":' shift ',"vpT":' vp.t ',"vpB":' vp.b ',"vpH":' vp
+    .h ',"dir":' direction '}')
+    ; #endregion
+    return out
 }
 
 ; After hold: blink, then snap mark to the current last two rows.
@@ -188,11 +226,10 @@ ReadingMode_AfterHoldBlink(*) {
     global g_ReadingModeBlinkStep
     if (!ReadingMode_IsActive())
         return
-    g_ReadingModeBlinkStep := 0
     ; #region agent log
-    ReadingMode_DebugLog("F", "reading_mode.ahk:AfterHoldBlink", "blink start then snap bottom", '{"runId":"post-fix"}'
-    )
+    ReadingMode_DebugLog("C", "AfterHoldBlink", "blink start", '{}')
     ; #endregion
+    g_ReadingModeBlinkStep := 0
     SetTimer(ReadingMode_BlinkTick, 100)
 }
 
@@ -211,7 +248,7 @@ ReadingMode_BlinkTick(*) {
         }
         g_ReadingModeBlinkStep := 0
         ; #region agent log
-        ReadingMode_DebugLog("F", "reading_mode.ahk:BlinkTick", "snap to bottom rows", '{"runId":"post-fix"}')
+        ReadingMode_DebugLog("C", "BlinkTick", "snap RefreshMark", '{}')
         ; #endregion
         ReadingMode_RefreshMark()
         return
@@ -252,10 +289,6 @@ ReadingMode_TwoRowRect(last, prev := false) {
 
 ReadingMode_ShowAnchor(rect) {
     global g_ReadingModeOverlay
-    ; #region agent log
-    ReadingMode_DebugLog("C", "reading_mode.ahk:ShowAnchor", "show overlay", '{"rect":' ReadingMode_RectJson(rect) ',"runId":"post-fix"}'
-    )
-    ; #endregion
     if (!IsObject(rect) || rect.w < 1 || rect.h < 2)
         return
     ; Reposition existing persistent bar when possible
@@ -278,9 +311,6 @@ ReadingMode_ShowAnchor(rect) {
         g_ReadingModeOverlay := overlay
     } catch {
         g_ReadingModeOverlay := 0
-        ; #region agent log
-        ReadingMode_DebugLog("E", "reading_mode.ahk:ShowAnchor", "overlay create failed", '{}')
-        ; #endregion
     }
 }
 
@@ -298,17 +328,45 @@ ReadingMode_ToMarkBar(rect) {
 }
 
 ReadingMode_RefreshMark() {
+    global g_ReadingModeSnapCorrect
+    ; #region agent log
+    ReadingMode_DebugLog("A", "RefreshMark", "entry", '{"snapCorrect":' (g_ReadingModeSnapCorrect ? "true" : "false") '}'
+    )
+    ; #endregion
     hwnd := WinExist("A")
     if (!hwnd)
         return
     rect := ReadingMode_GetAnchorRect(hwnd)
     bar := ReadingMode_ToMarkBar(rect)
+    if (g_ReadingModeSnapCorrect) {
+        bar := ReadingMode_CorrectSnapOvershoot(bar, hwnd)
+        g_ReadingModeSnapCorrect := false
+    }
     ; #region agent log
-    ReadingMode_DebugLog("B", "reading_mode.ahk:RefreshMark", "mark bar", '{"ok":' (IsObject(bar) ? "true" : "false") ',"rect":' ReadingMode_RectJson(
-        rect) ',"bar":' ReadingMode_RectJson(bar) ',"runId":"post-fix"}')
+    if (IsObject(bar))
+        ReadingMode_DebugLog("H", "RefreshMark", "bar", '{"x":' bar.x ',"y":' bar.y ',"w":' bar.w ',"h":' bar.h '}')
+    else
+        ReadingMode_DebugLog("H", "RefreshMark", "no bar", '{}')
     ; #endregion
     if (IsObject(bar))
         ReadingMode_ShowAnchor(bar)
+}
+
+; If the post-blink bottom snap sits too close to the viewport edge, nudge up one row.
+ReadingMode_CorrectSnapOvershoot(bar, hwnd) {
+    global g_ReadingModeSnapLineH
+    if (!IsObject(bar))
+        return false
+    vp := ReadingMode_GetViewport(hwnd)
+    if (!IsObject(vp))
+        return bar
+    lineH := g_ReadingModeSnapLineH
+    if (lineH < 8)
+        lineH := Max(Round(bar.h / 2), 12)
+    margin := Max(4, Round(lineH * 0.35))
+    if (bar.y + bar.h > vp.b - margin)
+        bar := { x: bar.x, y: Max(vp.t + 2, bar.y - lineH), w: bar.w, h: bar.h }
+    return bar
 }
 
 EnableReadingMode() {
@@ -348,90 +406,78 @@ ToggleReadingMode() {
 }
 
 ReadingMode_Page(direction) {
-    global g_ReadingModeSettleMs, g_ReadingModeHoldMs
+    global g_ReadingModeSettleMs, g_ReadingModeHoldMs, g_ReadingModeBrowserSettleMs,
+        g_ReadingModeSnapLineH, g_ReadingModeSnapCorrect
     ReadingMode_CancelHoldSequence()
+    ; #region agent log
+    ReadingMode_DebugLog("D", "Page", "entry", '{"dir":' direction '}')
+    ; #endregion
 
     hwnd := WinExist("A")
-    ; #region agent log
-    ReadingMode_DebugLog("A", "reading_mode.ahk:Page", "page start", '{"dir":' direction ',"hwnd":' (hwnd ? hwnd : 0) ',"runId":"post-fix"}'
-    )
-    ; #endregion
 
     ; Capture the last two rows BEFORE scrolling (continuity target).
     beforeRect := ReadingMode_GetAnchorRect(hwnd)
+    g_ReadingModeSnapLineH := 0
+    if (IsObject(beforeRect) && beforeRect.h >= 8)
+        g_ReadingModeSnapLineH := Max(Round(beforeRect.h / 2), 12)
 
     if (direction > 0)
         Send("{PgDn}")
     else
         Send("{PgUp}")
-    Sleep g_ReadingModeSettleMs
+
+    settleMs := (hwnd && ReadingMode_IsBrowserHwnd(hwnd)) ? g_ReadingModeBrowserSettleMs : g_ReadingModeSettleMs
+    Sleep settleMs
 
     hwnd := WinExist("A")
-    if (!hwnd) {
-        ; #region agent log
-        ReadingMode_DebugLog("D", "reading_mode.ahk:Page", "hwnd lost after scroll", '{}')
-        ; #endregion
+    if (!hwnd)
         return
-    }
 
     cont := ReadingMode_ContinuityBar(beforeRect, direction, hwnd)
-    ; #region agent log
-    ReadingMode_DebugLog("F", "reading_mode.ahk:Page", "continuity mark", '{"ok":' (IsObject(cont) ? "true" : "false") ',"before":' ReadingMode_RectJson(
-        beforeRect) ',"cont":' ReadingMode_RectJson(cont) ',"runId":"post-fix"}')
-    ; #endregion
     if (IsObject(cont))
         ReadingMode_ShowAnchor(cont)
     else
         ReadingMode_RefreshMark()
 
     ; Hold on continuity rows, then blink and snap to new bottom two rows.
+    g_ReadingModeSnapCorrect := true
     SetTimer(ReadingMode_AfterHoldBlink, -g_ReadingModeHoldMs)
 }
 
 ; ---------------------------------------------------------------------------
 ; Locate: last fully visible line rect {x,y,w,h} in screen coords, or false
 ; ---------------------------------------------------------------------------
+ReadingMode_IsReasonableAnchor(rect) {
+    if (!IsObject(rect))
+        return false
+    ; Allow up to ~two rows; reject giant paragraph/viewport unions
+    if (rect.w < 8 || rect.h < 8 || rect.h > 160)
+        return false
+    return true
+}
+
 ReadingMode_GetAnchorRect(hwnd) {
     if (!hwnd)
         return false
 
+    ; Always prefer UIA TextPattern. Do NOT use UIA_Browser JSReturnThroughClipboard /
+    ; SetURL("javascript:…") — that pastes a long script into the address bar, blanks the
+    ; tab, and can loop with omnibox focus (confirmed runtime logs + user report).
     rect := ReadingMode_TryUiaAnchor(hwnd)
-    if (IsObject(rect)) {
+    if (ReadingMode_IsReasonableAnchor(rect)) {
         ; #region agent log
-        ReadingMode_DebugLog("A", "reading_mode.ahk:GetAnchorRect", "uia hit", '{"rect":' ReadingMode_RectJson(rect) '}'
-        )
+        ReadingMode_DebugLog("A", "GetAnchorRect", "uia ok", '{"browser":' (ReadingMode_IsBrowserHwnd(hwnd) ? "true" :
+            "false") '}')
         ; #endregion
         return rect
     }
 
-    if (ReadingMode_IsBrowserHwnd(hwnd)) {
-        rect := ReadingMode_TryBrowserJsAnchor(hwnd)
-        if (IsObject(rect)) {
-            ; #region agent log
-            ReadingMode_DebugLog("A", "reading_mode.ahk:GetAnchorRect", "browser js hit", '{"rect":' ReadingMode_RectJson(
-                rect) '}')
-            ; #endregion
-            return rect
-        }
-    }
-
-    ; PDF / other: UIA already tried; browser JS only if Chromium PDF tab
-    if (ReadingMode_LooksLikePdf(hwnd)) {
-        if (ReadingMode_IsBrowserHwnd(hwnd)) {
-            rect := ReadingMode_TryBrowserJsAnchor(hwnd)
-            if (IsObject(rect))
-                return rect
-        }
-        ; Soft fail — remaps still work
-        ; #region agent log
-        ReadingMode_DebugLog("A", "reading_mode.ahk:GetAnchorRect", "pdf soft fail", '{}')
-        ; #endregion
-        return false
-    }
-
     ; #region agent log
-    ReadingMode_DebugLog("A", "reading_mode.ahk:GetAnchorRect", "no anchor", '{}')
+    ReadingMode_DebugLog("A", "GetAnchorRect", "uia failed", '{"browser":' (ReadingMode_IsBrowserHwnd(hwnd) ? "true" :
+        "false") '}')
     ; #endregion
+
+    ; PDF / other soft-fail — remaps still work
     return false
 }
 
@@ -472,12 +518,27 @@ ReadingMode_LooksLikePdf(hwnd) {
     return false
 }
 
-ReadingMode_RectFullyVisible(rx, ry, rw, rh, vl, vt, vr, vb, pad := 3) {
+ReadingMode_RectFullyVisible(rx, ry, rw, rh, vl, vt, vr, vb, padTop := 3, padBottom := 3) {
     if (rw < 2 || rh < 2)
         return false
     bottom := ry + rh
     right := rx + rw
-    return (ry >= vt + pad && bottom <= vb - pad && rx >= vl - 2 && right <= vr + 2)
+    return (ry >= vt + padTop && bottom <= vb - padBottom && rx >= vl - 2 && right <= vr + 2)
+}
+
+; True last fully-visible line: not in the cutoff band near the viewport bottom.
+ReadingMode_IsSolidBottomLine(r, vt, vb, vpH) {
+    if (!IsObject(r) || r.h < 8)
+        return false
+    bottom := r.y + r.h
+    ; Reject lines sitting in the bottom cutoff band (~55% of line height, min 12px)
+    padBottom := Max(12, Round(r.h * 0.55))
+    if (bottom > vb - padBottom)
+        return false
+    ; Reject probes that resolved to the top half (bad RangeFromPoint mapping)
+    if (r.y < vt + Round(vpH * 0.45))
+        return false
+    return true
 }
 
 ; ---------------------------------------------------------------------------
@@ -564,61 +625,86 @@ ReadingMode_TryUiaAnchor(hwnd) {
 
     try {
         vbr := el.BoundingRectangle
-        vl := vbr.l, vt := vbr.t, vr := vbr.r, vb := vbr.b
+        elVp := { l: vbr.l, t: vbr.t, r: vbr.r, b: vbr.b, h: vbr.b - vbr.t }
     } catch {
         return false
     }
+
+    contentVp := ReadingMode_GetViewport(hwnd)
+    vp := ReadingMode_IntersectViewport(elVp, contentVp)
+    vl := vp.l, vt := vp.t, vr := vp.r, vb := vp.b
     if (vr - vl < 8 || vb - vt < 8)
         return false
+    vpH := vb - vt
 
     best := false
-    prev := false
     bestBottom := -1
+    bestRng := 0
 
-    ; Prefer RangeFromPoint near viewport bottom, walk upward for a fully visible line
+    ; Probe from bottom; keep lowest solid fully-visible line (not the cutoff/"next" row).
     cx := (vl + vr) // 2
-    offsets := [6, 14, 28, 48, 72, 100, 140]
+    offsets := [8, 16, 28, 44, 64, 88, 120, 160, 220]
     for offset in offsets {
         py := vb - offset
-        if (py <= vt)
+        if (py <= vt + 8)
             break
         try {
             rng := tp.RangeFromPoint(cx, py)
             rng.ExpandToEnclosingUnit(UIA.TextUnit.Line)
             for r in rng.GetBoundingRectangles() {
-                if (ReadingMode_RectFullyVisible(r.x, r.y, r.w, r.h, vl, vt, vr, vb, g_ReadingModeViewportPad)) {
-                    bottom := r.y + r.h
-                    if (bottom > bestBottom) {
-                        bestBottom := bottom
-                        best := { x: r.x, y: r.y, w: r.w, h: r.h }
-                    }
+                padBottom := Max(12, Round(Max(r.h, 16) * 0.55))
+                if (!ReadingMode_RectFullyVisible(r.x, r.y, r.w, r.h, vl, vt, vr, vb, g_ReadingModeViewportPad,
+                    padBottom))
+                    continue
+                if (!ReadingMode_IsSolidBottomLine(r, vt, vb, vpH))
+                    continue
+                bottom := r.y + r.h
+                if (bottom > bestBottom) {
+                    bestBottom := bottom
+                    best := { x: r.x, y: r.y, w: r.w, h: r.h }
+                    bestRng := rng
                 }
-            }
-            if (IsObject(best)) {
-                ; Line immediately above the last fully visible one
-                try {
-                    above := rng.Clone()
-                    above.ExpandToEnclosingUnit(UIA.TextUnit.Line)
-                    if (above.Move(UIA.TextUnit.Line, -1)) {
-                        for r in above.GetBoundingRectangles() {
-                            if (r.w >= 2 && r.h >= 2) {
-                                prev := { x: r.x, y: r.y, w: r.w, h: r.h }
-                                break
-                            }
-                        }
-                    }
-                } catch {
-                }
-                break
             }
         } catch {
         }
     }
 
-    if (IsObject(best))
-        return ReadingMode_TwoRowRect(best, prev)
+    prev := false
+    if (IsObject(best) && IsObject(bestRng)) {
+        try {
+            above := bestRng.Clone()
+            above.ExpandToEnclosingUnit(UIA.TextUnit.Line)
+            if (above.Move(UIA.TextUnit.Line, -1)) {
+                for r in above.GetBoundingRectangles() {
+                    if (r.w >= 2 && r.h >= 2 && r.h <= Max(best.h * 2.5, 80)) {
+                        prev := { x: r.x, y: r.y, w: r.w, h: r.h }
+                        break
+                    }
+                }
+            }
+        } catch {
+        }
+    }
 
-    ; Fallback: walk GetVisibleRanges by Line — keep last two fully visible
+    if (IsObject(best)) {
+        out := ReadingMode_TwoRowRect(best, prev)
+        ; #region agent log
+        try {
+            elType := el.Type
+            elName := SubStr(el.Name, 1, 40)
+            elName := StrReplace(elName, '"', "'")
+            elName := StrReplace(elName, "`n", " ")
+        } catch {
+            elType := -1
+            elName := "?"
+        }
+        ReadingMode_DebugLog("G", "TryUiaAnchor", "hit RangeFromPoint", '{"elType":' elType ',"elName":"' elName '","vt":' vt ',"vb":' vb ',"bestY":' best
+            .y ',"bestH":' best.h ',"outY":' (IsObject(out) ? out.y : -1) ',"outH":' (IsObject(out) ? out.h : -1) ',"runId":"post-fix"}'
+        )
+        ; #endregion
+        return out
+    }
+
     try {
         ranges := tp.GetVisibleRanges()
     } catch {
@@ -646,18 +732,22 @@ ReadingMode_TryUiaAnchor(hwnd) {
                 break
             }
             for r in rects {
-                if (ReadingMode_RectFullyVisible(r.x, r.y, r.w, r.h, vl, vt, vr, vb, g_ReadingModeViewportPad)) {
-                    bottom := r.y + r.h
-                    cand := { x: r.x, y: r.y, w: r.w, h: r.h }
-                    if (bottom >= bestBottom) {
-                        prev := best
-                        secondBottom := bestBottom
-                        best := cand
-                        bestBottom := bottom
-                    } else if (bottom > secondBottom) {
-                        prev := cand
-                        secondBottom := bottom
-                    }
+                padBottom := Max(12, Round(Max(r.h, 16) * 0.55))
+                if (!ReadingMode_RectFullyVisible(r.x, r.y, r.w, r.h, vl, vt, vr, vb, g_ReadingModeViewportPad,
+                    padBottom))
+                    continue
+                if (!ReadingMode_IsSolidBottomLine(r, vt, vb, vpH))
+                    continue
+                bottom := r.y + r.h
+                cand := { x: r.x, y: r.y, w: r.w, h: r.h }
+                if (bottom >= bestBottom) {
+                    prev := best
+                    secondBottom := bestBottom
+                    best := cand
+                    bestBottom := bottom
+                } else if (bottom > secondBottom) {
+                    prev := cand
+                    secondBottom := bottom
                 }
             }
             try {
@@ -669,90 +759,27 @@ ReadingMode_TryUiaAnchor(hwnd) {
                 break
         }
     }
-    return IsObject(best) ? ReadingMode_TwoRowRect(best, prev) : false
+    out2 := IsObject(best) ? ReadingMode_TwoRowRect(best, prev) : false
+    ; #region agent log
+    ReadingMode_DebugLog("G", "TryUiaAnchor", "hit GetVisibleRanges", '{"vt":' vt ',"vb":' vb ',"outY":' (IsObject(out2
+    ) ? out2.y : -1) ',"outH":' (IsObject(out2) ? out2.h : -1) ',"ok":' (IsObject(out2) ? "true" : "false") ',"runId":"post-fix"}'
+    )
+    ; #endregion
+    return out2
 }
 
 ; ---------------------------------------------------------------------------
-; Layer 2 — Chrome/Edge (and friends) JS line boxes
+; Browser JS locator — DISABLED (do not call JSReturnThroughClipboard / SetURL javascript:)
+; Confirmed: that path dumps the locator script into Chrome's address bar.
 ; ---------------------------------------------------------------------------
-ReadingMode_BrowserJsPayload() {
-    ; Returns JSON {x,y,w,h,dpr} covering the last two fully visible line boxes, or "".
-    return "(function(){var vh=window.innerHeight,vw=window.innerWidth,eps=3,best=null,prev=null,dpr=window.devicePixelRatio||1;function consider(r){if(!r||r.width<2||r.height<2)return;if(r.top<eps||r.bottom>vh-eps||r.left<-2||r.right>vw+2)return;var c={x:r.left,y:r.top,w:r.width,h:r.height,b:r.bottom};if(!best||c.b>best.b){prev=best;best=c;}else if(!prev||(c.b>prev.b&&c.b<best.b-0.5)){prev=c;}}try{var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null),n;while(n=w.nextNode()){if(!n.nodeValue||!/\S/.test(n.nodeValue))continue;var rg=document.createRange();rg.selectNodeContents(n);var rs=rg.getClientRects();for(var i=0;i<rs.length;i++)consider(rs[i]);}}catch(e){}if(!best){try{document.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6,div,span,td,th,pre,blockquote,article').forEach(function(el){var rs=el.getClientRects();for(var i=0;i<rs.length;i++)consider(rs[i]);});}catch(e){}}if(!best)return'';var x1=best.x,y1=best.y,x2=best.x+best.w,y2=best.y+best.h;if(prev){x1=Math.min(x1,prev.x);y1=Math.min(y1,prev.y);x2=Math.max(x2,prev.x+prev.w);y2=Math.max(y2,prev.y+prev.h);}else{y1=best.y-best.h;y2=best.y+best.h;}return JSON.stringify({x:Math.round(x1),y:Math.round(y1),w:Math.round(x2-x1),h:Math.round(y2-y1),dpr:dpr});})()"
-}
-
 ReadingMode_TryBrowserJsAnchor(hwnd) {
-    try {
-        uia := UIA_Browser("ahk_id " hwnd)
-    } catch {
-        return false
-    }
-
-    js := ReadingMode_BrowserJsPayload()
-    raw := ""
-    try raw := uia.JSReturnThroughClipboard(js)
-    catch {
-        return false
-    }
-    raw := Trim(raw)
-    if (raw = "" || !InStr(raw, '"x"'))
-        return false
-
-    x := 0, y := 0, w := 0, h := 0
-    if (!RegExMatch(raw, '"x"\s*:\s*(-?\d+)', &mx)
-    || !RegExMatch(raw, '"y"\s*:\s*(-?\d+)', &my)
-    || !RegExMatch(raw, '"w"\s*:\s*(-?\d+)', &mw)
-    || !RegExMatch(raw, '"h"\s*:\s*(-?\d+)', &mh)) {
-        return false
-    }
-    x := Integer(mx[1])
-    y := Integer(my[1])
-    w := Integer(mw[1])
-    h := Integer(mh[1])
-    if (w < 2 || h < 2)
-        return false
-
-    dpr := 1.0
-    if (RegExMatch(raw, '"dpr"\s*:\s*([0-9.]+)', &md)) {
-        try dpr := Float(md[1])
-        catch {
-            dpr := 1.0
-        }
-    }
-    x := Round(x * dpr)
-    y := Round(y * dpr)
-    w := Round(w * dpr)
-    h := Round(h * dpr)
-
-    ox := 0, oy := 0
-    converted := false
-    try {
-        ControlGetPos(&cx, &cy, &ow, &oh, "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
-        pt := Buffer(8, 0)
-        NumPut("int", cx, pt, 0)
-        NumPut("int", cy, pt, 4)
-        if (DllCall("ClientToScreen", "ptr", hwnd, "ptr", pt)) {
-            ox := NumGet(pt, 0, "int")
-            oy := NumGet(pt, 4, "int")
-            converted := true
-        }
-    } catch {
-    }
-    if (!converted) {
-        try {
-            br := uia.GetCurrentDocumentElement().GetPos("screen")
-            ox := br.x
-            oy := br.y
-            converted := true
-        } catch {
-        }
-    }
-    if (!converted) {
-        try WinGetPos(&ox, &oy, , , "ahk_id " hwnd)
-        catch {
-            return false
-        }
-    }
-    return { x: ox + x, y: oy + y, w: w, h: h }
+    global g_ReadingModeJsCallCount
+    g_ReadingModeJsCallCount += 1
+    ; #region agent log
+    ReadingMode_DebugLog("A", "TryBrowserJsAnchor", "disabled skip address-bar JS", '{"n":' g_ReadingModeJsCallCount '}'
+    )
+    ; #endregion
+    return false
 }
 
 ; ---------------------------------------------------------------------------
