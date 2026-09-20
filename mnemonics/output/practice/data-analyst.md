@@ -1,6 +1,97 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 13: SQL Advanced Analytics</strong> · Character: Erik Satie · 4 beasts · 4 atoms</summary>
+
+_No image_
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Ba] bat
+
+**Concept**
+💡 [<kbd><strong><u>SQL Advanced Analytics</u></strong></kbd>] [I <kbd><strong><u>extract</u></strong></kbd> nested subqueries using CTEs] [and apply <kbd><strong><u>window functions</u></strong></kbd>] [to <kbd><strong><u>evaluate</u></strong></kbd> specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
+
+🔑 **Keywords**
+
+- [**SQL Advanced Analytics**] → [dashboard]
+- [**extract**] → [tweezers]
+- [**window functions**] → [window]
+- [**evaluate**] → [scales]
+
+**Quote**
+“a window function always has two components... now this whole section is called a CTE and we know that because it has this with keyword”
+
+**Story**
+A gigantic bat uses silver tweezers to extract nested glowing code blocks from a dashboard, throwing them through a glass window to evaluate the flying data on brass scales.
+
+### 🟧 [Bb] Bone bird of paradise
+
+**Concept**
+💡 [<kbd><strong><u>Temporary Tables</u></strong></kbd>] [I <kbd><strong><u>store</u></strong></kbd> the output of heavy computation] [in a <kbd><strong><u>temporary table</u></strong></kbd>] [to prevent the database from <kbd><strong><u>re-executing</u></strong></kbd> it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
+
+🔑 **Keywords**
+
+- [**Temporary Tables**] → [tent]
+- [**store**] → [freezer]
+- [**temporary table**] → [clipboard]
+- [**re-executing**] → [hamster wheel]
+
+**Quote**
+“if you find yourself using the same CTE again and again especially if your data set is large and your queries are taking a really long time to run then consider creating a temp table”
+
+**Story**
+A Bone bird of paradise drags a humming chest freezer into a camping tent to store a wooden clipboard, smashing a glowing hamster wheel to stop it from spinning again.
+
+### 🟧 [Bc] Bone cat
+
+**Concept**
+💡 [<kbd><strong><u>HAVING Clause</u></strong></kbd>] [I <kbd><strong><u>filter</u></strong></kbd> summary rows] [after they have been <kbd><strong><u>processed</u></strong></kbd>] [by the GROUP BY <kbd><strong><u>aggregation</u></strong></kbd>] — Note: The WHERE clause filters individual rows before any data grouping occurs.
+
+🔑 **Keywords**
+
+- [**HAVING Clause**] → [funnel]
+- [**filter**] → [coffee filter]
+- [**processed**] → [blender]
+- [**aggregation**] → [snowball]
+
+**Quote**
+“The `HAVING` clause in SQL is used to filter records after they have been aggregated by a `GROUP BY` clause.”
+
+**Story**
+A Bone cat pours a giant snowball through a roaring blender, using a plastic funnel lined with a coffee filter to catch only the perfectly crushed ice at the end.
+
+### 🟧 [Bd] Bone dragon
+
+**Concept**
+💡 [<kbd><strong><u>GROUP BY Scope</u></strong></kbd>] [I <kbd><strong><u>include</u></strong></kbd> any non-aggregated column] [from the <kbd><strong><u>SELECT statement</u></strong></kbd>] [inside the <kbd><strong><u>GROUP BY clause</u></strong></kbd>] — Note: This ensures identical data combinations correctly collapse into a single summary row.
+
+🔑 **Keywords**
+
+- [**GROUP BY Scope**] → [lasso]
+- [**include**] → [vacuum]
+- [**SELECT statement**] → [menu]
+- [**GROUP BY clause**] → [folder]
+
+**Quote**
+“Any non-aggregated column present in the SELECT list must appear in the GROUP BY clause.”
+
+**Story**
+A Bone dragon uses a vacuum trunk to suck scattered items off a glowing restaurant menu, spitting them neatly into a massive manila folder.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 12: Location Probes & Rearrangement</strong> · Character: Maurice Ravel · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 12](images/data-analyst/12.jpg)

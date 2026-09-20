@@ -1,0 +1,35 @@
+﻿===PREVIEW===
+Mode REMOVE · STUDY_DATAANALYST · 1 palaces · 4 beasts · 4 atoms
+Scope: palaces 13–15 · pegs Ba–Bl
+Packing: 4 (remainder only on last in-scope palace)
+Changes: merged Window Functions and CTEs into single atom; removed Bb-Bf, Bh, Bj; re-pegged survivors to Ba-Bd
+
+PALACE 13 — SQL Advanced Analytics (Erik Satie) [PALACE_DATAANALYST_13]
+  [Ba] bat — Concept: [SQL Advanced Analytics] [I extract nested subqueries using CTEs] [and apply window functions] [to evaluate specific data subsets] | Quote: "a window function always has two components... now this whole section is called a CTE and we know that because it has this with keyword" | Story: A gigantic bat uses silver tweezers to extract nested glowing code blocks...
+  [Bb] Bone bird of paradise — Concept: [Temporary Tables] [I store the output of heavy computation] [in a temporary table] [to prevent the database from re-executing it] | Quote: "if you find yourself using the same CTE again and again especially if your data set is large..." | Story: A Bone bird of paradise drags a humming chest freezer into a camping tent...
+  [Bc] Bone cat — Concept: [HAVING Clause] [I filter summary rows] [after they have been processed] [by the GROUP BY aggregation] | Quote: "The `HAVING` clause in SQL is used to filter records after they have been aggregated by a `GROUP BY` clause." | Story: A Bone cat pours a giant snowball through a roaring blender...
+  [Bd] Bone dragon — Concept: [GROUP BY Scope] [I include any non-aggregated column] [from the SELECT statement] [inside the GROUP BY clause] | Quote: "Any non-aggregated column present in the SELECT list must appear in the GROUP BY clause." | Story: A Bone dragon uses a vacuum trunk to suck scattered items off a glowing restaurant menu...
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_13,STUDY_DATAANALYST,13,SQL Advanced Analytics,Erik Satie,,4,"an original fictional late-19th-century composer-like man (slender, goatee, pince-nez glasses, velvet suit, holding an umbrella) — not any real, living, historical, or named public figure and not any copyrighted character. Depth slot: ForegroundLeft on a stone gate with a giant bat extracting code blocks with tweezers. Depth slot: MidgroundRight on a camping tent where a bone bird of paradise drags a chest freezer. Depth slot: BackgroundCenter on a concrete step where a bone cat pours a snowball into a blender. Depth slot: Aerial on the roof tiles with a bone dragon using a vacuum trunk to suck items off a menu."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATAANALYST_Ba,PALACE_DATAANALYST_13,Ba,bat,Lynne Kelly,,0,1
+BEAST_DATAANALYST_Bb,PALACE_DATAANALYST_13,Bb,Bone bird of paradise,Custom,,0,2
+BEAST_DATAANALYST_Bc,PALACE_DATAANALYST_13,Bc,Bone cat,Custom,,0,3
+BEAST_DATAANALYST_Bd,PALACE_DATAANALYST_13,Bd,Bone dragon,Custom,,0,4
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+,BEAST_DATAANALYST_Ba,single,,,"[SQL Advanced Analytics] [I extract nested subqueries using CTEs] [and apply window functions] [to evaluate specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.","dashboard | SQL Advanced Analytics || tweezers | extract || window | window functions || scales | evaluate","a window function always has two components... now this whole section is called a CTE and we know that because it has this with keyword","A gigantic bat uses silver tweezers to extract nested glowing code blocks from a dashboard, throwing them through a glass window to evaluate the flying data on brass scales.",,1
+,BEAST_DATAANALYST_Bb,single,,,"[Temporary Tables] [I store the output of heavy computation] [in a temporary table] [to prevent the database from re-executing it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.","tent | Temporary Tables || freezer | store || clipboard | temporary table || hamster wheel | re-executing","if you find yourself using the same CTE again and again especially if your data set is large and your queries are taking a really long time to run then consider creating a temp table","A Bone bird of paradise drags a humming chest freezer into a camping tent to store a wooden clipboard, smashing a glowing hamster wheel to stop it from spinning again.",,1
+,BEAST_DATAANALYST_Bc,single,,,"[HAVING Clause] [I filter summary rows] [after they have been processed] [by the GROUP BY aggregation] — Note: The WHERE clause filters individual rows before any data grouping occurs.","funnel | HAVING Clause || coffee filter | filter || blender | processed || snowball | aggregation","The `HAVING` clause in SQL is used to filter records after they have been aggregated by a `GROUP BY` clause.","A Bone cat pours a giant snowball through a roaring blender, using a plastic funnel lined with a coffee filter to catch only the perfectly crushed ice at the end.",,1
+,BEAST_DATAANALYST_Bd,single,,,"[GROUP BY Scope] [I include any non-aggregated column] [from the SELECT statement] [inside the GROUP BY clause] — Note: This ensures identical data combinations correctly collapse into a single summary row.","lasso | GROUP BY Scope || vacuum | include || menu | SELECT statement || folder | GROUP BY clause","Any non-aggregated column present in the SELECT list must appear in the GROUP BY clause.","A Bone dragon uses a vacuum trunk to suck scattered items off a glowing restaurant menu, spitting them neatly into a massive manila folder.",,1
+===END_FILE===
