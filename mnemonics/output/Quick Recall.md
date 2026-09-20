@@ -1,7 +1,22 @@
 # Quick Recall
 
 <details open>
-<summary><strong>Data Analyst</strong> · 7 palaces · 29 atoms</summary>
+<summary><strong>Data Analyst</strong> · 10 palaces · 41 atoms</summary>
+
+🟧 [Bk] Bone kitten [<kbd><strong><u>HAVING Clause</u></strong></kbd>] [I <kbd><strong><u>filter</u></strong></kbd> summary rows] [after they have been <kbd><strong><u>processed</u></strong></kbd>] [by the GROUP BY <kbd><strong><u>aggregation</u></strong></kbd>] — Note: The WHERE clause filters individual rows before any data grouping occurs.
+🟧 [Bl] bloodhound [<kbd><strong><u>GROUP BY Scope</u></strong></kbd>] [I <kbd><strong><u>include</u></strong></kbd> any non-aggregated column] [from the <kbd><strong><u>SELECT statement</u></strong></kbd>] [inside the <kbd><strong><u>GROUP BY clause</u></strong></kbd>] — Note: This ensures identical data combinations correctly collapse into a single summary row.
+
+🟧 [Bf] Bone frog [<kbd><strong><u>Window Function Filtering</u></strong></kbd>] [I <kbd><strong><u>wrap</u></strong></kbd> the query in a subquery or CTE] [to <kbd><strong><u>filter</u></strong></kbd> results] [based on a <kbd><strong><u>window function</u></strong></kbd>] — Note: This is necessary because window functions execute after the WHERE clause.
+🟧 [Bg] Bone goat [<kbd><strong><u>Common Table Expression</u></strong></kbd>] [I <kbd><strong><u>extract</u></strong></kbd> nested subquery logic] [to the <kbd><strong><u>top</u></strong></kbd> of the script] [using the <kbd><strong><u>WITH keyword</u></strong></kbd>] — Note: This creates a temporary, named result set that improves script readability.
+🟧 [Bh] Bone Hydra [<kbd><strong><u>CTE Reusability</u></strong></kbd>] [I <kbd><strong><u>reference</u></strong></kbd> a defined CTE alias] [<kbd><strong><u>multiple times</u></strong></kbd>] [in the <kbd><strong><u>main query</u></strong></kbd>] — Note: This avoids rewriting the entire subquery for each use.
+🟧 [Bi] bison [<kbd><strong><u>Temporary Tables</u></strong></kbd>] [I <kbd><strong><u>store</u></strong></kbd> the output of heavy computation] [in a <kbd><strong><u>temporary table</u></strong></kbd>] [to prevent the database from <kbd><strong><u>re-executing</u></strong></kbd> it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
+🟧 [Bj] Bone jester [<kbd><strong><u>Recursive CTE</u></strong></kbd>] [I <kbd><strong><u>loop</u></strong></kbd> a query to reference itself] [to generate sequences or <kbd><strong><u>hierarchical data</u></strong></kbd>] — Note: It uses an initial anchor value and a UNION ALL command to stack subsequent rows.
+
+🟧 [Ba] bat [<kbd><strong><u>Window Function</u></strong></kbd>] [I <kbd><strong><u>combine</u></strong></kbd> two parts] [the analytical function and the <kbd><strong><u>OVER clause</u></strong></kbd>] — Note: The <kbd><strong><u>OVER clause</u></strong></kbd> defines how I view the data when applying the function.
+🟧 [Bb] Bone bird of paradise [<kbd><strong><u>OVER Clause</u></strong></kbd>] [I define the specific <kbd><strong><u>subset</u></strong></kbd> of table data] [that the window function <kbd><strong><u>evaluates</u></strong></kbd>] — Note: It allows me to partition or reorder the data for the calculation.
+🟧 [Bc] Bone cat [<kbd><strong><u>Ranking Functions</u></strong></kbd>] [I <kbd><strong><u>handle</u></strong></kbd> underlying data ties] [in <kbd><strong><u>distinct ways</u></strong></kbd>] — Note: ROW_NUMBER ignores ties, RANK skips subsequent numbers, and DENSE_RANK assigns ties without skipping.
+🟧 [Bd] Bone dragon [<kbd><strong><u>Navigation Functions</u></strong></kbd>] [I <kbd><strong><u>retrieve</u></strong></kbd> data values] [relative to a row's <kbd><strong><u>current position</u></strong></kbd>] [within its <kbd><strong><u>window</u></strong></kbd>] — Note: Functions like LEAD and LAG pull values from subsequent or preceding rows.
+🟧 [Be] bee [<kbd><strong><u>PARTITION BY</u></strong></kbd>] [I <kbd><strong><u>divide</u></strong></kbd> rows into smaller subsets] [based on a <kbd><strong><u>specific column</u></strong></kbd>] — Note: The window function resets its calculation for each new partition group it encounters.
 
 🟧 [Ay] aye-aye [<kbd><strong><u>Viewpoint</u></strong></kbd> Controls: I show two windows together] [<kbd><strong><u>overview</u></strong></kbd> plus enlarged <kbd><strong><u>detail</u></strong></kbd> of one area]
 🟧 [Az] Aztec [<kbd><strong><u>Rearrangement</u></strong></kbd>: I change marks and <kbd><strong><u>axis</u></strong></kbd> values] [so the new layout can change what I <kbd><strong><u>understand</u></strong></kbd>]

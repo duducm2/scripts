@@ -781,6 +781,11 @@ Palace_PlacePickerPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBott
     g_PalacePickerPlaceH := h
     Palace_PickerMarkAutoSlotExclude(hwnd)
     Palace_RevealPickerChrome(hwnd, true, true)
+    ; Placement itself means we are in picker preview — do not require a later
+    ; title tick before study-mode transition (fast pick race).
+    global g_PalacePickerSawTitle
+    if (Palace_ChromeTitleLooksLikePicker(hwnd))
+        g_PalacePickerSawTitle := true
     return true
 }
 
@@ -850,6 +855,26 @@ Palace_StopStudyModeAssert() {
     g_PalaceStudyModeHwnd := 0
 }
 
+; True when study chrome still needs work (not maximized and/or still layered/translucent).
+Palace_StudyModeNeedsApply(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) != 1)
+            return true
+    } catch {
+        return true
+    }
+    ; WinGetTransparent returns "" when transparency is Off (not layered).
+    try {
+        tr := WinGetTransparent("ahk_id " hwnd)
+        if (tr != "" && tr != "Off")
+            return true
+    } catch {
+    }
+    return false
+}
+
 Palace_StudyModeAssertTick(*) {
     global g_PalaceStudyModeHwnd, g_PalaceStudyModeAssertLeft
     hwnd := g_PalaceStudyModeHwnd
@@ -862,9 +887,14 @@ Palace_StudyModeAssertTick(*) {
         Palace_StopStudyModeAssert()
         return
     }
+    ; Already maximized + opaque — stop early (do not WinRestore; that causes flicker).
+    if (!Palace_StudyModeNeedsApply(hwnd)) {
+        Palace_StopStudyModeAssert()
+        return
+    }
     Palace_ApplyStudyModeChrome(hwnd)
     g_PalaceStudyModeAssertLeft -= 1
-    if (g_PalaceStudyModeAssertLeft < 1)
+    if (g_PalaceStudyModeAssertLeft < 1 || !Palace_StudyModeNeedsApply(hwnd))
         Palace_StopStudyModeAssert()
 }
 
@@ -872,15 +902,32 @@ Palace_ApplyStudyModeChrome(hwnd) {
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
     Palace_PickerMarkAutoSlotExclude(hwnd)
-    try WinRestore("ahk_id " hwnd)
-    catch {
-    }
-    try WinMaximize("ahk_id " hwnd)
-    catch {
-    }
-    ; Fully opaque study mode (remove the picker translucency/layered effect).
+    ; Fully opaque first so maximize does not animate a translucent frame.
     try WinSetTransparent("Off", "ahk_id " hwnd)
     catch {
+    }
+    mm := 0
+    try mm := WinGetMinMax("ahk_id " hwnd)
+    catch {
+        mm := 0
+    }
+    ; Only restore when minimized. Never WinRestore a maximized window — that
+    ; collapses to the 80% preview size and, with the assert timer, causes a
+    ; restore↔maximize flicker loop (vertigo).
+    if (mm = -1) {
+        try WinRestore("ahk_id " hwnd)
+        catch {
+        }
+        mm := 0
+    }
+    if (mm != 1) {
+        try WinMaximize("ahk_id " hwnd)
+        catch {
+        }
+        ; Reinforce for Chrome after SetWindowPos preview placement.
+        try PostMessage(0x0112, 0xF030, 0, 0, "ahk_id " hwnd)  ; WM_SYSCOMMAND SC_MAXIMIZE
+        catch {
+        }
     }
 }
 
@@ -890,11 +937,14 @@ Palace_RestorePickerChrome(hwnd) {
     global g_PalaceStudyModeHwnd, g_PalaceStudyModeAssertTimer, g_PalaceStudyModeAssertLeft
     Palace_StopStudyModeAssert()
     Palace_ApplyStudyModeChrome(hwnd)
-    ; Chrome often fights the first maximize after SetWindowPos preview placement.
+    ; Chrome may fight the first maximize after SetWindowPos preview placement.
+    ; Re-assert only while still not maximized/opaque — never Restore+Maximize blindly.
+    if (!Palace_StudyModeNeedsApply(hwnd))
+        return
     g_PalaceStudyModeHwnd := hwnd
-    g_PalaceStudyModeAssertLeft := 6
+    g_PalaceStudyModeAssertLeft := 8
     g_PalaceStudyModeAssertTimer := Palace_StudyModeAssertTick
-    SetTimer(g_PalaceStudyModeAssertTimer, 150)
+    SetTimer(g_PalaceStudyModeAssertTimer, 250)
 }
 
 Palace_PickerWatchTick(*) {
@@ -937,8 +987,9 @@ Palace_PickerWatchTick(*) {
         }
         return
     }
-    ; Leave picker for study mode as soon as the picker title is gone (any study/QR choice).
-    if (g_PalacePickerSawTitle) {
+    ; Leave picker for study mode when title leaves the needle.
+    ; Also transition if we already placed preview (sawTitle can miss a fast pick).
+    if (g_PalacePickerSawTitle || g_PalacePickerPlaceW > 0) {
         Palace_RestorePickerChrome(hwnd)
         Palace_StopPickerWatch()
     }
@@ -946,14 +997,20 @@ Palace_PickerWatchTick(*) {
 
 Palace_BeginPickerPreviewSession(hwnd, anchorHwnd := 0) {
     global g_PalacePickerWatchHwnd, g_PalacePickerWatchTimer, g_PalacePickerSawTitle
+    global g_PalacePickerPlaceW
     if (!hwnd)
         return
     Palace_StopStudyModeAssert()
     Palace_StopPickerWatch()
-    g_PalacePickerSawTitle := false
+    g_PalacePickerSawTitle := Palace_ChromeTitleLooksLikePicker(hwnd)
     if (!Palace_PlacePickerPreview(hwnd, anchorHwnd)) {
         ; Fail-safe: never leave Chrome stuck hidden/transparent-0.
         Palace_RevealPickerChrome(hwnd, false, true)
+    }
+    ; If the user already left the picker during place, go straight to study chrome.
+    if (!Palace_ChromeTitleLooksLikePicker(hwnd) && (g_PalacePickerSawTitle || g_PalacePickerPlaceW > 0)) {
+        Palace_RestorePickerChrome(hwnd)
+        return
     }
     g_PalacePickerWatchHwnd := hwnd
     g_PalacePickerWatchTimer := Palace_PickerWatchTick
