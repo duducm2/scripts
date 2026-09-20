@@ -772,7 +772,7 @@ class TaskStore:
             "title": title,
             "body": "",
             "emoji": (payload.get("emoji") or "ℹ️").strip() or "ℹ️",
-            "section_path": "",
+            "section_path": (payload.get("section_path") or "").strip(),
         }
         if rid:
             out = []

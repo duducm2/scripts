@@ -1,7 +1,11 @@
 # Quick Recall
 
 <details open>
-<summary><strong>Data Analyst</strong> · 8 palaces · 33 atoms</summary>
+<summary><strong>Data Analyst</strong> · 9 palaces · 36 atoms</summary>
+
+🟧 [Be] bee [<kbd><strong><u>INNER JOIN</u></strong></kbd>] [I return only the <kbd><strong><u>records</u></strong></kbd>] [that have <kbd><strong><u>matching values</u></strong></kbd>] [in <kbd><strong><u>both tables</u></strong></kbd>] — Note: Unmatched rows are completely excluded.
+🟧 [Bf] Bone frog [<kbd><strong><u>LEFT JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from the <kbd><strong><u>left table</u></strong></kbd>] [and fill missing right matches with <kbd><strong><u>NULLs</u></strong></kbd>]
+🟧 [Bg] Bone goat [<kbd><strong><u>FULL OUTER JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from <kbd><strong><u>both tables</u></strong></kbd>] [and fill any missing sides with <kbd><strong><u>NULLs</u></strong></kbd>] — Note: It essentially combines the results of both a left join and a right join.
 
 🟧 [Ba] bat [<kbd><strong><u>SQL Advanced Analytics</u></strong></kbd>] [I <kbd><strong><u>extract</u></strong></kbd> nested subqueries using CTEs] [and apply <kbd><strong><u>window functions</u></strong></kbd>] [to <kbd><strong><u>evaluate</u></strong></kbd> specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
 🟧 [Bb] Bone bird of paradise [<kbd><strong><u>Temporary Tables</u></strong></kbd>] [I <kbd><strong><u>store</u></strong></kbd> the output of heavy computation] [in a <kbd><strong><u>temporary table</u></strong></kbd>] [to prevent the database from <kbd><strong><u>re-executing</u></strong></kbd> it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.

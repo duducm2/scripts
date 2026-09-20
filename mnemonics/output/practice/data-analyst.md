@@ -1,6 +1,79 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 14: SQL Joins</strong> · Character: Frédéric Chopin · 3 beasts · 3 atoms</summary>
+
+_No image_
+
+<p><em>3 beasts · 3 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Be] bee
+
+**Concept**
+💡 [<kbd><strong><u>INNER JOIN</u></strong></kbd>] [I return only the <kbd><strong><u>records</u></strong></kbd>] [that have <kbd><strong><u>matching values</u></strong></kbd>] [in <kbd><strong><u>both tables</u></strong></kbd>] — Note: Unmatched rows are completely excluded.
+
+🔑 **Keywords**
+
+- [**INNER JOIN**] → [bullseye]
+- [**records**] → [vinyl record]
+- [**matching values**] → [puzzle piece]
+- [**both tables**] → [twins]
+
+**Quote**
+“Returns only the records that have matching values in both tables. If a row in the first table does not have a corresponding match in the second table based on the join condition, that row is completely excluded from the final result.”
+
+**Story**
+A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only the bullseye hits where the twins match exactly, while the rest vaporize into mist.
+
+### 🟧 [Bf] Bone frog
+
+**Concept**
+💡 [<kbd><strong><u>LEFT JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from the <kbd><strong><u>left table</u></strong></kbd>] [and fill missing right matches with <kbd><strong><u>NULLs</u></strong></kbd>]
+
+🔑 **Keywords**
+
+- [**LEFT JOIN**] → [left hand]
+- [**records**] → [vinyl record]
+- [**left table**] → [table]
+- [**NULLs**] → [ghost]
+
+**Quote**
+“Returns all records from the left table, along with the matched records from the right table. If a record in the left table has no match in the right table, the query still returns the left table's row, but populates the right table's columns with NULL values.”
+
+**Story**
+A Bone frog kicks a wooden table with its glowing left webbed foot, catching all the bouncing vinyl records and stuffing transparent ghosts into the empty slots on the right.
+
+### 🟧 [Bg] Bone goat
+
+**Concept**
+💡 [<kbd><strong><u>FULL OUTER JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from <kbd><strong><u>both tables</u></strong></kbd>] [and fill any missing sides with <kbd><strong><u>NULLs</u></strong></kbd>] — Note: It essentially combines the results of both a left join and a right join.
+
+🔑 **Keywords**
+
+- [**FULL OUTER JOIN**] → [outer space]
+- [**records**] → [vinyl record]
+- [**both tables**] → [table]
+- [**NULLs**] → [ghost]
+
+**Quote**
+“Commonly referred to as FULL OUTER JOIN, it returns all records when there is a match in either the left or the right table. It essentially combines the results of both a LEFT JOIN and a RIGHT JOIN. Any missing matches on either side are filled with NULL values.”
+
+**Story**
+A Bone goat floating in outer space swallows every vinyl record from two clashing tables, breathing out icy ghosts to fill the missing gaps on both sides.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 13: SQL Advanced Analytics</strong> · Character: Erik Satie · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 13](images/data-analyst/13.jpg)

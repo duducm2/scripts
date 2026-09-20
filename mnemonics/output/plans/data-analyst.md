@@ -93,9 +93,9 @@
 
 ### 2. Aggregation Logic
 
-- [ ] Aggregate with GROUP BY and filter groups with HAVING
-- [ ] Apply SUM, AVG, COUNT, MIN, and MAX correctly
-- [ ] Visualize GROUP BY as a binding machine that stamps totals on bundled books
+- [✅] Aggregate with GROUP BY and filter groups with HAVING
+- [✅] Apply SUM, AVG, COUNT, MIN, and MAX correctly
+- [✅] Visualize GROUP BY as a binding machine that stamps totals on bundled books
 
 **🔗 Resources:**
 

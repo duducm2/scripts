@@ -1,0 +1,30 @@
+﻿===PREVIEW===
+STUDY_DATAANALYST · 1 palaces · 3 beasts · 3 atoms
+Packing: 3 (remainder only on last **new** palace in this pack)
+
+PALACE 14 — SQL Joins (Frédéric Chopin) [PALACE_DATAANALYST_14]
+  [Be] bee — Concept: [INNER JOIN] [I return only the records] [that have matching values] [in both tables] — Note: Unmatched rows are completely excluded. | Quote: "Returns only the records that have matching values in both tables. If a row in the first table does not have a corresponding match in the second table based on the join condition, that row is completely excluded from the final result." | Story: A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only the bullseye hits where the twins match exactly, while the rest vaporize into mist.
+  [Bf] Bone frog — Concept: [LEFT JOIN] [I return all records] [from the left table] [and fill missing right matches with NULLs] | Quote: "Returns all records from the left table, along with the matched records from the right table. If a record in the left table has no match in the right table, the query still returns the left table's row, but populates the right table's columns with NULL values." | Story: A Bone frog kicks a wooden table with its glowing left webbed foot, catching all the bouncing vinyl records and stuffing transparent ghosts into the empty slots on the right.
+  [Bg] Bone goat — Concept: [FULL OUTER JOIN] [I return all records] [from both tables] [and fill any missing sides with NULLs] — Note: It essentially combines the results of both a left join and a right join. | Quote: "Commonly referred to as FULL OUTER JOIN, it returns all records when there is a match in either the left or the right table. It essentially combines the results of both a LEFT JOIN and a RIGHT JOIN. Any missing matches on either side are filled with NULL values." | Story: A Bone goat floating in outer space swallows every vinyl record from two clashing tables, breathing out icy ghosts to fill the missing gaps on both sides.
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_14,STUDY_DATAANALYST,14,SQL Joins,Frédéric Chopin,,3,"ForegroundLeft by an iron gate: a microscopic bee. MidgroundRight on a stone bench: a skeletal frog made of bone. BackgroundCenter against a brick facade: a skeletal goat made of bone. An original fictional 19th-century composer-like man (pale, medium-length wavy brown hair, romantic era suit and cravat, coughing lightly into a handkerchief) — not any real, living, historical, or named public figure and not any copyrighted character — stands observing the street."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATAANALYST_14_Be,PALACE_DATAANALYST_14,Be,bee,Lynne Kelly,,0,1
+BEAST_DATAANALYST_14_Bf,PALACE_DATAANALYST_14,Bf,Bone frog,Custom,,0,2
+BEAST_DATAANALYST_14_Bg,PALACE_DATAANALYST_14,Bg,Bone goat,Custom,,0,3
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+,BEAST_DATAANALYST_14_Be,single,,,"[INNER JOIN] [I return only the records] [that have matching values] [in both tables] — Note: Unmatched rows are completely excluded.","bullseye | INNER JOIN || vinyl record | records || puzzle piece | matching values || twins | both tables","Returns only the records that have matching values in both tables. If a row in the first table does not have a corresponding match in the second table based on the join condition, that row is completely excluded from the final result.","A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only the bullseye hits where the twins match exactly, while the rest vaporize into mist.",,1
+,BEAST_DATAANALYST_14_Bf,single,,,"[LEFT JOIN] [I return all records] [from the left table] [and fill missing right matches with NULLs]","left hand | LEFT JOIN || vinyl record | records || table | left table || ghost | NULLs","Returns all records from the left table, along with the matched records from the right table. If a record in the left table has no match in the right table, the query still returns the left table's row, but populates the right table's columns with NULL values.","A Bone frog kicks a wooden table with its glowing left webbed foot, catching all the bouncing vinyl records and stuffing transparent ghosts into the empty slots on the right.",,1
+,BEAST_DATAANALYST_14_Bg,single,,,"[FULL OUTER JOIN] [I return all records] [from both tables] [and fill any missing sides with NULLs] — Note: It essentially combines the results of both a left join and a right join.","outer space | FULL OUTER JOIN || vinyl record | records || table | both tables || ghost | NULLs","Commonly referred to as FULL OUTER JOIN, it returns all records when there is a match in either the left or the right table. It essentially combines the results of both a LEFT JOIN and a RIGHT JOIN. Any missing matches on either side are filled with NULL values.","A Bone goat floating in outer space swallows every vinyl record from two clashing tables, breathing out icy ghosts to fill the missing gaps on both sides.",,1
+===END_FILE===

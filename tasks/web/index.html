@@ -867,14 +867,17 @@
         display: flex;
         flex-direction: column;
       }
-      .modal.modal-info .plain-list {
+      .modal.modal-info .plain-list,
+      .modal.modal-info .info-bento {
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
       }
       .modal.modal-info h3,
-      .modal.modal-info > .toolbar {
+      .modal.modal-info > .toolbar,
+      .modal.modal-info > .info-pills,
+      .modal.modal-info > .info-hints {
         flex: 0 0 auto;
       }
       @media (min-width: 901px) {
@@ -884,6 +887,96 @@
           max-width: 80vw;
           max-height: 80vh;
         }
+      }
+      .modal.modal-info.is-fullscreen {
+        width: calc(100vw - 16px);
+        height: calc(100vh - 16px);
+        max-width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+        border-radius: 8px;
+      }
+      .info-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 0 10px;
+        align-items: center;
+      }
+      .info-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid var(--line);
+        background: #252528;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 3px 10px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        line-height: 1.3;
+      }
+      .info-pill:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .info-pill.active {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: #2a2a20;
+      }
+      .info-pill .n {
+        font-size: 10px;
+        opacity: 0.75;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0 4px;
+        color: var(--gold);
+      }
+      .info-hints {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        padding: 0 0 10px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .info-hints span {
+        white-space: nowrap;
+      }
+      .info-bento {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px;
+        align-content: start;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .info-bento .plain-row {
+        margin: 0;
+        min-height: 96px;
+        display: flex;
+        flex-direction: column;
+      }
+      .info-bento .plain-row-head {
+        flex: 1 1 auto;
+      }
+      .info-bento .plain-row .title {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .info-cat-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 50vh;
+      }
+      .info-cat-picker .plain-list {
+        max-height: 40vh;
+        overflow-y: auto;
       }
       .modal h3 {
         margin: 0 0 12px;
@@ -1114,8 +1207,13 @@
           infoCtx: null, // { parentType, parentId }
           infoUi: "", // "" | list | form
           infoSelId: "",
+          infoLayout: "list", // list | bento
+          infoFullscreen: false,
+          infoCategoryFilter: "", // "" = all | "__uncat__" | category label
           taskClipboard: null, // { ...fields, cutFromId? } for Ctrl+C / Ctrl+X / Ctrl+V
         };
+        const INFO_UNCAT = "__uncat__";
+        const INFO_CAT_SLOT_MAX = 9;
         // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
         const ESC_DOUBLE_TAP_MS = 400;
         const GITHUB_PUNCTUAL_MD =
@@ -1380,7 +1478,7 @@
             toast("Open the info list first");
             return false;
           }
-          const parts = infoRowsForCtx()
+          const parts = infoRowsFiltered()
             .map((row) => infoText(row))
             .filter(Boolean);
           if (!parts.length) {
@@ -2073,10 +2171,16 @@
 
         function shiftCmdFromEvent(e) {
           const code = e.code || "";
+          if (code === "Digit0" || code === "Numpad0") return "0";
           if (code === "Digit1" || code === "Numpad1") return "1";
           if (code === "Digit2" || code === "Numpad2") return "2";
           if (code === "Digit3" || code === "Numpad3") return "3";
           if (code === "Digit4" || code === "Numpad4") return "4";
+          if (code === "Digit5" || code === "Numpad5") return "5";
+          if (code === "Digit6" || code === "Numpad6") return "6";
+          if (code === "Digit7" || code === "Numpad7") return "7";
+          if (code === "Digit8" || code === "Numpad8") return "8";
+          if (code === "Digit9" || code === "Numpad9") return "9";
           if (code.startsWith("Key") && code.length === 4)
             return code.slice(3).toLowerCase();
           const k = (e.key || "").toLowerCase();
@@ -2976,6 +3080,7 @@
           state.infoUi = "";
           state.infoCtx = null;
           state.infoSelId = "";
+          state.infoCategoryFilter = "";
           state.view = "dashboard";
           if (state.projectFocusId) {
             state.projectFocusId = "";
@@ -3009,6 +3114,7 @@
           state.infoUi = "";
           state.infoCtx = null;
           state.infoSelId = "";
+          state.infoCategoryFilter = "";
           applySelection(true);
           return true;
         }
@@ -3125,7 +3231,7 @@
           const id = state.infoSelId;
           if (!id || state.infoUi !== "list") return;
           const list = document.querySelector(
-            "#modalHost .modal-info .plain-list",
+            "#modalHost .modal-info .plain-list, #modalHost .modal-info .info-bento",
           );
           const el = list?.querySelector(
             `.plain-row[data-id="${CSS.escape(id)}"]`,
@@ -3159,6 +3265,7 @@
           state.infoUi = "";
           state.infoCtx = null;
           state.infoSelId = "";
+          state.infoCategoryFilter = "";
           closeModal();
           applySelection(true);
         }
@@ -3177,21 +3284,250 @@
           return false;
         }
 
+        function infoCategoryOf(row) {
+          return String(row?.section_path || "").trim();
+        }
+
+        function infoCategoriesForCtx() {
+          const seen = new Map();
+          for (const row of infoRowsForCtx()) {
+            const cat = infoCategoryOf(row);
+            if (!cat) continue;
+            if (!seen.has(cat)) seen.set(cat, seen.size);
+          }
+          return [...seen.keys()].sort((a, b) =>
+            a.localeCompare(b, undefined, { sensitivity: "base" }),
+          );
+        }
+
+        function infoHasUncategorized() {
+          return infoRowsForCtx().some((r) => !infoCategoryOf(r));
+        }
+
+        function infoRowsFiltered() {
+          const filt = state.infoCategoryFilter || "";
+          const rows = infoRowsForCtx();
+          if (!filt) return rows;
+          if (filt === INFO_UNCAT)
+            return rows.filter((r) => !infoCategoryOf(r));
+          return rows.filter((r) => infoCategoryOf(r) === filt);
+        }
+
+        function infoDefaultSectionPath() {
+          const filt = state.infoCategoryFilter || "";
+          if (!filt || filt === INFO_UNCAT) return "";
+          return filt;
+        }
+
+        function setInfoCategoryFilter(next, opts = {}) {
+          const toggle = opts.toggle !== false;
+          const val = next == null ? "" : String(next);
+          if (toggle && state.infoCategoryFilter === val)
+            state.infoCategoryFilter = "";
+          else state.infoCategoryFilter = val;
+          const ctx = state.infoCtx;
+          if (!ctx) return;
+          infoListModal(ctx.parentType, ctx.parentId, state.infoSelId);
+        }
+
+        function toggleInfoLayout() {
+          state.infoLayout = state.infoLayout === "bento" ? "list" : "bento";
+          const ctx = state.infoCtx;
+          if (!ctx || state.infoUi !== "list") return;
+          infoListModal(ctx.parentType, ctx.parentId, state.infoSelId);
+          toast(state.infoLayout === "bento" ? "Bento layout" : "List layout");
+        }
+
+        function toggleInfoFullscreen() {
+          state.infoFullscreen = !state.infoFullscreen;
+          const ctx = state.infoCtx;
+          if (!ctx || state.infoUi !== "list") return;
+          infoListModal(ctx.parentType, ctx.parentId, state.infoSelId);
+          toast(state.infoFullscreen ? "Fullscreen" : "Standard size");
+        }
+
+        async function assignInfoCategory(name) {
+          const cat = String(name || "").trim();
+          if (!cat) {
+            toast("Category name required");
+            return;
+          }
+          if (!state.infoSelId) {
+            toast("Select an info point first");
+            return;
+          }
+          const row = (state.data.info_points || []).find(
+            (i) => i.id === state.infoSelId,
+          );
+          if (!row) {
+            toast("Select an info point first");
+            return;
+          }
+          const ctx = state.infoCtx;
+          if (!ctx) return;
+          const r = await api("/api/info", {
+            method: "POST",
+            body: JSON.stringify({
+              id: row.id,
+              title: infoText(row) || row.title || "",
+              body: "",
+              section_path: cat,
+              parent_type: ctx.parentType,
+              parent_id: ctx.parentId,
+              emoji: row.emoji || "ℹ️",
+            }),
+          });
+          toast("Category: " + cat);
+          await afterEntitySave("info", r, () => {
+            infoListModal(ctx.parentType, ctx.parentId, row.id);
+            flashInfoRow(row.id);
+          });
+        }
+
+        async function promptNewInfoCategory() {
+          if (state.infoUi !== "list") return;
+          if (!state.infoSelId) {
+            toast("Select an info point first");
+            return;
+          }
+          const name = prompt("New category name");
+          if (name == null) return;
+          try {
+            await assignInfoCategory(name);
+          } catch (err) {
+            toast(err.message || String(err));
+          }
+        }
+
+        function openInfoCategoryMorePicker() {
+          const cats = infoCategoriesForCtx();
+          const overflow = cats.slice(INFO_CAT_SLOT_MAX);
+          if (!overflow.length) {
+            toast("No more categories");
+            return;
+          }
+          const prevUi = state.infoUi;
+          const prevCtx = state.infoCtx;
+          const prevSel = state.infoSelId;
+          state.infoUi = "form";
+          modal(`<div class="modal"><h3>More categories</h3>
+      <div class="modal-body info-cat-picker">
+        <input id="mCatFilter" type="search" placeholder="Filter categories…" autocomplete="off"/>
+        <ul class="plain-list" id="mCatList">${overflow
+          .map(
+            (c) =>
+              `<li class="plain-row" data-cat="${esc(c)}"><div class="plain-row-head"><span class="title">${esc(c)}</span></div></li>`,
+          )
+          .join("")}</ul>
+      </div>
+      <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button></div></div>`);
+          const list = $("#mCatList");
+          const filterInp = $("#mCatFilter");
+          const applyFilter = () => {
+            const q = (filterInp?.value || "").trim().toLowerCase();
+            list?.querySelectorAll(".plain-row").forEach((el) => {
+              const name = (el.getAttribute("data-cat") || "").toLowerCase();
+              el.style.display = !q || name.includes(q) ? "" : "none";
+            });
+          };
+          filterInp?.addEventListener("input", applyFilter);
+          const restoreList = () => {
+            state.infoUi = prevUi;
+            state.infoCtx = prevCtx;
+            state.infoSelId = prevSel;
+            if (prevCtx)
+              infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
+            else dismissInfoModal();
+          };
+          $("#modalHost").onclick = (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            ) {
+              restoreList();
+              return;
+            }
+            const row = e.target.closest(".plain-row[data-cat]");
+            if (!row) return;
+            const cat = row.getAttribute("data-cat") || "";
+            state.infoCategoryFilter = cat;
+            state.infoUi = "list";
+            state.infoCtx = prevCtx;
+            state.infoSelId = prevSel;
+            if (prevCtx)
+              infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
+          };
+          setTimeout(() => filterInp?.focus(), 0);
+        }
+
+        function infoPillsHtml() {
+          const cats = infoCategoriesForCtx();
+          const slotted = cats.slice(0, INFO_CAT_SLOT_MAX);
+          const hasMore = cats.length > INFO_CAT_SLOT_MAX;
+          const hasUncat = infoHasUncategorized();
+          const filt = state.infoCategoryFilter || "";
+          const parts = [];
+          parts.push(
+            `<button type="button" class="info-pill${filt === "" ? " active" : ""}" data-info-cat="" title="All">All</button>`,
+          );
+          slotted.forEach((c, i) => {
+            const n = i + 1;
+            parts.push(
+              `<button type="button" class="info-pill${filt === c ? " active" : ""}" data-info-cat="${esc(c)}" title="Filter (Shift+${n})"><span class="n">${n}</span>${esc(c)}</button>`,
+            );
+          });
+          if (hasUncat) {
+            parts.push(
+              `<button type="button" class="info-pill${filt === INFO_UNCAT ? " active" : ""}" data-info-cat="${INFO_UNCAT}" title="Uncategorized">Uncategorized</button>`,
+            );
+          }
+          if (hasMore) {
+            parts.push(
+              `<button type="button" class="info-pill" data-info-cat-more="1" title="More categories (Shift+0)">More… <span class="n">0</span></button>`,
+            );
+          }
+          return `<div class="info-pills">${parts.join("")}</div>`;
+        }
+
+        function infoRowHtml(i) {
+          const hit = infoHyperlink(i);
+          const openAttrs = hit
+            ? ` data-act="open-info-link" data-href="${esc(hit.href)}" data-kind="${esc(hit.kind)}" title="Open"`
+            : "";
+          const sel = i.id === state.infoSelId ? " kb-selected" : "";
+          const cat = infoCategoryOf(i);
+          const catBadge = cat
+            ? `<span class="info-tag" title="Category">${esc(cat)}</span>`
+            : "";
+          return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
+        <div class="plain-row-head">
+          <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
+          <span class="row-actions">
+            ${catBadge}
+            <button class="btn" data-act="edit-info">Edit</button>
+            <button class="btn danger" data-act="del-info">Del</button>
+          </span>
+        </div>
+        ${thumbsHtml("info", i.id)}
+      </li>`;
+        }
+
         function infoListModal(parentType, parentId, preferId) {
+          const prevCtx = state.infoCtx;
+          if (
+            !prevCtx ||
+            prevCtx.parentType !== parentType ||
+            prevCtx.parentId !== parentId
+          ) {
+            state.infoCategoryFilter = "";
+          }
           state.projectId =
             parentType === "project" ? parentId : state.projectId;
           state.taskId = parentType === "task" ? parentId : "";
           state.infoCtx = { parentType, parentId };
           state.infoUi = "list";
-          const rows = (state.data.info_points || [])
-            .filter(
-              (i) => i.parent_type === parentType && i.parent_id === parentId,
-            )
-            .sort((a, b) => {
-              const [as, ai] = infoSortKey(a);
-              const [bs, bi] = infoSortKey(b);
-              return as - bs || ai.localeCompare(bi);
-            });
+          const allRows = infoRowsForCtx();
+          let rows = infoRowsFiltered();
           if (preferId && rows.some((r) => r.id === preferId))
             state.infoSelId = preferId;
           else if (
@@ -3199,32 +3535,31 @@
             !rows.some((r) => r.id === state.infoSelId)
           )
             state.infoSelId = rows[0]?.id || "";
-          modal(`<div class="modal modal-info"><h3>Info</h3>
+          const layout = state.infoLayout === "bento" ? "bento" : "list";
+          const listClass = layout === "bento" ? "info-bento" : "plain-list";
+          const fsClass = state.infoFullscreen ? " is-fullscreen" : "";
+          const layoutLabel = layout === "bento" ? "List" : "Bento";
+          const fsLabel = state.infoFullscreen ? "Exit full" : "Fullscreen";
+          modal(`<div class="modal modal-info${fsClass}"><h3>Info</h3>
       <div class="toolbar" style="padding:0 0 10px">
         <button class="btn" data-m="add-info-here">+ Info</button>
         <button class="btn" data-m="copy-all-info" title="Copy all text (Shift+A)">Copy all</button>
+        <button class="btn" data-m="toggle-layout" title="Toggle layout (Shift+B)">${layoutLabel}</button>
+        <button class="btn" data-m="toggle-fs" title="Toggle fullscreen (Shift+F)">${fsLabel}</button>
+        <button class="btn" data-m="new-cat" title="New category (Shift+K)">+ Category</button>
         <button class="btn" data-m="cancel">Close</button>
       </div>
-      <ul class="plain-list">${
-        rows
-          .map((i) => {
-            const hit = infoHyperlink(i);
-            const openAttrs = hit
-              ? ` data-act="open-info-link" data-href="${esc(hit.href)}" data-kind="${esc(hit.kind)}" title="Open"`
-              : "";
-            const sel = i.id === state.infoSelId ? " kb-selected" : "";
-            return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
-        <div class="plain-row-head">
-          <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
-          <span class="row-actions">
-            <button class="btn" data-act="edit-info">Edit</button>
-            <button class="btn danger" data-act="del-info">Del</button>
-          </span>
-        </div>
-        ${thumbsHtml("info", i.id)}
-      </li>`;
-          })
-          .join("") || '<p class="empty">No info points</p>'
+      ${infoPillsHtml()}
+      <div class="info-hints">
+        <span><kbd>Shift+B</kbd> layout</span>
+        <span><kbd>Shift+F</kbd> fullscreen</span>
+        <span><kbd>Shift+K</kbd> category</span>
+        <span><kbd>Shift+1–9</kbd> filter</span>
+        <span><kbd>Shift+0</kbd> more</span>
+      </div>
+      <ul class="${listClass}">${
+        rows.map(infoRowHtml).join("") ||
+        `<p class="empty">${allRows.length ? "No info in this category" : "No info points"}</p>`
       }</ul></div>`);
           $("#modalHost").onclick = async (e) => {
             if (
@@ -3244,6 +3579,28 @@
               } catch (err) {
                 toast(err.message || String(err));
               }
+              return;
+            }
+            if (e.target.dataset.m === "toggle-layout") {
+              toggleInfoLayout();
+              return;
+            }
+            if (e.target.dataset.m === "toggle-fs") {
+              toggleInfoFullscreen();
+              return;
+            }
+            if (e.target.dataset.m === "new-cat") {
+              await promptNewInfoCategory();
+              return;
+            }
+            const moreBtn = e.target.closest("[data-info-cat-more]");
+            if (moreBtn) {
+              openInfoCategoryMorePicker();
+              return;
+            }
+            const pill = e.target.closest("[data-info-cat]");
+            if (pill) {
+              setInfoCategoryFilter(pill.getAttribute("data-info-cat") || "");
               return;
             }
             const row = e.target.closest(".plain-row[data-id]");
@@ -3319,15 +3676,19 @@
             $("#mText")?.focus();
             return;
           }
+          const sectionPath = existing
+            ? infoCategoryOf(existing)
+            : infoDefaultSectionPath();
           const r = await api("/api/info", {
             method: "POST",
             body: JSON.stringify({
               id: existing?.id || "",
               title: text,
               body: "",
-              section_path: "",
+              section_path: sectionPath,
               parent_type: parentType,
               parent_id: parentId,
+              emoji: existing?.emoji || "ℹ️",
             }),
           });
           toast("Saved");
@@ -3339,7 +3700,7 @@
         }
 
         function moveInfoSel(dir) {
-          const rows = infoRowsForCtx();
+          const rows = infoRowsFiltered();
           if (!rows.length) return;
           let idx = rows.findIndex((r) => r.id === state.infoSelId);
           if (idx < 0) idx = dir > 0 ? -1 : 0;
@@ -4686,6 +5047,49 @@
                 toast(err.message || String(err));
               }
               return;
+            }
+            if (e.shiftKey && shiftCmdFromEvent(e) === "b") {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleInfoLayout();
+              return;
+            }
+            if (e.shiftKey && shiftCmdFromEvent(e) === "f") {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleInfoFullscreen();
+              return;
+            }
+            if (e.shiftKey && shiftCmdFromEvent(e) === "k") {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await promptNewInfoCategory();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
+            if (e.shiftKey) {
+              const digit = shiftCmdFromEvent(e);
+              if (digit === "0") {
+                e.preventDefault();
+                e.stopPropagation();
+                openInfoCategoryMorePicker();
+                return;
+              }
+              if (/^[1-9]$/.test(digit)) {
+                e.preventDefault();
+                e.stopPropagation();
+                const cats = infoCategoriesForCtx();
+                const idx = Number(digit) - 1;
+                if (idx >= cats.length) {
+                  toast("No category " + digit);
+                  return;
+                }
+                setInfoCategoryFilter(cats[idx]);
+                return;
+              }
             }
             if (e.shiftKey && shiftCmdFromEvent(e) === "e") {
               e.preventDefault();

@@ -139,9 +139,9 @@ PITEM_0137,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subte
 PITEM_0138,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Understand schemas, tables, and primary/foreign key relationships",1,23
 PITEM_0139,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Write SELECT, FROM, and WHERE queries to extract and filter rows",1,24
 PITEM_0140,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Map SELECT/FROM/WHERE to flashlight, aisle, and iron gate loci before coding",1,25
-PITEM_0141,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Aggregate with GROUP BY and filter groups with HAVING,0,26
-PITEM_0142,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,"Apply SUM, AVG, COUNT, MIN, and MAX correctly",0,27
-PITEM_0143,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Visualize GROUP BY as a binding machine that stamps totals on bundled books,0,28
+PITEM_0141,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Aggregate with GROUP BY and filter groups with HAVING,1,26
+PITEM_0142,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,"Apply SUM, AVG, COUNT, MIN, and MAX correctly",1,27
+PITEM_0143,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Visualize GROUP BY as a binding machine that stamps totals on bundled books,1,28
 PITEM_0144,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Write INNER JOIN queries across related tables,0,29
 PITEM_0145,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Write LEFT JOIN queries and interpret NULL placeholders for non-matches,0,30
 PITEM_0146,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Use OUTER JOIN patterns and table aliases for readable multi-table SQL,0,31
