@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 13: SQL Advanced Analytics</strong> · Character: Erik Satie · 4 beasts · 4 atoms</summary>
 
-_No image_
+![Memory Palace 13](images/data-analyst/13.jpg)
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
