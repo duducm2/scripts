@@ -933,6 +933,22 @@
         padding: 0 4px;
         color: var(--gold);
       }
+      .info-row-cat {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        max-width: 40%;
+        border: 1px solid var(--line);
+        background: #252528;
+        color: var(--gold);
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 11px;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .info-hints {
         display: flex;
         flex-wrap: wrap;
@@ -1213,7 +1229,7 @@
           taskClipboard: null, // { ...fields, cutFromId? } for Ctrl+C / Ctrl+X / Ctrl+V
         };
         const INFO_UNCAT = "__uncat__";
-        const INFO_CAT_SLOT_MAX = 9;
+        const INFO_CAT_SLOT_MAX = 8; // Shift+2..9
         // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
         const ESC_DOUBLE_TAP_MS = 400;
         const GITHUB_PUNCTUAL_MD =
@@ -3377,6 +3393,13 @@
               emoji: row.emoji || "ℹ️",
             }),
           });
+          const saved = String(r?.info?.section_path || "").trim();
+          if (saved !== cat) {
+            toast(
+              "Category not saved — restart the Tasks server and try again",
+            );
+            throw new Error("section_path not persisted");
+          }
           toast("Category: " + cat);
           await afterEntitySave("info", r, () => {
             infoListModal(ctx.parentType, ctx.parentId, row.id);
@@ -3384,19 +3407,86 @@
           });
         }
 
-        async function promptNewInfoCategory() {
+        async function createInfoCategoryViaPrompt() {
+          const name = prompt("New category name");
+          if (name == null) return;
+          await assignInfoCategory(name);
+        }
+
+        function openInfoCategoryAssignPicker() {
           if (state.infoUi !== "list") return;
           if (!state.infoSelId) {
             toast("Select an info point first");
             return;
           }
-          const name = prompt("New category name");
-          if (name == null) return;
-          try {
-            await assignInfoCategory(name);
-          } catch (err) {
-            toast(err.message || String(err));
-          }
+          const cats = infoCategoriesForCtx();
+          const prevUi = state.infoUi;
+          const prevCtx = state.infoCtx;
+          const prevSel = state.infoSelId;
+          state.infoUi = "form";
+          const listHtml = cats.length
+            ? cats
+                .map(
+                  (c) =>
+                    `<li class="plain-row" data-cat="${esc(c)}"><div class="plain-row-head"><span class="title">${esc(c)}</span></div></li>`,
+                )
+                .join("")
+            : '<p class="empty">No categories yet</p>';
+          modal(`<div class="modal"><h3>Assign category</h3>
+      <div class="modal-body info-cat-picker">
+        <input id="mCatFilter" type="search" placeholder="Filter categories…" autocomplete="off"/>
+        <ul class="plain-list" id="mCatList">${listHtml}</ul>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" data-m="new-cat">+ New category…</button>
+        <button class="btn" data-m="cancel">Cancel</button>
+      </div></div>`);
+          const list = $("#mCatList");
+          const filterInp = $("#mCatFilter");
+          const applyFilter = () => {
+            const q = (filterInp?.value || "").trim().toLowerCase();
+            list?.querySelectorAll(".plain-row").forEach((el) => {
+              const name = (el.getAttribute("data-cat") || "").toLowerCase();
+              el.style.display = !q || name.includes(q) ? "" : "none";
+            });
+          };
+          filterInp?.addEventListener("input", applyFilter);
+          const restoreList = () => {
+            state.infoUi = prevUi || "list";
+            state.infoCtx = prevCtx;
+            state.infoSelId = prevSel;
+            if (prevCtx)
+              infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
+            else dismissInfoModal();
+          };
+          $("#modalHost").onclick = async (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            ) {
+              restoreList();
+              return;
+            }
+            if (e.target.dataset.m === "new-cat") {
+              try {
+                await createInfoCategoryViaPrompt();
+              } catch (err) {
+                toast(err.message || String(err));
+                restoreList();
+              }
+              return;
+            }
+            const row = e.target.closest(".plain-row[data-cat]");
+            if (!row) return;
+            const cat = row.getAttribute("data-cat") || "";
+            try {
+              await assignInfoCategory(cat);
+            } catch (err) {
+              toast(err.message || String(err));
+              restoreList();
+            }
+          };
+          setTimeout(() => filterInp?.focus(), 0);
         }
 
         function openInfoCategoryMorePicker() {
@@ -3468,10 +3558,10 @@
           const filt = state.infoCategoryFilter || "";
           const parts = [];
           parts.push(
-            `<button type="button" class="info-pill${filt === "" ? " active" : ""}" data-info-cat="" title="All">All</button>`,
+            `<button type="button" class="info-pill${filt === "" ? " active" : ""}" data-info-cat="" title="All (Shift+1)"><span class="n">1</span>All</button>`,
           );
           slotted.forEach((c, i) => {
-            const n = i + 1;
+            const n = i + 2;
             parts.push(
               `<button type="button" class="info-pill${filt === c ? " active" : ""}" data-info-cat="${esc(c)}" title="Filter (Shift+${n})"><span class="n">${n}</span>${esc(c)}</button>`,
             );
@@ -3497,13 +3587,13 @@
           const sel = i.id === state.infoSelId ? " kb-selected" : "";
           const cat = infoCategoryOf(i);
           const catBadge = cat
-            ? `<span class="info-tag" title="Category">${esc(cat)}</span>`
+            ? `<span class="info-row-cat" title="Category">${esc(cat)}</span>`
             : "";
           return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
         <div class="plain-row-head">
           <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
+          ${catBadge}
           <span class="row-actions">
-            ${catBadge}
             <button class="btn" data-act="edit-info">Edit</button>
             <button class="btn danger" data-act="del-info">Del</button>
           </span>
@@ -3546,15 +3636,16 @@
         <button class="btn" data-m="copy-all-info" title="Copy all text (Shift+A)">Copy all</button>
         <button class="btn" data-m="toggle-layout" title="Toggle layout (Shift+B)">${layoutLabel}</button>
         <button class="btn" data-m="toggle-fs" title="Toggle fullscreen (Shift+F)">${fsLabel}</button>
-        <button class="btn" data-m="new-cat" title="New category (Shift+K)">+ Category</button>
+        <button class="btn" data-m="new-cat" title="Assign category (Shift+K)">+ Category</button>
         <button class="btn" data-m="cancel">Close</button>
       </div>
       ${infoPillsHtml()}
       <div class="info-hints">
         <span><kbd>Shift+B</kbd> layout</span>
         <span><kbd>Shift+F</kbd> fullscreen</span>
-        <span><kbd>Shift+K</kbd> category</span>
-        <span><kbd>Shift+1–9</kbd> filter</span>
+        <span><kbd>Shift+K</kbd> assign category</span>
+        <span><kbd>Shift+1</kbd> all</span>
+        <span><kbd>Shift+2–9</kbd> categories</span>
         <span><kbd>Shift+0</kbd> more</span>
       </div>
       <ul class="${listClass}">${
@@ -3590,7 +3681,7 @@
               return;
             }
             if (e.target.dataset.m === "new-cat") {
-              await promptNewInfoCategory();
+              openInfoCategoryAssignPicker();
               return;
             }
             const moreBtn = e.target.closest("[data-info-cat-more]");
@@ -5063,11 +5154,7 @@
             if (e.shiftKey && shiftCmdFromEvent(e) === "k") {
               e.preventDefault();
               e.stopPropagation();
-              try {
-                await promptNewInfoCategory();
-              } catch (err) {
-                toast(err.message || String(err));
-              }
+              openInfoCategoryAssignPicker();
               return;
             }
             if (e.shiftKey) {
@@ -5078,11 +5165,17 @@
                 openInfoCategoryMorePicker();
                 return;
               }
-              if (/^[1-9]$/.test(digit)) {
+              if (digit === "1") {
+                e.preventDefault();
+                e.stopPropagation();
+                setInfoCategoryFilter("");
+                return;
+              }
+              if (/^[2-9]$/.test(digit)) {
                 e.preventDefault();
                 e.stopPropagation();
                 const cats = infoCategoriesForCtx();
-                const idx = Number(digit) - 1;
+                const idx = Number(digit) - 2;
                 if (idx >= cats.length) {
                   toast("No category " + digit);
                   return;

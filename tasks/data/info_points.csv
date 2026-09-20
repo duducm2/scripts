@@ -1,5 +1,5 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at
-INFO_0005,project,PROJ_0004,Next steps,Next steps,ℹ️,,170,2026-08-29 15:48:39
+INFO_0005,project,PROJ_0004,Next steps,,ℹ️,,170,2026-08-29 15:48:39
 INFO_0006,project,PROJ_0004,Plan,Plan,ℹ️,,190,2026-08-29 15:48:39
 INFO_0016,task,TASK_0011,Contribution Goals,"Contribution Goals
 0 - Não atingido
@@ -246,6 +246,6 @@ Tempo integral
 SAP MM ANALYST - GLOBAL TAX SOLUTIONS (S/4HANA) (34142)
 Tempo integral
 PRODUCT OWNER SR - PROJETOS S/4HANA
-Tempo integral",,ℹ️,,120,2026-09-19 17:11:06
+Tempo integral",,ℹ️,Prompt,120,2026-09-19 17:11:06
 INFO_0179,task,TASK_0299,image.png,,ℹ️,,10,2026-09-19 19:02:50
-INFO_0180,task,TASK_0255,I want you to come here both data set below of job openings and tell me if there are new posted job openings when compared to the old ones,,ℹ️,,130,2026-09-20 15:02:58
+INFO_0180,task,TASK_0255,I want you to come here both data set below of job openings and tell me if there are new posted job openings when compared to the old ones,,ℹ️,Prompt,130,2026-09-20 15:02:58
