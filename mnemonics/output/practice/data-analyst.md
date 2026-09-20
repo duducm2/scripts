@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 14: SQL Joins</strong> · Character: Frédéric Chopin · 3 beasts · 3 atoms</summary>
 
-_No image_
+![Memory Palace 14](images/data-analyst/14.jpg)
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
