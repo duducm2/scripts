@@ -1084,6 +1084,9 @@ cheatSheets["Tasks"] := "
     🗂️ [Shift+B] Info list — toggle list / bento layout
     ⛶ [Shift+F] Info list — toggle fullscreen
     🏷️ [Shift+K] Info list — assign category (pick existing or create new)
+    ⏎ [Enter] Category picker — select highlighted / first match
+    ➕ [Shift+Enter] Category picker — create new (uses typed text if any)
+    ⬆️⬇️ [Up/Down] Category picker — move highlight
     1️⃣ [Shift+1] Info list — show all (clear category filter)
     2️⃣ [Shift+2–9] Info list — filter by category pill
     ⋯ [Shift+0] Info list — more categories picker

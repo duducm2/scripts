@@ -3407,10 +3407,103 @@
           });
         }
 
-        async function createInfoCategoryViaPrompt() {
+        async function createInfoCategoryViaPrompt(defaultName = "") {
+          const typed = String(defaultName || "").trim();
+          if (typed) {
+            await assignInfoCategory(typed);
+            return;
+          }
           const name = prompt("New category name");
           if (name == null) return;
           await assignInfoCategory(name);
+        }
+
+        function infoCatPickerVisibleRows(list) {
+          return [
+            ...(list?.querySelectorAll(".plain-row[data-cat]") || []),
+          ].filter((el) => el.style.display !== "none");
+        }
+
+        function infoCatPickerPaintSel(list, el) {
+          list?.querySelectorAll(".plain-row").forEach((row) => {
+            row.classList.toggle("kb-selected", row === el);
+          });
+          if (el?.scrollIntoView)
+            el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+
+        function infoCatPickerMoveSel(list, dir) {
+          const rows = infoCatPickerVisibleRows(list);
+          if (!rows.length) return null;
+          let idx = rows.findIndex((r) => r.classList.contains("kb-selected"));
+          if (idx < 0) idx = dir > 0 ? -1 : 0;
+          idx = Math.max(0, Math.min(rows.length - 1, idx + dir));
+          const el = rows[idx];
+          infoCatPickerPaintSel(list, el);
+          return el;
+        }
+
+        function infoCatPickerSyncSel(list) {
+          const rows = infoCatPickerVisibleRows(list);
+          if (!rows.length) {
+            infoCatPickerPaintSel(list, null);
+            return null;
+          }
+          const cur = rows.find((r) => r.classList.contains("kb-selected"));
+          const el = cur || rows[0];
+          infoCatPickerPaintSel(list, el);
+          return el;
+        }
+
+        function wireInfoCatPickerFilter(filterInp, list, opts = {}) {
+          const onEnter = opts.onEnter;
+          const onShiftEnter = opts.onShiftEnter;
+          const applyFilter = () => {
+            const q = (filterInp?.value || "").trim().toLowerCase();
+            list?.querySelectorAll(".plain-row[data-cat]").forEach((el) => {
+              const name = (el.getAttribute("data-cat") || "").toLowerCase();
+              el.style.display = !q || name.includes(q) ? "" : "none";
+            });
+            infoCatPickerSyncSel(list);
+          };
+          filterInp?.addEventListener("input", applyFilter);
+          filterInp?.addEventListener("keydown", async (e) => {
+            if (e.key === "Escape") return;
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              e.stopPropagation();
+              infoCatPickerMoveSel(list, 1);
+              return;
+            }
+            if (e.key === "ArrowUp") {
+              e.preventDefault();
+              e.stopPropagation();
+              infoCatPickerMoveSel(list, -1);
+              return;
+            }
+            if (e.key === "Enter" && e.shiftKey && onShiftEnter) {
+              e.preventDefault();
+              e.stopPropagation();
+              await onShiftEnter(filterInp?.value || "");
+              return;
+            }
+            if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              const sel =
+                infoCatPickerVisibleRows(list).find((r) =>
+                  r.classList.contains("kb-selected"),
+                ) || infoCatPickerVisibleRows(list)[0];
+              if (!sel) {
+                toast("No matching category");
+                return;
+              }
+              await onEnter?.(sel.getAttribute("data-cat") || "");
+              return;
+            }
+          });
+          applyFilter();
+          return applyFilter;
         }
 
         function openInfoCategoryAssignPicker() {
@@ -3431,26 +3524,19 @@
                     `<li class="plain-row" data-cat="${esc(c)}"><div class="plain-row-head"><span class="title">${esc(c)}</span></div></li>`,
                 )
                 .join("")
-            : '<p class="empty">No categories yet</p>';
+            : '<p class="empty">No categories yet — Shift+Enter to create</p>';
           modal(`<div class="modal"><h3>Assign category</h3>
       <div class="modal-body info-cat-picker">
-        <input id="mCatFilter" type="search" placeholder="Filter categories…" autocomplete="off"/>
+        <input id="mCatFilter" type="search" placeholder="Type to filter…" autocomplete="off"/>
+        <p class="sub"><kbd>Enter</kbd> select · <kbd>Shift+Enter</kbd> new · <kbd>↑↓</kbd> move · <kbd>Esc</kbd> back</p>
         <ul class="plain-list" id="mCatList">${listHtml}</ul>
       </div>
       <div class="modal-actions">
-        <button class="btn" data-m="new-cat">+ New category…</button>
+        <button class="btn" data-m="new-cat" title="New category (Shift+Enter)">+ New category…</button>
         <button class="btn" data-m="cancel">Cancel</button>
       </div></div>`);
           const list = $("#mCatList");
           const filterInp = $("#mCatFilter");
-          const applyFilter = () => {
-            const q = (filterInp?.value || "").trim().toLowerCase();
-            list?.querySelectorAll(".plain-row").forEach((el) => {
-              const name = (el.getAttribute("data-cat") || "").toLowerCase();
-              el.style.display = !q || name.includes(q) ? "" : "none";
-            });
-          };
-          filterInp?.addEventListener("input", applyFilter);
           const restoreList = () => {
             state.infoUi = prevUi || "list";
             state.infoCtx = prevCtx;
@@ -3459,6 +3545,26 @@
               infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
             else dismissInfoModal();
           };
+          const pickCat = async (cat) => {
+            try {
+              await assignInfoCategory(cat);
+            } catch (err) {
+              toast(err.message || String(err));
+              restoreList();
+            }
+          };
+          const makeNew = async (typed) => {
+            try {
+              await createInfoCategoryViaPrompt(typed);
+            } catch (err) {
+              toast(err.message || String(err));
+              restoreList();
+            }
+          };
+          wireInfoCatPickerFilter(filterInp, list, {
+            onEnter: pickCat,
+            onShiftEnter: makeNew,
+          });
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -3468,23 +3574,12 @@
               return;
             }
             if (e.target.dataset.m === "new-cat") {
-              try {
-                await createInfoCategoryViaPrompt();
-              } catch (err) {
-                toast(err.message || String(err));
-                restoreList();
-              }
+              await makeNew(filterInp?.value || "");
               return;
             }
             const row = e.target.closest(".plain-row[data-cat]");
             if (!row) return;
-            const cat = row.getAttribute("data-cat") || "";
-            try {
-              await assignInfoCategory(cat);
-            } catch (err) {
-              toast(err.message || String(err));
-              restoreList();
-            }
+            await pickCat(row.getAttribute("data-cat") || "");
           };
           setTimeout(() => filterInp?.focus(), 0);
         }
@@ -3502,7 +3597,8 @@
           state.infoUi = "form";
           modal(`<div class="modal"><h3>More categories</h3>
       <div class="modal-body info-cat-picker">
-        <input id="mCatFilter" type="search" placeholder="Filter categories…" autocomplete="off"/>
+        <input id="mCatFilter" type="search" placeholder="Type to filter…" autocomplete="off"/>
+        <p class="sub"><kbd>Enter</kbd> select · <kbd>↑↓</kbd> move · <kbd>Esc</kbd> back</p>
         <ul class="plain-list" id="mCatList">${overflow
           .map(
             (c) =>
@@ -3513,14 +3609,6 @@
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button></div></div>`);
           const list = $("#mCatList");
           const filterInp = $("#mCatFilter");
-          const applyFilter = () => {
-            const q = (filterInp?.value || "").trim().toLowerCase();
-            list?.querySelectorAll(".plain-row").forEach((el) => {
-              const name = (el.getAttribute("data-cat") || "").toLowerCase();
-              el.style.display = !q || name.includes(q) ? "" : "none";
-            });
-          };
-          filterInp?.addEventListener("input", applyFilter);
           const restoreList = () => {
             state.infoUi = prevUi;
             state.infoCtx = prevCtx;
@@ -3529,6 +3617,17 @@
               infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
             else dismissInfoModal();
           };
+          const pickCat = (cat) => {
+            state.infoCategoryFilter = cat;
+            state.infoUi = "list";
+            state.infoCtx = prevCtx;
+            state.infoSelId = prevSel;
+            if (prevCtx)
+              infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
+          };
+          wireInfoCatPickerFilter(filterInp, list, {
+            onEnter: async (cat) => pickCat(cat),
+          });
           $("#modalHost").onclick = (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -3539,13 +3638,7 @@
             }
             const row = e.target.closest(".plain-row[data-cat]");
             if (!row) return;
-            const cat = row.getAttribute("data-cat") || "";
-            state.infoCategoryFilter = cat;
-            state.infoUi = "list";
-            state.infoCtx = prevCtx;
-            state.infoSelId = prevSel;
-            if (prevCtx)
-              infoListModal(prevCtx.parentType, prevCtx.parentId, prevSel);
+            pickCat(row.getAttribute("data-cat") || "");
           };
           setTimeout(() => filterInp?.focus(), 0);
         }
