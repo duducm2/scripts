@@ -3,7 +3,7 @@
 ; Constant Pasting: toggle loop pastes from current Clip Angel selection
 ; (All or Favorites; no Row-0 jump), 1.5s interruptible gap.
 ; Directions: "down" (Shift+P) / "up" (Shift+B). Before start, Char ListView picks
-; interstitial delimiter (E/S/H/N); Char key selects that option immediately.
+; interstitial delimiter (E/S/,/;/H/N); Char key selects that option immediately.
 ; Hot path: native Ctrl+Alt+B (paste+previous = down list) / Ctrl+Alt+V (paste+next = toward top)
 ; via ClipAngel_PostHotkey — paste target stays foreground; no per-clip Activate/UIA walk.
 ; Efficiency: WM_HOTKEY post (efficiency-canon §15); bounded gap; light UIA only for end-of-list.
@@ -31,9 +31,19 @@ global g_ClipAngelConstantPasteDelimiterHotkeys := []
 
 ; Char-first delimiter options; pressing Char selects that option immediately.
 ClipAngel_ConstantPaste_DelimiterOptions() {
-    return [{ char: "E", label: "Enter", send: "{Enter}" }, { char: "S", label: "Space", send: "{Space}" }, { char: "H",
-        label: "Shift+Enter", send: "+{Enter}" }, { char: "N", label: "None", send: "" }
+    return [{ char: "E", label: "Enter", send: "{Enter}" }, { char: "S", label: "Space", send: "{Space}" }, { char: ",",
+        label: "Comma", send: "," }, { char: ";", label: "Semicolon", send: ";" }, { char: "H", label: "Shift+Enter",
+            send: "+{Enter}" }, { char: "N", label: "None", send: "" }
     ]
+}
+
+; Map ListView Char to a Hotkey key name (punctuation needs VK codes).
+ClipAngel_ConstantPaste_DelimiterHotkeyKey(ch) {
+    if (ch = ",")
+        return "vkBC"
+    if (ch = ";")
+        return "vkBA"
+    return StrLower(ch)
 }
 
 ClipAngel_ConstantPaste_IsActive() {
@@ -405,11 +415,12 @@ ClipAngel_ConstantPaste_DelimiterBindHotkeys() {
     }
 
     for opt in ClipAngel_ConstantPaste_DelimiterOptions() {
-        ch := StrLower(opt.char)
+        ch := opt.char
+        key := ClipAngel_ConstantPaste_DelimiterHotkeyKey(ch)
         cb := ClipAngel_ConstantPaste_DelimiterSelectChar.Bind(ch)
         try {
-            Hotkey(ch, cb, "On")
-            g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: ch, handler: cb })
+            Hotkey(key, cb, "On")
+            g_ClipAngelConstantPasteDelimiterHotkeys.Push({ key: key, handler: cb })
         } catch {
         }
     }
@@ -636,7 +647,7 @@ ClipAngel_ConstantPaste_PromptDelimiter() {
     g_ClipAngelConstantPasteDelimiterGui.Add("Text", "w420",
         "Char = select   Enter/double-click = select   Esc = cancel")
     g_ClipAngelConstantPasteDelimiterLv := g_ClipAngelConstantPasteDelimiterGui.Add("ListView",
-        "w420 h140 -Multi", ["Char", "Delimiter"])
+        "w420 h200 -Multi", ["Char", "Delimiter"])
     g_ClipAngelConstantPasteDelimiterLv.OnEvent("DoubleClick", ClipAngel_ConstantPaste_DelimiterOnListActivate)
     g_ClipAngelConstantPasteDelimiterGui.Add("Button", "w100", "Close").OnEvent("Click",
         ClipAngel_ConstantPaste_DelimiterCancel)
