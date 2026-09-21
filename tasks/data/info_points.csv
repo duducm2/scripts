@@ -152,7 +152,10 @@ INFO_0176,task,TASK_0284,"Recommended annually if the puppy will go to daycares,
 INFO_0177,task,TASK_0286,"Leishmaniose: Depending on veterinary guidance in the São Paulo / Nova Odessa region, this might be recommended.
 
 Giárdia: Sometimes recommended, though considered non-core.",,ℹ️,,10,2026-09-17 22:23:59
-INFO_0178,task,TASK_0255,"Old: Campinas, Brasil47 empregos
+INFO_0178,task,TASK_0255,"old: 
+old: Campinas, Brasil45 empregos
+WORKLOAD AUTOMATION (WLA) SENIOR ENGINEER - 35082
+Tempo integral
 ANALISTA DE VENDAS PL (35769)
 Tempo integral
 PROGRAMA DE ESTÁGIO SUPERIOR - OUTUBRO/2026
@@ -215,10 +218,6 @@ SENIOR SAP S/4HANA PROJECT LEAD | GLOBAL ROLLOUTS - 9495775 e 9495808
 Tempo integral
 SENIOR FOREIGN TRADE SYSTEMS ANALYST (SAP FT) (35439)
 Tempo integral
-PROGRAMA JOVEM APRENDIZ - 1º SEMESTRE/2027
-Tempo integral
-AGENTE QUALIDADE LOGÍSTICA JUNIOR - 2º TURNO (35573)
-Tempo integral
 SENIOR SAP SD ANALYST – FOCUS ON LOCALIZATION & BUSINESS PROCESSES (35459)
 Tempo integral
 SALES MANAGER (Brazil–China) (34692) - FLUENTE EM MANDARIM
@@ -228,8 +227,6 @@ Tempo integral
 SENIOR SAP SD PROJECT ANALYST - 9174417
 Tempo integral
 SENIOR IT PRODUCT OWNER - Databricks Data Platform (35357)
-Tempo integral
-SENIOR IT PRODUCT OWNER - BI & Analytics Enablement (35376)
 Tempo integral
 SENIOR SAP SD FUNCTIONAL ANALYST - Order-to-Cash (35352)
 Tempo integral
@@ -246,6 +243,24 @@ Tempo integral
 SAP MM ANALYST - GLOBAL TAX SOLUTIONS (S/4HANA) (34142)
 Tempo integral
 PRODUCT OWNER SR - PROJETOS S/4HANA
-Tempo integral",,ℹ️,Prompt,120,2026-09-19 17:11:06
-INFO_0180,task,TASK_0255,I want you to come here both data set below of job openings and tell me if there are new posted job openings when compared to the old ones,,ℹ️,Prompt,130,2026-09-20 15:02:58
+Tempo integral
+
+Curitiba, Brasil8 empregos
+VAGA EXCLUSIVA PARA PESSOAS COM DEFICIÊNCIA - OPERADOR (35379)
+Tempo integral
+MEIO OFICIAL EM TREINAMENTO - TEMPO DETERMINADO DE 1 ANO (34074)
+Tempo integral
+ANALISTA DE LOGÍSTICA PLENO (35940)
+Tempo integral
+ALMOXARIFE - TEMPO DETERMINADO 6 MESES (35934, 35935, 35936, 35937, 35938, 35939)
+Tempo integral
+ANALISTA DE CONTROLADORIA PL (35767)
+Tempo integral
+ENGENHARIA DE DESENVOLVIMENTO DE PRODUTO PL (FOCO EM FLUIDOS E TÉRMICA) (35734)
+Tempo integral
+ENGENHARIA DE DESENVOLVIMENTO DE PRODUTO PL (FOCO EM FLUIDOS E TÉRMICA) - VAGA POR TEMPO DETERMINADO 365 DIAS (35735)
+Tempo integral
+MID LEVEL DIGITAL SOLUTION ARCHITECT (33992)
+Tempo integral",,ℹ️,Prompt,130,2026-09-19 17:11:06
+INFO_0180,task,TASK_0255,I want you to come here both data set below of job openings and tell me if there are new posted job openings when compared to the old ones,,ℹ️,Prompt,120,2026-09-20 15:02:58
 INFO_0181,task,TASK_0302,https://meet.google.com/rcn-pbqa-xra?hs=224,,ℹ️,,10,2026-09-21 13:16:48
