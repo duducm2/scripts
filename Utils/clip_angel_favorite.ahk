@@ -2216,7 +2216,7 @@ ClipAngel_UnfavoriteAllClips() {
         ClipAngel_ReleaseChordModifiersForSend()
 
         if !ClipAngel_ReassertFocusAfterDialog(hwnd, 1000) {
-            errMsg := "❌ Clip Angel lost focus after confirm."
+            errMsg := "❌ Clip Angel lost focus aftQer confirm."
             return false
         }
 

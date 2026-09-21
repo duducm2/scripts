@@ -315,3 +315,5 @@
 2026-09-20 15:48:05|4|Creating mnemonic stories|gemini|default|ctx=3+1|direct
 2026-09-20 15:48:36|6|Curate knowledge atoms|gemini|default|ctx=1|direct
 2026-09-20 15:49:08|4|Creating mnemonic stories|gemini|default|ctx=3+1|direct
+2026-09-21 19:04:50|2|Quick task lines|gemini|default|ctx=0|direct
+2026-09-21 19:05:01|k|Convert to Task|gemini|default|ctx=2|direct
