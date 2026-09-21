@@ -34,6 +34,7 @@ Fill in filenames you keep locally if they differ from the list.
 | `fastcopy-start.mp3` / `fastcopy-finish.mp3`      | Fast Copy mode                                                                   |
 | `commit-start.wav`                                | Commit flows (Shift keys)                                                        |
 | `favorite-set.wav`                                | After Alt+Q marks focused Clip Angel clip as favorite (`MarkLastClipAsFavorite`) |
+| `unfavorite-all-success.wav`                      | After unfavorite-all succeeds (`ClipAngel_UnfavoriteAllClips`; CC0 bell ding)    |
 | System `*16` / `*64`                              | Via `ScriptSoundPlaySystem` (gated)                                              |
 
 `quick-update-failure.wav` exists in tree; confirm whether any path plays it—if not, candidate for failed Quick Update.
@@ -59,6 +60,7 @@ Check boxes when you add an asset and wire it.
 
 - [ ] Merge clips complete (`ShowCenteredOverlay_Utils` success paths in merge flow).
 - [x] Newly marked favorite — `favorite-set.wav` in `MarkLastClipAsFavorite` (already-favorite branch stays silent).
+- [x] Unfavorite all — `unfavorite-all-success.wav` after successful clear (`ClipAngel_UnfavoriteAllClips`).
 
 ### Gemini & Cursor bridges
 

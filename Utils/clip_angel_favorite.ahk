@@ -2144,8 +2144,41 @@ ClipAngel_ReassertFocusAfterDialog(hwnd, timeoutMs := 1000) {
     return WinActive("ahk_id " hwnd)
 }
 
+; Ensure Yes/Sim (Button1) is focused so Enter confirms — Default1 alone can miss after Owner.
+ClipAngel_FocusUnfavoriteAllConfirmYes() {
+    dlgTitle := "Clip Angel — unfavorite all"
+    deadline := A_TickCount + 1500
+    while (A_TickCount < deadline) {
+        if hwndDlg := WinExist(dlgTitle " ahk_class #32770") {
+            try {
+                WinActivate("ahk_id " hwndDlg)
+                ControlFocus("Button1", "ahk_id " hwndDlg)
+            } catch {
+            }
+            try {
+                ; Button1 = Yes/Sim for YesNo; fall back to caption match if needed.
+                if (ControlGetFocus("ahk_id " hwndDlg) = "Button1")
+                    return
+                loop 4 {
+                    try {
+                        btnText := ControlGetText("Button" . A_Index, "ahk_id " hwndDlg)
+                        if RegExMatch(btnText, "i)^(Yes|Sim|&Yes|&Sim)") {
+                            ControlFocus("Button" . A_Index, "ahk_id " hwndDlg)
+                            return
+                        }
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+            return
+        }
+        Sleep 20
+    }
+}
+
 ; Confirm → favorites filter (Ctrl+2) → select all → unmark (Alt+W / Shift+U).
-; Loading Indication stays up for the whole removal; Clip Angel stays focused.
+; Loading Indication stays up for the whole removal; Clip Angel minimizes on success.
 ClipAngel_UnfavoriteAllClips() {
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
@@ -2163,12 +2196,17 @@ ClipAngel_UnfavoriteAllClips() {
     loadingShown := false
     try {
         ownerOpt := " Owner" . hwnd
+        ; Default1 + timer focus so Enter confirms without Tab.
+        SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, -50)
         response := MsgBox(
             "Remove favorite status from ALL currently favorited clips?`n`n"
             . "Clips stay in history; only the favorite mark is cleared.",
             "Clip Angel — unfavorite all",
             "YesNo Icon! Default1" . ownerOpt
         )
+        try SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, 0)
+        catch {
+        }
         if (response != "Yes") {
             ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
             return false
@@ -2250,14 +2288,17 @@ ClipAngel_UnfavoriteAllClips() {
             }
         }
         ClipAngel_ReleaseAutomationLock()
-        ; Leave Clip Angel focused for the user after the run.
-        if hwnd
-            ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
     }
 
-    if ok
+    if ok {
+        if hwnd
+            ClipAngel_HideWindow(hwnd)
+        try ScriptSoundPlay(A_ScriptDir "\assets\sounds\unfavorite-all-success.wav")
         ShowCenteredOverlay_Utils("✅ Favorite marks cleared from selection.", 1500, BANNER_ACCENT_SUCCESS)
-    else if (errMsg != "")
+    } else if (errMsg != "") {
+        if hwnd
+            ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
         ShowCenteredOverlay_Utils(errMsg, 2500, BANNER_ACCENT_ERROR)
+    }
     return ok
 }
