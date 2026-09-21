@@ -1,0 +1,18 @@
+﻿===PREVIEW===
+0 project(s) · 2 task(s) · 1 info · Nutritive recomposition target and macros mapped to existing Habits & Health project
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Habits & Health,habits,"Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)",🩺,habitual,daily,,,Daily
+Habits & Health,habits,"Review body recomposition progress (photos, measurements, gym performance)",🩺,habitual,weekly,,,Weekly
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,filter,title,body,section_path
+task,"Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)",habits,Caloric and Macronutrient Breakdown,"TDEE: ~2,700 kcal/day (Mifflin-St Jeor based on 82 kg, height, age, moderate activity). Target: 2,500 kcal/day for body recomposition (mild deficit). Macros: Protein 165g (~2g/kg body weight), Fats 80g (~30% intake), Carbohydrates 280g.",Daily
+===END_FILE===
