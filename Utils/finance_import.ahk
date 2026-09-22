@@ -863,7 +863,7 @@ Finance_AfterDailyImport(parsed, autoConfirm) {
         guiOpen := false
     }
     if (!autoConfirm || guiOpen)
-        Finance_ShowTransactions()
+        Finance_ShowTransactions(false)  ; keep month chosen for the imported rows
 }
 
 Finance_ImportMonthly(*) {

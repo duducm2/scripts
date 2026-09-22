@@ -14,16 +14,25 @@ global g_FinanceTxCatFilterHelp := false
 global g_FinanceTxCatNeedle := ""
 global g_FinanceTxCatFilterVisible := false
 
-Finance_ShowTransactions() {
+; resetView: true = current month + clear type/category filters (normal open).
+; false = keep month/filter already set by caller (e.g. after daily import).
+Finance_ShowTransactions(resetView := true) {
     global g_FinanceGui, g_FinanceMonth, g_FinanceTxLv, g_FinanceTxFilter, g_FinanceTxHeader, g_FinanceTxHint
     global g_FinanceTxCatFilterEdit, g_FinanceTxCatFilterLabel, g_FinanceTxCatFilterHelp
     global g_FinanceTxCatNeedle, g_FinanceTxCatFilterVisible
     Finance_CloseGui()
     Finance_EnsureData()
-    if (g_FinanceMonth = "")
+    if (resetView) {
         g_FinanceMonth := Finance_CurrentYearMonth()
-    g_FinanceTxCatNeedle := ""
-    g_FinanceTxCatFilterVisible := false
+        g_FinanceTxFilter := "all"
+        g_FinanceTxCatNeedle := ""
+        g_FinanceTxCatFilterVisible := false
+    } else {
+        if (g_FinanceMonth = "")
+            g_FinanceMonth := Finance_CurrentYearMonth()
+        g_FinanceTxCatNeedle := ""
+        g_FinanceTxCatFilterVisible := false
+    }
 
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Transactions")
     g_FinanceGui.SetFont("s10", "Segoe UI")
