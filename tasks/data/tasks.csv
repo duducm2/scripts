@@ -117,7 +117,6 @@ TASK_0248,PROJ_0015,SEC_0015,Deixar firma aberta no cartório,⚡,punctual,,,,,p
 TASK_0251,PROJ_0027,SEC_0132,You can get in touch with people directly through this page and check if the companies have job openings,⏳,punctual,,,,Alumni Unicamp,personal,4240,,2026-09-14 18:10:24,1
 TASK_0254,PROJ_0027,SEC_0136,Job openings,⏳,punctual,,,,Levva,personal,4270,,2026-09-14 18:25:53,1
 TASK_0255,PROJ_0027,SEC_0134,Search on Platforms,⚡,punctual,,,,Bosch,personal,4280,,2026-09-14 18:27:29,1
-TASK_0256,PROJ_0027,SEC_0135,"Check datacenters on Campinas, Paulínia and Sumaré",⚡,punctual,,,,Campinas,personal,4290,,2026-09-14 18:33:06,1
 TASK_0258,PROJ_0027,SEC_0131,Check Job openings,⚡,punctual,,,,,personal,4310,,2026-09-15 15:52:03,1
 TASK_0259,PROJ_0027,SEC_0131,You should continue or cancel your LinkedIn premium subscription that finishes on October 15th,⏳,punctual,,,,,personal,4320,,2026-09-15 16:21:27,1
 TASK_0264,PROJ_0029,SEC_0138,1st Dose V10,,punctual,,2026-09-19,,Vaccination Timetable,personal,4380,,2026-09-17 22:16:13,1
@@ -149,3 +148,4 @@ TASK_0303,PROJ_0019,SEC_0081,"Track daily nutrition targets (2,500 kcal, 165g P,
 TASK_0304,PROJ_0019,SEC_0082,"Review body recomposition progress (photos, measurements, gym performance)",🩺,habitual,weekly,,,Weekly,habits,4770,,2026-09-21 19:06:59,1
 TASK_0305,PROJ_0029,SEC_0137,Coleira de spikes,⏳,punctual,,,,,personal,4780,,2026-09-21 19:42:45,1
 TASK_0306,PROJ_0027,SEC_0134,Apply to this one,🔲,punctual,,,,Bosch,personal,4790,,2026-09-21 21:56:49,1
+TASK_0307,PROJ_0027,SEC_0131,You could somehow using cursor see all available job openings on the companies and daily be able to refresh that and check if new job openings appeared so you can apply them. Maybe you can also use the same way that we have import into our in our auto hotkey system,⚡,punctual,,,,,personal,4800,,2026-09-21 22:05:32,1
