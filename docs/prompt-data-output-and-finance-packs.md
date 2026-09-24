@@ -208,7 +208,7 @@ Change **Data output** in Prompt Manager (`#!+h` or `#!+U` → Prompts → Edit)
 Call sites:
 
 - [`Utils/prompt_render.ahk`](../Utils/prompt_render.ahk) — Utility Shortcuts paste / L-arm companion
-- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[D]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / **`k`** Convert to Task pack), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation. Legacy emoji-line **`mtask`** remains Char **`2`** (Prompts only, not on this menu).
+- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[D]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / **`k`** Convert to Task pack), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation.
 
 The long FILE DELIVERY PROTOCOL inside each `.txt` body is documentation/fallback; the injected block is the runtime authority for **file vs code**.
 
@@ -293,7 +293,7 @@ Files (prefer download; if attach fails, one marked fence; never fake disk save)
 - [`assets/prompt/finance-daily-transactions.txt`](../assets/prompt/finance-daily-transactions.txt)
 - [`assets/prompt/finance-monthly-investments.txt`](../assets/prompt/finance-monthly-investments.txt)
 - [`assets/prompt/mnemonic-atoms-import.txt`](../assets/prompt/mnemonic-atoms-import.txt) — Utility Prompts **`[u]`**; Desktop `PALACE_ATOMS.csv` → Import Management **`[P]`**
-- [`assets/prompt/convert-to-task.txt`](../assets/prompt/convert-to-task.txt) — Utility Prompts **`[k]`**; dictation **`[T]`** (TASK_PACK). Legacy emoji-line helper remains Char **`[2]`** (`mtask.txt`, “Quick task lines”).
+- [`assets/prompt/convert-to-task.txt`](../assets/prompt/convert-to-task.txt) — Utility Prompts **`[k]`**; dictation **`[T]`** (TASK_PACK).
 - [`mnemonics/technique/prompts/story-prompt.txt`](../mnemonics/technique/prompts/story-prompt.txt)
 - [`mnemonics/technique/prompts/story-reduction-prompt.txt`](../mnemonics/technique/prompts/story-reduction-prompt.txt)
 - [`mnemonics/technique/prompts/plan-prompt.txt`](../mnemonics/technique/prompts/plan-prompt.txt)

@@ -865,7 +865,7 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "task_pack" | "mtask" | "finance_daily"
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "task_pack" | "finance_daily"
     ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
     ; Finance daily / registry presets: attach context files then paste prompt + dictation.
     ; Finance daily sends only (no wait / download / import); user finishes manually.
@@ -884,7 +884,7 @@ class D2C_FlowManager {
         try dictation := A_Clipboard
 
         if (presetMode = "finance_daily" || presetMode = "grammar" || presetMode = "aiopt"
-            || presetMode = "mtask" || presetMode = "task_pack") {
+            || presetMode = "task_pack") {
             PromptData_Load(true)
             charKey := ""
             if (presetMode = "finance_daily")
@@ -895,8 +895,6 @@ class D2C_FlowManager {
                 charKey := "3"
             else if (presetMode = "task_pack")
                 charKey := "k"
-            else if (presetMode = "mtask")
-                charKey := "2"
             registryPrompt := PromptData_FindByChar(charKey)
             if (presetMode = "finance_daily" && !IsObject(registryPrompt)) {
                 ShowCenteredOverlay_Utils("⚠ Finance daily prompt not found (char d)", 2200, BANNER_ACCENT_ERROR)
@@ -921,8 +919,6 @@ class D2C_FlowManager {
                 presetBody := GetGrammarPromptText()
             } else if (presetMode = "aiopt") {
                 presetBody := GetAioptPromptText()
-            } else if (presetMode = "mtask") {
-                presetBody := GetMtaskPromptText()
             }
             optionalSnippet := D2C_CombinePresetWithDictation(presetBody, dictation)
         }
