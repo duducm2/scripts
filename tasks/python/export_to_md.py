@@ -1,6 +1,7 @@
-"""Export tasks CSV data to notes Markdown (punctual.md = personal filter).
+"""Export tasks CSV data to notes Markdown for phone (personal + habits).
 
-Human-readable mirror for the notes repo. Not required to round-trip import.
+punctual.md = personal filter; habits.md = habits filter.
+Work is never written unless --work is passed explicitly (push path does not).
 """
 
 from __future__ import annotations

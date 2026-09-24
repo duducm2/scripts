@@ -1125,7 +1125,7 @@ cheatSheets["Tasks"] := "
     
     === Alt ===
     🔍 [S] Show search field (toggle; Esc closes when empty)
-    📄 [G] Open personal tasks on GitHub (main/punctual.md)
+    📄 [G] Open personal tasks on GitHub (main/punctual.md); habits at main/habits.md (#!+9 1× push exports both; never work)
 )"
 
 ; --- Memory Palace (localhost :8767, Chrome title Memory Palace) ----------

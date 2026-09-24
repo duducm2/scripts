@@ -1,7 +1,8 @@
 ; =============================================================================
 ; Utils module: utility_git_push.ahk
 ; Commit and push scripts + notes repos from Utility Shortcuts top-level [G]
-; Exports personal tasks to main/punctual.md; syncs Palace MD when mnemonics/data is dirty.
+; Exports personal → main/punctual.md and habits → main/habits.md (never work);
+; syncs Palace MD when mnemonics/data is dirty.
 ; Runs in the background so the UI stays usable.
 ; =============================================================================
 
@@ -73,7 +74,8 @@ Utility_GitStatusHasPathPrefix(porcelain, prefixFwd) {
     return false
 }
 
-Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
+Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot) {
+    ; Phone mirror: personal + habits only (work stays local CSV).
     py := scriptsRoot . "\tasks\python\export_to_md.py"
     if (!FileExist(py))
         return "error:export_to_md.py not found"
@@ -86,7 +88,9 @@ Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
         return "error:Python not found for Tasks MD export"
     dataDir := scriptsRoot . "\tasks\data"
     punctual := notesRoot . "\main\punctual.md"
-    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --punctual "' . punctual . '"'
+    habits := notesRoot . "\main\habits.md"
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir
+        . '" --punctual "' . punctual . '" --habits "' . habits . '"'
     exitCode := 0
     try {
         exitCode := RunWait(A_ComSpec . " /c " . cmd, scriptsRoot, "Hide")
@@ -98,13 +102,18 @@ Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
     return "ok"
 }
 
+; Backward-compatible alias (#!+9 / Utility [G] path).
+Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
+    return Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
+}
+
 Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     status := GitCli_Run(scriptsRoot, "status --porcelain", 30000)
     if (status.exitCode != 0)
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
 
-    Utility_GitPassiveBar("⏳ Exporting personal tasks to punctual.md…")
-    export := Utility_GitExportPunctualMd(scriptsRoot, notesRoot)
+    Utility_GitPassiveBar("⏳ Exporting personal + habits MD (no work)…")
+    export := Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
     if (SubStr(export, 1, 6) = "error:")
         return export
 
