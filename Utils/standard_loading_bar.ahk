@@ -883,7 +883,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
                 g_StandardLoadingBarGui.OnEvent("Escape", StandardLoadingBar_KeysEscapeDismiss)
         } catch {
         }
-        g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) &
+        g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int",
+            0x1B) &
         0x8000)
         SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
         g_StandardLoadingBarKeysEscapeActive := true
@@ -1167,6 +1168,126 @@ StandardLoadingBar_BusyAllMonitors_Tick() {
         catch {
         }
     }
+}
+
+; =============================================================================
+; All-monitors passive Information Only banner (auto-dismiss; no progress bar)
+; Separate from BusyAllMonitors and the single-monitor StandardLoadingBar.
+; =============================================================================
+global g_PassiveAllMonitorsOverlays := []   ; [{ overlay: Gui, border: Gui|0 }, ...]
+global g_PassiveAllMonitorsHideArmed := false
+
+StandardLoadingBar_ShowPassiveAllMonitors(text, durationMs := 3000, accentColor := "") {
+    global g_PassiveAllMonitorsOverlays, g_PassiveAllMonitorsHideArmed, g_StandardLoadingBarIsKeysOverlay
+    if (text = "")
+        return false
+    if (accentColor = "")
+        accentColor := BANNER_ACCENT_INFO
+    if (durationMs < 1)
+        durationMs := 1
+
+    ; Do not fight an interactive keys overlay.
+    if (g_StandardLoadingBarIsKeysOverlay)
+        return false
+
+    StandardLoadingBar_PassiveAllMonitors_Clear()
+    g_PassiveAllMonitorsOverlays := []
+
+    fontSize := 17
+    alpha := 235
+    borderWidth := 6
+    n := 0
+    try n := MonitorGetCount()
+    catch
+        n := 0
+    loop n {
+        monIdx := A_Index
+        try {
+            MonitorGetWorkArea(monIdx, &ml, &mt, &mr, &mb)
+        } catch {
+            continue
+        }
+        monitorWidth := mr - ml
+        barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
+        overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        overlayGui.BackColor := "1E1E2E"
+        overlayGui.MarginX := 16
+        overlayGui.MarginY := 10
+        overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
+        overlayGui.Add("Text", "w" . barWidth . " Wrap Center", text)
+        overlayGui.Show("AutoSize Hide")
+        overlayGui.GetPos(, , &gw, &gh)
+        guiX := Round(ml + (monitorWidth - gw) / 2)
+        if (guiX < ml)
+            guiX := ml
+        if (guiX + gw > mr)
+            guiX := mr - gw
+        guiY := mt + 40
+
+        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        borderGui.BackColor := accentColor
+        borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
+        " h" . (gh + 2 * borderWidth))
+        overlayGui.Show("x" . guiX . " y" . guiY . " NA")
+        try WinSetTransparent(alpha, overlayGui)
+        catch {
+        }
+        g_PassiveAllMonitorsOverlays.Push({ overlay: overlayGui, border: borderGui })
+    }
+
+    if (g_PassiveAllMonitorsOverlays.Length = 0)
+        return false
+
+    try SetTimer(StandardLoadingBar_PassiveAllMonitors_HideNow, 0)
+    catch {
+    }
+    SetTimer(StandardLoadingBar_PassiveAllMonitors_HideNow, -durationMs)
+    g_PassiveAllMonitorsHideArmed := true
+    ; Hard ceiling so a missed hide cannot leave banners stuck.
+    forceMs := durationMs + 2000
+    if (forceMs < 5000)
+        forceMs := 5000
+    SetTimer(StandardLoadingBar_PassiveAllMonitors_ForceClear, -forceMs)
+    return true
+}
+
+StandardLoadingBar_PassiveAllMonitors_HideNow(*) {
+    global g_PassiveAllMonitorsHideArmed
+    g_PassiveAllMonitorsHideArmed := false
+    try SetTimer(StandardLoadingBar_PassiveAllMonitors_ForceClear, 0)
+    catch {
+    }
+    StandardLoadingBar_PassiveAllMonitors_Clear()
+}
+
+StandardLoadingBar_PassiveAllMonitors_ForceClear(*) {
+    StandardLoadingBar_PassiveAllMonitors_Clear()
+}
+
+StandardLoadingBar_PassiveAllMonitors_Clear() {
+    global g_PassiveAllMonitorsOverlays, g_PassiveAllMonitorsHideArmed
+    g_PassiveAllMonitorsHideArmed := false
+    try SetTimer(StandardLoadingBar_PassiveAllMonitors_HideNow, 0)
+    catch {
+    }
+    try SetTimer(StandardLoadingBar_PassiveAllMonitors_ForceClear, 0)
+    catch {
+    }
+    if (!IsObject(g_PassiveAllMonitorsOverlays))
+        g_PassiveAllMonitorsOverlays := []
+    for item in g_PassiveAllMonitorsOverlays {
+        try {
+            if (IsObject(item) && IsObject(item.overlay))
+                item.overlay.Destroy()
+        } catch {
+        }
+        try {
+            if (IsObject(item) && IsObject(item.border))
+                item.border.Destroy()
+        } catch {
+        }
+    }
+    g_PassiveAllMonitorsOverlays := []
 }
 
 ; Full AI reply on the active monitor (same UX as #!+8 pronunciation ShowResultBanner).

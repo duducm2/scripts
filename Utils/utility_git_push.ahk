@@ -3,22 +3,49 @@
 ; Commit and push scripts + notes (+ personal when present) from Utility [G]
 ; Exports personal → main/punctual.md and habits → main/habits.md (never work);
 ; syncs Palace MD when mnemonics/data is dirty.
-; Runs in the background; no mid-run loading bar — only a final 3s result banner.
+; Runs in the background; no mid-run loading bar — final 3s banner on all monitors.
 ; =============================================================================
 
 global g_UtilityGitPushBusy := false
 global UTILITY_GIT_RESULT_BANNER_MS := 3000
 
+Utility_GitChimeStart() {
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\commit-start.wav")
+    catch {
+    }
+}
+
+Utility_GitChimeEnd(ok := true) {
+    path := ok
+        ? (A_ScriptDir . "\assets\sounds\pull-successful.wav")
+            : (A_ScriptDir . "\assets\sounds\quick-update-failure.wav")
+    try ScriptSoundPlay(path)
+    catch {
+    }
+}
+
+; Final status on every monitor for exactly UTILITY_GIT_RESULT_BANNER_MS (default 3s).
 Utility_GitNotify(msg, ms := 0, accent := "") {
     global UTILITY_GIT_RESULT_BANNER_MS
     if (ms <= 0)
         ms := UTILITY_GIT_RESULT_BANNER_MS
     if (accent = "")
         accent := BANNER_ACCENT_INFO
-    try ShowCenteredOverlay_Utils(msg, ms, accent)
+    shown := false
+    try shown := StandardLoadingBar_ShowPassiveAllMonitors(msg, ms, accent)
     catch {
-        TrayTip("Git push", msg)
+        shown := false
     }
+    if (!shown) {
+        ; Fallback: single-monitor overlay, then tray tip.
+        try {
+            ShowCenteredOverlay_Utils(msg, ms, accent)
+            shown := true
+        } catch {
+        }
+    }
+    if (!shown)
+        TrayTip("Git push", msg)
 }
 
 Utility_GitFirstErrorLine(r) {
@@ -198,6 +225,7 @@ Utility_GitSyncPush() {
         return
     }
     g_UtilityGitPushBusy := true
+    Utility_GitChimeStart()
     SetTimer(Utility_GitSyncPushWorker, -1)
 }
 
@@ -206,7 +234,7 @@ Utility_GitSyncPushWorker() {
     resultMsg := ""
     resultAccent := BANNER_ACCENT_INFO
     try {
-        ; No mid-run loading bar — only the final result banner below.
+        ; No mid-run loading bar — only the final all-monitors result banner below.
 
         commitMsg := Format("{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}",
             A_YYYY, A_MM, A_DD, A_Hour, A_Min, A_Sec)
@@ -291,7 +319,10 @@ Utility_GitSyncPushWorker() {
         resultAccent := BANNER_ACCENT_ERROR
     } finally {
         g_UtilityGitPushBusy := false
-        if (resultMsg != "")
+        if (resultMsg != "") {
+            ok := (resultAccent != BANNER_ACCENT_ERROR)
+            Utility_GitChimeEnd(ok)
             Utility_GitNotify(resultMsg, , resultAccent)
+        }
     }
 }
