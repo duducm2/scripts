@@ -79,14 +79,16 @@ COLUMNS (header required)
 project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
 
 RULES
-- filter: work | personal | habits only. Default: work for job/Bosch/office content; personal for life/home; habits for recurring health/cadence items.
+- filter: work | personal | habits only. Default: work for job/Bosch/office content; personal for life/home; habits for recurring health/cadence items AND one-shot milestones that belong under a habits project.
+- The Habits column shows every active task with filter=habits (habitual or punctual). Prefer kind=habitual + recurrence for true cadence; one-shot dated milestones may stay punctual under a habits project and still appear in Habits.
 - project_title: exact or close match to a TASK_PROJECTS title or an attached projects.csv title for that filter. If empty, importer uses the filter inbox (Work inbox / Personal inbox / Habits & Health).
 - title: short actionable string (required).
 - emoji: optional. Common: 🔲 general, ⏳ waiting, ⚡ important, ✅ done, ❓ doubt. Custom allowed (e.g. 🩺). Empty → importer uses 🔲.
 - kind: punctual | habitual. Default punctual. Use habitual only for recurring cadence items.
 - recurrence: empty for punctual. For habitual: daily | weekly | monthly | quarterly | biannual | yearly | every_2y | every_3y | every_5y | every_10y.
 - due_date / next_due: optional ISO yyyy-MM-dd. For habitual, prefer next_due when a next occurrence is known.
-- section_path: optional nesting path from headings.
+- section_path: optional nesting path from headings (single section title in the importer, e.g. Feeding Schedule).
+- Placement comments in the user message (e.g. “put under Dog / Feeding Schedule”, “these go in Work → RISE”) are instructions — map them to project_title + filter + section_path. Do not invent a task from the placement comment itself.
 - Non-actionable notes belong in TASK_INFO, not as tasks.
 
 ===FILE: TASK_INFO.csv===
@@ -102,5 +104,6 @@ RULES
 
 CONTEXT
 - Attached projects.csv and tasks.csv list existing rows. Reuse project titles when possible. Do not invent PROJ_/TASK_ ids.
+- When the speaker gives placement comments (“under X”, “in section Y”, “habits Dog”), honor them in project_title / filter / section_path. Put clarifying placement prose in TASK_INFO if useful; never turn the placement instruction alone into a task row.
 
 After the pack, optional one-line chat note listing only skips / ambiguities. Do not replace the pack with that note.

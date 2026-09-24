@@ -238,6 +238,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
     new_infos: list[dict] = []
 
     def ensure_project(title: str, filt: str) -> str:
+        nonlocal sections_dirty
         title = (title or "").strip() or INBOX_TITLES.get(filt, "Inbox")
         key = f"{filt}|{title.lower()}"
         if key in staged:
@@ -324,6 +325,10 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         if t.get("title") and t.get("filter"):
             task_index[f"{t['filter']}|{(t['title'] or '').strip().lower()}"] = t["id"]
 
+    import_batch = "IMP-" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    hint_filter_counts: dict[str, int] = {}
+    hint_project_counts: dict[str, int] = {}
+
     for r in pack.get("tasks") or []:
         title = (r.get("title") or "").strip()
         filt = (r.get("filter") or "work").strip().lower()
@@ -344,7 +349,8 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         if kind == "punctual":
             recurrence = ""
         emoji = (r.get("emoji") or "").strip() or STATUS_EMOJIS["general"]
-        proj_id = ensure_project(r.get("project_title") or "", filt)
+        proj_title = (r.get("project_title") or "").strip()
+        proj_id = ensure_project(proj_title, filt)
         section_id, section_path = ensure_section(proj_id, r.get("section_path") or "")
         tid = next_id("TASK_", tasks + new_tasks)
         row = {
@@ -363,10 +369,14 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
             "completed_at": "",
             "created_at": now_stamp(),
             "active": "1",
+            "import_batch": import_batch,
         }
         new_tasks.append(row)
         tasks.append(row)
         task_index[f"{filt}|{title.lower()}"] = tid
+        hint_filter_counts[filt] = hint_filter_counts.get(filt, 0) + 1
+        display_proj = proj_title or INBOX_TITLES.get(filt, "Inbox")
+        hint_project_counts[display_proj] = hint_project_counts.get(display_proj, 0) + 1
 
     for r in pack.get("info") or []:
         attach_to = (r.get("attach_to") or "task").strip().lower()
@@ -432,12 +442,23 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
     errors = list(dict.fromkeys(errors))
     if errors:
         write_fix_file("Partial import — some rows failed", "\n".join(errors))
+    hint_filter = ""
+    hint_project = ""
+    if hint_filter_counts:
+        hint_filter = max(hint_filter_counts.items(), key=lambda x: x[1])[0]
+    if hint_project_counts:
+        hint_project = max(hint_project_counts.items(), key=lambda x: x[1])[0]
     return {
         "ok": True,
         "added": {
             "projects": len(new_projects),
             "tasks": len(new_tasks),
             "info": len(new_infos),
+        },
+        "import_batch": import_batch if new_tasks else "",
+        "hint": {
+            "filter": hint_filter,
+            "project": hint_project,
         },
         "errors": errors,
     }

@@ -156,13 +156,19 @@ Task_ImportPackFromDesktop(*) {
     }
 
     ; 0 = full success; 2 = success with partial row errors (fix file written)
+    ; preview writes foo.json; commit writes foo.commit.json next to it
+    commitResultPath := RegExReplace(jsonOut, "i)\.json$", ".commit.json")
     if (exitCommit = 0) {
-        Task_Notify("TASK_PACK imported", 2200, BANNER_ACCENT_SUCCESS)
+        Task_Notify(Task_ImportSuccessMessage(commitResultPath), 3200, BANNER_ACCENT_SUCCESS)
         ImportMgmt_OnImportSuccess()
         return true
     }
     if (exitCommit = 2) {
-        Task_Notify("TASK_PACK imported with row errors — see AI fix", 3200, BANNER_ACCENT_INTERMEDIATE)
+        Task_Notify(
+            Task_ImportSuccessMessage(commitResultPath, true),
+            3600,
+            BANNER_ACCENT_INTERMEDIATE
+        )
         if (FileExist(Task_ImportAiFixPath()))
             ImportMgmt_OnAiFixReady(Task_ImportAiFixPath(), "TASK_AI_FIX.txt")
         else
@@ -171,4 +177,69 @@ Task_ImportPackFromDesktop(*) {
     }
     Task_ImportFailAi("TASK_PACK commit failed")
     return false
+}
+
+; Build toast from commit JSON: counts + where to look (e.g. Habits → Dog).
+Task_ImportSuccessMessage(commitJsonPath, withErrors := false) {
+    prefix := withErrors ? "Imported with row errors" : "TASK_PACK imported"
+    if (commitJsonPath = "" || !FileExist(commitJsonPath))
+        return withErrors ? prefix . " — see AI fix" : prefix
+    text := ""
+    try {
+        f := FileOpen(commitJsonPath, "r", "UTF-8")
+        if (f) {
+            text := f.Read()
+            f.Close()
+        }
+    } catch {
+        text := ""
+    }
+    if (text = "")
+        return withErrors ? prefix . " — see AI fix" : prefix
+    addedTasks := 0
+    addedProj := 0
+    addedInfo := 0
+    hintFilt := ""
+    hintProj := ""
+    if RegExMatch(text, '"tasks"\s*:\s*(\d+)', &m)
+        addedTasks := Integer(m[1])
+    if RegExMatch(text, '"projects"\s*:\s*(\d+)', &m)
+        addedProj := Integer(m[1])
+    if RegExMatch(text, '"info"\s*:\s*(\d+)', &m)
+        addedInfo := Integer(m[1])
+    if RegExMatch(text, '"hint"\s*:\s*\{[^}]*"filter"\s*:\s*"([^"]*)"', &m)
+        hintFilt := m[1]
+    if RegExMatch(text, '"hint"\s*:\s*\{[^}]*"project"\s*:\s*"([^"]*)"', &m)
+        hintProj := m[1]
+    counts := ""
+    if (addedTasks || addedProj || addedInfo)
+        counts := addedTasks . " task(s)"
+            . (addedProj ? ", " . addedProj . " project(s)" : "")
+            . (addedInfo ? ", " . addedInfo . " info" : "")
+    where := ""
+    if (hintFilt != "" || hintProj != "") {
+        filtLabel := ""
+        if (hintFilt = "habits")
+            filtLabel := "Habits"
+        else if (hintFilt = "personal")
+            filtLabel := "Personal"
+        else if (hintFilt = "work")
+            filtLabel := "Work"
+        else if (hintFilt != "")
+            filtLabel := hintFilt
+        if (filtLabel != "" && hintProj != "")
+            where := filtLabel . " → " . hintProj
+        else if (filtLabel != "")
+            where := filtLabel
+        else
+            where := hintProj
+    }
+    msg := prefix
+    if (counts != "")
+        msg .= ": " . counts
+    if (where != "")
+        msg .= " · look in " . where
+    if (withErrors)
+        msg .= " — see AI fix"
+    return msg
 }

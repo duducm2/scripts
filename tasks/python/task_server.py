@@ -266,6 +266,13 @@ class TaskHandler(BaseHTTPRequestHandler):
                 key = payload.get("key") or payload.get("emoji") or ""
                 self._json(200, store.set_task_emoji(tid, key))
                 return
+            if path == "/api/tasks/clear-import-batches":
+                self._json(200, store.clear_all_import_batches())
+                return
+            if path.startswith("/api/tasks/") and path.endswith("/clear-import-batch"):
+                tid = path[len("/api/tasks/") : -len("/clear-import-batch")]
+                self._json(200, store.clear_task_import_batch(tid))
+                return
             if path.startswith("/api/tasks/") and path.endswith("/to-personal"):
                 tid = path[len("/api/tasks/") : -len("/to-personal")]
                 self._json(200, store.spawn_personal_from_habit(tid))

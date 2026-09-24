@@ -235,6 +235,40 @@
         font-size: 13px;
         line-height: 1;
       }
+      .task .new-tag {
+        flex: 0 0 auto;
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        line-height: 1.2;
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: #1a1a1c;
+        background: #c8a84b;
+        border: 1px solid rgba(200, 168, 75, 0.85);
+      }
+      .task .new-tag:hover {
+        filter: brightness(1.08);
+      }
+      .ftr-stats {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .ftr-stats .btn-clear-new {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(200, 168, 75, 0.55);
+        background: rgba(200, 168, 75, 0.18);
+        color: var(--gold, #c8a84b);
+        cursor: pointer;
+      }
+      .ftr-stats .btn-clear-new:hover {
+        background: rgba(200, 168, 75, 0.3);
+      }
       .plain-row .title.is-link {
         color: var(--gold);
         text-decoration: underline;
@@ -1772,6 +1806,10 @@
           const infoTag = hasInfo
             ? `<span class="info-tag" data-act="info-task" title="Has info points">ℹ️</span>`
             : "";
+          const isNew = !!(t.import_batch || "").trim();
+          const newTag = isNew
+            ? `<span class="new-tag" data-act="clear-new" title="Newly imported — click to clear">NEW</span>`
+            : "";
           const actions = isHabit
             ? `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
         <button class="btn" data-act="cut-task" title="Cut (Ctrl+X)">Cut</button>
@@ -1792,8 +1830,9 @@
           const cutClass =
             state.taskClipboard?.cutFromId === t.id ? " is-cut" : "";
           const em = taskEmoji(t);
-          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
+          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}${isNew ? ' data-new="1"' : ""}>
       <span class="em">${esc(em)}</span>
+      ${newTag}
       ${infoTag}
       <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
       ${due ? `<span class="due">${esc(due)}</span>` : ""}
@@ -1972,7 +2011,10 @@
         function habitTasksList() {
           const q = searchNeedle();
           return (state.data.tasks || []).filter((t) => {
-            if (t.active === "0" || t.kind !== "habitual") return false;
+            if (t.active === "0") return false;
+            // Habits column: all tasks with filter=habits (habitual or punctual milestones).
+            if ((t.filter || "") !== "habits") return false;
+            if (t.kind !== "habitual" && t.emoji === "✅") return false;
             if (!q) return true;
             if (
               String(t.title || "")
@@ -2122,11 +2164,23 @@
           syncDocumentTitle();
         }
 
+        function countNewImportTasks() {
+          return (state.data?.tasks || []).filter(
+            (t) => t.active !== "0" && (t.import_batch || "").trim(),
+          ).length;
+        }
+
         function updateStatsLine() {
           const c = state.data?.counts || {};
+          const newN = countNewImportTasks();
           const text = `${c.projects || 0} projects · ${c.tasks || 0} tasks · ${c.info || 0} info · ${c.open || 0} open`;
           const ftr = $("#ftrSub");
-          if (ftr) ftr.textContent = text;
+          if (!ftr) return;
+          if (newN > 0) {
+            ftr.innerHTML = `${esc(text)} · <span>${newN} new</span> <button type="button" class="btn-clear-new" data-act="clear-all-new" title="Clear NEW tags on imported tasks">Clear NEW</button>`;
+          } else {
+            ftr.textContent = text;
+          }
         }
 
         function showSearchBar() {
@@ -4938,6 +4992,31 @@
             }
             if (act === "edit-task") {
               taskForm((state.data.tasks || []).find((t) => t.id === id));
+              return;
+            }
+            if (act === "clear-new") {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!id) return;
+              await api(
+                "/api/tasks/" + encodeURIComponent(id) + "/clear-import-batch",
+                { method: "POST", body: "{}" },
+              );
+              await refresh();
+              return;
+            }
+            if (act === "clear-all-new") {
+              e.preventDefault();
+              const r = await api("/api/tasks/clear-import-batches", {
+                method: "POST",
+                body: "{}",
+              });
+              toast(
+                r.cleared
+                  ? `Cleared NEW on ${r.cleared} task(s)`
+                  : "No NEW tags",
+              );
+              await refresh();
               return;
             }
             if (act === "copy-task") {

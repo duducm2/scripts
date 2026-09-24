@@ -36,6 +36,7 @@ HEADERS = {
         "completed_at",
         "created_at",
         "active",
+        "import_batch",
     ],
     "info_points": [
         "id",
@@ -680,6 +681,8 @@ class TaskStore:
                         r["completed_at"] = now_stamp()
                     if fields["emoji"] != "✅":
                         r["completed_at"] = ""
+                    # Editing a task clears the NEW import badge.
+                    r["import_batch"] = ""
                     found = True
                 out.append(r)
             if not found:
@@ -692,6 +695,7 @@ class TaskStore:
             "sort_order": next_sort(rows),
             "completed_at": "",
             "created_at": now_stamp(),
+            "import_batch": "",
         }
         rows.append(row)
         self.save("tasks", rows)
@@ -726,15 +730,45 @@ class TaskStore:
                     )
                     r["emoji"] = STATUS_EMOJIS["general"]
                     r["completed_at"] = ""
+                    r["import_batch"] = ""
                 else:
                     r["emoji"] = emoji
                     r["completed_at"] = now_stamp() if emoji == "✅" else ""
+                    if emoji == "✅":
+                        r["import_batch"] = ""
                 found = r
             out.append(r)
         if not found:
             return {"ok": False, "error": "task not found"}
         self.save("tasks", out)
         return {"ok": True, "task": found}
+
+    def clear_task_import_batch(self, task_id: str) -> dict:
+        rows = self.load("tasks")
+        out = []
+        found = None
+        for r in rows:
+            if r["id"] == task_id:
+                r = {**r, "import_batch": ""}
+                found = r
+            out.append(r)
+        if not found:
+            return {"ok": False, "error": "task not found"}
+        self.save("tasks", out)
+        return {"ok": True, "task": found}
+
+    def clear_all_import_batches(self) -> dict:
+        rows = self.load("tasks")
+        cleared = 0
+        out = []
+        for r in rows:
+            if (r.get("import_batch") or "").strip():
+                r = {**r, "import_batch": ""}
+                cleared += 1
+            out.append(r)
+        if cleared:
+            self.save("tasks", out)
+        return {"ok": True, "cleared": cleared}
 
     def delete_task(self, task_id: str) -> dict:
         infos = self.load("info_points")
