@@ -9,6 +9,25 @@
 ; Handy UIA Helper Functions
 ; =============================================================================
 
+; Background suppress (ClipAngel BeginFavoriteSuppress pattern): opacity 0 + off-screen.
+; Spike: settings_store.json has selected_model, but Handy has no hot-reload IPC; CLI
+; --model only applies to --transcribe-file. Live switches use suppressed UIA.
+HANDY_SUPPRESS_OPACITY := 0
+HANDY_SUPPRESS_OFFSCREEN_X := -32000
+HANDY_SUPPRESS_OFFSCREEN_Y := -32000
+HANDY_SUPPRESS_OFFSCREEN_W := 900
+HANDY_SUPPRESS_OFFSCREEN_H := 700
+HANDY_SUPPRESS_MIN_W := 640
+HANDY_SUPPRESS_MIN_H := 480
+
+global g_HandySuppressActive := false
+global g_HandySuppressHadSavedPos := false
+global g_HandySuppressSavedX := 0
+global g_HandySuppressSavedY := 0
+global g_HandySuppressSavedW := 0
+global g_HandySuppressSavedH := 0
+; g_HandyModelSwitchBusy is declared in handy_ai_model_config.ahk (loaded first).
+
 ; Restore the window that was focused before Handy automation (paste/dictation target).
 ; excludeHwnd: skip if it is Handy itself (already closed or still the only option).
 Handy_RestorePrevWindow(restoreHwnd, excludeHwnd := 0) {
@@ -25,91 +44,339 @@ Handy_RestorePrevWindow(restoreHwnd, excludeHwnd := 0) {
     }
 }
 
-; Activate existing Handy window or launch it; returns hwnd or 0
-Handy_ActivateOrLaunch() {
-    targetPath := GetHandyShortcutPath()
+; Main Handy hwnd (includes hidden / suppressed). Environment-aware exe path filter.
+Handy_MainHwnd() {
     expectedExePath := GetHandyProcessPath()
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList("Handy ahk_class Tauri Window") {
+            try {
+                procPath := WinGetProcessPath(hwnd)
+                if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0)
+                    return hwnd
+            } catch {
+                if (expectedExePath = "")
+                    return hwnd
+            }
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    return 0
+}
 
-    ; Find existing Handy window
-    matchingHwnd := 0
-    for hwnd in WinGetList("Handy ahk_class Tauri Window") {
+; Resolve handy.exe for Run with --start-hidden (lnk targets and process path).
+Handy_ResolveExePath() {
+    expected := GetHandyProcessPath()
+    if (expected != "" && FileExist(expected))
+        return expected
+    hwnd := Handy_MainHwnd()
+    if (hwnd) {
         try {
-            procPath := WinGetProcessPath(hwnd)
-            if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
-                matchingHwnd := hwnd
-                break
+            p := WinGetProcessPath("ahk_id " hwnd)
+            if (p != "" && FileExist(p))
+                return p
+        } catch {
+        }
+    }
+    shortcut := GetHandyShortcutPath()
+    if (shortcut = "" || !FileExist(shortcut))
+        return ""
+    if (RegExMatch(shortcut, "i)\.exe$"))
+        return shortcut
+    try {
+        FileGetShortcut(shortcut, &outTarget)
+        if (outTarget != "" && FileExist(outTarget))
+            return outTarget
+    } catch {
+    }
+    return ""
+}
+
+Handy_ApplySuppressOpacity(hwnd) {
+    if !hwnd
+        return
+    try WinSetTransparent(HANDY_SUPPRESS_OPACITY, "ahk_id " hwnd)
+    catch {
+    }
+}
+
+Handy_ClearSuppressOpacity(hwnd := 0) {
+    if !hwnd
+        hwnd := Handy_MainHwnd()
+    if !hwnd
+        return
+    try WinSetTransparent("Off", "ahk_id " hwnd)
+    catch {
+    }
+}
+
+; Park Handy off-screen at opacity 0 for model-switch automation. Does not activate.
+Handy_BeginSuppress(hwnd) {
+    global g_HandySuppressActive, g_HandySuppressHadSavedPos
+    global g_HandySuppressSavedX, g_HandySuppressSavedY
+    global g_HandySuppressSavedW, g_HandySuppressSavedH
+    if !hwnd
+        return false
+    g_HandySuppressActive := true
+    Handy_ApplySuppressOpacity(hwnd)
+    if !g_HandySuppressHadSavedPos {
+        try {
+            WinGetPos(&sx, &sy, &sw, &sh, "ahk_id " hwnd)
+            if (sw > 0 && sh > 0
+                && (sx > HANDY_SUPPRESS_OFFSCREEN_X + 1000 || sy > HANDY_SUPPRESS_OFFSCREEN_Y + 1000)) {
+                g_HandySuppressSavedX := sx
+                g_HandySuppressSavedY := sy
+                g_HandySuppressSavedW := sw
+                g_HandySuppressSavedH := sh
+                g_HandySuppressHadSavedPos := true
             }
         } catch {
-            if (expectedExePath = "") {
-                matchingHwnd := hwnd
-                break
+        }
+    }
+    w := g_HandySuppressHadSavedPos ? Max(HANDY_SUPPRESS_MIN_W, g_HandySuppressSavedW)
+        : HANDY_SUPPRESS_OFFSCREEN_W
+    h := g_HandySuppressHadSavedPos ? Max(HANDY_SUPPRESS_MIN_H, g_HandySuppressSavedH)
+        : HANDY_SUPPRESS_OFFSCREEN_H
+    if (w < HANDY_SUPPRESS_OFFSCREEN_W)
+        w := HANDY_SUPPRESS_OFFSCREEN_W
+    if (h < HANDY_SUPPRESS_OFFSCREEN_H)
+        h := HANDY_SUPPRESS_OFFSCREEN_H
+    try WinMove(HANDY_SUPPRESS_OFFSCREEN_X, HANDY_SUPPRESS_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
+    catch {
+    }
+    Handy_ApplySuppressOpacity(hwnd)
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = -1 || mm = 1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    Handy_ApplySuppressOpacity(hwnd)
+    try WinMove(HANDY_SUPPRESS_OFFSCREEN_X, HANDY_SUPPRESS_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
+    catch {
+    }
+    Handy_ApplySuppressOpacity(hwnd)
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    Handy_ApplySuppressOpacity(hwnd)
+    try WinMove(HANDY_SUPPRESS_OFFSCREEN_X, HANDY_SUPPRESS_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
+    catch {
+    }
+    Handy_ApplySuppressOpacity(hwnd)
+    return true
+}
+
+; End suppress: restore saved geometry + opacity. showNormal=true activates on-screen.
+Handy_EndSuppress(hwnd := 0, showNormal := false) {
+    global g_HandySuppressActive, g_HandySuppressHadSavedPos
+    global g_HandySuppressSavedX, g_HandySuppressSavedY
+    global g_HandySuppressSavedW, g_HandySuppressSavedH
+    if !hwnd
+        hwnd := Handy_MainHwnd()
+    if (hwnd) {
+        Handy_ApplySuppressOpacity(hwnd)
+        if g_HandySuppressHadSavedPos {
+            try {
+                WinMove(g_HandySuppressSavedX, g_HandySuppressSavedY,
+                    g_HandySuppressSavedW, g_HandySuppressSavedH, "ahk_id " hwnd)
+            } catch {
+            }
+        }
+        Handy_ClearSuppressOpacity(hwnd)
+        if (showNormal) {
+            try WinShow("ahk_id " hwnd)
+            catch {
             }
         }
     }
+    g_HandySuppressActive := false
+    g_HandySuppressHadSavedPos := false
+}
 
+; Ensure Handy exists for background automation: launch if needed, suppress, wait UI.
+; Does not activate / steal focus. Returns hwnd or 0.
+Handy_EnsureForAutomation(waitUiMs := 2000) {
+    hwnd := Handy_MainHwnd()
+    launched := false
+    if (!hwnd) {
+        exePath := Handy_ResolveExePath()
+        targetPath := GetHandyShortcutPath()
+        if (exePath != "" && FileExist(exePath)) {
+            try Run('"' exePath '" --start-hidden')
+            catch {
+                try Run('"' exePath '"')
+                catch
+                    return 0
+            }
+        } else if (targetPath != "" && FileExist(targetPath)) {
+            try Run targetPath
+            catch
+                return 0
+        } else {
+            return 0
+        }
+        launched := true
+        prevDetect := A_DetectHiddenWindows
+        DetectHiddenWindows true
+        try {
+            if !WinWait("Handy ahk_class Tauri Window", , 8)
+                return 0
+        } finally {
+            DetectHiddenWindows prevDetect
+        }
+        hwnd := Handy_MainHwnd()
+        if (!hwnd)
+            return 0
+        waitUiMs := Max(waitUiMs, 9000)
+    }
+    Handy_BeginSuppress(hwnd)
+    if (Handy_WaitForMainUiReady(hwnd, waitUiMs))
+        return hwnd
+    ; WebView2 can throttle at -32000: park opacity-0 on the farthest monitor instead.
+    Handy_SuppressMonitorFallback(hwnd)
+    if (Handy_WaitForMainUiReady(hwnd, Min(waitUiMs, 2500)))
+        return hwnd
+    if (launched)
+        return 0
+    ; Warm instance: probe can flake while suppressed; still return hwnd for UIA attempts.
+    return hwnd
+}
+
+; Fallback when off-screen (-32000) UIA is dead: opacity 0 on the monitor farthest from the cursor.
+Handy_SuppressMonitorFallback(hwnd) {
+    if !hwnd
+        return false
+    global g_HandySuppressActive
+    g_HandySuppressActive := true
+    Handy_ApplySuppressOpacity(hwnd)
+    CoordMode "Mouse", "Screen"
+    MouseGetPos &mx, &my
+    bestIdx := 1
+    bestDist := -1
+    try {
+        loop MonitorGetCount() {
+            MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+            cx := (l + r) // 2
+            cy := (t + b) // 2
+            dist := (cx - mx) * (cx - mx) + (cy - my) * (cy - my)
+            if (dist > bestDist) {
+                bestDist := dist
+                bestIdx := A_Index
+            }
+        }
+        MonitorGetWorkArea(bestIdx, &ml, &mt, &mr, &mb)
+        ; Park just inside the far monitor (opacity 0 — invisible but WebView keeps painting).
+        x := mr - HANDY_SUPPRESS_OFFSCREEN_W - 8
+        y := mb - HANDY_SUPPRESS_OFFSCREEN_H - 8
+        if (x < ml)
+            x := ml
+        if (y < mt)
+            y := mt
+        try {
+            mm := WinGetMinMax("ahk_id " hwnd)
+            if (mm = -1 || mm = 1)
+                WinRestore("ahk_id " hwnd)
+        } catch {
+        }
+        try WinMove(x, y, HANDY_SUPPRESS_OFFSCREEN_W, HANDY_SUPPRESS_OFFSCREEN_H, "ahk_id " hwnd)
+        catch {
+        }
+        try WinShow("ahk_id " hwnd)
+        catch {
+        }
+        Handy_ApplySuppressOpacity(hwnd)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Activate existing Handy window or launch it; returns hwnd or 0.
+; Ends suppress first so the window is visible for interactive flows.
+Handy_ActivateOrLaunch() {
+    matchingHwnd := Handy_MainHwnd()
     if (matchingHwnd) {
+        global g_HandySuppressActive
+        if (g_HandySuppressActive)
+            Handy_EndSuppress(matchingHwnd, true)
         WinActivate("ahk_id " . matchingHwnd)
         WinWaitActive("ahk_id " . matchingHwnd, , 2)
         Handy_WaitForMainUiReady(matchingHwnd, 2000)
         return matchingHwnd
     }
 
-    ; Launch Handy
-    if (targetPath = "" || !FileExist(targetPath))
-        return 0
-
-    Run targetPath
-    if !WinWait("Handy ahk_class Tauri Window", , 8)
-        return 0
-
-    ; Find the window we just launched
-    for h in WinGetList("Handy ahk_class Tauri Window") {
-        try {
-            procPath := WinGetProcessPath(h)
-            if (expectedExePath = "" || StrCompare(procPath, expectedExePath, false) = 0) {
-                WinActivate("ahk_id " . h)
-                WinWaitActive("ahk_id " . h, , 2)
-                if (!Handy_WaitForMainUiReady(h, 9000))
-                    return 0
-                return h
-            }
-        } catch {
-            if (expectedExePath = "") {
-                WinActivate("ahk_id " . h)
-                WinWaitActive("ahk_id " . h, , 2)
-                if (!Handy_WaitForMainUiReady(h, 9000))
-                    return 0
-                return h
-            }
+    exePath := Handy_ResolveExePath()
+    targetPath := GetHandyShortcutPath()
+    if (exePath != "" && FileExist(exePath)) {
+        try Run('"' exePath '"')
+        catch {
+            if (targetPath = "" || !FileExist(targetPath))
+                return 0
+            Run targetPath
         }
+    } else if (targetPath != "" && FileExist(targetPath)) {
+        Run targetPath
+    } else {
+        return 0
     }
-    return 0
+
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        if !WinWait("Handy ahk_class Tauri Window", , 8)
+            return 0
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+
+    h := Handy_MainHwnd()
+    if (!h)
+        return 0
+    WinActivate("ahk_id " . h)
+    WinWaitActive("ahk_id " . h, , 2)
+    if (!Handy_WaitForMainUiReady(h, 9000))
+        return 0
+    return h
 }
 
 ; Wait for Handy main UI to be interactive (needed most on cold launch).
 Handy_WaitForMainUiReady(hwnd, maxWaitMs := 9000) {
     global UIA
     start := A_TickCount
-    pollMs := 120
-    loop {
-        if ((A_TickCount - start) >= maxWaitMs)
-            return false
-        el := UIA.ElementFromHandle(hwnd)
-        if (el) {
-            try {
-                if (el.FindFirst({ Type: 50000, Name: "Check for updates" }))
-                    return true
+    pollMs := 100
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        loop {
+            if ((A_TickCount - start) >= maxWaitMs)
+                return false
+            el := UIA.ElementFromHandle(hwnd)
+            if (el) {
+                try {
+                    if (el.FindFirst({ Type: 50000, Name: "Check for updates" }))
+                        return true
+                }
+                try {
+                    if (el.FindFirst({ Type: 50000, Name: "Verificar atualizações" }))
+                        return true
+                }
+                try {
+                    if (el.FindFirst({ Type: 50000, Name: "Update available" }))
+                        return true
+                }
+                ; Model button alone is enough when already on History/Models tabs.
+                try {
+                    if (Handy_FindActiveAiModelButton(el))
+                        return true
+                }
             }
-            try {
-                if (el.FindFirst({ Type: 50000, Name: "Verificar atualizações" }))
-                    return true
-            }
-            try {
-                if (el.FindFirst({ Type: 50000, Name: "Update available" }))
-                    return true
-            }
+            Sleep pollMs
         }
-        Sleep pollMs
+    } finally {
+        DetectHiddenWindows prevDetect
     }
 }
 
@@ -284,14 +551,38 @@ Handy_SetCohereLanguage(hwnd, langName) {
     return false
 }
 
-; Open the AI model dropdown menu using keyboard navigation
+; Open the AI model dropdown via direct UIA click on the header model button (no focus steal).
+; Falls back to keyboard navigation only when direct click fails (requires activation).
 Handy_OpenAiModelMenu(hwnd) {
     el := UIA.ElementFromHandle(hwnd)
     if !el {
         return false
     }
 
-    ; Find anchor: primary "Check for updates" button
+    ; Preferred: click the active model selector button (handy.md header button).
+    modelBtn := Handy_FindActiveAiModelButton(el)
+    if (modelBtn) {
+        try modelBtn.Click()
+        catch {
+            try modelBtn.Invoke()
+            catch {
+                modelBtn := 0
+            }
+        }
+        if (modelBtn && Handy_WaitForAiModelMenuOpen(hwnd, 1800))
+            return true
+    }
+
+    ; Fallback: anchor + Shift+Tab + Enter (needs foreground focus).
+    global g_HandySuppressActive
+    if (g_HandySuppressActive) {
+        ; Re-assert suppress after any accidental activate from fallback prep.
+        Handy_BeginSuppress(hwnd)
+    }
+    try WinActivate("ahk_id " . hwnd)
+    catch {
+    }
+
     anchor := 0
     try anchor := el.FindFirst({
         Type: 50000,
@@ -323,28 +614,36 @@ Handy_OpenAiModelMenu(hwnd) {
     }
 
     if (!anchor) {
+        if (g_HandySuppressActive)
+            Handy_BeginSuppress(hwnd)
         return false
     }
 
-    ; Focus anchor, Shift+Tab to model button, Enter to open menu
     try anchor.SetFocus()
     catch {
         try anchor.Click()
     }
-    Sleep 60
-    Send "+{Tab}"
-    Sleep 60
-    Send "{Enter}"
+    Sleep 40
+    ; Prefer ControlSend so keys go to Handy even if focus races.
+    try ControlSend("+{Tab}", , "ahk_id " hwnd)
+    catch
+        Send "+{Tab}"
+    Sleep 40
+    try ControlSend("{Enter}", , "ahk_id " hwnd)
+    catch
+        Send "{Enter}"
 
-    ; Context menu can open slowly in Handy; wait for menu row(s) to actually exist.
-    return Handy_WaitForAiModelMenuOpen(hwnd, 2500)
+    opened := Handy_WaitForAiModelMenuOpen(hwnd, 1800)
+    if (g_HandySuppressActive)
+        Handy_BeginSuppress(hwnd)
+    return opened
 }
 
 ; Wait for AI model context menu rows to appear after opening the menu.
-Handy_WaitForAiModelMenuOpen(hwnd, maxWaitMs := 2500) {
+Handy_WaitForAiModelMenuOpen(hwnd, maxWaitMs := 1800) {
     global UIA
     start := A_TickCount
-    pollMs := 100
+    pollMs := 50
     loop {
         if ((A_TickCount - start) >= maxWaitMs)
             return false
@@ -459,15 +758,24 @@ Handy_TrySelectAiModel(hwnd, modelClickName, maxWaitMs := 20000) {
     return Handy_WaitForModelReady(hwnd, maxWaitMs)
 }
 
-; Close a stuck model menu before retrying.
+; Close a stuck model menu before retrying. Prefer ControlSend; re-assert suppress after.
 Handy_DismissOpenUi(hwnd) {
     if !hwnd
         return
-    try WinActivate("ahk_id " . hwnd)
-    Sleep 80
-    Send "{Escape}"
-    Sleep 80
-    Send "{Escape}"
+    global g_HandySuppressActive
+    try ControlSend("{Escape}", , "ahk_id " hwnd)
+    catch {
+        try WinActivate("ahk_id " . hwnd)
+        Sleep 40
+        Send "{Escape}"
+    }
+    Sleep 40
+    try ControlSend("{Escape}", , "ahk_id " hwnd)
+    catch
+        Send "{Escape}"
+    Sleep 40
+    if (g_HandySuppressActive)
+        Handy_BeginSuppress(hwnd)
 }
 
 ; Poll the AI model selection button until Name no longer contains "loading", or maxWaitMs elapses.
@@ -475,7 +783,7 @@ Handy_DismissOpenUi(hwnd) {
 ; Returns true when loading text disappeared, false on timeout or if button not found.
 Handy_WaitForModelReady(hwnd, maxWaitMs) {
     global UIA
-    pollInterval := 250
+    pollInterval := 100
     start := A_TickCount
     loop {
         if ((A_TickCount - start) >= maxWaitMs)

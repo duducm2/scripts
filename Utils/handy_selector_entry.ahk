@@ -11,10 +11,13 @@
 ; Select AI model in Handy via interactive GUI selector.
 ; Win+Alt+Shift+C toggles: open when closed, close when open.
 ; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
+; Blocks opening while a background model switch is already running.
 SelectAiModelInHandy() {
     if (!HandyAi_IsOwnerProcess())
         return
-    global g_AiModelSelectorActive
+    global g_AiModelSelectorActive, g_HandyModelSwitchBusy
+    if (g_HandyModelSwitchBusy)
+        return
     if (g_AiModelSelectorActive)
         AiModelSelector_Close()
     else

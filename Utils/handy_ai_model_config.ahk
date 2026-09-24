@@ -66,6 +66,10 @@ global g_AiModelSelectorActive := false
 
 global g_AiModelBannerGui := false
 
+; Set true while ExecuteHandyAiModelSelection runs (guards overlapping #!+C / shortcuts).
+
+global g_HandyModelSwitchBusy := false
+
 ; In-process slot cache (shortcuts, modal highlight, flag init share this after INI load).
 
 global g_HandyAiPersistedSlot := 0

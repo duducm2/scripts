@@ -144,28 +144,12 @@ UpdateGeminiScript() {
 
 ; Add specific word to Handy macro function
 AddWordToHandy() {
-    targetPath := GetHandyShortcutPath()
-
     try {
-        if WinExist("Handy ahk_class Tauri Window") {
-            WinActivate
-        } else {
-            if (targetPath = "" || !FileExist(targetPath)) {
-                MsgBox "Failed to launch Handy.`n`nShortcut not found.", "Utils.ahk", "IconX"
-                return
-            }
-            Run targetPath
-            if !WinWait("Handy ahk_class Tauri Window", , 5) {
-                MsgBox "Failed to launch Handy."
-                return
-            }
-        }
-
-        if (!WinWaitActive("Handy ahk_class Tauri Window", , 2)) {
-            ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+        hwnd := Handy_ActivateOrLaunch()
+        if (!hwnd) {
+            MsgBox "Failed to launch Handy.`n`nShortcut not found.", "Utils.ahk", "IconX"
             return
         }
-        hwnd := WinExist("Handy ahk_class Tauri Window")
 
         ; Initialize UIA
         el := UIA.ElementFromHandle(hwnd)

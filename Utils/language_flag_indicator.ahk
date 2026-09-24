@@ -194,18 +194,24 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 
 ; =============================================================================
 ; ExecuteHandyAiModelSelection() - Main automation logic for Handy
-; keepOpen: when true, leave Handy open after success (for History re-transcribe).
-; restoreHwnd: window to re-activate after closing Handy (paste/dictation target).
-;   0 = capture foreground at start (before Handy steals focus).
+; keepOpen: when true, leave Handy visible after success (for History re-transcribe).
+; restoreHwnd: window to re-activate after automation (paste/dictation target).
+;   0 = capture foreground at start (before any focus steal from fallback path).
 ; Returns true on success, false on failure.
+; Background path: Handy stays off-screen/transparent (BeginSuppress); no WinClose.
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
     if (!HandyAi_IsOwnerProcess() && A_ScriptName != "WindowManagement.ahk")
         return false
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
+    global g_HandyModelSwitchBusy, g_HandySuppressActive
 
     if !g_HandyAiModels.Has(selection)
         return false
+
+    if (g_HandyModelSwitchBusy)
+        return false
+    g_HandyModelSwitchBusy := true
 
     if (!restoreHwnd) {
         try restoreHwnd := WinGetID("A")
@@ -225,10 +231,10 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
         loop HANDY_AI_MODEL_MAX_ATTEMPTS {
             attempt := A_Index
             attemptLabel := (attempt = 1)
-                ? "Attempt " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Launching Handy..."
-                : "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Launching Handy..."
+                ? "Attempt " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Preparing Handy..."
+                : "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Preparing Handy..."
             AiModelBanner_Show(attemptLabel)
-            handyHwnd := Handy_ActivateOrLaunch()
+            handyHwnd := Handy_EnsureForAutomation(attempt = 1 ? 2000 : 3000)
             if (!handyHwnd) {
                 if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS) {
                     Sleep HANDY_AI_MODEL_RETRY_DELAY_MS
@@ -237,9 +243,14 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
                 AiModelBanner_Show("❌ Failed to launch Handy", "E74C3C")
                 Sleep 2000
                 AiModelBanner_Hide()
-                if (!keepOpen)
-                    Handy_RestorePrevWindow(restoreHwnd)
+                Handy_RestorePrevWindow(restoreHwnd)
                 return false
+            }
+
+            ; Fast path: already on the requested model (warm suppressed instance).
+            if (Handy_VerifyAiModelActive(handyHwnd, modelClickName)) {
+                verified := true
+                break
             }
 
             AiModelBanner_Show((attempt > 1 ? "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": " : "")
@@ -268,8 +279,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
             AiModelBanner_Show("❌ Could not switch model after " . HANDY_AI_MODEL_MAX_ATTEMPTS . " attempts", "E74C3C")
             Sleep 2000
             AiModelBanner_Hide()
-            if (!keepOpen)
-                Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
+            Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
             return false
         }
 
@@ -277,8 +287,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
             AiModelBanner_Show("❌ Could not save model preference", BANNER_ACCENT_ERROR)
             Sleep 2000
             AiModelBanner_Hide()
-            if (!keepOpen)
-                Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
+            Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
             return false
         }
 
@@ -296,13 +305,21 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
             AiModelBanner_Show("✅ Model ready", BANNER_ACCENT_SUCCESS)
             Sleep 400
             AiModelBanner_Hide()
+            ; Interactive follow-up (re-transcribe): end suppress and show Handy.
+            if (handyHwnd)
+                Handy_EndSuppress(handyHwnd, true)
+            try WinActivate("ahk_id " . handyHwnd)
+            catch {
+            }
             return true
         }
 
-        AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
-        try WinClose("ahk_id " . handyHwnd)
-        Sleep 150
+        ; Keep Handy warm and suppressed off-screen — do not WinClose.
+        if (handyHwnd)
+            Handy_BeginSuppress(handyHwnd)
 
+        AiModelBanner_Show("✅ " . modelDisplayName, BANNER_ACCENT_SUCCESS)
+        Sleep 350
         AiModelBanner_Hide()
         Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
         return true
@@ -314,5 +331,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
         if (!keepOpen)
             Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
         return false
+    } finally {
+        g_HandyModelSwitchBusy := false
     }
 }
