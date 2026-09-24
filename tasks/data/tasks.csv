@@ -1,164 +1,164 @@
-id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active,import_batch
-TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,⏳,punctual,,,,,work,100,,2026-08-29 15:48:39,1,
-TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,⏳,punctual,,,,,work,90,,2026-08-29 15:48:39,1,
-TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1,
-TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⏳,punctual,,,,,work,220,,2026-08-29 15:48:39,1,
-TASK_0009,PROJ_0005,SEC_0005,Check you can have the Gemini extension and CLI on VS Code,⚡,punctual,,,,,work,370,,2026-08-29 15:48:39,1,
-TASK_0010,PROJ_0005,SEC_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,,work,400,,2026-08-29 15:48:39,1,
-TASK_0011,PROJ_0005,SEC_0063,Separar a reunião de segunda que vem para analisarmos se essa pessoa técnica,⏳,punctual,,,,"Tasks/Checar esta meta, se precisamos revisar",work,410,,2026-08-29 15:48:39,1,
-TASK_0012,PROJ_0006,SEC_0006,"[Ca-IE-SSM-SEGMAADM-WBT] Health, Safety at Work and Environment-B (due to 29/Jul/2027)",⏳,punctual,,,,,work,440,,2026-08-29 15:48:39,1,
-TASK_0013,PROJ_0011,SEC_0011,A Letícia gostaria de incluir a Fran para trazer as expectativas. Ela cuida de CX (customer experience - call center).,⏳,punctual,,,,,work,560,,2026-08-29 15:48:39,1,
-TASK_0014,PROJ_0012,SEC_0012,KPIs,⏳,punctual,,,,,work,640,,2026-08-29 15:48:39,1,
-TASK_0015,PROJ_0012,SEC_0067,Checar essa funcionalidade de interação com o chat? O Flarian usaria?,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,670,,2026-08-29 15:48:39,1,
-TASK_0016,PROJ_0012,SEC_0067,A PT está usando o NextAPP. Eles tão usando isso? Eles querem conectar com a nossa base? Apenas somente venda.,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,680,,2026-08-29 15:48:39,1,
-TASK_0017,PROJ_0012,SEC_0068,Contact Larissa for assistance with Power BI and API construction. Check if there is any left value that you couldn't fulfill inside the business model that she could help,⏳,punctual,,,,Projects/Business Model,work,690,,2026-08-29 15:48:39,1,
-TASK_0019,PROJ_0013,SEC_0070,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 15:48:39,1,
-TASK_0020,PROJ_0013,SEC_0070,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 15:48:39,1,
-TASK_0025,PROJ_0013,SEC_0073,Make more communications,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 15:48:39,1,
-TASK_0029,PROJ_0013,SEC_0075,Maybe we need to send a news to the key users for them to prepare a license for the Gemini Enterprise Plus,✅,punctual,,,,Projects/Parte 2 – N8N,work,980,2026-08-29 15:48:39,2026-08-29 15:48:39,1,
-TASK_0033,PROJ_0013,SEC_0075,to understand where this key user this list of key users is on the network and if necessary place to our folder,⏳,punctual,,,,Projects/Parte 2 – N8N,work,1100,,2026-08-29 15:48:39,1,
-TASK_0036,PROJ_0015,SEC_0015,Start look at investing in other countries instead of only brazil,⏳,punctual,,,,,personal,1370,,2026-08-29 15:48:39,1,
-TASK_0040,PROJ_0027,SEC_0131,Update your CV when you finish your master's degree at any new article if you have published,🔲,punctual,,,,,personal,1510,,2026-08-29 15:48:39,1,
-TASK_0042,PROJ_0026,SEC_0129,"Close anything that might generate costs on your Azure, the tools used for your dissertation",⏳,punctual,,,,,personal,1540,,2026-08-29 15:48:39,1,
-TASK_0043,PROJ_0015,SEC_0015,Check if other companies can offer it for a better price for your bruxismo  guard,⏳,punctual,,,,,personal,1580,,2026-08-29 15:48:39,1,
-TASK_0044,PROJ_0015,SEC_0015,Limpar o túmulo da mãe,⏳,punctual,,,,,personal,1590,,2026-08-29 15:48:39,1,
-TASK_0045,PROJ_0026,SEC_0129,Print the articles you published,⏳,punctual,,,,,personal,1600,,2026-08-29 15:48:39,1,
-TASK_0046,PROJ_0015,SEC_0015,Read your dissertation,✅,punctual,,,,,personal,1630,2026-08-29 19:40:11,2026-08-29 15:48:39,1,
-TASK_0047,PROJ_0015,SEC_0015,Rehearsal your presentation,✅,punctual,,,,,personal,1640,2026-08-29 19:40:13,2026-08-29 15:48:39,1,
-TASK_0048,PROJ_0015,SEC_0015,Check if REDU already approved your repo,✅,punctual,,,,,personal,1660,2026-08-29 19:40:17,2026-08-29 15:48:39,1,
-TASK_0051,PROJ_0016,SEC_0016,Waiting analysis,⏳,punctual,,,,,personal,1730,,2026-08-29 15:48:39,1,
-TASK_0053,PROJ_0028,SEC_0133,How to store big vocabularies,⏳,punctual,,,,,personal,1750,,2026-08-29 15:48:39,1,
-TASK_0056,PROJ_0024,SEC_0127,Assess potential scholarship options and funding support for Australian and British PhD programs.,⏳,punctual,,,,,personal,1810,,2026-08-29 15:48:39,1,
-TASK_0057,PROJ_0019,SEC_0081,Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake,🩺,habitual,daily,,,Daily,habits,1890,,2026-08-29 15:48:39,1,
-TASK_0058,PROJ_0019,SEC_0081,Physical activity: at least 30 minutes moderate movement,🩺,habitual,daily,,,Daily,habits,1900,,2026-08-29 15:48:39,1,
-TASK_0059,PROJ_0019,SEC_0081,Medications (daily adherence):,🩺,habitual,daily,,,Daily,habits,1910,,2026-08-29 15:48:39,1,
-TASK_0060,PROJ_0019,SEC_0081,Sleep: target 7–9 hours; fixed wake time,🩺,habitual,daily,,,Daily,habits,1930,,2026-08-29 15:48:39,1,
-TASK_0061,PROJ_0019,SEC_0081,"Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)",🩺,habitual,daily,,,Daily,habits,1940,,2026-08-29 15:48:39,1,
-TASK_0062,PROJ_0019,SEC_0082,Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable,🩺,habitual,weekly,,,Weekly,habits,1950,,2026-08-29 15:48:39,1,
-TASK_0063,PROJ_0019,SEC_0082,Exercise long session (≥60–90 minutes) or two shorter sessions,🩺,habitual,weekly,,,Weekly,habits,1960,,2026-08-29 15:48:39,1,
-TASK_0064,PROJ_0019,SEC_0082,Check your grocery list,🔲,habitual,weekly,,,Weekly,habits,1970,,2026-08-29 15:48:39,1,
-TASK_0066,PROJ_0019,SEC_0083,Medication logistics: refill meds; adherence check; pillbox setup,🩺,habitual,monthly,,,Monthly,habits,2000,,2026-08-29 15:48:39,1,
-TASK_0067,PROJ_0019,SEC_0083,Weight/BP log; note any fluvoxamina changes,🩺,habitual,monthly,,,Monthly,habits,2010,,2026-08-29 15:48:39,1,
-TASK_0068,PROJ_0019,SEC_0083,Health check-up (self-check; schedule visit if concerns),🩺,habitual,monthly,,,Monthly,habits,2020,,2026-08-29 15:48:39,1,
-TASK_0069,PROJ_0019,SEC_0083,Check your pills and supplies (minoxidil should not be stockpiled),🩺,habitual,monthly,,,Monthly,habits,2030,,2026-08-29 15:48:39,1,
-TASK_0071,PROJ_0019,SEC_0084,We need to eventually clean our water filter.,🔲,habitual,quarterly,,,Quarterly,habits,2050,,2026-08-29 15:48:39,1,
-TASK_0072,PROJ_0019,SEC_0084,We need to eventually clean our coffee machine.,🔲,habitual,quarterly,,,Quarterly,habits,2060,,2026-08-29 15:48:39,1,
-TASK_0073,PROJ_0019,SEC_0084,Clean your keyboard.,🔲,habitual,quarterly,,,Quarterly,habits,2070,,2026-08-29 15:48:39,1,
-TASK_0074,PROJ_0019,SEC_0084,Update your lattes curriculum,🔲,habitual,quarterly,,,Quarterly,habits,2080,,2026-08-29 15:48:39,1,
-TASK_0075,PROJ_0019,SEC_0084,Review Cursor subscription status; current term ends on Nov 3; renew/cancel as needed,🔲,habitual,quarterly,,,Quarterly,habits,2090,,2026-08-29 15:48:39,1,
-TASK_0076,PROJ_0019,SEC_0085,Dental check-up and cleaning (suggest Jan and Jul each year),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2100,,2026-08-29 15:48:39,1,
-TASK_0077,PROJ_0019,SEC_0085,Consulta com tricologista (hair health),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2110,,2026-08-29 15:48:39,1,
-TASK_0078,PROJ_0019,SEC_0085,Levar projetos importantes ao LinkedIn,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2120,,2026-08-29 15:48:39,1,
-TASK_0079,PROJ_0019,SEC_0085,Reler as anotações dos seus livros pertinentes,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2130,,2026-08-29 15:48:39,1,
-TASK_0080,PROJ_0019,SEC_0085,Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2140,,2026-08-29 15:48:39,1,
-TASK_0081,PROJ_0019,SEC_0085,Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2150,,2026-08-29 15:48:39,1,
-TASK_0082,PROJ_0019,SEC_0086,"Vaccines: Influenza (seasonal, typically Apr–Jun availability) and COVID-19 booster (seasonal availability)",🩺,habitual,yearly,,,Yearly,habits,2160,,2026-08-29 15:48:39,1,
-TASK_0083,PROJ_0019,SEC_0086,Dermatology full-body skin exam,🩺,habitual,yearly,,,Yearly,habits,2170,,2026-08-29 15:48:39,1,
-TASK_0084,PROJ_0019,SEC_0086,Comprehensive physical exam (primary care) (september),🩺,habitual,yearly,,,Yearly,habits,2180,,2026-08-29 15:48:39,1,
-TASK_0086,PROJ_0019,SEC_0086,Review skills notes,🔲,habitual,yearly,,,Yearly,habits,2200,,2026-08-29 15:48:39,1,
-TASK_0087,PROJ_0019,SEC_0086,"Checar validade dos documentos (RG, passaporte, CNH, vistos)",🔲,habitual,yearly,,,Yearly,habits,2210,,2026-08-29 15:48:39,1,
-TASK_0088,PROJ_0019,SEC_0086,Imposto de Renda (IRPF),🔲,habitual,yearly,,,Yearly,habits,2220,,2026-08-29 15:48:39,1,
-TASK_0089,PROJ_0019,SEC_0086,Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas),🔲,habitual,yearly,,,Yearly,habits,2230,,2026-08-29 15:48:39,1,
-TASK_0090,PROJ_0019,SEC_0086,Imprimir as fotos do último ano,🔲,habitual,yearly,,,Yearly,habits,2240,,2026-08-29 15:48:39,1,
-TASK_0091,PROJ_0019,SEC_0086,Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail,🔲,habitual,yearly,,,Yearly,habits,2250,,2026-08-29 15:48:39,1,
-TASK_0093,PROJ_0019,SEC_0087,Renovar RG após emissão (até 60 anos); acompanhar pela data de emissão,🔲,habitual,every_10y,,,Every 10 Years (Documents),habits,2270,,2026-08-29 15:48:39,1,
-TASK_0094,PROJ_0019,SEC_0088,Eye exam (optometry/ophthalmology),🩺,habitual,every_2y,,,Every 2 Years,habits,2280,,2026-08-29 15:48:39,1,
-TASK_0095,PROJ_0019,SEC_0089,Hemoglobin A1c (diabetes screening) if low risk,🩺,habitual,every_3y,,,Every 3 Years,habits,2290,,2026-08-29 15:48:39,1,
-TASK_0096,PROJ_0019,SEC_0090,Lipid profile (cholesterol) if low cardiovascular risk,🩺,habitual,every_5y,,,Every 5 Years,habits,2300,,2026-08-29 15:48:39,1,
-TASK_0097,PROJ_0021,SEC_0091,"Track side effects, sleep changes, and activation; discuss any concerns promptly with your prescriber",🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2340,,2026-08-29 15:48:39,1,
-TASK_0098,PROJ_0021,SEC_0091,Interaction cautions: review all new meds/supplements for interactions with fluvoxamina,🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2350,,2026-08-29 15:48:39,1,
-TASK_0099,PROJ_0022,SEC_0092,"Tdap (tetanus, diphtheria, pertussis): one dose in 2025 (Age 28) as adult catch-up, regardless of prior dT",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2370,,2026-08-29 15:48:39,1,
-TASK_0100,PROJ_0022,SEC_0092,"Td or Tdap boosters every 10 years after 2025: 2035 (Age 38), 2045 (Age 48), 2055 (Age 58), 2065 (Age 68), 2075 (Age 78), 2085 (Age 88), 2095 (Age 98)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2380,,2026-08-29 15:48:39,1,
-TASK_0101,PROJ_0022,SEC_0092,Varicella (chickenpox/catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2390,,2026-08-29 15:48:39,1,
-TASK_0102,PROJ_0022,SEC_0092,"Influenza: annually, every year",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2400,,2026-08-29 15:48:39,1,
-TASK_0103,PROJ_0022,SEC_0092,"COVID-19: annually, every year per local seasonality",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2410,,2026-08-29 15:48:39,1,
-TASK_0104,PROJ_0022,SEC_0092,Herpes Zoster (Shingrix): 2-dose series at 50 years — 2047 (Age 50) Dose 1; Dose 2 in 2–6 months (still 2047/2048),🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2420,,2026-08-29 15:48:39,1,
-TASK_0105,PROJ_0022,SEC_0092,"Pneumococcal (at 60 years if average risk): 2057 (Age 60) per current guideline (e.g., single PCV20, or PCV15 followed by PPSV23 depending on policy at that time)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2430,,2026-08-29 15:48:39,1,
-TASK_0106,PROJ_0022,SEC_0092,Yellow Fever: you received 14/10/2022; generally one dose is lifelong. Booster only if policy/travel risk requires,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2440,,2026-08-29 15:48:39,1,
-TASK_0107,PROJ_0022,SEC_0092,Hepatitis A/B: your records are considered complete; no routine boosters if immunocompetent,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2450,,2026-08-29 15:48:39,1,
-TASK_0108,PROJ_0022,SEC_0092,MMR: appears complete; no routine adult boosters if two documented doses,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2460,,2026-08-29 15:48:39,1,
-TASK_0109,PROJ_0022,SEC_0092,"Travel/occupational vaccines (e.g., meningococcal, hepatitis boosters, rabies pre-exposure): as needed based on destination/risk",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2470,,2026-08-29 15:48:39,1,
-TASK_0110,PROJ_0023,SEC_0093,COVID-19 bivalente Pfizer: 16/02/2024; prior Pfizer doses 2021–2022; CoronaVac booster 03/11/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2490,,2026-08-29 15:48:39,1,
-TASK_0111,PROJ_0023,SEC_0093,Influenza trivalente: 04/12/2024 (keep annually),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2500,,2026-08-29 15:48:39,1,
-TASK_0112,PROJ_0023,SEC_0093,dT (adult diphtheria-tetanus) booster: 04/04/2022 (Tdap still due once; plan in 2025),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2510,,2026-08-29 15:48:39,1,
-TASK_0113,PROJ_0023,SEC_0093,Yellow Fever: 14/10/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2520,,2026-08-29 15:48:39,1,
-TASK_0114,PROJ_0023,SEC_0093,Hepatitis A: 2016 (series considered fine),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2530,,2026-08-29 15:48:39,1,
-TASK_0115,PROJ_0023,SEC_0093,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2540,,2026-08-29 15:48:39,1,
-TASK_0116,PROJ_0023,SEC_0093,Varicella (catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2550,,2026-08-29 15:48:39,1,
-TASK_0204,PROJ_0015,SEC_0015,test,✅,punctual,,,,,personal,3770,2026-08-30 11:49:48,2026-08-30 11:49:44,1,
-TASK_0209,PROJ_0024,SEC_0127,Candidate to open PhD positions,⏳,punctual,,,,,personal,3820,,2026-08-30 14:53:57,1,
-TASK_0210,PROJ_0025,SEC_0128,Portal as a UX delivery,⏳,punctual,,,,,work,3830,,2026-08-30 15:09:40,1,
-TASK_0211,PROJ_0025,SEC_0128,Solução de construção de propostaise,⏳,punctual,,,,,work,3840,,2026-08-30 15:09:44,1,
-TASK_0212,PROJ_0005,SEC_0005,Project Management stuff to do,,punctual,,,,,work,3850,,2026-08-30 15:10:29,1,
-TASK_0213,PROJ_0005,SEC_0005,My Allocation,,punctual,,,,,work,3860,,2026-08-30 15:10:56,1,
-TASK_0214,PROJ_0011,SEC_0011,Info,,punctual,,,,,work,3870,,2026-08-30 15:24:30,1,
-TASK_0215,PROJ_0012,SEC_0012,"Retirar: Oportunidades, Prioridade, recomendações e sentimentos.",⏳,punctual,,,,,work,3880,,2026-08-30 15:25:59,1,
-TASK_0216,PROJ_0012,SEC_0012,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,⏳,punctual,,,,,work,3890,,2026-08-30 15:26:02,1,
-TASK_0217,PROJ_0013,SEC_0013,Como indicar um key-user?,,punctual,,,,,work,3900,,2026-08-30 15:28:48,1,
-TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1,
-TASK_0223,PROJ_0003,SEC_0003,Doubts,,punctual,,,,,work,3960,,2026-08-31 12:04:55,1,
-TASK_0226,PROJ_0005,SEC_0005,Check the Mercado Livre House insurance,⏳,punctual,,,,,work,3990,,2026-09-01 10:02:29,1,
-TASK_0229,PROJ_0005,SEC_0005,BPM Success Case,⏳,punctual,,,,,work,4020,,2026-09-02 10:41:14,1,
-TASK_0230,PROJ_0005,SEC_0005,Data Insights Success Case,⏳,punctual,,,,,work,4030,,2026-09-02 10:41:40,1,
-TASK_0231,PROJ_0005,SEC_0005,RISE Success Case,⏳,punctual,,,,,work,4040,,2026-09-02 10:41:52,1,
-TASK_0232,PROJ_0005,SEC_0005,Add the links to the MIRO to your projects on DevOps,⚡,punctual,,,,,work,4050,,2026-09-02 10:43:15,1,
-TASK_0236,PROJ_0015,SEC_0015,Continue with your idea of the book,🔲,punctual,,,,,personal,4090,,2026-09-02 16:20:09,1,
-TASK_0237,PROJ_0013,SEC_0070,Como vamos ter as horas mapeadas?,⏳,punctual,,,,Projects/Governance,work,4100,,2026-09-03 11:06:36,1,
-TASK_0238,PROJ_0013,SEC_0070,Como vai ser a fase de acompanhamento com os key-users?,⏳,punctual,,,,Projects/Governance,work,4110,,2026-09-03 11:07:07,1,
-TASK_0240,PROJ_0005,SEC_0005,How can we compare the model prices?,⚡,punctual,,,,,work,4130,,2026-09-03 11:38:18,1,
-TASK_0241,PROJ_0015,SEC_0015,"You need to better understand, open code",⏳,punctual,,,,,personal,4140,,2026-09-03 19:28:59,1,
-TASK_0242,PROJ_0011,SEC_0011,Backlog,,punctual,,,,,work,4150,,2026-09-04 11:47:26,1,
-TASK_0243,PROJ_0019,SEC_0082,You need to check if you made something good to add to your my personal repo just for historical purposes,🔲,habitual,,,2026-09-04,Weekly,habits,4160,,2026-09-04 13:00:03,1,
-TASK_0246,PROJ_0028,SEC_0133,"You should check how to remember numbers, maybe with the SPA technique",⏳,punctual,,,,,personal,4190,,2026-09-10 12:26:26,1,
-TASK_0248,PROJ_0015,SEC_0015,Deixar firma aberta no cartório,⚡,punctual,,,,,personal,4210,,2026-09-12 16:24:10,1,
-TASK_0251,PROJ_0027,SEC_0132,You can get in touch with people directly through this page and check if the companies have job openings,⏳,punctual,,,,Alumni Unicamp,personal,4240,,2026-09-14 18:10:24,1,
-TASK_0254,PROJ_0027,SEC_0136,Job openings,⏳,punctual,,,,Levva,personal,4270,,2026-09-14 18:25:53,1,
-TASK_0258,PROJ_0027,SEC_0131,Check Job openings,⚡,punctual,,,,,personal,4310,,2026-09-15 15:52:03,1,
-TASK_0259,PROJ_0027,SEC_0131,You should continue or cancel your LinkedIn premium subscription that finishes on October 15th,⏳,punctual,,,,,personal,4320,,2026-09-15 16:21:27,1,
-TASK_0264,PROJ_0029,SEC_0138,1st Dose V10,,punctual,,2026-09-19,,Vaccination Timetable,personal,4380,,2026-09-17 22:16:13,1,
-TASK_0265,PROJ_0029,SEC_0138,2nd Dose V10,⏳,punctual,,2026-10-19,,Vaccination Timetable,personal,4390,,2026-09-17 22:16:13,1,
-TASK_0266,PROJ_0029,SEC_0138,3rd Dose V10,⏳,punctual,,2026-11-19,,Vaccination Timetable,personal,4400,,2026-09-17 22:16:13,1,
-TASK_0267,PROJ_0029,SEC_0138,4th Dose V10 + Raiva,⏳,punctual,,2026-12-19,,Vaccination Timetable,personal,4690,,2026-09-17 22:16:13,1,
-TASK_0274,PROJ_0029,SEC_0139,"Buy Deshedding Brush (slicker, metal comb)",⏳,punctual,,,,Essential Shopping List,personal,4470,,2026-09-17 22:16:13,1,
-TASK_0275,PROJ_0029,SEC_0139,"Buy Collar, ID Tag, and Leash",⏳,punctual,,,,Essential Shopping List,personal,4480,,2026-09-17 22:16:13,1,
-TASK_0282,PROJ_0019,SEC_0086,🐕 Early rabies vaccine for my dog,🔲,habitual,,,,Yearly,habits,4550,,2026-09-17 22:21:30,1,
-TASK_0283,PROJ_0019,SEC_0086,🐕 Early V10 vaccine for my dog,🔲,habitual,,,,Yearly,habits,4560,,2026-09-17 22:21:57,1,
-TASK_0284,PROJ_0019,SEC_0086,🐕 Early gripe canina vaccine for my dog,🔲,habitual,,,,Yearly,habits,4570,,2026-09-17 22:22:40,1,
-TASK_0285,PROJ_0019,SEC_0087,🐕 Early V10 vaccine for my dog,🔲,habitual,,,2026-09-18,Every 10 Years (Documents),habits,4580,,2026-09-17 22:23:25,1,
-TASK_0286,PROJ_0019,SEC_0086,🐕 Other non core vaccines,🔲,habitual,,,,Yearly,habits,4590,,2026-09-17 22:23:38,1,
-TASK_0287,PROJ_0019,SEC_0083,"🐕 Flea and Tick Prevention: Administered monthly or every 12 weeks (e.g., Simparica, NexGard, Bravecto).",🔲,habitual,,,2026-09-18,Monthly,habits,4600,,2026-09-17 22:25:03,1,
-TASK_0288,PROJ_0019,SEC_0085,"🐕 Dewormer (Vermífugo): Generally given every 3 to 6 months to prevent intestinal parasites (e.g., Drontal, Milbemax).",🔲,habitual,,,2026-09-18,Bi-yearly (Every 6 months),habits,4610,,2026-09-17 22:25:34,1,
-TASK_0289,PROJ_0019,SEC_0083,"🐕 Heartworm Prevention (Dirofilariose): Administered monthly. This is highly recommended, especially if you plan to travel with her to coastal areas. Certain all-in-one preventatives combine flea, tick, and heartworm protection.",🔲,habitual,,,,Monthly,habits,4620,,2026-09-17 22:26:51,1,
-TASK_0290,PROJ_0019,SEC_0086,"🐈 Polivalente Felina (V4 or V5): This core vaccine must be administered annually. It protects against feline viral rhinotracheitis, calicivirus, panleukopenia, and chlamydia. The V5 includes protection against Feline Leukemia (FeLV) and is highly recommended if Baby and the orange cat have outdoor access, though a negative test is required before their first dose.",🔲,habitual,,,2026-09-18,Yearly,habits,4630,,2026-09-17 22:28:41,1,
-TASK_0291,PROJ_0019,SEC_0086,🐈 Raiva (Rabies): This is required annually in Brazil to maintain immunity and comply with local laws.,🔲,habitual,,,2026-09-18,Yearly,habits,4640,,2026-09-17 22:28:48,1,
-TASK_0292,PROJ_0019,SEC_0083,"🐈 Flea and Tick Prevention: Administered topically on the back of the neck on a strict schedule. Depending on the brand, such as Bravecto or Revolution, this is given every 30 days or up to 12 weeks. Never use dog flea medications on cats, as permethrin is highly toxic to felines.",🔲,habitual,,,2026-09-18,Monthly,habits,4650,,2026-09-17 22:29:24,1,
-TASK_0293,PROJ_0019,SEC_0085,🐈 Intestinal Deworming (Vermífugo): Administered every 3 to 6 months depending on their exposure to outdoor environments or prey.,🔲,habitual,,,2026-09-18,Bi-yearly (Every 6 months),habits,4660,,2026-09-17 22:29:43,1,
-TASK_0294,PROJ_0019,SEC_0083,"🐈 Heartworm Prevention (Dirofilariose): Administered monthly. Products like Revolution provide inclusive protection against fleas, heartworms, and ear mites, which is beneficial if you travel to coastal areas.",🔲,habitual,,,2026-09-18,Monthly,habits,4670,,2026-09-17 22:30:12,1,
-TASK_0295,PROJ_0030,SEC_0140,"Pastor alemão Capa Preta, nascida em dia dezenove de julho de dois mil e vinte e seis.",🔲,habitual,,,2026-09-18,,habits,4680,,2026-09-18 11:32:24,1,
-TASK_0296,PROJ_0029,SEC_0138,We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.,,punctual,,,,Vaccination Timetable,personal,4370,,2026-09-18 11:48:27,1,
-TASK_0297,PROJ_0029,SEC_0137,Check if you have already received the pedigree,⏳,punctual,,,,,personal,4700,,2026-09-19 16:21:18,1,
-TASK_0303,PROJ_0019,SEC_0081,"Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)",🩺,habitual,daily,,,Daily,habits,4760,,2026-09-21 19:06:59,1,
-TASK_0304,PROJ_0019,SEC_0082,"Review body recomposition progress (photos, measurements, gym performance)",🩺,habitual,weekly,,,Weekly,habits,4770,,2026-09-21 19:06:59,1,
-TASK_0305,PROJ_0029,SEC_0137,Coleira de spikes,⏳,punctual,,,,,personal,4780,,2026-09-21 19:42:45,1,
-TASK_0306,PROJ_0027,SEC_0134,Apply to this one,🔲,punctual,,,,Bosch,personal,4790,,2026-09-21 21:56:49,1,
-TASK_0308,PROJ_0031,SEC_0141,You need to understand this whole situation with the lawyer,⚡,punctual,,,,,personal,4810,,2026-09-22 19:19:16,1,
-TASK_0309,PROJ_0031,SEC_0141,Go to the insurance company,🔲,punctual,,,,,personal,4820,,2026-09-22 19:20:38,1,
-TASK_0310,PROJ_0015,SEC_0015,Check,🔲,punctual,,,,,personal,4830,,2026-09-23 20:12:16,1,
-TASK_0311,PROJ_0027,SEC_0131,Entrar em contato com o professor Selmar Gimarães da Silva para ver se ele tem possibilidades de emprego.,🔲,punctual,,,,,personal,4840,,2026-09-23 20:48:02,1,
-TASK_0312,PROJ_0026,SEC_0129,Make the corrections,⚡,punctual,,,,,personal,4850,,2026-09-23 20:51:19,1,
-TASK_0313,PROJ_0015,SEC_0015,Leo migrate to gemini,🔲,punctual,,,,,personal,4860,,2026-09-24 12:24:29,1,
-TASK_0314,PROJ_0030,SEC_0142,Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,habitual,daily,,2026-09-24,Feeding Schedule,habits,4870,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0315,PROJ_0030,SEC_0142,Weigh German Shepherd and adjust daily grams based on calorie density and growth rate,⚖️,habitual,monthly,,2026-10-19,Feeding Schedule,habits,4880,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0316,PROJ_0030,SEC_0142,Month 3 feeding (15 kg rapid growth): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,punctual,,2026-10-19,,Feeding Schedule,habits,4890,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0317,PROJ_0030,SEC_0142,Month 4 feeding (~4 months milestone): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,punctual,,2026-11-19,,Feeding Schedule,habits,4900,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0318,PROJ_0030,SEC_0142,Month 5 feeding: Puppy food across 3 meals (adjust portion between 250g-350g and adult target),🐕,punctual,,2026-12-19,,Feeding Schedule,habits,4910,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0319,PROJ_0030,SEC_0142,Month 6 feeding: Puppy food across 3 meals (monitor weight and adjust portion),🐕,punctual,,2027-01-19,,Feeding Schedule,habits,4920,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0320,PROJ_0030,SEC_0142,Month 7 feeding: Puppy food across 3 meals (support rapid bone and joint growth),🐕,punctual,,2027-02-19,,Feeding Schedule,habits,4930,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0321,PROJ_0030,SEC_0142,Month 8 feeding: Puppy food across 3 meals (monitor growth and calorie density),🐕,punctual,,2027-03-19,,Feeding Schedule,habits,4940,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0322,PROJ_0030,SEC_0142,Month 9 feeding: Large-breed puppy food across 3 meals (maintain bone/joint nutrition),🐕,punctual,,2027-04-19,,Feeding Schedule,habits,4950,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0323,PROJ_0030,SEC_0142,Month 10 feeding: Large-breed puppy food across 3 meals (monitor weight progression),🐕,punctual,,2027-05-19,,Feeding Schedule,habits,4960,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0324,PROJ_0030,SEC_0142,Month 11 feeding: Large-breed puppy food across 3 meals (prepare transition to adult schedule),🐕,punctual,,2027-06-19,,Feeding Schedule,habits,4970,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0325,PROJ_0030,SEC_0142,Month 12 feeding (1 Year): Puppy food milestone (maintain puppy food through 12-15 months),🐕,punctual,,2027-07-19,,Feeding Schedule,habits,4980,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0326,PROJ_0030,SEC_0142,Month 13 feeding: Large-breed puppy food (continue through 12-15 months; monitor weight),🐕,punctual,,2027-08-19,,Feeding Schedule,habits,4990,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0327,PROJ_0030,SEC_0142,Month 14 feeding: Large-breed puppy food (12-15 months window; plan adult switch),🐕,punctual,,2027-09-19,,Feeding Schedule,habits,5000,,2026-09-24 13:05:52,1,IMP-20260924-130552
-TASK_0328,PROJ_0030,SEC_0142,"Month 15 feeding (Adulthood / 30-40 kg): Transition to adult food, 350g-500g/day in 2 meals (175g-250g/meal)",🐕,punctual,,2027-10-19,,Feeding Schedule,habits,5010,,2026-09-24 13:05:52,1,IMP-20260924-130552
+id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active
+TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,⏳,punctual,,,,,work,100,,2026-08-29 15:48:39,1
+TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,⏳,punctual,,,,,work,90,,2026-08-29 15:48:39,1
+TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1
+TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⏳,punctual,,,,,work,220,,2026-08-29 15:48:39,1
+TASK_0009,PROJ_0005,SEC_0005,Check you can have the Gemini extension and CLI on VS Code,⚡,punctual,,,,,work,370,,2026-08-29 15:48:39,1
+TASK_0010,PROJ_0005,SEC_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,,work,400,,2026-08-29 15:48:39,1
+TASK_0011,PROJ_0005,SEC_0063,Separar a reunião de segunda que vem para analisarmos se essa pessoa técnica,⏳,punctual,,,,"Tasks/Checar esta meta, se precisamos revisar",work,410,,2026-08-29 15:48:39,1
+TASK_0012,PROJ_0006,SEC_0006,"[Ca-IE-SSM-SEGMAADM-WBT] Health, Safety at Work and Environment-B (due to 29/Jul/2027)",⏳,punctual,,,,,work,440,,2026-08-29 15:48:39,1
+TASK_0013,PROJ_0011,SEC_0011,A Letícia gostaria de incluir a Fran para trazer as expectativas. Ela cuida de CX (customer experience - call center).,⏳,punctual,,,,,work,560,,2026-08-29 15:48:39,1
+TASK_0014,PROJ_0012,SEC_0012,KPIs,⏳,punctual,,,,,work,640,,2026-08-29 15:48:39,1
+TASK_0015,PROJ_0012,SEC_0067,Checar essa funcionalidade de interação com o chat? O Flarian usaria?,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,670,,2026-08-29 15:48:39,1
+TASK_0016,PROJ_0012,SEC_0067,A PT está usando o NextAPP. Eles tão usando isso? Eles querem conectar com a nossa base? Apenas somente venda.,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,680,,2026-08-29 15:48:39,1
+TASK_0017,PROJ_0012,SEC_0068,Contact Larissa for assistance with Power BI and API construction. Check if there is any left value that you couldn't fulfill inside the business model that she could help,⏳,punctual,,,,Projects/Business Model,work,690,,2026-08-29 15:48:39,1
+TASK_0019,PROJ_0013,SEC_0070,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 15:48:39,1
+TASK_0020,PROJ_0013,SEC_0070,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 15:48:39,1
+TASK_0025,PROJ_0013,SEC_0073,Make more communications,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 15:48:39,1
+TASK_0029,PROJ_0013,SEC_0075,Maybe we need to send a news to the key users for them to prepare a license for the Gemini Enterprise Plus,✅,punctual,,,,Projects/Parte 2 – N8N,work,980,2026-08-29 15:48:39,2026-08-29 15:48:39,1
+TASK_0033,PROJ_0013,SEC_0075,to understand where this key user this list of key users is on the network and if necessary place to our folder,⏳,punctual,,,,Projects/Parte 2 – N8N,work,1100,,2026-08-29 15:48:39,1
+TASK_0036,PROJ_0015,SEC_0015,Start look at investing in other countries instead of only brazil,⏳,punctual,,,,,personal,1370,,2026-08-29 15:48:39,1
+TASK_0040,PROJ_0027,SEC_0131,Update your CV when you finish your master's degree at any new article if you have published,🔲,punctual,,,,,personal,1510,,2026-08-29 15:48:39,1
+TASK_0042,PROJ_0026,SEC_0129,"Close anything that might generate costs on your Azure, the tools used for your dissertation",⏳,punctual,,,,,personal,1540,,2026-08-29 15:48:39,1
+TASK_0043,PROJ_0015,SEC_0015,Check if other companies can offer it for a better price for your bruxismo  guard,⏳,punctual,,,,,personal,1580,,2026-08-29 15:48:39,1
+TASK_0044,PROJ_0015,SEC_0015,Limpar o túmulo da mãe,⏳,punctual,,,,,personal,1590,,2026-08-29 15:48:39,1
+TASK_0045,PROJ_0026,SEC_0129,Print the articles you published,⏳,punctual,,,,,personal,1600,,2026-08-29 15:48:39,1
+TASK_0046,PROJ_0015,SEC_0015,Read your dissertation,✅,punctual,,,,,personal,1630,2026-08-29 19:40:11,2026-08-29 15:48:39,1
+TASK_0047,PROJ_0015,SEC_0015,Rehearsal your presentation,✅,punctual,,,,,personal,1640,2026-08-29 19:40:13,2026-08-29 15:48:39,1
+TASK_0048,PROJ_0015,SEC_0015,Check if REDU already approved your repo,✅,punctual,,,,,personal,1660,2026-08-29 19:40:17,2026-08-29 15:48:39,1
+TASK_0051,PROJ_0016,SEC_0016,Waiting analysis,⏳,punctual,,,,,personal,1730,,2026-08-29 15:48:39,1
+TASK_0053,PROJ_0028,SEC_0133,How to store big vocabularies,⏳,punctual,,,,,personal,1750,,2026-08-29 15:48:39,1
+TASK_0056,PROJ_0024,SEC_0127,Assess potential scholarship options and funding support for Australian and British PhD programs.,⏳,punctual,,,,,personal,1810,,2026-08-29 15:48:39,1
+TASK_0057,PROJ_0019,SEC_0081,Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake,🩺,habitual,daily,,,Daily,habits,1890,,2026-08-29 15:48:39,1
+TASK_0058,PROJ_0019,SEC_0081,Physical activity: at least 30 minutes moderate movement,🩺,habitual,daily,,,Daily,habits,1900,,2026-08-29 15:48:39,1
+TASK_0059,PROJ_0019,SEC_0081,Medications (daily adherence):,🩺,habitual,daily,,,Daily,habits,1910,,2026-08-29 15:48:39,1
+TASK_0060,PROJ_0019,SEC_0081,Sleep: target 7–9 hours; fixed wake time,🩺,habitual,daily,,,Daily,habits,1930,,2026-08-29 15:48:39,1
+TASK_0061,PROJ_0019,SEC_0081,"Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)",🩺,habitual,daily,,,Daily,habits,1940,,2026-08-29 15:48:39,1
+TASK_0062,PROJ_0019,SEC_0082,Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable,🩺,habitual,weekly,,,Weekly,habits,1950,,2026-08-29 15:48:39,1
+TASK_0063,PROJ_0019,SEC_0082,Exercise long session (≥60–90 minutes) or two shorter sessions,🩺,habitual,weekly,,,Weekly,habits,1960,,2026-08-29 15:48:39,1
+TASK_0064,PROJ_0019,SEC_0082,Check your grocery list,🔲,habitual,weekly,,,Weekly,habits,1970,,2026-08-29 15:48:39,1
+TASK_0066,PROJ_0019,SEC_0083,Medication logistics: refill meds; adherence check; pillbox setup,🩺,habitual,monthly,,,Monthly,habits,2000,,2026-08-29 15:48:39,1
+TASK_0067,PROJ_0019,SEC_0083,Weight/BP log; note any fluvoxamina changes,🩺,habitual,monthly,,,Monthly,habits,2010,,2026-08-29 15:48:39,1
+TASK_0068,PROJ_0019,SEC_0083,Health check-up (self-check; schedule visit if concerns),🩺,habitual,monthly,,,Monthly,habits,2020,,2026-08-29 15:48:39,1
+TASK_0069,PROJ_0019,SEC_0083,Check your pills and supplies (minoxidil should not be stockpiled),🩺,habitual,monthly,,,Monthly,habits,2030,,2026-08-29 15:48:39,1
+TASK_0071,PROJ_0019,SEC_0084,We need to eventually clean our water filter.,🔲,habitual,quarterly,,,Quarterly,habits,2050,,2026-08-29 15:48:39,1
+TASK_0072,PROJ_0019,SEC_0084,We need to eventually clean our coffee machine.,🔲,habitual,quarterly,,,Quarterly,habits,2060,,2026-08-29 15:48:39,1
+TASK_0073,PROJ_0019,SEC_0084,Clean your keyboard.,🔲,habitual,quarterly,,,Quarterly,habits,2070,,2026-08-29 15:48:39,1
+TASK_0074,PROJ_0019,SEC_0084,Update your lattes curriculum,🔲,habitual,quarterly,,,Quarterly,habits,2080,,2026-08-29 15:48:39,1
+TASK_0075,PROJ_0019,SEC_0084,Review Cursor subscription status; current term ends on Nov 3; renew/cancel as needed,🔲,habitual,quarterly,,,Quarterly,habits,2090,,2026-08-29 15:48:39,1
+TASK_0076,PROJ_0019,SEC_0085,Dental check-up and cleaning (suggest Jan and Jul each year),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2100,,2026-08-29 15:48:39,1
+TASK_0077,PROJ_0019,SEC_0085,Consulta com tricologista (hair health),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2110,,2026-08-29 15:48:39,1
+TASK_0078,PROJ_0019,SEC_0085,Levar projetos importantes ao LinkedIn,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2120,,2026-08-29 15:48:39,1
+TASK_0079,PROJ_0019,SEC_0085,Reler as anotações dos seus livros pertinentes,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2130,,2026-08-29 15:48:39,1
+TASK_0080,PROJ_0019,SEC_0085,Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2140,,2026-08-29 15:48:39,1
+TASK_0081,PROJ_0019,SEC_0085,Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2150,,2026-08-29 15:48:39,1
+TASK_0082,PROJ_0019,SEC_0086,"Vaccines: Influenza (seasonal, typically Apr–Jun availability) and COVID-19 booster (seasonal availability)",🩺,habitual,yearly,,,Yearly,habits,2160,,2026-08-29 15:48:39,1
+TASK_0083,PROJ_0019,SEC_0086,Dermatology full-body skin exam,🩺,habitual,yearly,,,Yearly,habits,2170,,2026-08-29 15:48:39,1
+TASK_0084,PROJ_0019,SEC_0086,Comprehensive physical exam (primary care) (september),🩺,habitual,yearly,,,Yearly,habits,2180,,2026-08-29 15:48:39,1
+TASK_0086,PROJ_0019,SEC_0086,Review skills notes,🔲,habitual,yearly,,,Yearly,habits,2200,,2026-08-29 15:48:39,1
+TASK_0087,PROJ_0019,SEC_0086,"Checar validade dos documentos (RG, passaporte, CNH, vistos)",🔲,habitual,yearly,,,Yearly,habits,2210,,2026-08-29 15:48:39,1
+TASK_0088,PROJ_0019,SEC_0086,Imposto de Renda (IRPF),🔲,habitual,yearly,,,Yearly,habits,2220,,2026-08-29 15:48:39,1
+TASK_0089,PROJ_0019,SEC_0086,Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas),🔲,habitual,yearly,,,Yearly,habits,2230,,2026-08-29 15:48:39,1
+TASK_0090,PROJ_0019,SEC_0086,Imprimir as fotos do último ano,🔲,habitual,yearly,,,Yearly,habits,2240,,2026-08-29 15:48:39,1
+TASK_0091,PROJ_0019,SEC_0086,Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail,🔲,habitual,yearly,,,Yearly,habits,2250,,2026-08-29 15:48:39,1
+TASK_0093,PROJ_0019,SEC_0087,Renovar RG após emissão (até 60 anos); acompanhar pela data de emissão,🔲,habitual,every_10y,,,Every 10 Years (Documents),habits,2270,,2026-08-29 15:48:39,1
+TASK_0094,PROJ_0019,SEC_0088,Eye exam (optometry/ophthalmology),🩺,habitual,every_2y,,,Every 2 Years,habits,2280,,2026-08-29 15:48:39,1
+TASK_0095,PROJ_0019,SEC_0089,Hemoglobin A1c (diabetes screening) if low risk,🩺,habitual,every_3y,,,Every 3 Years,habits,2290,,2026-08-29 15:48:39,1
+TASK_0096,PROJ_0019,SEC_0090,Lipid profile (cholesterol) if low cardiovascular risk,🩺,habitual,every_5y,,,Every 5 Years,habits,2300,,2026-08-29 15:48:39,1
+TASK_0097,PROJ_0021,SEC_0091,"Track side effects, sleep changes, and activation; discuss any concerns promptly with your prescriber",🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2340,,2026-08-29 15:48:39,1
+TASK_0098,PROJ_0021,SEC_0091,Interaction cautions: review all new meds/supplements for interactions with fluvoxamina,🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2350,,2026-08-29 15:48:39,1
+TASK_0099,PROJ_0022,SEC_0092,"Tdap (tetanus, diphtheria, pertussis): one dose in 2025 (Age 28) as adult catch-up, regardless of prior dT",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2370,,2026-08-29 15:48:39,1
+TASK_0100,PROJ_0022,SEC_0092,"Td or Tdap boosters every 10 years after 2025: 2035 (Age 38), 2045 (Age 48), 2055 (Age 58), 2065 (Age 68), 2075 (Age 78), 2085 (Age 88), 2095 (Age 98)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2380,,2026-08-29 15:48:39,1
+TASK_0101,PROJ_0022,SEC_0092,Varicella (chickenpox/catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2390,,2026-08-29 15:48:39,1
+TASK_0102,PROJ_0022,SEC_0092,"Influenza: annually, every year",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2400,,2026-08-29 15:48:39,1
+TASK_0103,PROJ_0022,SEC_0092,"COVID-19: annually, every year per local seasonality",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2410,,2026-08-29 15:48:39,1
+TASK_0104,PROJ_0022,SEC_0092,Herpes Zoster (Shingrix): 2-dose series at 50 years — 2047 (Age 50) Dose 1; Dose 2 in 2–6 months (still 2047/2048),🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2420,,2026-08-29 15:48:39,1
+TASK_0105,PROJ_0022,SEC_0092,"Pneumococcal (at 60 years if average risk): 2057 (Age 60) per current guideline (e.g., single PCV20, or PCV15 followed by PPSV23 depending on policy at that time)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2430,,2026-08-29 15:48:39,1
+TASK_0106,PROJ_0022,SEC_0092,Yellow Fever: you received 14/10/2022; generally one dose is lifelong. Booster only if policy/travel risk requires,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2440,,2026-08-29 15:48:39,1
+TASK_0107,PROJ_0022,SEC_0092,Hepatitis A/B: your records are considered complete; no routine boosters if immunocompetent,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2450,,2026-08-29 15:48:39,1
+TASK_0108,PROJ_0022,SEC_0092,MMR: appears complete; no routine adult boosters if two documented doses,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2460,,2026-08-29 15:48:39,1
+TASK_0109,PROJ_0022,SEC_0092,"Travel/occupational vaccines (e.g., meningococcal, hepatitis boosters, rabies pre-exposure): as needed based on destination/risk",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2470,,2026-08-29 15:48:39,1
+TASK_0110,PROJ_0023,SEC_0093,COVID-19 bivalente Pfizer: 16/02/2024; prior Pfizer doses 2021–2022; CoronaVac booster 03/11/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2490,,2026-08-29 15:48:39,1
+TASK_0111,PROJ_0023,SEC_0093,Influenza trivalente: 04/12/2024 (keep annually),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2500,,2026-08-29 15:48:39,1
+TASK_0112,PROJ_0023,SEC_0093,dT (adult diphtheria-tetanus) booster: 04/04/2022 (Tdap still due once; plan in 2025),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2510,,2026-08-29 15:48:39,1
+TASK_0113,PROJ_0023,SEC_0093,Yellow Fever: 14/10/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2520,,2026-08-29 15:48:39,1
+TASK_0114,PROJ_0023,SEC_0093,Hepatitis A: 2016 (series considered fine),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2530,,2026-08-29 15:48:39,1
+TASK_0115,PROJ_0023,SEC_0093,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2540,,2026-08-29 15:48:39,1
+TASK_0116,PROJ_0023,SEC_0093,Varicella (catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2550,,2026-08-29 15:48:39,1
+TASK_0204,PROJ_0015,SEC_0015,test,✅,punctual,,,,,personal,3770,2026-08-30 11:49:48,2026-08-30 11:49:44,1
+TASK_0209,PROJ_0024,SEC_0127,Candidate to open PhD positions,⏳,punctual,,,,,personal,3820,,2026-08-30 14:53:57,1
+TASK_0210,PROJ_0025,SEC_0128,Portal as a UX delivery,⏳,punctual,,,,,work,3830,,2026-08-30 15:09:40,1
+TASK_0211,PROJ_0025,SEC_0128,Solução de construção de propostaise,⏳,punctual,,,,,work,3840,,2026-08-30 15:09:44,1
+TASK_0212,PROJ_0005,SEC_0005,Project Management stuff to do,,punctual,,,,,work,3850,,2026-08-30 15:10:29,1
+TASK_0213,PROJ_0005,SEC_0005,My Allocation,,punctual,,,,,work,3860,,2026-08-30 15:10:56,1
+TASK_0214,PROJ_0011,SEC_0011,Info,,punctual,,,,,work,3870,,2026-08-30 15:24:30,1
+TASK_0215,PROJ_0012,SEC_0012,"Retirar: Oportunidades, Prioridade, recomendações e sentimentos.",⏳,punctual,,,,,work,3880,,2026-08-30 15:25:59,1
+TASK_0216,PROJ_0012,SEC_0012,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,⏳,punctual,,,,,work,3890,,2026-08-30 15:26:02,1
+TASK_0217,PROJ_0013,SEC_0013,Como indicar um key-user?,,punctual,,,,,work,3900,,2026-08-30 15:28:48,1
+TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1
+TASK_0223,PROJ_0003,SEC_0003,Doubts,,punctual,,,,,work,3960,,2026-08-31 12:04:55,1
+TASK_0226,PROJ_0005,SEC_0005,Check the Mercado Livre House insurance,⏳,punctual,,,,,work,3990,,2026-09-01 10:02:29,1
+TASK_0229,PROJ_0005,SEC_0005,BPM Success Case,⏳,punctual,,,,,work,4020,,2026-09-02 10:41:14,1
+TASK_0230,PROJ_0005,SEC_0005,Data Insights Success Case,⏳,punctual,,,,,work,4030,,2026-09-02 10:41:40,1
+TASK_0231,PROJ_0005,SEC_0005,RISE Success Case,⏳,punctual,,,,,work,4040,,2026-09-02 10:41:52,1
+TASK_0232,PROJ_0005,SEC_0005,Add the links to the MIRO to your projects on DevOps,⚡,punctual,,,,,work,4050,,2026-09-02 10:43:15,1
+TASK_0236,PROJ_0015,SEC_0015,Continue with your idea of the book,🔲,punctual,,,,,personal,4090,,2026-09-02 16:20:09,1
+TASK_0237,PROJ_0013,SEC_0070,Como vamos ter as horas mapeadas?,⏳,punctual,,,,Projects/Governance,work,4100,,2026-09-03 11:06:36,1
+TASK_0238,PROJ_0013,SEC_0070,Como vai ser a fase de acompanhamento com os key-users?,⏳,punctual,,,,Projects/Governance,work,4110,,2026-09-03 11:07:07,1
+TASK_0240,PROJ_0005,SEC_0005,How can we compare the model prices?,⚡,punctual,,,,,work,4130,,2026-09-03 11:38:18,1
+TASK_0241,PROJ_0015,SEC_0015,"You need to better understand, open code",⏳,punctual,,,,,personal,4140,,2026-09-03 19:28:59,1
+TASK_0242,PROJ_0011,SEC_0011,Backlog,,punctual,,,,,work,4150,,2026-09-04 11:47:26,1
+TASK_0243,PROJ_0019,SEC_0082,You need to check if you made something good to add to your my personal repo just for historical purposes,🔲,habitual,,,2026-09-04,Weekly,habits,4160,,2026-09-04 13:00:03,1
+TASK_0246,PROJ_0028,SEC_0133,"You should check how to remember numbers, maybe with the SPA technique",⏳,punctual,,,,,personal,4190,,2026-09-10 12:26:26,1
+TASK_0248,PROJ_0015,SEC_0015,Deixar firma aberta no cartório,⏳,punctual,,,,,personal,4210,,2026-09-12 16:24:10,1
+TASK_0251,PROJ_0027,SEC_0132,You can get in touch with people directly through this page and check if the companies have job openings,⏳,punctual,,,,Alumni Unicamp,personal,4240,,2026-09-14 18:10:24,1
+TASK_0254,PROJ_0027,SEC_0136,Job openings,⏳,punctual,,,,Levva,personal,4270,,2026-09-14 18:25:53,1
+TASK_0258,PROJ_0027,SEC_0131,Check Job openings,⚡,punctual,,,,,personal,4310,,2026-09-15 15:52:03,1
+TASK_0259,PROJ_0027,SEC_0131,You should continue or cancel your LinkedIn premium subscription that finishes on October 15th,⏳,punctual,,,,,personal,4320,,2026-09-15 16:21:27,1
+TASK_0264,PROJ_0029,SEC_0138,1st Dose V10,,punctual,,2026-09-19,,Vaccination Timetable,personal,4380,,2026-09-17 22:16:13,1
+TASK_0265,PROJ_0029,SEC_0138,2nd Dose V10,⏳,punctual,,2026-10-19,,Vaccination Timetable,personal,4390,,2026-09-17 22:16:13,1
+TASK_0266,PROJ_0029,SEC_0138,3rd Dose V10,⏳,punctual,,2026-11-19,,Vaccination Timetable,personal,4400,,2026-09-17 22:16:13,1
+TASK_0267,PROJ_0029,SEC_0138,4th Dose V10 + Raiva,⏳,punctual,,2026-12-19,,Vaccination Timetable,personal,4690,,2026-09-17 22:16:13,1
+TASK_0274,PROJ_0029,SEC_0139,"Buy Deshedding Brush (slicker, metal comb)",⏳,punctual,,,,Essential Shopping List,personal,4470,,2026-09-17 22:16:13,1
+TASK_0275,PROJ_0029,SEC_0139,"Buy Collar, ID Tag, and Leash",⏳,punctual,,,,Essential Shopping List,personal,4480,,2026-09-17 22:16:13,1
+TASK_0282,PROJ_0019,SEC_0086,🐕 Early rabies vaccine for my dog,🔲,habitual,,,,Yearly,habits,4550,,2026-09-17 22:21:30,1
+TASK_0283,PROJ_0019,SEC_0086,🐕 Early V10 vaccine for my dog,🔲,habitual,,,,Yearly,habits,4560,,2026-09-17 22:21:57,1
+TASK_0284,PROJ_0019,SEC_0086,🐕 Early gripe canina vaccine for my dog,🔲,habitual,,,,Yearly,habits,4570,,2026-09-17 22:22:40,1
+TASK_0285,PROJ_0019,SEC_0087,🐕 Early V10 vaccine for my dog,🔲,habitual,,,2026-09-18,Every 10 Years (Documents),habits,4580,,2026-09-17 22:23:25,1
+TASK_0286,PROJ_0019,SEC_0086,🐕 Other non core vaccines,🔲,habitual,,,,Yearly,habits,4590,,2026-09-17 22:23:38,1
+TASK_0287,PROJ_0019,SEC_0083,"🐕 Flea and Tick Prevention: Administered monthly or every 12 weeks (e.g., Simparica, NexGard, Bravecto).",🔲,habitual,,,2026-09-18,Monthly,habits,4600,,2026-09-17 22:25:03,1
+TASK_0288,PROJ_0019,SEC_0085,"🐕 Dewormer (Vermífugo): Generally given every 3 to 6 months to prevent intestinal parasites (e.g., Drontal, Milbemax).",🔲,habitual,,,2026-09-18,Bi-yearly (Every 6 months),habits,4610,,2026-09-17 22:25:34,1
+TASK_0289,PROJ_0019,SEC_0083,"🐕 Heartworm Prevention (Dirofilariose): Administered monthly. This is highly recommended, especially if you plan to travel with her to coastal areas. Certain all-in-one preventatives combine flea, tick, and heartworm protection.",🔲,habitual,,,,Monthly,habits,4620,,2026-09-17 22:26:51,1
+TASK_0290,PROJ_0019,SEC_0086,"🐈 Polivalente Felina (V4 or V5): This core vaccine must be administered annually. It protects against feline viral rhinotracheitis, calicivirus, panleukopenia, and chlamydia. The V5 includes protection against Feline Leukemia (FeLV) and is highly recommended if Baby and the orange cat have outdoor access, though a negative test is required before their first dose.",🔲,habitual,,,2026-09-18,Yearly,habits,4630,,2026-09-17 22:28:41,1
+TASK_0291,PROJ_0019,SEC_0086,🐈 Raiva (Rabies): This is required annually in Brazil to maintain immunity and comply with local laws.,🔲,habitual,,,2026-09-18,Yearly,habits,4640,,2026-09-17 22:28:48,1
+TASK_0292,PROJ_0019,SEC_0083,"🐈 Flea and Tick Prevention: Administered topically on the back of the neck on a strict schedule. Depending on the brand, such as Bravecto or Revolution, this is given every 30 days or up to 12 weeks. Never use dog flea medications on cats, as permethrin is highly toxic to felines.",🔲,habitual,,,2026-09-18,Monthly,habits,4650,,2026-09-17 22:29:24,1
+TASK_0293,PROJ_0019,SEC_0085,🐈 Intestinal Deworming (Vermífugo): Administered every 3 to 6 months depending on their exposure to outdoor environments or prey.,🔲,habitual,,,2026-09-18,Bi-yearly (Every 6 months),habits,4660,,2026-09-17 22:29:43,1
+TASK_0294,PROJ_0019,SEC_0083,"🐈 Heartworm Prevention (Dirofilariose): Administered monthly. Products like Revolution provide inclusive protection against fleas, heartworms, and ear mites, which is beneficial if you travel to coastal areas.",🔲,habitual,,,2026-09-18,Monthly,habits,4670,,2026-09-17 22:30:12,1
+TASK_0295,PROJ_0030,SEC_0140,"Pastor alemão Capa Preta, nascida em dia dezenove de julho de dois mil e vinte e seis.",🔲,habitual,,,2026-09-18,,habits,4680,,2026-09-18 11:32:24,1
+TASK_0296,PROJ_0029,SEC_0138,We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.,,punctual,,,,Vaccination Timetable,personal,4370,,2026-09-18 11:48:27,1
+TASK_0297,PROJ_0029,SEC_0137,Check if you have already received the pedigree,⏳,punctual,,,,,personal,4700,,2026-09-19 16:21:18,1
+TASK_0303,PROJ_0019,SEC_0081,"Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)",🩺,habitual,daily,,,Daily,habits,4760,,2026-09-21 19:06:59,1
+TASK_0304,PROJ_0019,SEC_0082,"Review body recomposition progress (photos, measurements, gym performance)",🩺,habitual,weekly,,,Weekly,habits,4770,,2026-09-21 19:06:59,1
+TASK_0305,PROJ_0029,SEC_0137,Coleira de spikes,⏳,punctual,,,,,personal,4780,,2026-09-21 19:42:45,1
+TASK_0306,PROJ_0027,SEC_0134,Apply to this one,🔲,punctual,,,,Bosch,personal,4790,,2026-09-21 21:56:49,1
+TASK_0308,PROJ_0031,SEC_0141,You need to understand this whole situation with the lawyer,⏳,punctual,,,,,personal,4810,,2026-09-22 19:19:16,1
+TASK_0309,PROJ_0031,SEC_0141,Go to the insurance company,🔲,punctual,,,,,personal,4820,,2026-09-22 19:20:38,1
+TASK_0310,PROJ_0015,SEC_0015,Check,🔲,punctual,,,,,personal,4830,,2026-09-23 20:12:16,1
+TASK_0311,PROJ_0027,SEC_0131,Entrar em contato com o professor Selmar Gimarães da Silva para ver se ele tem possibilidades de emprego.,🔲,punctual,,,,,personal,4840,,2026-09-23 20:48:02,1
+TASK_0312,PROJ_0026,SEC_0129,Make the corrections,⚡,punctual,,,,,personal,4850,,2026-09-23 20:51:19,1
+TASK_0313,PROJ_0015,SEC_0015,Leo migrate to gemini,🔲,punctual,,,,,personal,4860,,2026-09-24 12:24:29,1
+TASK_0314,PROJ_0030,SEC_0142,Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,habitual,daily,,2026-09-24,Feeding Schedule,habits,4870,,2026-09-24 13:05:52,1
+TASK_0315,PROJ_0030,SEC_0142,Weigh German Shepherd and adjust daily grams based on calorie density and growth rate,⚖️,habitual,monthly,,2026-10-19,Feeding Schedule,habits,4880,,2026-09-24 13:05:52,1
+TASK_0316,PROJ_0030,SEC_0142,Month 3 feeding (15 kg rapid growth): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,punctual,,2026-10-19,,Feeding Schedule,habits,4890,,2026-09-24 13:05:52,1
+TASK_0317,PROJ_0030,SEC_0142,Month 4 feeding (~4 months milestone): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,punctual,,2026-11-19,,Feeding Schedule,habits,4900,,2026-09-24 13:05:52,1
+TASK_0318,PROJ_0030,SEC_0142,Month 5 feeding: Puppy food across 3 meals (adjust portion between 250g-350g and adult target),🐕,punctual,,2026-12-19,,Feeding Schedule,habits,4910,,2026-09-24 13:05:52,1
+TASK_0319,PROJ_0030,SEC_0142,Month 6 feeding: Puppy food across 3 meals (monitor weight and adjust portion),🐕,punctual,,2027-01-19,,Feeding Schedule,habits,4920,,2026-09-24 13:05:52,1
+TASK_0320,PROJ_0030,SEC_0142,Month 7 feeding: Puppy food across 3 meals (support rapid bone and joint growth),🐕,punctual,,2027-02-19,,Feeding Schedule,habits,4930,,2026-09-24 13:05:52,1
+TASK_0321,PROJ_0030,SEC_0142,Month 8 feeding: Puppy food across 3 meals (monitor growth and calorie density),🐕,punctual,,2027-03-19,,Feeding Schedule,habits,4940,,2026-09-24 13:05:52,1
+TASK_0322,PROJ_0030,SEC_0142,Month 9 feeding: Large-breed puppy food across 3 meals (maintain bone/joint nutrition),🐕,punctual,,2027-04-19,,Feeding Schedule,habits,4950,,2026-09-24 13:05:52,1
+TASK_0323,PROJ_0030,SEC_0142,Month 10 feeding: Large-breed puppy food across 3 meals (monitor weight progression),🐕,punctual,,2027-05-19,,Feeding Schedule,habits,4960,,2026-09-24 13:05:52,1
+TASK_0324,PROJ_0030,SEC_0142,Month 11 feeding: Large-breed puppy food across 3 meals (prepare transition to adult schedule),🐕,punctual,,2027-06-19,,Feeding Schedule,habits,4970,,2026-09-24 13:05:52,1
+TASK_0325,PROJ_0030,SEC_0142,Month 12 feeding (1 Year): Puppy food milestone (maintain puppy food through 12-15 months),🐕,punctual,,2027-07-19,,Feeding Schedule,habits,4980,,2026-09-24 13:05:52,1
+TASK_0326,PROJ_0030,SEC_0142,Month 13 feeding: Large-breed puppy food (continue through 12-15 months; monitor weight),🐕,punctual,,2027-08-19,,Feeding Schedule,habits,4990,,2026-09-24 13:05:52,1
+TASK_0327,PROJ_0030,SEC_0142,Month 14 feeding: Large-breed puppy food (12-15 months window; plan adult switch),🐕,punctual,,2027-09-19,,Feeding Schedule,habits,5000,,2026-09-24 13:05:52,1
+TASK_0328,PROJ_0030,SEC_0142,"Month 15 feeding (Adulthood / 30-40 kg): Transition to adult food, 350g-500g/day in 2 meals (175g-250g/meal)",🐕,punctual,,2027-10-19,,Feeding Schedule,habits,5010,,2026-09-24 13:05:52,1
