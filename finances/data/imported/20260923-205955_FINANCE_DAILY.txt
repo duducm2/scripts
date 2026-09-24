@@ -1,0 +1,12 @@
+﻿===PREVIEW===
+5 row(s) · 5 card expenses; 0 skips
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Medication,"75,83",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1
+Gas station,"80,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1
+Restaurant lunch,"71,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1
+Coffee,"6,00",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Coffee,"3,50",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===
