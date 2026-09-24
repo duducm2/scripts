@@ -619,14 +619,12 @@ ClipAngelExport_HotIfActive(*) {
     }
 }
 
-; Base letter of a hotkey like "+x" / "^!a" (for letter-jump exclusion). Non-letters → "".
-ClipAngelExport_HotkeyBaseLetter(hk) {
+; True only for plain letter action keys (e.g. "x"). Shift+X ("+x") leaves "x" free for letter jump.
+ClipAngelExport_IsPlainLetterHotkey(hk, ch) {
     s := StrLower(Trim(hk))
-    while (s != "" && InStr("+^!#*~$", SubStr(s, 1, 1)))
+    while (s != "" && InStr("$*~", SubStr(s, 1, 1)))
         s := SubStr(s, 2)
-    if (StrLen(s) = 1 && Ord(s) >= Ord("a") && Ord(s) <= Ord("z"))
-        return s
-    return ""
+    return s = ch
 }
 
 ; First word of the name (emoji stripped), unaccented — letter jump uses its first character.
@@ -703,8 +701,8 @@ ClipAngelExport_LetterJumpStart() {
         ch := Chr(96 + A_Index)
         skip := false
         for hk in g_ClipAngelNameHotkeys {
-            ; Skip plain "x" and modifier forms ("+x") so Shift+X is not also a letter-jump.
-            if (StrLower(hk) = ch || ClipAngelExport_HotkeyBaseLetter(hk) = ch) {
+            ; Only plain letter action keys block jump; Shift+N/T/X/A/E leave those letters free.
+            if (ClipAngelExport_IsPlainLetterHotkey(hk, ch)) {
                 skip := true
                 break
             }
