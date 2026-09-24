@@ -351,6 +351,10 @@ catch {
 ; [Utils module] Import Management hub (#!+X / Utility [J] / #!+F×2) -> Utils\import_mgmt_launcher.ahk
 ; Pack-import agent docs -> docs\prompt-data-output-and-finance-packs.md
 #include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
+; [Utils module] Desktop AI-fix → active companion paste (no submit) -> Utils\import_watcher_companion.ahk
+#include %A_ScriptDir%\Utils\import_watcher_companion.ahk
+; [Utils module] Always-on Desktop pack watcher (AppLaunchers only) -> Utils\import_watcher.ahk
+#include %A_ScriptDir%\Utils\import_watcher.ahk
 ; [Utils module] Utility Shortcuts [G] background push scripts+notes (+ Tasks/Palace MD export) -> Utils\utility_git_push.ahk
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
 ; [Utils module] Main Repos status window (#!+Y 2×) -> Utils\utility_git_status.ahk
@@ -375,3 +379,7 @@ catch {
 
 ; Handy model hotkeys and language flag: AppLaunchers.ahk only (after #!+C / ^!#9 / ^!#b are registered).
 HandyAi_ConfigureProcessOwnership()
+; Desktop import watcher: AppLaunchers only (see ImportWatcher_IsOwnerProcess).
+try ImportWatcher_Init()
+catch {
+}

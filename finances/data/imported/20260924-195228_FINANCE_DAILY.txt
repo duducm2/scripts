@@ -1,0 +1,8 @@
+﻿===PREVIEW===
+1 row(s) · Ice cream mapped to Groceries (CAT_MERCADO)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Ice cream,"10,00",expense,CAT_MERCADO,ACC_MERCADOP,,,1
+===END_FILE===
