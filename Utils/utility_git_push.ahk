@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: utility_git_push.ahk
-; Commit and push scripts + notes repos from Utility Shortcuts top-level [G]
+; Commit and push scripts + notes (+ personal when present) from Utility [G]
 ; Exports personal → main/punctual.md and habits → main/habits.md (never work);
 ; syncs Palace MD when mnemonics/data is dirty.
 ; Runs in the background so the UI stays usable.
@@ -247,18 +247,30 @@ Utility_GitSyncPushWorker() {
         scriptsResult := Utility_GitSyncPushOne(scriptsRoot, "Scripts", commitMsg)
         notesResult := Utility_GitSyncPushOne(notesRoot, "Notes", commitMsg)
 
+        ; Soft-skip when PERSONAL_REPO_PATH missing (typical on work PC).
+        personalRoot := ""
+        try personalRoot := GetPersonalRepoPath()
+        catch {
+            personalRoot := ""
+        }
+        personalResult := "noop"
+        if (personalRoot != "")
+            personalResult := Utility_GitSyncPushOne(personalRoot, "Personal", commitMsg)
+
         errors := []
         if (SubStr(scriptsResult, 1, 6) = "error:")
             errors.Push(SubStr(scriptsResult, 7))
         if (SubStr(notesResult, 1, 6) = "error:")
             errors.Push(SubStr(notesResult, 7))
+        if (SubStr(personalResult, 1, 6) = "error:")
+            errors.Push(SubStr(personalResult, 7))
         if (errors.Length > 0) {
             resultMsg := "❌ " . errors[1]
             resultAccent := BANNER_ACCENT_ERROR
             return
         }
 
-        if (scriptsResult = "noop" && notesResult = "noop") {
+        if (scriptsResult = "noop" && notesResult = "noop" && personalResult = "noop") {
             resultMsg := "ℹ Nothing to commit"
             resultAccent := BANNER_ACCENT_INFO
             return
@@ -269,10 +281,14 @@ Utility_GitSyncPushWorker() {
             parts.Push("Scripts")
         if (notesResult = "pushed")
             parts.Push("Notes")
-        if (parts.Length = 2)
-            resultMsg := "✅ Scripts + Notes pushed"
-        else
+        if (personalResult = "pushed")
+            parts.Push("Personal")
+        if (parts.Length = 1)
             resultMsg := "✅ " . parts[1] . " pushed"
+        else if (parts.Length = 2)
+            resultMsg := "✅ " . parts[1] . " + " . parts[2] . " pushed"
+        else
+            resultMsg := "✅ " . parts[1] . " + " . parts[2] . " + " . parts[3] . " pushed"
         resultAccent := BANNER_ACCENT_SUCCESS
     } catch as e {
         resultMsg := "❌ Push failed: " . e.Message
