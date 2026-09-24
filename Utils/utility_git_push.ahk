@@ -3,12 +3,16 @@
 ; Commit and push scripts + notes (+ personal when present) from Utility [G]
 ; Exports personal → main/punctual.md and habits → main/habits.md (never work);
 ; syncs Palace MD when mnemonics/data is dirty.
-; Runs in the background so the UI stays usable.
+; Runs in the background; no mid-run loading bar — only a final 3s result banner.
 ; =============================================================================
 
 global g_UtilityGitPushBusy := false
+global UTILITY_GIT_RESULT_BANNER_MS := 3000
 
-Utility_GitNotify(msg, ms := 1800, accent := "") {
+Utility_GitNotify(msg, ms := 0, accent := "") {
+    global UTILITY_GIT_RESULT_BANNER_MS
+    if (ms <= 0)
+        ms := UTILITY_GIT_RESULT_BANNER_MS
     if (accent = "")
         accent := BANNER_ACCENT_INFO
     try ShowCenteredOverlay_Utils(msg, ms, accent)
@@ -49,7 +53,7 @@ Utility_GitFormatPushError(r) {
 }
 
 Utility_GitPassiveBar(msg) {
-    ; Milestone updates on the active Loading Indication (animated bar).
+    ; Used by discard (Main Repos); push path intentionally does not call this.
     try StandardLoadingBar_Update(msg)
     catch {
         try StandardLoadingBar_Show(msg, BANNER_ACCENT_INTERMEDIATE)
@@ -112,7 +116,6 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     if (status.exitCode != 0)
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
 
-    Utility_GitPassiveBar("⏳ Exporting personal + habits MD (no work)…")
     export := Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
     if (SubStr(export, 1, 6) = "error:")
         return export
@@ -121,7 +124,6 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     needPalace := Utility_GitStatusHasPathPrefix(porcelain, "mnemonics/data/")
 
     if (needPalace) {
-        Utility_GitPassiveBar("⏳ Syncing Memory Palace Markdown…")
         ; Soft-fail: Drive-locked prune must not abort scripts/notes push
         try Palace_SyncAllPracticeMd(false)
         catch {
@@ -135,9 +137,6 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
 
 ; Returns "pushed", "noop", or "error:…"
 Utility_GitSyncPushOne(repoDir, label, commitMsg) {
-    prefix := label . ": "
-    Utility_GitPassiveBar("⏳ " . prefix . "Checking git status…")
-
     repo := GitCli_RevParseTopLevel(repoDir)
     if (repo = "")
         return "error:" . label . " not a git repository"
@@ -154,12 +153,10 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
     if (changed = 0)
         return "noop"
 
-    Utility_GitPassiveBar("⏳ " . prefix . "Staging changes…")
     add := GitCli_Run(repo, "add -A", 60000)
     if (add.exitCode != 0)
         return "error:" . label . " add failed: " . Utility_GitFirstErrorLine(add)
 
-    Utility_GitPassiveBar("⏳ " . prefix . "Committing…")
     msgFile := A_Temp . "\utility-git-msg-" . A_TickCount . "-" . label . ".txt"
     try FileDelete(msgFile)
     catch {
@@ -179,7 +176,6 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
         return "error:" . label . " commit failed: " . err
     }
 
-    Utility_GitPassiveBar("⏳ " . prefix . "Pushing to remote…")
     push := GitCli_Run(repo, "push", 120000)
     if (push.exitCode != 0) {
         branch := GitCli_CaptureStdout(repo, "branch --show-current", 15000)
@@ -198,7 +194,7 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
 Utility_GitSyncPush() {
     global g_UtilityGitPushBusy
     if (g_UtilityGitPushBusy) {
-        Utility_GitNotify("ℹ Push already running", 1800, BANNER_ACCENT_INFO)
+        Utility_GitNotify("ℹ Push already running", , BANNER_ACCENT_INFO)
         return
     }
     g_UtilityGitPushBusy := true
@@ -210,10 +206,7 @@ Utility_GitSyncPushWorker() {
     resultMsg := ""
     resultAccent := BANNER_ACCENT_INFO
     try {
-        ; Loading Indication for the whole push (animated bar)
-        try StandardLoadingBar_Show("⏳ Preparing push…", BANNER_ACCENT_INTERMEDIATE)
-        catch {
-        }
+        ; No mid-run loading bar — only the final result banner below.
 
         commitMsg := Format("{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}",
             A_YYYY, A_MM, A_DD, A_Hour, A_Min, A_Sec)
@@ -236,7 +229,6 @@ Utility_GitSyncPushWorker() {
             return
         }
 
-        Utility_GitPassiveBar("⏳ Exporting Markdown if needed…")
         prep := Utility_GitPrepareExports(scriptsRoot, notesRoot)
         if (SubStr(prep, 1, 6) = "error:") {
             resultMsg := "❌ " . SubStr(prep, 7)
@@ -245,7 +237,18 @@ Utility_GitSyncPushWorker() {
         }
 
         scriptsResult := Utility_GitSyncPushOne(scriptsRoot, "Scripts", commitMsg)
+        if (SubStr(scriptsResult, 1, 6) = "error:") {
+            resultMsg := "❌ " . SubStr(scriptsResult, 7)
+            resultAccent := BANNER_ACCENT_ERROR
+            return
+        }
+
         notesResult := Utility_GitSyncPushOne(notesRoot, "Notes", commitMsg)
+        if (SubStr(notesResult, 1, 6) = "error:") {
+            resultMsg := "❌ " . SubStr(notesResult, 7)
+            resultAccent := BANNER_ACCENT_ERROR
+            return
+        }
 
         ; Soft-skip when PERSONAL_REPO_PATH missing (typical on work PC).
         personalRoot := ""
@@ -254,20 +257,13 @@ Utility_GitSyncPushWorker() {
             personalRoot := ""
         }
         personalResult := "noop"
-        if (personalRoot != "")
+        if (personalRoot != "") {
             personalResult := Utility_GitSyncPushOne(personalRoot, "Personal", commitMsg)
-
-        errors := []
-        if (SubStr(scriptsResult, 1, 6) = "error:")
-            errors.Push(SubStr(scriptsResult, 7))
-        if (SubStr(notesResult, 1, 6) = "error:")
-            errors.Push(SubStr(notesResult, 7))
-        if (SubStr(personalResult, 1, 6) = "error:")
-            errors.Push(SubStr(personalResult, 7))
-        if (errors.Length > 0) {
-            resultMsg := "❌ " . errors[1]
-            resultAccent := BANNER_ACCENT_ERROR
-            return
+            if (SubStr(personalResult, 1, 6) = "error:") {
+                resultMsg := "❌ " . SubStr(personalResult, 7)
+                resultAccent := BANNER_ACCENT_ERROR
+                return
+            }
         }
 
         if (scriptsResult = "noop" && notesResult = "noop" && personalResult = "noop") {
@@ -295,11 +291,7 @@ Utility_GitSyncPushWorker() {
         resultAccent := BANNER_ACCENT_ERROR
     } finally {
         g_UtilityGitPushBusy := false
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        ; Information Only AFTER Hide so Hide does not wipe the result toast
         if (resultMsg != "")
-            Utility_GitNotify(resultMsg, 2800, resultAccent)
+            Utility_GitNotify(resultMsg, , resultAccent)
     }
 }

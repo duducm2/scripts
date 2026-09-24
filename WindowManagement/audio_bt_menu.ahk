@@ -1676,9 +1676,6 @@ class AudioBt_DoubleTapTimerObj {
             return
         g_AudioBt_DoubleTapArmed := false
         g_AudioBt_DoubleTapTimer := 0
-        try ShowCenteredOverlay_Utils("⬆ Push scripts · notes · personal", 1500, BANNER_ACCENT_INFO)
-        catch {
-        }
         Utility_GitSyncPush()
     }
 }
