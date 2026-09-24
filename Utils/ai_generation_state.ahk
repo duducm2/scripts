@@ -118,6 +118,8 @@ Cursor_FindComposerIconAcrossInstances() {
 InitMacros() {
     ; Add specific word to Handy
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
+    ; Show Handy for manual edits, or re-hide into background suppress after model switches.
+    RegisterMacro(Handy_ToggleVisible, "👁 Toggle Handy visible / hidden", "h")
     ; Email note: new mail to both inboxes (work Outlook / personal Gmail)
     RegisterMacro(EmailNote_Create, "📧 Email note (both inboxes)", "o")
     RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
