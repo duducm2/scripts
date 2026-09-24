@@ -142,14 +142,14 @@ PITEM_0140,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subte
 PITEM_0141,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Aggregate with GROUP BY and filter groups with HAVING,1,26
 PITEM_0142,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,"Apply SUM, AVG, COUNT, MIN, and MAX correctly",1,27
 PITEM_0143,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Visualize GROUP BY as a binding machine that stamps totals on bundled books,1,28
-PITEM_0144,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Write INNER JOIN queries across related tables,0,29
-PITEM_0145,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Write LEFT JOIN queries and interpret NULL placeholders for non-matches,0,30
-PITEM_0146,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Use OUTER JOIN patterns and table aliases for readable multi-table SQL,0,31
-PITEM_0147,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Contrast INNER (narrow bridge) vs LEFT JOIN (ghost NULL placeholders) on practice tables,0,32
-PITEM_0148,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 4. Query Modularity,Refactor nested subqueries into readable Common Table Expressions (CTEs),0,33
-PITEM_0149,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 4. Query Modularity,Format long queries to avoid monolithic bad-smell structures,0,34
-PITEM_0150,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 4. Query Modularity,Treat hundred-line nested queries as architectural bad smells; extract CTE desks,0,35
-PITEM_0151,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 5. Advanced Analytics,"Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)",0,36
+PITEM_0144,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Write INNER JOIN queries across related tables,1,29
+PITEM_0145,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Write LEFT JOIN queries and interpret NULL placeholders for non-matches,1,30
+PITEM_0146,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Use OUTER JOIN patterns and table aliases for readable multi-table SQL,1,31
+PITEM_0147,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 3. Set Theory and Joins,Contrast INNER (narrow bridge) vs LEFT JOIN (ghost NULL placeholders) on practice tables,1,32
+PITEM_0148,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 4. Query Modularity,Refactor nested subqueries into readable Common Table Expressions (CTEs),1,33
+PITEM_0149,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 4. Query Modularity,Format long queries to avoid monolithic bad-smell structures,1,34
+PITEM_0150,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 4. Query Modularity,Treat hundred-line nested queries as architectural bad smells; extract CTE desks,1,35
+PITEM_0151,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 5. Advanced Analytics,"Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)",1,36
 PITEM_0152,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 5. Advanced Analytics,Use LEAD and LAG for row-relative comparisons without collapsing grain,0,37
 PITEM_0153,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 5. Advanced Analytics,Practice PARTITION BY windows that preserve row grain while adding running metrics,0,38
 PITEM_0154,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 6. Portfolio Integration,Run Exploratory Data Analysis in SQL on a real-world dataset (e.g. COVID / demographic data),0,39

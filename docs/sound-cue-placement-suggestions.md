@@ -35,6 +35,8 @@ Fill in filenames you keep locally if they differ from the list.
 | `commit-start.wav`                                | Commit flows (Shift keys)                                                        |
 | `favorite-set.wav`                                | After Alt+Q marks focused Clip Angel clip as favorite (`MarkLastClipAsFavorite`) |
 | `unfavorite-all-success.wav`                      | After unfavorite-all succeeds (`ClipAngel_UnfavoriteAllClips`; CC0 bell ding)    |
+| `clipangel-open.wav`                              | After Alt+P / Alt+B open succeeds (`ClipAngel_OpenWithMarkFilter`; CC0 ack ding) |
+| `clipangel-restart-success.wav`                   | After hard restart succeeds (`ClipAngel_Restart`; CC0 complete ding)             |
 | System `*16` / `*64`                              | Via `ScriptSoundPlaySystem` (gated)                                              |
 
 `quick-update-failure.wav` exists in tree; confirm whether any path plays it—if not, candidate for failed Quick Update.
@@ -61,6 +63,7 @@ Check boxes when you add an asset and wire it.
 - [ ] Merge clips complete (`ShowCenteredOverlay_Utils` success paths in merge flow).
 - [x] Newly marked favorite — `favorite-set.wav` in `MarkLastClipAsFavorite` (already-favorite branch stays silent).
 - [x] Unfavorite all — `unfavorite-all-success.wav` after successful clear (`ClipAngel_UnfavoriteAllClips`).
+- [x] Alt+P / Alt+B open — `clipangel-open.wav` after successful `ClipAngel_OpenWithMarkFilter` (errors banner-only; same cue for all marks vs favorites).
 
 ### Gemini & Cursor bridges
 

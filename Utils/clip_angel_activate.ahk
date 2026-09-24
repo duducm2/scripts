@@ -207,6 +207,9 @@ ClipAngel_OpenWithMarkFilter(mode) {
         catch {
         }
         ShowCenteredOverlay_Utils(doneMsg, 900, BANNER_ACCENT_SUCCESS)
+        try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-open.wav")
+        catch {
+        }
         return true
     } catch Error as e {
         try StandardLoadingBar_Hide(0)

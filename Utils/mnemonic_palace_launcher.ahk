@@ -1186,15 +1186,21 @@ Palace_DashboardHwndCacheClear() {
 }
 
 ; Dedicated Memory Palace Chrome window title (not Google Search, etc.).
-; Includes SPA atom titles like "Memory Palace 3: AI Pricing & Elo Mechanics".
+; Includes SPA atom titles like "Memory Palace 3: AI Pricing & Elo Mechanics"
+; and the study-picker / Quick Recall sentinel title.
 Palace_IsDashboardChromeWindowTitle(title) {
     t := Trim(String(title))
     if (t = "")
         return false
+    ; Chrome notification badge: "(1) Memory Palace - Google Chrome"
+    t := RegExReplace(t, "^\(\d+\)\s+", "")
     if (InStr(t, "Google Search") || InStr(t, " - Search") || InStr(t, "Search - "))
         return false
     ; Starts with "Memory Palace" (home, atom view, or "… - Google Chrome").
     if (RegExMatch(t, "i)^Memory Palace(\b|$)"))
+        return true
+    ; Study picker / Quick Recall sentinel (set while modal is open).
+    if (InStr(t, "Select a Study and Quick Recall"))
         return true
     return false
 }
@@ -1419,12 +1425,14 @@ Palace_OpenDashboardInChrome(fileUrl) {
     return true
 }
 
-; Memory Palace web (:8767) — Alt+V/A/F save study links from clipboard only.
+; Memory Palace web (:8767) — study-link hotkeys while that Chrome window is active
+; (including Quick Recall / picker title, not only "Memory Palace…").
 Palace_IsMemoryPalaceChromeActive() {
     try {
         if (WinGetProcessName("A") != "chrome.exe")
             return false
-        return Palace_IsDashboardChromeWindowTitle(SafeWinGetTitle())
+        ; Prefer broad title match (picker sentinel, badge, localhost boot title).
+        return Palace_IsChromeWindowTitle(SafeWinGetTitle())
     } catch {
         return false
     }
@@ -1442,7 +1450,23 @@ Palace_OnStudyLinkSetFavorite(*) {
     StudyLink_SetFromClipboard(STUDYLINK_KEY_FAVORITE, "favorite link")
 }
 
+Palace_OnStudyLinkOpenVideo(*) {
+    StudyLink_Open(STUDYLINK_KEY_YOUTUBE)
+}
+
+Palace_OnStudyLinkOpenArticle(*) {
+    StudyLink_Open(STUDYLINK_KEY_ARTICLE)
+}
+
+Palace_OnStudyLinkOpenFavorite(*) {
+    StudyLink_Open(STUDYLINK_KEY_FAVORITE)
+}
+
 #HotIf Palace_IsMemoryPalaceChromeActive()
+; Shift+V/A/F open · Alt+V/A/F save from clipboard (AHK — works even if page focus is lost)
++v:: Palace_OnStudyLinkOpenVideo()
++a:: Palace_OnStudyLinkOpenArticle()
++f:: Palace_OnStudyLinkOpenFavorite()
 !v:: Palace_OnStudyLinkSetVideo()
 !a:: Palace_OnStudyLinkSetArticle()
 !f:: Palace_OnStudyLinkSetFavorite()

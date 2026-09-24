@@ -103,10 +103,10 @@
 
 ### 3. Set Theory and Joins
 
-- [ ] Write INNER JOIN queries across related tables
-- [ ] Write LEFT JOIN queries and interpret NULL placeholders for non-matches
-- [ ] Use OUTER JOIN patterns and table aliases for readable multi-table SQL
-- [ ] Contrast INNER (narrow bridge) vs LEFT JOIN (ghost NULL placeholders) on practice tables
+- [✅] Write INNER JOIN queries across related tables
+- [✅] Write LEFT JOIN queries and interpret NULL placeholders for non-matches
+- [✅] Use OUTER JOIN patterns and table aliases for readable multi-table SQL
+- [✅] Contrast INNER (narrow bridge) vs LEFT JOIN (ghost NULL placeholders) on practice tables
 
 **🔗 Resources:**
 
@@ -115,9 +115,9 @@
 
 ### 4. Query Modularity
 
-- [ ] Refactor nested subqueries into readable Common Table Expressions (CTEs)
-- [ ] Format long queries to avoid monolithic bad-smell structures
-- [ ] Treat hundred-line nested queries as architectural bad smells; extract CTE desks
+- [✅] Refactor nested subqueries into readable Common Table Expressions (CTEs)
+- [✅] Format long queries to avoid monolithic bad-smell structures
+- [✅] Treat hundred-line nested queries as architectural bad smells; extract CTE desks
 
 **🔗 Resources:**
 
@@ -126,7 +126,7 @@
 
 ### 5. Advanced Analytics
 
-- [ ] Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)
+- [✅] Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)
 - [ ] Use LEAD and LAG for row-relative comparisons without collapsing grain
 - [ ] Practice PARTITION BY windows that preserve row grain while adding running metrics
 
