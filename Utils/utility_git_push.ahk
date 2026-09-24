@@ -8,6 +8,10 @@
 
 global g_UtilityGitPushBusy := false
 global UTILITY_GIT_RESULT_BANNER_MS := 3000
+global UTILITY_GIT_PUSH_WATCHDOG_MS := 180000
+global g_UtilityGitPushResultMsg := ""
+global g_UtilityGitPushResultAccent := ""
+global g_UtilityGitPushWatchdogArmed := false
 
 Utility_GitChimeStart() {
     try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\commit-start.wav")
@@ -122,12 +126,30 @@ Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot) {
     habits := notesRoot . "\main\habits.md"
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir
         . '" --punctual "' . punctual . '" --habits "' . habits . '"'
-    exitCode := 0
-    try {
-        exitCode := RunWait(A_ComSpec . " /c " . cmd, scriptsRoot, "Hide")
-    } catch as e {
+    ; Temp .cmd avoids RunWaitWithTimeout PowerShell -Command breaking on quoted
+    ; paths that contain spaces (e.g. "Meu Drive").
+    bat := A_Temp . "\utility-git-export-" . A_TickCount . ".cmd"
+    try FileDelete(bat)
+    catch {
+    }
+    try FileAppend("@echo off`r`n" . cmd . "`r`n", bat, "CP0")
+    catch as e {
         return "error:Tasks MD export failed: " . e.Message
     }
+    exitCode := 0
+    try {
+        exitCode := RunWaitWithTimeout('"' . bat . '"', scriptsRoot, "Hide", 60000)
+    } catch as e {
+        try FileDelete(bat)
+        catch {
+        }
+        return "error:Tasks MD export failed: " . e.Message
+    }
+    try FileDelete(bat)
+    catch {
+    }
+    if (exitCode = 124)
+        return "error:Tasks MD export timed out"
     if (exitCode != 0)
         return "error:Tasks MD export failed (exit " . exitCode . ")"
     return "ok"
@@ -217,6 +239,62 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
     return "pushed"
 }
 
+Utility_GitPushCancelWatchdog() {
+    global g_UtilityGitPushWatchdogArmed
+    try SetTimer(Utility_GitPushWatchdog, 0)
+    catch {
+    }
+    g_UtilityGitPushWatchdogArmed := false
+}
+
+Utility_GitPushArmWatchdog() {
+    global g_UtilityGitPushWatchdogArmed, UTILITY_GIT_PUSH_WATCHDOG_MS
+    Utility_GitPushCancelWatchdog()
+    SetTimer(Utility_GitPushWatchdog, -UTILITY_GIT_PUSH_WATCHDOG_MS)
+    g_UtilityGitPushWatchdogArmed := true
+}
+
+; If worker still busy after ~180s, force an explicit timeout result (never silent).
+Utility_GitPushWatchdog(*) {
+    global g_UtilityGitPushBusy, g_UtilityGitPushWatchdogArmed
+    global g_UtilityGitPushResultMsg, g_UtilityGitPushResultAccent
+    g_UtilityGitPushWatchdogArmed := false
+    if (!g_UtilityGitPushBusy)
+        return
+    g_UtilityGitPushBusy := false
+    g_UtilityGitPushResultMsg := "❌ Push timed out — check network or git"
+    g_UtilityGitPushResultAccent := BANNER_ACCENT_ERROR
+    SetTimer(Utility_GitSyncPushShowResult, -50)
+}
+
+; Fresh-timer delivery so GUIs paint after a long blocking worker.
+Utility_GitSyncPushShowResult(*) {
+    global g_UtilityGitPushResultMsg, g_UtilityGitPushResultAccent
+    msg := g_UtilityGitPushResultMsg
+    accent := g_UtilityGitPushResultAccent
+    g_UtilityGitPushResultMsg := ""
+    g_UtilityGitPushResultAccent := ""
+    if (msg = "")
+        return
+    if (accent = "")
+        accent := BANNER_ACCENT_INFO
+    ok := (accent != BANNER_ACCENT_ERROR)
+    Utility_GitChimeEnd(ok)
+    Utility_GitNotify(msg, , accent)
+}
+
+Utility_GitSyncPushScheduleResult(msg, accent) {
+    global g_UtilityGitPushResultMsg, g_UtilityGitPushResultAccent
+    if (msg = "")
+        return
+    g_UtilityGitPushResultMsg := msg
+    g_UtilityGitPushResultAccent := accent
+    try SetTimer(Utility_GitSyncPushShowResult, 0)
+    catch {
+    }
+    SetTimer(Utility_GitSyncPushShowResult, -50)
+}
+
 ; Entry from Utility Shortcuts [G] — arms background worker immediately.
 Utility_GitSyncPush() {
     global g_UtilityGitPushBusy
@@ -226,6 +304,7 @@ Utility_GitSyncPush() {
     }
     g_UtilityGitPushBusy := true
     Utility_GitChimeStart()
+    Utility_GitPushArmWatchdog()
     SetTimer(Utility_GitSyncPushWorker, -1)
 }
 
@@ -318,11 +397,9 @@ Utility_GitSyncPushWorker() {
         resultMsg := "❌ Push failed: " . e.Message
         resultAccent := BANNER_ACCENT_ERROR
     } finally {
+        Utility_GitPushCancelWatchdog()
         g_UtilityGitPushBusy := false
-        if (resultMsg != "") {
-            ok := (resultAccent != BANNER_ACCENT_ERROR)
-            Utility_GitChimeEnd(ok)
-            Utility_GitNotify(resultMsg, , resultAccent)
-        }
+        if (resultMsg != "")
+            Utility_GitSyncPushScheduleResult(resultMsg, resultAccent)
     }
 }

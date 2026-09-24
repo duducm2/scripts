@@ -1178,7 +1178,7 @@ global g_PassiveAllMonitorsOverlays := []   ; [{ overlay: Gui, border: Gui|0 }, 
 global g_PassiveAllMonitorsHideArmed := false
 
 StandardLoadingBar_ShowPassiveAllMonitors(text, durationMs := 3000, accentColor := "") {
-    global g_PassiveAllMonitorsOverlays, g_PassiveAllMonitorsHideArmed, g_StandardLoadingBarIsKeysOverlay
+    global g_PassiveAllMonitorsOverlays, g_PassiveAllMonitorsHideArmed
     if (text = "")
         return false
     if (accentColor = "")
@@ -1186,9 +1186,10 @@ StandardLoadingBar_ShowPassiveAllMonitors(text, durationMs := 3000, accentColor 
     if (durationMs < 1)
         durationMs := 1
 
-    ; Do not fight an interactive keys overlay.
-    if (g_StandardLoadingBarIsKeysOverlay)
-        return false
+    ; Clear a stuck keys overlay so push results are never silently skipped.
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
 
     StandardLoadingBar_PassiveAllMonitors_Clear()
     g_PassiveAllMonitorsOverlays := []
@@ -1229,6 +1230,14 @@ StandardLoadingBar_ShowPassiveAllMonitors(text, durationMs := 3000, accentColor 
         borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
         " h" . (gh + 2 * borderWidth))
         overlayGui.Show("x" . guiX . " y" . guiY . " NA")
+        ; Raise overlay above other AlwaysOnTop windows (border stays under it).
+        try {
+            hwnd := overlayGui.Hwnd
+            if (hwnd)
+                DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", -1, "Int", 0, "Int", 0, "Int", 0, "Int", 0,
+                    "UInt", 0x0013)
+        } catch {
+        }
         try WinSetTransparent(alpha, overlayGui)
         catch {
         }
