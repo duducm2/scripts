@@ -147,3 +147,18 @@ TASK_0310,PROJ_0015,SEC_0015,Check,🔲,punctual,,,,,personal,4830,,2026-09-23 2
 TASK_0311,PROJ_0027,SEC_0131,Entrar em contato com o professor Selmar Gimarães da Silva para ver se ele tem possibilidades de emprego.,🔲,punctual,,,,,personal,4840,,2026-09-23 20:48:02,1,
 TASK_0312,PROJ_0026,SEC_0129,Make the corrections,⚡,punctual,,,,,personal,4850,,2026-09-23 20:51:19,1,
 TASK_0313,PROJ_0015,SEC_0015,Leo migrate to gemini,🔲,punctual,,,,,personal,4860,,2026-09-24 12:24:29,1,
+TASK_0314,PROJ_0030,SEC_0142,Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,habitual,daily,,2026-09-24,Feeding Schedule,habits,4870,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0315,PROJ_0030,SEC_0142,Weigh German Shepherd and adjust daily grams based on calorie density and growth rate,⚖️,habitual,monthly,,2026-10-19,Feeding Schedule,habits,4880,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0316,PROJ_0030,SEC_0142,Month 3 feeding (15 kg rapid growth): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,punctual,,2026-10-19,,Feeding Schedule,habits,4890,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0317,PROJ_0030,SEC_0142,Month 4 feeding (~4 months milestone): 250g-350g/day divided into 3 meals (85g-115g/meal),🐕,punctual,,2026-11-19,,Feeding Schedule,habits,4900,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0318,PROJ_0030,SEC_0142,Month 5 feeding: Puppy food across 3 meals (adjust portion between 250g-350g and adult target),🐕,punctual,,2026-12-19,,Feeding Schedule,habits,4910,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0319,PROJ_0030,SEC_0142,Month 6 feeding: Puppy food across 3 meals (monitor weight and adjust portion),🐕,punctual,,2027-01-19,,Feeding Schedule,habits,4920,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0320,PROJ_0030,SEC_0142,Month 7 feeding: Puppy food across 3 meals (support rapid bone and joint growth),🐕,punctual,,2027-02-19,,Feeding Schedule,habits,4930,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0321,PROJ_0030,SEC_0142,Month 8 feeding: Puppy food across 3 meals (monitor growth and calorie density),🐕,punctual,,2027-03-19,,Feeding Schedule,habits,4940,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0322,PROJ_0030,SEC_0142,Month 9 feeding: Large-breed puppy food across 3 meals (maintain bone/joint nutrition),🐕,punctual,,2027-04-19,,Feeding Schedule,habits,4950,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0323,PROJ_0030,SEC_0142,Month 10 feeding: Large-breed puppy food across 3 meals (monitor weight progression),🐕,punctual,,2027-05-19,,Feeding Schedule,habits,4960,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0324,PROJ_0030,SEC_0142,Month 11 feeding: Large-breed puppy food across 3 meals (prepare transition to adult schedule),🐕,punctual,,2027-06-19,,Feeding Schedule,habits,4970,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0325,PROJ_0030,SEC_0142,Month 12 feeding (1 Year): Puppy food milestone (maintain puppy food through 12-15 months),🐕,punctual,,2027-07-19,,Feeding Schedule,habits,4980,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0326,PROJ_0030,SEC_0142,Month 13 feeding: Large-breed puppy food (continue through 12-15 months; monitor weight),🐕,punctual,,2027-08-19,,Feeding Schedule,habits,4990,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0327,PROJ_0030,SEC_0142,Month 14 feeding: Large-breed puppy food (12-15 months window; plan adult switch),🐕,punctual,,2027-09-19,,Feeding Schedule,habits,5000,,2026-09-24 13:05:52,1,IMP-20260924-130552
+TASK_0328,PROJ_0030,SEC_0142,"Month 15 feeding (Adulthood / 30-40 kg): Transition to adult food, 350g-500g/day in 2 meals (175g-250g/meal)",🐕,punctual,,2027-10-19,,Feeding Schedule,habits,5010,,2026-09-24 13:05:52,1,IMP-20260924-130552
