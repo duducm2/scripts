@@ -388,15 +388,19 @@ class D2C_FlowManager {
     ; After pick: banner Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
     ; If exe+title/url has a saved main field (paste_field_mappings.ini), focus it first.
     ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
+    ; After paste (+ learn prompt), restores focus to originHwnd (window active before the picker).
     PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
         picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
         if (!picked)
             return false
-        SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend), -50)
+        SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend, originHwnd), -50)
         return true
     }
 
-    _FinishDeferredPaste(targetHwnd, onDone, autoSend := false) {
+    ; restoreHwnd: window that was active before the picker; restored after paste (+ learn prompt).
+    _FinishDeferredPaste(targetHwnd, onDone, autoSend := false, restoreHwnd := 0) {
         mappingResult := { hasMapping: false, focused: false }
         pasteCompleted := false
         try {
@@ -455,8 +459,15 @@ class D2C_FlowManager {
             needsLearn := !mappingResult.hasMapping
             completion := PasteWindow_CompletionForPasteOutcome(autoSend, needsLearn)
             PasteWindow_FinishLoadingHold(completion.state, completion.holdMs)
+            ; Capture focused-field signature while target still has focus.
             if (needsLearn)
                 PasteField_PromptSaveMainField(targetHwnd)
+            ; Return OS focus to the window that was active before the picker.
+            if (restoreHwnd && restoreHwnd != targetHwnd && WinExist("ahk_id " restoreHwnd)) {
+                if (autoSend)
+                    Sleep CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS
+                Handy_RestorePrevWindow(restoreHwnd, targetHwnd)
+            }
         }
 
         if (onDone)
@@ -1331,7 +1342,7 @@ class D2C_FlowManager {
             catch {
             }
             onDone := this._OnActionPasteWindowDone.Bind(this)
-            SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend), -50)
+            SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend, originHwnd), -50)
         } catch {
             this.Reset()
         }

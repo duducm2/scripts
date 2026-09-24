@@ -117,6 +117,7 @@ RegisterMacro(MacroStudyLink_OpenFavorite, "❤️ Open favorite", "f")
 
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
 ; After pick: [Y] paste+Enter, [N] paste only, [Esc] abort, 3s timeout = paste only.
+; After paste (+ optional learn-field prompt), restores focus to the window that was active before the picker.
 ; If a main text field is saved for that exe+title/url (assets/data/paste_field_mappings.ini),
 ; focus it via UIA before paste; if unknown, after paste ask [Y]/[N] to persist the focused field.
 ; In the picker: slot key = paste; [R] then slot = ignore that process (exe) for AutoSlot;

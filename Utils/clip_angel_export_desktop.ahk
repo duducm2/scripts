@@ -1707,9 +1707,10 @@ HotkeyCopy_WTryFinishPaste() {
     }
     targetHwnd := g_HotkeyCopy_Flow.targetHwnd
     autoSend := g_HotkeyCopy_Flow.autoSend
+    originHwnd := g_HotkeyCopy_Flow.originHwnd
     g_HotkeyCopy_Flow.active := false
     try {
-        D2C_FlowManager.GetInstance()._FinishDeferredPaste(targetHwnd, "", autoSend)
+        D2C_FlowManager.GetInstance()._FinishDeferredPaste(targetHwnd, "", autoSend, originHwnd)
     } catch as e {
         ShowCenteredOverlay_Utils("❌ Paste failed: " (e.Message ? e.Message : "unknown"), 2500, BANNER_ACCENT_ERROR)
     }
