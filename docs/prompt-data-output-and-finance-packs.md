@@ -20,9 +20,24 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 
 1. **Prompt** (`.txt` + `prompts.ini` metadata) tells the AI what structured pack to emit.
 2. **Context CSVs** attached at send time give the AI existing rows/ids to match.
-3. Human saves the AI **pack** (`.txt` on Desktop) — the companion never writes to disk directly.
-4. **Importer** (`*_import.ahk`) discovers the newest Desktop pack, extracts CSV, upserts local data.
-5. On failure or partial failure, importer writes a **Desktop fix file** for the AI to correct output.
+3. **Pack auto-pipeline** (AppLaunchers — [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk)): after a catalog pack prompt is **sent**, wait for generation to finish, extract last **code block** (fallback: last message), write the canonical Desktop filename, then open the domain **import confirm** GUI. No manual naming/save.
+4. **Importer** (`*_import.ahk`) reads the Desktop pack, extracts CSV, upserts local data (confirm still required).
+5. On structure-validation failure before write: pipeline builds a Desktop AI-fix file, **pastes + submits** to the companion, and retries (max 2). On importer failure after confirm: existing `*_AI_FIX.txt` + clipboard/paste paths still apply.
+6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs dropped manually; the pack pipeline marks its write as seen / sets busy so the watcher does not double-fire.
+
+### Pack auto-pipeline (arm → extract → Desktop → import)
+
+| Trigger                                      | Canonical Desktop file |
+| -------------------------------------------- | ---------------------- |
+| Utility Prompts `[d]` / Send dictation `[D]` | `FINANCE_DAILY.txt`    |
+| Utility `[m]`                                | `FINANCE_MONTHLY.txt`  |
+| Utility `[4]` / `[a]`                        | `PALACE_PACK.txt`      |
+| Utility `[n]`                                | `PLAN_PACK.txt`        |
+| Utility `[k]` / Send dictation `[T]`         | `TASK_PACK.txt`        |
+
+- Arm: `PackPipeline_ArmFromPrompt` (after Prompt Manager send) / `PackPipeline_ArmFromPreset` (D2C).
+- Extract: code snippet first (`WM_COPY_LAST_GEMINI_CODE` / in-process Copilot/Enterprise), else last message.
+- Confirm GUIs stay; only file naming/save is automated.
 
 ### Shared import pipeline (all domains)
 
@@ -64,6 +79,7 @@ Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors wh
 | Import Management | —                                                                                                                                                       | Hub UI + `ImportMgmt_Run*` → domain importers                                                                                       | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)                       | —                      |
 
 Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
+Pack auto-pipeline: [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk). Desktop watcher: [`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk).
 
 Prompt wiring: [`assets/data/prompts.ini`](../assets/data/prompts.ini), [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). ClipAngel Desktop names: [`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv).
 

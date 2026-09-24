@@ -1407,6 +1407,12 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             onAfter := (*) => ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         }
         PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus, submitOpts)
+        ; Pack auto-pipeline: after send, wait for generation → Desktop → import confirm.
+        if (pasteChoice = "send" && IsObject(prompt)) {
+            try PackPipeline_ArmFromPrompt(prompt, companion, companionHwnd)
+            catch {
+            }
+        }
     } else if (appendClip != "") {
         g_lastExpansion := 0
         InsertText(appendClip)

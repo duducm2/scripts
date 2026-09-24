@@ -304,11 +304,16 @@ WM_TRIGGER_READ_ALOUD := 0x8004
 ; Work environment: M365 Copilot web (Chrome) copy / read-aloud IPC from Utils D2C_FlowManager.
 WM_COPY_LAST_COPILOT := 0x8005
 WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
+; Pack pipeline (Utils): copy last code snippet (same UIA path as #!+p 2×).
+WM_COPY_LAST_GEMINI_CODE := 0x8007
+WM_COPY_LAST_COPILOT_CODE := 0x8008
 ; Path for bridge to verify that Copy Last Response (same as #!+p) actually succeeded
 GEMINI_COPY_RESULT_PATH := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
 OnMessage(WM_COPY_LAST_GEMINI, copyFromBridge)
 OnMessage(WM_COPY_LAST_COPILOT, copyCopilotFromBridge)
+OnMessage(WM_COPY_LAST_GEMINI_CODE, copyCodeFromBridge)
+OnMessage(WM_COPY_LAST_COPILOT_CODE, copyCopilotCodeFromBridge)
 OnMessage(WM_START_DELAYED_SUBMIT_MONITOR, handleStartDelayedSubmitMonitor)
 OnMessage(WM_STOP_DELAYED_SUBMIT_MONITOR, handleStopDelayedSubmitMonitor)
 OnMessage(WM_TRIGGER_READ_ALOUD, handleTriggerReadAloud)
@@ -358,6 +363,38 @@ copyCopilotFromBridge(wParam, lParam, msg, hwnd) {
     if (copilotHwnd && WinActive("ahk_id " copilotHwnd))
         opts.alreadyActive := true
     r := CopilotWeb_CopyLastMessageToClipboard(opts, copilotHwnd)
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
+}
+
+copyCodeFromBridge(wParam, lParam, msg, hwnd) {
+    geminiHwnd := Integer(lParam)
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend("0", GEMINI_COPY_RESULT_PATH)
+    opts := { restoreWindow: false, playChimeAndNotify: false }
+    if (geminiHwnd && WinActive("ahk_id " geminiHwnd))
+        opts.alreadyActive := true
+    r := CopyLastGeminiCodeSnippetToClipboard(opts, geminiHwnd)
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend(r ? "1" : "0", GEMINI_COPY_RESULT_PATH)
+}
+
+copyCopilotCodeFromBridge(wParam, lParam, msg, hwnd) {
+    copilotHwnd := Integer(lParam)
+    try
+        FileDelete(GEMINI_COPY_RESULT_PATH)
+    try
+        FileAppend("0", GEMINI_COPY_RESULT_PATH)
+    opts := { restoreWindow: false, playChimeAndNotify: false }
+    if (copilotHwnd && WinActive("ahk_id " copilotHwnd))
+        opts.alreadyActive := true
+    r := CopilotWeb_CopyLastCodeSnippetToClipboard(opts, copilotHwnd)
     try
         FileDelete(GEMINI_COPY_RESULT_PATH)
     try

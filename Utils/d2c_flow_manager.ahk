@@ -1017,13 +1017,13 @@ class D2C_FlowManager {
                 PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
             } else
                 Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
-            if (presetMode = "finance_daily") {
-                ; Send-only: leave companion generating; user downloads/imports manually.
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
-                try ShowCenteredOverlay_Utils("✅ Finance daily sent — finish manually", 2200, BANNER_ACCENT_SUCCESS)
+            if (presetMode = "finance_daily" || presetMode = "task_pack") {
+                ; Pack pipeline owns completion → extract → Desktop → import confirm.
+                try PackPipeline_ArmFromPreset(presetMode, this.CompanionId, this.GeminiHwnd)
                 catch {
                 }
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
                 global g_D2C_DictationSubmitMenuCycleFinished
                 g_D2C_DictationSubmitMenuCycleFinished := true
                 this.Reset()
