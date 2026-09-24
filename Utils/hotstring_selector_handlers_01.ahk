@@ -131,6 +131,9 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             contextEntries := resolved.entries
             pickedCount := resolved.pickedCount
         }
+        ; Pack catalog + Send: always route through companion (no [L] required) so watch can arm.
+        if (pasteChoice = "send" && PackPipeline_IsCatalogPrompt(prompt))
+            useGemini := true
         PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
         clip := ""
         if (doAppendClipboard) {
@@ -161,6 +164,10 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             companionId := (attachCount > 0 || InsertFiles_IsAiChatForeground()) ? ResolveGlobalAICompanion() : ""
             submitOpts := { hwnd: g_UtilitySelectorRestoreHwnd, companionId: companionId, attachCount: attachCount }
             PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd, submitOpts)
+            ; Non-companion path: still arm if somehow a catalog pack was sent without force-route.
+            try PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companionId, g_UtilitySelectorRestoreHwnd)
+            catch {
+            }
         } else if (doAppendClipboard && clip != "") {
             PromptPaste_BusyEnsure("⏳ Pasting clipboard…")
             g_lastExpansion := 0
@@ -1408,10 +1415,8 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         }
         PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus, submitOpts)
         ; Pack auto-pipeline: after send, wait for generation → Desktop → import confirm.
-        if (pasteChoice = "send" && IsObject(prompt)) {
-            try PackPipeline_ArmFromPrompt(prompt, companion, companionHwnd)
-            catch {
-            }
+        try PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companion, companionHwnd)
+        catch {
         }
     } else if (appendClip != "") {
         g_lastExpansion := 0

@@ -95,6 +95,23 @@ PackPipeline_ArmFromPrompt(prompt, companionId := "", hwnd := 0) {
     return PackPipeline_Arm(ch, item, companionId, hwnd)
 }
 
+; True when prompt char is a pack-pipeline catalog entry (Finance/Palace/Plan/Task).
+PackPipeline_IsCatalogPrompt(prompt) {
+    if (!IsObject(prompt))
+        return false
+    ch := StrLower(Trim(prompt.HasProp("char") ? prompt.char : ""))
+    return IsObject(PackPipeline_Lookup(ch))
+}
+
+; Arm after Prompt Manager / companion send when pasteChoice is "send" and prompt is catalog.
+PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companionId := "", hwnd := 0) {
+    if (pasteChoice != "send")
+        return false
+    if (!PackPipeline_IsCatalogPrompt(prompt))
+        return false
+    return PackPipeline_ArmFromPrompt(prompt, companionId, hwnd)
+}
+
 ; Arm from D2C presetMode ("finance_daily" | "task_pack").
 PackPipeline_ArmFromPreset(presetMode, companionId := "", hwnd := 0) {
     if (!PackPipeline_IsOwnerProcess())
