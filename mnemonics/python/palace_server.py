@@ -652,29 +652,39 @@ class PalaceHandler(BaseHTTPRequestHandler):
             self._bytes(200, html.encode("utf-8"), "text/html; charset=utf-8")
             return
 
-        # Static assets next to the SPA (dashboard.css, etc.)
-        if path.startswith("/") and ".." not in path:
+        # Static assets next to the SPA (dashboard.css, /assets/…, etc.)
+        if path.startswith("/") and ".." not in path and not path.startswith("/api"):
             rel = path.lstrip("/").replace("\\", "/")
-            if rel and "/" not in rel and not rel.startswith("api"):
-                asset = (WEB_DIR / rel).resolve()
-                try:
-                    asset.relative_to(WEB_DIR.resolve())
-                except ValueError:
-                    pass
-                else:
-                    if asset.is_file():
-                        ctype = "application/octet-stream"
-                        suf = asset.suffix.lower()
-                        if suf == ".css":
-                            ctype = "text/css; charset=utf-8"
-                        elif suf == ".js":
-                            ctype = "application/javascript; charset=utf-8"
-                        elif suf == ".html":
-                            ctype = "text/html; charset=utf-8"
-                        elif suf == ".svg":
-                            ctype = "image/svg+xml"
-                        self._bytes(200, asset.read_bytes(), ctype)
-                        return
+            if rel and not rel.startswith("api/"):
+                # Root files (dashboard.css) or nested under assets/
+                if "/" not in rel or rel.startswith("assets/"):
+                    asset = (WEB_DIR / rel).resolve()
+                    try:
+                        asset.relative_to(WEB_DIR.resolve())
+                    except ValueError:
+                        pass
+                    else:
+                        if asset.is_file():
+                            ctype = "application/octet-stream"
+                            suf = asset.suffix.lower()
+                            if suf == ".css":
+                                ctype = "text/css; charset=utf-8"
+                            elif suf == ".js":
+                                ctype = "application/javascript; charset=utf-8"
+                            elif suf == ".html":
+                                ctype = "text/html; charset=utf-8"
+                            elif suf == ".svg":
+                                ctype = "image/svg+xml"
+                            elif suf == ".json":
+                                ctype = "application/json; charset=utf-8"
+                            elif suf == ".png":
+                                ctype = "image/png"
+                            elif suf in (".jpg", ".jpeg"):
+                                ctype = "image/jpeg"
+                            elif suf == ".webp":
+                                ctype = "image/webp"
+                            self._bytes(200, asset.read_bytes(), ctype)
+                            return
 
         if path == "/api/bootstrap":
             self._json(200, self._store().bootstrap())

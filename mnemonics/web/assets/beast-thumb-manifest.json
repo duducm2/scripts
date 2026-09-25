@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "style": {
+    "name": "Memory Quest Bestiary",
+    "description": "Cartoon RPG inventory icons for Quick Recall beast pegs — warm gold and navy accents, chunky readable silhouette.",
+    "format": "PNG RGBA",
+    "dimensions_px": [
+      256,
+      256
+    ],
+    "background": "transparent",
+    "generated_with": "Cursor GenerateImage",
+    "source_layout": "Per unique beast_name icon, chroma-keyed magenta then copied to each beast id filename",
+    "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
+    "catalog_scope": "46 Quick Recall beasts across 13 included palaces",
+    "generated_at": "2026-09-24"
+  },
+  "icons": {
+    "BEAST_DATAANALYST_06_Aa": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "BEAST_DATAANALYST_06_Aa.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Aa.png"
+    },
+    "BEAST_DATAANALYST_06_Ab": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "BEAST_DATAANALYST_06_Ab.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Ab.png"
+    },
+    "BEAST_DATAANALYST_06_Ac": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "BEAST_DATAANALYST_06_Ac.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Ac.png"
+    },
+    "BEAST_DATAANALYST_06_Y": {
+      "label": "yak",
+      "peg_code": "Y",
+      "filename": "BEAST_DATAANALYST_06_Y.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Y.png"
+    },
+    "BEAST_DATAANALYST_06_Z": {
+      "label": "Zeus",
+      "peg_code": "Z",
+      "filename": "BEAST_DATAANALYST_06_Z.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Z.png"
+    },
+    "BEAST_DATAANALYST_07_Ad": {
+      "label": "adder",
+      "peg_code": "Ad",
+      "filename": "BEAST_DATAANALYST_07_Ad.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_07_Ad.png"
+    },
+    "BEAST_DATAANALYST_08_Ae": {
+      "label": "aerialist",
+      "peg_code": "Ae",
+      "filename": "BEAST_DATAANALYST_08_Ae.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ae.png"
+    },
+    "BEAST_DATAANALYST_08_Af": {
+      "label": "Afghan hound",
+      "peg_code": "Af",
+      "filename": "BEAST_DATAANALYST_08_Af.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Af.png"
+    },
+    "BEAST_DATAANALYST_08_Ag": {
+      "label": "Agaric fungi",
+      "peg_code": "Ag",
+      "filename": "BEAST_DATAANALYST_08_Ag.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ag.png"
+    },
+    "BEAST_DATAANALYST_08_Ah": {
+      "label": "Ah!—a sigh",
+      "peg_code": "Ah",
+      "filename": "BEAST_DATAANALYST_08_Ah.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ah.png"
+    },
+    "BEAST_DATAANALYST_08_Ai": {
+      "label": "Airedale terrier",
+      "peg_code": "Ai",
+      "filename": "BEAST_DATAANALYST_08_Ai.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ai.png"
+    },
+    "BEAST_DATAANALYST_09_Aj": {
+      "label": "Ajax",
+      "peg_code": "Aj",
+      "filename": "BEAST_DATAANALYST_09_Aj.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Aj.png"
+    },
+    "BEAST_DATAANALYST_09_Ak": {
+      "label": "Akita (dog breed)",
+      "peg_code": "Ak",
+      "filename": "BEAST_DATAANALYST_09_Ak.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Ak.png"
+    },
+    "BEAST_DATAANALYST_09_Al": {
+      "label": "alligator",
+      "peg_code": "Al",
+      "filename": "BEAST_DATAANALYST_09_Al.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Al.png"
+    },
+    "BEAST_DATAANALYST_09_Am": {
+      "label": "amulet",
+      "peg_code": "Am",
+      "filename": "BEAST_DATAANALYST_09_Am.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Am.png"
+    },
+    "BEAST_DATAANALYST_09_An": {
+      "label": "angel",
+      "peg_code": "An",
+      "filename": "BEAST_DATAANALYST_09_An.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_An.png"
+    },
+    "BEAST_DATAANALYST_10_Ao": {
+      "label": "aoudad",
+      "peg_code": "Ao",
+      "filename": "BEAST_DATAANALYST_10_Ao.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Ao.png"
+    },
+    "BEAST_DATAANALYST_10_Ap": {
+      "label": "ape",
+      "peg_code": "Ap",
+      "filename": "BEAST_DATAANALYST_10_Ap.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Ap.png"
+    },
+    "BEAST_DATAANALYST_10_Aq": {
+      "label": "aquatic leech",
+      "peg_code": "Aq",
+      "filename": "BEAST_DATAANALYST_10_Aq.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Aq.png"
+    },
+    "BEAST_DATAANALYST_10_Ar": {
+      "label": "armadillo",
+      "peg_code": "Ar",
+      "filename": "BEAST_DATAANALYST_10_Ar.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Ar.png"
+    },
+    "BEAST_DATAANALYST_10_As": {
+      "label": "asp",
+      "peg_code": "As",
+      "filename": "BEAST_DATAANALYST_10_As.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_As.png"
+    },
+    "BEAST_DATAANALYST_11_At": {
+      "label": "atlas",
+      "peg_code": "At",
+      "filename": "BEAST_DATAANALYST_11_At.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_At.png"
+    },
+    "BEAST_DATAANALYST_11_Au": {
+      "label": "auroch",
+      "peg_code": "Au",
+      "filename": "BEAST_DATAANALYST_11_Au.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Au.png"
+    },
+    "BEAST_DATAANALYST_11_Av": {
+      "label": "avocet",
+      "peg_code": "Av",
+      "filename": "BEAST_DATAANALYST_11_Av.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Av.png"
+    },
+    "BEAST_DATAANALYST_11_Aw": {
+      "label": "awassi sheep",
+      "peg_code": "Aw",
+      "filename": "BEAST_DATAANALYST_11_Aw.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Aw.png"
+    },
+    "BEAST_DATAANALYST_11_Ax": {
+      "label": "axolotl",
+      "peg_code": "Ax",
+      "filename": "BEAST_DATAANALYST_11_Ax.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Ax.png"
+    },
+    "BEAST_DATAANALYST_12_Ay": {
+      "label": "aye-aye",
+      "peg_code": "Ay",
+      "filename": "BEAST_DATAANALYST_12_Ay.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_12_Ay.png"
+    },
+    "BEAST_DATAANALYST_12_Az": {
+      "label": "Aztec",
+      "peg_code": "Az",
+      "filename": "BEAST_DATAANALYST_12_Az.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_12_Az.png"
+    },
+    "BEAST_DATAANALYST_13_Ba": {
+      "label": "bat",
+      "peg_code": "Ba",
+      "filename": "BEAST_DATAANALYST_13_Ba.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Ba.png"
+    },
+    "BEAST_DATAANALYST_13_Bb": {
+      "label": "Bone bird of paradise",
+      "peg_code": "Bb",
+      "filename": "BEAST_DATAANALYST_13_Bb.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Bb.png"
+    },
+    "BEAST_DATAANALYST_13_Bc": {
+      "label": "Bone cat",
+      "peg_code": "Bc",
+      "filename": "BEAST_DATAANALYST_13_Bc.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Bc.png"
+    },
+    "BEAST_DATAANALYST_13_Bd": {
+      "label": "Bone dragon",
+      "peg_code": "Bd",
+      "filename": "BEAST_DATAANALYST_13_Bd.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Bd.png"
+    },
+    "BEAST_DATAANALYST_14_Be": {
+      "label": "bee",
+      "peg_code": "Be",
+      "filename": "BEAST_DATAANALYST_14_Be.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_14_Be.png"
+    },
+    "BEAST_DATAANALYST_14_Bf": {
+      "label": "Bone frog",
+      "peg_code": "Bf",
+      "filename": "BEAST_DATAANALYST_14_Bf.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_14_Bf.png"
+    },
+    "BEAST_DATAANALYST_14_Bg": {
+      "label": "Bone goat",
+      "peg_code": "Bg",
+      "filename": "BEAST_DATAANALYST_14_Bg.png",
+      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_14_Bg.png"
+    },
+    "BEAST_PIANO_08_AF": {
+      "label": "Afghan hound",
+      "peg_code": "Af",
+      "filename": "BEAST_PIANO_08_AF.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_08_AF.png"
+    },
+    "BEAST_PIANO_08_AG": {
+      "label": "Agaric fungi",
+      "peg_code": "Ag",
+      "filename": "BEAST_PIANO_08_AG.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_08_AG.png"
+    },
+    "BEAST_PIANO_08_AH": {
+      "label": "Ah!—a sigh",
+      "peg_code": "Ah",
+      "filename": "BEAST_PIANO_08_AH.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_08_AH.png"
+    },
+    "BEAST_PIANO_09_AI": {
+      "label": "Airedale terrier",
+      "peg_code": "Ai",
+      "filename": "BEAST_PIANO_09_AI.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_09_AI.png"
+    },
+    "BEAST_PIANO_10_AJ": {
+      "label": "Ajax",
+      "peg_code": "Aj",
+      "filename": "BEAST_PIANO_10_AJ.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_10_AJ.png"
+    },
+    "BEAST_PIANO_10_AK": {
+      "label": "Akita (dog breed)",
+      "peg_code": "Ak",
+      "filename": "BEAST_PIANO_10_AK.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_10_AK.png"
+    },
+    "BEAST_PIANO_Al": {
+      "label": "alligator",
+      "peg_code": "Al",
+      "filename": "BEAST_PIANO_Al.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_Al.png"
+    },
+    "BEAST_PIANO_Am": {
+      "label": "amulet",
+      "peg_code": "Am",
+      "filename": "BEAST_PIANO_Am.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_Am.png"
+    },
+    "BEAST_PIANO_An": {
+      "label": "angel",
+      "peg_code": "An",
+      "filename": "BEAST_PIANO_An.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_An.png"
+    },
+    "BEAST_PIANO_Ao": {
+      "label": "aoudad",
+      "peg_code": "Ao",
+      "filename": "BEAST_PIANO_Ao.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_Ao.png"
+    },
+    "BEAST_PIANO_Ap": {
+      "label": "ape",
+      "peg_code": "Ap",
+      "filename": "BEAST_PIANO_Ap.png",
+      "url": "/assets/beast-thumbs/BEAST_PIANO_Ap.png"
+    }
+  }
+}

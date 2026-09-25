@@ -861,6 +861,8 @@
         mermaidLoading: false,
         studyLinks: { video: "", article: "", favorite: "" },
         imagesFsId: "",
+        beastThumbManifest: null,
+        beastThumbManifestPromise: null,
       };
 
       function invalidateDataIndex() {
@@ -1620,16 +1622,19 @@
           li.appendChild(btn);
           ul.appendChild(li);
         });
-        renderQuickRecall();
-        const firstQr = document.querySelector("#quickRecallList .qr-line");
-        const firstStudy = ul.querySelector("button");
-        if (firstQr) {
-          requestAnimationFrame(() => selectQuickRecallLine(firstQr));
-        } else if (firstStudy) {
-          requestAnimationFrame(() => firstStudy.focus());
-        }
-        // Nudge again after AHK hide/show/activate settles (force=true).
-        setTimeout(() => ensureStudyModalKeyboardFocus(true), 0);
+        const finishQr = () => {
+          renderQuickRecall();
+          const firstQr = document.querySelector("#quickRecallList .qr-line");
+          const firstStudy = ul.querySelector("button");
+          if (firstQr) {
+            requestAnimationFrame(() => selectQuickRecallLine(firstQr));
+          } else if (firstStudy) {
+            requestAnimationFrame(() => firstStudy.focus());
+          }
+          // Nudge again after AHK hide/show/activate settles (force=true).
+          setTimeout(() => ensureStudyModalKeyboardFocus(true), 0);
+        };
+        loadBeastThumbManifest().then(finishQr);
         setTimeout(() => ensureStudyModalKeyboardFocus(true), 250);
         setTimeout(() => ensureStudyModalKeyboardFocus(true), 600);
       }
@@ -1742,6 +1747,34 @@
         return out;
       }
 
+      function loadBeastThumbManifest() {
+        if (state.beastThumbManifest)
+          return Promise.resolve(state.beastThumbManifest);
+        if (state.beastThumbManifestPromise)
+          return state.beastThumbManifestPromise;
+        state.beastThumbManifestPromise = fetch(
+          "/assets/beast-thumb-manifest.json",
+        )
+          .then((r) => (r.ok ? r.json() : null))
+          .then((m) => {
+            state.beastThumbManifest =
+              m && typeof m === "object" ? m : { icons: {} };
+            return state.beastThumbManifest;
+          })
+          .catch(() => {
+            state.beastThumbManifest = { icons: {} };
+            return state.beastThumbManifest;
+          });
+        return state.beastThumbManifestPromise;
+      }
+
+      function beastThumbUrl(beastId) {
+        const icons = state.beastThumbManifest?.icons;
+        if (!icons || !beastId) return "";
+        const entry = icons[beastId];
+        return entry?.url || "";
+      }
+
       function renderQuickRecall() {
         const host = document.getElementById("quickRecallList");
         if (!host) return;
@@ -1795,7 +1828,12 @@
                 if (peg) bodyParts.push(`[${esc(peg)}]`);
                 if (name) bodyParts.push(esc(name));
                 if (conceptHtml) bodyParts.push(conceptHtml);
+                const thumbUrl = beastThumbUrl(b.id);
+                const thumbHtml = thumbUrl
+                  ? `<img class="qr-thumb" src="${esc(thumbUrl)}" alt="" width="28" height="28" loading="lazy" decoding="async">`
+                  : "";
                 btn.innerHTML =
+                  thumbHtml +
                   `<span class="qr-marks">${marks.join("")}</span>` +
                   `<span class="qr-body">${bodyParts.join(" ")}</span>`;
                 btn.addEventListener("click", () =>
