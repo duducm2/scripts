@@ -82,6 +82,62 @@ PackPipeline_IsActive() {
     return IsObject(g_PackPipeline) && g_PackPipeline.HasProp("active") && g_PackPipeline.active
 }
 
+; Capture foreground hwnd when it is not the companion (call before intentional focus steal).
+PackPipeline_CaptureUserHwnd() {
+    global g_PackPipeline
+    if (!IsObject(g_PackPipeline))
+        return 0
+    companionHwnd := g_PackPipeline.HasProp("hwnd") ? g_PackPipeline.hwnd : 0
+    try {
+        fg := WinGetID("A")
+        if (fg && (!companionHwnd || fg != companionHwnd)) {
+            g_PackPipeline.userHwnd := fg
+            return fg
+        }
+    } catch {
+    }
+    return g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0
+}
+
+; Restore the user's window after brief companion activate (extract / fix-submit).
+PackPipeline_RestoreUserHwnd() {
+    global g_PackPipeline
+    if (!IsObject(g_PackPipeline) || !g_PackPipeline.HasProp("userHwnd"))
+        return false
+    userHwnd := g_PackPipeline.userHwnd
+    if (!userHwnd || !WinExist("ahk_id " userHwnd))
+        return false
+    companionHwnd := g_PackPipeline.HasProp("hwnd") ? g_PackPipeline.hwnd : 0
+    if (companionHwnd && userHwnd = companionHwnd)
+        return false
+    try {
+        if (!WinActive("ahk_id " userHwnd)) {
+            WinActivate("ahk_id " userHwnd)
+            WinWaitActive("ahk_id " userHwnd, , 1)
+        }
+        return !!WinActive("ahk_id " userHwnd)
+    } catch {
+    }
+    return false
+}
+
+; Brief activate companion for copy/paste; captures userHwnd first.
+PackPipeline_ActivateCompanionBriefly(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    PackPipeline_CaptureUserHwnd()
+    try {
+        if (!WinActive("ahk_id " hwnd)) {
+            WinActivate("ahk_id " hwnd)
+            if (!WinWaitActive("ahk_id " hwnd, , 1.5))
+                return false
+        }
+        return true
+    } catch {
+    }
+    return false
+}
+
 ; Arm from Utility prompt object after Gemini send.
 PackPipeline_ArmFromPrompt(prompt, companionId := "", hwnd := 0) {
     if (!PackPipeline_IsOwnerProcess())
@@ -148,11 +204,19 @@ PackPipeline_Arm(key, item, companionId := "", hwnd := 0) {
         }
     }
     PackPipeline_StopMonitor()
+    userHwnd := 0
+    try {
+        fg := WinGetID("A")
+        if (fg && (!hwnd || fg != hwnd))
+            userHwnd := fg
+    } catch {
+    }
     g_PackPipeline := {
         active: true,
         key: key,
         companionId: companionId,
         hwnd: hwnd,
+        userHwnd: userHwnd,
         canonical: item["canonical"],
         label: item["label"],
         run: item["run"],
@@ -162,7 +226,8 @@ PackPipeline_Arm(key, item, companionId := "", hwnd := 0) {
     }
     g_PackPipelineMonitorRetry := 0
     g_PackPipelineMonitorButtonSeen := false
-    try ShowCenteredOverlay_Utils("📥 Pack pipeline armed — " . item["label"], 1800, BANNER_ACCENT_INFO)
+    try ShowCenteredOverlay_Utils("📥 Pack pipeline armed — " . item["label"] . " (background)", 1800,
+        BANNER_ACCENT_INFO)
     catch {
     }
     PackPipeline_StartMonitor()
@@ -178,7 +243,11 @@ PackPipeline_StartMonitor() {
     SetTimer(PackPipeline_MonitorTick, 500)
 }
 
+; Hwnd-scoped Stop-button poll only — never WinActivate, never bare UIA_Browser().
 PackPipeline_CompanionIsGenerating(hwnd, companionId) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    companionId := StrLower(Trim(companionId))
     try {
         if (companionId = "copilot") {
             root := CopilotWeb_ReadRootFromHwnd(hwnd)
@@ -188,16 +257,25 @@ PackPipeline_CompanionIsGenerating(hwnd, companionId) {
             root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
             return !!(root && GeminiEnterprise_FindStopButton(root))
         }
-        try return !!PromptPaste_CompanionIsGenerating(hwnd, companionId)
-        catch {
+        ; Consumer Gemini (default): hwnd-bound UIA only.
+        try {
+            uia := UIA_Browser("ahk_id " hwnd)
+            if (IsObject(uia) && Gemini_HasGeneratingStopButtonForUia(uia))
+                return true
+        } catch {
         }
-        root := UIA.ElementFromHandle(hwnd)
-        for n in ["Stop streaming", "Interromper transmissão", "Stop response"] {
-            try {
-                if (root.FindElement({ Name: n, Type: "Button" }))
-                    return true
-            } catch {
+        try {
+            root := UIA.ElementFromHandle(hwnd)
+            if (IsObject(root) && Gemini_HasGeneratingStopButtonForUia(root))
+                return true
+            for n in ["Stop streaming", "Interromper transmissão", "Stop response"] {
+                try {
+                    if (root.FindElement({ Name: n, Type: "Button" }))
+                        return true
+                } catch {
+                }
             }
+        } catch {
         }
     } catch {
     }
@@ -233,6 +311,13 @@ PackPipeline_MonitorTick(*) {
         }
         if (!hwnd)
             return
+    }
+    ; Passive status every ~10s — no focus steal.
+    if (Mod(g_PackPipelineMonitorRetry, 20) = 0) {
+        try ShowCenteredOverlay_Utils("👁 Watching " . g_PackPipeline.label . " in background…", 1200,
+            BANNER_ACCENT_INFO)
+        catch {
+        }
     }
     generating := PackPipeline_CompanionIsGenerating(hwnd, companionId)
     if (generating) {
@@ -307,6 +392,8 @@ PackPipeline_CopyResultPath() {
 }
 
 PackPipeline_IpcCopy(wm, hwnd) {
+    ; Capture before Gemini IPC may WinActivate the companion.
+    PackPipeline_CaptureUserHwnd()
     targetHwnd := 0
     try targetHwnd := GetGeminiScriptMsgTargetHwnd()
     catch {
@@ -335,6 +422,8 @@ PackPipeline_IpcCopy(wm, hwnd) {
     } catch {
     } finally {
         DetectHiddenWindows prevDH
+        ; Bridge may have activated Chrome — restore user focus immediately.
+        PackPipeline_RestoreUserHwnd()
     }
     if (!sendOk)
         return ""
@@ -357,52 +446,68 @@ PackPipeline_IpcCopy(wm, hwnd) {
 }
 
 PackPipeline_CopyCode(companionId, hwnd) {
+    ; Activate briefly so alreadyActive:true binds UIA to companion (not user's fg window).
+    PackPipeline_ActivateCompanionBriefly(hwnd)
     opts := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-    if (companionId = "copilot") {
-        ok := false
-        try ok := CopilotWeb_CopyLastCodeSnippetToClipboard(opts, hwnd)
-        catch {
+    text := ""
+    try {
+        if (companionId = "copilot") {
             ok := false
-        }
-        return ok ? Trim(A_Clipboard) : ""
-    }
-    if (companionId = "enterprise") {
-        ok := false
-        try ok := GeminiEnterprise_CopyLastCodeSnippetToClipboard(opts, hwnd)
-        catch {
+            try ok := CopilotWeb_CopyLastCodeSnippetToClipboard(opts, hwnd)
+            catch {
+                ok := false
+            }
+            text := ok ? Trim(A_Clipboard) : ""
+        } else if (companionId = "enterprise") {
             ok := false
+            try ok := GeminiEnterprise_CopyLastCodeSnippetToClipboard(opts, hwnd)
+            catch {
+                ok := false
+            }
+            text := ok ? Trim(A_Clipboard) : ""
+        } else {
+            ; Consumer Gemini via IPC (code lives in Gemini.ahk process).
+            ; IpcCopy also restores after SendMessage; finally covers early IPC failures.
+            text := PackPipeline_IpcCopy(WM_COPY_LAST_GEMINI_CODE, hwnd)
         }
-        return ok ? Trim(A_Clipboard) : ""
+    } finally {
+        PackPipeline_RestoreUserHwnd()
     }
-    ; Consumer Gemini via IPC (code lives in Gemini.ahk process).
-    return PackPipeline_IpcCopy(WM_COPY_LAST_GEMINI_CODE, hwnd)
+    return text
 }
 
 PackPipeline_CopyMessage(companionId, hwnd) {
+    PackPipeline_ActivateCompanionBriefly(hwnd)
     opts := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
-    if (companionId = "copilot") {
-        ok := false
-        try ok := CopilotWeb_CopyLastMessageWithRetry(opts, hwnd)
-        catch {
-            try ok := CopilotWeb_CopyLastMessageToClipboard(opts, hwnd)
+    text := ""
+    try {
+        if (companionId = "copilot") {
+            ok := false
+            try ok := CopilotWeb_CopyLastMessageWithRetry(opts, hwnd)
             catch {
-                ok := false
+                try ok := CopilotWeb_CopyLastMessageToClipboard(opts, hwnd)
+                catch {
+                    ok := false
+                }
             }
-        }
-        return ok ? Trim(A_Clipboard) : ""
-    }
-    if (companionId = "enterprise") {
-        ok := false
-        try ok := GeminiEnterprise_CopyLastMessageWithRetry(opts, hwnd)
-        catch {
-            try ok := GeminiEnterprise_CopyLastMessageToClipboard(opts, hwnd)
+            text := ok ? Trim(A_Clipboard) : ""
+        } else if (companionId = "enterprise") {
+            ok := false
+            try ok := GeminiEnterprise_CopyLastMessageWithRetry(opts, hwnd)
             catch {
-                ok := false
+                try ok := GeminiEnterprise_CopyLastMessageToClipboard(opts, hwnd)
+                catch {
+                    ok := false
+                }
             }
+            text := ok ? Trim(A_Clipboard) : ""
+        } else {
+            text := PackPipeline_IpcCopy(WM_COPY_LAST_GEMINI, hwnd)
         }
-        return ok ? Trim(A_Clipboard) : ""
+    } finally {
+        PackPipeline_RestoreUserHwnd()
     }
-    return PackPipeline_IpcCopy(WM_COPY_LAST_GEMINI, hwnd)
+    return text
 }
 
 ; --- Validation ---
@@ -561,6 +666,7 @@ PackPipeline_SendFixAndSubmit(fixText) {
     if (fixText = "" || !PackPipeline_IsActive())
         return false
     companionId := g_PackPipeline.companionId
+    PackPipeline_CaptureUserHwnd()
     hwnd := 0
     try {
         switch companionId {
@@ -583,10 +689,13 @@ PackPipeline_SendFixAndSubmit(fixText) {
         try ShowCenteredOverlay_Utils("❌ AI fix send failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         catch {
         }
+        PackPipeline_RestoreUserHwnd()
         return false
     }
     if (hwnd)
         g_PackPipeline.hwnd := hwnd
+    ; Restore user focus before re-entering background wait.
+    PackPipeline_RestoreUserHwnd()
     return true
 }
 
