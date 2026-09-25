@@ -2167,6 +2167,9 @@
           return;
         }
         render();
+        // Keep Quick Recall list current if the picker is open (e.g. soft refresh
+        // after an AHK pack import while the SPA was already running).
+        if (studyModalIsOpen()) renderQuickRecall();
         if (opts.links) refreshLinkStatus().catch(() => {});
       }
 
@@ -4018,11 +4021,28 @@
         }, 250);
       }
 
+      // Soft-reload CSV state when the tab is shown again (belt-and-suspenders with
+      // AHK post-import F5). Debounced so Alt-Tab chatter does not thrash /api/state.
+      let externalDataRefreshTimer = 0;
+      let lastExternalDataRefreshAt = 0;
+      function scheduleExternalDataRefresh() {
+        clearTimeout(externalDataRefreshTimer);
+        externalDataRefreshTimer = setTimeout(() => {
+          const now = Date.now();
+          if (now - lastExternalDataRefreshAt < 2500) return;
+          lastExternalDataRefreshAt = now;
+          refresh().catch(() => {});
+        }, 200);
+      }
+
       document.addEventListener("visibilitychange", () => {
-        if (!document.hidden && state.view === "links")
-          scheduleStudyLinkRefresh();
+        if (!document.hidden) {
+          scheduleExternalDataRefresh();
+          if (state.view === "links") scheduleStudyLinkRefresh();
+        }
       });
       window.addEventListener("focus", () => {
+        scheduleExternalDataRefresh();
         if (state.view === "links") scheduleStudyLinkRefresh();
       });
 

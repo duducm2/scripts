@@ -39,6 +39,7 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 - Extract: code snippet first (`WM_COPY_LAST_GEMINI_CODE` / in-process Copilot/Enterprise), else last message; brief companion activate then restore.
 - Confirm GUIs stay; only file naming/save is automated. **Cancel** does not open Memory Palace / Finance menus (toast: no data written). Success paths still open the domain UI after commit.
 - **No dedicated import-results window** — preview is the confirm ListView; success is a toast (+ optional domain main menu).
+- **Running SPA must reload after import** — Memory Palace (`:8767`) keeps `/api/state` in the browser; AHK post-success path invalidates the Python cache and `{F5}`-reloads any open Memory Palace Chrome tab (`Palace_RefreshRunningWebApp`).
 
 ### Shared import pipeline (all domains)
 
@@ -174,6 +175,7 @@ Typical human workflow:
 1. Open prompt (Utility Shortcuts or dictation) with dictation/context attached.
 2. AI returns a pack → save to Desktop (Quick Download `#!+Shift+9`, or copy fence).
 3. Open Import Management (`#!+X` or Utility `[J]`) → Char / Enter on the workflow → importer normalizes Desktop name, parses pack, upserts local CSV, archives source file on full success.
+4. **If the Memory Palace web app is already open:** the importer invalidates the Python CSV cache and reloads the open Chrome SPA tab (`Palace_RefreshRunningWebApp` / `{F5}`) so new palaces/beasts/atoms appear without a manual refresh. Do not assume the running SPA will pick up disk writes on its own.
 
 ### AI fix recovery
 

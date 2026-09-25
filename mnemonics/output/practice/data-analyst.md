@@ -1,6 +1,128 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 15: SQL Window Functions</strong> · Character: Socrates · 4 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>4 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Bh] Bone Hydra
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+🟦 **Z1 · LAG Function**
+
+**Concept**
+💡 [<kbd><strong><u>LAG Function</u></strong></kbd>] [I <kbd><strong><u>query data</u></strong></kbd>] [from <kbd><strong><u>preceding rows</u></strong></kbd>] [relative to the <kbd><strong><u>current evaluation row</u></strong></kbd>] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
+
+🔑 **Keywords**
+
+- [**LAG Function**] → [lagging foot]
+- [**query data**] → [magnifying glass]
+- [**preceding rows**] → [footprints]
+- [**current evaluation row**] → [anchor]
+
+**Quote**
+“a lag is going to be for previous days and so notice how on the first day in the results there's no previous day so you see null there”
+
+**Story**
+The Bone Hydra clamps a heavy iron anchor in its jaws, chewing on the metal while spitting out muddy footprints from the space behind it.
+
+---
+
+🟦 **Z2 · LEAD Function**
+
+**Concept**
+💡 [<kbd><strong><u>LEAD Function</u></strong></kbd>] [I <kbd><strong><u>query data</u></strong></kbd>] [from <kbd><strong><u>subsequent rows</u></strong></kbd>] [relative to the <kbd><strong><u>current evaluation row</u></strong></kbd>] — Note: It returns a null value at the final dataset record where no subsequent row exists.
+
+🔑 **Keywords**
+
+- [**LEAD Function**] → [leash]
+- [**query data**] → [binoculars]
+- [**subsequent rows**] → [stepping stone]
+- [**current evaluation row**] → [compass]
+
+**Quote**
+“notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead”
+
+**Story**
+The Bone Hydra's front claws grip a glowing neon leash attached to a golden compass, tearing stepping stones out of the empty air ahead of it.
+
+### [Bi] bison
+
+<img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>PARTITION BY</u></strong></kbd>] [I <kbd><strong><u>divide the result set</u></strong></kbd>] [<kbd><strong><u>into partitions</u></strong></kbd>] [and <kbd><strong><u>calculate the window function</u></strong></kbd>] [while <kbd><strong><u>preserving individual row details</u></strong></kbd>] — Note: GROUP BY reduces the output by collapsing multiple rows into a single summary row.
+
+🔑 **Keywords**
+
+- [**PARTITION BY**] → [glass divider]
+- [**divide the result set**] → [pizza slicer]
+- [**into partitions**] → [cubicle]
+- [**calculate the window function**] → [abacus]
+- [**preserving individual row details**] → [magnifying glass]
+
+**Quote**
+“the group by statement is going to reduce the number of rows in our output by actually rolling them up and then calculating the sums or averages for each group whereas partition by actually divides the result set into partitions and changes how the window function is calculated”
+
+**Story**
+A gigantic bison uses a pizza slicer to chop a glowing glass divider into small cubicles, calculating numbers on a wooden abacus while inspecting the remaining pieces with a magnifying glass.
+
+### [Bj] Bone jester
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Bone jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>Isolated Aggregation</u></strong></kbd>] [I <kbd><strong><u>isolate a single column</u></strong></kbd>] [for an <kbd><strong><u>aggregate function</u></strong></kbd>] [without changing the <kbd><strong><u>query&#x27;s granularity</u></strong></kbd>]
+
+🔑 **Keywords**
+
+- [**Isolated Aggregation**] → [test tube]
+- [**isolate a single column**] → [tweezers]
+- [**aggregate function**] → [blender]
+- [**query's granularity**] → [sandglass]
+
+**Quote**
+“because we're using the partition by we're able to isolate just one column that we want to perform our aggregate function on”
+
+**Story**
+A Bone jester grabs a test tube with silver tweezers, dumping the liquid into a roaring blender without breaking the delicate sandglass resting on top.
+
+### [Bk] Bone kitten
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Bone kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>Inline Aggregate Shortcut</u></strong></kbd>] [I <kbd><strong><u>inject aggregated metrics</u></strong></kbd>] [directly into an <kbd><strong><u>un-grouped query</u></strong></kbd>] [using a <kbd><strong><u>single OVER clause</u></strong></kbd>]
+
+🔑 **Keywords**
+
+- [**Inline Aggregate Shortcut**] → [syringe]
+- [**inject aggregated metrics**] → [needle]
+- [**un-grouped query**] → [open book]
+- [**single OVER clause**] → [blanket]
+
+**Quote**
+“what the partition by is doing is basically taking this query right here and sticking it on one line in the select statement”
+
+**Story**
+A Bone kitten stabs a glowing syringe needle into an open book, injecting neon blue ink before wrapping the entire book in a heavy wool blanket.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 14: SQL Joins</strong> · Character: Frédéric Chopin · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 14](images/data-analyst/14.jpg)
@@ -31,7 +153,7 @@ A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only
 
 ### [Bf] Bone frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [<kbd><strong><u>LEFT JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from the <kbd><strong><u>left table</u></strong></kbd>] [and fill missing right matches with <kbd><strong><u>NULLs</u></strong></kbd>]
@@ -51,7 +173,7 @@ A Bone frog kicks a wooden table with its glowing left webbed foot, catching all
 
 ### [Bg] Bone goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [<kbd><strong><u>FULL OUTER JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from <kbd><strong><u>both tables</u></strong></kbd>] [and fill any missing sides with <kbd><strong><u>NULLs</u></strong></kbd>] — Note: It essentially combines the results of both a left join and a right join.
@@ -110,7 +232,7 @@ A gigantic bat uses silver tweezers to extract nested glowing code blocks from a
 
 ### [Bb] Bone bird of paradise
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [<kbd><strong><u>Temporary Tables</u></strong></kbd>] [I <kbd><strong><u>store</u></strong></kbd> the output of heavy computation] [in a <kbd><strong><u>temporary table</u></strong></kbd>] [to prevent the database from <kbd><strong><u>re-executing</u></strong></kbd> it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
@@ -130,7 +252,7 @@ A Bone bird of paradise drags a humming chest freezer into a camping tent to sto
 
 ### [Bc] Bone cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="Bone cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Bone cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [<kbd><strong><u>HAVING Clause</u></strong></kbd>] [I <kbd><strong><u>filter</u></strong></kbd> summary rows] [after they have been <kbd><strong><u>processed</u></strong></kbd>] [by the GROUP BY <kbd><strong><u>aggregation</u></strong></kbd>] — Note: The WHERE clause filters individual rows before any data grouping occurs.
@@ -150,7 +272,7 @@ A Bone cat pours a giant snowball through a roaring blender, using a plastic fun
 
 ### [Bd] Bone dragon
 
-<img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [<kbd><strong><u>GROUP BY Scope</u></strong></kbd>] [I <kbd><strong><u>include</u></strong></kbd> any non-aggregated column] [from the <kbd><strong><u>SELECT statement</u></strong></kbd>] [inside the <kbd><strong><u>GROUP BY clause</u></strong></kbd>] — Note: This ensures identical data combinations correctly collapse into a single summary row.

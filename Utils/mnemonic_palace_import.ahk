@@ -117,6 +117,32 @@ Palace_InvalidateServerCache(port := 8767) {
     }
 }
 
+; Operational rule: after any successful data write, if the Memory Palace Chrome SPA is
+; already open, reload that tab so client state shows the new rows (server cache alone is
+; not enough — the SPA keeps /api/state in memory until refresh).
+; Does not activate the window (Import Manager / companion keep focus).
+Palace_RefreshRunningWebApp() {
+    hwnd := 0
+    try hwnd := Palace_FindExistingWebHwnd()
+    catch {
+        hwnd := 0
+    }
+    if (!hwnd)
+        return false
+    try {
+        ControlSend("{F5}", , "ahk_id " hwnd)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Invalidate Python CSV cache + reload open SPA. Call after successful imports / attaches.
+Palace_AfterDataWriteRefreshUi() {
+    Palace_InvalidateServerCache()
+    Palace_RefreshRunningWebApp()
+}
+
 ; Strip Gemini preambles; find a header that looks like palace CSV.
 ; When skipNotes is an Array, malformed rows (field count ≠ header) are skipped and noted.
 Palace_ReadAiImportCsv(path, headerHint := "beast_id", skipNotes := 0) {
@@ -515,8 +541,9 @@ Palace_ReturnAfterImport(hubClosed := false) {
     Palace_ShowMainMenu()
 }
 
-; Success: close Import Manager when open; otherwise Palace main menu.
+; Success: refresh open SPA, then close Import Manager when open; otherwise Palace main menu.
 Palace_FinishImportSuccess() {
+    Palace_RefreshRunningWebApp()
     if (ImportMgmt_IsOpen())
         ImportMgmt_OnImportSuccess()
     else
@@ -1729,7 +1756,7 @@ Palace_AttachImageFileToPalace(palace, src) {
         return { ok: false, err: "Palace row vanished" }
     existing["image_rel_path"] := rel
     Palace_Save("palaces", palaces)
-    Palace_InvalidateServerCache()
+    Palace_AfterDataWriteRefreshUi()
     Palace_SyncPracticeMd([palace["study_id"]])
     return { ok: true, rel: rel }
 }
