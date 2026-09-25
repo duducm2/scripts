@@ -887,6 +887,7 @@ cheatSheets["EXCEL.EXE"] := "
     🌐 [L]Open cell [L]ink in new Chrome
     🔢 [F][F]ill series down to last used row
     📐 [O][O]rganize (select all · center · font 11)
+    🔍 [R][R]ead active cell (dark modal · Esc / Shift+R closes)
 )"
 
 ; --- PowerPoint --------------------------------------------------------

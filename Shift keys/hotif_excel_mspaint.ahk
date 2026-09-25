@@ -1250,3 +1250,148 @@ Excel_QuickOrganizeCenterFont11() {
 }
 
 +o:: Excel_QuickOrganizeCenterFont11()
+
+; Shift + R : Read active cell in a dark centered modal (toggle; Esc also closes)
+global g_ExcelCellPreviewGui := 0
+global g_ExcelCellPreviewBorderGui := 0
+
+Excel_CellPreview_IsOpen() {
+    global g_ExcelCellPreviewGui
+    try return IsObject(g_ExcelCellPreviewGui) && !!g_ExcelCellPreviewGui.Hwnd
+    catch {
+        return false
+    }
+}
+
+Excel_CellPreview_Close(*) {
+    global g_ExcelCellPreviewGui, g_ExcelCellPreviewBorderGui
+    try {
+        if IsObject(g_ExcelCellPreviewGui)
+            g_ExcelCellPreviewGui.Destroy()
+    } catch {
+    }
+    g_ExcelCellPreviewGui := 0
+    try {
+        if IsObject(g_ExcelCellPreviewBorderGui)
+            g_ExcelCellPreviewBorderGui.Destroy()
+    } catch {
+    }
+    g_ExcelCellPreviewBorderGui := 0
+}
+
+Excel_CellPreview_Toggle() {
+    if Excel_CellPreview_IsOpen() {
+        Excel_CellPreview_Close()
+        return
+    }
+
+    try {
+        xl := ComObjActive("Excel.Application")
+        cell := xl.ActiveCell
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Excel COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+    if !cell {
+        ShowCenteredOverlay_Utils("❌ No active cell", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    text := ""
+    try text := String(cell.Text)
+    catch {
+        try text := String(cell.Value2)
+        catch {
+            text := ""
+        }
+    }
+    text := Trim(text, " `t`r`n")
+    if (text = "")
+        text := "∅ Empty cell"
+    else if (StrLen(text) > 4000)
+        text := SubStr(text, 1, 3997) . "…"
+
+    hwndExcel := WinExist("A")
+    ml := 0, mt := 0, mr := 0, mb := 0
+    workArea := ""
+    try workArea := GetWorkAreaForWindow_StandardBar(hwndExcel)
+    catch {
+        workArea := ""
+    }
+    if (IsObject(workArea)) {
+        ml := workArea.left
+        mt := workArea.top
+        mr := workArea.right
+        mb := workArea.bottom
+    } else {
+        GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    }
+    monW := mr - ml
+    monH := mb - mt
+    maxW := Max(280, Min(900, Floor(monW * 0.7)))
+    maxH := Max(120, Floor(monH * 0.7))
+
+    Excel_CellPreview_Close()
+    global g_ExcelCellPreviewGui, g_ExcelCellPreviewBorderGui
+
+    g := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    g.BackColor := "1E1E2E"
+    g.MarginX := 36
+    g.MarginY := 32
+    g.SetFont("s24 cFFFFFF", "Segoe UI")
+    g.Add("Text", "w" . maxW . " Center Wrap", text)
+    g.OnEvent("Close", Excel_CellPreview_Close)
+    g.OnEvent("Escape", Excel_CellPreview_Close)
+    g.Show("AutoSize Hide")
+    g.GetPos(, , &gw, &gh)
+    if (gh > maxH) {
+        try g.Destroy()
+        catch {
+        }
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        g.BackColor := "1E1E2E"
+        g.MarginX := 36
+        g.MarginY := 32
+        g.SetFont("s24 cFFFFFF", "Segoe UI")
+        bodyH := maxH - 64
+        if (bodyH < 80)
+            bodyH := 80
+        g.Add("Text", "w" . maxW . " h" . bodyH . " Center Wrap", text)
+        g.OnEvent("Close", Excel_CellPreview_Close)
+        g.OnEvent("Escape", Excel_CellPreview_Close)
+        g.Show("AutoSize Hide")
+        g.GetPos(, , &gw, &gh)
+    }
+
+    guiX := Round(ml + (monW - gw) / 2)
+    guiY := Round(mt + (monH - gh) / 2)
+    if (guiX < ml)
+        guiX := ml
+    if (guiY < mt)
+        guiY := mt
+    if (guiX + gw > mr)
+        guiX := mr - gw
+    if (guiY + gh > mb)
+        guiY := mb - gh
+
+    borderWidth := 4
+    borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    borderGui.BackColor := "3D3D5C"
+    borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth)
+    . " w" . (gw + 2 * borderWidth) . " h" . (gh + 2 * borderWidth))
+    g_ExcelCellPreviewBorderGui := borderGui
+
+    g.Show("x" . guiX . " y" . guiY)
+    WinSetTransparent(245, g)
+    g_ExcelCellPreviewGui := g
+    try WinActivate("ahk_id " g.Hwnd)
+    catch {
+    }
+}
+
++r:: Excel_CellPreview_Toggle()
+
+#HotIf Excel_CellPreview_IsOpen()
+Escape:: Excel_CellPreview_Close()
++r:: Excel_CellPreview_Close()
+#HotIf
