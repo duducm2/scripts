@@ -1048,11 +1048,11 @@ cheatSheets["Miro"] := "
     [Ctrl + Shift + L] > Copy board link
 )"
 
-; --- Tasks (localhost dashboard, Chrome title Tasks) ----------------------
+; --- Tasks (localhost :8766; Chrome title "Tasks" or "Tasks · …") ----------
 cheatSheets["Tasks"] := "
 (
     Tasks
-    Overlay Win+Alt+Shift+A.
+    Overlay Win+Alt+Shift+A. Tab title always starts with Tasks (e.g. Tasks · Habits).
     
     === Function keys & misc ===
     ⬆️ [Up] Previous item

@@ -175,6 +175,7 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Settle Up"
     if InStr(chromeTitle, "Miro")
         key := "Miro"
+    ; Tasks (:8766) — document.title is always "Tasks" or "Tasks · …" (never bare Habits/Work/Personal).
     if (chromeTitle = "Tasks" || InStr(chromeTitle, "Tasks") = 1)
         key := "Tasks"
     if (chromeTitle = "Memory Palace" || InStr(chromeTitle, "Memory Palace") = 1)
@@ -195,6 +196,17 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Google Maps"
     if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
         key := "Google"
+    ; Belt-and-suspenders: :8766 / :8767 when title matching missed (e.g. stale bare Habits/Work/Personal).
+    if (key = "") {
+        try {
+            url := Mobills_GetActiveBrowserUrl(300)
+            if (InStr(url, ":8766") || InStr(url, "localhost:8766") || InStr(url, "127.0.0.1:8766"))
+                key := "Tasks"
+            else if (InStr(url, ":8767") || InStr(url, "localhost:8767") || InStr(url, "127.0.0.1:8767"))
+                key := "Memory Palace"
+        } catch {
+        }
+    }
     return key
 }
 

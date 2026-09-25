@@ -1952,6 +1952,8 @@
         }
 
         function syncDocumentTitle() {
+          // Always keep a "Tasks" prefix so Shift Keys cheat sheet matching
+          // (PickChromeAppSheetKey) stays reliable under Work/Personal/Habits focus.
           if (state.projectFocusId) {
             const p = (state.data?.projects || []).find(
               (x) => x.id === state.projectFocusId,
@@ -1959,7 +1961,8 @@
             document.title = p ? `Tasks · ${p.title}` : "Tasks";
             return;
           }
-          document.title = focusViewLabel(state.sectionFocus) || "Tasks";
+          const view = focusViewLabel(state.sectionFocus);
+          document.title = view ? `Tasks · ${view}` : "Tasks";
         }
 
         // Container titles only when all three views are visible; solo focus uses the tab title.
