@@ -170,6 +170,7 @@ Handy_BeginSuppress(hwnd) {
 }
 
 ; End suppress: restore saved geometry + opacity. showNormal=true activates on-screen.
+; If saved pos is missing or itself off-screen (e.g. after script reload), place on a real monitor.
 Handy_EndSuppress(hwnd := 0, showNormal := false) {
     global g_HandySuppressActive, g_HandySuppressHadSavedPos
     global g_HandySuppressSavedX, g_HandySuppressSavedY
@@ -178,15 +179,22 @@ Handy_EndSuppress(hwnd := 0, showNormal := false) {
         hwnd := Handy_MainHwnd()
     if (hwnd) {
         Handy_ApplySuppressOpacity(hwnd)
+        restored := false
         if g_HandySuppressHadSavedPos {
-            try {
-                WinMove(g_HandySuppressSavedX, g_HandySuppressSavedY,
-                    g_HandySuppressSavedW, g_HandySuppressSavedH, "ahk_id " hwnd)
-            } catch {
+            sx := g_HandySuppressSavedX
+            sy := g_HandySuppressSavedY
+            if !Handy_IsOffscreenPos(sx, sy) {
+                try {
+                    WinMove(sx, sy, g_HandySuppressSavedW, g_HandySuppressSavedH, "ahk_id " hwnd)
+                    restored := true
+                } catch {
+                }
             }
         }
         Handy_ClearSuppressOpacity(hwnd)
         if (showNormal) {
+            if !restored
+                Handy_PlaceOnScreen(hwnd)
             try WinShow("ahk_id " hwnd)
             catch {
             }
@@ -194,6 +202,77 @@ Handy_EndSuppress(hwnd := 0, showNormal := false) {
     }
     g_HandySuppressActive := false
     g_HandySuppressHadSavedPos := false
+}
+
+; True when screen coords are far outside any normal desktop (suppress / start_hidden park).
+Handy_IsOffscreenPos(x, y) {
+    return (x <= -10000 || y <= -10000)
+}
+
+Handy_IsParkedOffscreen(hwnd) {
+    if !hwnd
+        return false
+    try {
+        WinGetPos(&x, &y, &w, &h, "ahk_id " hwnd)
+        return Handy_IsOffscreenPos(x, y)
+    } catch {
+        return false
+    }
+}
+
+; Center a usable-size Handy window on the monitor under the mouse (fallback: primary).
+Handy_PlaceOnScreen(hwnd) {
+    if !hwnd
+        return false
+    w := HANDY_SUPPRESS_OFFSCREEN_W
+    h := HANDY_SUPPRESS_OFFSCREEN_H
+    try {
+        WinGetPos(, , &cw, &ch, "ahk_id " hwnd)
+        if (cw >= HANDY_SUPPRESS_MIN_W && ch >= HANDY_SUPPRESS_MIN_H) {
+            w := cw
+            h := ch
+        }
+    } catch {
+    }
+    mon := 1
+    try {
+        CoordMode "Mouse", "Screen"
+        MouseGetPos &mx, &my
+        loop MonitorGetCount() {
+            MonitorGetWorkArea(A_Index, &l, &t, &r, &b)
+            if (mx >= l && mx < r && my >= t && my < b) {
+                mon := A_Index
+                break
+            }
+        }
+    } catch {
+        mon := 1
+    }
+    try {
+        MonitorGetWorkArea(mon, &ml, &mt, &mr, &mb)
+    } catch {
+        return false
+    }
+    mw := mr - ml
+    mh := mb - mt
+    if (w > mw - 40)
+        w := mw - 40
+    if (h > mh - 40)
+        h := mh - 40
+    x := ml + (mw - w) // 2
+    y := mt + (mh - h) // 2
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = -1 || mm = 1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    try WinMove(x, y, w, h, "ahk_id " hwnd)
+    catch {
+        return false
+    }
+    Handy_ClearSuppressOpacity(hwnd)
+    return true
 }
 
 ; Ensure Handy exists for background automation: launch if needed, suppress, wait UI.
@@ -355,7 +434,7 @@ Handy_DebugLog(hypothesisId, location, message, data := "") {
             }
         }
         line := '{"sessionId":"e946b7","hypothesisId":"' hypothesisId '","location":"' location '","message":"' .
-            StrReplace(StrReplace(message, "\", "\\"), '"', '\"') . '","data":' dataJson ',"timestamp":' ts ',"runId":"pre-fix"}`n'
+            StrReplace(StrReplace(message, "\", "\\"), '"', '\"') . '","data":' dataJson ',"timestamp":' ts ',"runId":"post-fix"}`n'
         FileAppend(line, path)
     } catch {
     }
@@ -434,14 +513,18 @@ Handy_ActivateOrLaunch() {
         Handy_DebugLog("D", "Handy_ActivateOrLaunch:existing", "found hwnd", {
             hwnd: matchingHwnd, suppress: g_HandySuppressActive })
         ; #endregion
-        if (g_HandySuppressActive)
+        parked := Handy_IsParkedOffscreen(matchingHwnd)
+        if (g_HandySuppressActive || parked)
             Handy_EndSuppress(matchingHwnd, true)
+        else {
+            Handy_ClearSuppressOpacity(matchingHwnd)
+        }
         ; #region agent log
         ; Also detect physical off-screen even if suppress flag cleared (e.g. after reload).
         try {
             WinGetPos(&ex, &ey, &ew, &eh, "ahk_id " matchingHwnd)
             Handy_DebugLog("E", "Handy_ActivateOrLaunch:preActivate", "geometry before activate", {
-                x: ex, y: ey, w: ew, h: eh, suppress: g_HandySuppressActive })
+                x: ex, y: ey, w: ew, h: eh, suppress: g_HandySuppressActive, parked: parked })
         } catch {
         }
         ; #endregion
