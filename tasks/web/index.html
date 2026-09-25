@@ -1758,14 +1758,8 @@
           const t = String(project?.icon_tint ?? "")
             .trim()
             .toLowerCase();
-          if (t === "1" || t === "true" || t === "yes") return true;
-          if (t === "0" || t === "false" || t === "no") return false;
-          // Legacy rows: SVG silhouettes are tintable; raster/3D stay native.
-          const ref = String(project?.icon_ref || "")
-            .trim()
-            .toLowerCase()
-            .replace(/\\/g, "/");
-          return ref.endsWith(".svg");
+          // Flat tint only when explicitly enabled — never auto-white from SVG.
+          return t === "1" || t === "true" || t === "yes";
         }
 
         function projectIconHtml(project) {
@@ -4522,7 +4516,7 @@
           };
           modal(`<div class="modal"><h3>Project icon — ${esc(p.title)}</h3>
       <div class="modal-body">
-      <p class="sub">Search Wikimedia Commons (PNG/SVG preferred). 3D / full-color icons keep original look; flat tint is for silhouettes.</p>
+      <p class="sub">Search Wikimedia Commons (PNG/SVG preferred). Icons keep original colors; turn on Flat color only if you want a single-color silhouette.</p>
       <div class="icon-modal-toolbar">
         <input id="mIconQ" type="search" placeholder="Search icons…" value="${esc(p.title || "")}"/>
         <button class="btn" data-m="search-icon">Search</button>

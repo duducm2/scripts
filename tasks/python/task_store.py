@@ -569,14 +569,12 @@ class TaskStore:
 
     @staticmethod
     def _icon_tint_for_ext(ext: str) -> str:
-        """SVG silhouettes support flat tint; raster/3D keep native colors."""
-        return "1" if (ext or "").lower() == ".svg" else "0"
+        """Never auto-flatten; user opts into flat tint via the Icon modal."""
+        return "0"
 
     @staticmethod
     def _icon_tint_from_ref(icon_ref: str) -> str:
-        ref = (icon_ref or "").strip().lower().replace("\\", "/")
-        if ref.endswith(".svg"):
-            return "1"
+        """Legacy migration default: keep original colors (no auto white tint)."""
         return "0"
 
     def set_project_icon(self, project_id: str, image_bytes: bytes, ext: str) -> dict:
