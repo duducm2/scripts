@@ -11,6 +11,8 @@
 
 ### 🟧 [Ab] Abyssinian cat
 
+![Abyssinian cat](../web/assets/beast-thumbs/abyssinian_cat.png)
+
 **Concept**
 💡 Package ideas with a Symbol, Slogan, Surprise, Idea, and Story.
 
@@ -24,6 +26,8 @@ _No keywords yet_
 A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a five-part harmony that magically weaves luxurious silk suits out of thin air for its floating kittens. Doc Brown cheers at the booming song, listening as the rich, melodic notes dress the naked ideas in perfectly tailored, unforgettable clothing.
 
 ### 🟧 [Ac] acorn
+
+![acorn](../web/assets/beast-thumbs/acorn.png)
 
 **Concept**
 💡 End with a definitive salute or summary, never a weak thank you.
@@ -58,6 +62,8 @@ _No gallery images._
 
 ### 🟧 [W] wombat
 
+![wombat](../web/assets/beast-thumbs/wombat.png)
+
 **Concept**
 💡 Success relies on acquired knowledge and practice over talent.
 
@@ -71,6 +77,8 @@ _No keywords yet_
 A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving microscopic formulas into a steel beam with its heavy claws. Sherlock Holmes runs his bare hands over the deep, jagged scratches, feeling the physical weight of knowledge and practice overwhelming the tiny speck of talent etched at the end.
 
 ### 🟧 [X] Xena, warrior woman
+
+![Xena, warrior woman](../web/assets/beast-thumbs/xena_warrior_woman.png)
 
 **Concept**
 💡 Talks must open with an empowerment promise for the audience.
@@ -86,6 +94,8 @@ Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic batt
 
 ### 🟧 [Y] yak
 
+![yak](../web/assets/beast-thumbs/yak.png)
+
 **Concept**
 💡 Cycle through main points three times to bypass natural fog.
 
@@ -100,6 +110,8 @@ A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence tha
 
 ### 🟧 [Z] Zeus
 
+![Zeus](../web/assets/beast-thumbs/zeus.png)
+
 **Concept**
 💡 Provide structural landmarks and ask questions to re-engage.
 
@@ -113,6 +125,8 @@ _No keywords yet_
 Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell intensely of burning ozone to mark specific landing zones on the pavement. Sherlock Holmes sniffs the sharp, electrical punctuation in the air, using the distinct scent as a landmark to safely step back onto the scorched pathway.
 
 ### 🟧 [Aa] aardvark
+
+![aardvark](../web/assets/beast-thumbs/aardvark.png)
 
 **Concept**
 💡 Eliminate heavy text on slides because reading annoys listeners.
@@ -147,6 +161,8 @@ _No gallery images._
 
 ### 🟧 [R] rat
 
+![rat](../web/assets/beast-thumbs/rat.png)
+
 **Concept**
 💡 Achieving bedrock clarity requires stripping away unnecessary details.
 
@@ -160,6 +176,8 @@ _No keywords yet_
 A microscopic rat sits on the iron gate in the ForegroundLeft, furiously erasing a massive, chaotic bull painting with its tail. Ada Lovelace cranks a brass gear, and the rat rips away thick layers of canvas until only a shockingly sharp, glowing neon outline of a bull remains in the air.
 
 ### 🟧 [S] skull
+
+![skull](../web/assets/beast-thumbs/skull.png)
 
 **Concept**
 💡 Consciously move evocative words from your deep passive lexicon to your surface automatic retrieval.
@@ -175,6 +193,8 @@ A colossal, floating bone skull hovers by the MidgroundRight lamp post, vomiting
 
 ### 🟧 [T] toucan
 
+![toucan](../web/assets/beast-thumbs/toucan.png)
+
 **Concept**
 💡 Anchor abstract ideas in lived sensory memory by populating speech with Time, Audio, Kinesthetic, Eyes, and Smell.
 
@@ -189,6 +209,8 @@ A giant toucan crashes into the BackgroundCenter facade, regurgitating a ticking
 
 ### 🟧 [U] unicorn
 
+![unicorn](../web/assets/beast-thumbs/unicorn.png)
+
 **Concept**
 💡 True comfort is built before speaking by aligning your body, mind, and spirit.
 
@@ -202,6 +224,8 @@ _No keywords yet_
 An ethereal unicorn balances on the Aerial roof, exhaling a perfect, glowing box-breathing square to calm its shivering body. Ada Lovelace peers through the box, seeing the unicorn's mind physically laser-focused on a cheering crowd while its spirit radiates a blinding, honest light that burns away the roof tiles.
 
 ### 🟧 [V] vulture
+
+![vulture](../web/assets/beast-thumbs/vulture.png)
 
 **Concept**
 💡 Cognitive sharpness is governed by biological inputs; tracking diet and sleep dictates mental clarity.
@@ -236,6 +260,8 @@ Test
 
 ### 🟧 [M] marmoset
 
+![marmoset](../web/assets/beast-thumbs/marmoset.png)
+
 **Concept**
 💡 Clear speaking requires clear thinking.
 
@@ -249,6 +275,8 @@ _No keywords yet_
 A colossal marmoset balances on a street lamp, scrubbing its glowing transparent brain with a giant wire brush. Alan Turing feeds it a complex math puzzle, and the beast screams out perfectly articulated, crystal-clear answers that shatter the nearby windows.
 
 ### 🟧 [N] Neanderthal
+
+![Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
 
 **Concept**
 💡 Clarity equals bad output multiplied by frequency.
@@ -264,6 +292,8 @@ A brutish Neanderthal stands near the front left gate, relentlessly smashing a b
 
 ### 🟧 [O] owl
 
+![owl](../web/assets/beast-thumbs/owl.png)
+
 **Concept**
 💡 Texture is creatively bending words into striking phrases.
 
@@ -278,6 +308,8 @@ A skyscraper-sized owl perches on a midground brick wall, aggressively chewing t
 
 ### 🟧 [P] panther
 
+![panther](../web/assets/beast-thumbs/panther.png)
+
 **Concept**
 💡 Use personal experiences to color in your speech outlines.
 
@@ -291,6 +323,8 @@ _No keywords yet_
 A sleek panther paces at the far end of the street, bleeding vibrant, dripping neon paint from its paws. As it walks, it fills in a giant hollow chalk outline on the road with the vivid, wet colors of its own life experiences.
 
 ### 🟧 [Q] rat
+
+![rat](../web/assets/beast-thumbs/quetzalcoatl.png)
 
 **Concept**
 💡 The vocal ego represents your elite, top 2% self.
@@ -325,6 +359,8 @@ _No gallery images._
 
 ### 🟧 [D] dragon
 
+![dragon](../web/assets/beast-thumbs/dragon.png)
+
 **Concept**
 💡 Define the business agenda for your own area.
 
@@ -338,6 +374,8 @@ _No keywords yet_
 A colossal dragon lands heavily on the gate post, and Goku desperately grabs its scaled tail. The beast breathes a massive, glowing business agenda made of bright neon fire into the sky, forcing everyone to clearly see the defined direction.
 
 ### 🟧 [E] eagle
+
+![eagle](../web/assets/beast-thumbs/eagle.png)
 
 **Concept**
 💡 Create value according to the general interest of Bosch.
@@ -353,6 +391,8 @@ An impossibly heavy eagle crashes onto a parked car, crushing its steel roof lik
 
 ### 🟧 [F] frog
 
+![frog](../web/assets/beast-thumbs/frog.png)
+
 **Concept**
 💡 Foster a collaborative and learning organization while driving digital business.
 
@@ -367,6 +407,8 @@ A skyscraper-sized frog squats at the far end of the street, croaking with a dea
 
 ### 🟧 [G] goat
 
+![goat](../web/assets/beast-thumbs/goat.png)
+
 **Concept**
 💡 Create an environment where people feel comfortable expressing their opinions.
 
@@ -380,6 +422,8 @@ _No keywords yet_
 A floating goat balances perfectly on top of a street lamp, emitting a highly concentrated, comforting scent of warm cinnamon. Goku breathes in the trusting aroma and shouts his deepest secrets to the goat, feeling completely safe to express opinions in the sweet-smelling air.
 
 ### 🟧 [H] Hydra
+
+![Hydra](../web/assets/beast-thumbs/hydra.png)
 
 **Concept**
 💡 Encourage others to take responsibility and achieve exceptional results.
@@ -414,6 +458,8 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
+![Arachne](../web/assets/beast-thumbs/arachne.png)
+
 **Concept**
 💡 Ethos is the credibility and authority of the speaker.
 
@@ -428,6 +474,8 @@ Arachne (a woman with the lower body of a spider) crawls down onto the street. S
 
 ### 🟧 [B] bird of paradise
 
+![bird of paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
+
 **Concept**
 💡 Pathos is the emotional appeal used to engage the audience.
 
@@ -441,6 +489,8 @@ _No keywords yet_
 A bright bird of paradise flutters down to perch on Arachne's badge and starts crying with giant, sad eyes. It looks so pathetic and cute that the entire crowd starts weeping with it. The bird actively uses these strong, sad feelings to steal everyone's attention and engage the audience completely.
 
 ### 🟧 [C] cat
+
+![cat](../web/assets/beast-thumbs/cat.png)
 
 **Concept**
 💡 Logos is the logical structure and the evidence supporting the argument.

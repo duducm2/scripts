@@ -14,6 +14,7 @@ from schemas import (
     iter_keyword_pairs,
     keyword_display_terms,
 )
+from beast_thumb_base import beast_thumb_md_image, short_label
 
 
 def md_escape(text: str) -> str:
@@ -108,6 +109,24 @@ def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str
         f"### 🟧 {beast_label}",
         "",
     ]
+    # Thumb from first atom's peg/name when available
+    peg = ""
+    name = ""
+    if atoms:
+        peg = (atoms[0].get("peg_code") or "").strip()
+        name = short_label(atoms[0].get("beast_name") or "")
+    if not name and beast_label and beast_label != "—":
+        # Fallback: strip "[P] " prefix from cluster key
+        raw = beast_label
+        if raw.startswith("[") and "]" in raw:
+            name = raw[raw.index("]") + 1 :].strip()
+            peg = peg or raw[1 : raw.index("]")].strip()
+        else:
+            name = raw
+    img = beast_thumb_md_image(name or beast_label, code=peg or None, from_dir="practice")
+    if img:
+        lines.append(img)
+        lines.append("")
     for i, atom in enumerate(atoms):
         if i > 0:
             lines.append("---")

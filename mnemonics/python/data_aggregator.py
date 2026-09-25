@@ -147,6 +147,9 @@ def snapshot(
                             "quote": a.get("quote", ""),
                             "story": a.get("story", a.get("narrative", "")),
                             "beast": f"[{b.get('peg_code', '')}] {b.get('beast_name', '')}".strip(),
+                            "beast_id": b.get("id", ""),
+                            "peg_code": b.get("peg_code", ""),
+                            "beast_name": b.get("beast_name", ""),
                             "sort_order": a.get("sort_order", ""),
                         }
                     )

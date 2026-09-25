@@ -11,6 +11,8 @@
 
 ### 🟧 [N] Neanderthal
 
+![Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
+
 🟦 **Z1 · Z1 Head | Cognitive Shuffling**
 
 **Concept**
@@ -58,6 +60,8 @@ _No keywords yet_
 The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland, sugary calm.
 
 ### 🟧 [O] owl
+
+![owl](../web/assets/beast-thumbs/owl.png)
 
 🟦 **Z1 · Z1 Head | Spelling Trick**
 
@@ -126,6 +130,8 @@ _No gallery images._
 
 ### 🟧 [J] jester
 
+![jester](../web/assets/beast-thumbs/jester.png)
+
 **Concept**
 💡 Behavioral activation works because taking physical action forcefully shifts brain chemistry before motivation ever appears.
 
@@ -139,6 +145,8 @@ _No keywords yet_
 A colossal medieval jester refuses to wait for hope; it aggressively bites Goku's arm and drags him across the rough pavement to force him into motion. The sheer friction of the dragging sparks a violent, tangible chemical explosion of energy in the air before Goku even realizes what is happening.
 
 ### 🟧 [K] kitten
+
+![kitten](../web/assets/beast-thumbs/kitten.png)
 
 **Concept**
 💡 The first five minutes involve gentle physical rotations of the neck, shoulders, and wrists to release an immediate energy boost.
@@ -154,6 +162,8 @@ A majestic kitten violently twists its neck, shoulders, and wrists exactly ten t
 
 ### 🟧 [L] lion
 
+![lion](../web/assets/beast-thumbs/lion.png)
+
 **Concept**
 💡 The second block emotionally warms the brain by placing a hand on the chest and deeply visualizing a simple pleasant experience.
 
@@ -167,6 +177,8 @@ _No keywords yet_
 A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against his heart. The impact instantly projects a holographic, hyper-realistic breakfast floating in the air, radiating a comforting, burning warmth that physically melts the icy frost covering the street.
 
 ### 🟧 [M] marmoset
+
+![marmoset](../web/assets/beast-thumbs/marmoset.png)
 
 **Concept**
 💡 The final five minutes require a small, practical action focused on personal sensory meaning rather than societal productivity.
@@ -200,6 +212,8 @@ _No gallery images._
 #### Knowledge Atoms
 
 ### 🟧 [H] Hydra
+
+![Hydra](../web/assets/beast-thumbs/hydra.png)
 
 🟦 **Z1 · Z1 Head | BP Definition**
 
@@ -248,6 +262,8 @@ _No keywords yet_
 Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries, popping them loudly as it screams the exact definition: "The force exerted by circulating blood against the inner walls of blood vessels, primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)." Simultaneously, its front claws splash a puddle of boiling blood, scorching the bright red numbers into the concrete as it hisses: "For a healthy, resting adult, a normal reading is strictly less than 120/80 mmHg (read as "120 over 80")." The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools, spewing acrid smoke as the beast groans: "The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom."
 
 ### 🟧 [I] imp
+
+![imp](../web/assets/beast-thumbs/imp.png)
 
 🟦 **Z1 · Z1 Head | HR Definition**
 
@@ -300,6 +316,8 @@ _No gallery images._
 
 ### 🟧 [F] frog
 
+![frog](../web/assets/beast-thumbs/frog.png)
+
 **Concept**
 💡 Asking questions before reading primes the brain to filter for relevant information.
 
@@ -313,6 +331,8 @@ _No keywords yet_
 —
 
 ### 🟧 [G] goat
+
+![goat](../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 Highlighting everything defeats the purpose of highlighting.
@@ -347,6 +367,8 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
+![Arachne](../web/assets/beast-thumbs/arachne.png)
+
 **Concept**
 💡 The habit of pronouncing words in your head slows down reading.
 
@@ -360,6 +382,8 @@ _No keywords yet_
 —
 
 ### 🟧 [B] bird of paradise
+
+![bird of paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 Eyes backtracking or back skipping wastes time and ruins focus.
@@ -375,6 +399,8 @@ _No keywords yet_
 
 ### 🟧 [C] cat
 
+![cat](../web/assets/beast-thumbs/cat.png)
+
 **Concept**
 💡 Familiar words don't need to be pronounced internally to be understood.
 
@@ -389,6 +415,8 @@ _No keywords yet_
 
 ### 🟧 [D] dragon
 
+![dragon](../web/assets/beast-thumbs/dragon.png)
+
 **Concept**
 💡 Using a visual guide prevents regression and focuses attention.
 
@@ -402,6 +430,8 @@ _No keywords yet_
 —
 
 ### 🟧 [E] eagle
+
+![eagle](../web/assets/beast-thumbs/eagle.png)
 
 **Concept**
 💡 Capturing multiple words per fixation expands reading speed.

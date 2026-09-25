@@ -165,3 +165,49 @@ def unique_canonical_targets() -> list[dict]:
             "source": data["by_code"][letter].get("source") or "Lynne Kelly",
         }
     return sorted(seen.values(), key=lambda x: x["slug"])
+
+
+THUMBS_DIR = ROOT / "web" / "assets" / "beast-thumbs"
+
+
+def thumb_png_path(canonical: str) -> Path:
+    return THUMBS_DIR / f"{canonical}.png"
+
+
+def beast_thumb_md_src(
+    name: str,
+    code: str | None = None,
+    source: str | None = None,
+    *,
+    from_dir: str = "practice",
+) -> str | None:
+    """Relative markdown image src for a beast, or None if PNG missing.
+
+    from_dir:
+      - \"practice\" → file under output/practice/*.md
+      - \"output\" → file under output/*.md (e.g. Quick Recall.md)
+    """
+    s = canonical_slug(name, code=code, source=source)
+    if not thumb_png_path(s).is_file():
+        return None
+    if from_dir == "practice":
+        return f"../web/assets/beast-thumbs/{s}.png"
+    if from_dir == "output":
+        return f"web/assets/beast-thumbs/{s}.png"
+    raise ValueError(f"unknown from_dir: {from_dir!r}")
+
+
+def beast_thumb_md_image(
+    name: str,
+    code: str | None = None,
+    source: str | None = None,
+    *,
+    from_dir: str = "practice",
+    alt: str | None = None,
+) -> str | None:
+    """Markdown image syntax, or None if no thumb file."""
+    src = beast_thumb_md_src(name, code=code, source=source, from_dir=from_dir)
+    if not src:
+        return None
+    label = short_label(name) or (alt or "beast")
+    return f"![{label}]({src})"

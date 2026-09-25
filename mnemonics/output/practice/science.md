@@ -11,6 +11,8 @@
 
 ### 🟧 [By] Byron
 
+![Byron](../web/assets/beast-thumbs/byron.png)
+
 **Concept**
 💡 [I translate <kbd><strong><u>multidimensional</u></strong></kbd> data] [into visual and <kbd><strong><u>geometric</u></strong></kbd> forms] [to leverage human <kbd><strong><u>cognitive</u></strong></kbd> processing] [for pattern recognition and <kbd><strong><u>anomaly</u></strong></kbd> detection]
 
@@ -48,6 +50,8 @@ _No gallery images._
 
 ### 🟧 [Bu] [butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Quote: "Does SSL increase trust?" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: "Does SSL increase trust?"
 
+![butterfly](../web/assets/beast-thumbs/butterfly.png)
+
 **Concept**
 —
 
@@ -61,6 +65,8 @@ _No keywords yet_
 —
 
 ### 🟧 [Bv] [Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.
+
+![Bone vulture](../web/assets/beast-thumbs/vulture.png)
 
 **Concept**
 —
@@ -76,6 +82,8 @@ _No keywords yet_
 
 ### 🟧 [Bw] [Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.
 
+![Bone wombat](../web/assets/beast-thumbs/wombat.png)
+
 **Concept**
 —
 
@@ -89,6 +97,8 @@ _No keywords yet_
 —
 
 ### 🟧 [Bx] [Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.
+
+![Bone Xena, warrior woman](../web/assets/beast-thumbs/xena_warrior_woman.png)
 
 **Concept**
 💡 https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intelligence-is-starving-for-1d91fb5bf59f
@@ -123,6 +133,8 @@ _No gallery images._
 
 ### 🟧 [Bq] Bone Quetzalcoatl
 
+![Bone Quetzalcoatl](../web/assets/beast-thumbs/quetzalcoatl.png)
+
 **Concept**
 💡 A research question is the core target your study attempts to answer, and it must have a singular focus without cramming multiple variables together.
 
@@ -136,6 +148,8 @@ _No keywords yet_
 The Bone Quetzalcoatl phases directly through the solid brick wall, defying physics. Its skeletal head bites the exact center of a giant glowing dartboard, hissing the first quote as sparks fly visibly into its empty eye sockets. Simultaneously, its massive feathered forelimbs violently smash three magnifying glasses together into a single laser beam, spewing the second quote as bone dust physically grinds the glass into one sharp point. Batman watches the impossibly large skeletal snake rewrite the rules of reality.
 
 ### 🟧 [Br] brontosaurus
+
+![brontosaurus](../web/assets/beast-thumbs/brontosaurus.png)
 
 **Concept**
 💡 A research aim outlines a broad goal, while a research question takes that aim and narrows it down to a tighter focus.
@@ -151,6 +165,8 @@ A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. It
 
 ### 🟧 [Bs] Bone skull
 
+![Bone skull](../web/assets/beast-thumbs/skull.png)
+
 **Concept**
 💡 A question must be practical and possible to answer with available methods.
 
@@ -164,6 +180,8 @@ _No keywords yet_
 A floating Bone skull hovers over the distant crosswalk, trying to bite a tantalizing, glowing diamond floating in the air. Its bony jaw physically phases right through the gem because it is completely impossible to catch. Frustrated by the impossible task, the skull squawks the exact quote into the night air while Batman tries to grab the gem himself.
 
 ### 🟧 [Bt] Bone toucan
+
+![Bone toucan](../web/assets/beast-thumbs/toucan.png)
 
 **Concept**
 💡 Your question must stem from a clear gap in existing literature so you do not repeat old work.
@@ -198,6 +216,8 @@ _No gallery images._
 
 ### 🟧 [Bn] Bone Neanderthal
 
+![Bone Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
+
 **Concept**
 💡 Participatory Action Research shifts power from traditional extraction by empowering marginalized groups to co-create research that translates into tangible tools for social change.
 
@@ -212,6 +232,8 @@ A colossal Bone Neanderthal stomps onto the street next to a brick gate, towerin
 
 ### 🟧 [Bo] bower-bird
 
+![bower-bird](../web/assets/beast-thumbs/bower_bird.png)
+
 **Concept**
 💡 Participatory Action Research is an iterative loop of planning, acting, observing, and reflecting.
 
@@ -225,6 +247,8 @@ _No keywords yet_
 A giant bower-bird weaves a nest out of four colored arrows that glow like neon tubes on a lamp post. Darth Vader watches as the bird flies in a perfect, never-ending spiral, leaving a trail of fire in the air. With every blazing loop it completes, the bird perfectly squawks the quote.
 
 ### 🟧 [Bp] Bone panther
+
+![Bone panther](../web/assets/beast-thumbs/panther.png)
 
 **Concept**
 💡 People experiencing a problem are uniquely qualified to investigate it, guiding the inquiry themselves.
@@ -259,6 +283,8 @@ _No gallery images._
 
 ### 🟧 [Bk] Bone kitten
 
+![Bone kitten](../web/assets/beast-thumbs/kitten.png)
+
 **Concept**
 💡 Open coding breaks raw qualitative data into small meaningful pieces and gives them concept labels.
 
@@ -273,6 +299,8 @@ A tiny Bone kitten scratches a giant transcript projected on a wall until the pa
 
 ### 🟧 [Bl] bloodhound
 
+![bloodhound](../web/assets/beast-thumbs/bloodhound.png)
+
 **Concept**
 💡 Axial coding reconnects open codes into broader categories and shows how they relate.
 
@@ -286,6 +314,8 @@ _No keywords yet_
 A colossal bloodhound bites loose concept tags and pulls them into a spinning wheel fixed to a street gate. Charles Darwin taps the on-screen diagram as the bloodhound barks the exact words: "Axial coding reconnects the concepts created during open coding by organizing them around broader categories and identifying relationships between them." The tags snap together with loud magnetic clicks, and the wheel smells like hot metal and wet dog.
 
 ### 🟧 [Bm] Bone marmoset
+
+![Bone marmoset](../web/assets/beast-thumbs/marmoset.png)
 
 **Concept**
 💡 Selective coding chooses one core category and connects the main categories around it to build a theory.
@@ -320,6 +350,8 @@ _No gallery images._
 
 ### 🟧 [Bf] Bone frog
 
+![Bone frog](../web/assets/beast-thumbs/frog.png)
+
 **Concept**
 💡 The theory side can fit into one beast: people make meaning through lived experience, shared labels, and context.
 
@@ -333,6 +365,8 @@ _No keywords yet_
 The Bone frog carries the theory pack through the same Bosch UX street. Ada Lovelace stands near a test table and watches the frog act like a living theory map. The frog shows that people do not just �see� reality. They live through situations, label what things mean, and read each sign through its context. The floating windows show lived experience. The sticky labels show shared social meaning. The small note under its paw shows that the same thing can mean something different depending on where it appears.
 
 ### 🟧 [Bg] Bone goat
+
+![Bone goat](../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 IPA means understanding how one person makes sense of a personal experience. IPA pronunciation: Interpretative Phenomenological Analysis /?n't??rpr?t?t?v f??n??m?'n??l?d??k?l ?'n�l?s?s/.
@@ -348,6 +382,8 @@ The Bone goat stands beside a Bosch UX interview table. The goat is not counting
 
 ### 🟧 [Bh] Bone Hydra
 
+![Bone Hydra](../web/assets/beast-thumbs/hydra.png)
+
 **Concept**
 💡 For Bosch UX research, IPA starts with open questions about human experience.
 
@@ -362,6 +398,8 @@ The Bone Hydra looms above a Bosch e-commerce prototype on the street. It does n
 
 ### 🟧 [Bi] bison
 
+![bison](../web/assets/beast-thumbs/bison.png)
+
 **Concept**
 💡 IPA analysis is slow and close: read the transcript again and again, mark what is said, notice how it is said, and ask what it may mean.
 
@@ -375,6 +413,8 @@ _No keywords yet_
 The bison stands heavy and slow beside a Bosch research board. A thick transcript blanket covers its back, and the bison reads it line by line, then reads it again. It places notes in the margins to catch what the user says about trust. It listens for words, tone, and metaphors. It also looks under the surface, asking what the participant�s words may mean for their deeper sense of safety, control, and doubt.
 
 ### 🟧 [Bj] Bone jester
+
+![Bone jester](../web/assets/beast-thumbs/jester.png)
 
 **Concept**
 💡 IPA turns each case into themes first, compares cases later, and keeps the researcher�s own role visible.
@@ -409,6 +449,8 @@ _No gallery images._
 
 ### 🟧 [Bb] Bone Bear
 
+![Bone Bear](../web/assets/beast-thumbs/bird_of_paradise.png)
+
 **Concept**
 💡 Reasoning uses what you already know to build explanations and guess what happens next.[cite: 1]
 
@@ -422,6 +464,8 @@ _No keywords yet_
 A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] Sherlock Holmes[cite: 7] hands the bear facts he already knows, and the bear uses them to build a clear path upward to explain a mystery.[cite: 1]
 
 ### 🟧 [Bc] Bone Cat
+
+![Bone Cat](../web/assets/beast-thumbs/cat.png)
 
 **Concept**
 💡 Deductive thinking works from the top down, where true starting facts guarantee a true final answer.[cite: 1]
@@ -437,6 +481,8 @@ A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a 
 
 ### 🟧 [Bd] Bone Dog
 
+![Bone Dog](../web/assets/beast-thumbs/dragon.png)
+
 **Concept**
 💡 Inductive thinking works from specific details up to a big rule to prove an idea with real-world clues.[cite: 1]
 
@@ -450,6 +496,8 @@ _No keywords yet_
 A Bone Dog[cite: 8] ignores the stairs and leaps upward into the air.[cite: 1] It carries a few specific drops of coffee from the floor high into the sky to form a large, general cloud.[cite: 1] While floating, the Bone Dog[cite: 8] holds a clipboard in its paws and gathers real coffee cups from the ground to prove its guess that the coffee is tasty.[cite: 1]
 
 ### 🟧 [Be] bee
+
+![bee](../web/assets/beast-thumbs/bee.png)
 
 **Concept**
 💡 Abductive thinking makes the best possible guess based on obvious but incomplete clues.[cite: 1]
@@ -484,6 +532,8 @@ _No gallery images._
 
 ### 🟧 [Aw] awassi sheep
 
+![awassi sheep](../web/assets/beast-thumbs/awassi_sheep.png)
+
 **Concept**
 💡 The 1990 update shifted away from natural discovery to strict rules, using an axial coding paradigm to map causes and effects between broken categories.
 
@@ -497,6 +547,8 @@ _No keywords yet_
 An awassi sheep steps into the library wearing rigid metal frames to enforce strict structural rules. It holds a carved stone wheel in its hooves, using it to force broken pieces of a plant into highly specific slots, carefully mapping the exact causes and effects between each broken fragment. It bleats loudly at the axolotl floating nearby.
 
 ### 🟧 [Ax] axolotl
+
+![axolotl](../web/assets/beast-thumbs/axolotl.png)
 
 **Concept**
 💡 Constructivist theory says the researcher is not a neutral robot; their own background directly shapes the final theory.
@@ -512,6 +564,8 @@ A pink axolotl swims in a floating water bubble, actively wrapping its slippery 
 
 ### 🟧 [Ay] aye-aye
 
+![aye-aye](../web/assets/beast-thumbs/aye_aye.png)
+
 **Concept**
 💡 Constructivists use action words ending in "ing" so the analysis focuses on dynamic processes over time.
 
@@ -526,6 +580,8 @@ A wide-eyed aye-aye wearing safety goggles sits at a typewriter. It angrily rips
 
 ### 🟧 [Az] Aztec
 
+![Aztec](../web/assets/beast-thumbs/aztec.png)
+
 **Concept**
 💡 Memos are continuous, informal notes written throughout the project that tie raw data to high-level ideas.
 
@@ -539,6 +595,8 @@ _No keywords yet_
 An Aztec warrior decorated with bright feathers ignores the crumpled paper and walks right across the aye-aye's typewriter keys. He carries small, messy sticky notes in his teeth. He stretches sticky strings across the room, pasting the informal notes between the bare bones of the library's skeletons. These notes act as the vital tissue that holds the entire project together.
 
 ### 🟧 [Ba] bat
+
+![bat](../web/assets/beast-thumbs/bat.png)
 
 **Concept**
 💡 Abduction is a complex reasoning loop where you guess a temporary explanation, then collect data to test it.
@@ -573,6 +631,8 @@ _No gallery images._
 
 ### 🟧 [As] asp
 
+![asp](../web/assets/beast-thumbs/asp.png)
+
 **Concept**
 💡 Data collection and analysis happen at the same time to build theory until new inputs stop changing the final ideas.[cite: 1]
 
@@ -586,6 +646,8 @@ _No keywords yet_
 A slippery asp[cite: 3] slithers between a classic detective in a deerstalker hat[cite: 5] and a glowing brain, linking raw clues directly to thoughts as they arrive. The snake holds a perfect, polished diamond in its tail, refusing to let the auroch[cite: 3] polish it further because the gem is already perfectly refined.
 
 ### 🟧 [At] atlas
+
+![atlas](../web/assets/beast-thumbs/atlas.png)
 
 **Concept**
 💡 You build theory step by step through the constant comparison of facts and concepts, creating early ideas that serve only as flexible guides.[cite: 1]
@@ -601,6 +663,8 @@ A giant stone atlas[cite: 3] drops his globe and watches the asp[cite: 3]. A spi
 
 ### 🟧 [Au] auroch
 
+![auroch](../web/assets/beast-thumbs/auroch.png)
+
 **Concept**
 💡 You stop collecting information when your concept is saturated and full, not when you reach a specific headcount.[cite: 1]
 
@@ -614,6 +678,8 @@ _No keywords yet_
 A massive, horned auroch[cite: 3] ignores the diamond and instead tries to squeeze rain from a dark cloud into a sponge held by the atlas[cite: 3]. Instead of counting the drops, the beast just watches until the sponge is totally full and cannot absorb any more, showing that capacity, not a simple count, is the true goal.
 
 ### 🟧 [Av] avocet
+
+![avocet](../web/assets/beast-thumbs/avocet.png)
 
 **Concept**
 💡 Absolutely any material or observation you find counts as valid data for your study.[cite: 1]
@@ -648,6 +714,8 @@ _No gallery images._
 
 ### 🟧 [Ao] aoudad
 
+![aoudad](../web/assets/beast-thumbs/aoudad.png)
+
 **Concept**
 💡 Taxonomies are hierarchical structures of boxes used for classifying items and individuals.
 
@@ -661,6 +729,8 @@ _No keywords yet_
 Neo from the Matrix watches an aoudad jump wildly across a huge wall of wooden boxes. The aoudad organizes people and items, tossing them into one or more of these specific boxes to classify them, completely ignoring the armadillo chewing nearby.
 
 ### 🟧 [Ap] ape
+
+![ape](../web/assets/beast-thumbs/ape.png)
 
 **Concept**
 💡 An ontology is a conceptual web that helps computers interpret data.
@@ -676,6 +746,8 @@ A large ape hangs upside down from the aoudad's boxes and reaches for Neo's comp
 
 ### 🟧 [Aq] aquatic leech
 
+![aquatic leech](../web/assets/beast-thumbs/aquatic_leech.png)
+
 **Concept**
 💡 While a taxonomy is just a skeleton, an ontology adds all the detailed connections between members.
 
@@ -689,6 +761,8 @@ _No keywords yet_
 An aquatic leech slithers along a bare bone skeleton sitting on the desk. It leaves a thick web of glowing red strings behind that attach to the ape's web, fleshing out the connections between all the isolated joints and joining them into a complete system.
 
 ### 🟧 [Ar] armadillo
+
+![armadillo](../web/assets/beast-thumbs/armadillo.png)
 
 **Concept**
 💡 Semantics focuses on the actual meaning of data rather than just its syntax or physical shape.
@@ -723,6 +797,8 @@ _No gallery images._
 
 ### 🟧 [Aj] [Ajax]
 
+![Ajax](../web/assets/beast-thumbs/ajax.png)
+
 **Concept**
 💡 The philosophical difference is that frequentists see probability as a fixed long-run physical frequency, while Bayesians see it as a degree of belief that updates.
 
@@ -736,6 +812,8 @@ _No keywords yet_
 —
 
 ### 🟧 [Ak] [Akita (dog breed)]
+
+![Akita (dog breed)](../web/assets/beast-thumbs/akita_dog_breed.png)
 
 **Concept**
 💡 A p-value is the chance of getting data this extreme assuming the null hypothesis is true, not the probability that the coin is fair.
@@ -751,6 +829,8 @@ _No keywords yet_
 
 ### 🟧 [Al] [alligator]
 
+![alligator](../web/assets/beast-thumbs/alligator.png)
+
 **Concept**
 💡 In a frequentist confidence interval, the true parameter is a fixed constant; if you repeat the experiment, 95% of the generated intervals will catch that fixed truth.
 
@@ -765,6 +845,8 @@ _No keywords yet_
 
 ### 🟧 [Am] [amulet]
 
+![amulet](../web/assets/beast-thumbs/amulet.png)
+
 **Concept**
 💡 Bayes' theorem updates your prior beliefs by multiplying them by the likelihood of the new data.
 
@@ -778,6 +860,8 @@ _No keywords yet_
 —
 
 ### 🟧 [An] [angel]
+
+![angel](../web/assets/beast-thumbs/angel.png)
 
 **Concept**
 💡 A Bayesian credible interval allows you to state the actual probability that the true parameter lies within a specific range.
@@ -812,6 +896,8 @@ _No gallery images._
 
 ### 🟧 [Ae] aerialist
 
+![aerialist](../web/assets/beast-thumbs/aerialist.png)
+
 **Concept**
 💡 Bayesian updating is the process of revising your beliefs when you receive new information.
 
@@ -825,6 +911,8 @@ _No keywords yet_
 An Aerialist hangs upside down in a grand courtroom. She acts as the judge, declaring that all beliefs are temporary and must be changed when new facts emerge. She points her gavel at an Afghan hound who is waiting to present a case.
 
 ### 🟧 [Af] Afghan hound
+
+![Afghan hound](../web/assets/beast-thumbs/afghan_hound.png)
 
 **Concept**
 💡 Before receiving new information, you start with an unconditional probability, like rolling a fair die.
@@ -840,6 +928,8 @@ The tall Afghan hound steps forward with a six-sided die in its mouth. He explai
 
 ### 🟧 [Ag] Agaric fungi
 
+![Agaric fungi](../web/assets/beast-thumbs/agaric_fungi.png)
+
 **Concept**
 💡 Conditional probability involves updating your chances based on new, restrictive information.
 
@@ -854,6 +944,8 @@ A cluster of giant red-and-white Agaric fungi grows right through the courtroom 
 
 ### 🟧 [Ah] Ah!�a sigh
 
+![Ah!�a sigh](../web/assets/beast-thumbs/ah_a_sigh.png)
+
 **Concept**
 💡 In the Monty Hall problem, revealing a goat provides crucial new information that changes the odds for the remaining unopened door.
 
@@ -867,6 +959,8 @@ _No keywords yet_
 A giant, floating word bubble that says "Ah!" lets out a loud, dramatic sigh over the courtroom. It acts as a game show host and reveals a goat behind a magical door. It sighs because the jury is confused. It explains that the other closed door now has better odds, even though it looks exactly the same as before.
 
 ### 🟧 [Ai] Airedale terrier
+
+![Airedale terrier](../web/assets/beast-thumbs/airedale_terrier.png)
 
 **Concept**
 💡 Bayesian updating is still effective even when the new information is imperfect, like a weather forecast.
@@ -901,6 +995,8 @@ _No gallery images._
 
 ### 🟧 [Ac] acorn
 
+![acorn](../web/assets/beast-thumbs/acorn.png)
+
 **Concept**
 💡 The null hypothesis is the default expectation of 'no difference' based on current knowledge, which we must assume is true until proven wrong.
 
@@ -914,6 +1010,8 @@ _No keywords yet_
 Albert Einstein walks into a large courtroom and places a giant acorn on the judge's desk. The acorn wears a white curly judge's wig and sits firmly in the center. Marie Curie steps forward holding a glass jar containing a calm bee and a wasp, demonstrating zero difference between them to the court. The acorn judge demands to be treated as the absolute truth, acting as a strict guard of the old rules until someone brings strong enough proof to defeat it.
 
 ### 🟧 [Ad] adder
+
+![adder](../web/assets/beast-thumbs/adder.png)
 
 **Concept**
 💡 The alternative hypothesis is a new idea that replaces the old belief when its weight of evidence tips the balance scale.
@@ -948,6 +1046,8 @@ _No gallery images._
 
 ### 🟧 [X] Xena, warrior woman
 
+![Xena, warrior woman](../web/assets/beast-thumbs/xena_warrior_woman.png)
+
 **Concept**
 💡 A paradigm is a necessary map that provides the rules for mature research.
 
@@ -961,6 +1061,8 @@ _No keywords yet_
 Xena, warrior woman, holds a giant, detailed map of a complex science lab. She shows the yak that this map contains glowing rules that actually build and structure their entire research game.
 
 ### 🟧 [Y] yak
+
+![yak](../web/assets/beast-thumbs/yak.png)
 
 **Concept**
 💡 An anomaly is a puzzle piece that refuses to fit the established rules.
@@ -976,6 +1078,8 @@ The heavy yak tries to use Xena's glowing rules to build a puzzle on the floor. 
 
 ### 🟧 [Z] Zeus
 
+![Zeus](../web/assets/beast-thumbs/zeus.png)
+
 **Concept**
 💡 When an anomaly becomes too big to ignore, a crisis begins.
 
@@ -990,6 +1094,8 @@ Zeus sees the yak struggling with the broken piece. He realizes this is not just
 
 ### 🟧 [Aa] aardvark
 
+![aardvark](../web/assets/beast-thumbs/aardvark.png)
+
 **Concept**
 💡 Extraordinary science is marked by competing ideas, random trials, and philosophical debate.
 
@@ -1003,6 +1109,8 @@ _No keywords yet_
 The aardvark ignores Xena's map entirely. Showing explicit discontent with the crisis, it starts trying anything, knocking over the yak's puzzle and debating philosophy with Zeus. It brings out dozens of competing, random ideas to fix the problem.
 
 ### 🟧 [Ab] Abyssinian cat
+
+![Abyssinian cat](../web/assets/beast-thumbs/abyssinian_cat.png)
 
 **Concept**
 💡 A paradigm shift changes your psychological perspective without changing the raw data.
@@ -1037,6 +1145,8 @@ _No gallery images._
 
 ### 🟧 [S] skull
 
+![skull](../web/assets/beast-thumbs/skull.png)
+
 **Concept**
 💡 Fake science looks at the past and twists any random fact to fit the idea.
 
@@ -1050,6 +1160,8 @@ _No keywords yet_
 A tall marks the start of this street. A floating skull holds a notebook of past events. It tries to force puzzle pieces that do not fit into its eye sockets, twisting every old piece of information to match what it wants to believe. It completely ignores the vulture nearby building a wall.
 
 ### 🟧 [T] toucan
+
+![toucan](../web/assets/beast-thumbs/toucan.png)
 
 **Concept**
 💡 Real science makes risky predictions about the future; ideas that cannot be tested or proven wrong have no scientific value.
@@ -1065,6 +1177,8 @@ A colorful toucan flies forward, completely ignoring the skull. Albert Einstein 
 
 ### 🟧 [U] unicorn
 
+![unicorn](../web/assets/beast-thumbs/unicorn.png)
+
 **Concept**
 💡 If you only look for facts that prove you are right, you will easily find them everywhere.
 
@@ -1079,6 +1193,8 @@ A glowing unicorn wears a red Santa Claus hat and circles above the toucan. The 
 
 ### 🟧 [V] vulture
 
+![vulture](../web/assets/beast-thumbs/vulture.png)
+
 **Concept**
 💡 Real science tries to prove ideas wrong, because a strong scientific idea must clearly forbid certain things from happening.
 
@@ -1092,6 +1208,8 @@ _No keywords yet_
 A vulture lands heavily in the middle of the road and builds a thick brick wall that stops the unicorn from running further. The bird spits out fake ideas and shakes its head firmly, using the wall to clearly block bad paths and look for flaws.
 
 ### 🟧 [W] wombat
+
+![wombat](../web/assets/beast-thumbs/wombat.png)
 
 **Concept**
 💡 We cannot be absolutely certain; we just believe what is most likely based on the facts we have.
@@ -1126,6 +1244,8 @@ _No gallery images._
 
 ### 🟧 [O] owl
 
+![owl](../web/assets/beast-thumbs/owl.png)
+
 **Concept**
 💡 Selection bias leaves out an important group, which hurts the quality of the results.
 
@@ -1139,6 +1259,8 @@ _No keywords yet_
 —
 
 ### 🟧 [P] panther
+
+![panther](../web/assets/beast-thumbs/panther.png)
 
 **Concept**
 💡 Analysis bias happens when you focus on certain facts just to get the answer you wanted from the start.
@@ -1154,6 +1276,8 @@ _No keywords yet_
 
 ### 🟧 [Q] Quetzalcoatl
 
+![Quetzalcoatl](../web/assets/beast-thumbs/quetzalcoatl.png)
+
 **Concept**
 💡 Confirmation bias is our natural habit of only looking for facts that support what we already believe.
 
@@ -1167,6 +1291,8 @@ _No keywords yet_
 —
 
 ### 🟧 [R] rat
+
+![rat](../web/assets/beast-thumbs/rat.png)
 
 **Concept**
 💡 Procedural bias happens when the way you collect data changes who answers or how they answer.
@@ -1201,6 +1327,8 @@ _No gallery images._
 
 ### 🟧 [L] Lion
 
+![Lion](../web/assets/beast-thumbs/lion.png)
+
 **Concept**
 💡 Total utility is calculated by summing the appeal of all the product's parts.
 
@@ -1215,6 +1343,8 @@ _No keywords yet_
 
 ### 🟧 [M] Marmoset
 
+![Marmoset](../web/assets/beast-thumbs/marmoset.png)
+
 **Concept**
 💡 Preference share is a statistical estimate of how likely a product is to be chosen over its competitors.
 
@@ -1228,6 +1358,8 @@ _No keywords yet_
 —
 
 ### 🟧 [N] Neanderthal
+
+![Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
 
 **Concept**
 💡 Preference share allows you to estimate potential demand for a new product launch.
@@ -1262,6 +1394,8 @@ _No gallery images._
 
 ### 🟧 [G] Goat
 
+![Goat](../web/assets/beast-thumbs/goat.png)
+
 **Concept**
 💡 Conjoint analysis is a powerful way to make product features better.
 
@@ -1275,6 +1409,8 @@ _No keywords yet_
 —
 
 ### 🟧 [H] Hydra
+
+![Hydra](../web/assets/beast-thumbs/hydra.png)
 
 **Concept**
 💡 The method forces choices, so it is often called trade-off analysis.
@@ -1290,6 +1426,8 @@ _No keywords yet_
 
 ### 🟧 [I] Imp
 
+![Imp](../web/assets/beast-thumbs/imp.png)
+
 **Concept**
 💡 Data is gathered by having people do an exercise called the choice task.
 
@@ -1304,6 +1442,8 @@ _No keywords yet_
 
 ### 🟧 [J] Jester
 
+![Jester](../web/assets/beast-thumbs/jester.png)
+
 **Concept**
 💡 The process uses a probabilistic methodology to find patterns in the choices.
 
@@ -1317,6 +1457,8 @@ _No keywords yet_
 —
 
 ### 🟧 [K] Kitten
+
+![Kitten](../web/assets/beast-thumbs/kitten.png)
 
 **Concept**
 💡 A part-worth utility score shows how a specific feature level affects the chance of selection.
@@ -1351,6 +1493,8 @@ _No gallery images._
 
 ### 🟧 [C] cat
 
+![cat](../web/assets/beast-thumbs/cat.png)
+
 **Concept**
 💡 Old pricing methods fail because they ask customers to value a product completely by itself.
 
@@ -1364,6 +1508,8 @@ _No keywords yet_
 Steve Jobs tries to sell a chocolate bar to a cat trapped inside an empty glass box. The cat just stares at the single item and ignores the dragon flying above. Steve realizes that locking the buyer in an empty room makes no sense for testing real value.
 
 ### 🟧 [D] dragon
+
+![dragon](../web/assets/beast-thumbs/dragon.png)
 
 **Concept**
 💡 The comparative method fixes this by first asking what competing item you would buy instead.
@@ -1379,6 +1525,8 @@ A giant dragon dives from the sky and shatters the cat's glass box with its claw
 
 ### 🟧 [E] eagle
 
+![eagle](../web/assets/beast-thumbs/eagle.png)
+
 **Concept**
 💡 To find the right price, this method asks what cost makes the customer perfectly equal in their choice between the two items.
 
@@ -1392,6 +1540,8 @@ _No keywords yet_
 A large eagle sits comfortably on the dragon's tail holding a small balancing scale. It places Steve Jobs' chocolate on one side and the dragon's rival candy on the other. It squawks loudly at the buyers, asking exactly what dollar amount would make them feel exactly as happy to buy either one.
 
 ### 🟧 [F] frog
+
+![frog](../web/assets/beast-thumbs/frog.png)
 
 **Concept**
 💡 This strategy separates people who actually want the product from people who want nothing, revealing the true value.
@@ -1426,6 +1576,8 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
+![Arachne](../web/assets/beast-thumbs/arachne.png)
+
 **Concept**
 💡 Descriptive evidence only tells what you saw in the sample. It does not say what the whole world does.
 
@@ -1439,6 +1591,8 @@ _No keywords yet_
 A spider-woman, Arachne, finishes a small web in front of a wooden sign. A woman in a short lab coat with dark hair in a low bun, like Marie Curie, hands her a cup with exactly three marbles. Arachne ties each marble to one knot, only the group she can touch. She nods toward a gaudy long-tailed bird on a bench, the bird of paradise, which is already lifting a much bigger map toward the sky.
 
 ### 🟧 [B] bird of paradise
+
+![bird of paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 Inferential evidence uses sample patterns to test ideas about a wider group, not only the people you tested.
