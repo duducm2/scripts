@@ -364,7 +364,7 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
             return false
         }
 
-        StandardLoadingBar_Update("⏳ Closing Handy...")
+        StandardLoadingBar_Update("⏳ Minimizing Handy...")
         Sleep 200
         StandardLoadingBar_Hide(0)
         barOwned := false
@@ -377,7 +377,8 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
     }
 }
 
-; End-to-end for Send dictation? [B]: toggle model (keep open) → re-transcribe → copy → close Handy.
+; End-to-end for Send dictation? [B]: toggle model (keep open) → re-transcribe → copy → minimize Handy.
+; Minimize (not WinClose): language switch keeps Handy warm via suppress, so closing is wrong.
 HandyRetranscribe_ToggleModelAndCopy() {
     targetSlot := Handy_GetDictationToggleTargetSlot()
 
@@ -395,7 +396,7 @@ HandyRetranscribe_ToggleModelAndCopy() {
     ok := HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd)
     if (ok) {
         try StandardLoadingBar_Hide(0)
-        try WinClose("ahk_id " . hwnd)
+        try WinMinimize("ahk_id " . hwnd)
     }
     return ok
 }
