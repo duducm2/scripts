@@ -1,0 +1,6325 @@
+{
+  "version": 1,
+  "total_count": 702,
+  "canonical_icon_count": 252,
+  "by_code": {
+    "A": {
+      "code": "A",
+      "name": "Arachne",
+      "source": "Lynne Kelly",
+      "order": 1,
+      "canonical_slug": "arachne",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png"
+    },
+    "B": {
+      "code": "B",
+      "name": "bird of paradise",
+      "source": "Lynne Kelly",
+      "order": 2,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "C": {
+      "code": "C",
+      "name": "cat",
+      "source": "Lynne Kelly",
+      "order": 3,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "D": {
+      "code": "D",
+      "name": "dragon",
+      "source": "Lynne Kelly",
+      "order": 4,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "E": {
+      "code": "E",
+      "name": "eagle",
+      "source": "Lynne Kelly",
+      "order": 5,
+      "canonical_slug": "eagle",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png"
+    },
+    "F": {
+      "code": "F",
+      "name": "frog",
+      "source": "Lynne Kelly",
+      "order": 6,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "G": {
+      "code": "G",
+      "name": "goat",
+      "source": "Lynne Kelly",
+      "order": 7,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "H": {
+      "code": "H",
+      "name": "Hydra",
+      "source": "Lynne Kelly",
+      "order": 8,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "I": {
+      "code": "I",
+      "name": "imp",
+      "source": "Lynne Kelly",
+      "order": 9,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "J": {
+      "code": "J",
+      "name": "jester",
+      "source": "Lynne Kelly",
+      "order": 10,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "K": {
+      "code": "K",
+      "name": "kitten",
+      "source": "Lynne Kelly",
+      "order": 11,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "L": {
+      "code": "L",
+      "name": "lion",
+      "source": "Lynne Kelly",
+      "order": 12,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "M": {
+      "code": "M",
+      "name": "marmoset",
+      "source": "Lynne Kelly",
+      "order": 13,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "N": {
+      "code": "N",
+      "name": "Neanderthal",
+      "source": "Lynne Kelly",
+      "order": 14,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "O": {
+      "code": "O",
+      "name": "owl",
+      "source": "Lynne Kelly",
+      "order": 15,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "P": {
+      "code": "P",
+      "name": "panther",
+      "source": "Lynne Kelly",
+      "order": 16,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Q": {
+      "code": "Q",
+      "name": "Quetzalcoatl",
+      "source": "Lynne Kelly",
+      "order": 17,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "R": {
+      "code": "R",
+      "name": "rat",
+      "source": "Lynne Kelly",
+      "order": 18,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "S": {
+      "code": "S",
+      "name": "skull",
+      "source": "Lynne Kelly",
+      "order": 19,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "T": {
+      "code": "T",
+      "name": "toucan",
+      "source": "Lynne Kelly",
+      "order": 20,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "U": {
+      "code": "U",
+      "name": "unicorn",
+      "source": "Lynne Kelly",
+      "order": 21,
+      "canonical_slug": "unicorn",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png"
+    },
+    "V": {
+      "code": "V",
+      "name": "vulture",
+      "source": "Lynne Kelly",
+      "order": 22,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "W": {
+      "code": "W",
+      "name": "wombat",
+      "source": "Lynne Kelly",
+      "order": 23,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "X": {
+      "code": "X",
+      "name": "Xena, warrior woman",
+      "source": "Lynne Kelly",
+      "order": 24,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Y": {
+      "code": "Y",
+      "name": "yak",
+      "source": "Lynne Kelly",
+      "order": 25,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Z": {
+      "code": "Z",
+      "name": "Zeus",
+      "source": "Lynne Kelly",
+      "order": 26,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Aa": {
+      "code": "Aa",
+      "name": "aardvark",
+      "source": "Lynne Kelly",
+      "order": 27,
+      "canonical_slug": "aardvark",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png"
+    },
+    "Ab": {
+      "code": "Ab",
+      "name": "Abyssinian cat",
+      "source": "Lynne Kelly",
+      "order": 28,
+      "canonical_slug": "abyssinian_cat",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png"
+    },
+    "Ac": {
+      "code": "Ac",
+      "name": "acorn",
+      "source": "Lynne Kelly",
+      "order": 29,
+      "canonical_slug": "acorn",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png"
+    },
+    "Ad": {
+      "code": "Ad",
+      "name": "adder",
+      "source": "Lynne Kelly",
+      "order": 30,
+      "canonical_slug": "adder",
+      "filename": "adder.png",
+      "url": "/assets/beast-thumbs/adder.png"
+    },
+    "Ae": {
+      "code": "Ae",
+      "name": "aerialist",
+      "source": "Lynne Kelly",
+      "order": 31,
+      "canonical_slug": "aerialist",
+      "filename": "aerialist.png",
+      "url": "/assets/beast-thumbs/aerialist.png"
+    },
+    "Af": {
+      "code": "Af",
+      "name": "Afghan hound",
+      "source": "Lynne Kelly",
+      "order": 32,
+      "canonical_slug": "afghan_hound",
+      "filename": "afghan_hound.png",
+      "url": "/assets/beast-thumbs/afghan_hound.png"
+    },
+    "Ag": {
+      "code": "Ag",
+      "name": "Agaric fungi",
+      "source": "Lynne Kelly",
+      "order": 33,
+      "canonical_slug": "agaric_fungi",
+      "filename": "agaric_fungi.png",
+      "url": "/assets/beast-thumbs/agaric_fungi.png"
+    },
+    "Ah": {
+      "code": "Ah",
+      "name": "Ah!—a sigh",
+      "source": "Lynne Kelly",
+      "order": 34,
+      "canonical_slug": "ah_a_sigh",
+      "filename": "ah_a_sigh.png",
+      "url": "/assets/beast-thumbs/ah_a_sigh.png"
+    },
+    "Ai": {
+      "code": "Ai",
+      "name": "Airedale terrier",
+      "source": "Lynne Kelly",
+      "order": 35,
+      "canonical_slug": "airedale_terrier",
+      "filename": "airedale_terrier.png",
+      "url": "/assets/beast-thumbs/airedale_terrier.png"
+    },
+    "Aj": {
+      "code": "Aj",
+      "name": "Ajax",
+      "source": "Lynne Kelly",
+      "order": 36,
+      "canonical_slug": "ajax",
+      "filename": "ajax.png",
+      "url": "/assets/beast-thumbs/ajax.png"
+    },
+    "Ak": {
+      "code": "Ak",
+      "name": "Akita (dog breed)",
+      "source": "Lynne Kelly",
+      "order": 37,
+      "canonical_slug": "akita_dog_breed",
+      "filename": "akita_dog_breed.png",
+      "url": "/assets/beast-thumbs/akita_dog_breed.png"
+    },
+    "Al": {
+      "code": "Al",
+      "name": "alligator",
+      "source": "Lynne Kelly",
+      "order": 38,
+      "canonical_slug": "alligator",
+      "filename": "alligator.png",
+      "url": "/assets/beast-thumbs/alligator.png"
+    },
+    "Am": {
+      "code": "Am",
+      "name": "amulet",
+      "source": "Lynne Kelly",
+      "order": 39,
+      "canonical_slug": "amulet",
+      "filename": "amulet.png",
+      "url": "/assets/beast-thumbs/amulet.png"
+    },
+    "An": {
+      "code": "An",
+      "name": "angel",
+      "source": "Lynne Kelly",
+      "order": 40,
+      "canonical_slug": "angel",
+      "filename": "angel.png",
+      "url": "/assets/beast-thumbs/angel.png"
+    },
+    "Ao": {
+      "code": "Ao",
+      "name": "aoudad",
+      "source": "Lynne Kelly",
+      "order": 41,
+      "canonical_slug": "aoudad",
+      "filename": "aoudad.png",
+      "url": "/assets/beast-thumbs/aoudad.png"
+    },
+    "Ap": {
+      "code": "Ap",
+      "name": "ape",
+      "source": "Lynne Kelly",
+      "order": 42,
+      "canonical_slug": "ape",
+      "filename": "ape.png",
+      "url": "/assets/beast-thumbs/ape.png"
+    },
+    "Aq": {
+      "code": "Aq",
+      "name": "aquatic leech",
+      "source": "Lynne Kelly",
+      "order": 43,
+      "canonical_slug": "aquatic_leech",
+      "filename": "aquatic_leech.png",
+      "url": "/assets/beast-thumbs/aquatic_leech.png"
+    },
+    "Ar": {
+      "code": "Ar",
+      "name": "armadillo",
+      "source": "Lynne Kelly",
+      "order": 44,
+      "canonical_slug": "armadillo",
+      "filename": "armadillo.png",
+      "url": "/assets/beast-thumbs/armadillo.png"
+    },
+    "As": {
+      "code": "As",
+      "name": "asp",
+      "source": "Lynne Kelly",
+      "order": 45,
+      "canonical_slug": "asp",
+      "filename": "asp.png",
+      "url": "/assets/beast-thumbs/asp.png"
+    },
+    "At": {
+      "code": "At",
+      "name": "atlas",
+      "source": "Lynne Kelly",
+      "order": 46,
+      "canonical_slug": "atlas",
+      "filename": "atlas.png",
+      "url": "/assets/beast-thumbs/atlas.png"
+    },
+    "Au": {
+      "code": "Au",
+      "name": "auroch",
+      "source": "Lynne Kelly",
+      "order": 47,
+      "canonical_slug": "auroch",
+      "filename": "auroch.png",
+      "url": "/assets/beast-thumbs/auroch.png"
+    },
+    "Av": {
+      "code": "Av",
+      "name": "avocet",
+      "source": "Lynne Kelly",
+      "order": 48,
+      "canonical_slug": "avocet",
+      "filename": "avocet.png",
+      "url": "/assets/beast-thumbs/avocet.png"
+    },
+    "Aw": {
+      "code": "Aw",
+      "name": "awassi sheep",
+      "source": "Lynne Kelly",
+      "order": 49,
+      "canonical_slug": "awassi_sheep",
+      "filename": "awassi_sheep.png",
+      "url": "/assets/beast-thumbs/awassi_sheep.png"
+    },
+    "Ax": {
+      "code": "Ax",
+      "name": "axolotl",
+      "source": "Lynne Kelly",
+      "order": 50,
+      "canonical_slug": "axolotl",
+      "filename": "axolotl.png",
+      "url": "/assets/beast-thumbs/axolotl.png"
+    },
+    "Ay": {
+      "code": "Ay",
+      "name": "aye-aye",
+      "source": "Lynne Kelly",
+      "order": 51,
+      "canonical_slug": "aye_aye",
+      "filename": "aye_aye.png",
+      "url": "/assets/beast-thumbs/aye_aye.png"
+    },
+    "Az": {
+      "code": "Az",
+      "name": "Aztec",
+      "source": "Lynne Kelly",
+      "order": 52,
+      "canonical_slug": "aztec",
+      "filename": "aztec.png",
+      "url": "/assets/beast-thumbs/aztec.png"
+    },
+    "Ba": {
+      "code": "Ba",
+      "name": "bat",
+      "source": "Lynne Kelly",
+      "order": 53,
+      "canonical_slug": "bat",
+      "filename": "bat.png",
+      "url": "/assets/beast-thumbs/bat.png"
+    },
+    "Bb": {
+      "code": "Bb",
+      "name": "Bone bird of paradise",
+      "source": "Custom",
+      "order": 54,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Bc": {
+      "code": "Bc",
+      "name": "Bone cat",
+      "source": "Custom",
+      "order": 55,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Bd": {
+      "code": "Bd",
+      "name": "Bone dragon",
+      "source": "Custom",
+      "order": 56,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Be": {
+      "code": "Be",
+      "name": "bee",
+      "source": "Lynne Kelly",
+      "order": 57,
+      "canonical_slug": "bee",
+      "filename": "bee.png",
+      "url": "/assets/beast-thumbs/bee.png"
+    },
+    "Bf": {
+      "code": "Bf",
+      "name": "Bone frog",
+      "source": "Custom",
+      "order": 58,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Bg": {
+      "code": "Bg",
+      "name": "Bone goat",
+      "source": "Custom",
+      "order": 59,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Bh": {
+      "code": "Bh",
+      "name": "Bone Hydra",
+      "source": "Custom",
+      "order": 60,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Bi": {
+      "code": "Bi",
+      "name": "bison",
+      "source": "Lynne Kelly",
+      "order": 61,
+      "canonical_slug": "bison",
+      "filename": "bison.png",
+      "url": "/assets/beast-thumbs/bison.png"
+    },
+    "Bj": {
+      "code": "Bj",
+      "name": "Bone jester",
+      "source": "Custom",
+      "order": 62,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Bk": {
+      "code": "Bk",
+      "name": "Bone kitten",
+      "source": "Custom",
+      "order": 63,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Bl": {
+      "code": "Bl",
+      "name": "bloodhound",
+      "source": "Lynne Kelly",
+      "order": 64,
+      "canonical_slug": "bloodhound",
+      "filename": "bloodhound.png",
+      "url": "/assets/beast-thumbs/bloodhound.png"
+    },
+    "Bm": {
+      "code": "Bm",
+      "name": "Bone marmoset",
+      "source": "Custom",
+      "order": 65,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Bn": {
+      "code": "Bn",
+      "name": "Bone Neanderthal",
+      "source": "Custom",
+      "order": 66,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Bo": {
+      "code": "Bo",
+      "name": "bower-bird",
+      "source": "Lynne Kelly",
+      "order": 67,
+      "canonical_slug": "bower_bird",
+      "filename": "bower_bird.png",
+      "url": "/assets/beast-thumbs/bower_bird.png"
+    },
+    "Bp": {
+      "code": "Bp",
+      "name": "Bone panther",
+      "source": "Custom",
+      "order": 68,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Bq": {
+      "code": "Bq",
+      "name": "Bone Quetzalcoatl",
+      "source": "Custom",
+      "order": 69,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Br": {
+      "code": "Br",
+      "name": "brontosaurus",
+      "source": "Lynne Kelly",
+      "order": 70,
+      "canonical_slug": "brontosaurus",
+      "filename": "brontosaurus.png",
+      "url": "/assets/beast-thumbs/brontosaurus.png"
+    },
+    "Bs": {
+      "code": "Bs",
+      "name": "Bone skull",
+      "source": "Custom",
+      "order": 71,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Bt": {
+      "code": "Bt",
+      "name": "Bone toucan",
+      "source": "Custom",
+      "order": 72,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Bu": {
+      "code": "Bu",
+      "name": "butterfly",
+      "source": "Lynne Kelly",
+      "order": 73,
+      "canonical_slug": "butterfly",
+      "filename": "butterfly.png",
+      "url": "/assets/beast-thumbs/butterfly.png"
+    },
+    "Bv": {
+      "code": "Bv",
+      "name": "Bone vulture",
+      "source": "Custom",
+      "order": 74,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Bw": {
+      "code": "Bw",
+      "name": "Bone wombat",
+      "source": "Custom",
+      "order": 75,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Bx": {
+      "code": "Bx",
+      "name": "Bone Xena, warrior woman",
+      "source": "Custom",
+      "order": 76,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "By": {
+      "code": "By",
+      "name": "Byron",
+      "source": "Lynne Kelly",
+      "order": 77,
+      "canonical_slug": "byron",
+      "filename": "byron.png",
+      "url": "/assets/beast-thumbs/byron.png"
+    },
+    "Bz": {
+      "code": "Bz",
+      "name": "Bone Zeus",
+      "source": "Custom",
+      "order": 78,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ca": {
+      "code": "Ca",
+      "name": "camel",
+      "source": "Lynne Kelly",
+      "order": 79,
+      "canonical_slug": "camel",
+      "filename": "camel.png",
+      "url": "/assets/beast-thumbs/camel.png"
+    },
+    "Cb": {
+      "code": "Cb",
+      "name": "Cold bird of paradise",
+      "source": "Custom",
+      "order": 80,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Cc": {
+      "code": "Cc",
+      "name": "Cold cat",
+      "source": "Custom",
+      "order": 81,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Cd": {
+      "code": "Cd",
+      "name": "Cold dragon",
+      "source": "Custom",
+      "order": 82,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ce": {
+      "code": "Ce",
+      "name": "cenotaur",
+      "source": "Lynne Kelly",
+      "order": 83,
+      "canonical_slug": "cenotaur",
+      "filename": "cenotaur.png",
+      "url": "/assets/beast-thumbs/cenotaur.png"
+    },
+    "Cf": {
+      "code": "Cf",
+      "name": "Cold frog",
+      "source": "Custom",
+      "order": 84,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Cg": {
+      "code": "Cg",
+      "name": "Cold goat",
+      "source": "Custom",
+      "order": 85,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Ch": {
+      "code": "Ch",
+      "name": "chipmunk",
+      "source": "Lynne Kelly",
+      "order": 86,
+      "canonical_slug": "chipmunk",
+      "filename": "chipmunk.png",
+      "url": "/assets/beast-thumbs/chipmunk.png"
+    },
+    "Ci": {
+      "code": "Ci",
+      "name": "cicada",
+      "source": "Lynne Kelly",
+      "order": 87,
+      "canonical_slug": "cicada",
+      "filename": "cicada.png",
+      "url": "/assets/beast-thumbs/cicada.png"
+    },
+    "Cj": {
+      "code": "Cj",
+      "name": "Cold jester",
+      "source": "Custom",
+      "order": 88,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Ck": {
+      "code": "Ck",
+      "name": "Cold kitten",
+      "source": "Custom",
+      "order": 89,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Cl": {
+      "code": "Cl",
+      "name": "clown",
+      "source": "Lynne Kelly",
+      "order": 90,
+      "canonical_slug": "clown",
+      "filename": "clown.png",
+      "url": "/assets/beast-thumbs/clown.png"
+    },
+    "Cm": {
+      "code": "Cm",
+      "name": "Cold marmoset",
+      "source": "Custom",
+      "order": 91,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Cn": {
+      "code": "Cn",
+      "name": "Cold Neanderthal",
+      "source": "Custom",
+      "order": 92,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Co": {
+      "code": "Co",
+      "name": "cow",
+      "source": "Lynne Kelly",
+      "order": 93,
+      "canonical_slug": "cow",
+      "filename": "cow.png",
+      "url": "/assets/beast-thumbs/cow.png"
+    },
+    "Cp": {
+      "code": "Cp",
+      "name": "Cold panther",
+      "source": "Custom",
+      "order": 94,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Cq": {
+      "code": "Cq",
+      "name": "Cold Quetzalcoatl",
+      "source": "Custom",
+      "order": 95,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Cr": {
+      "code": "Cr",
+      "name": "crab (hermit)",
+      "source": "Lynne Kelly",
+      "order": 96,
+      "canonical_slug": "crab_hermit",
+      "filename": "crab_hermit.png",
+      "url": "/assets/beast-thumbs/crab_hermit.png"
+    },
+    "Cs": {
+      "code": "Cs",
+      "name": "Cold skull",
+      "source": "Custom",
+      "order": 97,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Ct": {
+      "code": "Ct",
+      "name": "Cold toucan",
+      "source": "Custom",
+      "order": 98,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Cu": {
+      "code": "Cu",
+      "name": "cupid",
+      "source": "Lynne Kelly",
+      "order": 99,
+      "canonical_slug": "cupid",
+      "filename": "cupid.png",
+      "url": "/assets/beast-thumbs/cupid.png"
+    },
+    "Cv": {
+      "code": "Cv",
+      "name": "Cold vulture",
+      "source": "Custom",
+      "order": 100,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Cw": {
+      "code": "Cw",
+      "name": "Cold wombat",
+      "source": "Custom",
+      "order": 101,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Cx": {
+      "code": "Cx",
+      "name": "Cold Xena, warrior woman",
+      "source": "Custom",
+      "order": 102,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Cy": {
+      "code": "Cy",
+      "name": "cyborg",
+      "source": "Lynne Kelly",
+      "order": 103,
+      "canonical_slug": "cyborg",
+      "filename": "cyborg.png",
+      "url": "/assets/beast-thumbs/cyborg.png"
+    },
+    "Cz": {
+      "code": "Cz",
+      "name": "Cold Zeus",
+      "source": "Custom",
+      "order": 104,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Da": {
+      "code": "Da",
+      "name": "dalmatian",
+      "source": "Lynne Kelly",
+      "order": 105,
+      "canonical_slug": "dalmatian",
+      "filename": "dalmatian.png",
+      "url": "/assets/beast-thumbs/dalmatian.png"
+    },
+    "Db": {
+      "code": "Db",
+      "name": "Dark bird of paradise",
+      "source": "Custom",
+      "order": 106,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Dc": {
+      "code": "Dc",
+      "name": "Dark cat",
+      "source": "Custom",
+      "order": 107,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Dd": {
+      "code": "Dd",
+      "name": "Dark dragon",
+      "source": "Custom",
+      "order": 108,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "De": {
+      "code": "De",
+      "name": "devil",
+      "source": "Lynne Kelly",
+      "order": 109,
+      "canonical_slug": "devil",
+      "filename": "devil.png",
+      "url": "/assets/beast-thumbs/devil.png"
+    },
+    "Df": {
+      "code": "Df",
+      "name": "Dark frog",
+      "source": "Custom",
+      "order": 110,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Dg": {
+      "code": "Dg",
+      "name": "Dark goat",
+      "source": "Custom",
+      "order": 111,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Dh": {
+      "code": "Dh",
+      "name": "Dark Hydra",
+      "source": "Custom",
+      "order": 112,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Di": {
+      "code": "Di",
+      "name": "diamond python",
+      "source": "Lynne Kelly",
+      "order": 113,
+      "canonical_slug": "diamond_python",
+      "filename": "diamond_python.png",
+      "url": "/assets/beast-thumbs/diamond_python.png"
+    },
+    "Dj": {
+      "code": "Dj",
+      "name": "Dark jester",
+      "source": "Custom",
+      "order": 114,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Dk": {
+      "code": "Dk",
+      "name": "Dark kitten",
+      "source": "Custom",
+      "order": 115,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Dl": {
+      "code": "Dl",
+      "name": "Dark lion",
+      "source": "Custom",
+      "order": 116,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Dm": {
+      "code": "Dm",
+      "name": "Dark marmoset",
+      "source": "Custom",
+      "order": 117,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Dn": {
+      "code": "Dn",
+      "name": "Dark Neanderthal",
+      "source": "Custom",
+      "order": 118,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Do": {
+      "code": "Do",
+      "name": "dolphin",
+      "source": "Lynne Kelly",
+      "order": 119,
+      "canonical_slug": "dolphin",
+      "filename": "dolphin.png",
+      "url": "/assets/beast-thumbs/dolphin.png"
+    },
+    "Dp": {
+      "code": "Dp",
+      "name": "Dark panther",
+      "source": "Custom",
+      "order": 120,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Dq": {
+      "code": "Dq",
+      "name": "Dark Quetzalcoatl",
+      "source": "Custom",
+      "order": 121,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Dr": {
+      "code": "Dr",
+      "name": "dragonfly",
+      "source": "Lynne Kelly",
+      "order": 122,
+      "canonical_slug": "dragonfly",
+      "filename": "dragonfly.png",
+      "url": "/assets/beast-thumbs/dragonfly.png"
+    },
+    "Ds": {
+      "code": "Ds",
+      "name": "Dark skull",
+      "source": "Custom",
+      "order": 123,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Dt": {
+      "code": "Dt",
+      "name": "Dark toucan",
+      "source": "Custom",
+      "order": 124,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Du": {
+      "code": "Du",
+      "name": "duck",
+      "source": "Lynne Kelly",
+      "order": 125,
+      "canonical_slug": "duck",
+      "filename": "duck.png",
+      "url": "/assets/beast-thumbs/duck.png"
+    },
+    "Dv": {
+      "code": "Dv",
+      "name": "Dark vulture",
+      "source": "Custom",
+      "order": 126,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Dw": {
+      "code": "Dw",
+      "name": "dwarf",
+      "source": "Lynne Kelly",
+      "order": 127,
+      "canonical_slug": "dwarf",
+      "filename": "dwarf.png",
+      "url": "/assets/beast-thumbs/dwarf.png"
+    },
+    "Dx": {
+      "code": "Dx",
+      "name": "Dark Xena, warrior woman",
+      "source": "Custom",
+      "order": 128,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Dy": {
+      "code": "Dy",
+      "name": "dystopia",
+      "source": "Lynne Kelly",
+      "order": 129,
+      "canonical_slug": "dystopia",
+      "filename": "dystopia.png",
+      "url": "/assets/beast-thumbs/dystopia.png"
+    },
+    "Dz": {
+      "code": "Dz",
+      "name": "Dark Zeus",
+      "source": "Custom",
+      "order": 130,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ea": {
+      "code": "Ea",
+      "name": "earwig",
+      "source": "Lynne Kelly",
+      "order": 131,
+      "canonical_slug": "earwig",
+      "filename": "earwig.png",
+      "url": "/assets/beast-thumbs/earwig.png"
+    },
+    "Eb": {
+      "code": "Eb",
+      "name": "ebb and flow",
+      "source": "Lynne Kelly",
+      "order": 132,
+      "canonical_slug": "ebb_and_flow",
+      "filename": "ebb_and_flow.png",
+      "url": "/assets/beast-thumbs/ebb_and_flow.png"
+    },
+    "Ec": {
+      "code": "Ec",
+      "name": "echidna",
+      "source": "Lynne Kelly",
+      "order": 133,
+      "canonical_slug": "echidna",
+      "filename": "echidna.png",
+      "url": "/assets/beast-thumbs/echidna.png"
+    },
+    "Ed": {
+      "code": "Ed",
+      "name": "edelweiss",
+      "source": "Lynne Kelly",
+      "order": 134,
+      "canonical_slug": "edelweiss",
+      "filename": "edelweiss.png",
+      "url": "/assets/beast-thumbs/edelweiss.png"
+    },
+    "Ee": {
+      "code": "Ee",
+      "name": "eel",
+      "source": "Lynne Kelly",
+      "order": 135,
+      "canonical_slug": "eel",
+      "filename": "eel.png",
+      "url": "/assets/beast-thumbs/eel.png"
+    },
+    "Ef": {
+      "code": "Ef",
+      "name": "effigy",
+      "source": "Lynne Kelly",
+      "order": 136,
+      "canonical_slug": "effigy",
+      "filename": "effigy.png",
+      "url": "/assets/beast-thumbs/effigy.png"
+    },
+    "Eg": {
+      "code": "Eg",
+      "name": "egret",
+      "source": "Lynne Kelly",
+      "order": 137,
+      "canonical_slug": "egret",
+      "filename": "egret.png",
+      "url": "/assets/beast-thumbs/egret.png"
+    },
+    "Eh": {
+      "code": "Eh",
+      "name": "Ember Hydra",
+      "source": "Custom",
+      "order": 138,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Ei": {
+      "code": "Ei",
+      "name": "eider",
+      "source": "Lynne Kelly",
+      "order": 139,
+      "canonical_slug": "eider",
+      "filename": "eider.png",
+      "url": "/assets/beast-thumbs/eider.png"
+    },
+    "Ej": {
+      "code": "Ej",
+      "name": "Ember jester",
+      "source": "Custom",
+      "order": 140,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Ek": {
+      "code": "Ek",
+      "name": "Ember kitten",
+      "source": "Custom",
+      "order": 141,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "El": {
+      "code": "El",
+      "name": "elephant",
+      "source": "Lynne Kelly",
+      "order": 142,
+      "canonical_slug": "elephant",
+      "filename": "elephant.png",
+      "url": "/assets/beast-thumbs/elephant.png"
+    },
+    "Em": {
+      "code": "Em",
+      "name": "emu",
+      "source": "Lynne Kelly",
+      "order": 143,
+      "canonical_slug": "emu",
+      "filename": "emu.png",
+      "url": "/assets/beast-thumbs/emu.png"
+    },
+    "En": {
+      "code": "En",
+      "name": "engraving",
+      "source": "Lynne Kelly",
+      "order": 144,
+      "canonical_slug": "engraving",
+      "filename": "engraving.png",
+      "url": "/assets/beast-thumbs/engraving.png"
+    },
+    "Eo": {
+      "code": "Eo",
+      "name": "Ember owl",
+      "source": "Custom",
+      "order": 145,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "Ep": {
+      "code": "Ep",
+      "name": "Ember panther",
+      "source": "Custom",
+      "order": 146,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Eq": {
+      "code": "Eq",
+      "name": "Ember Quetzalcoatl",
+      "source": "Custom",
+      "order": 147,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Er": {
+      "code": "Er",
+      "name": "ermine",
+      "source": "Lynne Kelly",
+      "order": 148,
+      "canonical_slug": "ermine",
+      "filename": "ermine.png",
+      "url": "/assets/beast-thumbs/ermine.png"
+    },
+    "Es": {
+      "code": "Es",
+      "name": "eskimo",
+      "source": "Lynne Kelly",
+      "order": 149,
+      "canonical_slug": "eskimo",
+      "filename": "eskimo.png",
+      "url": "/assets/beast-thumbs/eskimo.png"
+    },
+    "Et": {
+      "code": "Et",
+      "name": "ethereal",
+      "source": "Lynne Kelly",
+      "order": 150,
+      "canonical_slug": "ethereal",
+      "filename": "ethereal.png",
+      "url": "/assets/beast-thumbs/ethereal.png"
+    },
+    "Eu": {
+      "code": "Eu",
+      "name": "eucalypt",
+      "source": "Lynne Kelly",
+      "order": 151,
+      "canonical_slug": "eucalypt",
+      "filename": "eucalypt.png",
+      "url": "/assets/beast-thumbs/eucalypt.png"
+    },
+    "Ev": {
+      "code": "Ev",
+      "name": "Eve",
+      "source": "Lynne Kelly",
+      "order": 152,
+      "canonical_slug": "eve",
+      "filename": "eve.png",
+      "url": "/assets/beast-thumbs/eve.png"
+    },
+    "Ew": {
+      "code": "Ew",
+      "name": "ewe",
+      "source": "Lynne Kelly",
+      "order": 153,
+      "canonical_slug": "ewe",
+      "filename": "ewe.png",
+      "url": "/assets/beast-thumbs/ewe.png"
+    },
+    "Ex": {
+      "code": "Ex",
+      "name": "Excalibur",
+      "source": "Lynne Kelly",
+      "order": 154,
+      "canonical_slug": "excalibur",
+      "filename": "excalibur.png",
+      "url": "/assets/beast-thumbs/excalibur.png"
+    },
+    "Ey": {
+      "code": "Ey",
+      "name": "eye",
+      "source": "Lynne Kelly",
+      "order": 155,
+      "canonical_slug": "eye",
+      "filename": "eye.png",
+      "url": "/assets/beast-thumbs/eye.png"
+    },
+    "Ez": {
+      "code": "Ez",
+      "name": "Ezekiel",
+      "source": "Lynne Kelly",
+      "order": 156,
+      "canonical_slug": "ezekiel",
+      "filename": "ezekiel.png",
+      "url": "/assets/beast-thumbs/ezekiel.png"
+    },
+    "Fa": {
+      "code": "Fa",
+      "name": "falcon",
+      "source": "Lynne Kelly",
+      "order": 157,
+      "canonical_slug": "falcon",
+      "filename": "falcon.png",
+      "url": "/assets/beast-thumbs/falcon.png"
+    },
+    "Fb": {
+      "code": "Fb",
+      "name": "Fire bird of paradise",
+      "source": "Custom",
+      "order": 158,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Fc": {
+      "code": "Fc",
+      "name": "Fire cat",
+      "source": "Custom",
+      "order": 159,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Fd": {
+      "code": "Fd",
+      "name": "Fire dragon",
+      "source": "Custom",
+      "order": 160,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Fe": {
+      "code": "Fe",
+      "name": "ferret",
+      "source": "Lynne Kelly",
+      "order": 161,
+      "canonical_slug": "ferret",
+      "filename": "ferret.png",
+      "url": "/assets/beast-thumbs/ferret.png"
+    },
+    "Ff": {
+      "code": "Ff",
+      "name": "Fire frog",
+      "source": "Custom",
+      "order": 162,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Fg": {
+      "code": "Fg",
+      "name": "Fire goat",
+      "source": "Custom",
+      "order": 163,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Fh": {
+      "code": "Fh",
+      "name": "Fire Hydra",
+      "source": "Custom",
+      "order": 164,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Fi": {
+      "code": "Fi",
+      "name": "fish",
+      "source": "Lynne Kelly",
+      "order": 165,
+      "canonical_slug": "fish",
+      "filename": "fish.png",
+      "url": "/assets/beast-thumbs/fish.png"
+    },
+    "Fj": {
+      "code": "Fj",
+      "name": "Fire jester",
+      "source": "Custom",
+      "order": 166,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Fk": {
+      "code": "Fk",
+      "name": "Fire kitten",
+      "source": "Custom",
+      "order": 167,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Fl": {
+      "code": "Fl",
+      "name": "flamingo",
+      "source": "Lynne Kelly",
+      "order": 168,
+      "canonical_slug": "flamingo",
+      "filename": "flamingo.png",
+      "url": "/assets/beast-thumbs/flamingo.png"
+    },
+    "Fm": {
+      "code": "Fm",
+      "name": "Fire marmoset",
+      "source": "Custom",
+      "order": 169,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Fn": {
+      "code": "Fn",
+      "name": "Fire Neanderthal",
+      "source": "Custom",
+      "order": 170,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Fo": {
+      "code": "Fo",
+      "name": "fox",
+      "source": "Lynne Kelly",
+      "order": 171,
+      "canonical_slug": "fox",
+      "filename": "fox.png",
+      "url": "/assets/beast-thumbs/fox.png"
+    },
+    "Fp": {
+      "code": "Fp",
+      "name": "Fire panther",
+      "source": "Custom",
+      "order": 172,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Fq": {
+      "code": "Fq",
+      "name": "Fire Quetzalcoatl",
+      "source": "Custom",
+      "order": 173,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Fr": {
+      "code": "Fr",
+      "name": "frogmouth",
+      "source": "Lynne Kelly",
+      "order": 174,
+      "canonical_slug": "frogmouth",
+      "filename": "frogmouth.png",
+      "url": "/assets/beast-thumbs/frogmouth.png"
+    },
+    "Fs": {
+      "code": "Fs",
+      "name": "Fire skull",
+      "source": "Custom",
+      "order": 175,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Ft": {
+      "code": "Ft",
+      "name": "Fire toucan",
+      "source": "Custom",
+      "order": 176,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Fu": {
+      "code": "Fu",
+      "name": "fuchsia",
+      "source": "Lynne Kelly",
+      "order": 177,
+      "canonical_slug": "fuchsia",
+      "filename": "fuchsia.png",
+      "url": "/assets/beast-thumbs/fuchsia.png"
+    },
+    "Fv": {
+      "code": "Fv",
+      "name": "Fire vulture",
+      "source": "Custom",
+      "order": 178,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Fw": {
+      "code": "Fw",
+      "name": "Fire wombat",
+      "source": "Custom",
+      "order": 179,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Fx": {
+      "code": "Fx",
+      "name": "Fire Xena, warrior woman",
+      "source": "Custom",
+      "order": 180,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Fy": {
+      "code": "Fy",
+      "name": "Fire yak",
+      "source": "Custom",
+      "order": 181,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Fz": {
+      "code": "Fz",
+      "name": "Fire Zeus",
+      "source": "Custom",
+      "order": 182,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ga": {
+      "code": "Ga",
+      "name": "gaggle",
+      "source": "Lynne Kelly",
+      "order": 183,
+      "canonical_slug": "gaggle",
+      "filename": "gaggle.png",
+      "url": "/assets/beast-thumbs/gaggle.png"
+    },
+    "Gb": {
+      "code": "Gb",
+      "name": "Granite bird of paradise",
+      "source": "Custom",
+      "order": 184,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Gc": {
+      "code": "Gc",
+      "name": "Granite cat",
+      "source": "Custom",
+      "order": 185,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Gd": {
+      "code": "Gd",
+      "name": "Granite dragon",
+      "source": "Custom",
+      "order": 186,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ge": {
+      "code": "Ge",
+      "name": "genie",
+      "source": "Lynne Kelly",
+      "order": 187,
+      "canonical_slug": "genie",
+      "filename": "genie.png",
+      "url": "/assets/beast-thumbs/genie.png"
+    },
+    "Gf": {
+      "code": "Gf",
+      "name": "Granite frog",
+      "source": "Custom",
+      "order": 188,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Gg": {
+      "code": "Gg",
+      "name": "Granite goat",
+      "source": "Custom",
+      "order": 189,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Gh": {
+      "code": "Gh",
+      "name": "gharial",
+      "source": "Lynne Kelly",
+      "order": 190,
+      "canonical_slug": "gharial",
+      "filename": "gharial.png",
+      "url": "/assets/beast-thumbs/gharial.png"
+    },
+    "Gi": {
+      "code": "Gi",
+      "name": "giraffe",
+      "source": "Lynne Kelly",
+      "order": 191,
+      "canonical_slug": "giraffe",
+      "filename": "giraffe.png",
+      "url": "/assets/beast-thumbs/giraffe.png"
+    },
+    "Gj": {
+      "code": "Gj",
+      "name": "Granite jester",
+      "source": "Custom",
+      "order": 192,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Gk": {
+      "code": "Gk",
+      "name": "Granite kitten",
+      "source": "Custom",
+      "order": 193,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Gl": {
+      "code": "Gl",
+      "name": "glider",
+      "source": "Lynne Kelly",
+      "order": 194,
+      "canonical_slug": "glider",
+      "filename": "glider.png",
+      "url": "/assets/beast-thumbs/glider.png"
+    },
+    "Gm": {
+      "code": "Gm",
+      "name": "Granite marmoset",
+      "source": "Custom",
+      "order": 195,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Gn": {
+      "code": "Gn",
+      "name": "gnome",
+      "source": "Lynne Kelly",
+      "order": 196,
+      "canonical_slug": "gnome",
+      "filename": "gnome.png",
+      "url": "/assets/beast-thumbs/gnome.png"
+    },
+    "Go": {
+      "code": "Go",
+      "name": "gorilla",
+      "source": "Lynne Kelly",
+      "order": 197,
+      "canonical_slug": "gorilla",
+      "filename": "gorilla.png",
+      "url": "/assets/beast-thumbs/gorilla.png"
+    },
+    "Gp": {
+      "code": "Gp",
+      "name": "Granite panther",
+      "source": "Custom",
+      "order": 198,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Gq": {
+      "code": "Gq",
+      "name": "Granite Quetzalcoatl",
+      "source": "Custom",
+      "order": 199,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Gr": {
+      "code": "Gr",
+      "name": "griffin",
+      "source": "Lynne Kelly",
+      "order": 200,
+      "canonical_slug": "griffin",
+      "filename": "griffin.png",
+      "url": "/assets/beast-thumbs/griffin.png"
+    },
+    "Gs": {
+      "code": "Gs",
+      "name": "Granite skull",
+      "source": "Custom",
+      "order": 201,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Gt": {
+      "code": "Gt",
+      "name": "Granite toucan",
+      "source": "Custom",
+      "order": 202,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Gu": {
+      "code": "Gu",
+      "name": "gull",
+      "source": "Lynne Kelly",
+      "order": 203,
+      "canonical_slug": "gull",
+      "filename": "gull.png",
+      "url": "/assets/beast-thumbs/gull.png"
+    },
+    "Gv": {
+      "code": "Gv",
+      "name": "Granite vulture",
+      "source": "Custom",
+      "order": 204,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Gw": {
+      "code": "Gw",
+      "name": "gwardar",
+      "source": "Lynne Kelly",
+      "order": 205,
+      "canonical_slug": "gwardar",
+      "filename": "gwardar.png",
+      "url": "/assets/beast-thumbs/gwardar.png"
+    },
+    "Gx": {
+      "code": "Gx",
+      "name": "Granite Xena, warrior woman",
+      "source": "Custom",
+      "order": 206,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Gy": {
+      "code": "Gy",
+      "name": "gypsy",
+      "source": "Lynne Kelly",
+      "order": 207,
+      "canonical_slug": "gypsy",
+      "filename": "gypsy.png",
+      "url": "/assets/beast-thumbs/gypsy.png"
+    },
+    "Gz": {
+      "code": "Gz",
+      "name": "Granite Zeus",
+      "source": "Custom",
+      "order": 208,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ha": {
+      "code": "Ha",
+      "name": "hare",
+      "source": "Lynne Kelly",
+      "order": 209,
+      "canonical_slug": "hare",
+      "filename": "hare.png",
+      "url": "/assets/beast-thumbs/hare.png"
+    },
+    "Hb": {
+      "code": "Hb",
+      "name": "Heavy bird of paradise",
+      "source": "Custom",
+      "order": 210,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Hc": {
+      "code": "Hc",
+      "name": "Heavy cat",
+      "source": "Custom",
+      "order": 211,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Hd": {
+      "code": "Hd",
+      "name": "Heavy dragon",
+      "source": "Custom",
+      "order": 212,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "He": {
+      "code": "He",
+      "name": "heron",
+      "source": "Lynne Kelly",
+      "order": 213,
+      "canonical_slug": "heron",
+      "filename": "heron.png",
+      "url": "/assets/beast-thumbs/heron.png"
+    },
+    "Hf": {
+      "code": "Hf",
+      "name": "Heavy frog",
+      "source": "Custom",
+      "order": 214,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Hg": {
+      "code": "Hg",
+      "name": "Heavy goat",
+      "source": "Custom",
+      "order": 215,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Hh": {
+      "code": "Hh",
+      "name": "Heavy Hydra",
+      "source": "Custom",
+      "order": 216,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Hi": {
+      "code": "Hi",
+      "name": "hippopotamus",
+      "source": "Lynne Kelly",
+      "order": 217,
+      "canonical_slug": "hippopotamus",
+      "filename": "hippopotamus.png",
+      "url": "/assets/beast-thumbs/hippopotamus.png"
+    },
+    "Hj": {
+      "code": "Hj",
+      "name": "Heavy jester",
+      "source": "Custom",
+      "order": 218,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Hk": {
+      "code": "Hk",
+      "name": "Heavy kitten",
+      "source": "Custom",
+      "order": 219,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Hl": {
+      "code": "Hl",
+      "name": "Heavy lion",
+      "source": "Custom",
+      "order": 220,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Hm": {
+      "code": "Hm",
+      "name": "Heavy marmoset",
+      "source": "Custom",
+      "order": 221,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Hn": {
+      "code": "Hn",
+      "name": "Heavy Neanderthal",
+      "source": "Custom",
+      "order": 222,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Ho": {
+      "code": "Ho",
+      "name": "horse",
+      "source": "Lynne Kelly",
+      "order": 223,
+      "canonical_slug": "horse",
+      "filename": "horse.png",
+      "url": "/assets/beast-thumbs/horse.png"
+    },
+    "Hp": {
+      "code": "Hp",
+      "name": "Heavy panther",
+      "source": "Custom",
+      "order": 224,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Hq": {
+      "code": "Hq",
+      "name": "Heavy Quetzalcoatl",
+      "source": "Custom",
+      "order": 225,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Hr": {
+      "code": "Hr",
+      "name": "Heavy rat",
+      "source": "Custom",
+      "order": 226,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Hs": {
+      "code": "Hs",
+      "name": "Heavy skull",
+      "source": "Custom",
+      "order": 227,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Ht": {
+      "code": "Ht",
+      "name": "Heavy toucan",
+      "source": "Custom",
+      "order": 228,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Hu": {
+      "code": "Hu",
+      "name": "hummingbird",
+      "source": "Lynne Kelly",
+      "order": 229,
+      "canonical_slug": "hummingbird",
+      "filename": "hummingbird.png",
+      "url": "/assets/beast-thumbs/hummingbird.png"
+    },
+    "Hv": {
+      "code": "Hv",
+      "name": "Heavy vulture",
+      "source": "Custom",
+      "order": 230,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Hw": {
+      "code": "Hw",
+      "name": "Heavy wombat",
+      "source": "Custom",
+      "order": 231,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Hx": {
+      "code": "Hx",
+      "name": "Heavy Xena, warrior woman",
+      "source": "Custom",
+      "order": 232,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Hy": {
+      "code": "Hy",
+      "name": "hyena",
+      "source": "Lynne Kelly",
+      "order": 233,
+      "canonical_slug": "hyena",
+      "filename": "hyena.png",
+      "url": "/assets/beast-thumbs/hyena.png"
+    },
+    "Hz": {
+      "code": "Hz",
+      "name": "Heavy Zeus",
+      "source": "Custom",
+      "order": 234,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ia": {
+      "code": "Ia",
+      "name": "iambic",
+      "source": "Lynne Kelly",
+      "order": 235,
+      "canonical_slug": "iambic",
+      "filename": "iambic.png",
+      "url": "/assets/beast-thumbs/iambic.png"
+    },
+    "Ib": {
+      "code": "Ib",
+      "name": "ibex",
+      "source": "Lynne Kelly",
+      "order": 236,
+      "canonical_slug": "ibex",
+      "filename": "ibex.png",
+      "url": "/assets/beast-thumbs/ibex.png"
+    },
+    "Ic": {
+      "code": "Ic",
+      "name": "Icarus",
+      "source": "Lynne Kelly",
+      "order": 237,
+      "canonical_slug": "icarus",
+      "filename": "icarus.png",
+      "url": "/assets/beast-thumbs/icarus.png"
+    },
+    "Id": {
+      "code": "Id",
+      "name": "identical twin",
+      "source": "Lynne Kelly",
+      "order": 238,
+      "canonical_slug": "identical_twin",
+      "filename": "identical_twin.png",
+      "url": "/assets/beast-thumbs/identical_twin.png"
+    },
+    "Ie": {
+      "code": "Ie",
+      "name": "Icy eagle",
+      "source": "Custom",
+      "order": 239,
+      "canonical_slug": "eagle",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png"
+    },
+    "If": {
+      "code": "If",
+      "name": "Icy frog",
+      "source": "Custom",
+      "order": 240,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Ig": {
+      "code": "Ig",
+      "name": "iguana",
+      "source": "Lynne Kelly",
+      "order": 241,
+      "canonical_slug": "iguana",
+      "filename": "iguana.png",
+      "url": "/assets/beast-thumbs/iguana.png"
+    },
+    "Ih": {
+      "code": "Ih",
+      "name": "Icy Hydra",
+      "source": "Custom",
+      "order": 242,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Ii": {
+      "code": "Ii",
+      "name": "Icy imp",
+      "source": "Custom",
+      "order": 243,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "Ij": {
+      "code": "Ij",
+      "name": "Icy jester",
+      "source": "Custom",
+      "order": 244,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Ik": {
+      "code": "Ik",
+      "name": "Icy kitten",
+      "source": "Custom",
+      "order": 245,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Il": {
+      "code": "Il",
+      "name": "illusionist",
+      "source": "Lynne Kelly",
+      "order": 246,
+      "canonical_slug": "illusionist",
+      "filename": "illusionist.png",
+      "url": "/assets/beast-thumbs/illusionist.png"
+    },
+    "Im": {
+      "code": "Im",
+      "name": "impala",
+      "source": "Lynne Kelly",
+      "order": 247,
+      "canonical_slug": "impala",
+      "filename": "impala.png",
+      "url": "/assets/beast-thumbs/impala.png"
+    },
+    "In": {
+      "code": "In",
+      "name": "insect",
+      "source": "Lynne Kelly",
+      "order": 248,
+      "canonical_slug": "insect",
+      "filename": "insect.png",
+      "url": "/assets/beast-thumbs/insect.png"
+    },
+    "Io": {
+      "code": "Io",
+      "name": "Icy owl",
+      "source": "Custom",
+      "order": 249,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "Ip": {
+      "code": "Ip",
+      "name": "Icy panther",
+      "source": "Custom",
+      "order": 250,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Iq": {
+      "code": "Iq",
+      "name": "Icy Quetzalcoatl",
+      "source": "Custom",
+      "order": 251,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Ir": {
+      "code": "Ir",
+      "name": "Iris",
+      "source": "Lynne Kelly",
+      "order": 252,
+      "canonical_slug": "iris",
+      "filename": "iris.png",
+      "url": "/assets/beast-thumbs/iris.png"
+    },
+    "Is": {
+      "code": "Is",
+      "name": "island",
+      "source": "Lynne Kelly",
+      "order": 253,
+      "canonical_slug": "island",
+      "filename": "island.png",
+      "url": "/assets/beast-thumbs/island.png"
+    },
+    "It": {
+      "code": "It",
+      "name": "Icy toucan",
+      "source": "Custom",
+      "order": 254,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Iu": {
+      "code": "Iu",
+      "name": "Icy unicorn",
+      "source": "Custom",
+      "order": 255,
+      "canonical_slug": "unicorn",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png"
+    },
+    "Iv": {
+      "code": "Iv",
+      "name": "ivy",
+      "source": "Lynne Kelly",
+      "order": 256,
+      "canonical_slug": "ivy",
+      "filename": "ivy.png",
+      "url": "/assets/beast-thumbs/ivy.png"
+    },
+    "Iw": {
+      "code": "Iw",
+      "name": "Icy wombat",
+      "source": "Custom",
+      "order": 257,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Ix": {
+      "code": "Ix",
+      "name": "Icy Xena, warrior woman",
+      "source": "Custom",
+      "order": 258,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Iy": {
+      "code": "Iy",
+      "name": "Icy yak",
+      "source": "Custom",
+      "order": 259,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Iz": {
+      "code": "Iz",
+      "name": "Icy Zeus",
+      "source": "Custom",
+      "order": 260,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ja": {
+      "code": "Ja",
+      "name": "jackass",
+      "source": "Lynne Kelly",
+      "order": 261,
+      "canonical_slug": "jackass",
+      "filename": "jackass.png",
+      "url": "/assets/beast-thumbs/jackass.png"
+    },
+    "Jb": {
+      "code": "Jb",
+      "name": "Jagged bird of paradise",
+      "source": "Custom",
+      "order": 262,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Jc": {
+      "code": "Jc",
+      "name": "Jagged cat",
+      "source": "Custom",
+      "order": 263,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Jd": {
+      "code": "Jd",
+      "name": "Jagged dragon",
+      "source": "Custom",
+      "order": 264,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Je": {
+      "code": "Je",
+      "name": "jellyfish",
+      "source": "Lynne Kelly",
+      "order": 265,
+      "canonical_slug": "jellyfish",
+      "filename": "jellyfish.png",
+      "url": "/assets/beast-thumbs/jellyfish.png"
+    },
+    "Jf": {
+      "code": "Jf",
+      "name": "Jagged frog",
+      "source": "Custom",
+      "order": 266,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Jg": {
+      "code": "Jg",
+      "name": "Jagged goat",
+      "source": "Custom",
+      "order": 267,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Jh": {
+      "code": "Jh",
+      "name": "Jagged Hydra",
+      "source": "Custom",
+      "order": 268,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Ji": {
+      "code": "Ji",
+      "name": "jigsaw",
+      "source": "Lynne Kelly",
+      "order": 269,
+      "canonical_slug": "jigsaw",
+      "filename": "jigsaw.png",
+      "url": "/assets/beast-thumbs/jigsaw.png"
+    },
+    "Jj": {
+      "code": "Jj",
+      "name": "Jagged jester",
+      "source": "Custom",
+      "order": 270,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Jk": {
+      "code": "Jk",
+      "name": "Jagged kitten",
+      "source": "Custom",
+      "order": 271,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Jl": {
+      "code": "Jl",
+      "name": "Jagged lion",
+      "source": "Custom",
+      "order": 272,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Jm": {
+      "code": "Jm",
+      "name": "Jagged marmoset",
+      "source": "Custom",
+      "order": 273,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Jn": {
+      "code": "Jn",
+      "name": "Jagged Neanderthal",
+      "source": "Custom",
+      "order": 274,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Jo": {
+      "code": "Jo",
+      "name": "jonquil",
+      "source": "Lynne Kelly",
+      "order": 275,
+      "canonical_slug": "jonquil",
+      "filename": "jonquil.png",
+      "url": "/assets/beast-thumbs/jonquil.png"
+    },
+    "Jp": {
+      "code": "Jp",
+      "name": "Jagged panther",
+      "source": "Custom",
+      "order": 276,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Jq": {
+      "code": "Jq",
+      "name": "Jagged Quetzalcoatl",
+      "source": "Custom",
+      "order": 277,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Jr": {
+      "code": "Jr",
+      "name": "Jagged rat",
+      "source": "Custom",
+      "order": 278,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Js": {
+      "code": "Js",
+      "name": "Jagged skull",
+      "source": "Custom",
+      "order": 279,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Jt": {
+      "code": "Jt",
+      "name": "Jagged toucan",
+      "source": "Custom",
+      "order": 280,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Ju": {
+      "code": "Ju",
+      "name": "juggler",
+      "source": "Lynne Kelly",
+      "order": 281,
+      "canonical_slug": "juggler",
+      "filename": "juggler.png",
+      "url": "/assets/beast-thumbs/juggler.png"
+    },
+    "Jv": {
+      "code": "Jv",
+      "name": "Jagged vulture",
+      "source": "Custom",
+      "order": 282,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Jw": {
+      "code": "Jw",
+      "name": "Jagged wombat",
+      "source": "Custom",
+      "order": 283,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Jx": {
+      "code": "Jx",
+      "name": "Jagged Xena, warrior woman",
+      "source": "Custom",
+      "order": 284,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Jy": {
+      "code": "Jy",
+      "name": "Jagged yak",
+      "source": "Custom",
+      "order": 285,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Jz": {
+      "code": "Jz",
+      "name": "Jagged Zeus",
+      "source": "Custom",
+      "order": 286,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ka": {
+      "code": "Ka",
+      "name": "kangaroo",
+      "source": "Lynne Kelly",
+      "order": 287,
+      "canonical_slug": "kangaroo",
+      "filename": "kangaroo.png",
+      "url": "/assets/beast-thumbs/kangaroo.png"
+    },
+    "Kb": {
+      "code": "Kb",
+      "name": "Knotted bird of paradise",
+      "source": "Custom",
+      "order": 288,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Kc": {
+      "code": "Kc",
+      "name": "Knotted cat",
+      "source": "Custom",
+      "order": 289,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Kd": {
+      "code": "Kd",
+      "name": "Knotted dragon",
+      "source": "Custom",
+      "order": 290,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ke": {
+      "code": "Ke",
+      "name": "kestrel",
+      "source": "Lynne Kelly",
+      "order": 291,
+      "canonical_slug": "kestrel",
+      "filename": "kestrel.png",
+      "url": "/assets/beast-thumbs/kestrel.png"
+    },
+    "Kf": {
+      "code": "Kf",
+      "name": "Knotted frog",
+      "source": "Custom",
+      "order": 292,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Kg": {
+      "code": "Kg",
+      "name": "Knotted goat",
+      "source": "Custom",
+      "order": 293,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Kh": {
+      "code": "Kh",
+      "name": "khaki",
+      "source": "Lynne Kelly",
+      "order": 294,
+      "canonical_slug": "khaki",
+      "filename": "khaki.png",
+      "url": "/assets/beast-thumbs/khaki.png"
+    },
+    "Ki": {
+      "code": "Ki",
+      "name": "kiwi",
+      "source": "Lynne Kelly",
+      "order": 295,
+      "canonical_slug": "kiwi",
+      "filename": "kiwi.png",
+      "url": "/assets/beast-thumbs/kiwi.png"
+    },
+    "Kj": {
+      "code": "Kj",
+      "name": "Knotted jester",
+      "source": "Custom",
+      "order": 296,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Kk": {
+      "code": "Kk",
+      "name": "Knotted kitten",
+      "source": "Custom",
+      "order": 297,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Kl": {
+      "code": "Kl",
+      "name": "Knotted lion",
+      "source": "Custom",
+      "order": 298,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Km": {
+      "code": "Km",
+      "name": "Knotted marmoset",
+      "source": "Custom",
+      "order": 299,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Kn": {
+      "code": "Kn",
+      "name": "knight",
+      "source": "Lynne Kelly",
+      "order": 300,
+      "canonical_slug": "knight",
+      "filename": "knight.png",
+      "url": "/assets/beast-thumbs/knight.png"
+    },
+    "Ko": {
+      "code": "Ko",
+      "name": "kookaburra",
+      "source": "Lynne Kelly",
+      "order": 301,
+      "canonical_slug": "kookaburra",
+      "filename": "kookaburra.png",
+      "url": "/assets/beast-thumbs/kookaburra.png"
+    },
+    "Kp": {
+      "code": "Kp",
+      "name": "Knotted panther",
+      "source": "Custom",
+      "order": 302,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Kq": {
+      "code": "Kq",
+      "name": "Knotted Quetzalcoatl",
+      "source": "Custom",
+      "order": 303,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Kr": {
+      "code": "Kr",
+      "name": "kraken",
+      "source": "Lynne Kelly",
+      "order": 304,
+      "canonical_slug": "kraken",
+      "filename": "kraken.png",
+      "url": "/assets/beast-thumbs/kraken.png"
+    },
+    "Ks": {
+      "code": "Ks",
+      "name": "Knotted skull",
+      "source": "Custom",
+      "order": 305,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Kt": {
+      "code": "Kt",
+      "name": "Knotted toucan",
+      "source": "Custom",
+      "order": 306,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Ku": {
+      "code": "Ku",
+      "name": "kumquat",
+      "source": "Lynne Kelly",
+      "order": 307,
+      "canonical_slug": "kumquat",
+      "filename": "kumquat.png",
+      "url": "/assets/beast-thumbs/kumquat.png"
+    },
+    "Kv": {
+      "code": "Kv",
+      "name": "Knotted vulture",
+      "source": "Custom",
+      "order": 308,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Kw": {
+      "code": "Kw",
+      "name": "Knotted wombat",
+      "source": "Custom",
+      "order": 309,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Kx": {
+      "code": "Kx",
+      "name": "Knotted Xena, warrior woman",
+      "source": "Custom",
+      "order": 310,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Ky": {
+      "code": "Ky",
+      "name": "kylin (dragon)",
+      "source": "Lynne Kelly",
+      "order": 311,
+      "canonical_slug": "kylin_dragon",
+      "filename": "kylin_dragon.png",
+      "url": "/assets/beast-thumbs/kylin_dragon.png"
+    },
+    "Kz": {
+      "code": "Kz",
+      "name": "Knotted Zeus",
+      "source": "Custom",
+      "order": 312,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "La": {
+      "code": "La",
+      "name": "lapwing",
+      "source": "Lynne Kelly",
+      "order": 313,
+      "canonical_slug": "lapwing",
+      "filename": "lapwing.png",
+      "url": "/assets/beast-thumbs/lapwing.png"
+    },
+    "Lb": {
+      "code": "Lb",
+      "name": "Lava bird of paradise",
+      "source": "Custom",
+      "order": 314,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Lc": {
+      "code": "Lc",
+      "name": "Lava cat",
+      "source": "Custom",
+      "order": 315,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Ld": {
+      "code": "Ld",
+      "name": "Lava dragon",
+      "source": "Custom",
+      "order": 316,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Le": {
+      "code": "Le",
+      "name": "leprechaun",
+      "source": "Lynne Kelly",
+      "order": 317,
+      "canonical_slug": "leprechaun",
+      "filename": "leprechaun.png",
+      "url": "/assets/beast-thumbs/leprechaun.png"
+    },
+    "Lf": {
+      "code": "Lf",
+      "name": "Lava frog",
+      "source": "Custom",
+      "order": 318,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Lg": {
+      "code": "Lg",
+      "name": "Lava goat",
+      "source": "Custom",
+      "order": 319,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Lh": {
+      "code": "Lh",
+      "name": "Lava Hydra",
+      "source": "Custom",
+      "order": 320,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Li": {
+      "code": "Li",
+      "name": "limpets",
+      "source": "Lynne Kelly",
+      "order": 321,
+      "canonical_slug": "limpets",
+      "filename": "limpets.png",
+      "url": "/assets/beast-thumbs/limpets.png"
+    },
+    "Lj": {
+      "code": "Lj",
+      "name": "Lava jester",
+      "source": "Custom",
+      "order": 322,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Lk": {
+      "code": "Lk",
+      "name": "Lava kitten",
+      "source": "Custom",
+      "order": 323,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Ll": {
+      "code": "Ll",
+      "name": "llama",
+      "source": "Lynne Kelly",
+      "order": 324,
+      "canonical_slug": "llama",
+      "filename": "llama.png",
+      "url": "/assets/beast-thumbs/llama.png"
+    },
+    "Lm": {
+      "code": "Lm",
+      "name": "Lava marmoset",
+      "source": "Custom",
+      "order": 325,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Ln": {
+      "code": "Ln",
+      "name": "Lava Neanderthal",
+      "source": "Custom",
+      "order": 326,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Lo": {
+      "code": "Lo",
+      "name": "lobster",
+      "source": "Lynne Kelly",
+      "order": 327,
+      "canonical_slug": "lobster",
+      "filename": "lobster.png",
+      "url": "/assets/beast-thumbs/lobster.png"
+    },
+    "Lp": {
+      "code": "Lp",
+      "name": "Lava panther",
+      "source": "Custom",
+      "order": 328,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Lq": {
+      "code": "Lq",
+      "name": "Lava Quetzalcoatl",
+      "source": "Custom",
+      "order": 329,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Lr": {
+      "code": "Lr",
+      "name": "Lava rat",
+      "source": "Custom",
+      "order": 330,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Ls": {
+      "code": "Ls",
+      "name": "Lava skull",
+      "source": "Custom",
+      "order": 331,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Lt": {
+      "code": "Lt",
+      "name": "Lava toucan",
+      "source": "Custom",
+      "order": 332,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Lu": {
+      "code": "Lu",
+      "name": "lute",
+      "source": "Lynne Kelly",
+      "order": 333,
+      "canonical_slug": "lute",
+      "filename": "lute.png",
+      "url": "/assets/beast-thumbs/lute.png"
+    },
+    "Lv": {
+      "code": "Lv",
+      "name": "Lava vulture",
+      "source": "Custom",
+      "order": 334,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Lw": {
+      "code": "Lw",
+      "name": "Lava wombat",
+      "source": "Custom",
+      "order": 335,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Lx": {
+      "code": "Lx",
+      "name": "Lava Xena, warrior woman",
+      "source": "Custom",
+      "order": 336,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Ly": {
+      "code": "Ly",
+      "name": "lynx",
+      "source": "Lynne Kelly",
+      "order": 337,
+      "canonical_slug": "lynx",
+      "filename": "lynx.png",
+      "url": "/assets/beast-thumbs/lynx.png"
+    },
+    "Lz": {
+      "code": "Lz",
+      "name": "Lava Zeus",
+      "source": "Custom",
+      "order": 338,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ma": {
+      "code": "Ma",
+      "name": "macaw",
+      "source": "Lynne Kelly",
+      "order": 339,
+      "canonical_slug": "macaw",
+      "filename": "macaw.png",
+      "url": "/assets/beast-thumbs/macaw.png"
+    },
+    "Mb": {
+      "code": "Mb",
+      "name": "Molten bird of paradise",
+      "source": "Custom",
+      "order": 340,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Mc": {
+      "code": "Mc",
+      "name": "McScottish",
+      "source": "Lynne Kelly",
+      "order": 341,
+      "canonical_slug": "mcscottish",
+      "filename": "mcscottish.png",
+      "url": "/assets/beast-thumbs/mcscottish.png"
+    },
+    "Md": {
+      "code": "Md",
+      "name": "Molten dragon",
+      "source": "Custom",
+      "order": 342,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Me": {
+      "code": "Me",
+      "name": "Medusa",
+      "source": "Lynne Kelly",
+      "order": 343,
+      "canonical_slug": "medusa",
+      "filename": "medusa.png",
+      "url": "/assets/beast-thumbs/medusa.png"
+    },
+    "Mf": {
+      "code": "Mf",
+      "name": "Molten frog",
+      "source": "Custom",
+      "order": 344,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Mg": {
+      "code": "Mg",
+      "name": "Molten goat",
+      "source": "Custom",
+      "order": 345,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Mh": {
+      "code": "Mh",
+      "name": "Molten Hydra",
+      "source": "Custom",
+      "order": 346,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Mi": {
+      "code": "Mi",
+      "name": "millipede",
+      "source": "Lynne Kelly",
+      "order": 347,
+      "canonical_slug": "millipede",
+      "filename": "millipede.png",
+      "url": "/assets/beast-thumbs/millipede.png"
+    },
+    "Mj": {
+      "code": "Mj",
+      "name": "Molten jester",
+      "source": "Custom",
+      "order": 348,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Mk": {
+      "code": "Mk",
+      "name": "Molten kitten",
+      "source": "Custom",
+      "order": 349,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Ml": {
+      "code": "Ml",
+      "name": "Molten lion",
+      "source": "Custom",
+      "order": 350,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Mm": {
+      "code": "Mm",
+      "name": "Molten marmoset",
+      "source": "Custom",
+      "order": 351,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Mn": {
+      "code": "Mn",
+      "name": "Molten Neanderthal",
+      "source": "Custom",
+      "order": 352,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Mo": {
+      "code": "Mo",
+      "name": "monkey",
+      "source": "Lynne Kelly",
+      "order": 353,
+      "canonical_slug": "monkey",
+      "filename": "monkey.png",
+      "url": "/assets/beast-thumbs/monkey.png"
+    },
+    "Mp": {
+      "code": "Mp",
+      "name": "Molten panther",
+      "source": "Custom",
+      "order": 354,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Mq": {
+      "code": "Mq",
+      "name": "Molten Quetzalcoatl",
+      "source": "Custom",
+      "order": 355,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Mr": {
+      "code": "Mr",
+      "name": "Molten rat",
+      "source": "Custom",
+      "order": 356,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Ms": {
+      "code": "Ms",
+      "name": "Molten skull",
+      "source": "Custom",
+      "order": 357,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Mt": {
+      "code": "Mt",
+      "name": "Molten toucan",
+      "source": "Custom",
+      "order": 358,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Mu": {
+      "code": "Mu",
+      "name": "muskrat",
+      "source": "Lynne Kelly",
+      "order": 359,
+      "canonical_slug": "muskrat",
+      "filename": "muskrat.png",
+      "url": "/assets/beast-thumbs/muskrat.png"
+    },
+    "Mv": {
+      "code": "Mv",
+      "name": "Molten vulture",
+      "source": "Custom",
+      "order": 360,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Mw": {
+      "code": "Mw",
+      "name": "Molten wombat",
+      "source": "Custom",
+      "order": 361,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Mx": {
+      "code": "Mx",
+      "name": "Molten Xena, warrior woman",
+      "source": "Custom",
+      "order": 362,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "My": {
+      "code": "My",
+      "name": "mynah",
+      "source": "Lynne Kelly",
+      "order": 363,
+      "canonical_slug": "mynah",
+      "filename": "mynah.png",
+      "url": "/assets/beast-thumbs/mynah.png"
+    },
+    "Mz": {
+      "code": "Mz",
+      "name": "Molten Zeus",
+      "source": "Custom",
+      "order": 364,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Na": {
+      "code": "Na",
+      "name": "nautilus",
+      "source": "Lynne Kelly",
+      "order": 365,
+      "canonical_slug": "nautilus",
+      "filename": "nautilus.png",
+      "url": "/assets/beast-thumbs/nautilus.png"
+    },
+    "Nb": {
+      "code": "Nb",
+      "name": "Night bird of paradise",
+      "source": "Custom",
+      "order": 366,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Nc": {
+      "code": "Nc",
+      "name": "Night cat",
+      "source": "Custom",
+      "order": 367,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Nd": {
+      "code": "Nd",
+      "name": "Night dragon",
+      "source": "Custom",
+      "order": 368,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ne": {
+      "code": "Ne",
+      "name": "Neptune",
+      "source": "Lynne Kelly",
+      "order": 369,
+      "canonical_slug": "neptune",
+      "filename": "neptune.png",
+      "url": "/assets/beast-thumbs/neptune.png"
+    },
+    "Nf": {
+      "code": "Nf",
+      "name": "Night frog",
+      "source": "Custom",
+      "order": 370,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Ng": {
+      "code": "Ng",
+      "name": "Night goat",
+      "source": "Custom",
+      "order": 371,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Nh": {
+      "code": "Nh",
+      "name": "Night Hydra",
+      "source": "Custom",
+      "order": 372,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Ni": {
+      "code": "Ni",
+      "name": "nit",
+      "source": "Lynne Kelly",
+      "order": 373,
+      "canonical_slug": "nit",
+      "filename": "nit.png",
+      "url": "/assets/beast-thumbs/nit.png"
+    },
+    "Nj": {
+      "code": "Nj",
+      "name": "Night jester",
+      "source": "Custom",
+      "order": 374,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Nk": {
+      "code": "Nk",
+      "name": "Night kitten",
+      "source": "Custom",
+      "order": 375,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Nl": {
+      "code": "Nl",
+      "name": "Night lion",
+      "source": "Custom",
+      "order": 376,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Nm": {
+      "code": "Nm",
+      "name": "Night marmoset",
+      "source": "Custom",
+      "order": 377,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Nn": {
+      "code": "Nn",
+      "name": "Night Neanderthal",
+      "source": "Custom",
+      "order": 378,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "No": {
+      "code": "No",
+      "name": "noddy (bird)",
+      "source": "Lynne Kelly",
+      "order": 379,
+      "canonical_slug": "noddy_bird",
+      "filename": "noddy_bird.png",
+      "url": "/assets/beast-thumbs/noddy_bird.png"
+    },
+    "Np": {
+      "code": "Np",
+      "name": "Night panther",
+      "source": "Custom",
+      "order": 380,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Nq": {
+      "code": "Nq",
+      "name": "Night Quetzalcoatl",
+      "source": "Custom",
+      "order": 381,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Nr": {
+      "code": "Nr",
+      "name": "Night rat",
+      "source": "Custom",
+      "order": 382,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Ns": {
+      "code": "Ns",
+      "name": "Night skull",
+      "source": "Custom",
+      "order": 383,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Nt": {
+      "code": "Nt",
+      "name": "Night toucan",
+      "source": "Custom",
+      "order": 384,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Nu": {
+      "code": "Nu",
+      "name": "numbat",
+      "source": "Lynne Kelly",
+      "order": 385,
+      "canonical_slug": "numbat",
+      "filename": "numbat.png",
+      "url": "/assets/beast-thumbs/numbat.png"
+    },
+    "Nv": {
+      "code": "Nv",
+      "name": "Night vulture",
+      "source": "Custom",
+      "order": 386,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Nw": {
+      "code": "Nw",
+      "name": "Night wombat",
+      "source": "Custom",
+      "order": 387,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Nx": {
+      "code": "Nx",
+      "name": "Night Xena, warrior woman",
+      "source": "Custom",
+      "order": 388,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Ny": {
+      "code": "Ny",
+      "name": "nymph",
+      "source": "Lynne Kelly",
+      "order": 389,
+      "canonical_slug": "nymph",
+      "filename": "nymph.png",
+      "url": "/assets/beast-thumbs/nymph.png"
+    },
+    "Nz": {
+      "code": "Nz",
+      "name": "Night Zeus",
+      "source": "Custom",
+      "order": 390,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Oa": {
+      "code": "Oa",
+      "name": "oak",
+      "source": "Lynne Kelly",
+      "order": 391,
+      "canonical_slug": "oak",
+      "filename": "oak.png",
+      "url": "/assets/beast-thumbs/oak.png"
+    },
+    "Ob": {
+      "code": "Ob",
+      "name": "Obsidian bird of paradise",
+      "source": "Custom",
+      "order": 392,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Oc": {
+      "code": "Oc",
+      "name": "octopus",
+      "source": "Lynne Kelly",
+      "order": 393,
+      "canonical_slug": "octopus",
+      "filename": "octopus.png",
+      "url": "/assets/beast-thumbs/octopus.png"
+    },
+    "Od": {
+      "code": "Od",
+      "name": "Odin",
+      "source": "Lynne Kelly",
+      "order": 394,
+      "canonical_slug": "odin",
+      "filename": "odin.png",
+      "url": "/assets/beast-thumbs/odin.png"
+    },
+    "Oe": {
+      "code": "Oe",
+      "name": "Obsidian eagle",
+      "source": "Custom",
+      "order": 395,
+      "canonical_slug": "eagle",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png"
+    },
+    "Of": {
+      "code": "Of",
+      "name": "Obsidian frog",
+      "source": "Custom",
+      "order": 396,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Og": {
+      "code": "Og",
+      "name": "ogre",
+      "source": "Lynne Kelly",
+      "order": 397,
+      "canonical_slug": "ogre",
+      "filename": "ogre.png",
+      "url": "/assets/beast-thumbs/ogre.png"
+    },
+    "Oh": {
+      "code": "Oh",
+      "name": "Obsidian Hydra",
+      "source": "Custom",
+      "order": 398,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Oi": {
+      "code": "Oi",
+      "name": "Obsidian imp",
+      "source": "Custom",
+      "order": 399,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "Oj": {
+      "code": "Oj",
+      "name": "Obsidian jester",
+      "source": "Custom",
+      "order": 400,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Ok": {
+      "code": "Ok",
+      "name": "okapi",
+      "source": "Lynne Kelly",
+      "order": 401,
+      "canonical_slug": "okapi",
+      "filename": "okapi.png",
+      "url": "/assets/beast-thumbs/okapi.png"
+    },
+    "Ol": {
+      "code": "Ol",
+      "name": "olive",
+      "source": "Lynne Kelly",
+      "order": 402,
+      "canonical_slug": "olive",
+      "filename": "olive.png",
+      "url": "/assets/beast-thumbs/olive.png"
+    },
+    "Om": {
+      "code": "Om",
+      "name": "Obsidian marmoset",
+      "source": "Custom",
+      "order": 403,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "On": {
+      "code": "On",
+      "name": "onion",
+      "source": "Lynne Kelly",
+      "order": 404,
+      "canonical_slug": "onion",
+      "filename": "onion.png",
+      "url": "/assets/beast-thumbs/onion.png"
+    },
+    "Oo": {
+      "code": "Oo",
+      "name": "Obsidian owl",
+      "source": "Custom",
+      "order": 405,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "Op": {
+      "code": "Op",
+      "name": "opossum",
+      "source": "Lynne Kelly",
+      "order": 406,
+      "canonical_slug": "opossum",
+      "filename": "opossum.png",
+      "url": "/assets/beast-thumbs/opossum.png"
+    },
+    "Oq": {
+      "code": "Oq",
+      "name": "Obsidian Quetzalcoatl",
+      "source": "Custom",
+      "order": 407,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Or": {
+      "code": "Or",
+      "name": "orangutan",
+      "source": "Lynne Kelly",
+      "order": 408,
+      "canonical_slug": "orangutan",
+      "filename": "orangutan.png",
+      "url": "/assets/beast-thumbs/orangutan.png"
+    },
+    "Os": {
+      "code": "Os",
+      "name": "ostrich",
+      "source": "Lynne Kelly",
+      "order": 409,
+      "canonical_slug": "ostrich",
+      "filename": "ostrich.png",
+      "url": "/assets/beast-thumbs/ostrich.png"
+    },
+    "Ot": {
+      "code": "Ot",
+      "name": "otter",
+      "source": "Lynne Kelly",
+      "order": 410,
+      "canonical_slug": "otter",
+      "filename": "otter.png",
+      "url": "/assets/beast-thumbs/otter.png"
+    },
+    "Ou": {
+      "code": "Ou",
+      "name": "Obsidian unicorn",
+      "source": "Custom",
+      "order": 411,
+      "canonical_slug": "unicorn",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png"
+    },
+    "Ov": {
+      "code": "Ov",
+      "name": "Obsidian vulture",
+      "source": "Custom",
+      "order": 412,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Ow": {
+      "code": "Ow",
+      "name": "owlet",
+      "source": "Lynne Kelly",
+      "order": 413,
+      "canonical_slug": "owlet",
+      "filename": "owlet.png",
+      "url": "/assets/beast-thumbs/owlet.png"
+    },
+    "Ox": {
+      "code": "Ox",
+      "name": "oxen",
+      "source": "Lynne Kelly",
+      "order": 414,
+      "canonical_slug": "oxen",
+      "filename": "oxen.png",
+      "url": "/assets/beast-thumbs/oxen.png"
+    },
+    "Oy": {
+      "code": "Oy",
+      "name": "oyster",
+      "source": "Lynne Kelly",
+      "order": 415,
+      "canonical_slug": "oyster",
+      "filename": "oyster.png",
+      "url": "/assets/beast-thumbs/oyster.png"
+    },
+    "Oz": {
+      "code": "Oz",
+      "name": "Obsidian Zeus",
+      "source": "Custom",
+      "order": 416,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Pa": {
+      "code": "Pa",
+      "name": "panda",
+      "source": "Lynne Kelly",
+      "order": 417,
+      "canonical_slug": "panda",
+      "filename": "panda.png",
+      "url": "/assets/beast-thumbs/panda.png"
+    },
+    "Pb": {
+      "code": "Pb",
+      "name": "Plastic bird of paradise",
+      "source": "Custom",
+      "order": 418,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Pc": {
+      "code": "Pc",
+      "name": "Plastic cat",
+      "source": "Custom",
+      "order": 419,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Pd": {
+      "code": "Pd",
+      "name": "Plastic dragon",
+      "source": "Custom",
+      "order": 420,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Pe": {
+      "code": "Pe",
+      "name": "penguin",
+      "source": "Lynne Kelly",
+      "order": 421,
+      "canonical_slug": "penguin",
+      "filename": "penguin.png",
+      "url": "/assets/beast-thumbs/penguin.png"
+    },
+    "Pf": {
+      "code": "Pf",
+      "name": "Plastic frog",
+      "source": "Custom",
+      "order": 422,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Pg": {
+      "code": "Pg",
+      "name": "Plastic goat",
+      "source": "Custom",
+      "order": 423,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Ph": {
+      "code": "Ph",
+      "name": "phoenix",
+      "source": "Lynne Kelly",
+      "order": 424,
+      "canonical_slug": "phoenix",
+      "filename": "phoenix.png",
+      "url": "/assets/beast-thumbs/phoenix.png"
+    },
+    "Pi": {
+      "code": "Pi",
+      "name": "pig",
+      "source": "Lynne Kelly",
+      "order": 425,
+      "canonical_slug": "pig",
+      "filename": "pig.png",
+      "url": "/assets/beast-thumbs/pig.png"
+    },
+    "Pj": {
+      "code": "Pj",
+      "name": "Plastic jester",
+      "source": "Custom",
+      "order": 426,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Pk": {
+      "code": "Pk",
+      "name": "Plastic kitten",
+      "source": "Custom",
+      "order": 427,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Pl": {
+      "code": "Pl",
+      "name": "platypus",
+      "source": "Lynne Kelly",
+      "order": 428,
+      "canonical_slug": "platypus",
+      "filename": "platypus.png",
+      "url": "/assets/beast-thumbs/platypus.png"
+    },
+    "Pm": {
+      "code": "Pm",
+      "name": "Plastic marmoset",
+      "source": "Custom",
+      "order": 429,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Pn": {
+      "code": "Pn",
+      "name": "Plastic Neanderthal",
+      "source": "Custom",
+      "order": 430,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Po": {
+      "code": "Po",
+      "name": "polar bear",
+      "source": "Lynne Kelly",
+      "order": 431,
+      "canonical_slug": "polar_bear",
+      "filename": "polar_bear.png",
+      "url": "/assets/beast-thumbs/polar_bear.png"
+    },
+    "Pp": {
+      "code": "Pp",
+      "name": "Plastic panther",
+      "source": "Custom",
+      "order": 432,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Pq": {
+      "code": "Pq",
+      "name": "Plastic Quetzalcoatl",
+      "source": "Custom",
+      "order": 433,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Pr": {
+      "code": "Pr",
+      "name": "praying mantis",
+      "source": "Lynne Kelly",
+      "order": 434,
+      "canonical_slug": "praying_mantis",
+      "filename": "praying_mantis.png",
+      "url": "/assets/beast-thumbs/praying_mantis.png"
+    },
+    "Ps": {
+      "code": "Ps",
+      "name": "Plastic skull",
+      "source": "Custom",
+      "order": 435,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Pt": {
+      "code": "Pt",
+      "name": "Plastic toucan",
+      "source": "Custom",
+      "order": 436,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Pu": {
+      "code": "Pu",
+      "name": "puffin",
+      "source": "Lynne Kelly",
+      "order": 437,
+      "canonical_slug": "puffin",
+      "filename": "puffin.png",
+      "url": "/assets/beast-thumbs/puffin.png"
+    },
+    "Pv": {
+      "code": "Pv",
+      "name": "Plastic vulture",
+      "source": "Custom",
+      "order": 438,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Pw": {
+      "code": "Pw",
+      "name": "Plastic wombat",
+      "source": "Custom",
+      "order": 439,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Px": {
+      "code": "Px",
+      "name": "Plastic Xena, warrior woman",
+      "source": "Custom",
+      "order": 440,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Py": {
+      "code": "Py",
+      "name": "python",
+      "source": "Lynne Kelly",
+      "order": 441,
+      "canonical_slug": "python",
+      "filename": "python.png",
+      "url": "/assets/beast-thumbs/python.png"
+    },
+    "Pz": {
+      "code": "Pz",
+      "name": "Plastic Zeus",
+      "source": "Custom",
+      "order": 442,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Qa": {
+      "code": "Qa",
+      "name": "Quartz Arachne",
+      "source": "Custom",
+      "order": 443,
+      "canonical_slug": "arachne",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png"
+    },
+    "Qb": {
+      "code": "Qb",
+      "name": "Quartz bird of paradise",
+      "source": "Custom",
+      "order": 444,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Qc": {
+      "code": "Qc",
+      "name": "Quartz cat",
+      "source": "Custom",
+      "order": 445,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Qd": {
+      "code": "Qd",
+      "name": "Quartz dragon",
+      "source": "Custom",
+      "order": 446,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Qe": {
+      "code": "Qe",
+      "name": "Quartz eagle",
+      "source": "Custom",
+      "order": 447,
+      "canonical_slug": "eagle",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png"
+    },
+    "Qf": {
+      "code": "Qf",
+      "name": "Quartz frog",
+      "source": "Custom",
+      "order": 448,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Qg": {
+      "code": "Qg",
+      "name": "Quartz goat",
+      "source": "Custom",
+      "order": 449,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Qh": {
+      "code": "Qh",
+      "name": "Quartz Hydra",
+      "source": "Custom",
+      "order": 450,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Qi": {
+      "code": "Qi",
+      "name": "Quartz imp",
+      "source": "Custom",
+      "order": 451,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "Qj": {
+      "code": "Qj",
+      "name": "Quartz jester",
+      "source": "Custom",
+      "order": 452,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Qk": {
+      "code": "Qk",
+      "name": "Quartz kitten",
+      "source": "Custom",
+      "order": 453,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Ql": {
+      "code": "Ql",
+      "name": "Quartz lion",
+      "source": "Custom",
+      "order": 454,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Qm": {
+      "code": "Qm",
+      "name": "Quartz marmoset",
+      "source": "Custom",
+      "order": 455,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Qn": {
+      "code": "Qn",
+      "name": "Quartz Neanderthal",
+      "source": "Custom",
+      "order": 456,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Qo": {
+      "code": "Qo",
+      "name": "Quartz owl",
+      "source": "Custom",
+      "order": 457,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "Qp": {
+      "code": "Qp",
+      "name": "Quartz panther",
+      "source": "Custom",
+      "order": 458,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Qq": {
+      "code": "Qq",
+      "name": "Quartz Quetzalcoatl",
+      "source": "Custom",
+      "order": 459,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Qr": {
+      "code": "Qr",
+      "name": "Quartz rat",
+      "source": "Custom",
+      "order": 460,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Qs": {
+      "code": "Qs",
+      "name": "Quartz skull",
+      "source": "Custom",
+      "order": 461,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Qt": {
+      "code": "Qt",
+      "name": "Quartz toucan",
+      "source": "Custom",
+      "order": 462,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Qu": {
+      "code": "Qu",
+      "name": "quail",
+      "source": "Lynne Kelly",
+      "order": 463,
+      "canonical_slug": "quail",
+      "filename": "quail.png",
+      "url": "/assets/beast-thumbs/quail.png"
+    },
+    "Qv": {
+      "code": "Qv",
+      "name": "Quartz vulture",
+      "source": "Custom",
+      "order": 464,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Qw": {
+      "code": "Qw",
+      "name": "Quartz wombat",
+      "source": "Custom",
+      "order": 465,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Qx": {
+      "code": "Qx",
+      "name": "Quartz Xena, warrior woman",
+      "source": "Custom",
+      "order": 466,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Qy": {
+      "code": "Qy",
+      "name": "Quartz yak",
+      "source": "Custom",
+      "order": 467,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Qz": {
+      "code": "Qz",
+      "name": "Quartz Zeus",
+      "source": "Custom",
+      "order": 468,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ra": {
+      "code": "Ra",
+      "name": "raven",
+      "source": "Lynne Kelly",
+      "order": 469,
+      "canonical_slug": "raven",
+      "filename": "raven.png",
+      "url": "/assets/beast-thumbs/raven.png"
+    },
+    "Rb": {
+      "code": "Rb",
+      "name": "Rusty bird of paradise",
+      "source": "Custom",
+      "order": 470,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Rc": {
+      "code": "Rc",
+      "name": "Rusty cat",
+      "source": "Custom",
+      "order": 471,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Rd": {
+      "code": "Rd",
+      "name": "Rusty dragon",
+      "source": "Custom",
+      "order": 472,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Re": {
+      "code": "Re",
+      "name": "reindeer",
+      "source": "Lynne Kelly",
+      "order": 473,
+      "canonical_slug": "reindeer",
+      "filename": "reindeer.png",
+      "url": "/assets/beast-thumbs/reindeer.png"
+    },
+    "Rf": {
+      "code": "Rf",
+      "name": "Rusty frog",
+      "source": "Custom",
+      "order": 474,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Rg": {
+      "code": "Rg",
+      "name": "Rusty goat",
+      "source": "Custom",
+      "order": 475,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Rh": {
+      "code": "Rh",
+      "name": "rhinoceros",
+      "source": "Lynne Kelly",
+      "order": 476,
+      "canonical_slug": "rhinoceros",
+      "filename": "rhinoceros.png",
+      "url": "/assets/beast-thumbs/rhinoceros.png"
+    },
+    "Ri": {
+      "code": "Ri",
+      "name": "ringtail",
+      "source": "Lynne Kelly",
+      "order": 477,
+      "canonical_slug": "ringtail",
+      "filename": "ringtail.png",
+      "url": "/assets/beast-thumbs/ringtail.png"
+    },
+    "Rj": {
+      "code": "Rj",
+      "name": "Rusty jester",
+      "source": "Custom",
+      "order": 478,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Rk": {
+      "code": "Rk",
+      "name": "Rusty kitten",
+      "source": "Custom",
+      "order": 479,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Rl": {
+      "code": "Rl",
+      "name": "Rusty lion",
+      "source": "Custom",
+      "order": 480,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Rm": {
+      "code": "Rm",
+      "name": "Rusty marmoset",
+      "source": "Custom",
+      "order": 481,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Rn": {
+      "code": "Rn",
+      "name": "Rusty Neanderthal",
+      "source": "Custom",
+      "order": 482,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Ro": {
+      "code": "Ro",
+      "name": "rooster",
+      "source": "Lynne Kelly",
+      "order": 483,
+      "canonical_slug": "rooster",
+      "filename": "rooster.png",
+      "url": "/assets/beast-thumbs/rooster.png"
+    },
+    "Rp": {
+      "code": "Rp",
+      "name": "Rusty panther",
+      "source": "Custom",
+      "order": 484,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Rq": {
+      "code": "Rq",
+      "name": "Rusty Quetzalcoatl",
+      "source": "Custom",
+      "order": 485,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Rr": {
+      "code": "Rr",
+      "name": "Rusty rat",
+      "source": "Custom",
+      "order": 486,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Rs": {
+      "code": "Rs",
+      "name": "Rusty skull",
+      "source": "Custom",
+      "order": 487,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Rt": {
+      "code": "Rt",
+      "name": "Rusty toucan",
+      "source": "Custom",
+      "order": 488,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Ru": {
+      "code": "Ru",
+      "name": "runner bean",
+      "source": "Lynne Kelly",
+      "order": 489,
+      "canonical_slug": "runner_bean",
+      "filename": "runner_bean.png",
+      "url": "/assets/beast-thumbs/runner_bean.png"
+    },
+    "Rv": {
+      "code": "Rv",
+      "name": "Rusty vulture",
+      "source": "Custom",
+      "order": 490,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Rw": {
+      "code": "Rw",
+      "name": "Rusty wombat",
+      "source": "Custom",
+      "order": 491,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Rx": {
+      "code": "Rx",
+      "name": "Rusty Xena, warrior woman",
+      "source": "Custom",
+      "order": 492,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Ry": {
+      "code": "Ry",
+      "name": "rye",
+      "source": "Lynne Kelly",
+      "order": 493,
+      "canonical_slug": "rye",
+      "filename": "rye.png",
+      "url": "/assets/beast-thumbs/rye.png"
+    },
+    "Rz": {
+      "code": "Rz",
+      "name": "Rusty Zeus",
+      "source": "Custom",
+      "order": 494,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Sa": {
+      "code": "Sa",
+      "name": "satyr",
+      "source": "Lynne Kelly",
+      "order": 495,
+      "canonical_slug": "satyr",
+      "filename": "satyr.png",
+      "url": "/assets/beast-thumbs/satyr.png"
+    },
+    "Sb": {
+      "code": "Sb",
+      "name": "Steel bird of paradise",
+      "source": "Custom",
+      "order": 496,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Sc": {
+      "code": "Sc",
+      "name": "scorpion",
+      "source": "Lynne Kelly",
+      "order": 497,
+      "canonical_slug": "scorpion",
+      "filename": "scorpion.png",
+      "url": "/assets/beast-thumbs/scorpion.png"
+    },
+    "Sd": {
+      "code": "Sd",
+      "name": "Steel dragon",
+      "source": "Custom",
+      "order": 498,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Se": {
+      "code": "Se",
+      "name": "seahorse",
+      "source": "Lynne Kelly",
+      "order": 499,
+      "canonical_slug": "seahorse",
+      "filename": "seahorse.png",
+      "url": "/assets/beast-thumbs/seahorse.png"
+    },
+    "Sf": {
+      "code": "Sf",
+      "name": "Steel frog",
+      "source": "Custom",
+      "order": 500,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Sg": {
+      "code": "Sg",
+      "name": "Steel goat",
+      "source": "Custom",
+      "order": 501,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Sh": {
+      "code": "Sh",
+      "name": "shrew",
+      "source": "Lynne Kelly",
+      "order": 502,
+      "canonical_slug": "shrew",
+      "filename": "shrew.png",
+      "url": "/assets/beast-thumbs/shrew.png"
+    },
+    "Si": {
+      "code": "Si",
+      "name": "Siamese cat",
+      "source": "Lynne Kelly",
+      "order": 503,
+      "canonical_slug": "siamese_cat",
+      "filename": "siamese_cat.png",
+      "url": "/assets/beast-thumbs/siamese_cat.png"
+    },
+    "Sj": {
+      "code": "Sj",
+      "name": "Steel jester",
+      "source": "Custom",
+      "order": 504,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Sk": {
+      "code": "Sk",
+      "name": "skunk",
+      "source": "Lynne Kelly",
+      "order": 505,
+      "canonical_slug": "skunk",
+      "filename": "skunk.png",
+      "url": "/assets/beast-thumbs/skunk.png"
+    },
+    "Sl": {
+      "code": "Sl",
+      "name": "sloth",
+      "source": "Lynne Kelly",
+      "order": 506,
+      "canonical_slug": "sloth",
+      "filename": "sloth.png",
+      "url": "/assets/beast-thumbs/sloth.png"
+    },
+    "Sm": {
+      "code": "Sm",
+      "name": "smuggler",
+      "source": "Lynne Kelly",
+      "order": 507,
+      "canonical_slug": "smuggler",
+      "filename": "smuggler.png",
+      "url": "/assets/beast-thumbs/smuggler.png"
+    },
+    "Sn": {
+      "code": "Sn",
+      "name": "snail",
+      "source": "Lynne Kelly",
+      "order": 508,
+      "canonical_slug": "snail",
+      "filename": "snail.png",
+      "url": "/assets/beast-thumbs/snail.png"
+    },
+    "So": {
+      "code": "So",
+      "name": "sourpuss",
+      "source": "Lynne Kelly",
+      "order": 509,
+      "canonical_slug": "sourpuss",
+      "filename": "sourpuss.png",
+      "url": "/assets/beast-thumbs/sourpuss.png"
+    },
+    "Sp": {
+      "code": "Sp",
+      "name": "spaniel",
+      "source": "Lynne Kelly",
+      "order": 510,
+      "canonical_slug": "spaniel",
+      "filename": "spaniel.png",
+      "url": "/assets/beast-thumbs/spaniel.png"
+    },
+    "Sq": {
+      "code": "Sq",
+      "name": "squirrel",
+      "source": "Lynne Kelly",
+      "order": 511,
+      "canonical_slug": "squirrel",
+      "filename": "squirrel.png",
+      "url": "/assets/beast-thumbs/squirrel.png"
+    },
+    "Sr": {
+      "code": "Sr",
+      "name": "Steel rat",
+      "source": "Custom",
+      "order": 512,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Ss": {
+      "code": "Ss",
+      "name": "Steel skull",
+      "source": "Custom",
+      "order": 513,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "St": {
+      "code": "St",
+      "name": "stingray",
+      "source": "Lynne Kelly",
+      "order": 514,
+      "canonical_slug": "stingray",
+      "filename": "stingray.png",
+      "url": "/assets/beast-thumbs/stingray.png"
+    },
+    "Su": {
+      "code": "Su",
+      "name": "sugar glider",
+      "source": "Lynne Kelly",
+      "order": 515,
+      "canonical_slug": "sugar_glider",
+      "filename": "sugar_glider.png",
+      "url": "/assets/beast-thumbs/sugar_glider.png"
+    },
+    "Sv": {
+      "code": "Sv",
+      "name": "Steel vulture",
+      "source": "Custom",
+      "order": 516,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Sw": {
+      "code": "Sw",
+      "name": "swallow",
+      "source": "Lynne Kelly",
+      "order": 517,
+      "canonical_slug": "swallow",
+      "filename": "swallow.png",
+      "url": "/assets/beast-thumbs/swallow.png"
+    },
+    "Sx": {
+      "code": "Sx",
+      "name": "Steel Xena, warrior woman",
+      "source": "Custom",
+      "order": 518,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Sy": {
+      "code": "Sy",
+      "name": "symphony",
+      "source": "Lynne Kelly",
+      "order": 519,
+      "canonical_slug": "symphony",
+      "filename": "symphony.png",
+      "url": "/assets/beast-thumbs/symphony.png"
+    },
+    "Sz": {
+      "code": "Sz",
+      "name": "Steel Zeus",
+      "source": "Custom",
+      "order": 520,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ta": {
+      "code": "Ta",
+      "name": "tapir",
+      "source": "Lynne Kelly",
+      "order": 521,
+      "canonical_slug": "tapir",
+      "filename": "tapir.png",
+      "url": "/assets/beast-thumbs/tapir.png"
+    },
+    "Tb": {
+      "code": "Tb",
+      "name": "Toxic bird of paradise",
+      "source": "Custom",
+      "order": 522,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Tc": {
+      "code": "Tc",
+      "name": "Toxic cat",
+      "source": "Custom",
+      "order": 523,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Td": {
+      "code": "Td",
+      "name": "Toxic dragon",
+      "source": "Custom",
+      "order": 524,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Te": {
+      "code": "Te",
+      "name": "termite",
+      "source": "Lynne Kelly",
+      "order": 525,
+      "canonical_slug": "termite",
+      "filename": "termite.png",
+      "url": "/assets/beast-thumbs/termite.png"
+    },
+    "Tf": {
+      "code": "Tf",
+      "name": "Toxic frog",
+      "source": "Custom",
+      "order": 526,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Tg": {
+      "code": "Tg",
+      "name": "Toxic goat",
+      "source": "Custom",
+      "order": 527,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Th": {
+      "code": "Th",
+      "name": "thornbill",
+      "source": "Lynne Kelly",
+      "order": 528,
+      "canonical_slug": "thornbill",
+      "filename": "thornbill.png",
+      "url": "/assets/beast-thumbs/thornbill.png"
+    },
+    "Ti": {
+      "code": "Ti",
+      "name": "tiger",
+      "source": "Lynne Kelly",
+      "order": 529,
+      "canonical_slug": "tiger",
+      "filename": "tiger.png",
+      "url": "/assets/beast-thumbs/tiger.png"
+    },
+    "Tj": {
+      "code": "Tj",
+      "name": "Toxic jester",
+      "source": "Custom",
+      "order": 530,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Tk": {
+      "code": "Tk",
+      "name": "Toxic kitten",
+      "source": "Custom",
+      "order": 531,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Tl": {
+      "code": "Tl",
+      "name": "Toxic lion",
+      "source": "Custom",
+      "order": 532,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Tm": {
+      "code": "Tm",
+      "name": "Toxic marmoset",
+      "source": "Custom",
+      "order": 533,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Tn": {
+      "code": "Tn",
+      "name": "Toxic Neanderthal",
+      "source": "Custom",
+      "order": 534,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "To": {
+      "code": "To",
+      "name": "toad",
+      "source": "Lynne Kelly",
+      "order": 535,
+      "canonical_slug": "toad",
+      "filename": "toad.png",
+      "url": "/assets/beast-thumbs/toad.png"
+    },
+    "Tp": {
+      "code": "Tp",
+      "name": "Toxic panther",
+      "source": "Custom",
+      "order": 536,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Tq": {
+      "code": "Tq",
+      "name": "Toxic Quetzalcoatl",
+      "source": "Custom",
+      "order": 537,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Tr": {
+      "code": "Tr",
+      "name": "troll",
+      "source": "Lynne Kelly",
+      "order": 538,
+      "canonical_slug": "troll",
+      "filename": "troll.png",
+      "url": "/assets/beast-thumbs/troll.png"
+    },
+    "Ts": {
+      "code": "Ts",
+      "name": "Toxic skull",
+      "source": "Custom",
+      "order": 539,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Tt": {
+      "code": "Tt",
+      "name": "Toxic toucan",
+      "source": "Custom",
+      "order": 540,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Tu": {
+      "code": "Tu",
+      "name": "turkey",
+      "source": "Lynne Kelly",
+      "order": 541,
+      "canonical_slug": "turkey",
+      "filename": "turkey.png",
+      "url": "/assets/beast-thumbs/turkey.png"
+    },
+    "Tv": {
+      "code": "Tv",
+      "name": "Toxic vulture",
+      "source": "Custom",
+      "order": 542,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Tw": {
+      "code": "Tw",
+      "name": "twitcher",
+      "source": "Lynne Kelly",
+      "order": 543,
+      "canonical_slug": "twitcher",
+      "filename": "twitcher.png",
+      "url": "/assets/beast-thumbs/twitcher.png"
+    },
+    "Tx": {
+      "code": "Tx",
+      "name": "Toxic Xena, warrior woman",
+      "source": "Custom",
+      "order": 544,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Ty": {
+      "code": "Ty",
+      "name": "tyrannosaurus",
+      "source": "Lynne Kelly",
+      "order": 545,
+      "canonical_slug": "tyrannosaurus",
+      "filename": "tyrannosaurus.png",
+      "url": "/assets/beast-thumbs/tyrannosaurus.png"
+    },
+    "Tz": {
+      "code": "Tz",
+      "name": "Toxic Zeus",
+      "source": "Custom",
+      "order": 546,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ua": {
+      "code": "Ua",
+      "name": "Umbral Arachne",
+      "source": "Custom",
+      "order": 547,
+      "canonical_slug": "arachne",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png"
+    },
+    "Ub": {
+      "code": "Ub",
+      "name": "Umbral bird of paradise",
+      "source": "Custom",
+      "order": 548,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Uc": {
+      "code": "Uc",
+      "name": "Umbral cat",
+      "source": "Custom",
+      "order": 549,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Ud": {
+      "code": "Ud",
+      "name": "Umbral dragon",
+      "source": "Custom",
+      "order": 550,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ue": {
+      "code": "Ue",
+      "name": "Umbral eagle",
+      "source": "Custom",
+      "order": 551,
+      "canonical_slug": "eagle",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png"
+    },
+    "Uf": {
+      "code": "Uf",
+      "name": "Umbral frog",
+      "source": "Custom",
+      "order": 552,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Ug": {
+      "code": "Ug",
+      "name": "Umbral goat",
+      "source": "Custom",
+      "order": 553,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Uh": {
+      "code": "Uh",
+      "name": "Umbral Hydra",
+      "source": "Custom",
+      "order": 554,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Ui": {
+      "code": "Ui",
+      "name": "Umbral imp",
+      "source": "Custom",
+      "order": 555,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "Uj": {
+      "code": "Uj",
+      "name": "Umbral jester",
+      "source": "Custom",
+      "order": 556,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Uk": {
+      "code": "Uk",
+      "name": "Umbral kitten",
+      "source": "Custom",
+      "order": 557,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Ul": {
+      "code": "Ul",
+      "name": "Ulysses",
+      "source": "Lynne Kelly",
+      "order": 558,
+      "canonical_slug": "ulysses",
+      "filename": "ulysses.png",
+      "url": "/assets/beast-thumbs/ulysses.png"
+    },
+    "Um": {
+      "code": "Um",
+      "name": "umbrella bird",
+      "source": "Lynne Kelly",
+      "order": 559,
+      "canonical_slug": "umbrella_bird",
+      "filename": "umbrella_bird.png",
+      "url": "/assets/beast-thumbs/umbrella_bird.png"
+    },
+    "Un": {
+      "code": "Un",
+      "name": "univalve",
+      "source": "Lynne Kelly",
+      "order": 560,
+      "canonical_slug": "univalve",
+      "filename": "univalve.png",
+      "url": "/assets/beast-thumbs/univalve.png"
+    },
+    "Uo": {
+      "code": "Uo",
+      "name": "Umbral owl",
+      "source": "Custom",
+      "order": 561,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "Up": {
+      "code": "Up",
+      "name": "Umbral panther",
+      "source": "Custom",
+      "order": 562,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Uq": {
+      "code": "Uq",
+      "name": "Umbral Quetzalcoatl",
+      "source": "Custom",
+      "order": 563,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Ur": {
+      "code": "Ur",
+      "name": "urchin",
+      "source": "Lynne Kelly",
+      "order": 564,
+      "canonical_slug": "urchin",
+      "filename": "urchin.png",
+      "url": "/assets/beast-thumbs/urchin.png"
+    },
+    "Us": {
+      "code": "Us",
+      "name": "usher",
+      "source": "Lynne Kelly",
+      "order": 565,
+      "canonical_slug": "usher",
+      "filename": "usher.png",
+      "url": "/assets/beast-thumbs/usher.png"
+    },
+    "Ut": {
+      "code": "Ut",
+      "name": "utopia",
+      "source": "Lynne Kelly",
+      "order": 566,
+      "canonical_slug": "utopia",
+      "filename": "utopia.png",
+      "url": "/assets/beast-thumbs/utopia.png"
+    },
+    "Uu": {
+      "code": "Uu",
+      "name": "Umbral unicorn",
+      "source": "Custom",
+      "order": 567,
+      "canonical_slug": "unicorn",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png"
+    },
+    "Uv": {
+      "code": "Uv",
+      "name": "Umbral vulture",
+      "source": "Custom",
+      "order": 568,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Uw": {
+      "code": "Uw",
+      "name": "Umbral wombat",
+      "source": "Custom",
+      "order": 569,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Ux": {
+      "code": "Ux",
+      "name": "Umbral Xena, warrior woman",
+      "source": "Custom",
+      "order": 570,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Uy": {
+      "code": "Uy",
+      "name": "Umbral yak",
+      "source": "Custom",
+      "order": 571,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Uz": {
+      "code": "Uz",
+      "name": "Umbral Zeus",
+      "source": "Custom",
+      "order": 572,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Va": {
+      "code": "Va",
+      "name": "vampire bat",
+      "source": "Lynne Kelly",
+      "order": 573,
+      "canonical_slug": "vampire_bat",
+      "filename": "vampire_bat.png",
+      "url": "/assets/beast-thumbs/vampire_bat.png"
+    },
+    "Vb": {
+      "code": "Vb",
+      "name": "Venom bird of paradise",
+      "source": "Custom",
+      "order": 574,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Vc": {
+      "code": "Vc",
+      "name": "Venom cat",
+      "source": "Custom",
+      "order": 575,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Vd": {
+      "code": "Vd",
+      "name": "Venom dragon",
+      "source": "Custom",
+      "order": 576,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ve": {
+      "code": "Ve",
+      "name": "Venetian",
+      "source": "Lynne Kelly",
+      "order": 577,
+      "canonical_slug": "venetian",
+      "filename": "venetian.png",
+      "url": "/assets/beast-thumbs/venetian.png"
+    },
+    "Vf": {
+      "code": "Vf",
+      "name": "Venom frog",
+      "source": "Custom",
+      "order": 578,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Vg": {
+      "code": "Vg",
+      "name": "Venom goat",
+      "source": "Custom",
+      "order": 579,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Vh": {
+      "code": "Vh",
+      "name": "Venom Hydra",
+      "source": "Custom",
+      "order": 580,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Vi": {
+      "code": "Vi",
+      "name": "viper",
+      "source": "Lynne Kelly",
+      "order": 581,
+      "canonical_slug": "viper",
+      "filename": "viper.png",
+      "url": "/assets/beast-thumbs/viper.png"
+    },
+    "Vj": {
+      "code": "Vj",
+      "name": "Venom jester",
+      "source": "Custom",
+      "order": 582,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Vk": {
+      "code": "Vk",
+      "name": "Venom kitten",
+      "source": "Custom",
+      "order": 583,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Vl": {
+      "code": "Vl",
+      "name": "Venom lion",
+      "source": "Custom",
+      "order": 584,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Vm": {
+      "code": "Vm",
+      "name": "Venom marmoset",
+      "source": "Custom",
+      "order": 585,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Vn": {
+      "code": "Vn",
+      "name": "Venom Neanderthal",
+      "source": "Custom",
+      "order": 586,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Vo": {
+      "code": "Vo",
+      "name": "volcano",
+      "source": "Lynne Kelly",
+      "order": 587,
+      "canonical_slug": "volcano",
+      "filename": "volcano.png",
+      "url": "/assets/beast-thumbs/volcano.png"
+    },
+    "Vp": {
+      "code": "Vp",
+      "name": "Venom panther",
+      "source": "Custom",
+      "order": 588,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Vq": {
+      "code": "Vq",
+      "name": "Venom Quetzalcoatl",
+      "source": "Custom",
+      "order": 589,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Vr": {
+      "code": "Vr",
+      "name": "Venom rat",
+      "source": "Custom",
+      "order": 590,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Vs": {
+      "code": "Vs",
+      "name": "Venom skull",
+      "source": "Custom",
+      "order": 591,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Vt": {
+      "code": "Vt",
+      "name": "Venom toucan",
+      "source": "Custom",
+      "order": 592,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Vu": {
+      "code": "Vu",
+      "name": "Vulcan",
+      "source": "Lynne Kelly",
+      "order": 593,
+      "canonical_slug": "vulcan",
+      "filename": "vulcan.png",
+      "url": "/assets/beast-thumbs/vulcan.png"
+    },
+    "Vv": {
+      "code": "Vv",
+      "name": "Venom vulture",
+      "source": "Custom",
+      "order": 594,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Vw": {
+      "code": "Vw",
+      "name": "Venom wombat",
+      "source": "Custom",
+      "order": 595,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Vx": {
+      "code": "Vx",
+      "name": "Venom Xena, warrior woman",
+      "source": "Custom",
+      "order": 596,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Vy": {
+      "code": "Vy",
+      "name": "Venom yak",
+      "source": "Custom",
+      "order": 597,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Vz": {
+      "code": "Vz",
+      "name": "Venom Zeus",
+      "source": "Custom",
+      "order": 598,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Wa": {
+      "code": "Wa",
+      "name": "walrus",
+      "source": "Lynne Kelly",
+      "order": 599,
+      "canonical_slug": "walrus",
+      "filename": "walrus.png",
+      "url": "/assets/beast-thumbs/walrus.png"
+    },
+    "Wb": {
+      "code": "Wb",
+      "name": "Wet bird of paradise",
+      "source": "Custom",
+      "order": 600,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Wc": {
+      "code": "Wc",
+      "name": "Wet cat",
+      "source": "Custom",
+      "order": 601,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Wd": {
+      "code": "Wd",
+      "name": "Wet dragon",
+      "source": "Custom",
+      "order": 602,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "We": {
+      "code": "We",
+      "name": "weevil",
+      "source": "Lynne Kelly",
+      "order": 603,
+      "canonical_slug": "weevil",
+      "filename": "weevil.png",
+      "url": "/assets/beast-thumbs/weevil.png"
+    },
+    "Wf": {
+      "code": "Wf",
+      "name": "Wet frog",
+      "source": "Custom",
+      "order": 604,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Wg": {
+      "code": "Wg",
+      "name": "Wet goat",
+      "source": "Custom",
+      "order": 605,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Wh": {
+      "code": "Wh",
+      "name": "whippet",
+      "source": "Lynne Kelly",
+      "order": 606,
+      "canonical_slug": "whippet",
+      "filename": "whippet.png",
+      "url": "/assets/beast-thumbs/whippet.png"
+    },
+    "Wi": {
+      "code": "Wi",
+      "name": "witch",
+      "source": "Lynne Kelly",
+      "order": 607,
+      "canonical_slug": "witch",
+      "filename": "witch.png",
+      "url": "/assets/beast-thumbs/witch.png"
+    },
+    "Wj": {
+      "code": "Wj",
+      "name": "Wet jester",
+      "source": "Custom",
+      "order": 608,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Wk": {
+      "code": "Wk",
+      "name": "Wet kitten",
+      "source": "Custom",
+      "order": 609,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Wl": {
+      "code": "Wl",
+      "name": "Wet lion",
+      "source": "Custom",
+      "order": 610,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Wm": {
+      "code": "Wm",
+      "name": "Wet marmoset",
+      "source": "Custom",
+      "order": 611,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Wn": {
+      "code": "Wn",
+      "name": "Wet Neanderthal",
+      "source": "Custom",
+      "order": 612,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Wo": {
+      "code": "Wo",
+      "name": "wolf",
+      "source": "Lynne Kelly",
+      "order": 613,
+      "canonical_slug": "wolf",
+      "filename": "wolf.png",
+      "url": "/assets/beast-thumbs/wolf.png"
+    },
+    "Wp": {
+      "code": "Wp",
+      "name": "Wet panther",
+      "source": "Custom",
+      "order": 614,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Wq": {
+      "code": "Wq",
+      "name": "Wet Quetzalcoatl",
+      "source": "Custom",
+      "order": 615,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Wr": {
+      "code": "Wr",
+      "name": "wren",
+      "source": "Lynne Kelly",
+      "order": 616,
+      "canonical_slug": "wren",
+      "filename": "wren.png",
+      "url": "/assets/beast-thumbs/wren.png"
+    },
+    "Ws": {
+      "code": "Ws",
+      "name": "Wet skull",
+      "source": "Custom",
+      "order": 617,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Wt": {
+      "code": "Wt",
+      "name": "Wet toucan",
+      "source": "Custom",
+      "order": 618,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Wu": {
+      "code": "Wu",
+      "name": "Wet unicorn",
+      "source": "Custom",
+      "order": 619,
+      "canonical_slug": "unicorn",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png"
+    },
+    "Wv": {
+      "code": "Wv",
+      "name": "Wet vulture",
+      "source": "Custom",
+      "order": 620,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Ww": {
+      "code": "Ww",
+      "name": "Wet wombat",
+      "source": "Custom",
+      "order": 621,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Wx": {
+      "code": "Wx",
+      "name": "Wet Xena, warrior woman",
+      "source": "Custom",
+      "order": 622,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Wy": {
+      "code": "Wy",
+      "name": "wyvern",
+      "source": "Lynne Kelly",
+      "order": 623,
+      "canonical_slug": "wyvern",
+      "filename": "wyvern.png",
+      "url": "/assets/beast-thumbs/wyvern.png"
+    },
+    "Wz": {
+      "code": "Wz",
+      "name": "Wet Zeus",
+      "source": "Custom",
+      "order": 624,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Xa": {
+      "code": "Xa",
+      "name": "xanthorrhoea",
+      "source": "Lynne Kelly",
+      "order": 625,
+      "canonical_slug": "xanthorrhoea",
+      "filename": "xanthorrhoea.png",
+      "url": "/assets/beast-thumbs/xanthorrhoea.png"
+    },
+    "Xb": {
+      "code": "Xb",
+      "name": "X-ray bird of paradise",
+      "source": "Custom",
+      "order": 626,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Xc": {
+      "code": "Xc",
+      "name": "X-ray cat",
+      "source": "Custom",
+      "order": 627,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Xd": {
+      "code": "Xd",
+      "name": "X-ray dragon",
+      "source": "Custom",
+      "order": 628,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Xe": {
+      "code": "Xe",
+      "name": "X-ray eagle",
+      "source": "Custom",
+      "order": 629,
+      "canonical_slug": "eagle",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png"
+    },
+    "Xf": {
+      "code": "Xf",
+      "name": "X-ray frog",
+      "source": "Custom",
+      "order": 630,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Xg": {
+      "code": "Xg",
+      "name": "X-ray goat",
+      "source": "Custom",
+      "order": 631,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Xh": {
+      "code": "Xh",
+      "name": "X-ray Hydra",
+      "source": "Custom",
+      "order": 632,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Xi": {
+      "code": "Xi",
+      "name": "X-ray imp",
+      "source": "Custom",
+      "order": 633,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "Xj": {
+      "code": "Xj",
+      "name": "X-ray jester",
+      "source": "Custom",
+      "order": 634,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Xk": {
+      "code": "Xk",
+      "name": "X-ray kitten",
+      "source": "Custom",
+      "order": 635,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Xl": {
+      "code": "Xl",
+      "name": "X-ray lion",
+      "source": "Custom",
+      "order": 636,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Xm": {
+      "code": "Xm",
+      "name": "X-ray marmoset",
+      "source": "Custom",
+      "order": 637,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Xn": {
+      "code": "Xn",
+      "name": "X-ray Neanderthal",
+      "source": "Custom",
+      "order": 638,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Xo": {
+      "code": "Xo",
+      "name": "X-ray owl",
+      "source": "Custom",
+      "order": 639,
+      "canonical_slug": "owl",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png"
+    },
+    "Xp": {
+      "code": "Xp",
+      "name": "X-ray panther",
+      "source": "Custom",
+      "order": 640,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Xq": {
+      "code": "Xq",
+      "name": "X-ray Quetzalcoatl",
+      "source": "Custom",
+      "order": 641,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Xr": {
+      "code": "Xr",
+      "name": "X-ray rat",
+      "source": "Custom",
+      "order": 642,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Xs": {
+      "code": "Xs",
+      "name": "X-ray skull",
+      "source": "Custom",
+      "order": 643,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Xt": {
+      "code": "Xt",
+      "name": "X-ray toucan",
+      "source": "Custom",
+      "order": 644,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Xu": {
+      "code": "Xu",
+      "name": "X-ray unicorn",
+      "source": "Custom",
+      "order": 645,
+      "canonical_slug": "unicorn",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png"
+    },
+    "Xv": {
+      "code": "Xv",
+      "name": "X-ray vulture",
+      "source": "Custom",
+      "order": 646,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Xw": {
+      "code": "Xw",
+      "name": "X-ray wombat",
+      "source": "Custom",
+      "order": 647,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Xx": {
+      "code": "Xx",
+      "name": "X-ray Xena, warrior woman",
+      "source": "Custom",
+      "order": 648,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Xy": {
+      "code": "Xy",
+      "name": "X-ray yak",
+      "source": "Custom",
+      "order": 649,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Xz": {
+      "code": "Xz",
+      "name": "X-ray Zeus",
+      "source": "Custom",
+      "order": 650,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Ya": {
+      "code": "Ya",
+      "name": "yachtsman",
+      "source": "Lynne Kelly",
+      "order": 651,
+      "canonical_slug": "yachtsman",
+      "filename": "yachtsman.png",
+      "url": "/assets/beast-thumbs/yachtsman.png"
+    },
+    "Yb": {
+      "code": "Yb",
+      "name": "Yellow bird of paradise",
+      "source": "Custom",
+      "order": 652,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Yc": {
+      "code": "Yc",
+      "name": "Yellow cat",
+      "source": "Custom",
+      "order": 653,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Yd": {
+      "code": "Yd",
+      "name": "Yellow dragon",
+      "source": "Custom",
+      "order": 654,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ye": {
+      "code": "Ye",
+      "name": "yeti",
+      "source": "Lynne Kelly",
+      "order": 655,
+      "canonical_slug": "yeti",
+      "filename": "yeti.png",
+      "url": "/assets/beast-thumbs/yeti.png"
+    },
+    "Yf": {
+      "code": "Yf",
+      "name": "Yellow frog",
+      "source": "Custom",
+      "order": 656,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Yg": {
+      "code": "Yg",
+      "name": "Yellow goat",
+      "source": "Custom",
+      "order": 657,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Yh": {
+      "code": "Yh",
+      "name": "Yellow Hydra",
+      "source": "Custom",
+      "order": 658,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Yi": {
+      "code": "Yi",
+      "name": "Yellow imp",
+      "source": "Custom",
+      "order": 659,
+      "canonical_slug": "imp",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png"
+    },
+    "Yj": {
+      "code": "Yj",
+      "name": "Yellow jester",
+      "source": "Custom",
+      "order": 660,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Yk": {
+      "code": "Yk",
+      "name": "Yellow kitten",
+      "source": "Custom",
+      "order": 661,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Yl": {
+      "code": "Yl",
+      "name": "Yellow lion",
+      "source": "Custom",
+      "order": 662,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Ym": {
+      "code": "Ym",
+      "name": "Yellow marmoset",
+      "source": "Custom",
+      "order": 663,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Yn": {
+      "code": "Yn",
+      "name": "Yellow Neanderthal",
+      "source": "Custom",
+      "order": 664,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Yo": {
+      "code": "Yo",
+      "name": "Yorkshire terrier",
+      "source": "Lynne Kelly",
+      "order": 665,
+      "canonical_slug": "yorkshire_terrier",
+      "filename": "yorkshire_terrier.png",
+      "url": "/assets/beast-thumbs/yorkshire_terrier.png"
+    },
+    "Yp": {
+      "code": "Yp",
+      "name": "Yellow panther",
+      "source": "Custom",
+      "order": 666,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Yq": {
+      "code": "Yq",
+      "name": "Yellow Quetzalcoatl",
+      "source": "Custom",
+      "order": 667,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Yr": {
+      "code": "Yr",
+      "name": "Yellow rat",
+      "source": "Custom",
+      "order": 668,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Ys": {
+      "code": "Ys",
+      "name": "Yellow skull",
+      "source": "Custom",
+      "order": 669,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Yt": {
+      "code": "Yt",
+      "name": "Yellow toucan",
+      "source": "Custom",
+      "order": 670,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Yu": {
+      "code": "Yu",
+      "name": "yucca plant",
+      "source": "Lynne Kelly",
+      "order": 671,
+      "canonical_slug": "yucca_plant",
+      "filename": "yucca_plant.png",
+      "url": "/assets/beast-thumbs/yucca_plant.png"
+    },
+    "Yv": {
+      "code": "Yv",
+      "name": "scroll apology",
+      "source": "Lynne Kelly",
+      "order": 672,
+      "canonical_slug": "scroll_apology",
+      "filename": "scroll_apology.png",
+      "url": "/assets/beast-thumbs/scroll_apology.png"
+    },
+    "Yw": {
+      "code": "Yw",
+      "name": "Yellow wombat",
+      "source": "Custom",
+      "order": 673,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Yx": {
+      "code": "Yx",
+      "name": "Yellow Xena, warrior woman",
+      "source": "Custom",
+      "order": 674,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Yy": {
+      "code": "Yy",
+      "name": "Yellow yak",
+      "source": "Custom",
+      "order": 675,
+      "canonical_slug": "yak",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png"
+    },
+    "Yz": {
+      "code": "Yz",
+      "name": "Yellow Zeus",
+      "source": "Custom",
+      "order": 676,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    },
+    "Za": {
+      "code": "Za",
+      "name": "Zapotec",
+      "source": "Lynne Kelly",
+      "order": 677,
+      "canonical_slug": "zapotec",
+      "filename": "zapotec.png",
+      "url": "/assets/beast-thumbs/zapotec.png"
+    },
+    "Zb": {
+      "code": "Zb",
+      "name": "Zinc bird of paradise",
+      "source": "Custom",
+      "order": 678,
+      "canonical_slug": "bird_of_paradise",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png"
+    },
+    "Zc": {
+      "code": "Zc",
+      "name": "Zinc cat",
+      "source": "Custom",
+      "order": 679,
+      "canonical_slug": "cat",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png"
+    },
+    "Zd": {
+      "code": "Zd",
+      "name": "Zinc dragon",
+      "source": "Custom",
+      "order": 680,
+      "canonical_slug": "dragon",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png"
+    },
+    "Ze": {
+      "code": "Ze",
+      "name": "zebra",
+      "source": "Lynne Kelly",
+      "order": 681,
+      "canonical_slug": "zebra",
+      "filename": "zebra.png",
+      "url": "/assets/beast-thumbs/zebra.png"
+    },
+    "Zf": {
+      "code": "Zf",
+      "name": "Zinc frog",
+      "source": "Custom",
+      "order": 682,
+      "canonical_slug": "frog",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png"
+    },
+    "Zg": {
+      "code": "Zg",
+      "name": "Zinc goat",
+      "source": "Custom",
+      "order": 683,
+      "canonical_slug": "goat",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png"
+    },
+    "Zh": {
+      "code": "Zh",
+      "name": "Zinc Hydra",
+      "source": "Custom",
+      "order": 684,
+      "canonical_slug": "hydra",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png"
+    },
+    "Zi": {
+      "code": "Zi",
+      "name": "zither",
+      "source": "Lynne Kelly",
+      "order": 685,
+      "canonical_slug": "zither",
+      "filename": "zither.png",
+      "url": "/assets/beast-thumbs/zither.png"
+    },
+    "Zj": {
+      "code": "Zj",
+      "name": "Zinc jester",
+      "source": "Custom",
+      "order": 686,
+      "canonical_slug": "jester",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png"
+    },
+    "Zk": {
+      "code": "Zk",
+      "name": "Zinc kitten",
+      "source": "Custom",
+      "order": 687,
+      "canonical_slug": "kitten",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png"
+    },
+    "Zl": {
+      "code": "Zl",
+      "name": "Zinc lion",
+      "source": "Custom",
+      "order": 688,
+      "canonical_slug": "lion",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png"
+    },
+    "Zm": {
+      "code": "Zm",
+      "name": "Zinc marmoset",
+      "source": "Custom",
+      "order": 689,
+      "canonical_slug": "marmoset",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png"
+    },
+    "Zn": {
+      "code": "Zn",
+      "name": "Zinc Neanderthal",
+      "source": "Custom",
+      "order": 690,
+      "canonical_slug": "neanderthal",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png"
+    },
+    "Zo": {
+      "code": "Zo",
+      "name": "zombie",
+      "source": "Lynne Kelly",
+      "order": 691,
+      "canonical_slug": "zombie",
+      "filename": "zombie.png",
+      "url": "/assets/beast-thumbs/zombie.png"
+    },
+    "Zp": {
+      "code": "Zp",
+      "name": "Zinc panther",
+      "source": "Custom",
+      "order": 692,
+      "canonical_slug": "panther",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png"
+    },
+    "Zq": {
+      "code": "Zq",
+      "name": "Zinc Quetzalcoatl",
+      "source": "Custom",
+      "order": 693,
+      "canonical_slug": "quetzalcoatl",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png"
+    },
+    "Zr": {
+      "code": "Zr",
+      "name": "Zinc rat",
+      "source": "Custom",
+      "order": 694,
+      "canonical_slug": "rat",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png"
+    },
+    "Zs": {
+      "code": "Zs",
+      "name": "Zinc skull",
+      "source": "Custom",
+      "order": 695,
+      "canonical_slug": "skull",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png"
+    },
+    "Zt": {
+      "code": "Zt",
+      "name": "Zinc toucan",
+      "source": "Custom",
+      "order": 696,
+      "canonical_slug": "toucan",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png"
+    },
+    "Zu": {
+      "code": "Zu",
+      "name": "zucchini",
+      "source": "Lynne Kelly",
+      "order": 697,
+      "canonical_slug": "zucchini",
+      "filename": "zucchini.png",
+      "url": "/assets/beast-thumbs/zucchini.png"
+    },
+    "Zv": {
+      "code": "Zv",
+      "name": "Zinc vulture",
+      "source": "Custom",
+      "order": 698,
+      "canonical_slug": "vulture",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png"
+    },
+    "Zw": {
+      "code": "Zw",
+      "name": "Zinc wombat",
+      "source": "Custom",
+      "order": 699,
+      "canonical_slug": "wombat",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png"
+    },
+    "Zx": {
+      "code": "Zx",
+      "name": "Zinc Xena, warrior woman",
+      "source": "Custom",
+      "order": 700,
+      "canonical_slug": "xena_warrior_woman",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png"
+    },
+    "Zy": {
+      "code": "Zy",
+      "name": "zygote",
+      "source": "Lynne Kelly",
+      "order": 701,
+      "canonical_slug": "zygote",
+      "filename": "zygote.png",
+      "url": "/assets/beast-thumbs/zygote.png"
+    },
+    "Zz": {
+      "code": "Zz",
+      "name": "Zinc Zeus",
+      "source": "Custom",
+      "order": 702,
+      "canonical_slug": "zeus",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png"
+    }
+  }
+}

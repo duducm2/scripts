@@ -1,0 +1,698 @@
+﻿[
+    {
+        "label":  "giraffe",
+        "slug":  "giraffe",
+        "code":  "Gi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "glider",
+        "slug":  "glider",
+        "code":  "Gl",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "gnome",
+        "slug":  "gnome",
+        "code":  "Gn",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "gorilla",
+        "slug":  "gorilla",
+        "code":  "Go",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "griffin",
+        "slug":  "griffin",
+        "code":  "Gr",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "gull",
+        "slug":  "gull",
+        "code":  "Gu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "gwardar",
+        "slug":  "gwardar",
+        "code":  "Gw",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "gypsy",
+        "slug":  "gypsy",
+        "code":  "Gy",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "hare",
+        "slug":  "hare",
+        "code":  "Ha",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "heron",
+        "slug":  "heron",
+        "code":  "He",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "hippopotamus",
+        "slug":  "hippopotamus",
+        "code":  "Hi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "horse",
+        "slug":  "horse",
+        "code":  "Ho",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "hummingbird",
+        "slug":  "hummingbird",
+        "code":  "Hu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "hyena",
+        "slug":  "hyena",
+        "code":  "Hy",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "iambic",
+        "slug":  "iambic",
+        "code":  "Ia",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "ibex",
+        "slug":  "ibex",
+        "code":  "Ib",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Icarus",
+        "slug":  "icarus",
+        "code":  "Ic",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "identical twin",
+        "slug":  "identical_twin",
+        "code":  "Id",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "iguana",
+        "slug":  "iguana",
+        "code":  "Ig",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "illusionist",
+        "slug":  "illusionist",
+        "code":  "Il",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "impala",
+        "slug":  "impala",
+        "code":  "Im",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "insect",
+        "slug":  "insect",
+        "code":  "In",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Iris",
+        "slug":  "iris",
+        "code":  "Ir",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "island",
+        "slug":  "island",
+        "code":  "Is",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "ivy",
+        "slug":  "ivy",
+        "code":  "Iv",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "jackass",
+        "slug":  "jackass",
+        "code":  "Ja",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "jellyfish",
+        "slug":  "jellyfish",
+        "code":  "Je",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "jigsaw",
+        "slug":  "jigsaw",
+        "code":  "Ji",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "jonquil",
+        "slug":  "jonquil",
+        "code":  "Jo",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "juggler",
+        "slug":  "juggler",
+        "code":  "Ju",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "kangaroo",
+        "slug":  "kangaroo",
+        "code":  "Ka",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "kestrel",
+        "slug":  "kestrel",
+        "code":  "Ke",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Medusa",
+        "slug":  "medusa",
+        "code":  "Me",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "millipede",
+        "slug":  "millipede",
+        "code":  "Mi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "monkey",
+        "slug":  "monkey",
+        "code":  "Mo",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "muskrat",
+        "slug":  "muskrat",
+        "code":  "Mu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "mynah",
+        "slug":  "mynah",
+        "code":  "My",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "nautilus",
+        "slug":  "nautilus",
+        "code":  "Na",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Neptune",
+        "slug":  "neptune",
+        "code":  "Ne",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "nit",
+        "slug":  "nit",
+        "code":  "Ni",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "noddy (bird)",
+        "slug":  "noddy_bird",
+        "code":  "No",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "numbat",
+        "slug":  "numbat",
+        "code":  "Nu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "nymph",
+        "slug":  "nymph",
+        "code":  "Ny",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "oak",
+        "slug":  "oak",
+        "code":  "Oa",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "octopus",
+        "slug":  "octopus",
+        "code":  "Oc",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Odin",
+        "slug":  "odin",
+        "code":  "Od",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "ogre",
+        "slug":  "ogre",
+        "code":  "Og",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "okapi",
+        "slug":  "okapi",
+        "code":  "Ok",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "olive",
+        "slug":  "olive",
+        "code":  "Ol",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "onion",
+        "slug":  "onion",
+        "code":  "On",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "opossum",
+        "slug":  "opossum",
+        "code":  "Op",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "orangutan",
+        "slug":  "orangutan",
+        "code":  "Or",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "ostrich",
+        "slug":  "ostrich",
+        "code":  "Os",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "otter",
+        "slug":  "otter",
+        "code":  "Ot",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "owlet",
+        "slug":  "owlet",
+        "code":  "Ow",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "oxen",
+        "slug":  "oxen",
+        "code":  "Ox",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "oyster",
+        "slug":  "oyster",
+        "code":  "Oy",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "panda",
+        "slug":  "panda",
+        "code":  "Pa",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "penguin",
+        "slug":  "penguin",
+        "code":  "Pe",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "phoenix",
+        "slug":  "phoenix",
+        "code":  "Ph",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "pig",
+        "slug":  "pig",
+        "code":  "Pi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "platypus",
+        "slug":  "platypus",
+        "code":  "Pl",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "polar bear",
+        "slug":  "polar_bear",
+        "code":  "Po",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "praying mantis",
+        "slug":  "praying_mantis",
+        "code":  "Pr",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "seahorse",
+        "slug":  "seahorse",
+        "code":  "Se",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "shrew",
+        "slug":  "shrew",
+        "code":  "Sh",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Siamese cat",
+        "slug":  "siamese_cat",
+        "code":  "Si",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "skunk",
+        "slug":  "skunk",
+        "code":  "Sk",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "sloth",
+        "slug":  "sloth",
+        "code":  "Sl",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "smuggler",
+        "slug":  "smuggler",
+        "code":  "Sm",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "snail",
+        "slug":  "snail",
+        "code":  "Sn",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "sourpuss",
+        "slug":  "sourpuss",
+        "code":  "So",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "spaniel",
+        "slug":  "spaniel",
+        "code":  "Sp",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "squirrel",
+        "slug":  "squirrel",
+        "code":  "Sq",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "stingray",
+        "slug":  "stingray",
+        "code":  "St",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "sugar glider",
+        "slug":  "sugar_glider",
+        "code":  "Su",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "swallow",
+        "slug":  "swallow",
+        "code":  "Sw",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "symphony",
+        "slug":  "symphony",
+        "code":  "Sy",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "tapir",
+        "slug":  "tapir",
+        "code":  "Ta",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "termite",
+        "slug":  "termite",
+        "code":  "Te",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "thornbill",
+        "slug":  "thornbill",
+        "code":  "Th",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "tiger",
+        "slug":  "tiger",
+        "code":  "Ti",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "toad",
+        "slug":  "toad",
+        "code":  "To",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "troll",
+        "slug":  "troll",
+        "code":  "Tr",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "turkey",
+        "slug":  "turkey",
+        "code":  "Tu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "twitcher",
+        "slug":  "twitcher",
+        "code":  "Tw",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "tyrannosaurus",
+        "slug":  "tyrannosaurus",
+        "code":  "Ty",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Ulysses",
+        "slug":  "ulysses",
+        "code":  "Ul",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "umbrella bird",
+        "slug":  "umbrella_bird",
+        "code":  "Um",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "univalve",
+        "slug":  "univalve",
+        "code":  "Un",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "urchin",
+        "slug":  "urchin",
+        "code":  "Ur",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "usher",
+        "slug":  "usher",
+        "code":  "Us",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "utopia",
+        "slug":  "utopia",
+        "code":  "Ut",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "vampire bat",
+        "slug":  "vampire_bat",
+        "code":  "Va",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Venetian",
+        "slug":  "venetian",
+        "code":  "Ve",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "viper",
+        "slug":  "viper",
+        "code":  "Vi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "volcano",
+        "slug":  "volcano",
+        "code":  "Vo",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Vulcan",
+        "slug":  "vulcan",
+        "code":  "Vu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "walrus",
+        "slug":  "walrus",
+        "code":  "Wa",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "weevil",
+        "slug":  "weevil",
+        "code":  "We",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "whippet",
+        "slug":  "whippet",
+        "code":  "Wh",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "witch",
+        "slug":  "witch",
+        "code":  "Wi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "wolf",
+        "slug":  "wolf",
+        "code":  "Wo",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "wren",
+        "slug":  "wren",
+        "code":  "Wr",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "wyvern",
+        "slug":  "wyvern",
+        "code":  "Wy",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "xanthorrhoea",
+        "slug":  "xanthorrhoea",
+        "code":  "Xa",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "yachtsman",
+        "slug":  "yachtsman",
+        "code":  "Ya",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "yeti",
+        "slug":  "yeti",
+        "code":  "Ye",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Yorkshire terrier",
+        "slug":  "yorkshire_terrier",
+        "code":  "Yo",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "yucca plant",
+        "slug":  "yucca_plant",
+        "code":  "Yu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "Zapotec",
+        "slug":  "zapotec",
+        "code":  "Za",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "zebra",
+        "slug":  "zebra",
+        "code":  "Ze",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "zither",
+        "slug":  "zither",
+        "code":  "Zi",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "zombie",
+        "slug":  "zombie",
+        "code":  "Zo",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "zucchini",
+        "slug":  "zucchini",
+        "code":  "Zu",
+        "source":  "Lynne Kelly"
+    },
+    {
+        "label":  "zygote",
+        "slug":  "zygote",
+        "code":  "Zy",
+        "source":  "Lynne Kelly"
+    }
+]

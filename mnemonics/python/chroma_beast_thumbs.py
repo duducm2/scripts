@@ -9,6 +9,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from beast_thumb_base import canonical_slug, slug
+
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "web" / "assets"
 THUMBS = ASSETS / "beast-thumbs"
@@ -21,7 +23,6 @@ def _is_chroma(r: int, g: int, b: int, bg: tuple[int, int, int]) -> bool:
     br, bg_, bb = bg
     if abs(r - br) <= TOL and abs(g - bg_) <= TOL and abs(b - bb) <= TOL:
         return True
-    # Hot-pink / magenta family used by GenerateImage when asked for #FF00FF
     if r >= 200 and g <= 60 and b >= 120:
         return True
     return False
@@ -30,7 +31,6 @@ def _is_chroma(r: int, g: int, b: int, bg: tuple[int, int, int]) -> bool:
 def chroma_to_rgba(src: Path) -> Image.Image:
     im = Image.open(src).convert("RGBA")
     w, h = im.size
-    # Sample corners to learn the actual key color (often not pure #FF00FF).
     samples = [
         im.getpixel((2, 2))[:3],
         im.getpixel((w - 3, 2))[:3],
@@ -44,18 +44,10 @@ def chroma_to_rgba(src: Path) -> Image.Image:
             r, g, b, a = px[x, y]
             if _is_chroma(r, g, b, bg):
                 px[x, y] = (0, 0, 0, 0)
-    # center-crop / pad to square then resize
     side = max(w, h)
     canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     canvas.paste(im, ((side - w) // 2, (side - h) // 2), im)
     return canvas.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
-
-
-def slug(name: str) -> str:
-    s = "".join(ch if ch.isalnum() else "_" for ch in name.lower())
-    while "__" in s:
-        s = s.replace("__", "_")
-    return s.strip("_") or "beast"
 
 
 def main() -> None:
@@ -64,7 +56,12 @@ def main() -> None:
         "--sources",
         type=Path,
         default=ASSETS / "_beast_thumb_sources",
-        help="Dir of source images named {slug}.png (unique beast_name)",
+        help="Dir of source images named {slug}.png (canonical beast_name)",
+    )
+    ap.add_argument(
+        "--slugs-from-bestiary",
+        action="store_true",
+        help="Also chroma every unique canonical target from bestiary.json",
     )
     args = ap.parse_args()
     sources = args.sources
@@ -76,8 +73,15 @@ def main() -> None:
     by_slug: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for bid, meta in icons.items():
         label = meta.get("label") or bid
-        s = meta.get("source_slug") or slug(label)
+        peg = meta.get("peg_code") or ""
+        s = meta.get("source_slug") or canonical_slug(label, code=peg or None)
         by_slug[s].append((bid, label))
+
+    if args.slugs_from_bestiary:
+        from beast_thumb_base import unique_canonical_targets
+
+        for t in unique_canonical_targets():
+            by_slug.setdefault(t["slug"], []).append(("", t["label"]))
 
     THUMBS.mkdir(parents=True, exist_ok=True)
     done = 0
@@ -85,11 +89,13 @@ def main() -> None:
     for s, pairs in sorted(by_slug.items()):
         src = sources / f"{s}.png"
         if not src.is_file():
-            alt = sources / f"{pairs[0][0]}.png"
+            # try raw slug of first label if different
+            alt_label = pairs[0][1]
+            alt = sources / f"{slug(alt_label)}.png"
             if alt.is_file():
                 src = alt
             else:
-                missing.append(pairs[0][1])
+                missing.append(pairs[0][1] or s)
                 continue
         rgba = chroma_to_rgba(src)
         dest = THUMBS / f"{s}.png"

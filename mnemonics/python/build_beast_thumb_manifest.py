@@ -4,16 +4,12 @@ from __future__ import annotations
 
 import csv
 import json
-import re
 from collections import defaultdict
 from pathlib import Path
 
+from beast_thumb_base import canonical_slug, short_label
+
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def slug(name: str) -> str:
-    s = "".join(ch if ch.isalnum() else "_" for ch in name.lower())
-    return re.sub(r"_+", "_", s).strip("_") or "beast"
 
 
 def main() -> None:
@@ -28,11 +24,12 @@ def main() -> None:
     icons = {}
     for b in qr_beasts:
         bid = b["id"]
-        label = b["beast_name"]
-        s = slug(label)
+        label = short_label(b.get("beast_name") or bid)
+        peg = b.get("peg_code") or ""
+        s = canonical_slug(label, code=peg or None)
         icons[bid] = {
             "label": label,
-            "peg_code": b.get("peg_code") or "",
+            "peg_code": peg,
             "filename": f"{s}.png",
             "url": f"/assets/beast-thumbs/{s}.png",
             "source_slug": s,
@@ -40,7 +37,7 @@ def main() -> None:
 
     unique_slugs = {meta["source_slug"] for meta in icons.values()}
     manifest = {
-        "version": 1,
+        "version": 3,
         "style": {
             "name": "Memory Quest Bestiary",
             "description": (
@@ -52,8 +49,8 @@ def main() -> None:
             "background": "transparent",
             "generated_with": "Cursor GenerateImage",
             "source_layout": (
-                "One chroma-keyed PNG per unique beast_name slug; all beast ids "
-                "sharing that name point at the same shared file"
+                "Custom adjective variants share the A–Z second-letter base icon; "
+                "Lynne Kelly / unique pegs each get their own canonical slug PNG"
             ),
             "generation_prompt_template": (
                 "Isolated RPG inventory item icon of {beast_name}, polished "
@@ -74,14 +71,12 @@ def main() -> None:
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "beast-thumbs").mkdir(parents=True, exist_ok=True)
     out = assets / "beast-thumb-manifest.json"
-    out.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {out} icons={len(icons)}")
 
     by_name: dict[str, list[str]] = defaultdict(list)
     for b in qr_beasts:
-        by_name[b["beast_name"]].append(b["id"])
+        by_name[short_label(b["beast_name"])].append(b["id"])
     print(f"unique_names={len(by_name)}")
     for name, bids in sorted(by_name.items(), key=lambda x: x[0].lower()):
         print(f"{name}\t{len(bids)}\t{','.join(bids)}")

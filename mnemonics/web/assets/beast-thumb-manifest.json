@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "style": {
     "name": "Memory Quest Bestiary",
     "description": "Cartoon RPG inventory icons for beast pegs — warm gold and navy accents, chunky readable silhouette.",
@@ -11,9 +11,9 @@
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
     "generated_at": "2026-09-24",
-    "source_layout": "One chroma-keyed PNG per unique short-label slug; all beast ids sharing that label point at the same shared file",
+    "source_layout": "Custom adjective variants share the A–Z second-letter base icon; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "362 beasts / 109 unique labels / 91 shared thumb files"
+    "catalog_scope": "362 beasts / 61 in-use slugs / 252 bestiary canonical icons"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -502,9 +502,9 @@
     "BEAST_ENGLISH_13_BB": {
       "label": "Brass bison",
       "peg_code": "Bb",
-      "filename": "brass_bison.png",
-      "url": "/assets/beast-thumbs/brass_bison.png",
-      "source_slug": "brass_bison"
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
     },
     "BEAST_ENGLISH_13_BE": {
       "label": "bee",
@@ -516,23 +516,23 @@
     "BEAST_ENGLISH_14_BF": {
       "label": "Blackwater ferret",
       "peg_code": "Bf",
-      "filename": "blackwater_ferret.png",
-      "url": "/assets/beast-thumbs/blackwater_ferret.png",
-      "source_slug": "blackwater_ferret"
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
     },
     "BEAST_ENGLISH_14_BG": {
       "label": "Boulder giraffe",
       "peg_code": "Bg",
-      "filename": "boulder_giraffe.png",
-      "url": "/assets/beast-thumbs/boulder_giraffe.png",
-      "source_slug": "boulder_giraffe"
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
     },
     "BEAST_ENGLISH_15_BH": {
       "label": "Bitter hare",
       "peg_code": "Bh",
-      "filename": "bitter_hare.png",
-      "url": "/assets/beast-thumbs/bitter_hare.png",
-      "source_slug": "bitter_hare"
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
     },
     "BEAST_ENGLISH_15_BI": {
       "label": "bison",
@@ -544,16 +544,16 @@
     "BEAST_ENGLISH_15_BJ": {
       "label": "Basil jellyfish",
       "peg_code": "Bj",
-      "filename": "basil_jellyfish.png",
-      "url": "/assets/beast-thumbs/basil_jellyfish.png",
-      "source_slug": "basil_jellyfish"
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
     },
     "BEAST_ENGLISH_15_BK": {
       "label": "Bloodmoon kestrel",
       "peg_code": "Bk",
-      "filename": "bloodmoon_kestrel.png",
-      "url": "/assets/beast-thumbs/bloodmoon_kestrel.png",
-      "source_slug": "bloodmoon_kestrel"
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
     },
     "BEAST_ENGLISH_16_BL": {
       "label": "bloodhound",
@@ -565,16 +565,16 @@
     "BEAST_ENGLISH_16_BM": {
       "label": "Bone marmoset",
       "peg_code": "Bm",
-      "filename": "bone_marmoset.png",
-      "url": "/assets/beast-thumbs/bone_marmoset.png",
-      "source_slug": "bone_marmoset"
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
     },
     "BEAST_ENGLISH_16_BN": {
       "label": "Blazing nightjar",
       "peg_code": "Bn",
-      "filename": "blazing_nightjar.png",
-      "url": "/assets/beast-thumbs/blazing_nightjar.png",
-      "source_slug": "blazing_nightjar"
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
     },
     "BEAST_ENGLISH_16_BO": {
       "label": "bower-bird",
@@ -586,16 +586,16 @@
     "BEAST_ENGLISH_16_BP": {
       "label": "Blackwater penguin",
       "peg_code": "Bp",
-      "filename": "blackwater_penguin.png",
-      "url": "/assets/beast-thumbs/blackwater_penguin.png",
-      "source_slug": "blackwater_penguin"
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
     },
     "BEAST_ENGLISH_17_BQ": {
       "label": "Boulder quail",
       "peg_code": "Bq",
-      "filename": "boulder_quail.png",
-      "url": "/assets/beast-thumbs/boulder_quail.png",
-      "source_slug": "boulder_quail"
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
     },
     "BEAST_ENGLISH_17_BR": {
       "label": "brontosaurus",
@@ -607,16 +607,16 @@
     "BEAST_ENGLISH_18_BS": {
       "label": "Bone Shark",
       "peg_code": "Bs",
-      "filename": "bone_shark.png",
-      "url": "/assets/beast-thumbs/bone_shark.png",
-      "source_slug": "bone_shark"
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
     },
     "BEAST_ENGLISH_18_BT": {
       "label": "Bone Toad",
       "peg_code": "Bt",
-      "filename": "bone_toad.png",
-      "url": "/assets/beast-thumbs/bone_toad.png",
-      "source_slug": "bone_toad"
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
     },
     "BEAST_ENGLISH_18_BU": {
       "label": "butterfly",
@@ -1482,23 +1482,23 @@
     "BEAST_SCIENCE_14_BB": {
       "label": "Bone Bear",
       "peg_code": "Bb",
-      "filename": "bone_bear.png",
-      "url": "/assets/beast-thumbs/bone_bear.png",
-      "source_slug": "bone_bear"
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
     },
     "BEAST_SCIENCE_14_BC": {
       "label": "Bone Cat",
       "peg_code": "Bc",
-      "filename": "bone_cat.png",
-      "url": "/assets/beast-thumbs/bone_cat.png",
-      "source_slug": "bone_cat"
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
     },
     "BEAST_SCIENCE_14_BD": {
       "label": "Bone Dog",
       "peg_code": "Bd",
-      "filename": "bone_dog.png",
-      "url": "/assets/beast-thumbs/bone_dog.png",
-      "source_slug": "bone_dog"
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
     },
     "BEAST_SCIENCE_14_BE": {
       "label": "bee",
@@ -1510,23 +1510,23 @@
     "BEAST_SCIENCE_15_BF": {
       "label": "Bone frog",
       "peg_code": "Bf",
-      "filename": "bone_frog.png",
-      "url": "/assets/beast-thumbs/bone_frog.png",
-      "source_slug": "bone_frog"
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
     },
     "BEAST_SCIENCE_15_BG": {
       "label": "Bone goat",
       "peg_code": "Bg",
-      "filename": "bone_goat.png",
-      "url": "/assets/beast-thumbs/bone_goat.png",
-      "source_slug": "bone_goat"
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
     },
     "BEAST_SCIENCE_15_BH": {
       "label": "Bone Hydra",
       "peg_code": "Bh",
-      "filename": "bone_hydra.png",
-      "url": "/assets/beast-thumbs/bone_hydra.png",
-      "source_slug": "bone_hydra"
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
     },
     "BEAST_SCIENCE_15_BI": {
       "label": "bison",
@@ -1538,16 +1538,16 @@
     "BEAST_SCIENCE_15_BJ": {
       "label": "Bone jester",
       "peg_code": "Bj",
-      "filename": "bone_jester.png",
-      "url": "/assets/beast-thumbs/bone_jester.png",
-      "source_slug": "bone_jester"
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
     },
     "BEAST_SCIENCE_16_BK": {
       "label": "Bone kitten",
       "peg_code": "Bk",
-      "filename": "bone_kitten.png",
-      "url": "/assets/beast-thumbs/bone_kitten.png",
-      "source_slug": "bone_kitten"
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
     },
     "BEAST_SCIENCE_16_BL": {
       "label": "bloodhound",
@@ -1559,16 +1559,16 @@
     "BEAST_SCIENCE_16_BM": {
       "label": "Bone marmoset",
       "peg_code": "Bm",
-      "filename": "bone_marmoset.png",
-      "url": "/assets/beast-thumbs/bone_marmoset.png",
-      "source_slug": "bone_marmoset"
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
     },
     "BEAST_SCIENCE_17_BN": {
       "label": "Bone Neanderthal",
       "peg_code": "Bn",
-      "filename": "bone_neanderthal.png",
-      "url": "/assets/beast-thumbs/bone_neanderthal.png",
-      "source_slug": "bone_neanderthal"
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
     },
     "BEAST_SCIENCE_17_BO": {
       "label": "bower-bird",
@@ -1580,16 +1580,16 @@
     "BEAST_SCIENCE_17_BP": {
       "label": "Bone panther",
       "peg_code": "Bp",
-      "filename": "bone_panther.png",
-      "url": "/assets/beast-thumbs/bone_panther.png",
-      "source_slug": "bone_panther"
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
     },
     "BEAST_SCIENCE_18_BQ": {
       "label": "Bone Quetzalcoatl",
       "peg_code": "Bq",
-      "filename": "bone_quetzalcoatl.png",
-      "url": "/assets/beast-thumbs/bone_quetzalcoatl.png",
-      "source_slug": "bone_quetzalcoatl"
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
     },
     "BEAST_SCIENCE_18_BR": {
       "label": "brontosaurus",
@@ -1601,16 +1601,16 @@
     "BEAST_SCIENCE_18_BS": {
       "label": "Bone skull",
       "peg_code": "Bs",
-      "filename": "bone_skull.png",
-      "url": "/assets/beast-thumbs/bone_skull.png",
-      "source_slug": "bone_skull"
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
     },
     "BEAST_SCIENCE_18_BT": {
       "label": "Bone toucan",
       "peg_code": "Bt",
-      "filename": "bone_toucan.png",
-      "url": "/assets/beast-thumbs/bone_toucan.png",
-      "source_slug": "bone_toucan"
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
     },
     "BEAST_SCIENCE_19_BU": {
       "label": "butterfly",
@@ -1622,23 +1622,23 @@
     "BEAST_SCIENCE_19_BV": {
       "label": "Bone vulture",
       "peg_code": "Bv",
-      "filename": "bone_vulture.png",
-      "url": "/assets/beast-thumbs/bone_vulture.png",
-      "source_slug": "bone_vulture"
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
     },
     "BEAST_SCIENCE_19_BW": {
       "label": "Bone wombat",
       "peg_code": "Bw",
-      "filename": "bone_wombat.png",
-      "url": "/assets/beast-thumbs/bone_wombat.png",
-      "source_slug": "bone_wombat"
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
     },
     "BEAST_SCIENCE_19_BX": {
       "label": "Bone Xena, warrior woman",
       "peg_code": "Bx",
-      "filename": "bone_xena_warrior_woman.png",
-      "url": "/assets/beast-thumbs/bone_xena_warrior_woman.png",
-      "source_slug": "bone_xena_warrior_woman"
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
     },
     "BEAST_SKILLS_01_A": {
       "label": "Arachne",
@@ -2021,9 +2021,9 @@
     "BEAST_COMMUNICATION_Q": {
       "label": "rat",
       "peg_code": "Q",
-      "filename": "rat.png",
-      "url": "/assets/beast-thumbs/rat.png",
-      "source_slug": "rat"
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
     },
     "BEAST_COMMUNICATION_04_R": {
       "label": "rat",
@@ -2511,23 +2511,23 @@
     "BEAST_DATAANALYST_13_Bb": {
       "label": "Bone bird of paradise",
       "peg_code": "Bb",
-      "filename": "bone_bird_of_paradise.png",
-      "url": "/assets/beast-thumbs/bone_bird_of_paradise.png",
-      "source_slug": "bone_bird_of_paradise"
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
     },
     "BEAST_DATAANALYST_13_Bc": {
       "label": "Bone cat",
       "peg_code": "Bc",
-      "filename": "bone_cat.png",
-      "url": "/assets/beast-thumbs/bone_cat.png",
-      "source_slug": "bone_cat"
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
     },
     "BEAST_DATAANALYST_13_Bd": {
       "label": "Bone dragon",
       "peg_code": "Bd",
-      "filename": "bone_dragon.png",
-      "url": "/assets/beast-thumbs/bone_dragon.png",
-      "source_slug": "bone_dragon"
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
     },
     "BEAST_DATAANALYST_14_Be": {
       "label": "bee",
@@ -2539,16 +2539,16 @@
     "BEAST_DATAANALYST_14_Bf": {
       "label": "Bone frog",
       "peg_code": "Bf",
-      "filename": "bone_frog.png",
-      "url": "/assets/beast-thumbs/bone_frog.png",
-      "source_slug": "bone_frog"
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
     },
     "BEAST_DATAANALYST_14_Bg": {
       "label": "Bone goat",
       "peg_code": "Bg",
-      "filename": "bone_goat.png",
-      "url": "/assets/beast-thumbs/bone_goat.png",
-      "source_slug": "bone_goat"
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
     }
   }
 }
