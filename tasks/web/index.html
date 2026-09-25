@@ -195,11 +195,53 @@
       }
       .proj-icon {
         flex: 0 0 auto;
+        display: inline-block;
         width: 26px;
         height: 26px;
-        object-fit: contain;
-        background: transparent;
+        background: var(--icon-color, #ffffff);
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-mode: alpha;
+        mask-mode: alpha;
         border: none;
+        vertical-align: middle;
+      }
+      .icon-color-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 0 0 auto;
+      }
+      .icon-color-row label {
+        font-size: 12px;
+        color: var(--muted, #aaa);
+      }
+      .icon-color-row input[type="color"] {
+        width: 36px;
+        height: 28px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: transparent;
+        cursor: pointer;
+      }
+      .icon-preview {
+        width: 48px;
+        height: 48px;
+        flex: 0 0 auto;
+        background: var(--icon-color, #ffffff);
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-mode: alpha;
+        mask-mode: alpha;
       }
       .proj-title {
         font-weight: 600;
@@ -1678,10 +1720,22 @@
           return "/data/" + ref;
         }
 
+        function projectIconColor(project) {
+          const c = String(project?.icon_color || "")
+            .trim()
+            .toLowerCase();
+          if (/^#[0-9a-f]{6}$/.test(c)) return c;
+          if (/^#[0-9a-f]{3}$/.test(c))
+            return "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+          return "#ffffff";
+        }
+
         function projectIconHtml(project) {
           const src = projectIconSrc(project);
           if (!src) return "";
-          return `<img class="proj-icon" src="${esc(src)}" alt="" title="Project icon" />`;
+          const color = projectIconColor(project);
+          const safeUrl = esc(src).replace(/'/g, "%27");
+          return `<span class="proj-icon" style="--icon-color:${esc(color)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Project icon" role="img" aria-label="Project icon"></span>`;
         }
 
         async function copyInfoById(id) {
@@ -4411,9 +4465,16 @@
             return;
           }
           const currentSrc = projectIconSrc(p);
+          const currentColor = projectIconColor(p);
           const clearBtn = currentSrc
             ? `<button class="btn danger" data-m="clear-icon">Clear icon</button>`
             : "";
+          const previewHtml = currentSrc
+            ? (() => {
+                const safeUrl = esc(currentSrc).replace(/'/g, "%27");
+                return `<span id="mIconPreview" class="icon-preview" style="--icon-color:${esc(currentColor)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Current icon"></span>`;
+              })()
+            : `<span id="mIconPreview" class="icon-preview" style="display:none"></span>`;
           modal(`<div class="modal"><h3>Project icon — ${esc(p.title)}</h3>
       <div class="modal-body">
       <p class="sub">Search Wikimedia Commons (PNG/SVG preferred). No AI image generation.</p>
@@ -4421,6 +4482,11 @@
         <input id="mIconQ" type="search" placeholder="Search icons…" value="${esc(p.title || "")}"/>
         <button class="btn" data-m="search-icon">Search</button>
         <button class="btn" data-m="suggest-icon">Suggest top 5</button>
+        <div class="icon-color-row">
+          <label for="mIconColor">Color</label>
+          <input id="mIconColor" type="color" value="${esc(currentColor)}" title="Icon tint color"/>
+          ${previewHtml}
+        </div>
         ${clearBtn}
       </div>
       <div id="mIconStatus" class="sub"></div>
@@ -4430,6 +4496,32 @@
 
           const statusEl = () => $("#mIconStatus");
           const gridEl = () => $("#mIconGrid");
+
+          const applyPreviewColor = (color) => {
+            const preview = $("#mIconPreview");
+            if (preview) preview.style.setProperty("--icon-color", color);
+          };
+
+          const saveIconColor = async (color) => {
+            try {
+              const r = await api(
+                "/api/projects/" +
+                  encodeURIComponent(projectId) +
+                  "/icon-color",
+                {
+                  method: "PATCH",
+                  body: JSON.stringify({ color }),
+                },
+              );
+              if (r.project) mergeApiRow("projects", r.project);
+              applyPreviewColor(
+                projectIconColor(r.project || { icon_color: color }),
+              );
+              render();
+            } catch (err) {
+              toast(err.message || String(err));
+            }
+          };
 
           const renderResults = (results, meta) => {
             const grid = gridEl();
@@ -4559,6 +4651,17 @@
               e.preventDefault();
               await runSearch();
             }
+          });
+          let colorTimer = null;
+          $("#mIconColor")?.addEventListener("input", (e) => {
+            const color = e.target.value || "#ffffff";
+            applyPreviewColor(color);
+            clearTimeout(colorTimer);
+            colorTimer = setTimeout(() => void saveIconColor(color), 200);
+          });
+          $("#mIconColor")?.addEventListener("change", (e) => {
+            clearTimeout(colorTimer);
+            void saveIconColor(e.target.value || "#ffffff");
           });
           focusModalPrimaryField("#mIconQ");
           void runSuggest();

@@ -168,9 +168,7 @@ class TaskHandler(BaseHTTPRequestHandler):
                 self._json(404, {"ok": False, "error": "project not found"})
                 return
             sections = [
-                s
-                for s in store.load("sections")
-                if s.get("project_id") == project_id
+                s for s in store.load("sections") if s.get("project_id") == project_id
             ]
             tasks = [
                 t for t in store.load("tasks") if t.get("project_id") == project_id
@@ -278,6 +276,27 @@ class TaskHandler(BaseHTTPRequestHandler):
                 500, {"ok": False, "error": str(e), "trace": traceback.format_exc()}
             )
 
+    def do_PATCH(self) -> None:
+        parsed = urlparse(self.path)
+        path = unquote(parsed.path)
+        store = get_store(self.data_dir)
+        try:
+            payload = self._read_json()
+        except json.JSONDecodeError:
+            self._json(400, {"ok": False, "error": "invalid JSON"})
+            return
+        try:
+            if path.startswith("/api/projects/") and path.endswith("/icon-color"):
+                pid = path[len("/api/projects/") : -len("/icon-color")]
+                color = payload.get("color") if "color" in payload else ""
+                self._json(200, store.set_project_icon_color(pid, str(color or "")))
+                return
+            self._json(404, {"ok": False, "error": "not found"})
+        except Exception as e:
+            self._json(
+                500, {"ok": False, "error": str(e), "trace": traceback.format_exc()}
+            )
+
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
@@ -297,9 +316,7 @@ class TaskHandler(BaseHTTPRequestHandler):
                     data, ext = icon_commons.download_image(
                         url=str(payload.get("url") or ""),
                         commons_title=str(
-                            payload.get("commons_title")
-                            or payload.get("title")
-                            or ""
+                            payload.get("commons_title") or payload.get("title") or ""
                         ),
                     )
                 except Exception as e:

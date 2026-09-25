@@ -19,6 +19,7 @@ HEADERS = {
         "active",
         "created_at",
         "icon_ref",
+        "icon_color",
     ],
     "sections": ["id", "project_id", "title", "sort_order"],
     "tasks": [
@@ -537,6 +538,7 @@ class TaskStore:
             "active": "1",
             "created_at": now_stamp(),
             "icon_ref": "",
+            "icon_color": "#ffffff",
         }
         rows.append(row)
         self.save("projects", rows)
@@ -610,6 +612,40 @@ class TaskStore:
         for r in rows:
             if r["id"] == pid:
                 r = {**r, "icon_ref": ""}
+            out.append(r)
+        self.save("projects", out)
+        return {"ok": True, "project": next(x for x in out if x["id"] == pid)}
+
+    @staticmethod
+    def _normalize_icon_color(color: str) -> str | None:
+        """Return #rrggbb or None if invalid. Empty/default → #ffffff."""
+        raw = (color or "").strip().lower()
+        if not raw or raw in {"default", "none", "white"}:
+            return "#ffffff"
+        if not raw.startswith("#"):
+            raw = "#" + raw
+        if re.fullmatch(r"#[0-9a-f]{3}", raw):
+            return "#" + "".join(c * 2 for c in raw[1:])
+        if re.fullmatch(r"#[0-9a-f]{6}", raw):
+            return raw
+        return None
+
+    def set_project_icon_color(self, project_id: str, color: str) -> dict:
+        """Set projects.icon_color (flat tint); does not touch the icon file."""
+        pid = (project_id or "").strip()
+        if not pid:
+            return {"ok": False, "error": "project id required"}
+        normalized = self._normalize_icon_color(color)
+        if normalized is None:
+            return {"ok": False, "error": "invalid color (use #rgb or #rrggbb)"}
+        rows = self.load("projects")
+        target = next((r for r in rows if r.get("id") == pid), None)
+        if not target:
+            return {"ok": False, "error": "project not found"}
+        out = []
+        for r in rows:
+            if r["id"] == pid:
+                r = {**r, "icon_color": normalized}
             out.append(r)
         self.save("projects", out)
         return {"ok": True, "project": next(x for x in out if x["id"] == pid)}
@@ -902,7 +938,7 @@ class TaskStore:
         self.save("info_points", rows)
 
     def migrate_project_columns(self) -> None:
-        """Rewrite projects.csv when icon_ref header is missing."""
+        """Rewrite projects.csv when icon_ref / icon_color headers are missing."""
         path = self.path("projects")
         if not path.exists():
             return
@@ -916,6 +952,9 @@ class TaskStore:
         if list(header) == want:
             return
         rows = self.load("projects")
+        for r in rows:
+            if not (r.get("icon_color") or "").strip():
+                r["icon_color"] = "#ffffff"
         self.save("projects", rows)
 
     # --- info ---
