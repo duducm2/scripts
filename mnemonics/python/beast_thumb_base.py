@@ -206,10 +206,20 @@ def beast_thumb_md_image(
     *,
     from_dir: str = "practice",
     alt: str | None = None,
+    width: int = 28,
 ) -> str | None:
-    """Markdown image syntax, or None if no thumb file."""
+    """GitHub-friendly HTML thumb (sized); None if no thumb file.
+
+    Plain Markdown ![…](…) ignores width on GitHub/mobile, so we emit <img>.
+    """
     src = beast_thumb_md_src(name, code=code, source=source, from_dir=from_dir)
     if not src:
         return None
     label = short_label(name) or (alt or "beast")
-    return f"![{label}]({src})"
+    # Escape quotes in alt only
+    safe_alt = label.replace('"', "'")
+    w = max(12, min(int(width), 128))
+    return (
+        f'<img src="{src}" alt="{safe_alt}" width="{w}" height="{w}" '
+        f'style="vertical-align:middle;height:{w}px;width:{w}px;" />'
+    )

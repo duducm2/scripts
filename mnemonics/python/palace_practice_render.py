@@ -123,7 +123,9 @@ def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str
             peg = peg or raw[1 : raw.index("]")].strip()
         else:
             name = raw
-    img = beast_thumb_md_image(name or beast_label, code=peg or None, from_dir="practice")
+    img = beast_thumb_md_image(
+        name or beast_label, code=peg or None, from_dir="practice", width=32
+    )
     if img:
         lines.append(img)
         lines.append("")

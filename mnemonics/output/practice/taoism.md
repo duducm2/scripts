@@ -11,7 +11,7 @@
 
 ### 🟧 [P] panther
 
-![panther](../../web/assets/beast-thumbs/panther.png)
+<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Taoism <kbd><strong><u>splits</u></strong></kbd> into Daojia (a <kbd><strong><u>school</u></strong></kbd> of <kbd><strong><u>teachings</u></strong></kbd> and texts) and Daojiao (an organized <kbd><strong><u>religion</u></strong></kbd>).
@@ -31,7 +31,7 @@ A two-headed panther stands at a left-side gate. One head whispers riddles that 
 
 ### 🟧 [Q] Quetzalcoatl
 
-![Quetzalcoatl](../../web/assets/beast-thumbs/quetzalcoatl.png)
+<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Way of the Celestial Masters was the <kbd><strong><u>first</u></strong></kbd> <kbd><strong><u>organized</u></strong></kbd> Taoist group, started by Zhang Daoling after a <kbd><strong><u>vision</u></strong></kbd> of Laozi.
@@ -50,7 +50,7 @@ A huge feathered serpent coils around a right-side parked car and stacks five gl
 
 ### 🟧 [R] rat
 
-![rat](../../web/assets/beast-thumbs/rat.png)
+<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Three Pure Ones are the <kbd><strong><u>highest</u></strong></kbd> Taoist gods, three <kbd><strong><u>faces</u></strong></kbd> of the Tao as it takes <kbd><strong><u>form</u></strong></kbd>.
@@ -69,7 +69,7 @@ A three-headed rat at the far end of the street bites three cheeses at once. The
 
 ### 🟧 [S] skull
 
-![skull](../../web/assets/beast-thumbs/skull.png)
+<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Jade Emperor <kbd><strong><u>rules</u></strong></kbd> the <kbd><strong><u>sky</u></strong></kbd> in Taoist belief and runs it like an old Chinese <kbd><strong><u>court</u></strong></kbd>.
@@ -88,7 +88,7 @@ A giant skull in a jade crown sits on a cloud-throne above a roof, bone so smoot
 
 ### 🟧 [T] toucan
 
-![toucan](../../web/assets/beast-thumbs/toucan.png)
+<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Quanzhen is a <kbd><strong><u>monastic</u></strong></kbd> Taoist school that trains inner <kbd><strong><u>alchemy</u></strong></kbd> and <kbd><strong><u>blends</u></strong></kbd> three teachings.
@@ -126,7 +126,7 @@ _No gallery images._
 
 ### 🟧 [K] kitten
 
-![kitten](../../web/assets/beast-thumbs/kitten.png)
+<img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Yin and yang are the <kbd><strong><u>paired</u></strong></kbd> forces (dark/light, soft/hard, and so on) whose <kbd><strong><u>play</u></strong></kbd> shapes the <kbd><strong><u>world</u></strong></kbd>.
@@ -145,7 +145,7 @@ A kitten on a left-side parked car bats a ball of yarn that is half pitch-black 
 
 ### 🟧 [L] lion
 
-![lion](../../web/assets/beast-thumbs/lion.png)
+<img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Qi is the <kbd><strong><u>living</u></strong></kbd> stuff of the universe, the <kbd><strong><u>body</u></strong></kbd> of the Tao you can <kbd><strong><u>feel</u></strong></kbd> in all things.
@@ -164,7 +164,7 @@ A lion made of crackling energy walks along a right-side wall, paws that never q
 
 ### 🟧 [M] marmoset
 
-![marmoset](../../web/assets/beast-thumbs/marmoset.png)
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Wuxing is the <kbd><strong><u>five</u></strong></kbd> <kbd><strong><u>phases</u></strong></kbd> — wood, fire, earth, metal, water — used to explain how things <kbd><strong><u>change</u></strong></kbd>.
@@ -183,7 +183,7 @@ A marmoset on a far facade juggles five orbs that scream five ways: fire crackle
 
 ### 🟧 [N] Neanderthal
 
-![Neanderthal](../../web/assets/beast-thumbs/neanderthal.png)
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Neidan is inner <kbd><strong><u>alchemy</u></strong></kbd>: you change <kbd><strong><u>jing</u></strong></kbd>, <kbd><strong><u>qi</u></strong></kbd>, and <kbd><strong><u>shen</u></strong></kbd> inside the body to live <kbd><strong><u>longer</u></strong></kbd> and change the spirit.
@@ -204,7 +204,7 @@ A Neanderthal sits on a balcony in a still pose, with a cauldron boiling inside 
 
 ### 🟧 [O] owl
 
-![owl](../../web/assets/beast-thumbs/owl.png)
+<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Xian are <kbd><strong><u>immortals</u></strong></kbd> who gain strange <kbd><strong><u>powers</u></strong></kbd> by <kbd><strong><u>mastering</u></strong></kbd> the Tao, body and spirit both.
@@ -242,7 +242,7 @@ _No gallery images._
 
 ### 🟧 [F] frog
 
-![frog](../../web/assets/beast-thumbs/frog.png)
+<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Laozi is the traditional <kbd><strong><u>founder</u></strong></kbd> of Taoism, but scholars <kbd><strong><u>debate</u></strong></kbd> whether he was a <kbd><strong><u>real</u></strong></kbd> person.
@@ -261,7 +261,7 @@ One frog sits on a lily pad in a curb puddle by a left-side wall. Its throat-sac
 
 ### 🟧 [G] goat
 
-![goat](../../web/assets/beast-thumbs/goat.png)
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Tao Te Ching is the core Taoist <kbd><strong><u>book</u></strong></kbd>, a short <kbd><strong><u>poetic</u></strong></kbd> text <kbd><strong><u>tied</u></strong></kbd> to Laozi.
@@ -280,7 +280,7 @@ A goat chained to a right-side fence chews a scroll that talks while it is eaten
 
 ### 🟧 [H] Hydra
 
-![Hydra](../../web/assets/beast-thumbs/hydra.png)
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Zhuangzi was a major Taoist <kbd><strong><u>hermit</u></strong></kbd>, and some think <kbd><strong><u>southern</u></strong></kbd> <kbd><strong><u>shaman</u></strong></kbd> practice shaped him.
@@ -299,7 +299,7 @@ A Hydra fills a cave mouth that opened in a far brick wall. Shaman rattles grow 
 
 ### 🟧 [I] imp
 
-![imp](../../web/assets/beast-thumbs/imp.png)
+<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Zhuangzi uses <kbd><strong><u>stories</u></strong></kbd> and talks to push a <kbd><strong><u>free</u></strong></kbd> life in line with nature, not stiff social <kbd><strong><u>rules</u></strong></kbd>.
@@ -318,7 +318,7 @@ An imp juggles dirt-smelling story balls from a balcony. One ball hits a stone o
 
 ### 🟧 [J] jester
 
-![jester](../../web/assets/beast-thumbs/jester.png)
+<img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Yellow Emperor is a mythic <kbd><strong><u>ruler</u></strong></kbd> said to have set many Taoist <kbd><strong><u>rules</u></strong></kbd> while seeking a <kbd><strong><u>long</u></strong></kbd> life.
@@ -356,7 +356,7 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
-![Arachne](../../web/assets/beast-thumbs/arachne.png)
+<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Tao is the <kbd><strong><u>nameless</u></strong></kbd> <kbd><strong><u>changing</u></strong></kbd> process under all of <kbd><strong><u>reality</u></strong></kbd>.
@@ -375,7 +375,7 @@ A street-wide Arachne spins a web you can taste, honey and lightning in one bite
 
 ### 🟧 [B] bird of paradise
 
-![bird of paradise](../../web/assets/beast-thumbs/bird_of_paradise.png)
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 De is the <kbd><strong><u>power</u></strong></kbd> that shows up when a person lives in <kbd><strong><u>line</u></strong></kbd> with the Tao.
@@ -393,7 +393,7 @@ A bird of paradise sits on a right-side gate post, feathers so hot they feel lik
 
 ### 🟧 [C] cat
 
-![cat](../../web/assets/beast-thumbs/cat.png)
+<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Wu wei is <kbd><strong><u>effortless</u></strong></kbd> action: you reach a goal by <kbd><strong><u>flowing</u></strong></kbd> with the world, not by <kbd><strong><u>forcing</u></strong></kbd> it.
@@ -412,7 +412,7 @@ A sleeping cat rides a flood down the far street, still asleep on a fence-board.
 
 ### 🟧 [D] dragon
 
-![dragon](../../web/assets/beast-thumbs/dragon.png)
+<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 Ziran is the <kbd><strong><u>self-so</u></strong></kbd> state of things: <kbd><strong><u>natural</u></strong></kbd>, <kbd><strong><u>unforced</u></strong></kbd>, as they already are.
@@ -431,7 +431,7 @@ A dragon the size of a thumbnail sits on an uncut log on a roof edge. Branches e
 
 ### 🟧 [E] eagle
 
-![eagle](../../web/assets/beast-thumbs/eagle.png)
+<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
 **Concept**
 💡 The Three Treasures are <kbd><strong><u>compassion</u></strong></kbd> (ci), <kbd><strong><u>moderation</u></strong></kbd> (jian), and <kbd><strong><u>humility</u></strong></kbd>.
