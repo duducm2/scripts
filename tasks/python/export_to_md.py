@@ -45,6 +45,24 @@ def sort_key(row: dict[str, str]) -> tuple:
 
 
 def info_export_text(info: dict[str, str]) -> str:
+    from datetime import date, datetime
+
+    birth = (info.get("birth_date") or "").strip()
+    if birth:
+        label = (info.get("title") or "Birth date & age").strip()
+        try:
+            bday = datetime.strptime(birth[:10], "%Y-%m-%d").date()
+            pretty = bday.strftime("%B %d, %Y")
+            today = date.today()
+            months = (today.year - bday.year) * 12 + (today.month - bday.month)
+            if today.day < bday.day:
+                months -= 1
+            months = max(0, months)
+            age_line = f"Age: {months} month{'s' if months != 1 else ''}"
+        except ValueError:
+            pretty = birth
+            age_line = "Age: (unknown)"
+        return f"{label}\nBirth date: {pretty}\n{age_line}"
     t = (info.get("title") or "").strip()
     b = (info.get("body") or "").strip()
     if t and b and t != b:

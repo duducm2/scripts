@@ -983,6 +983,19 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .info-row-lock {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        border: 1px solid var(--line);
+        background: #1e1e22;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 11px;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
       .info-hints {
         display: flex;
         flex-wrap: wrap;
@@ -1492,10 +1505,60 @@
         }
 
         function infoText(info) {
+          const birth = String(info?.birth_date || "").trim();
+          if (birth) {
+            const label =
+              String(info?.title || "").trim() || "Birth date & age";
+            const months = ageMonthsFromBirth(birth);
+            const pretty = formatBirthDate(birth);
+            const ageLine =
+              months == null
+                ? "Age: (unknown)"
+                : `Age: ${months} month${months === 1 ? "" : "s"}`;
+            return `${label}\nBirth date: ${pretty}\n${ageLine}`;
+          }
           const t = String(info?.title || "").trim();
           const b = String(info?.body || "").trim();
           if (t && b && t !== b) return t + "\n" + b;
           return t || b;
+        }
+
+        function ageMonthsFromBirth(birthDate, asOf) {
+          const raw = String(birthDate || "")
+            .trim()
+            .slice(0, 10);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+          const [by, bm, bd] = raw.split("-").map(Number);
+          const ref = asOf instanceof Date ? asOf : new Date();
+          let months =
+            (ref.getFullYear() - by) * 12 + (ref.getMonth() + 1 - bm);
+          if (ref.getDate() < bd) months -= 1;
+          return Math.max(0, months);
+        }
+
+        function formatBirthDate(birthDate) {
+          const raw = String(birthDate || "")
+            .trim()
+            .slice(0, 10);
+          const d = new Date(raw + "T12:00:00");
+          if (Number.isNaN(d.getTime())) return raw;
+          return d.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        }
+
+        function isAgentLockedInfo(info) {
+          return (
+            String(info?.edit_lock || "")
+              .trim()
+              .toLowerCase() === "agent"
+          );
+        }
+
+        function toastAgentLocked() {
+          toast("Agent-locked — edit via agent / CSV / API only");
         }
 
         async function copyInfoById(id) {
@@ -3433,6 +3496,10 @@
             toast("Select an info point first");
             return;
           }
+          if (isAgentLockedInfo(row)) {
+            toastAgentLocked();
+            return;
+          }
           const ctx = state.infoCtx;
           if (!ctx) return;
           const r = await api("/api/info", {
@@ -3736,14 +3803,21 @@
           const catBadge = cat
             ? `<span class="info-row-cat" title="Category">${esc(cat)}</span>`
             : "";
+          const locked = isAgentLockedInfo(i);
+          const lockBadge = locked
+            ? `<span class="info-row-lock" title="Editable via agent / CSV / API only">agent-only</span>`
+            : "";
+          const actions = locked
+            ? `<span class="row-actions"><span class="info-row-lock" title="Editable via agent / CSV / API only">Locked</span></span>`
+            : `<span class="row-actions">
+            <button class="btn" data-act="edit-info">Edit</button>
+            <button class="btn danger" data-act="del-info">Del</button>
+          </span>`;
           return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
         <div class="plain-row-head">
           <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
-          ${catBadge}
-          <span class="row-actions">
-            <button class="btn" data-act="edit-info">Edit</button>
-            <button class="btn danger" data-act="del-info">Del</button>
-          </span>
+          ${catBadge}${lockBadge}
+          ${actions}
         </div>
         ${thumbsHtml("info", i.id)}
       </li>`;
@@ -3861,10 +3935,24 @@
               return;
             }
             if (act === "edit-info") {
-              infoForm((state.data.info_points || []).find((i) => i.id === id));
+              const row = (state.data.info_points || []).find(
+                (i) => i.id === id,
+              );
+              if (isAgentLockedInfo(row)) {
+                toastAgentLocked();
+                return;
+              }
+              infoForm(row);
               return;
             }
             if (act === "del-info") {
+              const row = (state.data.info_points || []).find(
+                (i) => i.id === id,
+              );
+              if (isAgentLockedInfo(row)) {
+                toastAgentLocked();
+                return;
+              }
               await deleteInfoPoint(id);
             }
           };
@@ -3873,6 +3961,13 @@
 
         async function deleteInfoPoint(id) {
           if (!id) return;
+          const existing = (state.data.info_points || []).find(
+            (i) => i.id === id,
+          );
+          if (isAgentLockedInfo(existing)) {
+            toastAgentLocked();
+            return;
+          }
           if (!confirm("Delete info?")) return;
           const ctx = state.infoCtx;
           const rows = infoRowsForCtx();
@@ -3904,6 +3999,10 @@
         }
 
         async function saveInfoFromForm(existing) {
+          if (isAgentLockedInfo(existing)) {
+            toastAgentLocked();
+            return;
+          }
           const ctx = state.infoCtx;
           const parentType =
             ctx?.parentType || (state.taskId ? "task" : "project");
@@ -3955,6 +4054,11 @@
           const ctx = state.infoCtx;
           if (!ctx) return;
           const id = state.infoSelId;
+          const row = (state.data.info_points || []).find((i) => i.id === id);
+          if (isAgentLockedInfo(row)) {
+            toastAgentLocked();
+            return;
+          }
           try {
             const r = await api(
               "/api/info/" + encodeURIComponent(id) + "/move",
@@ -5075,10 +5179,24 @@
               return;
             }
             if (act === "edit-info") {
-              infoForm((state.data.info_points || []).find((i) => i.id === id));
+              const row = (state.data.info_points || []).find(
+                (i) => i.id === id,
+              );
+              if (isAgentLockedInfo(row)) {
+                toastAgentLocked();
+                return;
+              }
+              infoForm(row);
               return;
             }
             if (act === "del-info") {
+              const row = (state.data.info_points || []).find(
+                (i) => i.id === id,
+              );
+              if (isAgentLockedInfo(row)) {
+                toastAgentLocked();
+                return;
+              }
               if (!confirm("Delete info?")) return;
               await api("/api/info/" + encodeURIComponent(id), {
                 method: "DELETE",
