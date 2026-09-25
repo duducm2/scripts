@@ -11,7 +11,7 @@
 
 ### 🟧 [N] Neanderthal
 
-![Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
+![Neanderthal](../../web/assets/beast-thumbs/neanderthal.png)
 
 🟦 **Z1 · Z1 Head | Cognitive Shuffling**
 
@@ -61,7 +61,7 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 
 ### 🟧 [O] owl
 
-![owl](../web/assets/beast-thumbs/owl.png)
+![owl](../../web/assets/beast-thumbs/owl.png)
 
 🟦 **Z1 · Z1 Head | Spelling Trick**
 
@@ -130,7 +130,7 @@ _No gallery images._
 
 ### 🟧 [J] jester
 
-![jester](../web/assets/beast-thumbs/jester.png)
+![jester](../../web/assets/beast-thumbs/jester.png)
 
 **Concept**
 💡 Behavioral activation works because taking physical action forcefully shifts brain chemistry before motivation ever appears.
@@ -146,7 +146,7 @@ A colossal medieval jester refuses to wait for hope; it aggressively bites Goku'
 
 ### 🟧 [K] kitten
 
-![kitten](../web/assets/beast-thumbs/kitten.png)
+![kitten](../../web/assets/beast-thumbs/kitten.png)
 
 **Concept**
 💡 The first five minutes involve gentle physical rotations of the neck, shoulders, and wrists to release an immediate energy boost.
@@ -162,7 +162,7 @@ A majestic kitten violently twists its neck, shoulders, and wrists exactly ten t
 
 ### 🟧 [L] lion
 
-![lion](../web/assets/beast-thumbs/lion.png)
+![lion](../../web/assets/beast-thumbs/lion.png)
 
 **Concept**
 💡 The second block emotionally warms the brain by placing a hand on the chest and deeply visualizing a simple pleasant experience.
@@ -178,7 +178,7 @@ A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against 
 
 ### 🟧 [M] marmoset
 
-![marmoset](../web/assets/beast-thumbs/marmoset.png)
+![marmoset](../../web/assets/beast-thumbs/marmoset.png)
 
 **Concept**
 💡 The final five minutes require a small, practical action focused on personal sensory meaning rather than societal productivity.
@@ -213,7 +213,7 @@ _No gallery images._
 
 ### 🟧 [H] Hydra
 
-![Hydra](../web/assets/beast-thumbs/hydra.png)
+![Hydra](../../web/assets/beast-thumbs/hydra.png)
 
 🟦 **Z1 · Z1 Head | BP Definition**
 
@@ -263,7 +263,7 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 
 ### 🟧 [I] imp
 
-![imp](../web/assets/beast-thumbs/imp.png)
+![imp](../../web/assets/beast-thumbs/imp.png)
 
 🟦 **Z1 · Z1 Head | HR Definition**
 
@@ -316,7 +316,7 @@ _No gallery images._
 
 ### 🟧 [F] frog
 
-![frog](../web/assets/beast-thumbs/frog.png)
+![frog](../../web/assets/beast-thumbs/frog.png)
 
 **Concept**
 💡 Asking questions before reading primes the brain to filter for relevant information.
@@ -332,7 +332,7 @@ _No keywords yet_
 
 ### 🟧 [G] goat
 
-![goat](../web/assets/beast-thumbs/goat.png)
+![goat](../../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 Highlighting everything defeats the purpose of highlighting.
@@ -367,7 +367,7 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
-![Arachne](../web/assets/beast-thumbs/arachne.png)
+![Arachne](../../web/assets/beast-thumbs/arachne.png)
 
 **Concept**
 💡 The habit of pronouncing words in your head slows down reading.
@@ -383,7 +383,7 @@ _No keywords yet_
 
 ### 🟧 [B] bird of paradise
 
-![bird of paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
+![bird of paradise](../../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 Eyes backtracking or back skipping wastes time and ruins focus.
@@ -399,7 +399,7 @@ _No keywords yet_
 
 ### 🟧 [C] cat
 
-![cat](../web/assets/beast-thumbs/cat.png)
+![cat](../../web/assets/beast-thumbs/cat.png)
 
 **Concept**
 💡 Familiar words don't need to be pronounced internally to be understood.
@@ -415,7 +415,7 @@ _No keywords yet_
 
 ### 🟧 [D] dragon
 
-![dragon](../web/assets/beast-thumbs/dragon.png)
+![dragon](../../web/assets/beast-thumbs/dragon.png)
 
 **Concept**
 💡 Using a visual guide prevents regression and focuses attention.
@@ -431,7 +431,7 @@ _No keywords yet_
 
 ### 🟧 [E] eagle
 
-![eagle](../web/assets/beast-thumbs/eagle.png)
+![eagle](../../web/assets/beast-thumbs/eagle.png)
 
 **Concept**
 💡 Capturing multiple words per fixation expands reading speed.

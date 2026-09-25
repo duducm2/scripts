@@ -191,9 +191,11 @@ def beast_thumb_md_src(
     if not thumb_png_path(s).is_file():
         return None
     if from_dir == "practice":
-        return f"../web/assets/beast-thumbs/{s}.png"
+        # output/practice/*.md → mnemonics/web/assets/...
+        return f"../../web/assets/beast-thumbs/{s}.png"
     if from_dir == "output":
-        return f"web/assets/beast-thumbs/{s}.png"
+        # output/Quick Recall.md → mnemonics/web/assets/...
+        return f"../web/assets/beast-thumbs/{s}.png"
     raise ValueError(f"unknown from_dir: {from_dir!r}")
 
 

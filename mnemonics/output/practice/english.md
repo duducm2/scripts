@@ -11,7 +11,7 @@
 
 ### 🟧 [Bs] Bone Shark
 
-![Bone Shark](../web/assets/beast-thumbs/skull.png)
+![Bone Shark](../../web/assets/beast-thumbs/skull.png)
 
 **Concept**
 💡 Syllabic L [l̩] takes over the entire syllable when the vowel is reduced.
@@ -27,7 +27,7 @@ _No keywords yet_
 
 ### 🟧 [Bt] Bone Toad
 
-![Bone Toad](../web/assets/beast-thumbs/toucan.png)
+![Bone Toad](../../web/assets/beast-thumbs/toucan.png)
 
 **Concept**
 💡 Syllabic N [n̩] frequently occurs after alveolar consonants like /t/ or /s/, often utilizing a glottal stop.
@@ -43,7 +43,7 @@ _No keywords yet_
 
 ### 🟧 [Bu] butterfly
 
-![butterfly](../web/assets/beast-thumbs/butterfly.png)
+![butterfly](../../web/assets/beast-thumbs/butterfly.png)
 
 **Concept**
 💡 Syllabic M [m̩] acts as its own syllable, often found in words ending in "thm" or "sm".
@@ -78,7 +78,7 @@ _No gallery images._
 
 ### 🟧 [Bq] Boulder quail
 
-![Boulder quail](../web/assets/beast-thumbs/quetzalcoatl.png)
+![Boulder quail](../../web/assets/beast-thumbs/quetzalcoatl.png)
 
 **Concept**
 💡 Intrusion is the addition of a new sound.
@@ -94,7 +94,7 @@ _No keywords yet_
 
 ### 🟧 [Br] brontosaurus
 
-![brontosaurus](../web/assets/beast-thumbs/brontosaurus.png)
+![brontosaurus](../../web/assets/beast-thumbs/brontosaurus.png)
 
 **Concept**
 💡 Only 'w', 'y', or 'r' sounds are usually added in intrusion.
@@ -129,7 +129,7 @@ _No gallery images._
 
 ### 🟧 [Bl] bloodhound
 
-![bloodhound](../web/assets/beast-thumbs/bloodhound.png)
+![bloodhound](../../web/assets/beast-thumbs/bloodhound.png)
 
 **Concept**
 💡 Connected speech involves changing, losing, or adding sounds.
@@ -145,7 +145,7 @@ _No keywords yet_
 
 ### 🟧 [Bm] Bone marmoset
 
-![Bone marmoset](../web/assets/beast-thumbs/marmoset.png)
+![Bone marmoset](../../web/assets/beast-thumbs/marmoset.png)
 
 **Concept**
 💡 Assimilation is when a sound changes to be more like its neighbor.
@@ -161,7 +161,7 @@ _No keywords yet_
 
 ### 🟧 [Bn] Blazing nightjar
 
-![Blazing nightjar](../web/assets/beast-thumbs/neanderthal.png)
+![Blazing nightjar](../../web/assets/beast-thumbs/neanderthal.png)
 
 **Concept**
 💡 Preparing for /b/ by closing lips early changes /n/ to /m/.
@@ -177,7 +177,7 @@ _No keywords yet_
 
 ### 🟧 [Bo] bower-bird
 
-![bower-bird](../web/assets/beast-thumbs/bower_bird.png)
+![bower-bird](../../web/assets/beast-thumbs/bower_bird.png)
 
 **Concept**
 💡 Elision is the deletion or loss of sounds.
@@ -193,7 +193,7 @@ _No keywords yet_
 
 ### 🟧 [Bp] Blackwater penguin
 
-![Blackwater penguin](../web/assets/beast-thumbs/panther.png)
+![Blackwater penguin](../../web/assets/beast-thumbs/panther.png)
 
 **Concept**
 💡 Final 't' or 'd' sounds are the most commonly lost in English.
@@ -228,7 +228,7 @@ _No gallery images._
 
 ### 🟧 [Bh] Bitter hare
 
-![Bitter hare](../web/assets/beast-thumbs/hydra.png)
+![Bitter hare](../../web/assets/beast-thumbs/hydra.png)
 
 **Concept**
 💡 Thought groups involve using short pauses to break down sentences.
@@ -244,7 +244,7 @@ _No keywords yet_
 
 ### 🟧 [Bi] bison
 
-![bison](../web/assets/beast-thumbs/bison.png)
+![bison](../../web/assets/beast-thumbs/bison.png)
 
 **Concept**
 💡 English is a stress-timed language with regular intervals.
@@ -260,7 +260,7 @@ _No keywords yet_
 
 ### 🟧 [Bj] Basil jellyfish
 
-![Basil jellyfish](../web/assets/beast-thumbs/jester.png)
+![Basil jellyfish](../../web/assets/beast-thumbs/jester.png)
 
 **Concept**
 💡 Linking occurs when the end of one word blends directly into the start of the next word.
@@ -276,7 +276,7 @@ _No keywords yet_
 
 ### 🟧 [Bk] Bloodmoon kestrel
 
-![Bloodmoon kestrel](../web/assets/beast-thumbs/kitten.png)
+![Bloodmoon kestrel](../../web/assets/beast-thumbs/kitten.png)
 
 **Concept**
 💡 Shadowing is actively repeating a text simultaneously to absorb natural rhythm.
@@ -311,7 +311,7 @@ _No gallery images._
 
 ### 🟧 [Bf] Blackwater ferret
 
-![Blackwater ferret](../web/assets/beast-thumbs/frog.png)
+![Blackwater ferret](../../web/assets/beast-thumbs/frog.png)
 
 **Concept**
 💡 Linguistically, only the relative values of pitch matter, not the absolute values.
@@ -327,7 +327,7 @@ _No keywords yet_
 
 ### 🟧 [Bg] Boulder giraffe
 
-![Boulder giraffe](../web/assets/beast-thumbs/goat.png)
+![Boulder giraffe](../../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 The IPA chart has a dedicated section for suprasegmental symbols.
@@ -362,7 +362,7 @@ _No gallery images._
 
 ### 🟧 [Ay] aye-aye
 
-![aye-aye](../web/assets/beast-thumbs/aye_aye.png)
+![aye-aye](../../web/assets/beast-thumbs/aye_aye.png)
 
 **Concept**
 💡 Spoken language is built from segments: consonants (bricks) and vowels (mortar).
@@ -378,7 +378,7 @@ _No keywords yet_
 
 ### 🟧 [Az] Aztec
 
-![Aztec](../web/assets/beast-thumbs/aztec.png)
+![Aztec](../../web/assets/beast-thumbs/aztec.png)
 
 **Concept**
 💡 Suprasegmentals are features "beyond the segment" that emerge only through comparison.
@@ -394,7 +394,7 @@ _No keywords yet_
 
 ### 🟧 [Ba] bat
 
-![bat](../web/assets/beast-thumbs/bat.png)
+![bat](../../web/assets/beast-thumbs/bat.png)
 
 **Concept**
 💡 Length is the relative duration of a sound.
@@ -410,7 +410,7 @@ _No keywords yet_
 
 ### 🟧 [Bb] Brass bison
 
-![Brass bison](../web/assets/beast-thumbs/bird_of_paradise.png)
+![Brass bison](../../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 Stress can alter a word's meaning, pitch, and sound properties.
@@ -426,7 +426,7 @@ _No keywords yet_
 
 ### 🟧 [Be] bee
 
-![bee](../web/assets/beast-thumbs/bee.png)
+![bee](../../web/assets/beast-thumbs/bee.png)
 
 **Concept**
 💡 Intonation is the pitch pattern at the sentence level, which can change meaning.
@@ -461,7 +461,7 @@ _No gallery images._
 
 ### 🟧 [At] atlas
 
-![atlas](../web/assets/beast-thumbs/atlas.png)
+![atlas](../../web/assets/beast-thumbs/atlas.png)
 
 **Concept**
 💡 Prefix dis- indicates the opposite or active negation.
@@ -477,7 +477,7 @@ _No keywords yet_
 
 ### 🟧 [Au] auroch
 
-![auroch](../web/assets/beast-thumbs/auroch.png)
+![auroch](../../web/assets/beast-thumbs/auroch.png)
 
 **Concept**
 💡 Prefix mis- refers to a mistake.
@@ -493,7 +493,7 @@ _No keywords yet_
 
 ### 🟧 [Av] avocet
 
-![avocet](../web/assets/beast-thumbs/avocet.png)
+![avocet](../../web/assets/beast-thumbs/avocet.png)
 
 **Concept**
 💡 Prefixes im-, in-, ir- spelling rules.
@@ -509,7 +509,7 @@ _No keywords yet_
 
 ### 🟧 [Aw] awassi sheep
 
-![awassi sheep](../web/assets/beast-thumbs/awassi_sheep.png)
+![awassi sheep](../../web/assets/beast-thumbs/awassi_sheep.png)
 
 **Concept**
 💡 Insecure (feeling) vs. Unsecure (safety).
@@ -525,7 +525,7 @@ _No keywords yet_
 
 ### 🟧 [Ax] axolotl
 
-![axolotl](../web/assets/beast-thumbs/axolotl.png)
+![axolotl](../../web/assets/beast-thumbs/axolotl.png)
 
 **Concept**
 💡 Prefix re- means to repeat.
@@ -560,7 +560,7 @@ _No gallery images._
 
 ### 🟧 [Ao] aoudad
 
-![aoudad](../web/assets/beast-thumbs/aoudad.png)
+![aoudad](../../web/assets/beast-thumbs/aoudad.png)
 
 **Concept**
 💡 Core definitions: Prefix (before) and Suffix (after).
@@ -576,7 +576,7 @@ _No keywords yet_
 
 ### 🟧 [Ap] ape
 
-![ape](../web/assets/beast-thumbs/ape.png)
+![ape](../../web/assets/beast-thumbs/ape.png)
 
 **Concept**
 💡 Suffix -able indicates ability.
@@ -592,7 +592,7 @@ _No keywords yet_
 
 ### 🟧 [Aq] aquatic leech
 
-![aquatic leech](../web/assets/beast-thumbs/aquatic_leech.png)
+![aquatic leech](../../web/assets/beast-thumbs/aquatic_leech.png)
 
 **Concept**
 💡 Suffix -ish softens time or adjectives.
@@ -608,7 +608,7 @@ _No keywords yet_
 
 ### 🟧 [Ar] armadillo
 
-![armadillo](../web/assets/beast-thumbs/armadillo.png)
+![armadillo](../../web/assets/beast-thumbs/armadillo.png)
 
 **Concept**
 💡 Prefix un- means not complete or absent.
@@ -624,7 +624,7 @@ _No keywords yet_
 
 ### 🟧 [As] asp
 
-![asp](../web/assets/beast-thumbs/asp.png)
+![asp](../../web/assets/beast-thumbs/asp.png)
 
 **Concept**
 💡 Prefix un- can also mean to reverse an action.
@@ -659,7 +659,7 @@ _No gallery images._
 
 ### 🟧 [Aj] Ajax
 
-![Ajax](../web/assets/beast-thumbs/ajax.png)
+![Ajax](../../web/assets/beast-thumbs/ajax.png)
 
 **Concept**
 💡 Definition of Nominalization (turning words into nouns).
@@ -675,7 +675,7 @@ _No keywords yet_
 
 ### 🟧 [Ak] Akita (dog breed)
 
-![Akita (dog breed)](../web/assets/beast-thumbs/akita_dog_breed.png)
+![Akita (dog breed)](../../web/assets/beast-thumbs/akita_dog_breed.png)
 
 **Concept**
 💡 Transforming Verbs into Nouns (Enjoy -> Enjoyment).
@@ -691,7 +691,7 @@ _No keywords yet_
 
 ### 🟧 [Al] alligator
 
-![alligator](../web/assets/beast-thumbs/alligator.png)
+![alligator](../../web/assets/beast-thumbs/alligator.png)
 
 **Concept**
 💡 Transforming Adjectives into Nouns (Beautiful -> Beauty).
@@ -707,7 +707,7 @@ _No keywords yet_
 
 ### 🟧 [Am] amulet
 
-![amulet](../web/assets/beast-thumbs/amulet.png)
+![amulet](../../web/assets/beast-thumbs/amulet.png)
 
 **Concept**
 💡 The "Noun of Noun" Structure (Develop -> Development).
@@ -723,7 +723,7 @@ _No keywords yet_
 
 ### 🟧 [An] angel
 
-![angel](../web/assets/beast-thumbs/angel.png)
+![angel](../../web/assets/beast-thumbs/angel.png)
 
 **Concept**
 💡 Advanced Nominalization with Relational Verbs (Leads to).
@@ -758,7 +758,7 @@ _No gallery images._
 
 ### 🟧 [Ah] Ah!—a sigh
 
-![Ah!—a sigh](../web/assets/beast-thumbs/ah_a_sigh.png)
+![Ah!—a sigh](../../web/assets/beast-thumbs/ah_a_sigh.png)
 
 **Concept**
 💡 Perfect Passive (Sequence/Reason) - Passive action completed before main clause.
@@ -774,7 +774,7 @@ _No keywords yet_
 
 ### 🟧 [Ai] Airedale terrier
 
-![Airedale terrier](../web/assets/beast-thumbs/airedale_terrier.png)
+![Airedale terrier](../../web/assets/beast-thumbs/airedale_terrier.png)
 
 **Concept**
 💡 The Dangling Participle - Subject mismatch.
@@ -809,7 +809,7 @@ _No gallery images._
 
 ### 🟧 [Ac] acorn
 
-![acorn](../web/assets/beast-thumbs/acorn.png)
+![acorn](../../web/assets/beast-thumbs/acorn.png)
 
 **Concept**
 💡 Present Active (Consequence) - Action first, then the result.
@@ -825,7 +825,7 @@ _No keywords yet_
 
 ### 🟧 [Ad] adder
 
-![adder](../web/assets/beast-thumbs/adder.png)
+![adder](../../web/assets/beast-thumbs/adder.png)
 
 **Concept**
 💡 Present Active (Ambiguity) - Flip the sentence if the subject is unclear.
@@ -841,7 +841,7 @@ _No keywords yet_
 
 ### 🟧 [Ae] aerialist
 
-![aerialist](../web/assets/beast-thumbs/aerialist.png)
+![aerialist](../../web/assets/beast-thumbs/aerialist.png)
 
 **Concept**
 💡 Perfect Active (Sequence) - Action fully completed before the main clause.
@@ -857,7 +857,7 @@ _No keywords yet_
 
 ### 🟧 [Af] Afghan hound
 
-![Afghan hound](../web/assets/beast-thumbs/afghan_hound.png)
+![Afghan hound](../../web/assets/beast-thumbs/afghan_hound.png)
 
 **Concept**
 💡 Past Participle (Subject Info) - Adding information about the subject.
@@ -873,7 +873,7 @@ _No keywords yet_
 
 ### 🟧 [Ag] Agaric fungi
 
-![Agaric fungi](../web/assets/beast-thumbs/agaric_fungi.png)
+![Agaric fungi](../../web/assets/beast-thumbs/agaric_fungi.png)
 
 **Concept**
 💡 Past Participle (Condition) - Reduced conditional stating a fact.
@@ -908,7 +908,7 @@ _No gallery images._
 
 ### 🟧 [X] Xena, warrior woman
 
-![Xena, warrior woman](../web/assets/beast-thumbs/xena_warrior_woman.png)
+![Xena, warrior woman](../../web/assets/beast-thumbs/xena_warrior_woman.png)
 
 **Concept**
 💡 A participle clause is a subordinate clause used to give extra information.
@@ -924,7 +924,7 @@ _No keywords yet_
 
 ### 🟧 [Y] yak
 
-![yak](../web/assets/beast-thumbs/yak.png)
+![yak](../../web/assets/beast-thumbs/yak.png)
 
 **Concept**
 💡 The subject of the participle clause and the main clause must be the same.
@@ -940,7 +940,7 @@ _No keywords yet_
 
 ### 🟧 [Z] Zeus
 
-![Zeus](../web/assets/beast-thumbs/zeus.png)
+![Zeus](../../web/assets/beast-thumbs/zeus.png)
 
 **Concept**
 💡 Present Active (Simultaneous Actions) - Two things happening at the same time.
@@ -956,7 +956,7 @@ _No keywords yet_
 
 ### 🟧 [Aa] aardvark
 
-![aardvark](../web/assets/beast-thumbs/aardvark.png)
+![aardvark](../../web/assets/beast-thumbs/aardvark.png)
 
 **Concept**
 💡 Present Active (Reason) - Stating a reason before the result.
@@ -972,7 +972,7 @@ _No keywords yet_
 
 ### 🟧 [Ab] Abyssinian cat
 
-![Abyssinian cat](../web/assets/beast-thumbs/abyssinian_cat.png)
+![Abyssinian cat](../../web/assets/beast-thumbs/abyssinian_cat.png)
 
 **Concept**
 💡 Present Active (Negative Form) - Place "not" before the participle.
@@ -1007,7 +1007,7 @@ _No gallery images._
 
 ### 🟧 [T] toucan
 
-![toucan](../web/assets/beast-thumbs/toucan.png)
+![toucan](../../web/assets/beast-thumbs/toucan.png)
 
 **Concept**
 💡 A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
@@ -1023,7 +1023,7 @@ A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decid
 
 ### 🟧 [U] unicorn
 
-![unicorn](../web/assets/beast-thumbs/unicorn.png)
+![unicorn](../../web/assets/beast-thumbs/unicorn.png)
 
 **Concept**
 💡 A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
@@ -1039,7 +1039,7 @@ A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a 
 
 ### 🟧 [V] vulture
 
-![vulture](../web/assets/beast-thumbs/vulture.png)
+![vulture](../../web/assets/beast-thumbs/vulture.png)
 
 **Concept**
 💡 A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
@@ -1055,7 +1055,7 @@ A Vulture perches on a desk like a boss. It places the word "therefore" right be
 
 ### 🟧 [W] wombat
 
-![wombat](../web/assets/beast-thumbs/wombat.png)
+![wombat](../../web/assets/beast-thumbs/wombat.png)
 
 **Concept**
 💡 A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
@@ -1090,7 +1090,7 @@ _No gallery images._
 
 ### 🟧 [R] rat
 
-![rat](../web/assets/beast-thumbs/rat.png)
+![rat](../../web/assets/beast-thumbs/rat.png)
 
 **Concept**
 💡 A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
@@ -1106,7 +1106,7 @@ A Rat looks at a calendar on the wall. Someone says "He will come today." The Ra
 
 ### 🟧 [S] skull
 
-![skull](../web/assets/beast-thumbs/skull.png)
+![skull](../../web/assets/beast-thumbs/skull.png)
 
 **Concept**
 💡 A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
@@ -1141,7 +1141,7 @@ _No gallery images._
 
 ### 🟧 [M] marmoset
 
-![marmoset](../web/assets/beast-thumbs/marmoset.png)
+![marmoset](../../web/assets/beast-thumbs/marmoset.png)
 
 **Concept**
 💡 It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
@@ -1157,7 +1157,7 @@ It holds a red pen and reads a long sentence on a screen. It aggressively crosse
 
 ### 🟧 [N] Neanderthal
 
-![Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
+![Neanderthal](../../web/assets/beast-thumbs/neanderthal.png)
 
 **Concept**
 💡 A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
@@ -1173,7 +1173,7 @@ A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest
 
 ### 🟧 [O] owl
 
-![owl](../web/assets/beast-thumbs/owl.png)
+![owl](../../web/assets/beast-thumbs/owl.png)
 
 **Concept**
 💡 An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
@@ -1189,7 +1189,7 @@ An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl 
 
 ### 🟧 [P] panther
 
-![panther](../web/assets/beast-thumbs/panther.png)
+![panther](../../web/assets/beast-thumbs/panther.png)
 
 **Concept**
 💡 A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
@@ -1205,7 +1205,7 @@ A black Panther stalks a sentence written on the ground. It pounces on a repeate
 
 ### 🟧 [Q] Quetzalcoatl
 
-![Quetzalcoatl](../web/assets/beast-thumbs/quetzalcoatl.png)
+![Quetzalcoatl](../../web/assets/beast-thumbs/quetzalcoatl.png)
 
 **Concept**
 💡 The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
@@ -1240,7 +1240,7 @@ _No gallery images._
 
 ### 🟧 [K] Kitten
 
-![Kitten](../web/assets/beast-thumbs/kitten.png)
+![Kitten](../../web/assets/beast-thumbs/kitten.png)
 
 **Concept**
 💡 A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
@@ -1256,7 +1256,7 @@ A small Kitten sleeps at the bottom of a black stone. It does not want toys or f
 
 ### 🟧 [L] Lion
 
-![Lion](../web/assets/beast-thumbs/lion.png)
+![Lion](../../web/assets/beast-thumbs/lion.png)
 
 **Concept**
 💡 A Lion wears a detective hat. He looks at the ground with a glass. He ignores the police. He tries to do the action himself. "What he did was try to solve the crime himself." The Lion shows the action using "What... do."
@@ -1291,7 +1291,7 @@ _No gallery images._
 
 ### 🟧 [F] Frog
 
-![Frog](../web/assets/beast-thumbs/frog.png)
+![Frog](../../web/assets/beast-thumbs/frog.png)
 
 **Concept**
 💡 A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your rel
@@ -1307,7 +1307,7 @@ A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the 
 
 ### 🟧 [G] Goat
 
-![Goat](../web/assets/beast-thumbs/goat.png)
+![Goat](../../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
@@ -1323,7 +1323,7 @@ A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the
 
 ### 🟧 [H] Hydra
 
-![Hydra](../web/assets/beast-thumbs/hydra.png)
+![Hydra](../../web/assets/beast-thumbs/hydra.png)
 
 **Concept**
 💡 The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Cleft
@@ -1339,7 +1339,7 @@ The Hydra holds a heavy car battery in its main head. It moves the battery all t
 
 ### 🟧 [I] Imp
 
-![Imp](../web/assets/beast-thumbs/imp.png)
+![Imp](../../web/assets/beast-thumbs/imp.png)
 
 **Concept**
 💡 An Imp paints a big word "IS" on the wall. A big pile of plural nouns falls on him. Even with the heavy weight, he says the verb must be singular. The rule is: The Wh-clause is singular. Even if your noun is plural, use is or was.
@@ -1355,7 +1355,7 @@ Example: "What they need is more time." (Not "are"—use is even though "they" i
 
 ### 🟧 [J] Jester
 
-![Jester](../web/assets/beast-thumbs/jester.png)
+![Jester](../../web/assets/beast-thumbs/jester.png)
 
 **Concept**
 💡 The Jester points at the Imp and laughs. He uses the word "That" to talk about the whole thing. He says: "That's what I'm talking about." This shows you can use "That" to talk about what just happened.
@@ -1390,7 +1390,7 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
-![Arachne](../web/assets/beast-thumbs/arachne.png)
+![Arachne](../../web/assets/beast-thumbs/arachne.png)
 
 **Concept**
 💡 Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
@@ -1406,7 +1406,7 @@ Arachne hangs from the stone. She is making a big web. She does not finish it. I
 
 ### 🟧 [B] Bird of Paradise
 
-![Bird of Paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
+![Bird of Paradise](../../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my pass
@@ -1422,7 +1422,7 @@ Next to her, a Bird of Paradise opens its colorful feathers. It wants you to loo
 
 ### 🟧 [C] Cat
 
-![Cat](../web/assets/beast-thumbs/cat.png)
+![Cat](../../web/assets/beast-thumbs/cat.png)
 
 **Concept**
 💡 Down the street, a Cat sits on a government paper. You try to move the cat, but it stays there. It shows that this is the paper you need. The cat says: "It's form B6115 that you need." This shows the It-Cleft Structure: It plus "to be" plus
@@ -1438,7 +1438,7 @@ A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are p
 
 ### 🟧 [E] Eagle
 
-![Eagle](../web/assets/beast-thumbs/eagle.png)
+![Eagle](../../web/assets/beast-thumbs/eagle.png)
 
 **Concept**
 💡 High up, an Eagle holds a famous book in its claws. It shouts the name of the author to everyone below. "I believe it was Shel Silverstein who wrote The Giving Tree." The Eagle shows you the Relative Pronouns: Who or That.

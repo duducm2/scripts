@@ -11,7 +11,7 @@
 
 ### 🟧 [Be] bee
 
-![bee](../web/assets/beast-thumbs/bee.png)
+![bee](../../web/assets/beast-thumbs/bee.png)
 
 **Concept**
 💡 [<kbd><strong><u>INNER JOIN</u></strong></kbd>] [I return only the <kbd><strong><u>records</u></strong></kbd>] [that have <kbd><strong><u>matching values</u></strong></kbd>] [in <kbd><strong><u>both tables</u></strong></kbd>] — Note: Unmatched rows are completely excluded.
@@ -31,7 +31,7 @@ A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only
 
 ### 🟧 [Bf] Bone frog
 
-![Bone frog](../web/assets/beast-thumbs/frog.png)
+![Bone frog](../../web/assets/beast-thumbs/frog.png)
 
 **Concept**
 💡 [<kbd><strong><u>LEFT JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from the <kbd><strong><u>left table</u></strong></kbd>] [and fill missing right matches with <kbd><strong><u>NULLs</u></strong></kbd>]
@@ -51,7 +51,7 @@ A Bone frog kicks a wooden table with its glowing left webbed foot, catching all
 
 ### 🟧 [Bg] Bone goat
 
-![Bone goat](../web/assets/beast-thumbs/goat.png)
+![Bone goat](../../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 [<kbd><strong><u>FULL OUTER JOIN</u></strong></kbd>] [I return all <kbd><strong><u>records</u></strong></kbd>] [from <kbd><strong><u>both tables</u></strong></kbd>] [and fill any missing sides with <kbd><strong><u>NULLs</u></strong></kbd>] — Note: It essentially combines the results of both a left join and a right join.
@@ -90,7 +90,7 @@ _No gallery images._
 
 ### 🟧 [Ba] bat
 
-![bat](../web/assets/beast-thumbs/bat.png)
+![bat](../../web/assets/beast-thumbs/bat.png)
 
 **Concept**
 💡 [<kbd><strong><u>SQL Advanced Analytics</u></strong></kbd>] [I <kbd><strong><u>extract</u></strong></kbd> nested subqueries using CTEs] [and apply <kbd><strong><u>window functions</u></strong></kbd>] [to <kbd><strong><u>evaluate</u></strong></kbd> specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
@@ -110,7 +110,7 @@ A gigantic bat uses silver tweezers to extract nested glowing code blocks from a
 
 ### 🟧 [Bb] Bone bird of paradise
 
-![Bone bird of paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
+![Bone bird of paradise](../../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 [<kbd><strong><u>Temporary Tables</u></strong></kbd>] [I <kbd><strong><u>store</u></strong></kbd> the output of heavy computation] [in a <kbd><strong><u>temporary table</u></strong></kbd>] [to prevent the database from <kbd><strong><u>re-executing</u></strong></kbd> it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
@@ -130,7 +130,7 @@ A Bone bird of paradise drags a humming chest freezer into a camping tent to sto
 
 ### 🟧 [Bc] Bone cat
 
-![Bone cat](../web/assets/beast-thumbs/cat.png)
+![Bone cat](../../web/assets/beast-thumbs/cat.png)
 
 **Concept**
 💡 [<kbd><strong><u>HAVING Clause</u></strong></kbd>] [I <kbd><strong><u>filter</u></strong></kbd> summary rows] [after they have been <kbd><strong><u>processed</u></strong></kbd>] [by the GROUP BY <kbd><strong><u>aggregation</u></strong></kbd>] — Note: The WHERE clause filters individual rows before any data grouping occurs.
@@ -150,7 +150,7 @@ A Bone cat pours a giant snowball through a roaring blender, using a plastic fun
 
 ### 🟧 [Bd] Bone dragon
 
-![Bone dragon](../web/assets/beast-thumbs/dragon.png)
+![Bone dragon](../../web/assets/beast-thumbs/dragon.png)
 
 **Concept**
 💡 [<kbd><strong><u>GROUP BY Scope</u></strong></kbd>] [I <kbd><strong><u>include</u></strong></kbd> any non-aggregated column] [from the <kbd><strong><u>SELECT statement</u></strong></kbd>] [inside the <kbd><strong><u>GROUP BY clause</u></strong></kbd>] — Note: This ensures identical data combinations correctly collapse into a single summary row.
@@ -189,7 +189,7 @@ _No gallery images._
 
 ### 🟧 [Ay] aye-aye
 
-![aye-aye](../web/assets/beast-thumbs/aye_aye.png)
+![aye-aye](../../web/assets/beast-thumbs/aye_aye.png)
 
 **Concept**
 💡 [<kbd><strong><u>Viewpoint</u></strong></kbd> Controls: I show two windows together] [<kbd><strong><u>overview</u></strong></kbd> plus enlarged <kbd><strong><u>detail</u></strong></kbd> of one area]
@@ -208,7 +208,7 @@ A tiny-then-huge aye-aye carries twin glass panes: one shows the whole hive map,
 
 ### 🟧 [Az] Aztec
 
-![Aztec](../web/assets/beast-thumbs/aztec.png)
+![Aztec](../../web/assets/beast-thumbs/aztec.png)
 
 **Concept**
 💡 [<kbd><strong><u>Rearrangement</u></strong></kbd>: I change marks and <kbd><strong><u>axis</u></strong></kbd> values] [so the new layout can change what I <kbd><strong><u>understand</u></strong></kbd>]
@@ -246,7 +246,7 @@ _No gallery images._
 
 ### 🟧 [At] atlas
 
-![atlas](../web/assets/beast-thumbs/atlas.png)
+![atlas](../../web/assets/beast-thumbs/atlas.png)
 
 **Concept**
 💡 [<kbd><strong><u>Glyph</u></strong></kbd>: a graphic entity] [whose <kbd><strong><u>attributes</u></strong></kbd> are <kbd><strong><u>driven</u></strong></kbd> by data <kbd><strong><u>attributes</u></strong></kbd>]
@@ -265,7 +265,7 @@ A huge atlas wears a face-glyph mask whose eyes, smile, and horns twist whenever
 
 ### 🟧 [Au] auroch
 
-![auroch](../web/assets/beast-thumbs/auroch.png)
+![auroch](../../web/assets/beast-thumbs/auroch.png)
 
 **Concept**
 💡 [Dense <kbd><strong><u>Pixel</u></strong></kbd> Displays: I <kbd><strong><u>map</u></strong></kbd> each value to individual pixels] [and form a <kbd><strong><u>polygon</u></strong></kbd> per data dimension]
@@ -284,7 +284,7 @@ A towering auroch stitches a carpet of single glowing pixels that crawl into spi
 
 ### 🟧 [Av] avocet
 
-![avocet](../web/assets/beast-thumbs/avocet.png)
+![avocet](../../web/assets/beast-thumbs/avocet.png)
 
 **Concept**
 💡 [View <kbd><strong><u>Transformation</u></strong></kbd>: creates new <kbd><strong><u>views</u></strong></kbd>] [of the visual structure] [for my <kbd><strong><u>needs</u></strong></kbd>]
@@ -303,7 +303,7 @@ A gigantic avocet flips a structure like a Rubik cube; each twist births a new v
 
 ### 🟧 [Aw] awassi sheep
 
-![awassi sheep](../web/assets/beast-thumbs/awassi_sheep.png)
+![awassi sheep](../../web/assets/beast-thumbs/awassi_sheep.png)
 
 **Concept**
 💡 [<kbd><strong><u>Location</u></strong></kbd> Investigations: I use a data mark's <kbd><strong><u>location</u></strong></kbd>] [to <kbd><strong><u>reveal</u></strong></kbd> extra table <kbd><strong><u>information</u></strong></kbd>]
@@ -322,7 +322,7 @@ A huge awassi sheep taps one glowing pin on the map; the pin sprouts a detail-ca
 
 ### 🟧 [Ax] axolotl
 
-![axolotl](../web/assets/beast-thumbs/axolotl.png)
+![axolotl](../../web/assets/beast-thumbs/axolotl.png)
 
 **Concept**
 💡 [<kbd><strong><u>Distortions</u></strong></kbd>: show focus and <kbd><strong><u>context</u></strong></kbd>] [in the <kbd><strong><u>same</u></strong></kbd> visual structure at once]
@@ -360,7 +360,7 @@ _No gallery images._
 
 ### 🟧 [Ao] aoudad
 
-![aoudad](../web/assets/beast-thumbs/aoudad.png)
+![aoudad](../../web/assets/beast-thumbs/aoudad.png)
 
 **Concept**
 💡 [<kbd><strong><u>Multivariate</u></strong></kbd> Line Charts: I tell dimensions apart] [by color, <kbd><strong><u>width</u></strong></kbd>, or line <kbd><strong><u>style</u></strong></kbd>]
@@ -379,7 +379,7 @@ A colossal aoudad paints giant noodles of lines in different colors and thicknes
 
 ### 🟧 [Ap] ape
 
-![ape](../web/assets/beast-thumbs/ape.png)
+![ape](../../web/assets/beast-thumbs/ape.png)
 
 **Concept**
 💡 [<kbd><strong><u>Parallel</u></strong></kbd> Coordinates: I draw each variable as a <kbd><strong><u>parallel</u></strong></kbd> axis] [and turn each <kbd><strong><u>tuple</u></strong></kbd> into a <kbd><strong><u>polyline</u></strong></kbd>]
@@ -398,7 +398,7 @@ A huge ape strings tall parallel fence-poles and weaves each data row as a zigza
 
 ### 🟧 [Aq] aquatic leech
 
-![aquatic leech](../web/assets/beast-thumbs/aquatic_leech.png)
+![aquatic leech](../../web/assets/beast-thumbs/aquatic_leech.png)
 
 **Concept**
 💡 [<kbd><strong><u>Radial</u></strong></kbd> Axis Techniques: I use polar axes] [to study <kbd><strong><u>cyclical</u></strong></kbd> events and <kbd><strong><u>seasonality</u></strong></kbd>]
@@ -417,7 +417,7 @@ A gigantic aquatic leech spins a giant clock-plot where months loop forever; sea
 
 ### 🟧 [Ar] armadillo
 
-![armadillo](../web/assets/beast-thumbs/armadillo.png)
+![armadillo](../../web/assets/beast-thumbs/armadillo.png)
 
 **Concept**
 💡 [Table <kbd><strong><u>Lens</u></strong></kbd>: I combine reordering, bar-sized <kbd><strong><u>marks</u></strong></kbd>, and semantic <kbd><strong><u>zoom</u></strong></kbd>] [by row and column]
@@ -436,7 +436,7 @@ A huge armadillo shuffles a living spreadsheet like cards, grows cells into bar 
 
 ### 🟧 [As] asp
 
-![asp](../web/assets/beast-thumbs/asp.png)
+![asp](../../web/assets/beast-thumbs/asp.png)
 
 **Concept**
 💡 [Parallel <kbd><strong><u>Sets</u></strong></kbd>: like Parallel Coordinates] [but focused on <kbd><strong><u>nominal</u></strong></kbd> variables]
@@ -474,7 +474,7 @@ _No gallery images._
 
 ### 🟧 [Aj] Ajax
 
-![Ajax](../web/assets/beast-thumbs/ajax.png)
+![Ajax](../../web/assets/beast-thumbs/ajax.png)
 
 **Concept**
 💡 [Visual <kbd><strong><u>Mapping</u></strong></kbd>: I link each data-table <kbd><strong><u>variable</u></strong></kbd>] [to a graphical or spatial <kbd><strong><u>property</u></strong></kbd>]
@@ -493,7 +493,7 @@ A huge Ajax plugs each table column into a different paint hose—color, size, p
 
 ### 🟧 [Ak] Akita (dog breed)
 
-![Akita (dog breed)](../web/assets/beast-thumbs/akita_dog_breed.png)
+![Akita (dog breed)](../../web/assets/beast-thumbs/akita_dog_breed.png)
 
 **Concept**
 💡 [<kbd><strong><u>Automatic</u></strong></kbd> Visual Processing: I aid search and pattern detection] [with automatically <kbd><strong><u>processed</u></strong></kbd> properties] [like <kbd><strong><u>color</u></strong></kbd> and size]
@@ -512,7 +512,7 @@ A gigantic Akita (dog breed) flashes color and size balloons that pop out of the
 
 ### 🟧 [Al] alligator
 
-![alligator](../web/assets/beast-thumbs/alligator.png)
+![alligator](../../web/assets/beast-thumbs/alligator.png)
 
 **Concept**
 💡 [<kbd><strong><u>Expressiveness</u></strong></kbd>: my visual mapping must express all table <kbd><strong><u>data</u></strong></kbd>] [and <kbd><strong><u>only</u></strong></kbd> that <kbd><strong><u>data</u></strong></kbd>]
@@ -531,7 +531,7 @@ A living alligator rips fake neighbor-links off a chart and stamps a glowing fil
 
 ### 🟧 [Am] amulet
 
-![amulet](../web/assets/beast-thumbs/amulet.png)
+![amulet](../../web/assets/beast-thumbs/amulet.png)
 
 **Concept**
 💡 [<kbd><strong><u>Effectiveness</u></strong></kbd>: fast easy <kbd><strong><u>distinction</u></strong></kbd> of data] [with as few interpretation <kbd><strong><u>errors</u></strong></kbd> as possible]
@@ -550,7 +550,7 @@ A racing amulet sorts glowing bars against a stopwatch; wrong interpretations sh
 
 ### 🟧 [An] angel
 
-![angel](../web/assets/beast-thumbs/angel.png)
+![angel](../../web/assets/beast-thumbs/angel.png)
 
 **Concept**
 💡 [<kbd><strong><u>RadViz</u></strong></kbd>: I place N anchors on a circle] [and <kbd><strong><u>pull</u></strong></kbd> points by <kbd><strong><u>Hooke</u></strong></kbd> spring balance]
@@ -588,7 +588,7 @@ _No gallery images._
 
 ### 🟧 [Ae] aerialist
 
-![aerialist](../web/assets/beast-thumbs/aerialist.png)
+![aerialist](../../web/assets/beast-thumbs/aerialist.png)
 
 **Concept**
 💡 [<kbd><strong><u>Database</u></strong></kbd> <kbd><strong><u>Schema</u></strong></kbd>: I treat it as the structural blueprint] [of my <kbd><strong><u>database</u></strong></kbd>] [including tables, fields, <kbd><strong><u>relationships</u></strong></kbd>, and constraints]
@@ -607,7 +607,7 @@ A skyscraper-tall aerialist hangs upside down from a glowing blueprint sheet and
 
 ### 🟧 [Af] Afghan hound
 
-![Afghan hound](../web/assets/beast-thumbs/afghan_hound.png)
+![Afghan hound](../../web/assets/beast-thumbs/afghan_hound.png)
 
 **Concept**
 💡 [Visual <kbd><strong><u>Structure</u></strong></kbd>: the set of visual elements] [that <kbd><strong><u>represent</u></strong></kbd> a <kbd><strong><u>dataset</u></strong></kbd>]
@@ -626,7 +626,7 @@ A gigantic Afghan hound dumps a toolbox of glowing points, lines, and areas onto
 
 ### 🟧 [Ag] Agaric fungi
 
-![Agaric fungi](../web/assets/beast-thumbs/agaric_fungi.png)
+![Agaric fungi](../../web/assets/beast-thumbs/agaric_fungi.png)
 
 **Concept**
 💡 [Spatial <kbd><strong><u>Substrate</u></strong></kbd>: the area available] [to <kbd><strong><u>display</u></strong></kbd> the <kbd><strong><u>dataset</u></strong></kbd>]
@@ -645,7 +645,7 @@ A giant Agaric fungi unrolls a rubber stage that stretches like chewing gum acro
 
 ### 🟧 [Ah] Ah!—a sigh
 
-![Ah!—a sigh](../web/assets/beast-thumbs/ah_a_sigh.png)
+![Ah!—a sigh](../../web/assets/beast-thumbs/ah_a_sigh.png)
 
 **Concept**
 💡 [<kbd><strong><u>Marks</u></strong></kbd>: objects present] [in the <kbd><strong><u>chart</u></strong></kbd> <kbd><strong><u>space</u></strong></kbd>] — Note: <kbd><strong><u>Marks</u></strong></kbd> use graphical and spatial properties to show data values.
@@ -664,7 +664,7 @@ A huge Ah!—a sigh coughs up toy marks—points, lines, icons—that bounce ins
 
 ### 🟧 [Ai] Airedale terrier
 
-![Airedale terrier](../web/assets/beast-thumbs/airedale_terrier.png)
+![Airedale terrier](../../web/assets/beast-thumbs/airedale_terrier.png)
 
 **Concept**
 💡 [Small <kbd><strong><u>Multiples</u></strong></kbd>: they force visual <kbd><strong><u>comparison</u></strong></kbd>] [of changes, differences, and <kbd><strong><u>alternatives</u></strong></kbd>]
@@ -702,7 +702,7 @@ _No gallery images._
 
 ### 🟧 [Ad] adder
 
-![adder](../web/assets/beast-thumbs/adder.png)
+![adder](../../web/assets/beast-thumbs/adder.png)
 
 **Concept**
 💡 [I store data without fixed <kbd><strong><u>tables</u></strong></kbd>] [using flexible <kbd><strong><u>formats</u></strong></kbd>] [for horizontal <kbd><strong><u>scaling</u></strong></kbd>] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
@@ -740,7 +740,7 @@ _No gallery images._
 
 ### 🟧 [Y] yak
 
-![yak](../web/assets/beast-thumbs/yak.png)
+![yak](../../web/assets/beast-thumbs/yak.png)
 
 **Concept**
 💡 [I unpivot multiple <kbd><strong><u>columns</u></strong></kbd> into rows] [to <kbd><strong><u>model</u></strong></kbd> my data more easily] — Note: Column headers become an attribute column paired with a single value column.
@@ -758,7 +758,7 @@ A colossal yak uses its curved horns as crowbars to rip tall stone columns out o
 
 ### 🟧 [Z] Zeus
 
-![Zeus](../web/assets/beast-thumbs/zeus.png)
+![Zeus](../../web/assets/beast-thumbs/zeus.png)
 
 **Concept**
 💡 [My unpivot step automatically <kbd><strong><u>deletes</u></strong></kbd> all rows] [with <kbd><strong><u>null</u></strong></kbd> values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
@@ -776,7 +776,7 @@ A gigantic Zeus hurls blinding neon lightning bolts at an enormous ledger, vapor
 
 ### 🟧 [Aa] aardvark
 
-![aardvark](../web/assets/beast-thumbs/aardvark.png)
+![aardvark](../../web/assets/beast-thumbs/aardvark.png)
 
 **Concept**
 💡 [I replace nulls with a temporary <kbd><strong><u>placeholder</u></strong></kbd>] [before <kbd><strong><u>unpivoting</u></strong></kbd>] [to <kbd><strong><u>swap</u></strong></kbd> them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
@@ -795,7 +795,7 @@ An aardvark with a vacuum snout loudly slurps empty holes out of a wooden table 
 
 ### 🟧 [Ab] Abyssinian cat
 
-![Abyssinian cat](../web/assets/beast-thumbs/abyssinian_cat.png)
+![Abyssinian cat](../../web/assets/beast-thumbs/abyssinian_cat.png)
 
 🟦 **Z1 · Reusing query steps**
 
@@ -835,7 +835,7 @@ Its front paws sprout white-hot glowing claws that slice and copy rows of burnin
 
 ### 🟧 [Ac] acorn
 
-![acorn](../web/assets/beast-thumbs/acorn.png)
+![acorn](../../web/assets/beast-thumbs/acorn.png)
 
 **Concept**
 💡 [I <kbd><strong><u>store</u></strong></kbd> data] [in rigid <kbd><strong><u>tables</u></strong></kbd> of rows and columns] [linked by predefined <kbd><strong><u>relationships</u></strong></kbd>] — Note: Enforces schemas and data integrity using SQL validation rules.
@@ -873,7 +873,7 @@ _No gallery images._
 
 ### 🟧 [T] toucan
 
-![toucan](../web/assets/beast-thumbs/toucan.png)
+![toucan](../../web/assets/beast-thumbs/toucan.png)
 
 **Concept**
 💡 [I use the power query <kbd><strong><u>mashup</u></strong></kbd> engine] [as the underlying <kbd><strong><u>technology</u></strong></kbd>] [to <kbd><strong><u>execute</u></strong></kbd> my data queries.]
@@ -892,7 +892,7 @@ A giant toucan violently drops a roaring car engine block into a massive blender
 
 ### 🟧 [U] unicorn
 
-![unicorn](../web/assets/beast-thumbs/unicorn.png)
+![unicorn](../../web/assets/beast-thumbs/unicorn.png)
 
 **Concept**
 💡 [I avoid using <kbd><strong><u>spaces</u></strong></kbd>] [in my step <kbd><strong><u>names</u></strong></kbd>] [to keep the underlying M code <kbd><strong><u>clean</u></strong></kbd>.] - Note: <kbd><strong><u>Spaces</u></strong></kbd> force the variables to be wrapped in quotes and a hash sign.
@@ -911,7 +911,7 @@ A unicorn uses a vacuum attached to its horn to suck all the empty air out of gl
 
 ### 🟧 [V] vulture
 
-![vulture](../web/assets/beast-thumbs/vulture.png)
+![vulture](../../web/assets/beast-thumbs/vulture.png)
 
 **Concept**
 💡 [I use query <kbd><strong><u>folding</u></strong></kbd>] [to <kbd><strong><u>push</u></strong></kbd> transformation work] [back to the data <kbd><strong><u>source</u></strong></kbd>] [to maximize processing <kbd><strong><u>efficiency</u></strong></kbd>.]
@@ -931,7 +931,7 @@ A giant vulture folds an enormous glowing origami swan with its talons, using a 
 
 ### 🟧 [W] wombat
 
-![wombat](../web/assets/beast-thumbs/wombat.png)
+![wombat](../../web/assets/beast-thumbs/wombat.png)
 
 **Concept**
 💡 [The OData connector uses a <kbd><strong><u>discovery</u></strong></kbd> mechanism] [to automatically determine the <kbd><strong><u>schema</u></strong></kbd>] [of the external <kbd><strong><u>table</u></strong></kbd>.]
@@ -950,7 +950,7 @@ A skyscraper-sized wombat peers through glowing binoculars at a wooden picnic ta
 
 ### 🟧 [X] Xena, warrior woman
 
-![Xena, warrior woman](../web/assets/beast-thumbs/xena_warrior_woman.png)
+![Xena, warrior woman](../../web/assets/beast-thumbs/xena_warrior_woman.png)
 
 **Concept**
 💡 [The OData connector suffers from <kbd><strong><u>network</u></strong></kbd> latency] [because it makes redundant metadata <kbd><strong><u>calls</u></strong></kbd>] [at <kbd><strong><u>runtime</u></strong></kbd>.]
@@ -988,7 +988,7 @@ _No gallery images._
 
 ### 🟧 [O] owl
 
-![owl](../web/assets/beast-thumbs/owl.png)
+![owl](../../web/assets/beast-thumbs/owl.png)
 
 **Concept**
 💡 [Data Lake: I <kbd><strong><u>store</u></strong></kbd> structured, semi-structured, and unstructured raw data] [in a <kbd><strong><u>centralized</u></strong></kbd>, low-cost object storage system[cite: 1].]
@@ -1006,7 +1006,7 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 
 ### 🟧 [P] panther
 
-![panther](../web/assets/beast-thumbs/panther.png)
+![panther](../../web/assets/beast-thumbs/panther.png)
 
 **Concept**
 💡 [Data Warehouse: A highly <kbd><strong><u>structured</u></strong></kbd>, schema-on-write repository] [optimized for SQL <kbd><strong><u>analytics</u></strong></kbd>] [and business <kbd><strong><u>intelligence</u></strong></kbd>[cite: 1].]
@@ -1025,7 +1025,7 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 
 ### 🟧 [Q] Quetzalcoatl
 
-![Quetzalcoatl](../web/assets/beast-thumbs/quetzalcoatl.png)
+![Quetzalcoatl](../../web/assets/beast-thumbs/quetzalcoatl.png)
 
 **Concept**
 💡 [Data Lakehouse: A <kbd><strong><u>hybrid</u></strong></kbd> architecture] [combining the scale and <kbd><strong><u>flexibility</u></strong></kbd> of a data lake] [with the <kbd><strong><u>reliability</u></strong></kbd> of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
@@ -1044,7 +1044,7 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 
 ### 🟧 [R] rat
 
-![rat](../web/assets/beast-thumbs/rat.png)
+![rat](../../web/assets/beast-thumbs/rat.png)
 
 **Concept**
 💡 [Data Swamp: A poorly <kbd><strong><u>governed</u></strong></kbd> data lake] [where data is <kbd><strong><u>uncataloged</u></strong></kbd>, undocumented,] [and difficult to <kbd><strong><u>retrieve</u></strong></kbd>[cite: 1].]
@@ -1063,7 +1063,7 @@ Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of
 
 ### 🟧 [S] skull
 
-![skull](../web/assets/beast-thumbs/skull.png)
+![skull](../../web/assets/beast-thumbs/skull.png)
 
 **Concept**
 💡 [Data Mart: A <kbd><strong><u>specialized</u></strong></kbd> subset of a data warehouse] [<kbd><strong><u>focused</u></strong></kbd> on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
@@ -1100,7 +1100,7 @@ _No gallery images._
 
 ### 🟧 [J] jester
 
-![jester](../web/assets/beast-thumbs/jester.png)
+![jester](../../web/assets/beast-thumbs/jester.png)
 
 **Concept**
 💡 ETL Pipeline: I move raw data from multiple disparate sources into a centralized target system using an automated integration pipeline[cite: 1]. — Note: The target is typically a Data Warehouse or Data Mart[cite: 1].
@@ -1116,7 +1116,7 @@ A jester juggles multiple disparate screaming data hard drives at the iron gate,
 
 ### 🟧 [K] kitten
 
-![kitten](../web/assets/beast-thumbs/kitten.png)
+![kitten](../../web/assets/beast-thumbs/kitten.png)
 
 **Concept**
 💡 Extract Phase: I retrieve raw data from various origin systems during the first pipeline phase[cite: 1]. — Note: Sources include operational databases, SaaS applications, APIs, or flat files[cite: 1].
@@ -1132,7 +1132,7 @@ A giant kitten digs its sharp claws into a flat file server rack on top of the p
 
 ### 🟧 [L] lion
 
-![lion](../web/assets/beast-thumbs/lion.png)
+![lion](../../web/assets/beast-thumbs/lion.png)
 
 **Concept**
 💡 Transform Phase: I clean, structure, and enrich the data in a temporary staging area to meet business requirements[cite: 1]. — Note: Includes standardizing formats, filtering anomalies, joining tables, and mapping to a predefined schema[cite: 1].
@@ -1148,7 +1148,7 @@ At the central stone fountain, a lion scrubs muddy data tables in a glowing temp
 
 ### 🟧 [M] marmoset
 
-![marmoset](../web/assets/beast-thumbs/marmoset.png)
+![marmoset](../../web/assets/beast-thumbs/marmoset.png)
 
 **Concept**
 💡 Load Phase: I write the fully processed data into the target repository[cite: 1]. — Note: This makes it immediately available for business intelligence tools and analytics[cite: 1].
@@ -1164,7 +1164,7 @@ Up on the rooftop, a marmoset violently hammers white-hot glowing processed data
 
 ### 🟧 [N] Neanderthal
 
-![Neanderthal](../web/assets/beast-thumbs/neanderthal.png)
+![Neanderthal](../../web/assets/beast-thumbs/neanderthal.png)
 
 **Concept**
 💡 Data Store: Any repository that persists and manages a collection of data[cite: 1]. — Note: Ranges from traditional relational databases to cloud object storage[cite: 1].
@@ -1199,7 +1199,7 @@ _No gallery images._
 
 ### 🟧 [E] eagle
 
-![eagle](../web/assets/beast-thumbs/eagle.png)
+![eagle](../../web/assets/beast-thumbs/eagle.png)
 
 **Concept**
 💡 I analyze raw data to extract useful business insights. — Note: Transforms unorganized datasets into actionable intelligence.
@@ -1215,7 +1215,7 @@ Perched on the iron gatepost, a giant eagle rips open a massive floating jigsaw 
 
 ### 🟧 [F] frog
 
-![frog](../web/assets/beast-thumbs/frog.png)
+![frog](../../web/assets/beast-thumbs/frog.png)
 
 **Concept**
 💡 I apply analytics to speed decisions, cut costs, and develop products. — Note: Optimizes operational performance and predicts market behavior.
@@ -1231,7 +1231,7 @@ Beside a parked bakery delivery truck, a neon-striped frog croaks at deafening v
 
 ### 🟧 [G] goat
 
-![goat](../web/assets/beast-thumbs/goat.png)
+![goat](../../web/assets/beast-thumbs/goat.png)
 
 **Concept**
 💡 I evaluate team data to shape future business strategies. — Note: Serves as the cross-functional bridge between raw metrics and executive planning.
@@ -1247,7 +1247,7 @@ Against the central brick facade, a goat rams its head into an oversized blue ar
 
 ### 🟧 [H] Hydra
 
-![Hydra](../web/assets/beast-thumbs/hydra.png)
+![Hydra](../../web/assets/beast-thumbs/hydra.png)
 
 **Concept**
 💡 I turn refined data into valuable business insights. — Note: The culmination of a five-step pipeline spanning definition, collection, cleaning, analysis, and presentation.
@@ -1263,7 +1263,7 @@ Sprawled across the upper roof tiles, a seven-headed Hydra spews boiling chemica
 
 ### 🟧 [I] imp
 
-![imp](../web/assets/beast-thumbs/imp.png)
+![imp](../../web/assets/beast-thumbs/imp.png)
 
 **Concept**
 💡 I dig deeper beyond number crunching to understand underlying causes. — Note: Balances quantitative technical skills like SQL with qualitative critical reasoning.
@@ -1298,7 +1298,7 @@ _No gallery images._
 
 ### 🟧 [A] Arachne
 
-![Arachne](../web/assets/beast-thumbs/arachne.png)
+![Arachne](../../web/assets/beast-thumbs/arachne.png)
 
 🟦 **Z1 · Head**
 
@@ -1332,7 +1332,7 @@ An oversized megaphone headpiece clamped to Arachne's forelegs screeches past ev
 
 ### 🟧 [B] bird of paradise
 
-![bird of paradise](../web/assets/beast-thumbs/bird_of_paradise.png)
+![bird of paradise](../../web/assets/beast-thumbs/bird_of_paradise.png)
 
 **Concept**
 💡 Key objectives: dashboards and KPI tracking vs ML pipelines and algorithmic automation.
@@ -1348,7 +1348,7 @@ A bird of paradise violently rakes its metallic claws against the parked vintage
 
 ### 🟧 [C] cat
 
-![cat](../web/assets/beast-thumbs/cat.png)
+![cat](../../web/assets/beast-thumbs/cat.png)
 
 **Concept**
 💡 Data types handled: structured relational tables/spreadsheets vs structured and unstructured multi-modal streams (images, audio, clickstreams).
@@ -1364,7 +1364,7 @@ Perched at the central storefront pillar, a cat exhales icy SQL tables from its 
 
 ### 🟧 [D] dragon
 
-![dragon](../web/assets/beast-thumbs/dragon.png)
+![dragon](../../web/assets/beast-thumbs/dragon.png)
 
 **Concept**
 💡 Core tooling and workflow: SQL/BI dashboards isolating friction vs Python/ML/pipelines training real-time automated churn classifiers.

@@ -207,7 +207,8 @@ def render_atom_line(beast: dict[str, str], atom: dict[str, str]) -> str:
     img = beast_thumb_md_image(name, code=peg or None, from_dir="output")
     if img:
         parts.append(img)
-    parts.append("🟧")
+    else:
+        parts.append("🟧")
     if peg:
         parts.append(f"[{peg}]")
     if name:
