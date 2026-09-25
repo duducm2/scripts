@@ -881,7 +881,7 @@ cheatSheets["EXCEL.EXE"] := "
     Excel (Shift)
     ⚪ [W]Select [W]hite Color
     ✏️ [E]Enable [E]diting
-    📥 [I][I]mport CSV (From Text/CSV → format → shade → save UTF-8)
+    📥 [I][I]mport CSV (From Text/CSV → format → shade → save UTF-8; then [N] once to fit window)
     📊 [C][C]SV to columns (semicolon delimited)
     📐 [N]Cycle layout pillars (Balanced·Scan·Narrative·Reference·Titles·Triage·Immersive)
     🌐 [L]Open cell [L]ink in new Chrome

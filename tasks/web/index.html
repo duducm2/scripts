@@ -195,6 +195,22 @@
         font-weight: 600;
         flex: 1;
       }
+      .proj-age-badge {
+        flex: 0 0 auto;
+        font-weight: 600;
+        font-size: 12px;
+        line-height: 1.2;
+        color: var(--gold);
+        border: 1px solid rgba(200, 168, 75, 0.45);
+        background: rgba(200, 168, 75, 0.12);
+        border-radius: 999px;
+        padding: 3px 9px;
+        white-space: nowrap;
+      }
+      .project-focus-title .proj-age-badge {
+        margin-left: 10px;
+        vertical-align: middle;
+      }
       .task-list,
       .habit-list,
       .plain-list {
@@ -1561,6 +1577,30 @@
           toast("Agent-locked — edit via agent / CSV / API only");
         }
 
+        function projectBirthInfo(projectId) {
+          const pid = String(projectId || "").trim();
+          if (!pid) return null;
+          const rows = state.data?.info_points || [];
+          return (
+            rows.find(
+              (i) =>
+                i.parent_type === "project" &&
+                i.parent_id === pid &&
+                String(i.birth_date || "").trim(),
+            ) || null
+          );
+        }
+
+        function projectAgeBadgeHtml(projectId) {
+          const info = projectBirthInfo(projectId);
+          if (!info) return "";
+          const months = ageMonthsFromBirth(info.birth_date);
+          if (months == null) return "";
+          const label = `${months} month${months === 1 ? "" : "s"}`;
+          const pretty = formatBirthDate(info.birth_date);
+          return `<span class="proj-age-badge" title="Born ${esc(pretty)}">${esc(label)}</span>`;
+        }
+
         async function copyInfoById(id) {
           const row = (state.data.info_points || []).find((i) => i.id === id);
           const text = infoText(row);
@@ -2040,8 +2080,9 @@
             visibleOpen = visibleOpen.concat(pts);
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
+            const ageBadge = projectAgeBadgeHtml(p.id);
             blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
@@ -2134,8 +2175,9 @@
             visible = visible.concat(plan.pts);
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
+            const ageBadge = projectAgeBadgeHtml(p.id);
             blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="habits">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
@@ -2177,13 +2219,14 @@
               : openTasks().filter((t) => t.project_id === pid);
           const plan = projectSearchPlan(p, allPts);
           const pThumbs = thumbsHtml("project", p.id);
+          const ageBadge = projectAgeBadgeHtml(p.id);
           return `<section class="column panel project-focus" id="sec-project-focus">
       <div class="project-focus-head">
-        <h2 class="project-focus-title">${highlightTitle(p.title)}</h2>
+        <h2 class="project-focus-title">${highlightTitle(p.title)}${ageBadge}</h2>
         <span class="project-focus-hint"><kbd>Shift+Z</kbd> exit</span>
       </div>
       <details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>

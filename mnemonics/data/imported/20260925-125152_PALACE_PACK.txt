@@ -1,0 +1,30 @@
+﻿===PREVIEW===
+STUDY_DATA_ANALYST · 1 palaces · 3 beasts · 3 atoms
+Packing: 3 (remainder only on last **new** palace in this pack)
+
+PALACE 15 — SQL Window Functions (Socrates) [PALACE_DATA_ANALYST_15]
+  [Bh] Bone Hydra — Concept: [LAG Function] [I query data] [from preceding rows] [relative to the current evaluation row] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist. | Quote: "a lag is going to be for previous days and so notice how on the first day in the results there's no previous day so you see null there" | Story: The Bone Hydra drags its lagging foot, using a magnifying glass to inspect muddy footprints left behind its glowing iron anchor.
+  [Bi] bison — Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists. | Quote: "notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead" | Story: A colossal bison wears a glowing neon leash and peers through binoculars at hovering stepping stones ahead of its golden compass.
+  [Bj] Bone jester — Concept: [Window Function Offsets] [I provide an explicit integer parameter] [to inspect data] [across wider row intervals] — Note: This overrides the default behavior of inspecting exactly one step forward or backward. | Quote: "by default lead and lag examine one row above or below you can adjust this if you want by using an offset" | Story: A Bone jester pulls a loud clicking measuring tape out of a calculator, flashing a headlamp to see across a massive echoing street canyon.
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATA_ANALYST_15,STUDY_DATA_ANALYST,15,SQL Window Functions,Socrates,,3,"an original fictional ancient philosopher-like man (elderly, white beard, classical Greek tunic, barefoot, holding a walking staff) — not any real, living, historical, or named public figure and not any copyrighted character standing on a paved street. Depth slot: ForegroundLeft, a Bone Hydra dragging an anchor near a rusted street lamp. Depth slot: MidgroundRight, a colossal bison wearing a glowing leash near a stone bench. Depth slot: BackgroundCenter, a Bone jester pulling a measuring tape across a wide crosswalk."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATA_ANALYST_Bh,PALACE_DATA_ANALYST_15,Bh,Bone Hydra,Custom,,0,1
+BEAST_DATA_ANALYST_Bi,PALACE_DATA_ANALYST_15,Bi,bison,Lynne Kelly,,0,2
+BEAST_DATA_ANALYST_Bj,PALACE_DATA_ANALYST_15,Bj,Bone jester,Custom,,0,3
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+,BEAST_DATA_ANALYST_Bh,single,,,"[LAG Function] [I query data] [from preceding rows] [relative to the current evaluation row] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.","lagging foot | LAG Function || magnifying glass | query data || footprints | preceding rows || anchor | current evaluation row","a lag is going to be for previous days and so notice how on the first day in the results there's no previous day so you see null there","The Bone Hydra drags its lagging foot, using a magnifying glass to inspect muddy footprints left behind its glowing iron anchor.",,1
+,BEAST_DATA_ANALYST_Bi,single,,,"[LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists.","leash | LEAD Function || binoculars | query data || stepping stone | subsequent rows || compass | current evaluation row","notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead","A colossal bison wears a glowing neon leash and peers through binoculars at hovering stepping stones ahead of its golden compass.",,2
+,BEAST_DATA_ANALYST_Bj,single,,,"[Window Function Offsets] [I provide an explicit integer parameter] [to inspect data] [across wider row intervals] — Note: This overrides the default behavior of inspecting exactly one step forward or backward.","measuring tape | Window Function Offsets || calculator | integer parameter || headlamp | inspect data || canyon | wider row intervals","by default lead and lag examine one row above or below you can adjust this if you want by using an offset","A Bone jester pulls a loud clicking measuring tape out of a calculator, flashing a headlamp to see across a massive echoing street canyon.",,3
+===END_FILE===
