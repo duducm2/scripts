@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [Al] alligator
+### [Al] alligator
 
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -25,7 +25,7 @@ _No keywords yet_
 **Story**
 Claude Monet watches an enormous alligator balance vertically on its tail upon a middle C piano key. The alligator holds a massive, ornate mirror in its jaws that perfectly reflects a glowing F note sinking downwards while a corresponding G note floats symmetrically upwards.
 
-### 🟧 [Am] amulet
+### [Am] amulet
 
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -41,7 +41,7 @@ _No keywords yet_
 **Story**
 A heavy, cursed amulet floats above a drawn bass staff, radiating dark energy. Claude Monet touches the amulet, causing it to shoot a thick, physical downward laser beam that scorches a perfectly straight ledger line right into the pavement for his left hand to play.
 
-### 🟧 [An] angel
+### [An] angel
 
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -57,7 +57,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized angel lands on the street and physically hops between the painted street lines and the open concrete spaces between them. With every leap, the angel's bare feet feel the alternating textures of rough paint and smooth stone, echoing the movement between adjacent white piano keys.
 
-### 🟧 [Ao] aoudad
+### [Ao] aoudad
 
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -73,7 +73,7 @@ _No keywords yet_
 **Story**
 this note is now in space one which is the space below the g line this note is f
 
-### 🟧 [Ap] ape
+### [Ap] ape
 
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -108,7 +108,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Aj] Ajax
+### [Aj] Ajax
 
 <img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -124,7 +124,7 @@ _No keywords yet_
 **Story**
 The towering Greek warrior Ajax slams his bronze shield into the pavement, splitting the street open. Elvis Presley points at him as Ajax perfectly balances three heavy boulders stacked vertically on a single spear stem, striking them all simultaneously with one sword swing so they explode into brilliant light.
 
-### 🟧 [Ak] Akita (dog breed)
+### [Ak] Akita (dog breed)
 
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -159,7 +159,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ai] Airedale terrier
+### [Ai] Airedale terrier
 
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -194,7 +194,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Af] Afghan hound
+### [Af] Afghan hound
 
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -210,7 +210,7 @@ _No keywords yet_
 **Story**
 Marilyn Monroe watches in awe as an Afghan hound bites down hard on a massive, glowing glass bead. Suddenly, a razor-sharp, vibrating piano string shoots straight through the center of the bead and the hound's snout, sliding frictionlessly back and forth without causing a single scratch.
 
-### 🟧 [Ag] Agaric fungi
+### [Ag] Agaric fungi
 
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -226,7 +226,7 @@ _No keywords yet_
 **Story**
 Giant, glowing Agaric fungi sprout exclusively inside the floating gap between two thick metal power lines, hovering perfectly in the empty space. They forcefully expand until their caps form blindingly bright neon circles that fill the void without ever touching the wires above or below.
 
-### 🟧 [Ah] Ah!—a sigh
+### [Ah] Ah!—a sigh
 
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -261,7 +261,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ac] acorn
+### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -277,7 +277,7 @@ _No keywords yet_
 **Story**
 Goku throws a giant, glowing acorn that crashes into a metal street sign, warping the pole. As it hits, the acorn splits open and projects blinding, physical neon letters into the air: "An accidental is a symbol in musical notation that temporarily alters the pitch of a note."
 
-### 🟧 [Ad] adder
+### [Ad] adder
 
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -293,7 +293,7 @@ _No keywords yet_
 **Story**
 A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shatters glass. The snake bites its own tail to form a perfect ring, shaking the ground as it rattles out the thunderous words: "A melody is a linear succession of musical tones—combining pitch and rhythm—that the listener perceives as a single, cohesive entity."
 
-### 🟧 [Ae] aerialist
+### [Ae] aerialist
 
 <img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -346,7 +346,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [X] Xena, warrior woman
+### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -362,7 +362,7 @@ _No keywords yet_
 **Story**
 Xena, warrior woman levitates high in the air and flips completely upside down, her heavy boots pressing against an invisible ceiling. From above, she shouts down to Neo on the street below: "an inversion just means that the note that's played at the very bottom is a different one of these notes".
 
-### 🟧 [Y] yak
+### [Y] yak
 
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -396,7 +396,7 @@ _No keywords yet_
 **Story**
 stamping three distinct lightning bolts into the pavement · sensory: tactile ✋
 
-### 🟧 [Z] Zeus
+### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -430,7 +430,7 @@ _No keywords yet_
 **Story**
 Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass, sighing: "Consonant chords provide a sense of rest and anchor the musical piece." Suddenly, he grips two pieces of sheet metal with his hands and violently scratches them together, shooting burning, loud sparks while roaring: "Composers use dissonance intentionally to create emotional tension, which typically drives the music forward".
 
-### 🟧 [Aa] aardvark
+### [Aa] aardvark
 
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -446,7 +446,7 @@ _No keywords yet_
 **Story**
 A colossal aardvark hops along a drawn timeline on the road while Neo tracks its path. With each heavy hop, the aardvark's fur shifts colors entirely from sad blue to angry red, echoing: "A chord progression is a specific sequence of chords played over time. This movement dictates the emotional arc of a song".
 
-### 🟧 [Ab] Abyssinian cat
+### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -481,7 +481,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [S] skull
+### [S] skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -497,7 +497,7 @@ _No keywords yet_
 **Story**
 A giant floating skull rolls along the street, explicitly skipping over every other painted sidewalk square. With a deafening jaw-clack, it blasts the exact rule into the air as bright neon letters: "for whatever note you start on the next notes that follow will skip over keys".
 
-### 🟧 [T] toucan
+### [T] toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -513,7 +513,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized toucan flaps its wings to project a blindingly bright rainbow over the buildings. As the light flashes, the toucan squawks the exact explanation into the sky: "they all have a cheerful sound they all sound what we call major".
 
-### 🟧 [U] unicorn
+### [U] unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -529,7 +529,7 @@ _No keywords yet_
 **Story**
 A shadowy unicorn bleeds thick red ink from its horn onto the pavement to draw three dark circles. It whispers the chilling words that physically freeze the air around it: "these three red chords which i have written are called the secondary chords and when we play secondary chords in major keys they always have a minor sound".
 
-### 🟧 [V] vulture
+### [V] vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -545,7 +545,7 @@ _No keywords yet_
 **Story**
 A vulture violently scratches a chalkboard wall on the street with its talons, letting out an ear-piercing screech. The screech shapes itself into grating, visible soundwaves that say: "this one is called diminished so when you play a diminished chord it has um it has more of a dissonant sound".
 
-### 🟧 [W] wombat
+### [W] wombat
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -580,7 +580,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -630,7 +630,7 @@ _No keywords yet_
 **Story**
 A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right, showing a sharp raising the note by one half step.
 
-### 🟧 [Q] Quetzalcoatl
+### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -664,7 +664,7 @@ _No keywords yet_
 **Story**
 Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a third key card. With a wide part of its body, Quetzalcoatl presses two keys at the same time so more than one sound becomes harmony. Then it stacks three piano stones into a simple tower: root, skip one, next, skip one, next.
 
-### 🟧 [R] rat
+### [R] rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -699,7 +699,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [K] kitten
+### [K] kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -715,7 +715,7 @@ _No keywords yet_
 **Story**
 A kitten divides the street piano into two clear work tables. One table holds a drum for rhythm and timing. The other table holds note cards for pitch and key names. Only after both tables are clear can rhythm and pitch come together.
 
-### 🟧 [L] lion
+### [L] lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -749,7 +749,7 @@ _No keywords yet_
 **Story**
 A lion pulls a tiny piano house along the street and parks it on one note, making that note feel like home. Beside the house, Erik Satie walks a short C-major path and stops at a bright C finish stone. The whole road feels settled when the path ends on C.
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -783,7 +783,7 @@ _No keywords yet_
 **Story**
 A marmoset crouches between two side-by-side piano keys and finds no space at all, its nose bumping both keys at once. Then it springs away and leaps over exactly one glowing middle key before landing on the next key. The tight squeeze shows the half step, and the one-key leap shows the whole step.
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -801,7 +801,7 @@ _No keywords yet_
 **Story**
 The Neanderthal carries a cracked acorn with five tiny piano keys growing from it.
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -854,7 +854,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -904,7 +904,7 @@ _No keywords yet_
 **Story**
 A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands, and the note is done.
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -920,7 +920,7 @@ _No keywords yet_
 **Story**
 A goat drops two thick black bars across the street staff. Every sound stops at those bars, like a gate closing at the end.
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -970,7 +970,7 @@ _No keywords yet_
 **Story**
 A Hydra places one playing hand over the piano keys while Claude Debussy watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely, reminding the thumb not to push or grip.
 
-### 🟧 [I] imp
+### [I] imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1004,7 +1004,7 @@ _No keywords yet_
 **Story**
 An imp sits at the street piano wearing a heavy cloth sleeve that hangs from shoulder to fingertip. The sleeve shows the arm’s weight flowing down into the key while the finger stays calm. With the same hand, the imp lowers a wet sponge onto a piano key so water slowly squeezes out without any sharp stab.
 
-### 🟧 [J] jester
+### [J] jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1057,7 +1057,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1107,7 +1107,7 @@ _No keywords yet_
 **Story**
 Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house, showing the same note name in a farther place.
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1157,7 +1157,7 @@ _No keywords yet_
 **Story**
 The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. Ludwig van Beethoven locks a metal brace from the bird’s beak around two staffs, joining treble and bass into one bigger reading system.
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1191,7 +1191,7 @@ _No keywords yet_
 **Story**
 A cat walks low across the bass staff with two clear landmarks attached to its body. On one side, it plants a small flag on a painted C key, saying without words, “Find me first when reading low notes.” On the other side, it wears a harmless tooth-shaped ring around a low F key, making F feel like a second easy street marker instead of a random note.
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1225,7 +1225,7 @@ _No keywords yet_
 **Story**
 A dragon stands over the street piano and stamps one claw on the road in a steady pulse. Each stamp makes the street lamps blink like a heart inside the music. With its other claw, the dragon turns a speed dial: when the dial rises, the stamps come faster; when it falls, the stamps slow into heavy steps.
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

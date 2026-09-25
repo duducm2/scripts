@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [By] Byron
+### [By] Byron
 
 <img src="../../web/assets/beast-thumbs/byron.png" alt="Byron" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -48,7 +48,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bu] [butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Quote: "Does SSL increase trust?" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: "Does SSL increase trust?"
+### [Bu] [butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Quote: "Does SSL increase trust?" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: "Does SSL increase trust?"
 
 <img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -64,7 +64,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bv] [Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.
+### [Bv] [Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="Bone vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -80,7 +80,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bw] [Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.
+### [Bw] [Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="Bone wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -96,7 +96,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bx] [Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.
+### [Bx] [Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Bone Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -131,7 +131,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bq] Bone Quetzalcoatl
+### [Bq] Bone Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Bone Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -147,7 +147,7 @@ _No keywords yet_
 **Story**
 The Bone Quetzalcoatl phases directly through the solid brick wall, defying physics. Its skeletal head bites the exact center of a giant glowing dartboard, hissing the first quote as sparks fly visibly into its empty eye sockets. Simultaneously, its massive feathered forelimbs violently smash three magnifying glasses together into a single laser beam, spewing the second quote as bone dust physically grinds the glass into one sharp point. Batman watches the impossibly large skeletal snake rewrite the rules of reality.
 
-### 🟧 [Br] brontosaurus
+### [Br] brontosaurus
 
 <img src="../../web/assets/beast-thumbs/brontosaurus.png" alt="brontosaurus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -163,7 +163,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. Its head roars the first quote so loudly the soundwaves paint a blurry cloud across the sky, deafening Batman. Below, its massive forelimbs grab a fully inflated hot air balloon, violently squeezing the rubber into a dense, tiny, glowing question mark as it thunders the second quote, forcing the massive balloon to physically shrink in its grip.
 
-### 🟧 [Bs] Bone skull
+### [Bs] Bone skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="Bone skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -179,7 +179,7 @@ _No keywords yet_
 **Story**
 A floating Bone skull hovers over the distant crosswalk, trying to bite a tantalizing, glowing diamond floating in the air. Its bony jaw physically phases right through the gem because it is completely impossible to catch. Frustrated by the impossible task, the skull squawks the exact quote into the night air while Batman tries to grab the gem himself.
 
-### 🟧 [Bt] Bone toucan
+### [Bt] Bone toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -214,7 +214,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bn] Bone Neanderthal
+### [Bn] Bone Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Bone Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -230,7 +230,7 @@ _No keywords yet_
 **Story**
 A colossal Bone Neanderthal stomps onto the street next to a brick gate, towering over Darth Vader. The glowing whiteboard diagram fused into its skull pulses with blinding light as it roars the first quote. It then crushes the glowing orb of knowledge in its huge skeletal hands, sending out intense tactile shockwaves that ripple the ground while it bellows the second quote. Finally, a dusty academic shelf violently bursts from its ribcage with a deafening crash, magically forging the falling papers into glowing shields as the beast thunders the final quote.
 
-### 🟧 [Bo] bower-bird
+### [Bo] bower-bird
 
 <img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -246,7 +246,7 @@ _No keywords yet_
 **Story**
 A giant bower-bird weaves a nest out of four colored arrows that glow like neon tubes on a lamp post. Darth Vader watches as the bird flies in a perfect, never-ending spiral, leaving a trail of fire in the air. With every blazing loop it completes, the bird perfectly squawks the quote.
 
-### 🟧 [Bp] Bone panther
+### [Bp] Bone panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="Bone panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -281,7 +281,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bk] Bone kitten
+### [Bk] Bone kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="Bone kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -297,7 +297,7 @@ _No keywords yet_
 **Story**
 A tiny Bone kitten scratches a giant transcript projected on a wall until the paper splits into glowing bone-shaped pieces. Charles Darwin points to the instructor�s line on the screen while the kitten meows the exact words: "Open coding is the first stage, where you break the qualitative data into smaller meaningful pieces and label them as concepts." Each broken piece floats upward and freezes as a sharp label, far too heavy for such a small kitten.
 
-### 🟧 [Bl] bloodhound
+### [Bl] bloodhound
 
 <img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -313,7 +313,7 @@ _No keywords yet_
 **Story**
 A colossal bloodhound bites loose concept tags and pulls them into a spinning wheel fixed to a street gate. Charles Darwin taps the on-screen diagram as the bloodhound barks the exact words: "Axial coding reconnects the concepts created during open coding by organizing them around broader categories and identifying relationships between them." The tags snap together with loud magnetic clicks, and the wheel smells like hot metal and wet dog.
 
-### 🟧 [Bm] Bone marmoset
+### [Bm] Bone marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -348,7 +348,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bf] Bone frog
+### [Bf] Bone frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -364,7 +364,7 @@ _No keywords yet_
 **Story**
 The Bone frog carries the theory pack through the same Bosch UX street. Ada Lovelace stands near a test table and watches the frog act like a living theory map. The frog shows that people do not just �see� reality. They live through situations, label what things mean, and read each sign through its context. The floating windows show lived experience. The sticky labels show shared social meaning. The small note under its paw shows that the same thing can mean something different depending on where it appears.
 
-### 🟧 [Bg] Bone goat
+### [Bg] Bone goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -380,7 +380,7 @@ _No keywords yet_
 **Story**
 The Bone goat stands beside a Bosch UX interview table. The goat is not counting clicks or only checking task time. It looks into a clear water tank on its back, where memory bubbles from one participant�s life float slowly. The goat reminds the researcher that IPA has two layers: the participant explains their world, and the UX researcher interprets that explanation with care.
 
-### 🟧 [Bh] Bone Hydra
+### [Bh] Bone Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -396,7 +396,7 @@ _No keywords yet_
 **Story**
 The Bone Hydra looms above a Bosch e-commerce prototype on the street. It does not ask a narrow yes-or-no question. One head lowers the wide paper funnel onto the prototype and asks people how trust forms while they look at signs, opinions, choices, and support. The Hydra keeps the question open so the participant can explain the experience in their own words.
 
-### 🟧 [Bi] bison
+### [Bi] bison
 
 <img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -412,7 +412,7 @@ _No keywords yet_
 **Story**
 The bison stands heavy and slow beside a Bosch research board. A thick transcript blanket covers its back, and the bison reads it line by line, then reads it again. It places notes in the margins to catch what the user says about trust. It listens for words, tone, and metaphors. It also looks under the surface, asking what the participant�s words may mean for their deeper sense of safety, control, and doubt.
 
-### 🟧 [Bj] Bone jester
+### [Bj] Bone jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="Bone jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -447,7 +447,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bb] Bone Bear
+### [Bb] Bone Bear
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone Bear" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -463,7 +463,7 @@ _No keywords yet_
 **Story**
 A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] Sherlock Holmes[cite: 7] hands the bear facts he already knows, and the bear uses them to build a clear path upward to explain a mystery.[cite: 1]
 
-### 🟧 [Bc] Bone Cat
+### [Bc] Bone Cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="Bone Cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -479,7 +479,7 @@ _No keywords yet_
 **Story**
 A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a large block that says "All" down the stairs, watching it shrink into a tiny block that says "One" as it hits the bottom.[cite: 1] Then, the Bone Cat[cite: 8] runs down and bites the tiny block hard to test if it is real.[cite: 1] Because the starting block at the top was made of solid truth, the Bone Cat[cite: 8] finds the final piece is also perfectly solid and true.[cite: 1]
 
-### 🟧 [Bd] Bone Dog
+### [Bd] Bone Dog
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone Dog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -495,7 +495,7 @@ _No keywords yet_
 **Story**
 A Bone Dog[cite: 8] ignores the stairs and leaps upward into the air.[cite: 1] It carries a few specific drops of coffee from the floor high into the sky to form a large, general cloud.[cite: 1] While floating, the Bone Dog[cite: 8] holds a clipboard in its paws and gathers real coffee cups from the ground to prove its guess that the coffee is tasty.[cite: 1]
 
-### 🟧 [Be] bee
+### [Be] bee
 
 <img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -530,7 +530,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Aw] awassi sheep
+### [Aw] awassi sheep
 
 <img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -546,7 +546,7 @@ _No keywords yet_
 **Story**
 An awassi sheep steps into the library wearing rigid metal frames to enforce strict structural rules. It holds a carved stone wheel in its hooves, using it to force broken pieces of a plant into highly specific slots, carefully mapping the exact causes and effects between each broken fragment. It bleats loudly at the axolotl floating nearby.
 
-### 🟧 [Ax] axolotl
+### [Ax] axolotl
 
 <img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -562,7 +562,7 @@ _No keywords yet_
 **Story**
 A pink axolotl swims in a floating water bubble, actively wrapping its slippery body around Socrates. It whispers that human biases and past experiences always weave into the data, proving that the observer and the subject build the truth together. The axolotl spits a splash of water at the aye-aye to emphasize its point.
 
-### 🟧 [Ay] aye-aye
+### [Ay] aye-aye
 
 <img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -578,7 +578,7 @@ _No keywords yet_
 **Story**
 A wide-eyed aye-aye wearing safety goggles sits at a typewriter. It angrily rips out any paper that uses static nouns, throwing the crumpled pages directly at the Aztec warrior. The aye-aye only types active, moving words ending in "ing" with its long, bony finger to keep the focus completely on changing actions rather than frozen topics.
 
-### 🟧 [Az] Aztec
+### [Az] Aztec
 
 <img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -594,7 +594,7 @@ _No keywords yet_
 **Story**
 An Aztec warrior decorated with bright feathers ignores the crumpled paper and walks right across the aye-aye's typewriter keys. He carries small, messy sticky notes in his teeth. He stretches sticky strings across the room, pasting the informal notes between the bare bones of the library's skeletons. These notes act as the vital tissue that holds the entire project together.
 
-### 🟧 [Ba] bat
+### [Ba] bat
 
 <img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -629,7 +629,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [As] asp
+### [As] asp
 
 <img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -645,7 +645,7 @@ _No keywords yet_
 **Story**
 A slippery asp[cite: 3] slithers between a classic detective in a deerstalker hat[cite: 5] and a glowing brain, linking raw clues directly to thoughts as they arrive. The snake holds a perfect, polished diamond in its tail, refusing to let the auroch[cite: 3] polish it further because the gem is already perfectly refined.
 
-### 🟧 [At] atlas
+### [At] atlas
 
 <img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -661,7 +661,7 @@ _No keywords yet_
 **Story**
 A giant stone atlas[cite: 3] drops his globe and watches the asp[cite: 3]. A spiky-haired martial artist in an orange gi[cite: 5] watches as the atlas constantly looks back and forth, comparing every single clue. The atlas juggles water drops into ice cubes to form a star, then draws temporary rules in the sand that easily wash away, knowing early ideas aren't locked in place.
 
-### 🟧 [Au] auroch
+### [Au] auroch
 
 <img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -677,7 +677,7 @@ _No keywords yet_
 **Story**
 A massive, horned auroch[cite: 3] ignores the diamond and instead tries to squeeze rain from a dark cloud into a sponge held by the atlas[cite: 3]. Instead of counting the drops, the beast just watches until the sponge is totally full and cannot absorb any more, showing that capacity, not a simple count, is the true goal.
 
-### 🟧 [Av] avocet
+### [Av] avocet
 
 <img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -712,7 +712,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ao] aoudad
+### [Ao] aoudad
 
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -728,7 +728,7 @@ _No keywords yet_
 **Story**
 Neo from the Matrix watches an aoudad jump wildly across a huge wall of wooden boxes. The aoudad organizes people and items, tossing them into one or more of these specific boxes to classify them, completely ignoring the armadillo chewing nearby.
 
-### 🟧 [Ap] ape
+### [Ap] ape
 
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -744,7 +744,7 @@ _No keywords yet_
 **Story**
 A large ape hangs upside down from the aoudad's boxes and reaches for Neo's computer screen. It spins a glowing, wet web of concepts between the screen and the boxes, linking data points together so the AI inside the machine can finally read and understand the files.
 
-### 🟧 [Aq] aquatic leech
+### [Aq] aquatic leech
 
 <img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -760,7 +760,7 @@ _No keywords yet_
 **Story**
 An aquatic leech slithers along a bare bone skeleton sitting on the desk. It leaves a thick web of glowing red strings behind that attach to the ape's web, fleshing out the connections between all the isolated joints and joining them into a complete system.
 
-### 🟧 [Ar] armadillo
+### [Ar] armadillo
 
 <img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -795,7 +795,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Aj] [Ajax]
+### [Aj] [Ajax]
 
 <img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -811,7 +811,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ak] [Akita (dog breed)]
+### [Ak] [Akita (dog breed)]
 
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -827,7 +827,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Al] [alligator]
+### [Al] [alligator]
 
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -843,7 +843,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Am] [amulet]
+### [Am] [amulet]
 
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -859,7 +859,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [An] [angel]
+### [An] [angel]
 
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -894,7 +894,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ae] aerialist
+### [Ae] aerialist
 
 <img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -910,7 +910,7 @@ _No keywords yet_
 **Story**
 An Aerialist hangs upside down in a grand courtroom. She acts as the judge, declaring that all beliefs are temporary and must be changed when new facts emerge. She points her gavel at an Afghan hound who is waiting to present a case.
 
-### 🟧 [Af] Afghan hound
+### [Af] Afghan hound
 
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -926,7 +926,7 @@ _No keywords yet_
 **Story**
 The tall Afghan hound steps forward with a six-sided die in its mouth. He explains that before anyone knows the result, every number has an equal chance of winning. He drops the die on the floor, ignoring the giant mushrooms growing nearby, to prove the baseline state of the court.
 
-### 🟧 [Ag] Agaric fungi
+### [Ag] Agaric fungi
 
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -942,7 +942,7 @@ _No keywords yet_
 **Story**
 A cluster of giant red-and-white Agaric fungi grows right through the courtroom floor. One mushroom announces that the secret die roll was an even number. This restricts the possibilities. The mushroom then paints a large vertical bar on the wall to show that the court's decision is now conditional on this new clue.
 
-### 🟧 [Ah] Ah!�a sigh
+### [Ah] Ah!�a sigh
 
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!�a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -958,7 +958,7 @@ _No keywords yet_
 **Story**
 A giant, floating word bubble that says "Ah!" lets out a loud, dramatic sigh over the courtroom. It acts as a game show host and reveals a goat behind a magical door. It sighs because the jury is confused. It explains that the other closed door now has better odds, even though it looks exactly the same as before.
 
-### 🟧 [Ai] Airedale terrier
+### [Ai] Airedale terrier
 
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -993,7 +993,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ac] acorn
+### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1009,7 +1009,7 @@ _No keywords yet_
 **Story**
 Albert Einstein walks into a large courtroom and places a giant acorn on the judge's desk. The acorn wears a white curly judge's wig and sits firmly in the center. Marie Curie steps forward holding a glass jar containing a calm bee and a wasp, demonstrating zero difference between them to the court. The acorn judge demands to be treated as the absolute truth, acting as a strict guard of the old rules until someone brings strong enough proof to defeat it.
 
-### 🟧 [Ad] adder
+### [Ad] adder
 
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1044,7 +1044,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [X] Xena, warrior woman
+### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1060,7 +1060,7 @@ _No keywords yet_
 **Story**
 Xena, warrior woman, holds a giant, detailed map of a complex science lab. She shows the yak that this map contains glowing rules that actually build and structure their entire research game.
 
-### 🟧 [Y] yak
+### [Y] yak
 
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1076,7 +1076,7 @@ _No keywords yet_
 **Story**
 The heavy yak tries to use Xena's glowing rules to build a puzzle on the floor. However, the yak gets stuck holding a unique, lightning-shaped puzzle piece. It tries to smash the piece into the board, but it just will not fit anywhere in the normal setup.
 
-### 🟧 [Z] Zeus
+### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1092,7 +1092,7 @@ _No keywords yet_
 **Story**
 Zeus sees the yak struggling with the broken piece. He realizes this is not just a normal puzzle problem. Zeus starts waving a red alarm flag, shouting to the aardvark that a massive crisis and extraordinary research have started.
 
-### 🟧 [Aa] aardvark
+### [Aa] aardvark
 
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1108,7 +1108,7 @@ _No keywords yet_
 **Story**
 The aardvark ignores Xena's map entirely. Showing explicit discontent with the crisis, it starts trying anything, knocking over the yak's puzzle and debating philosophy with Zeus. It brings out dozens of competing, random ideas to fix the problem.
 
-### 🟧 [Ab] Abyssinian cat
+### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1143,7 +1143,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [S] skull
+### [S] skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1159,7 +1159,7 @@ _No keywords yet_
 **Story**
 A tall marks the start of this street. A floating skull holds a notebook of past events. It tries to force puzzle pieces that do not fit into its eye sockets, twisting every old piece of information to match what it wants to believe. It completely ignores the vulture nearby building a wall.
 
-### 🟧 [T] toucan
+### [T] toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1175,7 +1175,7 @@ _No keywords yet_
 **Story**
 A colorful toucan flies forward, completely ignoring the skull. Albert Einstein rides on the toucan's back as it leaps over a deep, hazy pit. Albert knows that jumping over the pit is a dangerous test, and if the toucan cannot be tested against the fall, their whole journey is completely useless.
 
-### 🟧 [U] unicorn
+### [U] unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1191,7 +1191,7 @@ _No keywords yet_
 **Story**
 A glowing unicorn wears a red Santa Claus hat and circles above the toucan. The unicorn only lowers its horn to pierce pieces of meat shaped exactly like the hat. By ignoring everything else on the street, the beast easily finds exactly what it wants to see.
 
-### 🟧 [V] vulture
+### [V] vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1207,7 +1207,7 @@ _No keywords yet_
 **Story**
 A vulture lands heavily in the middle of the road and builds a thick brick wall that stops the unicorn from running further. The bird spits out fake ideas and shakes its head firmly, using the wall to clearly block bad paths and look for flaws.
 
-### 🟧 [W] wombat
+### [W] wombat
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1242,7 +1242,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1258,7 +1258,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1274,7 +1274,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Q] Quetzalcoatl
+### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1290,7 +1290,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [R] rat
+### [R] rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1325,7 +1325,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [L] Lion
+### [L] Lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="Lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1341,7 +1341,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [M] Marmoset
+### [M] Marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="Marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1357,7 +1357,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1392,7 +1392,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [G] Goat
+### [G] Goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="Goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1408,7 +1408,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1424,7 +1424,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [I] Imp
+### [I] Imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="Imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1440,7 +1440,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [J] Jester
+### [J] Jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="Jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1456,7 +1456,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [K] Kitten
+### [K] Kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="Kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1491,7 +1491,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1507,7 +1507,7 @@ _No keywords yet_
 **Story**
 Steve Jobs tries to sell a chocolate bar to a cat trapped inside an empty glass box. The cat just stares at the single item and ignores the dragon flying above. Steve realizes that locking the buyer in an empty room makes no sense for testing real value.
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1523,7 +1523,7 @@ _No keywords yet_
 **Story**
 A giant dragon dives from the sky and shatters the cat's glass box with its claws. It drops three different competing candies on the floor. It completely changes the game by demanding to know which of these rivals the buyer would pick if they walked away from the first product.
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1539,7 +1539,7 @@ _No keywords yet_
 **Story**
 A large eagle sits comfortably on the dragon's tail holding a small balancing scale. It places Steve Jobs' chocolate on one side and the dragon's rival candy on the other. It squawks loudly at the buyers, asking exactly what dollar amount would make them feel exactly as happy to buy either one.
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1574,7 +1574,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1590,7 +1590,7 @@ _No keywords yet_
 **Story**
 A spider-woman, Arachne, finishes a small web in front of a wooden sign. A woman in a short lab coat with dark hair in a low bun, like Marie Curie, hands her a cup with exactly three marbles. Arachne ties each marble to one knot, only the group she can touch. She nods toward a gaudy long-tailed bird on a bench, the bird of paradise, which is already lifting a much bigger map toward the sky.
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

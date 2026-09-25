@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -29,7 +29,7 @@
 **Story**
 A two-headed panther stands at a left-side gate. One head whispers riddles that chime like glass in wind. The other bellows temple gongs so loud the whispers go silent, then the chimes cut the gongs. Bruce Lee stands still and tracks which sound is winning.
 
-### 🟧 [Q] Quetzalcoatl
+### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -48,7 +48,7 @@ A two-headed panther stands at a left-side gate. One head whispers riddles that 
 **Story**
 A huge feathered serpent coils around a right-side parked car and stacks five glowing pecks of rice into a ranked pile. Its feathers throw a sage-vision into the sky, bright as a second sun. The rice keeps climbing itself into a taller, neater tower.
 
-### 🟧 [R] rat
+### [R] rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -67,7 +67,7 @@ A huge feathered serpent coils around a right-side parked car and stacks five gl
 **Story**
 A three-headed rat at the far end of the street bites three cheeses at once. The first tastes like nothing at all, the second like every book and law in one bite, the third like way-and-virtue tea so old it has no temperature. The three tastes crash in your mouth as if you swallowed the sky's layout.
 
-### 🟧 [S] skull
+### [S] skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -86,7 +86,7 @@ A three-headed rat at the far end of the street bites three cheeses at once. The
 **Story**
 A giant skull in a jade crown sits on a cloud-throne above a roof, bone so smooth and cold it burns your fingers. Each stamp of its seal slides a star to a new place. Bruce Lee feels the stamp's weight drop through the street like a frozen anvil.
 
-### 🟧 [T] toucan
+### [T] toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -124,7 +124,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [K] kitten
+### [K] kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -143,7 +143,7 @@ _No gallery images._
 **Story**
 A kitten on a left-side parked car bats a ball of yarn that is half pitch-black and half blinding white. The two halves braid themselves into a spinning circle on the hood. The contrast is so sharp it hurts to look at.
 
-### 🟧 [L] lion
+### [L] lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -162,7 +162,7 @@ A kitten on a left-side parked car bats a ball of yarn that is half pitch-black 
 **Story**
 A lion made of crackling energy walks along a right-side wall, paws that never quite touch the street. The air thickens and a hum presses into your skin. The Jade Emperor grips the mane, which feels like a solid brick and a flowing gas at once.
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -181,7 +181,7 @@ A lion made of crackling energy walks along a right-side wall, paws that never q
 **Story**
 A marmoset on a far facade juggles five orbs that scream five ways: fire crackle, water rush, wood creak, metal clang, earth rumble. When the orbs clash, the five noises braid into one blast that shakes windows. Each orb keeps its own sound even while they mix.
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -202,7 +202,7 @@ A marmoset on a far facade juggles five orbs that scream five ways: fire crackle
 **Story**
 A Neanderthal sits on a balcony in a still pose, with a cauldron boiling inside his chest. Three smells pour out: earthy jing, sharp electric qi, and sweet shen. One deep breath braids the three smells into a single burning scent.
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -240,7 +240,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -259,7 +259,7 @@ _No gallery images._
 **Story**
 One frog sits on a lily pad in a curb puddle by a left-side wall. Its throat-sack projects a flickering sage into the air. Glasses grow out of the frog's own face and the sage image blinks out, then snaps back, then dies again.
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -278,7 +278,7 @@ One frog sits on a lily pad in a curb puddle by a left-side wall. Its throat-sac
 **Story**
 A goat chained to a right-side fence chews a scroll that talks while it is eaten. The chew sounds like water and rock speaking at the same time. Zhuangzi leans in to catch the poem-sounds before they vanish.
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -297,7 +297,7 @@ A goat chained to a right-side fence chews a scroll that talks while it is eaten
 **Story**
 A Hydra fills a cave mouth that opened in a far brick wall. Shaman rattles grow from its tails and buzz against your palm. One head laughs, one weeps, one stays mute, and all three kinds of shaking hit your bones at once.
 
-### 🟧 [I] imp
+### [I] imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -316,7 +316,7 @@ A Hydra fills a cave mouth that opened in a far brick wall. Shaman rattles grow 
 **Story**
 An imp juggles dirt-smelling story balls from a balcony. One ball hits a stone official statue on the roof edge and the stone suit turns into leaves. A wild-grass smell follows the imp and wipes out the city smell.
 
-### 🟧 [J] jester
+### [J] jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -354,7 +354,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -373,7 +373,7 @@ _No gallery images._
 **Story**
 A street-wide Arachne spins a web you can taste, honey and lightning in one bite. The web hardens into a road, melts into a river, then hardens again. Laozi stands at a left-side gate and says the web has no name. Each bite flips from sweet to sour as the shape changes.
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -391,7 +391,7 @@ A street-wide Arachne spins a web you can taste, honey and lightning in one bite
 **Story**
 A bird of paradise sits on a right-side gate post, feathers so hot they feel like live coals on your skin. The feathers weld a glowing patch of heat onto the post, then into your palm. The heat stays in your hand like a solid brick of warmth.
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -410,7 +410,7 @@ A bird of paradise sits on a right-side gate post, feathers so hot they feel lik
 **Story**
 A sleeping cat rides a flood down the far street, still asleep on a fence-board. Water slams into walls and goes silent the instant it touches the cat's fur. The leftover sound is a huge hush that rings like a bell.
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -429,7 +429,7 @@ A sleeping cat rides a flood down the far street, still asleep on a fence-board.
 **Story**
 A dragon the size of a thumbnail sits on an uncut log on a roof edge. Branches explode out of the log in one wild burst, skipping the neat gardens below. The dragon's breath makes the raw bark glow so bright it hurts your eyes.
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

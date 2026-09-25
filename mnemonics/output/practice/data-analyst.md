@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [Be] bee
+### [Be] bee
 
 <img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -29,7 +29,7 @@
 **Story**
 A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only the bullseye hits where the twins match exactly, while the rest vaporize into mist.
 
-### 🟧 [Bf] Bone frog
+### [Bf] Bone frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -49,7 +49,7 @@ A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only
 **Story**
 A Bone frog kicks a wooden table with its glowing left webbed foot, catching all the bouncing vinyl records and stuffing transparent ghosts into the empty slots on the right.
 
-### 🟧 [Bg] Bone goat
+### [Bg] Bone goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -88,7 +88,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ba] bat
+### [Ba] bat
 
 <img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -108,7 +108,7 @@ _No gallery images._
 **Story**
 A gigantic bat uses silver tweezers to extract nested glowing code blocks from a dashboard, throwing them through a glass window to evaluate the flying data on brass scales.
 
-### 🟧 [Bb] Bone bird of paradise
+### [Bb] Bone bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -128,7 +128,7 @@ A gigantic bat uses silver tweezers to extract nested glowing code blocks from a
 **Story**
 A Bone bird of paradise drags a humming chest freezer into a camping tent to store a wooden clipboard, smashing a glowing hamster wheel to stop it from spinning again.
 
-### 🟧 [Bc] Bone cat
+### [Bc] Bone cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="Bone cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -148,7 +148,7 @@ A Bone bird of paradise drags a humming chest freezer into a camping tent to sto
 **Story**
 A Bone cat pours a giant snowball through a roaring blender, using a plastic funnel lined with a coffee filter to catch only the perfectly crushed ice at the end.
 
-### 🟧 [Bd] Bone dragon
+### [Bd] Bone dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -187,7 +187,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ay] aye-aye
+### [Ay] aye-aye
 
 <img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -206,7 +206,7 @@ _No gallery images._
 **Story**
 A tiny-then-huge aye-aye carries twin glass panes: one shows the whole hive map, the other zooms one corner until honeycomb letters roar.
 
-### 🟧 [Az] Aztec
+### [Az] Aztec
 
 <img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -244,7 +244,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [At] atlas
+### [At] atlas
 
 <img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -263,7 +263,7 @@ _No gallery images._
 **Story**
 A huge atlas wears a face-glyph mask whose eyes, smile, and horns twist whenever data knobs turn; the mask hisses when values spike.
 
-### 🟧 [Au] auroch
+### [Au] auroch
 
 <img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -282,7 +282,7 @@ A huge atlas wears a face-glyph mask whose eyes, smile, and horns twist whenever
 **Story**
 A towering auroch stitches a carpet of single glowing pixels that crawl into spiral polygons, one shape per dimension, buzzing like bees.
 
-### 🟧 [Av] avocet
+### [Av] avocet
 
 <img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -301,7 +301,7 @@ A towering auroch stitches a carpet of single glowing pixels that crawl into spi
 **Story**
 A gigantic avocet flips a structure like a Rubik cube; each twist births a new view window that rings when it fits the user's need.
 
-### 🟧 [Aw] awassi sheep
+### [Aw] awassi sheep
 
 <img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -320,7 +320,7 @@ A gigantic avocet flips a structure like a Rubik cube; each twist births a new v
 **Story**
 A huge awassi sheep taps one glowing pin on the map; the pin sprouts a detail-card that smells like warm paper and spills extra table facts.
 
-### 🟧 [Ax] axolotl
+### [Ax] axolotl
 
 <img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -358,7 +358,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ao] aoudad
+### [Ao] aoudad
 
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -377,7 +377,7 @@ _No gallery images._
 **Story**
 A colossal aoudad paints giant noodles of lines in different colors and thicknesses; each noodle tastes like its style when bitten.
 
-### 🟧 [Ap] ape
+### [Ap] ape
 
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -396,7 +396,7 @@ A colossal aoudad paints giant noodles of lines in different colors and thicknes
 **Story**
 A huge ape strings tall parallel fence-poles and weaves each data row as a zigzag neon thread that snaps across every pole.
 
-### 🟧 [Aq] aquatic leech
+### [Aq] aquatic leech
 
 <img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -415,7 +415,7 @@ A huge ape strings tall parallel fence-poles and weaves each data row as a zigza
 **Story**
 A gigantic aquatic leech spins a giant clock-plot where months loop forever; seasonal spikes burst as fireworks that smell like rain.
 
-### 🟧 [Ar] armadillo
+### [Ar] armadillo
 
 <img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -434,7 +434,7 @@ A gigantic aquatic leech spins a giant clock-plot where months loop forever; sea
 **Story**
 A huge armadillo shuffles a living spreadsheet like cards, grows cells into bar towers, then zooms rows until extra details explode outward as sticky notes.
 
-### 🟧 [As] asp
+### [As] asp
 
 <img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -472,7 +472,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Aj] Ajax
+### [Aj] Ajax
 
 <img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -491,7 +491,7 @@ _No gallery images._
 **Story**
 A huge Ajax plugs each table column into a different paint hose—color, size, position—until the street squirts matching visual properties that clang when connected.
 
-### 🟧 [Ak] Akita (dog breed)
+### [Ak] Akita (dog breed)
 
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -510,7 +510,7 @@ A huge Ajax plugs each table column into a different paint hose—color, size, p
 **Story**
 A gigantic Akita (dog breed) flashes color and size balloons that pop out of the pavement without anyone thinking; the balloons scream when a pattern appears.
 
-### 🟧 [Al] alligator
+### [Al] alligator
 
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -529,7 +529,7 @@ A gigantic Akita (dog breed) flashes color and size balloons that pop out of the
 **Story**
 A living alligator rips fake neighbor-links off a chart and stamps a glowing filter that lets only true table facts through; lies melt into sour smoke.
 
-### 🟧 [Am] amulet
+### [Am] amulet
 
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -548,7 +548,7 @@ A living alligator rips fake neighbor-links off a chart and stamps a glowing fil
 **Story**
 A racing amulet sorts glowing bars against a stopwatch; wrong interpretations shatter like ice when it snorts heat that erases them.
 
-### 🟧 [An] angel
+### [An] angel
 
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -586,7 +586,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ae] aerialist
+### [Ae] aerialist
 
 <img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -605,7 +605,7 @@ _No gallery images._
 **Story**
 A skyscraper-tall aerialist hangs upside down from a glowing blueprint sheet and stitches neon table outlines, field dots, and constraint chains into the air until the whole street becomes a rigid skeleton of light.
 
-### 🟧 [Af] Afghan hound
+### [Af] Afghan hound
 
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -624,7 +624,7 @@ A skyscraper-tall aerialist hangs upside down from a glowing blueprint sheet and
 **Story**
 A gigantic Afghan hound dumps a toolbox of glowing points, lines, and areas onto the street; the pile snaps into a living mirror that shows the whole dataset as one buzzing structure.
 
-### 🟧 [Ag] Agaric fungi
+### [Ag] Agaric fungi
 
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -643,7 +643,7 @@ A gigantic Afghan hound dumps a toolbox of glowing points, lines, and areas onto
 **Story**
 A giant Agaric fungi unrolls a rubber stage that stretches like chewing gum across the road; the dataset only appears where the stage sticks, squeaking underfoot.
 
-### 🟧 [Ah] Ah!—a sigh
+### [Ah] Ah!—a sigh
 
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -662,7 +662,7 @@ A giant Agaric fungi unrolls a rubber stage that stretches like chewing gum acro
 **Story**
 A huge Ah!—a sigh coughs up toy marks—points, lines, icons—that bounce inside a transparent chart-box like pinballs, clacking when they hit the walls.
 
-### 🟧 [Ai] Airedale terrier
+### [Ai] Airedale terrier
 
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -700,7 +700,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ad] adder
+### [Ad] adder
 
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -738,7 +738,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Y] yak
+### [Y] yak
 
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -756,7 +756,7 @@ _No gallery images._
 **Story**
 A colossal yak uses its curved horns as crowbars to rip tall stone columns out of the ground, bending them into flat sidewalk slabs that feel warm and rubbery.
 
-### 🟧 [Z] Zeus
+### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -774,7 +774,7 @@ A colossal yak uses its curved horns as crowbars to rip tall stone columns out o
 **Story**
 A gigantic Zeus hurls blinding neon lightning bolts at an enormous ledger, vaporizing every row marked with empty ghost icons until half the page vanishes into thin air.
 
-### 🟧 [Aa] aardvark
+### [Aa] aardvark
 
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -793,7 +793,7 @@ A gigantic Zeus hurls blinding neon lightning bolts at an enormous ledger, vapor
 **Story**
 An aardvark with a vacuum snout loudly slurps empty holes out of a wooden table and plugs each gap with a screeching rubber scarecrow before folding the table in half.
 
-### 🟧 [Ab] Abyssinian cat
+### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -833,7 +833,7 @@ A heavy twin-stamping iron helmet fused into its forehead slams down to press id
 **Story**
 Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched.
 
-### 🟧 [Ac] acorn
+### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -871,7 +871,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [T] toucan
+### [T] toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -890,7 +890,7 @@ _No gallery images._
 **Story**
 A giant toucan violently drops a roaring car engine block into a massive blender, screaming loudly as it executes my queries by shredding the metal into glowing dust.
 
-### 🟧 [U] unicorn
+### [U] unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -909,7 +909,7 @@ A giant toucan violently drops a roaring car engine block into a massive blender
 **Story**
 A unicorn uses a vacuum attached to its horn to suck all the empty air out of glowing name tags, squeezing the text together so it can scrub the underlying code clean with a giant dripping sponge.
 
-### 🟧 [V] vulture
+### [V] vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -929,7 +929,7 @@ A unicorn uses a vacuum attached to its horn to suck all the empty air out of gl
 **Story**
 A giant vulture folds an enormous glowing origami swan with its talons, using a bulldozer to push the paper creation back down into a deep stone well to stop a ticking stopwatch.
 
-### 🟧 [W] wombat
+### [W] wombat
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -948,7 +948,7 @@ A giant vulture folds an enormous glowing origami swan with its talons, using a 
 **Story**
 A skyscraper-sized wombat peers through glowing binoculars at a wooden picnic table, magically x-raying the wood to automatically determine the glowing neon skeleton hidden inside.
 
-### 🟧 [X] Xena, warrior woman
+### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -986,7 +986,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1004,7 +1004,7 @@ _No gallery images._
 **Story**
 Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data from a massive low-cost storage lake, tasting the metallic flavor of semi-structured fish[cite: 1].
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1023,7 +1023,7 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 **Story**
 Beside the dumpster, a panther constructs a highly structured schema-on-write pyramid out of SQL blocks, arranging glowing business intelligence analytics in perfect symmetry[cite: 1].
 
-### 🟧 [Q] Quetzalcoatl
+### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1042,7 +1042,7 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 **Story**
 At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of water with solid, reliable warehouse bricks, forging an unbreakable ACID-resistant hybrid architecture[cite: 1].
 
-### 🟧 [R] rat
+### [R] rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1061,7 +1061,7 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 **Story**
 Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of uncataloged data, gagging on the rancid stench of undocumented files rotting in the mud below[cite: 1].
 
-### 🟧 [S] skull
+### [S] skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1098,7 +1098,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [J] jester
+### [J] jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1114,7 +1114,7 @@ _No keywords yet_
 **Story**
 A jester juggles multiple disparate screaming data hard drives at the iron gate, funneling them into a single massive golden target vault[cite: 1].
 
-### 🟧 [K] kitten
+### [K] kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1130,7 +1130,7 @@ _No keywords yet_
 **Story**
 A giant kitten digs its sharp claws into a flat file server rack on top of the parked van, ripping out dripping raw data cables with extreme force[cite: 1].
 
-### 🟧 [L] lion
+### [L] lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1146,7 +1146,7 @@ _No keywords yet_
 **Story**
 At the central stone fountain, a lion scrubs muddy data tables in a glowing temporary staging pool, filtering out glowing red anomalies until the water runs crystal clear[cite: 1].
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1162,7 +1162,7 @@ _No keywords yet_
 **Story**
 Up on the rooftop, a marmoset violently hammers white-hot glowing processed data blocks into a target repository vault, sending sparks flying everywhere[cite: 1].
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1197,7 +1197,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1213,7 +1213,7 @@ _No keywords yet_
 **Story**
 Perched on the iron gatepost, a giant eagle rips open a massive floating jigsaw puzzle box, violently squeezing raw wooden letters into a blinding neon sign reading INSIGHTS.
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1229,7 +1229,7 @@ _No keywords yet_
 **Story**
 Beside a parked bakery delivery truck, a neon-striped frog croaks at deafening volume, spitting high-speed golden coin streams that slice red expense ledgers in half.
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1245,7 +1245,7 @@ _No keywords yet_
 **Story**
 Against the central brick facade, a goat rams its head into an oversized blue architectural blueprint, grinding tactical charts into glowing chalk paste with sandpaper-textured horns.
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1261,7 +1261,7 @@ _No keywords yet_
 **Story**
 Sprawled across the upper roof tiles, a seven-headed Hydra spews boiling chemical solvent across five descending conveyor belts, crystallizing raw sludge into sparkling ruby ingots that radiate intense heat.
 
-### 🟧 [I] imp
+### [I] imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1296,7 +1296,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1330,7 +1330,7 @@ _No keywords yet_
 **Story**
 An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1346,7 +1346,7 @@ _No keywords yet_
 **Story**
 A bird of paradise violently rakes its metallic claws against the parked vintage van's side door, carving neon KPI dials and glowing dashboard gauges that erupt in showers of colored spark metrics.
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1362,7 +1362,7 @@ _No keywords yet_
 **Story**
 Perched at the central storefront pillar, a cat exhales icy SQL tables from its mouth that freeze instantly into rigid glass spreadsheets, shattering floating clouds of clickstream smoke.
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

@@ -106,7 +106,7 @@ def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str
     """Flat beast block (not collapsible) — only Memory Palaces use <details>."""
     beast_label = dash(beast)
     lines: list[str] = [
-        f"### 🟧 {beast_label}",
+        f"### {beast_label}",
         "",
     ]
     # Thumb from first atom's peg/name when available

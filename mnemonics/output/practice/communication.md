@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [Ab] Abyssinian cat
+### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -25,7 +25,7 @@ _No keywords yet_
 **Story**
 A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a five-part harmony that magically weaves luxurious silk suits out of thin air for its floating kittens. Doc Brown cheers at the booming song, listening as the rich, melodic notes dress the naked ideas in perfectly tailored, unforgettable clothing.
 
-### 🟧 [Ac] acorn
+### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -60,7 +60,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [W] wombat
+### [W] wombat
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -76,7 +76,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving microscopic formulas into a steel beam with its heavy claws. Sherlock Holmes runs his bare hands over the deep, jagged scratches, feeling the physical weight of knowledge and practice overwhelming the tiny speck of talent etched at the end.
 
-### 🟧 [X] Xena, warrior woman
+### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -92,7 +92,7 @@ _No keywords yet_
 **Story**
 Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic battle cry that instantly materializes as solid glowing armor on the people around her. Sherlock Holmes listens as the empowering soundwaves loudly promise unbreakable strength, echoing down the street until the hour ends.
 
-### 🟧 [Y] yak
+### [Y] yak
 
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -108,7 +108,7 @@ _No keywords yet_
 **Story**
 A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence that circles its body exactly three times to trap a cloud of thick fog. Sherlock Holmes peers through his magnifying glass, watching the intensely bright, repeating cycles of light completely burn away the 20 percent of fog blocking the street.
 
-### 🟧 [Z] Zeus
+### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -124,7 +124,7 @@ _No keywords yet_
 **Story**
 Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell intensely of burning ozone to mark specific landing zones on the pavement. Sherlock Holmes sniffs the sharp, electrical punctuation in the air, using the distinct scent as a landmark to safely step back onto the scorched pathway.
 
-### 🟧 [Aa] aardvark
+### [Aa] aardvark
 
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -159,7 +159,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [R] rat
+### [R] rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -175,7 +175,7 @@ _No keywords yet_
 **Story**
 A microscopic rat sits on the iron gate in the ForegroundLeft, furiously erasing a massive, chaotic bull painting with its tail. Ada Lovelace cranks a brass gear, and the rat rips away thick layers of canvas until only a shockingly sharp, glowing neon outline of a bull remains in the air.
 
-### 🟧 [S] skull
+### [S] skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -191,7 +191,7 @@ _No keywords yet_
 **Story**
 A colossal, floating bone skull hovers by the MidgroundRight lamp post, vomiting out heavy, rusted iron words from its deep jaw. Ada Lovelace hits them repeatedly with a tuning fork, transforming the heavy metal into weightless, blazing surface flares that shoot instantly to the top of the cranium for automatic use.
 
-### 🟧 [T] toucan
+### [T] toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -207,7 +207,7 @@ _No keywords yet_
 **Story**
 A giant toucan crashes into the BackgroundCenter facade, regurgitating a ticking clock, a booming drum, and a stinking fish onto the pavement. Ada Lovelace touches the visceral mess, feeling the blood and bone materialize as the abstract words mutate into living, screaming sensory organs.
 
-### 🟧 [U] unicorn
+### [U] unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -223,7 +223,7 @@ _No keywords yet_
 **Story**
 An ethereal unicorn balances on the Aerial roof, exhaling a perfect, glowing box-breathing square to calm its shivering body. Ada Lovelace peers through the box, seeing the unicorn's mind physically laser-focused on a cheering crowd while its spirit radiates a blinding, honest light that burns away the roof tiles.
 
-### 🟧 [V] vulture
+### [V] vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -258,7 +258,7 @@ Test
 
 #### Knowledge Atoms
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -274,7 +274,7 @@ _No keywords yet_
 **Story**
 A colossal marmoset balances on a street lamp, scrubbing its glowing transparent brain with a giant wire brush. Alan Turing feeds it a complex math puzzle, and the beast screams out perfectly articulated, crystal-clear answers that shatter the nearby windows.
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -290,7 +290,7 @@ _No keywords yet_
 **Story**
 A brutish Neanderthal stands near the front left gate, relentlessly smashing a broken stone tablet over and over. Alan Turing watches closely as the high frequency of bad, clumsy strikes miraculously polishes the stone into a perfectly clear, flawless diamond lens.
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -306,7 +306,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized owl perches on a midground brick wall, aggressively chewing thick rubber dictionary pages into a sticky paste. It forcefully spits the chewed, gummed words out, which instantly harden and strike the pavement like a dazzling, crackling lightning bolt.
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -322,7 +322,7 @@ _No keywords yet_
 **Story**
 A sleek panther paces at the far end of the street, bleeding vibrant, dripping neon paint from its paws. As it walks, it fills in a giant hollow chalk outline on the road with the vivid, wet colors of its own life experiences.
 
-### 🟧 [Q] rat
+### [Q] rat
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -357,7 +357,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -373,7 +373,7 @@ _No keywords yet_
 **Story**
 A colossal dragon lands heavily on the gate post, and Goku desperately grabs its scaled tail. The beast breathes a massive, glowing business agenda made of bright neon fire into the sky, forcing everyone to clearly see the defined direction.
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -389,7 +389,7 @@ _No keywords yet_
 **Story**
 An impossibly heavy eagle crashes onto a parked car, crushing its steel roof like paper to hand Goku solid gold bars. The tangible, crushing weight of these delivered results physically alters the vehicle, showing immense value creation.
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -405,7 +405,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized frog squats at the far end of the street, croaking with a deafening electronic baseline. Goku plugs futuristic digital cables directly into the frog's warty skin, causing the loud croaks to instantly build a collaborative digital city out of soundwaves.
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -421,7 +421,7 @@ _No keywords yet_
 **Story**
 A floating goat balances perfectly on top of a street lamp, emitting a highly concentrated, comforting scent of warm cinnamon. Goku breathes in the trusting aroma and shouts his deepest secrets to the goat, feeling completely safe to express opinions in the sweet-smelling air.
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -456,7 +456,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -472,7 +472,7 @@ _No keywords yet_
 **Story**
 Arachne (a woman with the lower body of a spider) crawls down onto the street. She wears a tiny judge's wig and holds a shiny gold badge. She waves her many arms to show the crowd her badge, proving she is honest and making everyone respect her high authority.
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -488,7 +488,7 @@ _No keywords yet_
 **Story**
 A bright bird of paradise flutters down to perch on Arachne's badge and starts crying with giant, sad eyes. It looks so pathetic and cute that the entire crowd starts weeping with it. The bird actively uses these strong, sad feelings to steal everyone's attention and engage the audience completely.
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

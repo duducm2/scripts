@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [Bs] Bone Shark
+### [Bs] Bone Shark
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="Bone Shark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -25,7 +25,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bt] Bone Toad
+### [Bt] Bone Toad
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone Toad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -41,7 +41,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bu] butterfly
+### [Bu] butterfly
 
 <img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -76,7 +76,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bq] Boulder quail
+### [Bq] Boulder quail
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Boulder quail" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -92,7 +92,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Br] brontosaurus
+### [Br] brontosaurus
 
 <img src="../../web/assets/beast-thumbs/brontosaurus.png" alt="brontosaurus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -127,7 +127,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bl] bloodhound
+### [Bl] bloodhound
 
 <img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -143,7 +143,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bm] Bone marmoset
+### [Bm] Bone marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -159,7 +159,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bn] Blazing nightjar
+### [Bn] Blazing nightjar
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Blazing nightjar" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -175,7 +175,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bo] bower-bird
+### [Bo] bower-bird
 
 <img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -191,7 +191,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bp] Blackwater penguin
+### [Bp] Blackwater penguin
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="Blackwater penguin" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -226,7 +226,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bh] Bitter hare
+### [Bh] Bitter hare
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Bitter hare" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -242,7 +242,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bi] bison
+### [Bi] bison
 
 <img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -258,7 +258,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bj] Basil jellyfish
+### [Bj] Basil jellyfish
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="Basil jellyfish" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -274,7 +274,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bk] Bloodmoon kestrel
+### [Bk] Bloodmoon kestrel
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="Bloodmoon kestrel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -309,7 +309,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Bf] Blackwater ferret
+### [Bf] Blackwater ferret
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="Blackwater ferret" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -325,7 +325,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bg] Boulder giraffe
+### [Bg] Boulder giraffe
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="Boulder giraffe" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -360,7 +360,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ay] aye-aye
+### [Ay] aye-aye
 
 <img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -376,7 +376,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Az] Aztec
+### [Az] Aztec
 
 <img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -392,7 +392,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ba] bat
+### [Ba] bat
 
 <img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -408,7 +408,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Bb] Brass bison
+### [Bb] Brass bison
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Brass bison" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -424,7 +424,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Be] bee
+### [Be] bee
 
 <img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -459,7 +459,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [At] atlas
+### [At] atlas
 
 <img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -475,7 +475,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Au] auroch
+### [Au] auroch
 
 <img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -491,7 +491,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Av] avocet
+### [Av] avocet
 
 <img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -507,7 +507,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Aw] awassi sheep
+### [Aw] awassi sheep
 
 <img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -523,7 +523,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ax] axolotl
+### [Ax] axolotl
 
 <img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -558,7 +558,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ao] aoudad
+### [Ao] aoudad
 
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -574,7 +574,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ap] ape
+### [Ap] ape
 
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -590,7 +590,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Aq] aquatic leech
+### [Aq] aquatic leech
 
 <img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -606,7 +606,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ar] armadillo
+### [Ar] armadillo
 
 <img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -622,7 +622,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [As] asp
+### [As] asp
 
 <img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -657,7 +657,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Aj] Ajax
+### [Aj] Ajax
 
 <img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -673,7 +673,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ak] Akita (dog breed)
+### [Ak] Akita (dog breed)
 
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -689,7 +689,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Al] alligator
+### [Al] alligator
 
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -705,7 +705,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Am] amulet
+### [Am] amulet
 
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -721,7 +721,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [An] angel
+### [An] angel
 
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -756,7 +756,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ah] Ah!—a sigh
+### [Ah] Ah!—a sigh
 
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -772,7 +772,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ai] Airedale terrier
+### [Ai] Airedale terrier
 
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -807,7 +807,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ac] acorn
+### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -823,7 +823,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ad] adder
+### [Ad] adder
 
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -839,7 +839,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ae] aerialist
+### [Ae] aerialist
 
 <img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -855,7 +855,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Af] Afghan hound
+### [Af] Afghan hound
 
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -871,7 +871,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ag] Agaric fungi
+### [Ag] Agaric fungi
 
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -906,7 +906,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [X] Xena, warrior woman
+### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -922,7 +922,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Y] yak
+### [Y] yak
 
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -938,7 +938,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Z] Zeus
+### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -954,7 +954,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Aa] aardvark
+### [Aa] aardvark
 
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -970,7 +970,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ab] Abyssinian cat
+### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1005,7 +1005,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [T] toucan
+### [T] toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1021,7 +1021,7 @@ _No keywords yet_
 **Story**
 A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
 
-### 🟧 [U] unicorn
+### [U] unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1037,7 +1037,7 @@ _No keywords yet_
 **Story**
 A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
 
-### 🟧 [V] vulture
+### [V] vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1053,7 +1053,7 @@ _No keywords yet_
 **Story**
 A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
 
-### 🟧 [W] wombat
+### [W] wombat
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1088,7 +1088,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [R] rat
+### [R] rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1104,7 +1104,7 @@ _No keywords yet_
 **Story**
 A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
 
-### 🟧 [S] skull
+### [S] skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1139,7 +1139,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1155,7 +1155,7 @@ _No keywords yet_
 **Story**
 It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1171,7 +1171,7 @@ _No keywords yet_
 **Story**
 A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1187,7 +1187,7 @@ _No keywords yet_
 **Story**
 An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1203,7 +1203,7 @@ _No keywords yet_
 **Story**
 A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
 
-### 🟧 [Q] Quetzalcoatl
+### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1238,7 +1238,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [K] Kitten
+### [K] Kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="Kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1254,7 +1254,7 @@ _No keywords yet_
 **Story**
 A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
 
-### 🟧 [L] Lion
+### [L] Lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="Lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1289,7 +1289,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [F] Frog
+### [F] Frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="Frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1305,7 +1305,7 @@ _No keywords yet_
 **Story**
 A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your relative pronoun, you can take it out.
 
-### 🟧 [G] Goat
+### [G] Goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="Goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1321,7 +1321,7 @@ _No keywords yet_
 **Story**
 A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1337,7 +1337,7 @@ _No keywords yet_
 **Story**
 The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Clefts.
 
-### 🟧 [I] Imp
+### [I] Imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="Imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1353,7 +1353,7 @@ _No keywords yet_
 **Story**
 Example: "What they need is more time." (Not "are"—use is even though "they" is plural.)
 
-### 🟧 [J] Jester
+### [J] Jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="Jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1388,7 +1388,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1404,7 +1404,7 @@ _No keywords yet_
 **Story**
 Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
 
-### 🟧 [B] Bird of Paradise
+### [B] Bird of Paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bird of Paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1420,7 +1420,7 @@ _No keywords yet_
 **Story**
 Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my passport that she dropped." This shows why we use cleft sentences: For Emphasis and Correction.
 
-### 🟧 [C] Cat
+### [C] Cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="Cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -1436,7 +1436,7 @@ _No keywords yet_
 **Story**
 A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are plural (two people). But the Dragon uses fire to make them use a singular verb. He shouts: "It is Matt and Jessica who are having the party, not me." The rule is: Use the singular "Be," even for plural subjects.
 
-### 🟧 [E] Eagle
+### [E] Eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="Eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

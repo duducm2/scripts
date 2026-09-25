@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -59,7 +59,7 @@ _No keywords yet_
 **Story**
 The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland, sugary calm.
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -128,7 +128,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [J] jester
+### [J] jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -144,7 +144,7 @@ _No keywords yet_
 **Story**
 A colossal medieval jester refuses to wait for hope; it aggressively bites Goku's arm and drags him across the rough pavement to force him into motion. The sheer friction of the dragging sparks a violent, tangible chemical explosion of energy in the air before Goku even realizes what is happening.
 
-### 🟧 [K] kitten
+### [K] kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -160,7 +160,7 @@ _No keywords yet_
 **Story**
 A majestic kitten violently twists its neck, shoulders, and wrists exactly ten times, creating a deafening cracking sound that physically shakes the street. As the joints rotate, literal heavy golden coins of dopamine shoot out of the kitten's fur and rain down hard on the concrete.
 
-### 🟧 [L] lion
+### [L] lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -176,7 +176,7 @@ _No keywords yet_
 **Story**
 A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against his heart. The impact instantly projects a holographic, hyper-realistic breakfast floating in the air, radiating a comforting, burning warmth that physically melts the icy frost covering the street.
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -211,7 +211,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -261,7 +261,7 @@ _No keywords yet_
 **Story**
 Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries, popping them loudly as it screams the exact definition: "The force exerted by circulating blood against the inner walls of blood vessels, primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)." Simultaneously, its front claws splash a puddle of boiling blood, scorching the bright red numbers into the concrete as it hisses: "For a healthy, resting adult, a normal reading is strictly less than 120/80 mmHg (read as "120 over 80")." The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools, spewing acrid smoke as the beast groans: "The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom."
 
-### 🟧 [I] imp
+### [I] imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -314,7 +314,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -330,7 +330,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -365,7 +365,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -381,7 +381,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -397,7 +397,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -413,7 +413,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -429,7 +429,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

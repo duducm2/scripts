@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -29,7 +29,7 @@
 **Story**
 A microscopic marmoset juggles thousands of glowing text windows; as the session drags on, it becomes visibly sloppy and violently drops the massive text blocks, shattering them into useless binary dust across the pavement. Neo watches as the marmoset's brain audibly fizzles out.
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -49,7 +49,7 @@ A microscopic marmoset juggles thousands of glowing text windows; as the session
 **Story**
 A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggressively whispering secret rule-codes into a glowing megaphone. The overarching whispers completely mind-control the stage actors before they speak, setting their tone perfectly as Neo nods at the unseen directions.
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -128,7 +128,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [I] imp
+### [I] imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -181,7 +181,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -197,7 +197,7 @@ _No keywords yet_
 **Story**
 A colossal dragon made of folded library pages refuses to use its own brain. Instead, it violently rips glowing documents straight out of Ada Lovelace's hands. The beast chews the rough, heavy papers with a deafening crunch, using the sharp textures of the fetched pages to spit out perfectly formed answers.
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -213,7 +213,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized eagle stands on a flat heap of rotting, messy file folders that crush a parked car. It completely ignores Ada Lovelace’s polite whispers and refuses to hunt for true facts. The giant bird only dives to snatch the single document screaming with the loudest, most ear-shattering siren noise.
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -229,7 +229,7 @@ _No keywords yet_
 **Story**
 A microscopic frog sits on a distant brick wall, catching hundreds of chaotic, fractured dictionary words with its impossibly long tongue. As it swallows the messy letters, Ada Lovelace watches the frog sweat a single, blindingly bright, unified glowing word across its skin. This brilliant neon label locks the language steady and lights up the entire alley.
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -245,7 +245,7 @@ _No keywords yet_
 **Story**
 A three-headed goat tries to stamp its hooves to route banking tickets, but freezes when Ada Lovelace draws glowing chalk boundaries on the roof. The goat licks the thick chalk boundary and tastes bitter, burning electricity on its tongue. This foul flavor stops the beast from running amok and blindly changing systems.
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -280,7 +280,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -296,7 +296,7 @@ _No keywords yet_
 **Story**
 A skyscraper-sized Arachne weaves a glowing web of binary code directly into a massive dashboard on the brick wall. A man in a 1940s tweed suit watches in awe as her giant robotic spinnerets automatically filter mountains of raw, muddy data cubes into sparkling diamond insights.
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -312,7 +312,7 @@ _No keywords yet_
 **Story**
 A neon-plumed bird of paradise perched on a wooden bench sings questions that instantly materialize as glowing, readable text bubbles. The bubbles burst into a deafening silence that visually rains perfectly printed answer scrolls right into the 1940s man's open hands.
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 

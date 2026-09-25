@@ -9,7 +9,7 @@
 
 #### Knowledge Atoms
 
-### 🟧 [Aq] [aquatic leech]
+### [Aq] [aquatic leech]
 
 <img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -44,7 +44,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Al] [alligator]
+### [Al] [alligator]
 
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -60,7 +60,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Am] [amulet]
+### [Am] [amulet]
 
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -76,7 +76,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [An] [angel]
+### [An] [angel]
 
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -92,7 +92,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ao] [aoudad]
+### [Ao] [aoudad]
 
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -108,7 +108,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ap] [ape]
+### [Ap] [ape]
 
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -143,7 +143,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ag] [Agaric fungi]
+### [Ag] [Agaric fungi]
 
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -159,7 +159,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ah] [Ah!—a sigh]
+### [Ah] [Ah!—a sigh]
 
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -175,7 +175,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ai] [Airedale terrier]
+### [Ai] [Airedale terrier]
 
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -191,7 +191,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Ak] [Akita (dog breed)]
+### [Ak] [Akita (dog breed)]
 
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -226,7 +226,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Ad] adder
+### [Ad] adder
 
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -242,7 +242,7 @@ _No keywords yet_
 **Story**
 On the next street, an adder snake slithers around freely. It meets a tall villain in black armor, who points to the deep back of his throat. The snake vibrates its tail far back on a throat model, sliding around as a free and flexible option.
 
-### 🟧 [Ae] aerialqist
+### [Ae] aerialqist
 
 <img src="../../web/assets/beast-thumbs/aerialqist.png" alt="aerialqist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -258,7 +258,7 @@ _No keywords yet_
 **Story**
 An aerialist swings on a trapeze above the snake. She swings her body forward to reach the front part of the villain's throat model. She rubs the surface to make a smooth, vibrating friction sound that sits more to the front.
 
-### 🟧 [Af] Afghan hound
+### [Af] Afghan hound
 
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -295,7 +295,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [Y] yak
+### [Y] yak
 
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -311,7 +311,7 @@ _No keywords yet_
 **Story**
 A yak stands at the corner of the street. It holds a large sign with the word Symbol [zʏmˈboːl]. It tries to make a buzzing sound at the very beginning, but a giant red "X" stops it. A spiky-haired martial artist steps in to help the yak, showing that the buzz cannot start the word. "The alveolar fricative /z/ never occurs word-initially in Standard German. A word like "symbol" is pronounced with a voiced alveolar fricative: Symbol." IPA: Symbol [zʏmˈboːl]
 
-### 🟧 [Z] Zeus
+### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -327,7 +327,7 @@ _No keywords yet_
 **Story**
 Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grabs a singing block, representing the /ŋ/ sound, and forces it to sit at the absolute tail end of the broken piece. He yells at the yak that the sound is trapped at the end.
 
-### 🟧 [Aa] aardvark
+### [Aa] aardvark
 
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -343,7 +343,7 @@ _No keywords yet_
 **Story**
 An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁaːl]. It pulls out another band that says Metan [meˈtaːn]. Because the aardvark is very relaxed and not stressed, it lets both bands snap back so they become very short. "Most long vowels can be shortened when they appear in an unstressed position (e.g., Moral, Metan)." IPA: Moral [moˈʁaːl], Metan [meˈtaːn]
 
-### 🟧 [Ab] Abyssinian cat
+### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -359,7 +359,7 @@ _No keywords yet_
 **Story**
 An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak letter 'e' in the word großem [ˈɡʁoːsəm]. The cat pushes the weak letter into a hole in the street, dropping it entirely so it vanishes. "In words like großem, the schwa can be dropped entirely." IPA: großem [ˈɡʁoːsəm]
 
-### 🟧 [Ac] acorn
+### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -394,7 +394,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [W] Wombat
+### [W] Wombat
 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="Wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -410,7 +410,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [X] Xena, warrior woman
+### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -445,7 +445,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [R] Rat
+### [R] Rat
 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="Rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -461,7 +461,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [S] Skull
+### [S] Skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="Skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -477,7 +477,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [T] Toucan
+### [T] Toucan
 
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="Toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -493,7 +493,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [U] Unicorn
+### [U] Unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="Unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -509,7 +509,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [V] Vulture
+### [V] Vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="Vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -544,7 +544,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [N] Neanderthal
+### [N] Neanderthal
 
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -560,7 +560,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [O] owl
+### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -576,7 +576,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [P] panther
+### [P] panther
 
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -592,7 +592,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [Q] Quetzalcoatl
+### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -627,7 +627,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [I] imp
+### [I] imp
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -643,7 +643,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [J] jester
+### [J] jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -659,7 +659,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [K] kitten
+### [K] kitten
 
 <img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -675,7 +675,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [L] lion
+### [L] lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -691,7 +691,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [M] marmoset
+### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -726,7 +726,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [F] frog
+### [F] frog
 
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -742,7 +742,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [G] goat
+### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -758,7 +758,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [H] Hydra
+### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -793,7 +793,7 @@ _No gallery images._
 
 #### Knowledge Atoms
 
-### 🟧 [A] Arachne
+### [A] Arachne
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -809,7 +809,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [B] bird of paradise
+### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -825,7 +825,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [C] cat
+### [C] cat
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -841,7 +841,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [D] dragon
+### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
@@ -857,7 +857,7 @@ _No keywords yet_
 **Story**
 —
 
-### 🟧 [E] eagle
+### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
 
