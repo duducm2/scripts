@@ -48,6 +48,8 @@ HEADERS = {
         "section_path",
         "sort_order",
         "created_at",
+        "edit_lock",
+        "birth_date",
     ],
     "attachments": [
         "id",
@@ -103,6 +105,22 @@ def now_stamp() -> str:
 
 def today() -> str:
     return datetime.now().strftime("%Y-%m-%d")
+
+
+def age_months(birth_date: str, as_of: str | None = None) -> int | None:
+    """Completed months from YYYY-MM-DD birth_date to as_of (default today)."""
+    raw = (birth_date or "").strip()
+    if not raw:
+        return None
+    try:
+        birth = datetime.strptime(raw[:10], "%Y-%m-%d").date()
+        ref = datetime.strptime((as_of or today())[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    months = (ref.year - birth.year) * 12 + (ref.month - birth.month)
+    if ref.day < birth.day:
+        months -= 1
+    return max(0, months)
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -215,6 +233,7 @@ class TaskStore:
                 write_csv(p, headers, [])
         self.migrate_sections()
         self.migrate_task_images_to_info()
+        self.migrate_info_point_columns()
 
     def migrate_sections(self) -> None:
         """Ensure General per project; backfill task.section_id from section_path."""
@@ -787,6 +806,23 @@ class TaskStore:
         self.save("tasks", [t for t in self.load("tasks") if t.get("id") != task_id])
         return {"ok": True}
 
+    def migrate_info_point_columns(self) -> None:
+        """Rewrite info_points.csv when edit_lock / birth_date headers are missing."""
+        path = self.path("info_points")
+        if not path.exists():
+            return
+        with path.open("r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.reader(f)
+            try:
+                header = next(reader)
+            except StopIteration:
+                return
+        want = HEADERS["info_points"]
+        if list(header) == want:
+            return
+        rows = self.load("info_points")
+        self.save("info_points", rows)
+
     # --- info ---
     def upsert_info(self, payload: dict) -> dict:
         rows = self.load("info_points")
@@ -804,7 +840,7 @@ class TaskStore:
             "parent_type": parent_type,
             "parent_id": parent_id,
             "title": title,
-            "body": "",
+            "body": (payload.get("body") if "body" in payload else None),
             "emoji": (payload.get("emoji") or "ℹ️").strip() or "ℹ️",
             "section_path": (payload.get("section_path") or "").strip(),
         }
@@ -813,7 +849,18 @@ class TaskStore:
             found = False
             for r in rows:
                 if r["id"] == rid:
-                    r = {**r, **fields}
+                    merged = {**r, **{k: v for k, v in fields.items() if v is not None}}
+                    if fields["body"] is None:
+                        merged["body"] = r.get("body") or ""
+                    if "edit_lock" in payload:
+                        merged["edit_lock"] = str(
+                            payload.get("edit_lock") or ""
+                        ).strip()
+                    if "birth_date" in payload:
+                        merged["birth_date"] = str(
+                            payload.get("birth_date") or ""
+                        ).strip()
+                    r = merged
                     found = True
                 out.append(r)
             if not found:
@@ -827,9 +874,16 @@ class TaskStore:
         ]
         row = {
             "id": next_id("INFO_", rows),
-            **fields,
+            "parent_type": parent_type,
+            "parent_id": parent_id,
+            "title": title,
+            "body": (payload.get("body") or "").strip() if "body" in payload else "",
+            "emoji": fields["emoji"],
+            "section_path": fields["section_path"],
             "sort_order": next_sort(siblings),
             "created_at": now_stamp(),
+            "edit_lock": str(payload.get("edit_lock") or "").strip(),
+            "birth_date": str(payload.get("birth_date") or "").strip(),
         }
         rows.append(row)
         self.save("info_points", rows)
