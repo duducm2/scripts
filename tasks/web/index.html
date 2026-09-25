@@ -2175,7 +2175,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
-          <button class="btn" data-act="icon-project">Icon</button>
+          <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
@@ -2272,7 +2272,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
-          <button class="btn" data-act="icon-project">Icon</button>
+          <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
@@ -2323,7 +2323,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
-          <button class="btn" data-act="icon-project">Icon</button>
+          <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
@@ -3217,6 +3217,15 @@
               return;
             }
             toast("Select a project or task");
+            return;
+          }
+          if (k === "h") {
+            const pid = selectedProjectId();
+            if (!pid) {
+              toast("Select a project first");
+              return;
+            }
+            projectIconModal(pid);
             return;
           }
           if (k === "v") {
@@ -4459,9 +4468,7 @@
             if (statusEl()) statusEl().textContent = "Searching Commons…";
             try {
               const r = await api(
-                "/api/icons/search?q=" +
-                  encodeURIComponent(q) +
-                  "&limit=20",
+                "/api/icons/search?q=" + encodeURIComponent(q) + "&limit=20",
               );
               renderResults(r.results || [], { query: r.query || q });
             } catch (err) {
@@ -4471,7 +4478,8 @@
           };
 
           const runSuggest = async () => {
-            if (statusEl()) statusEl().textContent = "Suggesting from project text…";
+            if (statusEl())
+              statusEl().textContent = "Suggesting from project text…";
             try {
               const r = await api(
                 "/api/icons/suggest?project_id=" +
@@ -4553,6 +4561,7 @@
             }
           });
           focusModalPrimaryField("#mIconQ");
+          void runSuggest();
         }
 
         function projectForm(existing) {

@@ -114,6 +114,26 @@ STOPWORDS = {
     "schedule",
     "list",
     "plan",
+    # Schedule / portion noise that crowds out identity terms (e.g. Dog → puppy feeding…)
+    "meal",
+    "meals",
+    "feeding",
+    "food",
+    "per",
+    "gram",
+    "grams",
+    "kg",
+    "calorie",
+    "calories",
+    "adjust",
+    "monitor",
+    "support",
+    "divided",
+    "across",
+    "current",
+    "rapid",
+    "growth",
+    "adult",
 }
 
 MIME_PREF = {
@@ -143,7 +163,19 @@ def _http_get_bytes(url: str, timeout: float = 30.0) -> tuple[bytes, str]:
 
 
 def tokenize(text: str) -> list[str]:
-    return [t.lower() for t in TOKEN_RE.findall(text or "") if t.lower() not in STOPWORDS]
+    return [
+        t.lower() for t in TOKEN_RE.findall(text or "") if t.lower() not in STOPWORDS
+    ]
+
+
+def _stem_key(tok: str) -> str:
+    """Collapse simple plurals so meal/meals don't both fill the keyword list."""
+    t = (tok or "").lower()
+    if len(t) > 4 and t.endswith("ies"):
+        return t[:-3] + "y"
+    if len(t) > 3 and t.endswith("s") and not t.endswith("ss"):
+        return t[:-1]
+    return t
 
 
 def extract_keywords(
@@ -151,11 +183,11 @@ def extract_keywords(
     sections: list[dict[str, str]],
     infos: list[dict[str, str]],
     tasks: list[dict[str, str]],
-    max_terms: int = 6,
+    max_extra: int = 2,
 ) -> list[str]:
+    """Title-first keywords: project title tokens, then a few content terms."""
+    title_toks = tokenize(project.get("title") or "")
     weights: Counter[str] = Counter()
-    for tok in tokenize(project.get("title") or ""):
-        weights[tok] += 5
     for s in sections:
         for tok in tokenize(s.get("title") or ""):
             weights[tok] += 3
@@ -167,7 +199,43 @@ def extract_keywords(
     for t in tasks:
         for tok in tokenize(t.get("title") or ""):
             weights[tok] += 1
-    return [w for w, _ in weights.most_common(max_terms)]
+
+    title_stems = {_stem_key(t) for t in title_toks}
+    out: list[str] = []
+    seen_stems: set[str] = set()
+    for tok in title_toks:
+        sk = _stem_key(tok)
+        if sk in seen_stems:
+            continue
+        seen_stems.add(sk)
+        out.append(tok)
+
+    for tok, _ in weights.most_common(40):
+        if len(out) >= len(title_toks) + max(0, max_extra):
+            break
+        sk = _stem_key(tok)
+        if sk in seen_stems or sk in title_stems:
+            continue
+        seen_stems.add(sk)
+        out.append(tok)
+    return out
+
+
+def _merge_results(
+    existing: list[dict[str, Any]],
+    incoming: list[dict[str, Any]],
+    limit: int,
+    seen: set[str],
+) -> list[dict[str, Any]]:
+    for item in incoming:
+        if len(existing) >= limit:
+            break
+        t = item.get("title") or ""
+        if not t or t in seen:
+            continue
+        seen.add(t)
+        existing.append(item)
+    return existing
 
 
 def _candidate_score(item: dict[str, Any]) -> tuple:
@@ -236,7 +304,13 @@ def search_commons(query: str, limit: int = 20) -> list[dict[str, Any]]:
     url = COMMONS_API + "?" + urllib.parse.urlencode(params)
     try:
         data = _http_get_json(url)
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError, OSError):
+    except (
+        urllib.error.URLError,
+        urllib.error.HTTPError,
+        TimeoutError,
+        json.JSONDecodeError,
+        OSError,
+    ):
         return []
     pages = (data.get("query") or {}).get("pages") or {}
     items: list[dict[str, Any]] = []
@@ -258,19 +332,18 @@ def search_commons(query: str, limit: int = 20) -> list[dict[str, Any]]:
 
 
 def search_with_style_preference(query: str, limit: int = 20) -> list[dict[str, Any]]:
-    """Prefer icon-like results; try a light 3D/game boost, then fall back."""
+    """Prefer icon-like results; try a light 3D/game boost, then fall back to plain q."""
     q = (query or "").strip()
     if not q:
         return []
-    variants = []
+    variants: list[str] = []
     ql = q.lower()
+    if "3d" not in ql and "game" not in ql:
+        variants.append(f"{q} 3D game icon")
     if "icon" not in ql:
         variants.append(f"{q} icon")
-    else:
-        variants.append(q)
-    # Light style preference without OR-broadening into unrelated pictograms.
-    if "3d" not in ql and "game" not in ql:
-        variants.insert(0, f"{q} 3D game icon")
+    # Always try unmodified query last so long/noisy phrases can still hit.
+    variants.append(q)
     seen: set[str] = set()
     merged: list[dict[str, Any]] = []
     for variant in variants:
@@ -292,11 +365,52 @@ def suggest_for_project(
     tasks: list[dict[str, str]],
     limit: int = 5,
 ) -> dict[str, Any]:
+    """Cascade short title-first Commons queries until `limit` unique images."""
     limit = max(1, min(int(limit or 5), 10))
-    keywords = extract_keywords(project, sections, infos, tasks)
-    query = " ".join(keywords) if keywords else (project.get("title") or "").strip()
-    results = search_with_style_preference(query, limit=limit)
-    return {"ok": True, "query": query, "keywords": keywords, "results": results}
+    title = (project.get("title") or "").strip()
+    keywords = extract_keywords(project, sections, infos, tasks, max_extra=2)
+
+    cascade: list[str] = []
+    if title:
+        cascade.append(title)
+        if "icon" not in title.lower():
+            cascade.append(f"{title} icon")
+    # Short phrase: title tokens + up to 2 content terms (already title-first in keywords)
+    if keywords:
+        short = " ".join(keywords[: max(1, min(3, len(keywords)))])
+        if short and short.lower() not in {c.lower() for c in cascade}:
+            cascade.append(short)
+        # Content-only fallback if title was empty/generic
+        content_only = " ".join(k for k in keywords if k.lower() not in title.lower())
+        if content_only and content_only.lower() not in {c.lower() for c in cascade}:
+            cascade.append(content_only)
+
+    seen: set[str] = set()
+    results: list[dict[str, Any]] = []
+    used_query = title or (keywords[0] if keywords else "")
+    for step in cascade:
+        if len(results) >= limit:
+            break
+        before = len(results)
+        _merge_results(
+            results, search_with_style_preference(step, limit=limit), limit, seen
+        )
+        if len(results) > before:
+            used_query = step
+        if len(results) >= limit:
+            break
+        # Plain Commons if style boost still thin for this step
+        before = len(results)
+        _merge_results(results, search_commons(step, limit=limit), limit, seen)
+        if len(results) > before:
+            used_query = step
+
+    return {
+        "ok": True,
+        "query": used_query,
+        "keywords": keywords,
+        "results": results[:limit],
+    }
 
 
 def resolve_download_url(url: str = "", commons_title: str = "") -> tuple[str, str]:
