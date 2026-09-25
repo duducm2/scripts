@@ -22,8 +22,8 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 2. **Context CSVs** attached at send time give the AI existing rows/ids to match.
 3. **Pack auto-pipeline** (AppLaunchers — [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk)): after a catalog pack prompt is **sent**, wait for generation to finish, extract last **code block** (fallback: last message), write the canonical Desktop filename, then open the domain **import confirm** GUI. No manual naming/save.
 4. **Importer** (`*_import.ahk`) reads the Desktop pack, extracts CSV, upserts local data (confirm still required).
-5. On structure-validation failure before write: pipeline builds a Desktop AI-fix file, **pastes + submits** to the companion, and retries (max 2). On importer failure after confirm: existing `*_AI_FIX.txt` + clipboard/paste paths still apply.
-6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs dropped manually; the pack pipeline marks its write as seen / sets busy so the watcher does not double-fire.
+5. On **structure** failure before write **or import validation** failure (`*_AI_FIX.txt` written): pipeline **pastes + submits** the fix to the companion and re-watches generation (max 2 attempts). Confirm **Cancel** ends the session (no AI-fix loop, no app launch).
+6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs dropped manually; the pack pipeline marks its write as seen / sets busy so the watcher does not double-fire. After watcher-driven imports, fresh AI-fix files are **paste-only** into the companion. Hub / manual `ImportMgmt_OnAiFixReady` **paste+submits** when the pack pipeline is inactive.
 
 ### Pack auto-pipeline (arm → extract → Desktop → import)
 
@@ -35,9 +35,10 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 | Utility `[n]`                                | `PLAN_PACK.txt`        |
 | Utility `[k]` / Send dictation `[T]`         | `TASK_PACK.txt`        |
 
-- Arm: `PackPipeline_ArmFromPrompt` (after Prompt Manager send) / `PackPipeline_ArmFromPreset` (D2C).
-- Extract: code snippet first (`WM_COPY_LAST_GEMINI_CODE` / in-process Copilot/Enterprise), else last message.
-- Confirm GUIs stay; only file naming/save is automated.
+- Arm: `PackPipeline_ArmFromPrompt` (after Prompt Manager send) / `PackPipeline_ArmFromPreset` (D2C). After pack send, focus restores to the pre-companion window (dictation-style) while generation is watched in the background.
+- Extract: code snippet first (`WM_COPY_LAST_GEMINI_CODE` / in-process Copilot/Enterprise), else last message; brief companion activate then restore.
+- Confirm GUIs stay; only file naming/save is automated. **Cancel** does not open Memory Palace / Finance menus (toast: no data written). Success paths still open the domain UI after commit.
+- **No dedicated import-results window** — preview is the confirm ListView; success is a toast (+ optional domain main menu).
 
 ### Shared import pipeline (all domains)
 
@@ -63,7 +64,7 @@ Finance and Memory Palace add a **confirm UI** before save. Memory Palace upsert
 
 Fix files: `FINANCE_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `TASK_AI_FIX.txt`.
 
-Finance/Palace/Tasks AI-fix path: clipboard copy + ≥5s “paste into your AI companion” overlay via `ImportMgmt_OnAiFixReady`. Tasks pack import is AHK confirm + Python CLI (`task_pack_import.py preview|commit`).
+Finance/Palace/Tasks AI-fix path: clipboard copy + orientation toast via `ImportMgmt_OnAiFixReady`. When PackPipeline is **active**, the pipeline owns paste+submit + re-watch (OnAiFixReady skips companion send to avoid double-submit). When inactive, OnAiFixReady **paste+submits** once. Watcher after-import remains paste-only. Fix paths: `FINANCE_AI_FIX.txt`, `TASK_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `PACK_AI_FIX.txt`. Tasks pack import is AHK confirm + Python CLI (`task_pack_import.py preview|commit`).
 
 Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors when applicable) → **WHAT YOU MUST DO** (tailored via `*_AiCompanionFixGuidance`) → **DELIVERY RULES**.
 
@@ -183,14 +184,16 @@ When import fails completely or only some rows apply, importers write a Desktop 
 | Finance       | `FINANCE_AI_FIX.txt` |
 | Memory Palace | `PALACE_AI_FIX.txt`  |
 | Tasks         | `TASK_AI_FIX.txt`    |
+| Generic pack  | `PACK_AI_FIX.txt`    |
 
 Each fix file contains: **IMPORT ERROR**, **EXTRA NOTES** (per-row failures when applicable), **WHAT YOU MUST DO** (tailored guidance), and **DELIVERY RULES**.
 
 Recovery workflow:
 
-1. Importer writes fix file + error toast; Finance/Palace also copy fix text to clipboard and close Import Management (≥5s banner).
-2. Paste fix file into the AI companion.
-3. AI re-delivers a corrected pack → save/overwrite the **canonical** filename on Desktop → run import again via Import Management (`#!+X` / Utility `[J]`).
+1. Importer writes fix file + toast; copies fix text to clipboard; closes Import Management when open.
+2. **Pack pipeline armed:** pipeline paste+submits the fix and re-watches generation (max 2). Confirm Cancel does **not** open Memory Palace.
+3. **Pipeline inactive (hub/manual):** `ImportMgmt_OnAiFixReady` paste+submits once into the companion.
+4. AI re-delivers a corrected pack → pipeline extract overwrites the **canonical** Desktop filename → confirm again.
 
 ---
 

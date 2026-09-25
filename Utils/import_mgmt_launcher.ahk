@@ -43,7 +43,9 @@ ImportMgmt_CloseIfOpen() {
     return true
 }
 
-; Copy AI fix file to clipboard, show ≥5s orientation toast, close Import Manager if open.
+; Copy AI fix file to clipboard, show orientation toast, close Import Manager if open.
+; When PackPipeline is active: write/toast only (pipeline HandleInvalid owns paste+submit).
+; When inactive: also paste+submit into the companion once.
 ; Returns true when the hub was closed.
 ImportMgmt_OnAiFixReady(path, label) {
     if (path = "" || !FileExist(path))
@@ -65,10 +67,28 @@ ImportMgmt_OnAiFixReady(path, label) {
         catch {
         }
     }
-    msg := "AI fix copied — paste into your AI companion · Desktop " . label
-    try ShowCenteredOverlay_Utils(msg, 5000, BANNER_ACCENT_ERROR)
+    pipelineOwns := false
+    try pipelineOwns := PackPipeline_IsActive()
     catch {
-        TrayTip("Import", msg)
+        pipelineOwns := false
+    }
+    if (pipelineOwns) {
+        msg := "AI fix ready — pack pipeline will send to companion · Desktop " . label
+        try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", msg)
+        }
+    } else {
+        msg := "AI fix copied — sending to AI companion · Desktop " . label
+        try ShowCenteredOverlay_Utils(msg, 4000, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", msg)
+        }
+        if (body != "") {
+            try ImportWatcher_CompanionPasteAndSubmitFix(body)
+            catch {
+            }
+        }
     }
     return ImportMgmt_CloseIfOpen()
 }

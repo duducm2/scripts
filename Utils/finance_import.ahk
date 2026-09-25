@@ -702,7 +702,7 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
 }
 
 Finance_ImportDaily(*) {
-    Finance_ImportDailyFromPath("", false)
+    return Finance_ImportDailyFromPath("", false)
 }
 
 ; path empty = discover on Desktop. autoConfirm skips the confirm dialog.
@@ -876,12 +876,12 @@ Finance_ImportMonthly(*) {
         path := Finance_DesktopNewestMonthlyCodeDump()
     if (path = "") {
         Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
-        return
+        return false
     }
     path := PackImport_NormalizeDesktopSource(path, "FINANCE_MONTHLY.txt")
     if (path = "" || !FileExist(path)) {
         Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
-        return
+        return false
     }
     sourcePath := path
     csvPath := Finance_MaterializeAiCsv(path, "FINANCE_MONTHLY.csv")
@@ -893,7 +893,7 @@ Finance_ImportMonthly(*) {
     }
     if (!rows.Length) {
         Finance_FailAiImport("File has no data rows", "monthly", 2200)
-        return
+        return false
     }
     accs := Finance_Load("accounts")
     goals := Finance_Load("goals")
@@ -915,7 +915,7 @@ Finance_ImportMonthly(*) {
         ))
     }
     if (!Finance_ImportConfirm("Import monthly adjustments", previewRows))
-        return
+        return false
     txs := Finance_Load("transactions")
     n := 0
     for r in rows {
@@ -965,7 +965,7 @@ Finance_ImportMonthly(*) {
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
     if (!n) {
         Finance_FailAiImport("0 monthly adjustments applied — check entity_type/entity_id", "monthly", 2800)
-        return
+        return false
     }
     Finance_ArchiveImported(sourcePath)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
@@ -973,4 +973,5 @@ Finance_ImportMonthly(*) {
         ImportMgmt_OnImportSuccess()
     else
         Finance_ShowMainMenu()
+    return true
 }

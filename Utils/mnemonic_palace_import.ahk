@@ -503,9 +503,15 @@ Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
 }
 
 ; After import from hub: keep Import Manager; from Palace app: return to main menu.
+; Skip launch when PackPipeline is active (AI-fix loop owns the next step).
 Palace_ReturnAfterImport(hubClosed := false) {
     if (hubClosed || ImportMgmt_IsOpen())
         return
+    try {
+        if (PackPipeline_IsActive())
+            return
+    } catch {
+    }
     Palace_ShowMainMenu()
 }
 
@@ -1214,7 +1220,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
         . beastRows.Length . " beast(s)  ·  "
         . atomRows.Length . " atom(s)"
     if (!Palace_ImportConfirmPreview(title, labels)) {
-        Palace_ReturnAfterImport()
+        try ShowCenteredOverlay_Utils("Import cancelled — no data written", 2800, BANNER_ACCENT_INFO)
+        catch {
+            Palace_Notify("Import cancelled — no data written", 2800, BANNER_ACCENT_INFO)
+        }
+        ; Do not launch Palace on cancel (avoids “app opened with no import”).
         return false
     }
 
@@ -1822,7 +1832,10 @@ Palace_ImportPlansFromDesktop(pathPack) {
     if (resRows.Length)
         labels.Push("--- Resources (" . resRows.Length . ") ---")
     if (!Palace_ImportConfirmPreview("Import PLAN_PACK", labels)) {
-        Palace_ReturnAfterImport()
+        try ShowCenteredOverlay_Utils("Import cancelled — no data written", 2800, BANNER_ACCENT_INFO)
+        catch {
+            Palace_Notify("Import cancelled — no data written", 2800, BANNER_ACCENT_INFO)
+        }
         return false
     }
 

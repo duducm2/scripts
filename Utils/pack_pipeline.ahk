@@ -121,6 +121,18 @@ PackPipeline_RestoreUserHwnd() {
     return false
 }
 
+; Information Only: user may leave the companion — pack wait is hwnd-only in background.
+PackPipeline_NotifyUserFree() {
+    global g_PackPipeline
+    if (!PackPipeline_IsActive())
+        return
+    label := g_PackPipeline.HasProp("label") ? g_PackPipeline.label : "pack"
+    msg := "ℹ Free to work — watching " . label . " in background"
+    try ShowCenteredOverlay_Utils(msg, 4500, BANNER_ACCENT_INFO)
+    catch {
+    }
+}
+
 ; Brief activate companion for copy/paste; captures userHwnd first.
 PackPipeline_ActivateCompanionBriefly(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
@@ -244,11 +256,8 @@ PackPipeline_Arm(key, item, companionId := "", hwnd := 0, userHwnd := 0) {
     }
     g_PackPipelineMonitorRetry := 0
     g_PackPipelineMonitorButtonSeen := false
-    try ShowCenteredOverlay_Utils("📥 Pack pipeline armed — " . item["label"] . " (background)", 1800,
-        BANNER_ACCENT_INFO)
-    catch {
-    }
     PackPipeline_StartMonitor()
+    PackPipeline_NotifyUserFree()
     return true
 }
 
@@ -330,12 +339,9 @@ PackPipeline_MonitorTick(*) {
         if (!hwnd)
             return
     }
-    ; Passive status every ~10s — no focus steal.
-    if (Mod(g_PackPipelineMonitorRetry, 20) = 0) {
-        try ShowCenteredOverlay_Utils("👁 Watching " . g_PackPipeline.label . " in background…", 1200,
-            BANNER_ACCENT_INFO)
-        catch {
-        }
+    ; Passive status every ~15s — no focus steal; remind user they can keep working.
+    if (Mod(g_PackPipelineMonitorRetry, 30) = 0) {
+        PackPipeline_NotifyUserFree()
     }
     generating := PackPipeline_CompanionIsGenerating(hwnd, companionId)
     if (generating) {
@@ -653,7 +659,7 @@ PackPipeline_WriteGenericPlanFix(errorMsg) {
     return ""
 }
 
-PackPipeline_HandleInvalid(errorMsg) {
+PackPipeline_HandleInvalid(errorMsg, fixText := "") {
     global g_PackPipeline
     if (!PackPipeline_IsActive())
         return
@@ -662,7 +668,8 @@ PackPipeline_HandleInvalid(errorMsg) {
         PackPipeline_Fail("Pack still invalid after " . g_PackPipeline.maxAttempts . " fix attempt(s): " . errorMsg)
         return
     }
-    fixText := PackPipeline_BuildStructureFix(errorMsg)
+    if (Trim(fixText) = "")
+        fixText := PackPipeline_BuildStructureFix(errorMsg)
     try ShowCenteredOverlay_Utils("⚠ Pack invalid — sending AI fix (" . g_PackPipeline.attempt . "/"
         . g_PackPipeline.maxAttempts . ")", 2500, BANNER_ACCENT_ERROR)
     catch {
@@ -676,6 +683,35 @@ PackPipeline_HandleInvalid(errorMsg) {
     g_PackPipelineMonitorButtonSeen := false
     g_PackPipelineMonitorRetry := 0
     PackPipeline_StartMonitor()
+}
+
+; After domain import: if a fresh *_AI_FIX.txt was written, feed companion + re-monitor.
+; If no fresh fix (user cancelled confirm), end the session.
+PackPipeline_HandleImportOutcome(importOk, importStartStamp, errMsg := "") {
+    if (!PackPipeline_IsActive())
+        return
+    if (importOk) {
+        PackPipeline_Reset()
+        return
+    }
+    fixPath := ""
+    try fixPath := ImportWatcher_CompanionNewestAiFixSince(importStartStamp)
+    catch {
+        fixPath := ""
+    }
+    if (fixPath = "") {
+        ; Cancel or soft fail without AI-fix file — stop pipeline, do not loop.
+        PackPipeline_Reset()
+        return
+    }
+    fixText := ""
+    try fixText := ImportWatcher_CompanionReadUtf8(fixPath)
+    catch {
+        fixText := ""
+    }
+    if (Trim(fixMsg) = "")
+        errMsg := "Import validation failed"
+    PackPipeline_HandleInvalid(errMsg, fixText)
 }
 
 PackPipeline_SendFixAndSubmit(fixText) {
@@ -714,6 +750,7 @@ PackPipeline_SendFixAndSubmit(fixText) {
         g_PackPipeline.hwnd := hwnd
     ; Restore user focus before re-entering background wait.
     PackPipeline_RestoreUserHwnd()
+    PackPipeline_NotifyUserFree()
     return true
 }
 
@@ -798,12 +835,24 @@ PackPipeline_WriteAndImport(text) {
     try StandardLoadingBar_Hide(0)
     catch {
     }
-    ; Snapshot then clear session before blocking confirm GUI.
-    PackPipeline_Reset()
+    ; Keep session alive through confirm so import-fail can re-arm the fix loop.
+    importStartStamp := FormatTime(, "yyyyMMddHHmmss")
+    importOk := false
+    importErr := ""
     try {
-        if (runFn)
-            runFn.Call()
+        if (runFn) {
+            result := runFn.Call()
+            ; Strict == so empty/unset success returns are not treated as false.
+            if (result == false)
+                importOk := false
+            else
+                importOk := true
+        } else {
+            importOk := true
+        }
     } catch as e {
+        importOk := false
+        importErr := e.Message
         try ShowCenteredOverlay_Utils("Import failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Pack pipeline", "Import failed")
@@ -813,6 +862,7 @@ PackPipeline_WriteAndImport(text) {
         catch {
         }
     }
+    PackPipeline_HandleImportOutcome(importOk, importStartStamp, importErr)
 }
 
 PackPipeline_Fail(msg) {

@@ -1438,6 +1438,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             if (originHwnd)
                 PackPipeline_SetUserHwnd(originHwnd)
             PackPipeline_RestoreUserHwnd()
+            PackPipeline_NotifyUserFree()
         }
     } else if (appendClip != "") {
         g_lastExpansion := 0
