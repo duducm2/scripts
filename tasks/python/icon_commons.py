@@ -146,7 +146,16 @@ MIME_PREF = {
 }
 
 HINT_RE = re.compile(r"(icon|logo|symbol|emblem|badge|pictogram)", re.I)
+FLAT_HINT_RE = re.compile(
+    r"\b(silhouette|pictogram|glyph|outline|flat|vector|svg)\b", re.I
+)
+NONFLAT_HINT_RE = re.compile(
+    r"\b(3d|three[\s-]?d|game|render|photo|photograph|realistic)\b", re.I
+)
 TOKEN_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9\-]{2,}")
+
+# Lead search results with at most this many flat images; the rest are normal.
+FLAT_LEAD_CAP = 10
 
 
 def _http_get_json(url: str, timeout: float = 20.0) -> dict[str, Any]:
@@ -238,6 +247,19 @@ def _merge_results(
     return existing
 
 
+def _is_flat_icon(item: dict[str, Any]) -> bool:
+    """SVG / simple silhouette-style assets count as flat; 3D/photo-like do not."""
+    mime = (item.get("mime") or "").lower()
+    title = item.get("title") or item.get("name") or ""
+    if NONFLAT_HINT_RE.search(title):
+        return False
+    if mime == "image/svg+xml":
+        return True
+    if mime in {"image/png", "image/webp"} and FLAT_HINT_RE.search(title):
+        return True
+    return False
+
+
 def _candidate_score(item: dict[str, Any]) -> tuple:
     mime = (item.get("mime") or "").lower()
     title = item.get("title") or item.get("name") or ""
@@ -250,6 +272,21 @@ def _candidate_score(item: dict[str, Any]) -> tuple:
     except (TypeError, ValueError):
         size_n = 10**12
     return (mime_rank, hint, size_n)
+
+
+def _order_flat_then_normal(
+    items: list[dict[str, Any]], limit: int, flat_cap: int = FLAT_LEAD_CAP
+) -> list[dict[str, Any]]:
+    """Up to `flat_cap` flat icons first, then normal (non-flat) images."""
+    ranked = sorted(items, key=_candidate_score)
+    flat = [i for i in ranked if _is_flat_icon(i)]
+    normal = [i for i in ranked if not _is_flat_icon(i)]
+    out = flat[: max(0, flat_cap)]
+    for item in normal:
+        if len(out) >= limit:
+            break
+        out.append(item)
+    return out[:limit]
 
 
 def _normalize_page(page: dict[str, Any]) -> dict[str, Any] | None:
@@ -320,38 +357,38 @@ def search_commons(query: str, limit: int = 20) -> list[dict[str, Any]]:
         norm = _normalize_page(page)
         if norm:
             items.append(norm)
-    items.sort(key=_candidate_score)
-    # Only alpha-capable formats — never return JPEG/GIF as fill-ins.
-    alpha_ok = {"image/svg+xml", "image/png", "image/webp"}
-    ordered = [i for i in items if (i.get("mime") or "") in alpha_ok]
-    return ordered[:limit]
+    # Flat (SVG/silhouette) lead up to FLAT_LEAD_CAP, then normal images.
+    return _order_flat_then_normal(items, limit=limit)
 
 
 def search_with_style_preference(query: str, limit: int = 20) -> list[dict[str, Any]]:
-    """Prefer icon-like results; try a light 3D/game boost, then fall back to plain q."""
+    """Gather variants, then order flat icons first (cap 10) and normal after."""
     q = (query or "").strip()
     if not q:
         return []
     variants: list[str] = []
     ql = q.lower()
-    if "3d" not in ql and "game" not in ql:
-        variants.append(f"{q} 3D game icon")
+    # Flat-oriented queries first so the lead bucket fills with silhouettes/SVGs.
     if "icon" not in ql:
         variants.append(f"{q} icon")
-    # Always try unmodified query last so long/noisy phrases can still hit.
+    if "silhouette" not in ql:
+        variants.append(f"{q} silhouette")
     variants.append(q)
+    # Non-flat / stylized fill after the flat lead.
+    if "3d" not in ql and "game" not in ql:
+        variants.append(f"{q} 3D game icon")
     seen: set[str] = set()
     merged: list[dict[str, Any]] = []
+    # Fetch more than limit so both flat and normal buckets can fill.
+    per = max(limit, FLAT_LEAD_CAP + max(5, limit // 2))
     for variant in variants:
-        for item in search_commons(variant, limit=limit):
+        for item in search_commons(variant, limit=per):
             t = item.get("title") or ""
             if t in seen:
                 continue
             seen.add(t)
             merged.append(item)
-            if len(merged) >= limit:
-                return merged
-    return merged
+    return _order_flat_then_normal(merged, limit=limit)
 
 
 def suggest_for_project(
@@ -405,7 +442,7 @@ def suggest_for_project(
         "ok": True,
         "query": used_query,
         "keywords": keywords,
-        "results": results[:limit],
+        "results": _order_flat_then_normal(results, limit=limit),
     }
 
 
