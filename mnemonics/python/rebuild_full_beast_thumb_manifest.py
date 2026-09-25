@@ -28,7 +28,9 @@ NEED_GEN = ASSETS / "_beast_thumb_need_generate.json"
 
 
 def main() -> None:
-    beasts = list(csv.DictReader((ROOT / "data" / "beasts.csv").open(encoding="utf-8")))
+    beasts = list(
+        csv.DictReader((ROOT / "data" / "beasts.csv").open(encoding="utf-8-sig"))
+    )
     icons = {}
     by_slug: dict[str, list[str]] = defaultdict(list)
     for b in beasts:

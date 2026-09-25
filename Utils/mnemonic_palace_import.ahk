@@ -143,6 +143,25 @@ Palace_AfterDataWriteRefreshUi() {
     Palace_RefreshRunningWebApp()
 }
 
+; Rebuild web/assets/beast-thumb-manifest.json so SPA icon lookup includes new beast IDs.
+; Soft-fail: missing Python must not abort a successful import.
+Palace_RebuildBeastThumbManifest() {
+    py := Palace_PythonDir() . "\rebuild_full_beast_thumb_manifest.py"
+    if (!FileExist(py))
+        return false
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "")
+        return false
+    cmd := pyCmd . ' "' . py . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, Palace_PythonDir(), "Hide")
+    } catch {
+        return false
+    }
+    return (exitCode = 0)
+}
+
 ; Strip Gemini preambles; find a header that looks like palace CSV.
 ; When skipNotes is an Array, malformed rows (field count ≠ header) are skipped and noted.
 Palace_ReadAiImportCsv(path, headerHint := "beast_id", skipNotes := 0) {
@@ -1587,6 +1606,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
         syncIds.Push(sid)
     if (syncIds.Length)
         Palace_SyncPracticeMd(syncIds)
+    ; SPA thumbs are keyed by beast id — rebuild before {F5} so new Custom beasts get icons.
+    if (nBeasts)
+        Palace_RebuildBeastThumbManifest()
     Palace_Notify("Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)",
         2800, BANNER_ACCENT_SUCCESS)
     Palace_FinishImportSuccess()

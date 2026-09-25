@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 15: SQL Window Functions</strong> · Character: Socrates · 4 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 15](images/data-analyst/15.jpg)
 
 <p><em>4 beasts · 5 Knowledge Atoms</em></p>
 

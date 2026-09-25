@@ -16,7 +16,9 @@ WORKLIST = ASSETS / "_beast_thumb_worklist.json"
 
 
 def main() -> None:
-    beasts = list(csv.DictReader((ROOT / "data" / "beasts.csv").open(encoding="utf-8")))
+    beasts = list(
+        csv.DictReader((ROOT / "data" / "beasts.csv").open(encoding="utf-8-sig"))
+    )
     have = {p.stem for p in THUMBS.glob("*.png")}
     missing = []
     for b in beasts:
@@ -37,7 +39,9 @@ def main() -> None:
         {"name": labels[s], "ids": ids, "slug": s}
         for s, ids in sorted(by_slug.items(), key=lambda x: x[0])
     ]
-    WORKLIST.write_text(json.dumps(items, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    WORKLIST.write_text(
+        json.dumps(items, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"missing_unique_names={len(items)}")
     for it in items[:25]:
         print(f"  {it['slug']}\tx{len(it['ids'])}\t{it['name']}")

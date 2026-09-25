@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:
-    beasts = list(csv.DictReader((ROOT / "data" / "beasts.csv").open(encoding="utf-8")))
+    beasts = list(
+        csv.DictReader((ROOT / "data" / "beasts.csv").open(encoding="utf-8-sig"))
+    )
     qr = json.loads((ROOT / "data" / "quick_recall.json").read_text(encoding="utf-8"))
     palace_ids = set(qr.get("included_palace_ids") or [])
     qr_beasts = sorted(
@@ -82,7 +84,9 @@ def main() -> None:
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "beast-thumbs").mkdir(parents=True, exist_ok=True)
     out = assets / "beast-thumb-manifest.json"
-    out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"wrote {out} icons={len(icons)} with_adj={adj_count}")
 
     by_name: dict[str, list[str]] = defaultdict(list)
