@@ -179,8 +179,10 @@
         padding: 10px 12px;
         user-select: none;
       }
-      .project summary::-webkit-details-marker {
+      .project summary::-webkit-details-marker,
+      .project summary::marker {
         display: none;
+        content: none;
       }
       .project summary::before {
         content: "▸";
@@ -190,6 +192,15 @@
       }
       .project[open] summary::before {
         content: "▾";
+      }
+      .proj-icon {
+        flex: 0 0 auto;
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--line);
       }
       .proj-title {
         font-weight: 600;
@@ -207,9 +218,67 @@
         padding: 3px 9px;
         white-space: nowrap;
       }
-      .project-focus-title .proj-age-badge {
+      .project-focus-title .proj-age-badge,
+      .project-focus-title .proj-icon {
         margin-left: 10px;
         vertical-align: middle;
+      }
+      .project-focus-title .proj-icon {
+        display: inline-block;
+        margin-left: 8px;
+        margin-right: 0;
+      }
+      .icon-modal-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .icon-modal-toolbar input {
+        flex: 1 1 160px;
+        min-width: 120px;
+      }
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 10px;
+        max-height: 50vh;
+        overflow: auto;
+        padding: 4px 0 8px;
+      }
+      .icon-pick {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #252528;
+        cursor: pointer;
+        color: var(--text);
+        text-align: center;
+      }
+      .icon-pick:hover {
+        border-color: var(--gold);
+      }
+      .icon-pick img {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 6px;
+      }
+      .icon-pick span {
+        font-size: 10px;
+        color: var(--muted);
+        line-height: 1.25;
+        max-width: 100%;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
       .task-list,
       .habit-list,
@@ -1601,6 +1670,20 @@
           return `<span class="proj-age-badge" title="Born ${esc(pretty)}">${esc(label)}</span>`;
         }
 
+        function projectIconSrc(project) {
+          const ref = String(project?.icon_ref || "")
+            .trim()
+            .replace(/\\/g, "/");
+          if (!ref.startsWith("attachments/")) return "";
+          return "/data/" + ref;
+        }
+
+        function projectIconHtml(project) {
+          const src = projectIconSrc(project);
+          if (!src) return "";
+          return `<img class="proj-icon" src="${esc(src)}" alt="" title="Project icon" />`;
+        }
+
         async function copyInfoById(id) {
           const row = (state.data.info_points || []).find((i) => i.id === id);
           const text = infoText(row);
@@ -2084,13 +2167,15 @@
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
+            const iconHtml = projectIconHtml(p);
             blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
+        <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="icon-project">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
@@ -2179,13 +2264,15 @@
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
+            const iconHtml = projectIconHtml(p);
             blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
+        <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="habits">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="icon-project">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
@@ -2223,18 +2310,20 @@
           const plan = projectSearchPlan(p, allPts);
           const pThumbs = thumbsHtml("project", p.id);
           const ageBadge = projectAgeBadgeHtml(p.id);
+          const iconHtml = projectIconHtml(p);
           return `<section class="column panel project-focus" id="sec-project-focus">
       <div class="project-focus-head">
-        <h2 class="project-focus-title">${highlightTitle(p.title)}${ageBadge}</h2>
+        <h2 class="project-focus-title">${iconHtml}${highlightTitle(p.title)}${ageBadge}</h2>
         <span class="project-focus-hint"><kbd>Shift+Z</kbd> exit</span>
       </div>
       <details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
+        <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="icon-project">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
@@ -4306,6 +4395,166 @@
           return ["work", "personal", "habits"].includes(f) ? f : "work";
         }
 
+        function projectIconModal(projectId) {
+          const p = (state.data.projects || []).find((x) => x.id === projectId);
+          if (!p) {
+            toast("Project not found");
+            return;
+          }
+          const currentSrc = projectIconSrc(p);
+          const clearBtn = currentSrc
+            ? `<button class="btn danger" data-m="clear-icon">Clear icon</button>`
+            : "";
+          modal(`<div class="modal"><h3>Project icon — ${esc(p.title)}</h3>
+      <div class="modal-body">
+      <p class="sub">Search Wikimedia Commons (PNG/SVG preferred). No AI image generation.</p>
+      <div class="icon-modal-toolbar">
+        <input id="mIconQ" type="search" placeholder="Search icons…" value="${esc(p.title || "")}"/>
+        <button class="btn" data-m="search-icon">Search</button>
+        <button class="btn" data-m="suggest-icon">Suggest top 5</button>
+        ${clearBtn}
+      </div>
+      <div id="mIconStatus" class="sub"></div>
+      <div id="mIconGrid" class="icon-grid"></div>
+      </div>
+      <div class="modal-actions"><button class="btn" data-m="cancel">Close</button></div></div>`);
+
+          const statusEl = () => $("#mIconStatus");
+          const gridEl = () => $("#mIconGrid");
+
+          const renderResults = (results, meta) => {
+            const grid = gridEl();
+            const status = statusEl();
+            if (!grid) return;
+            const list = Array.isArray(results) ? results : [];
+            if (status) {
+              const q = meta?.query ? ` · query: ${meta.query}` : "";
+              status.textContent = list.length
+                ? `${list.length} result${list.length === 1 ? "" : "s"}${q}`
+                : `No results${q}`;
+            }
+            if (!list.length) {
+              grid.innerHTML = '<p class="empty">No icons found</p>';
+              return;
+            }
+            grid.innerHTML = list
+              .map((r, i) => {
+                const thumb = r.thumburl || r.url || "";
+                const title = r.name || r.title || `Result ${i + 1}`;
+                const commonsTitle = r.title || "";
+                return `<button type="button" class="icon-pick" data-m="pick-icon" data-title="${esc(commonsTitle)}" data-url="${esc(r.url || "")}" title="${esc(title)}">
+            <img src="${esc(thumb)}" alt="" loading="lazy"/>
+            <span>${esc(title)}</span>
+          </button>`;
+              })
+              .join("");
+          };
+
+          const runSearch = async () => {
+            const q = ($("#mIconQ")?.value || "").trim();
+            if (!q) {
+              toast("Enter a search query");
+              return;
+            }
+            if (statusEl()) statusEl().textContent = "Searching Commons…";
+            try {
+              const r = await api(
+                "/api/icons/search?q=" +
+                  encodeURIComponent(q) +
+                  "&limit=20",
+              );
+              renderResults(r.results || [], { query: r.query || q });
+            } catch (err) {
+              toast(err.message || String(err));
+              if (statusEl()) statusEl().textContent = "Search failed";
+            }
+          };
+
+          const runSuggest = async () => {
+            if (statusEl()) statusEl().textContent = "Suggesting from project text…";
+            try {
+              const r = await api(
+                "/api/icons/suggest?project_id=" +
+                  encodeURIComponent(projectId) +
+                  "&limit=5",
+              );
+              if ($("#mIconQ") && r.query) $("#mIconQ").value = r.query;
+              renderResults(r.results || [], { query: r.query || "" });
+            } catch (err) {
+              toast(err.message || String(err));
+              if (statusEl()) statusEl().textContent = "Suggest failed";
+            }
+          };
+
+          const assignIcon = async (commonsTitle, url) => {
+            if (statusEl()) statusEl().textContent = "Saving icon…";
+            try {
+              const r = await api(
+                "/api/projects/" + encodeURIComponent(projectId) + "/icon",
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    commons_title: commonsTitle || "",
+                    url: url || "",
+                  }),
+                },
+              );
+              if (r.project) mergeApiRow("projects", r.project);
+              toast("Icon saved");
+              closeModal();
+              render();
+            } catch (err) {
+              toast(err.message || String(err));
+              if (statusEl()) statusEl().textContent = "Assign failed";
+            }
+          };
+
+          $("#modalHost").onclick = async (e) => {
+            const actEl = e.target.closest("[data-m]");
+            const m = actEl?.dataset?.m || e.target.dataset.m;
+            if (m === "cancel" || e.target.classList.contains("modal-bg")) {
+              closeModal();
+              return;
+            }
+            if (m === "search-icon") {
+              await runSearch();
+              return;
+            }
+            if (m === "suggest-icon") {
+              await runSuggest();
+              return;
+            }
+            if (m === "clear-icon") {
+              try {
+                const r = await api(
+                  "/api/projects/" + encodeURIComponent(projectId) + "/icon",
+                  { method: "DELETE" },
+                );
+                if (r.project) mergeApiRow("projects", r.project);
+                toast("Icon cleared");
+                closeModal();
+                render();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
+            if (m === "pick-icon") {
+              await assignIcon(
+                actEl.getAttribute("data-title") || "",
+                actEl.getAttribute("data-url") || "",
+              );
+            }
+          };
+          $("#mIconQ")?.addEventListener("keydown", async (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              await runSearch();
+            }
+          });
+          focusModalPrimaryField("#mIconQ");
+        }
+
         function projectForm(existing) {
           const filt = existing?.filter || defaultProjectFilter();
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} project</h3>
@@ -5212,6 +5461,10 @@
             }
             if (act === "info-project") {
               infoListModal("project", id);
+              return;
+            }
+            if (act === "icon-project") {
+              projectIconModal(id);
               return;
             }
             if (act === "info-task") {

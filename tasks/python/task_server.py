@@ -12,11 +12,12 @@ import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from task_store import TaskStore  # noqa: E402
+import icon_commons  # noqa: E402
 
 DEFAULT_PORT = 8766
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -137,8 +138,58 @@ class TaskHandler(BaseHTTPRequestHandler):
                         "attachments",
                         "import",
                         "open",
+                        "icons",
                     ],
                 },
+            )
+            return
+
+        if path == "/api/icons/search":
+            qs = parse_qs(parsed.query or "")
+            q = (qs.get("q") or [""])[0]
+            try:
+                limit = int((qs.get("limit") or ["20"])[0])
+            except ValueError:
+                limit = 20
+            results = icon_commons.search_with_style_preference(q, limit=limit)
+            self._json(200, {"ok": True, "query": q, "results": results})
+            return
+
+        if path == "/api/icons/suggest":
+            qs = parse_qs(parsed.query or "")
+            project_id = (qs.get("project_id") or [""])[0].strip()
+            try:
+                limit = int((qs.get("limit") or ["5"])[0])
+            except ValueError:
+                limit = 5
+            store = get_store(self.data_dir)
+            project = store.find("projects", project_id)
+            if not project:
+                self._json(404, {"ok": False, "error": "project not found"})
+                return
+            sections = [
+                s
+                for s in store.load("sections")
+                if s.get("project_id") == project_id
+            ]
+            tasks = [
+                t for t in store.load("tasks") if t.get("project_id") == project_id
+            ]
+            task_ids = {t.get("id") for t in tasks}
+            infos = [
+                i
+                for i in store.load("info_points")
+                if (
+                    i.get("parent_type") == "project"
+                    and i.get("parent_id") == project_id
+                )
+                or (i.get("parent_type") == "task" and i.get("parent_id") in task_ids)
+            ]
+            self._json(
+                200,
+                icon_commons.suggest_for_project(
+                    project, sections, infos, tasks, limit=limit
+                ),
             )
             return
 
@@ -174,6 +225,8 @@ class TaskHandler(BaseHTTPRequestHandler):
                 ctype = "image/webp"
             elif file_path.suffix.lower() == ".gif":
                 ctype = "image/gif"
+            elif file_path.suffix.lower() == ".svg":
+                ctype = "image/svg+xml"
             self._bytes(200, data, ctype)
             return
 
@@ -200,6 +253,10 @@ class TaskHandler(BaseHTTPRequestHandler):
         path = unquote(parsed.path)
         store = get_store(self.data_dir)
         try:
+            if path.startswith("/api/projects/") and path.endswith("/icon"):
+                pid = path[len("/api/projects/") : -len("/icon")]
+                self._json(200, store.clear_project_icon(pid))
+                return
             if path.startswith("/api/projects/"):
                 self._json(200, store.delete_project(path.split("/")[-1]))
                 return
@@ -233,6 +290,22 @@ class TaskHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/projects":
                 self._json(200, store.upsert_project(payload))
+                return
+            if path.startswith("/api/projects/") and path.endswith("/icon"):
+                pid = path[len("/api/projects/") : -len("/icon")]
+                try:
+                    data, ext = icon_commons.download_image(
+                        url=str(payload.get("url") or ""),
+                        commons_title=str(
+                            payload.get("commons_title")
+                            or payload.get("title")
+                            or ""
+                        ),
+                    )
+                except Exception as e:
+                    self._json(400, {"ok": False, "error": str(e)})
+                    return
+                self._json(200, store.set_project_icon(pid, data, ext))
                 return
             if path.startswith("/api/projects/") and path.endswith("/move"):
                 pid = path[len("/api/projects/") : -len("/move")]
@@ -349,6 +422,7 @@ def main(argv: list[str] | None = None) -> int:
     data_dir = args.data_dir.resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
     (data_dir / "attachments").mkdir(exist_ok=True)
+    (data_dir / "attachments" / "icons").mkdir(exist_ok=True)
 
     handler = make_handler(data_dir, args.scripts_root.resolve())
     get_store(data_dir).migrate_sections()

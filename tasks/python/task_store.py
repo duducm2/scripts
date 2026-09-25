@@ -18,6 +18,7 @@ HEADERS = {
         "sort_order",
         "active",
         "created_at",
+        "icon_ref",
     ],
     "sections": ["id", "project_id", "title", "sort_order"],
     "tasks": [
@@ -234,6 +235,8 @@ class TaskStore:
         self.migrate_sections()
         self.migrate_task_images_to_info()
         self.migrate_info_point_columns()
+        self.migrate_project_columns()
+        (self.attach_dir / "icons").mkdir(parents=True, exist_ok=True)
 
     def migrate_sections(self) -> None:
         """Ensure General per project; backfill task.section_id from section_path."""
@@ -533,11 +536,83 @@ class TaskStore:
             "sort_order": next_sort(rows),
             "active": "1",
             "created_at": now_stamp(),
+            "icon_ref": "",
         }
         rows.append(row)
         self.save("projects", rows)
         gen = self.ensure_general_section(row["id"])
         return {"ok": True, "project": row, "section": gen}
+
+    def _icon_file_path(self, icon_ref: str) -> Path | None:
+        ref = (icon_ref or "").strip().replace("/", "\\")
+        if not ref.lower().startswith("attachments\\icons\\"):
+            return None
+        path = (self.data_dir / ref).resolve()
+        icons_root = (self.attach_dir / "icons").resolve()
+        try:
+            path.relative_to(icons_root)
+        except ValueError:
+            return None
+        return path
+
+    def _delete_icon_file(self, icon_ref: str) -> None:
+        path = self._icon_file_path(icon_ref)
+        if path and path.is_file():
+            try:
+                path.unlink()
+            except OSError:
+                pass
+
+    def set_project_icon(self, project_id: str, image_bytes: bytes, ext: str) -> dict:
+        """Save icon under attachments/icons/ and set projects.icon_ref (no info wrap)."""
+        pid = (project_id or "").strip()
+        if not pid:
+            return {"ok": False, "error": "project id required"}
+        rows = self.load("projects")
+        target = next((r for r in rows if r.get("id") == pid), None)
+        if not target:
+            return {"ok": False, "error": "project not found"}
+        safe_ext = (ext or ".png").lower()
+        if safe_ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}:
+            safe_ext = ".png"
+        if safe_ext == ".jpeg":
+            safe_ext = ".jpg"
+        icons_dir = self.attach_dir / "icons"
+        icons_dir.mkdir(parents=True, exist_ok=True)
+        dest_name = f"{pid}{safe_ext}"
+        dest = icons_dir / dest_name
+        old_ref = (target.get("icon_ref") or "").strip()
+        if old_ref:
+            old_path = self._icon_file_path(old_ref)
+            if old_path and old_path != dest.resolve() and old_path.is_file():
+                try:
+                    old_path.unlink()
+                except OSError:
+                    pass
+        dest.write_bytes(image_bytes)
+        ref = f"attachments\\icons\\{dest_name}"
+        out = []
+        for r in rows:
+            if r["id"] == pid:
+                r = {**r, "icon_ref": ref}
+            out.append(r)
+        self.save("projects", out)
+        return {"ok": True, "project": next(x for x in out if x["id"] == pid)}
+
+    def clear_project_icon(self, project_id: str) -> dict:
+        pid = (project_id or "").strip()
+        rows = self.load("projects")
+        target = next((r for r in rows if r.get("id") == pid), None)
+        if not target:
+            return {"ok": False, "error": "project not found"}
+        self._delete_icon_file(target.get("icon_ref") or "")
+        out = []
+        for r in rows:
+            if r["id"] == pid:
+                r = {**r, "icon_ref": ""}
+            out.append(r)
+        self.save("projects", out)
+        return {"ok": True, "project": next(x for x in out if x["id"] == pid)}
 
     def delete_project(self, project_id: str) -> dict:
         tasks = self.load("tasks")
@@ -561,6 +636,9 @@ class TaskStore:
             or (a.get("parent_type") == "task" and a.get("parent_id") in task_ids)
             or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
         )
+        proj = self.find("projects", project_id)
+        if proj:
+            self._delete_icon_file(proj.get("icon_ref") or "")
         self.save("tasks", [t for t in tasks if t.get("project_id") != project_id])
         self.save(
             "sections",
@@ -822,6 +900,23 @@ class TaskStore:
             return
         rows = self.load("info_points")
         self.save("info_points", rows)
+
+    def migrate_project_columns(self) -> None:
+        """Rewrite projects.csv when icon_ref header is missing."""
+        path = self.path("projects")
+        if not path.exists():
+            return
+        with path.open("r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.reader(f)
+            try:
+                header = next(reader)
+            except StopIteration:
+                return
+        want = HEADERS["projects"]
+        if list(header) == want:
+            return
+        rows = self.load("projects")
+        self.save("projects", rows)
 
     # --- info ---
     def upsert_info(self, payload: dict) -> dict:
