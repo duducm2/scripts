@@ -1820,7 +1820,7 @@
                   a.concept,
                   a.keywords,
                 );
-                const marks = ['<span aria-hidden="true">🟧</span>'];
+                const marks = [];
                 if (a.zone || a.zone_label) {
                   marks.push('<span aria-hidden="true">🟦</span>');
                 }
@@ -1832,9 +1832,12 @@
                 const thumbHtml = thumbUrl
                   ? `<img class="qr-thumb" src="${esc(thumbUrl)}" alt="" width="28" height="28" loading="lazy" decoding="async">`
                   : "";
+                const marksHtml = marks.length
+                  ? `<span class="qr-marks">${marks.join("")}</span>`
+                  : "";
                 btn.innerHTML =
                   thumbHtml +
-                  `<span class="qr-marks">${marks.join("")}</span>` +
+                  marksHtml +
                   `<span class="qr-body">${bodyParts.join(" ")}</span>`;
                 btn.addEventListener("click", () =>
                   pickQuickRecallPalace(p.id),
@@ -2524,7 +2527,7 @@
             <header class="beast-cluster-head">
               <span class="lbl">Beast</span>
               <div class="beast-head-row">
-                <p class="beast-name">${thumbHtml}<span class="emoji" aria-hidden="true">🟧</span> ${dash(b.beast_name || b.peg_code)}</p>
+                <p class="beast-name">${thumbHtml}${dash(b.beast_name || b.peg_code)}</p>
               </div>
             </header>
             <div class="beast-cluster-atoms">${cards}</div>
