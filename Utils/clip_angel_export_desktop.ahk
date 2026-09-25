@@ -1287,6 +1287,23 @@ ClipAngelExport_RenameStaging(sourcePath, baseName, ext := "") {
     }
 }
 
+; True when the Desktop name pick is Palace quick image (registry PALACE_QUICK_IMAGE).
+ClipAngelExport_IsPalaceQuickImageName(name) {
+    bare := ClipAngelExport_ListBaseName(ClipAngelExport_SanitizeFileName(name))
+    if (bare = "")
+        return false
+    ; Exact registry name, or UniqueNamedPath / Maps batch suffixes (_02, -2).
+    return RegExMatch(StrUpper(bare), "^PALACE_QUICK_IMAGE(_\d+|-\d+)?$")
+}
+
+; After a successful Desktop save as PALACE_QUICK_IMAGE → Import Management [Q].
+ClipAngelExport_MaybeRunPalaceQuickImage(baseName) {
+    if (!ClipAngelExport_IsPalaceQuickImageName(baseName))
+        return
+    ; Defer so ClipAngel lock / success toast finish before the palace picker.
+    SetTimer((*) => ImportMgmt_RunQuickImage(), -150)
+}
+
 ; #!+p intent-flow context: destination keys at gesture time; copy starts only after choice.
 ; choice: "" until P/Y/F/R/W/O; "cancel" on N/Esc/timeout. copyDone/copyOk set by Gemini worker.
 ; gen: increments each flow so a stale copy worker cannot touch a newer session.
@@ -1532,6 +1549,7 @@ HotkeyCopy_DoConfirmDesktop() {
 }
 
 ; [Y] Name Desktop file first, then copy, then save+rename (no companion focus during name UI).
+; PALACE_QUICK_IMAGE → then Import Management [Q] (Palace quick image).
 HotkeyCopy_YRunNameThenCopy() {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
     if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "Y")
@@ -1576,6 +1594,7 @@ HotkeyCopy_YTryFinishExport() {
     if !ClipAngel_TryAcquireAutomationLock()
         return
     savedClip := ClipboardAll()
+    savedOk := false
     try {
         StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
         ClipAngel_WaitForClipboardIngest()
@@ -1603,6 +1622,7 @@ HotkeyCopy_YTryFinishExport() {
             name := SubStr(name, 1, 45) "..."
         ShowCenteredOverlay_Utils("✅ Saved: " name, 2200, BANNER_ACCENT_SUCCESS)
         try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+        savedOk := true
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Clip Angel export failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     } finally {
@@ -1614,6 +1634,8 @@ HotkeyCopy_YTryFinishExport() {
         }
         ClipAngel_ReleaseAutomationLock()
     }
+    if (savedOk)
+        ClipAngelExport_MaybeRunPalaceQuickImage(desktopName)
 }
 
 HotkeyCopy_DoFavoriteClip() {
@@ -1858,6 +1880,8 @@ ClipAngel_ExportLastClipToDesktop() {
     if !ClipAngel_TryAcquireAutomationLock()
         return
     savedClip := ClipboardAll()
+    savedOk := false
+    savedBaseName := ""
     try {
         StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
         outPath := ""
@@ -1881,10 +1905,12 @@ ClipAngel_ExportLastClipToDesktop() {
         }
         finalPath := ClipAngelExport_PromptRename(outPath)
         SplitPath(finalPath, &name)
+        savedBaseName := ClipAngelExport_ListBaseName(name)
         if (StrLen(name) > 48)
             name := SubStr(name, 1, 45) "..."
         ShowCenteredOverlay_Utils("✅ Saved: " name, 2200, BANNER_ACCENT_SUCCESS)
         try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+        savedOk := true
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Clip Angel export failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     } finally {
@@ -1896,6 +1922,8 @@ ClipAngel_ExportLastClipToDesktop() {
         }
         ClipAngel_ReleaseAutomationLock()
     }
+    if (savedOk)
+        ClipAngelExport_MaybeRunPalaceQuickImage(savedBaseName)
 }
 
 RegisterMacro(ClipAngel_ExportLastClipToDesktop, "📎 ClipAngel last clip → Desktop", "c")
