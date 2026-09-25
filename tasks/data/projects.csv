@@ -1,24 +1,24 @@
-id,title,filter,section_path,sort_order,active,created_at,icon_ref,icon_color
-PROJ_0002,Doctoral degree,work,Tasks,160,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0004,TAR,work,Tasks,340,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0006,Trainings,work,Tasks,540,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0011,BPM,work,Projects,620,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0012,Piloto PT B2B - Data insights,work,Projects,720,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0013,RISE,work,Projects,1230,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0014,AI Roleplay,work,Projects,2500,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0015,Personal inbox,personal,,1340,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2490,1,2026-08-29 15:48:39,,#ffffff
-PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0019.svg,#ffffff
-PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2360,1,2026-08-29 15:48:39,attachments\icons\PROJ_0021.svg,#ffffff
-PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",habits,,2480,1,2026-08-29 15:48:39,attachments\icons\PROJ_0022.svg,#ffffff
-PROJ_0023,Notes from Your Records (Prior Vaccines),habits,,2550,1,2026-08-29 15:48:39,attachments\icons\PROJ_0023.svg,#ffffff
-PROJ_0024,PHD,personal,,2510,1,2026-08-30 14:53:43,,#ffffff
-PROJ_0025,Ideais,work,,430,1,2026-08-30 15:09:02,,#ffffff
-PROJ_0026,Dissertation,personal,,1720,1,2026-08-30 21:05:29,,#ffffff
-PROJ_0027,Job Search,personal,,2520,1,2026-09-14 18:09:36,,#ffffff
-PROJ_0028,Art of Memory,personal,,2530,1,2026-09-14 18:14:10,,#ffffff
-PROJ_0029,Dog,personal,,2540,1,2026-09-17 16:52:21,attachments\icons\PROJ_0029.svg,#ffffff
-PROJ_0030,Dog,habits,,2330,1,2026-09-18 11:31:59,attachments\icons\PROJ_0030.svg,#ffffff
-PROJ_0031,Father,personal,,2560,1,2026-09-22 19:18:51,,#ffffff
+id,title,filter,section_path,sort_order,active,created_at,icon_ref,icon_color,icon_tint
+PROJ_0002,Doctoral degree,work,Tasks,160,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0004,TAR,work,Tasks,340,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0006,Trainings,work,Tasks,540,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0011,BPM,work,Projects,620,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0012,Piloto PT B2B - Data insights,work,Projects,720,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0013,RISE,work,Projects,1230,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0014,AI Roleplay,work,Projects,2500,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0015,Personal inbox,personal,,1340,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2490,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0019.svg,#ffffff,1
+PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2360,1,2026-08-29 15:48:39,attachments\icons\PROJ_0021.svg,#ffffff,1
+PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",habits,,2480,1,2026-08-29 15:48:39,attachments\icons\PROJ_0022.svg,#ffffff,1
+PROJ_0023,Notes from Your Records (Prior Vaccines),habits,,2550,1,2026-08-29 15:48:39,attachments\icons\PROJ_0023.svg,#ffffff,1
+PROJ_0024,PHD,personal,,2510,1,2026-08-30 14:53:43,,#ffffff,0
+PROJ_0025,Ideais,work,,430,1,2026-08-30 15:09:02,,#ffffff,0
+PROJ_0026,Dissertation,personal,,1720,1,2026-08-30 21:05:29,,#ffffff,0
+PROJ_0027,Job Search,personal,,2520,1,2026-09-14 18:09:36,,#ffffff,0
+PROJ_0028,Art of Memory,personal,,2530,1,2026-09-14 18:14:10,,#ffffff,0
+PROJ_0029,Dog,personal,,2540,1,2026-09-17 16:52:21,attachments\icons\PROJ_0029.svg,#ffffff,1
+PROJ_0030,Dog,habits,,2330,1,2026-09-18 11:31:59,attachments\icons\PROJ_0030.svg,#ffffff,1
+PROJ_0031,Father,personal,,2560,1,2026-09-22 19:18:51,attachments\icons\PROJ_0031.png,#ffffff,0

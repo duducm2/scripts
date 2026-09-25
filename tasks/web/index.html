@@ -198,6 +198,10 @@
         display: inline-block;
         width: 26px;
         height: 26px;
+        vertical-align: middle;
+        border: none;
+      }
+      .proj-icon.proj-icon-tint {
         background: var(--icon-color, #ffffff);
         -webkit-mask-size: contain;
         mask-size: contain;
@@ -207,8 +211,10 @@
         mask-position: center;
         -webkit-mask-mode: alpha;
         mask-mode: alpha;
-        border: none;
-        vertical-align: middle;
+      }
+      .proj-icon.proj-icon-native {
+        object-fit: contain;
+        background: transparent;
       }
       .icon-color-row {
         display: flex;
@@ -229,10 +235,24 @@
         background: transparent;
         cursor: pointer;
       }
+      .icon-color-row input[type="color"]:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .icon-tint-toggle {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--muted, #aaa);
+        white-space: nowrap;
+      }
       .icon-preview {
         width: 48px;
         height: 48px;
         flex: 0 0 auto;
+      }
+      .icon-preview.proj-icon-tint {
         background: var(--icon-color, #ffffff);
         -webkit-mask-size: contain;
         mask-size: contain;
@@ -242,6 +262,10 @@
         mask-position: center;
         -webkit-mask-mode: alpha;
         mask-mode: alpha;
+      }
+      .icon-preview.proj-icon-native {
+        object-fit: contain;
+        background: transparent;
       }
       .proj-title {
         font-weight: 600;
@@ -1730,12 +1754,29 @@
           return "#ffffff";
         }
 
+        function projectIconTint(project) {
+          const t = String(project?.icon_tint ?? "")
+            .trim()
+            .toLowerCase();
+          if (t === "1" || t === "true" || t === "yes") return true;
+          if (t === "0" || t === "false" || t === "no") return false;
+          // Legacy rows: SVG silhouettes are tintable; raster/3D stay native.
+          const ref = String(project?.icon_ref || "")
+            .trim()
+            .toLowerCase()
+            .replace(/\\/g, "/");
+          return ref.endsWith(".svg");
+        }
+
         function projectIconHtml(project) {
           const src = projectIconSrc(project);
           if (!src) return "";
+          if (!projectIconTint(project)) {
+            return `<img class="proj-icon proj-icon-native" src="${esc(src)}" alt="" title="Project icon" />`;
+          }
           const color = projectIconColor(project);
           const safeUrl = esc(src).replace(/'/g, "%27");
-          return `<span class="proj-icon" style="--icon-color:${esc(color)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Project icon" role="img" aria-label="Project icon"></span>`;
+          return `<span class="proj-icon proj-icon-tint" style="--icon-color:${esc(color)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Project icon" role="img" aria-label="Project icon"></span>`;
         }
 
         async function copyInfoById(id) {
@@ -4466,26 +4507,33 @@
           }
           const currentSrc = projectIconSrc(p);
           const currentColor = projectIconColor(p);
+          let tintOn = projectIconTint(p);
           const clearBtn = currentSrc
             ? `<button class="btn danger" data-m="clear-icon">Clear icon</button>`
             : "";
-          const previewHtml = currentSrc
-            ? (() => {
-                const safeUrl = esc(currentSrc).replace(/'/g, "%27");
-                return `<span id="mIconPreview" class="icon-preview" style="--icon-color:${esc(currentColor)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Current icon"></span>`;
-              })()
-            : `<span id="mIconPreview" class="icon-preview" style="display:none"></span>`;
+          const previewBlock = (src, color, tint) => {
+            if (!src)
+              return `<span id="mIconPreview" class="icon-preview" style="display:none"></span>`;
+            if (!tint) {
+              return `<img id="mIconPreview" class="icon-preview proj-icon-native" src="${esc(src)}" alt="" title="Current icon (original colors)"/>`;
+            }
+            const safeUrl = esc(src).replace(/'/g, "%27");
+            return `<span id="mIconPreview" class="icon-preview proj-icon-tint" style="--icon-color:${esc(color)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Current icon (flat tint)"></span>`;
+          };
           modal(`<div class="modal"><h3>Project icon — ${esc(p.title)}</h3>
       <div class="modal-body">
-      <p class="sub">Search Wikimedia Commons (PNG/SVG preferred). No AI image generation.</p>
+      <p class="sub">Search Wikimedia Commons (PNG/SVG preferred). 3D / full-color icons keep original look; flat tint is for silhouettes.</p>
       <div class="icon-modal-toolbar">
         <input id="mIconQ" type="search" placeholder="Search icons…" value="${esc(p.title || "")}"/>
         <button class="btn" data-m="search-icon">Search</button>
         <button class="btn" data-m="suggest-icon">Suggest top 5</button>
         <div class="icon-color-row">
-          <label for="mIconColor">Color</label>
-          <input id="mIconColor" type="color" value="${esc(currentColor)}" title="Icon tint color"/>
-          ${previewHtml}
+          <label class="icon-tint-toggle" title="Flat single-color tint (for silhouettes). Off keeps 3D / original colors.">
+            <input id="mIconTint" type="checkbox" ${tintOn ? "checked" : ""} ${currentSrc ? "" : "disabled"}/>
+            Flat color
+          </label>
+          <input id="mIconColor" type="color" value="${esc(currentColor)}" title="Icon tint color" ${tintOn && currentSrc ? "" : "disabled"}/>
+          ${previewBlock(currentSrc, currentColor, tintOn)}
         </div>
         ${clearBtn}
       </div>
@@ -4496,27 +4544,46 @@
 
           const statusEl = () => $("#mIconStatus");
           const gridEl = () => $("#mIconGrid");
+          let queryTouched = false;
+          let fetchSeq = 0;
 
-          const applyPreviewColor = (color) => {
-            const preview = $("#mIconPreview");
-            if (preview) preview.style.setProperty("--icon-color", color);
+          const syncPreview = (color, tint) => {
+            const host = $("#mIconColor")?.closest(".icon-color-row");
+            const old = $("#mIconPreview");
+            if (!host || !old) return;
+            const proj = (state.data.projects || []).find(
+              (x) => x.id === projectId,
+            );
+            const src = projectIconSrc(proj || p);
+            const html = previewBlock(src, color, tint);
+            old.outerHTML = html;
+            const colorEl = $("#mIconColor");
+            if (colorEl) colorEl.disabled = !(tint && src);
+            const tintEl = $("#mIconTint");
+            if (tintEl) {
+              tintEl.disabled = !src;
+              tintEl.checked = !!tint;
+            }
           };
 
-          const saveIconColor = async (color) => {
+          const saveIconStyle = async ({ color, tint } = {}) => {
             try {
+              const body = {};
+              if (color !== undefined) body.color = color;
+              if (tint !== undefined) body.tint = tint ? 1 : 0;
               const r = await api(
                 "/api/projects/" +
                   encodeURIComponent(projectId) +
                   "/icon-color",
                 {
                   method: "PATCH",
-                  body: JSON.stringify({ color }),
+                  body: JSON.stringify(body),
                 },
               );
               if (r.project) mergeApiRow("projects", r.project);
-              applyPreviewColor(
-                projectIconColor(r.project || { icon_color: color }),
-              );
+              const next = r.project || {};
+              tintOn = projectIconTint(next);
+              syncPreview(projectIconColor(next), tintOn);
               render();
             } catch (err) {
               toast(err.message || String(err));
@@ -4543,7 +4610,9 @@
                 const thumb = r.thumburl || r.url || "";
                 const title = r.name || r.title || `Result ${i + 1}`;
                 const commonsTitle = r.title || "";
-                return `<button type="button" class="icon-pick" data-m="pick-icon" data-title="${esc(commonsTitle)}" data-url="${esc(r.url || "")}" title="${esc(title)}">
+                const mime = String(r.mime || "");
+                const isSvg = mime.includes("svg");
+                return `<button type="button" class="icon-pick" data-m="pick-icon" data-title="${esc(commonsTitle)}" data-url="${esc(r.url || "")}" title="${esc(title)}${isSvg ? " · tintable SVG" : " · original colors"}">
             <img src="${esc(thumb)}" alt="" loading="lazy"/>
             <span>${esc(title)}</span>
           </button>`;
@@ -4557,30 +4626,39 @@
               toast("Enter a search query");
               return;
             }
+            queryTouched = true;
+            const seq = ++fetchSeq;
             if (statusEl()) statusEl().textContent = "Searching Commons…";
             try {
               const r = await api(
                 "/api/icons/search?q=" + encodeURIComponent(q) + "&limit=20",
               );
+              if (seq !== fetchSeq) return;
               renderResults(r.results || [], { query: r.query || q });
             } catch (err) {
+              if (seq !== fetchSeq) return;
               toast(err.message || String(err));
               if (statusEl()) statusEl().textContent = "Search failed";
             }
           };
 
-          const runSuggest = async () => {
+          const runSuggest = async ({ fromButton = false } = {}) => {
             if (statusEl())
               statusEl().textContent = "Suggesting from project text…";
+            const seq = ++fetchSeq;
             try {
               const r = await api(
                 "/api/icons/suggest?project_id=" +
                   encodeURIComponent(projectId) +
                   "&limit=5",
               );
+              if (seq !== fetchSeq) return;
+              if (!fromButton && queryTouched) return;
               if ($("#mIconQ") && r.query) $("#mIconQ").value = r.query;
+              if (fromButton) queryTouched = false;
               renderResults(r.results || [], { query: r.query || "" });
             } catch (err) {
+              if (seq !== fetchSeq) return;
               toast(err.message || String(err));
               if (statusEl()) statusEl().textContent = "Suggest failed";
             }
@@ -4600,7 +4678,11 @@
                 },
               );
               if (r.project) mergeApiRow("projects", r.project);
-              toast("Icon saved");
+              toast(
+                projectIconTint(r.project)
+                  ? "Icon saved (flat tint)"
+                  : "Icon saved (original colors)",
+              );
               closeModal();
               render();
             } catch (err) {
@@ -4621,7 +4703,7 @@
               return;
             }
             if (m === "suggest-icon") {
-              await runSuggest();
+              await runSuggest({ fromButton: true });
               return;
             }
             if (m === "clear-icon") {
@@ -4646,22 +4728,39 @@
               );
             }
           };
+          $("#mIconQ")?.addEventListener("input", () => {
+            queryTouched = true;
+          });
           $("#mIconQ")?.addEventListener("keydown", async (e) => {
             if (e.key === "Enter") {
               e.preventDefault();
               await runSearch();
             }
           });
+          $("#mIconTint")?.addEventListener("change", (e) => {
+            const on = !!e.target.checked;
+            tintOn = on;
+            syncPreview($("#mIconColor")?.value || currentColor, on);
+            void saveIconStyle({ tint: on });
+          });
           let colorTimer = null;
           $("#mIconColor")?.addEventListener("input", (e) => {
             const color = e.target.value || "#ffffff";
-            applyPreviewColor(color);
+            if (!tintOn) return;
+            syncPreview(color, true);
             clearTimeout(colorTimer);
-            colorTimer = setTimeout(() => void saveIconColor(color), 200);
+            colorTimer = setTimeout(
+              () => void saveIconStyle({ color, tint: true }),
+              200,
+            );
           });
           $("#mIconColor")?.addEventListener("change", (e) => {
+            if (!tintOn) return;
             clearTimeout(colorTimer);
-            void saveIconColor(e.target.value || "#ffffff");
+            void saveIconStyle({
+              color: e.target.value || "#ffffff",
+              tint: true,
+            });
           });
           focusModalPrimaryField("#mIconQ");
           void runSuggest();

@@ -288,8 +288,16 @@ class TaskHandler(BaseHTTPRequestHandler):
         try:
             if path.startswith("/api/projects/") and path.endswith("/icon-color"):
                 pid = path[len("/api/projects/") : -len("/icon-color")]
-                color = payload.get("color") if "color" in payload else ""
-                self._json(200, store.set_project_icon_color(pid, str(color or "")))
+                color = payload["color"] if "color" in payload else None
+                tint = payload["tint"] if "tint" in payload else None
+                self._json(
+                    200,
+                    store.set_project_icon_color(
+                        pid,
+                        color=None if color is None else str(color),
+                        tint=tint,
+                    ),
+                )
                 return
             self._json(404, {"ok": False, "error": "not found"})
         except Exception as e:
