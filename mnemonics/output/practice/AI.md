@@ -11,7 +11,7 @@
 
 ### [M] marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 💡 **<kbd><strong><u>Context</u></strong></kbd>:** I experience the <kbd><strong><u>dumb</u></strong></kbd> zone as degraded <kbd><strong><u>attention</u></strong></kbd> and performance when processing a massive <kbd><strong><u>context</u></strong></kbd> window over an extended <kbd><strong><u>session</u></strong></kbd>.
@@ -31,7 +31,7 @@ A microscopic marmoset juggles thousands of glowing text windows; as the session
 
 ### [N] Neanderthal
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 💡 **Context:** I use a <kbd><strong><u>meta</u></strong></kbd> prompt as a behind-the-scenes <kbd><strong><u>instruction</u></strong></kbd> that establishes an AI's baseline parameters like tone, <kbd><strong><u>rules</u></strong></kbd>, and <kbd><strong><u>boundaries</u></strong></kbd>.
@@ -51,7 +51,7 @@ A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggr
 
 ### [O] owl
 
-<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · The Horse**
 
@@ -130,7 +130,7 @@ _No gallery images._
 
 ### [I] imp
 
-<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Token Metric**
 
@@ -183,7 +183,7 @@ _No gallery images._
 
 ### [D] dragon
 
-<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Retrieval-Augmented Generation (RAG) fetches external documents at query time instead of relying entirely on its training memory.
@@ -199,7 +199,7 @@ A colossal dragon made of folded library pages refuses to use its own brain. Ins
 
 ### [E] eagle
 
-<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A flat, unstructured content store causes models to retrieve the loudest keyword match instead of the most accurate document.
@@ -215,7 +215,7 @@ A skyscraper-sized eagle stands on a flat heap of rotting, messy file folders th
 
 ### [F] frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Controlled vocabularies prevent slight word variations from fracturing one concept into multiple unrelated topics.
@@ -231,7 +231,7 @@ A microscopic frog sits on a distant brick wall, catching hundreds of chaotic, f
 
 ### [G] goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 AI agents require explicit structures, hierarchies, and boundaries to safely take action and update records.
@@ -247,7 +247,7 @@ A three-headed goat tries to stamp its hooves to route banking tickets, but free
 
 ### [H] Hydra
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Adding situational context to text chunks before indexing them drastically reduces retrieval failures.
@@ -282,7 +282,7 @@ _No gallery images._
 
 ### [A] Arachne
 
-<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Augmented analytics automates data analysis using AI and machine learning.
@@ -298,7 +298,7 @@ A skyscraper-sized Arachne weaves a glowing web of binary code directly into a m
 
 ### [B] bird of paradise
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Conversational interfaces allow you to query data using everyday language.
@@ -314,7 +314,7 @@ A neon-plumed bird of paradise perched on a wooden bench sings questions that in
 
 ### [C] cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Data-lake translator jaws**
 

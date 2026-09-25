@@ -11,7 +11,7 @@
 
 ### [N] Neanderthal
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Cognitive Shuffling**
 
@@ -61,7 +61,7 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 
 ### [O] owl
 
-<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Spelling Trick**
 
@@ -130,7 +130,7 @@ _No gallery images._
 
 ### [J] jester
 
-<img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Behavioral activation works because taking physical action forcefully shifts brain chemistry before motivation ever appears.
@@ -146,7 +146,7 @@ A colossal medieval jester refuses to wait for hope; it aggressively bites Goku'
 
 ### [K] kitten
 
-<img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The first five minutes involve gentle physical rotations of the neck, shoulders, and wrists to release an immediate energy boost.
@@ -162,7 +162,7 @@ A majestic kitten violently twists its neck, shoulders, and wrists exactly ten t
 
 ### [L] lion
 
-<img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The second block emotionally warms the brain by placing a hand on the chest and deeply visualizing a simple pleasant experience.
@@ -178,7 +178,7 @@ A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against 
 
 ### [M] marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The final five minutes require a small, practical action focused on personal sensory meaning rather than societal productivity.
@@ -213,7 +213,7 @@ _No gallery images._
 
 ### [H] Hydra
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | BP Definition**
 
@@ -263,7 +263,7 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 
 ### [I] imp
 
-<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | HR Definition**
 
@@ -316,7 +316,7 @@ _No gallery images._
 
 ### [F] frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Asking questions before reading primes the brain to filter for relevant information.
@@ -332,7 +332,7 @@ _No keywords yet_
 
 ### [G] goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Highlighting everything defeats the purpose of highlighting.
@@ -367,7 +367,7 @@ _No gallery images._
 
 ### [A] Arachne
 
-<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The habit of pronouncing words in your head slows down reading.
@@ -383,7 +383,7 @@ _No keywords yet_
 
 ### [B] bird of paradise
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Eyes backtracking or back skipping wastes time and ruins focus.
@@ -399,7 +399,7 @@ _No keywords yet_
 
 ### [C] cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Familiar words don't need to be pronounced internally to be understood.
@@ -415,7 +415,7 @@ _No keywords yet_
 
 ### [D] dragon
 
-<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Using a visual guide prevents regression and focuses attention.
@@ -431,7 +431,7 @@ _No keywords yet_
 
 ### [E] eagle
 
-<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Capturing multiple words per fixation expands reading speed.

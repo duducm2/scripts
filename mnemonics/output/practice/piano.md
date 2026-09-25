@@ -11,7 +11,7 @@
 
 ### [Al] alligator
 
-<img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Bass F sits on the second line from the top and acts as a symmetrical mirror image to Treble G around Middle C.
@@ -27,7 +27,7 @@ Claude Monet watches an enormous alligator balance vertically on its tail upon a
 
 ### [Am] amulet
 
-<img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Middle C for the left hand is drawn with a downward stem on a ledger line above the bass staff.
@@ -43,7 +43,7 @@ A heavy, cursed amulet floats above a drawn bass staff, radiating dark energy. C
 
 ### [An] angel
 
-<img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Moving to an adjacent white key on the piano means stepping between a line note and a space note on the musical staff.
@@ -59,7 +59,7 @@ A skyscraper-sized angel lands on the street and physically hops between the pai
 
 ### [Ao] aoudad
 
-<img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Treble F is located in the first space at the very bottom of the treble staff
@@ -75,7 +75,7 @@ this note is now in space one which is the space below the g line this note is f
 
 ### [Ap] ape
 
-<img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Musical note names must be written in uppercase letters because lowercase letters represent different concepts in music theory notation.
@@ -110,7 +110,7 @@ _No gallery images._
 
 ### [Aj] Ajax
 
-<img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Stacked notes sharing a single stem mean the notes are played simultaneously.
@@ -126,7 +126,7 @@ The towering Greek warrior Ajax slams his bronze shield into the pavement, split
 
 ### [Ak] Akita (dog breed)
 
-<img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Good posture involves sitting straight with the head lifted upward as if pulled by a string, while keeping the shoulders relaxed.
@@ -161,7 +161,7 @@ _No gallery images._
 
 ### [Ai] Airedale terrier
 
-<img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Counting out loud and clapping physically reinforces the rhythm and prevents speed changes.
@@ -196,7 +196,7 @@ _No gallery images._
 
 ### [Af] Afghan hound
 
-<img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A line note has a staff line passing directly through its center, similar to a bead on a string.
@@ -212,7 +212,7 @@ Marilyn Monroe watches in awe as an Afghan hound bites down hard on a massive, g
 
 ### [Ag] Agaric fungi
 
-<img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A space note is a musical note that rests entirely in the empty gap between two staff lines.
@@ -228,7 +228,7 @@ Giant, glowing Agaric fungi sprout exclusively inside the floating gap between t
 
 ### [Ah] Ah!—a sigh
 
-<img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A cadence is a harmonic progression at the end of a musical phrase that provides a sense of resolution or punctuation.
@@ -263,7 +263,7 @@ _No gallery images._
 
 ### [Ac] acorn
 
-<img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 An accidental is a symbol that alters a note's pitch temporarily, such as sharps, flats, or naturals.
@@ -279,7 +279,7 @@ Goku throws a giant, glowing acorn that crashes into a metal street sign, warpin
 
 ### [Ad] adder
 
-<img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A melody combines pitch and rhythm into a primary, cohesive musical line.
@@ -295,7 +295,7 @@ A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shat
 
 ### [Ae] aerialist
 
-<img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Phrase**
 
@@ -348,7 +348,7 @@ _No gallery images._
 
 ### [X] Xena, warrior woman
 
-<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 An inversion changes which note sits at the bottom of the chord.
@@ -364,7 +364,7 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 
 ### [Y] yak
 
-<img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Harmony combination**
 
@@ -398,7 +398,7 @@ stamping three distinct lightning bolts into the pavement · sensory: tactile �
 
 ### [Z] Zeus
 
-<img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Z1 Head | Consonant rest**
 
@@ -432,7 +432,7 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 
 ### [Aa] aardvark
 
-<img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A chord progression is a sequence of chords that dictates the emotional arc and key of a song.
@@ -448,7 +448,7 @@ A colossal aardvark hops along a drawn timeline on the road while Neo tracks its
 
 ### [Ab] Abyssinian cat
 
-<img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Harmony provides the underlying context that can completely change the emotional feeling of the same melody.
@@ -483,7 +483,7 @@ _No gallery images._
 
 ### [S] skull
 
-<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Chords are constructed by skipping keys between the notes you play.
@@ -499,7 +499,7 @@ A giant floating skull rolls along the street, explicitly skipping over every ot
 
 ### [T] toucan
 
-<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Primary chords (I, IV, V) produce a cheerful, major sound.
@@ -515,7 +515,7 @@ A skyscraper-sized toucan flaps its wings to project a blindingly bright rainbow
 
 ### [U] unicorn
 
-<img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Secondary chords (ii, iii, vi) produce a darker, minor sound in major keys.
@@ -531,7 +531,7 @@ A shadowy unicorn bleeds thick red ink from its horn onto the pavement to draw t
 
 ### [V] vulture
 
-<img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Diminished chords have an edgy, dissonant sound because they skip fewer keys.
@@ -547,7 +547,7 @@ A vulture violently scratches a chalkboard wall on the street with its talons, l
 
 ### [W] wombat
 
-<img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A chord is in root position when the root note is on the very bottom.
@@ -582,7 +582,7 @@ _No gallery images._
 
 ### [P] panther
 
-<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · C major white keys**
 
@@ -632,7 +632,7 @@ A panther crouches across the street piano with white mushrooms growing only alo
 
 ### [Q] Quetzalcoatl
 
-<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Chord**
 
@@ -666,7 +666,7 @@ Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a th
 
 ### [R] rat
 
-<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The damper pedal keeps notes ringing after the keys are released.
@@ -701,7 +701,7 @@ _No gallery images._
 
 ### [K] kitten
 
-<img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/kitten.png" alt="kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Practice rhythm and pitch apart before putting them together.
@@ -717,7 +717,7 @@ A kitten divides the street piano into two clear work tables. One table holds a 
 
 ### [L] lion
 
-<img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Tonic home note**
 
@@ -751,7 +751,7 @@ A lion pulls a tiny piano house along the street and parks it on one note, makin
 
 ### [M] marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Half step**
 
@@ -785,7 +785,7 @@ A marmoset crouches between two side-by-side piano keys and finds no space at al
 
 ### [N] Neanderthal
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Pentascale**
 
@@ -803,7 +803,7 @@ The Neanderthal carries a cracked acorn with five tiny piano keys growing from i
 
 ### [O] owl
 
-<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Major scale sound**
 
@@ -856,7 +856,7 @@ _No gallery images._
 
 ### [F] frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Whole note**
 
@@ -906,7 +906,7 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 
 ### [G] goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A double bar line marks the end of a part or piece.
@@ -922,7 +922,7 @@ A goat drops two thick black bars across the street staff. Every sound stops at 
 
 ### [H] Hydra
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Rounded fingers**
 
@@ -972,7 +972,7 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 
 ### [I] imp
 
-<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Gentle arm weight**
 
@@ -1006,7 +1006,7 @@ An imp sits at the street piano wearing a heavy cloth sleeve that hangs from sho
 
 ### [J] jester
 
-<img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Raised flexible wrists**
 
@@ -1059,7 +1059,7 @@ _No gallery images._
 
 ### [A] Arachne
 
-<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Middle C home marker**
 
@@ -1109,7 +1109,7 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 
 ### [B] bird of paradise
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Five-line staff**
 
@@ -1159,7 +1159,7 @@ The bird of paradise lands beside the piano and drags one claw across the street
 
 ### [C] cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Bass C landmark**
 
@@ -1193,7 +1193,7 @@ A cat walks low across the bass staff with two clear landmarks attached to its b
 
 ### [D] dragon
 
-<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 🟦 **Z1 · Steady beat**
 
@@ -1227,7 +1227,7 @@ A dragon stands over the street piano and stamps one claw on the road in a stead
 
 ### [E] eagle
 
-<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A time signature tells how beats fit inside each measure.

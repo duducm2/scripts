@@ -11,7 +11,7 @@
 
 ### [Bs] Bone Shark
 
-<img src="../../web/assets/beast-thumbs/skull.png" alt="Bone Shark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/skull.png" alt="Bone Shark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Syllabic L [l̩] takes over the entire syllable when the vowel is reduced.
@@ -27,7 +27,7 @@ _No keywords yet_
 
 ### [Bt] Bone Toad
 
-<img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone Toad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone Toad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Syllabic N [n̩] frequently occurs after alveolar consonants like /t/ or /s/, often utilizing a glottal stop.
@@ -43,7 +43,7 @@ _No keywords yet_
 
 ### [Bu] butterfly
 
-<img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Syllabic M [m̩] acts as its own syllable, often found in words ending in "thm" or "sm".
@@ -78,7 +78,7 @@ _No gallery images._
 
 ### [Bq] Boulder quail
 
-<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Boulder quail" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Boulder quail" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Intrusion is the addition of a new sound.
@@ -94,7 +94,7 @@ _No keywords yet_
 
 ### [Br] brontosaurus
 
-<img src="../../web/assets/beast-thumbs/brontosaurus.png" alt="brontosaurus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/brontosaurus.png" alt="brontosaurus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Only 'w', 'y', or 'r' sounds are usually added in intrusion.
@@ -129,7 +129,7 @@ _No gallery images._
 
 ### [Bl] bloodhound
 
-<img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Connected speech involves changing, losing, or adding sounds.
@@ -145,7 +145,7 @@ _No keywords yet_
 
 ### [Bm] Bone marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Assimilation is when a sound changes to be more like its neighbor.
@@ -161,7 +161,7 @@ _No keywords yet_
 
 ### [Bn] Blazing nightjar
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Blazing nightjar" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Blazing nightjar" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Preparing for /b/ by closing lips early changes /n/ to /m/.
@@ -177,7 +177,7 @@ _No keywords yet_
 
 ### [Bo] bower-bird
 
-<img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Elision is the deletion or loss of sounds.
@@ -193,7 +193,7 @@ _No keywords yet_
 
 ### [Bp] Blackwater penguin
 
-<img src="../../web/assets/beast-thumbs/panther.png" alt="Blackwater penguin" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/panther.png" alt="Blackwater penguin" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Final 't' or 'd' sounds are the most commonly lost in English.
@@ -228,7 +228,7 @@ _No gallery images._
 
 ### [Bh] Bitter hare
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Bitter hare" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Bitter hare" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Thought groups involve using short pauses to break down sentences.
@@ -244,7 +244,7 @@ _No keywords yet_
 
 ### [Bi] bison
 
-<img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 English is a stress-timed language with regular intervals.
@@ -260,7 +260,7 @@ _No keywords yet_
 
 ### [Bj] Basil jellyfish
 
-<img src="../../web/assets/beast-thumbs/jester.png" alt="Basil jellyfish" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/jester.png" alt="Basil jellyfish" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Linking occurs when the end of one word blends directly into the start of the next word.
@@ -276,7 +276,7 @@ _No keywords yet_
 
 ### [Bk] Bloodmoon kestrel
 
-<img src="../../web/assets/beast-thumbs/kitten.png" alt="Bloodmoon kestrel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/kitten.png" alt="Bloodmoon kestrel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Shadowing is actively repeating a text simultaneously to absorb natural rhythm.
@@ -311,7 +311,7 @@ _No gallery images._
 
 ### [Bf] Blackwater ferret
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="Blackwater ferret" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/frog.png" alt="Blackwater ferret" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Linguistically, only the relative values of pitch matter, not the absolute values.
@@ -327,7 +327,7 @@ _No keywords yet_
 
 ### [Bg] Boulder giraffe
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="Boulder giraffe" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/goat.png" alt="Boulder giraffe" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The IPA chart has a dedicated section for suprasegmental symbols.
@@ -362,7 +362,7 @@ _No gallery images._
 
 ### [Ay] aye-aye
 
-<img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Spoken language is built from segments: consonants (bricks) and vowels (mortar).
@@ -378,7 +378,7 @@ _No keywords yet_
 
 ### [Az] Aztec
 
-<img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Suprasegmentals are features "beyond the segment" that emerge only through comparison.
@@ -394,7 +394,7 @@ _No keywords yet_
 
 ### [Ba] bat
 
-<img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Length is the relative duration of a sound.
@@ -410,7 +410,7 @@ _No keywords yet_
 
 ### [Bb] Brass bison
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Brass bison" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Brass bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Stress can alter a word's meaning, pitch, and sound properties.
@@ -426,7 +426,7 @@ _No keywords yet_
 
 ### [Be] bee
 
-<img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Intonation is the pitch pattern at the sentence level, which can change meaning.
@@ -461,7 +461,7 @@ _No gallery images._
 
 ### [At] atlas
 
-<img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Prefix dis- indicates the opposite or active negation.
@@ -477,7 +477,7 @@ _No keywords yet_
 
 ### [Au] auroch
 
-<img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Prefix mis- refers to a mistake.
@@ -493,7 +493,7 @@ _No keywords yet_
 
 ### [Av] avocet
 
-<img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Prefixes im-, in-, ir- spelling rules.
@@ -509,7 +509,7 @@ _No keywords yet_
 
 ### [Aw] awassi sheep
 
-<img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Insecure (feeling) vs. Unsecure (safety).
@@ -525,7 +525,7 @@ _No keywords yet_
 
 ### [Ax] axolotl
 
-<img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Prefix re- means to repeat.
@@ -560,7 +560,7 @@ _No gallery images._
 
 ### [Ao] aoudad
 
-<img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Core definitions: Prefix (before) and Suffix (after).
@@ -576,7 +576,7 @@ _No keywords yet_
 
 ### [Ap] ape
 
-<img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Suffix -able indicates ability.
@@ -592,7 +592,7 @@ _No keywords yet_
 
 ### [Aq] aquatic leech
 
-<img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Suffix -ish softens time or adjectives.
@@ -608,7 +608,7 @@ _No keywords yet_
 
 ### [Ar] armadillo
 
-<img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Prefix un- means not complete or absent.
@@ -624,7 +624,7 @@ _No keywords yet_
 
 ### [As] asp
 
-<img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Prefix un- can also mean to reverse an action.
@@ -659,7 +659,7 @@ _No gallery images._
 
 ### [Aj] Ajax
 
-<img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Definition of Nominalization (turning words into nouns).
@@ -675,7 +675,7 @@ _No keywords yet_
 
 ### [Ak] Akita (dog breed)
 
-<img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Transforming Verbs into Nouns (Enjoy -> Enjoyment).
@@ -691,7 +691,7 @@ _No keywords yet_
 
 ### [Al] alligator
 
-<img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Transforming Adjectives into Nouns (Beautiful -> Beauty).
@@ -707,7 +707,7 @@ _No keywords yet_
 
 ### [Am] amulet
 
-<img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The "Noun of Noun" Structure (Develop -> Development).
@@ -723,7 +723,7 @@ _No keywords yet_
 
 ### [An] angel
 
-<img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Advanced Nominalization with Relational Verbs (Leads to).
@@ -758,7 +758,7 @@ _No gallery images._
 
 ### [Ah] Ah!—a sigh
 
-<img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Perfect Passive (Sequence/Reason) - Passive action completed before main clause.
@@ -774,7 +774,7 @@ _No keywords yet_
 
 ### [Ai] Airedale terrier
 
-<img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The Dangling Participle - Subject mismatch.
@@ -809,7 +809,7 @@ _No gallery images._
 
 ### [Ac] acorn
 
-<img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Present Active (Consequence) - Action first, then the result.
@@ -825,7 +825,7 @@ _No keywords yet_
 
 ### [Ad] adder
 
-<img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Present Active (Ambiguity) - Flip the sentence if the subject is unclear.
@@ -841,7 +841,7 @@ _No keywords yet_
 
 ### [Ae] aerialist
 
-<img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Perfect Active (Sequence) - Action fully completed before the main clause.
@@ -857,7 +857,7 @@ _No keywords yet_
 
 ### [Af] Afghan hound
 
-<img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Past Participle (Subject Info) - Adding information about the subject.
@@ -873,7 +873,7 @@ _No keywords yet_
 
 ### [Ag] Agaric fungi
 
-<img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Past Participle (Condition) - Reduced conditional stating a fact.
@@ -908,7 +908,7 @@ _No gallery images._
 
 ### [X] Xena, warrior woman
 
-<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A participle clause is a subordinate clause used to give extra information.
@@ -924,7 +924,7 @@ _No keywords yet_
 
 ### [Y] yak
 
-<img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The subject of the participle clause and the main clause must be the same.
@@ -940,7 +940,7 @@ _No keywords yet_
 
 ### [Z] Zeus
 
-<img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Present Active (Simultaneous Actions) - Two things happening at the same time.
@@ -956,7 +956,7 @@ _No keywords yet_
 
 ### [Aa] aardvark
 
-<img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Present Active (Reason) - Stating a reason before the result.
@@ -972,7 +972,7 @@ _No keywords yet_
 
 ### [Ab] Abyssinian cat
 
-<img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Present Active (Negative Form) - Place "not" before the participle.
@@ -1007,7 +1007,7 @@ _No gallery images._
 
 ### [T] toucan
 
-<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
@@ -1023,7 +1023,7 @@ A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decid
 
 ### [U] unicorn
 
-<img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
@@ -1039,7 +1039,7 @@ A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a 
 
 ### [V] vulture
 
-<img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
@@ -1055,7 +1055,7 @@ A Vulture perches on a desk like a boss. It places the word "therefore" right be
 
 ### [W] wombat
 
-<img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
@@ -1090,7 +1090,7 @@ _No gallery images._
 
 ### [R] rat
 
-<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
@@ -1106,7 +1106,7 @@ A Rat looks at a calendar on the wall. Someone says "He will come today." The Ra
 
 ### [S] skull
 
-<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
@@ -1141,7 +1141,7 @@ _No gallery images._
 
 ### [M] marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
@@ -1157,7 +1157,7 @@ It holds a red pen and reads a long sentence on a screen. It aggressively crosse
 
 ### [N] Neanderthal
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
@@ -1173,7 +1173,7 @@ A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest
 
 ### [O] owl
 
-<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
@@ -1189,7 +1189,7 @@ An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl 
 
 ### [P] panther
 
-<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
@@ -1205,7 +1205,7 @@ A black Panther stalks a sentence written on the ground. It pounces on a repeate
 
 ### [Q] Quetzalcoatl
 
-<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
@@ -1240,7 +1240,7 @@ _No gallery images._
 
 ### [K] Kitten
 
-<img src="../../web/assets/beast-thumbs/kitten.png" alt="Kitten" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/kitten.png" alt="Kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
@@ -1256,7 +1256,7 @@ A small Kitten sleeps at the bottom of a black stone. It does not want toys or f
 
 ### [L] Lion
 
-<img src="../../web/assets/beast-thumbs/lion.png" alt="Lion" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/lion.png" alt="Lion" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Lion wears a detective hat. He looks at the ground with a glass. He ignores the police. He tries to do the action himself. "What he did was try to solve the crime himself." The Lion shows the action using "What... do."
@@ -1291,7 +1291,7 @@ _No gallery images._
 
 ### [F] Frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="Frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/frog.png" alt="Frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your rel
@@ -1307,7 +1307,7 @@ A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the 
 
 ### [G] Goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="Goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/goat.png" alt="Goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
@@ -1323,7 +1323,7 @@ A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the
 
 ### [H] Hydra
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Cleft
@@ -1339,7 +1339,7 @@ The Hydra holds a heavy car battery in its main head. It moves the battery all t
 
 ### [I] Imp
 
-<img src="../../web/assets/beast-thumbs/imp.png" alt="Imp" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/imp.png" alt="Imp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 An Imp paints a big word "IS" on the wall. A big pile of plural nouns falls on him. Even with the heavy weight, he says the verb must be singular. The rule is: The Wh-clause is singular. Even if your noun is plural, use is or was.
@@ -1355,7 +1355,7 @@ Example: "What they need is more time." (Not "are"—use is even though "they" i
 
 ### [J] Jester
 
-<img src="../../web/assets/beast-thumbs/jester.png" alt="Jester" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/jester.png" alt="Jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The Jester points at the Imp and laughs. He uses the word "That" to talk about the whole thing. He says: "That's what I'm talking about." This shows you can use "That" to talk about what just happened.
@@ -1390,7 +1390,7 @@ _No gallery images._
 
 ### [A] Arachne
 
-<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
@@ -1406,7 +1406,7 @@ Arachne hangs from the stone. She is making a big web. She does not finish it. I
 
 ### [B] Bird of Paradise
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bird of Paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bird of Paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my pass
@@ -1422,7 +1422,7 @@ Next to her, a Bird of Paradise opens its colorful feathers. It wants you to loo
 
 ### [C] Cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="Cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/cat.png" alt="Cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Down the street, a Cat sits on a government paper. You try to move the cat, but it stays there. It shows that this is the paper you need. The cat says: "It's form B6115 that you need." This shows the It-Cleft Structure: It plus "to be" plus
@@ -1438,7 +1438,7 @@ A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are p
 
 ### [E] Eagle
 
-<img src="../../web/assets/beast-thumbs/eagle.png" alt="Eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/eagle.png" alt="Eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 High up, an Eagle holds a famous book in its claws. It shouts the name of the author to everyone below. "I believe it was Shel Silverstein who wrote The Giving Tree." The Eagle shows you the Relative Pronouns: Who or That.

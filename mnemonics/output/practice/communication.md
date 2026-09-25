@@ -11,7 +11,7 @@
 
 ### [Ab] Abyssinian cat
 
-<img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Package ideas with a Symbol, Slogan, Surprise, Idea, and Story.
@@ -27,7 +27,7 @@ A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a 
 
 ### [Ac] acorn
 
-<img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 End with a definitive salute or summary, never a weak thank you.
@@ -62,7 +62,7 @@ _No gallery images._
 
 ### [W] wombat
 
-<img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Success relies on acquired knowledge and practice over talent.
@@ -78,7 +78,7 @@ A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving mic
 
 ### [X] Xena, warrior woman
 
-<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Talks must open with an empowerment promise for the audience.
@@ -94,7 +94,7 @@ Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic batt
 
 ### [Y] yak
 
-<img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Cycle through main points three times to bypass natural fog.
@@ -110,7 +110,7 @@ A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence tha
 
 ### [Z] Zeus
 
-<img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Provide structural landmarks and ask questions to re-engage.
@@ -126,7 +126,7 @@ Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell
 
 ### [Aa] aardvark
 
-<img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Eliminate heavy text on slides because reading annoys listeners.
@@ -161,7 +161,7 @@ _No gallery images._
 
 ### [R] rat
 
-<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Achieving bedrock clarity requires stripping away unnecessary details.
@@ -177,7 +177,7 @@ A microscopic rat sits on the iron gate in the ForegroundLeft, furiously erasing
 
 ### [S] skull
 
-<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Consciously move evocative words from your deep passive lexicon to your surface automatic retrieval.
@@ -193,7 +193,7 @@ A colossal, floating bone skull hovers by the MidgroundRight lamp post, vomiting
 
 ### [T] toucan
 
-<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Anchor abstract ideas in lived sensory memory by populating speech with Time, Audio, Kinesthetic, Eyes, and Smell.
@@ -209,7 +209,7 @@ A giant toucan crashes into the BackgroundCenter facade, regurgitating a ticking
 
 ### [U] unicorn
 
-<img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 True comfort is built before speaking by aligning your body, mind, and spirit.
@@ -225,7 +225,7 @@ An ethereal unicorn balances on the Aerial roof, exhaling a perfect, glowing box
 
 ### [V] vulture
 
-<img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Cognitive sharpness is governed by biological inputs; tracking diet and sleep dictates mental clarity.
@@ -260,7 +260,7 @@ Test
 
 ### [M] marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Clear speaking requires clear thinking.
@@ -276,7 +276,7 @@ A colossal marmoset balances on a street lamp, scrubbing its glowing transparent
 
 ### [N] Neanderthal
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Clarity equals bad output multiplied by frequency.
@@ -292,7 +292,7 @@ A brutish Neanderthal stands near the front left gate, relentlessly smashing a b
 
 ### [O] owl
 
-<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Texture is creatively bending words into striking phrases.
@@ -308,7 +308,7 @@ A skyscraper-sized owl perches on a midground brick wall, aggressively chewing t
 
 ### [P] panther
 
-<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Use personal experiences to color in your speech outlines.
@@ -324,7 +324,7 @@ A sleek panther paces at the far end of the street, bleeding vibrant, dripping n
 
 ### [Q] rat
 
-<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="rat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="rat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The vocal ego represents your elite, top 2% self.
@@ -359,7 +359,7 @@ _No gallery images._
 
 ### [D] dragon
 
-<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Define the business agenda for your own area.
@@ -375,7 +375,7 @@ A colossal dragon lands heavily on the gate post, and Goku desperately grabs its
 
 ### [E] eagle
 
-<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Create value according to the general interest of Bosch.
@@ -391,7 +391,7 @@ An impossibly heavy eagle crashes onto a parked car, crushing its steel roof lik
 
 ### [F] frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Foster a collaborative and learning organization while driving digital business.
@@ -407,7 +407,7 @@ A skyscraper-sized frog squats at the far end of the street, croaking with a dea
 
 ### [G] goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Create an environment where people feel comfortable expressing their opinions.
@@ -423,7 +423,7 @@ A floating goat balances perfectly on top of a street lamp, emitting a highly co
 
 ### [H] Hydra
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Encourage others to take responsibility and achieve exceptional results.
@@ -458,7 +458,7 @@ _No gallery images._
 
 ### [A] Arachne
 
-<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Ethos is the credibility and authority of the speaker.
@@ -474,7 +474,7 @@ Arachne (a woman with the lower body of a spider) crawls down onto the street. S
 
 ### [B] bird of paradise
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Pathos is the emotional appeal used to engage the audience.
@@ -490,7 +490,7 @@ A bright bird of paradise flutters down to perch on Arachne's badge and starts c
 
 ### [C] cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="32" height="32" style="vertical-align:middle;height:32px;width:32px;" />
+<img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Logos is the logical structure and the evidence supporting the argument.
