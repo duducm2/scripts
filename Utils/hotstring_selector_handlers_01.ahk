@@ -1372,10 +1372,6 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
     } catch {
         originHwnd := 0
     }
-    ; #region agent log
-    PackPipeline_AgentLog("E", "hotstring_selector_handlers_01.ahk:PastePromptToGemini", "origin at entry", Map(
-        "restoreGlobal", g_UtilitySelectorRestoreHwnd, "origin", originHwnd))
-    ; #endregion
     restoreFocus := ""
     playGeminiChime := false
     companionHwnd := 0
@@ -1403,14 +1399,8 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
                 companionHwnd := WinExist("A")
         }
         ; If origin is companion / missing, pick another visible window (Z-order).
-        if (!originHwnd || (companionHwnd && originHwnd = companionHwnd)) {
-            ; #region agent log
-            PackPipeline_AgentLog("E", "hotstring_selector_handlers_01.ahk:PastePromptToGemini",
-                "origin invalid — resolve fallback", Map(
-                    "origin", originHwnd, "companion", companionHwnd))
-            ; #endregion
+        if (!originHwnd || (companionHwnd && originHwnd = companionHwnd))
             originHwnd := PackPipeline_ResolveUserHwnd(companionHwnd, originHwnd)
-        }
         if (doAttach) {
             if (usedBusyBar)
                 PromptPaste_BusyEnsure("⏳ Attaching context…")
@@ -1436,13 +1426,6 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             onAfter := (*) => ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         }
         PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus, submitOpts)
-        ; #region agent log
-        snapAfterSend := PackPipeline_FgSnapshot()
-        PackPipeline_AgentLog("E", "hotstring_selector_handlers_01.ahk:PastePromptToGemini", "after ApplyChoice", Map(
-            "origin", originHwnd, "companion", companionHwnd,
-            "fg", snapAfterSend["fg"], "title", snapAfterSend["title"],
-            "pasteChoice", pasteChoice))
-        ; #endregion
         ; Pack auto-pipeline: after send, wait for generation → Desktop → import confirm.
         armed := false
         try armed := PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companion, companionHwnd, originHwnd)
@@ -1453,22 +1436,8 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         if (armed && PackPipeline_IsActive()) {
             if (originHwnd)
                 PackPipeline_SetUserHwnd(originHwnd)
-            ; #region agent log
-            global g_PackPipeline
-            PackPipeline_AgentLog("A", "hotstring_selector_handlers_01.ahk:PastePromptToGemini", "before restore", Map(
-                "origin", originHwnd, "companion", companionHwnd,
-                "userSet", (IsObject(g_PackPipeline) && g_PackPipeline.HasProp("userHwnd")) ? g_PackPipeline.userHwnd :
-                    0,
-                "armed", armed ? 1 : 0))
-            ; #endregion
             restored := PackPipeline_RestoreUserHwnd()
             PackPipeline_NotifyUserFree(restored)
-            ; #region agent log
-            snapEnd := PackPipeline_FgSnapshot()
-            PackPipeline_AgentLog("B", "hotstring_selector_handlers_01.ahk:PastePromptToGemini", "after notify", Map(
-                "restored", restored ? 1 : 0, "fg", snapEnd["fg"], "title", snapEnd["title"],
-                "fgIsCompanion", (companionHwnd && snapEnd["fg"] = companionHwnd) ? 1 : 0))
-            ; #endregion
         }
     } else if (appendClip != "") {
         g_lastExpansion := 0
