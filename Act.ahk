@@ -133,6 +133,11 @@ if (IS_WORK_ENVIRONMENT) {
 StandardLoadingBar_Update("⏳ Ensuring Clip Angel...")
 clipAngelOk := ClipAngel_EnsureRunning()
 
+; Open AI companion (same chord as Gemini/gemini_open.ahk #!+i).
+StandardLoadingBar_Update("⏳ Opening AI companion...")
+Sleep 3000  ; Gemini.ahk must finish auto-exec so #!+i is registered
+Send "#!+i"
+
 habitsFolder := notesFolder . "\habits"
 if (clipAngelOk)
     StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
