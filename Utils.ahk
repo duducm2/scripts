@@ -367,9 +367,6 @@ catch {
 ; [Utils module] Reading Mode macro (#!+W → k) Left/Right→PgUp/PgDn + line highlight -> Utils\reading_mode.ahk
 #include %A_ScriptDir%\Utils\reading_mode.ahk
 
-; [Utils module] Anti-Cat macro (#!+W → b) lock notebook KB/trackpad; never Bluetooth keyboards -> Utils\anti_cat.ahk
-#include %A_ScriptDir%\Utils\anti_cat.ahk
-
 ; [Utils module] Focus mode (#!+Y 1×) + Main Repos (#!+Y 2×) -> Utils\focus_mode.ahk
 #include %A_ScriptDir%\Utils\focus_mode.ahk
 
