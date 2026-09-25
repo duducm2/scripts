@@ -261,7 +261,7 @@ def _normalize_page(page: dict[str, Any]) -> dict[str, Any] | None:
         return None
     ii = infos[0]
     mime = (ii.get("mime") or "").lower()
-    if not mime.startswith("image/"):
+    if mime not in {"image/svg+xml", "image/png", "image/webp"}:
         return None
     thumb = ii.get("thumburl") or ii.get("url") or ""
     url = ii.get("url") or thumb
@@ -321,13 +321,9 @@ def search_commons(query: str, limit: int = 20) -> list[dict[str, Any]]:
         if norm:
             items.append(norm)
     items.sort(key=_candidate_score)
-    preferred = [
-        i
-        for i in items
-        if (i.get("mime") or "") in {"image/png", "image/svg+xml", "image/webp"}
-    ]
-    rest = [i for i in items if i not in preferred]
-    ordered = preferred + rest
+    # Only alpha-capable formats — never return JPEG/GIF as fill-ins.
+    alpha_ok = {"image/svg+xml", "image/png", "image/webp"}
+    ordered = [i for i in items if (i.get("mime") or "") in alpha_ok]
     return ordered[:limit]
 
 
