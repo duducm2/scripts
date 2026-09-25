@@ -19,6 +19,59 @@ WM_COPY_LAST_COPILOT := 0x8005
 WM_COPY_LAST_GEMINI_CODE := 0x8007
 WM_COPY_LAST_COPILOT_CODE := 0x8008
 
+; #region agent log
+PackPipeline_AgentLog(hypothesisId, location, message, dataMap := 0) {
+    logPath := ""
+    try {
+        SplitPath(A_LineFile, , &utilsDir)
+        logPath := utilsDir . "\..\debug-86e4cb.log"
+    } catch {
+        logPath := A_ScriptDir . "\debug-86e4cb.log"
+    }
+    ts := A_TickCount
+    dataJson := "{"
+    if (IsObject(dataMap)) {
+        first := true
+        for k, v in dataMap {
+            if (!first)
+                dataJson .= ","
+            first := false
+            vv := v
+            if (Type(vv) = "String") {
+                vv := StrReplace(vv, "\", "\\")
+                vv := StrReplace(vv, "`"", "\`"")
+                vv := StrReplace(vv, "`n", " ")
+                vv := StrReplace(vv, "`r", "")
+                dataJson .= "`"" . k . "`":`"" . vv . "`""
+            } else
+                dataJson .= "`"" . k . "`":" . vv
+        }
+    }
+    dataJson .= "}"
+    line := "{`"sessionId`":`"86e4cb`",`"hypothesisId`":`"" . hypothesisId . "`",`"location`":`""
+        . location . "`",`"message`":`"" . message . "`",`"data`":" . dataJson
+        . ",`"timestamp`":" . ts . ",`"runId`":`"pre-fix`"}`n"
+    try FileAppend(line, logPath, "UTF-8")
+    catch {
+    }
+}
+PackPipeline_FgSnapshot() {
+    fg := 0
+    title := ""
+    proc := ""
+    try fg := WinGetID("A")
+    catch {
+    }
+    try title := WinGetTitle("ahk_id " fg)
+    catch {
+    }
+    try proc := WinGetProcessName("ahk_id " fg)
+    catch {
+    }
+    return Map("fg", fg, "title", SubStr(title, 1, 80), "proc", proc)
+}
+; #endregion
+
 PackPipeline_IsOwnerProcess() {
     return A_ScriptName = "AppLaunchers.ahk"
 }
@@ -82,6 +135,55 @@ PackPipeline_IsActive() {
     return IsObject(g_PackPipeline) && g_PackPipeline.HasProp("active") && g_PackPipeline.active
 }
 
+; Pick a usable restore target: preferred if valid, else first visible non-companion / non-AHK window.
+PackPipeline_ResolveUserHwnd(companionHwnd := 0, preferred := 0) {
+    if (preferred && preferred != companionHwnd && WinExist("ahk_id " preferred)) {
+        try {
+            if (DllCall("IsWindowVisible", "ptr", preferred))
+                return preferred
+        } catch {
+            return preferred
+        }
+    }
+    try {
+        for hwnd in WinGetList() {
+            if (!hwnd || (companionHwnd && hwnd = companionHwnd))
+                continue
+            if (!WinExist("ahk_id " hwnd))
+                continue
+            try {
+                if (!DllCall("IsWindowVisible", "ptr", hwnd))
+                    continue
+            } catch {
+            }
+            proc := ""
+            title := ""
+            try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
+            catch {
+            }
+            if (InStr(proc, "autohotkey"))
+                continue
+            try title := Trim(WinGetTitle("ahk_id " hwnd))
+            catch {
+            }
+            if (title = "")
+                continue
+            ; #region agent log
+            PackPipeline_AgentLog("A", "pack_pipeline.ahk:ResolveUserHwnd", "picked z-order fallback", Map(
+                "preferred", preferred, "companion", companionHwnd, "picked", hwnd,
+                "title", SubStr(title, 1, 80), "proc", proc))
+            ; #endregion
+            return hwnd
+        }
+    } catch {
+    }
+    ; #region agent log
+    PackPipeline_AgentLog("A", "pack_pipeline.ahk:ResolveUserHwnd", "no fallback found", Map(
+        "preferred", preferred, "companion", companionHwnd))
+    ; #endregion
+    return 0
+}
+
 ; Capture foreground hwnd when it is not the companion (call before intentional focus steal).
 PackPipeline_CaptureUserHwnd() {
     global g_PackPipeline
@@ -91,9 +193,19 @@ PackPipeline_CaptureUserHwnd() {
     try {
         fg := WinGetID("A")
         if (fg && (!companionHwnd || fg != companionHwnd)) {
+            ; #region agent log
+            PackPipeline_AgentLog("C", "pack_pipeline.ahk:CaptureUserHwnd", "updating userHwnd", Map(
+                "fg", fg, "companion", companionHwnd,
+                "prevUser", g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0))
+            ; #endregion
             g_PackPipeline.userHwnd := fg
             return fg
         }
+        ; #region agent log
+        PackPipeline_AgentLog("C", "pack_pipeline.ahk:CaptureUserHwnd", "skip update (fg is companion or empty)", Map(
+            "fg", fg, "companion", companionHwnd,
+            "user", g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0))
+        ; #endregion
     } catch {
     }
     return g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0
@@ -105,38 +217,140 @@ PackPipeline_RestoreUserHwnd() {
     if (!IsObject(g_PackPipeline) || !g_PackPipeline.HasProp("userHwnd"))
         return false
     userHwnd := g_PackPipeline.userHwnd
-    if (!userHwnd || !WinExist("ahk_id " userHwnd))
+    snap0 := PackPipeline_FgSnapshot()
+    if (!userHwnd || !WinExist("ahk_id " userHwnd)) {
+        ; #region agent log
+        PackPipeline_AgentLog("A", "pack_pipeline.ahk:RestoreUserHwnd", "missing/dead userHwnd", Map(
+            "userHwnd", userHwnd, "fg", snap0["fg"], "title", snap0["title"]))
+        ; #endregion
+        OutputDebug("PackPipeline_RestoreUserHwnd: missing/dead userHwnd=" . userHwnd)
         return false
+    }
     companionHwnd := g_PackPipeline.HasProp("hwnd") ? g_PackPipeline.hwnd : 0
-    if (companionHwnd && userHwnd = companionHwnd)
+    if (companionHwnd && userHwnd = companionHwnd) {
+        ; #region agent log
+        PackPipeline_AgentLog("A", "pack_pipeline.ahk:RestoreUserHwnd", "userHwnd equals companion — skip", Map(
+            "userHwnd", userHwnd, "companion", companionHwnd, "fg", snap0["fg"], "title", snap0["title"]))
+        ; #endregion
+        OutputDebug("PackPipeline_RestoreUserHwnd: userHwnd is companion — skip")
         return false
+    }
     try {
-        if (!WinActive("ahk_id " userHwnd)) {
-            WinActivate("ahk_id " userHwnd)
-            WinWaitActive("ahk_id " userHwnd, , 1)
+        try WinShow("ahk_id " userHwnd)
+        catch {
         }
-        return !!WinActive("ahk_id " userHwnd)
-    } catch {
+        try {
+            if (WinGetMinMax("ahk_id " userHwnd) = -1)
+                WinRestore("ahk_id " userHwnd)
+        } catch {
+        }
+        if (WinActive("ahk_id " userHwnd)) {
+            ; #region agent log
+            PackPipeline_AgentLog("B", "pack_pipeline.ahk:RestoreUserHwnd", "already active", Map(
+                "userHwnd", userHwnd, "companion", companionHwnd, "fg", snap0["fg"]))
+            ; #endregion
+            return true
+        }
+        WinActivate("ahk_id " userHwnd)
+        if (WinWaitActive("ahk_id " userHwnd, , 1)) {
+            snap1 := PackPipeline_FgSnapshot()
+            ; #region agent log
+            PackPipeline_AgentLog("B", "pack_pipeline.ahk:RestoreUserHwnd", "activate ok first try", Map(
+                "userHwnd", userHwnd, "companion", companionHwnd, "fg", snap1["fg"], "title", snap1["title"]))
+            ; #endregion
+            return true
+        }
+        Sleep 100
+        WinActivate("ahk_id " userHwnd)
+        if (WinWaitActive("ahk_id " userHwnd, , 1)) {
+            snap1 := PackPipeline_FgSnapshot()
+            ; #region agent log
+            PackPipeline_AgentLog("B", "pack_pipeline.ahk:RestoreUserHwnd", "activate ok retry", Map(
+                "userHwnd", userHwnd, "companion", companionHwnd, "fg", snap1["fg"], "title", snap1["title"]))
+            ; #endregion
+            return true
+        }
+        try DllCall("SetForegroundWindow", "ptr", userHwnd)
+        catch {
+        }
+        Sleep 80
+        ok := !!WinActive("ahk_id " userHwnd)
+        snap1 := PackPipeline_FgSnapshot()
+        ; #region agent log
+        PackPipeline_AgentLog("B", "pack_pipeline.ahk:RestoreUserHwnd", "SetForegroundWindow result", Map(
+            "ok", ok, "userHwnd", userHwnd, "companion", companionHwnd, "fg", snap1["fg"], "title", snap1["title"]))
+        ; #endregion
+        OutputDebug("PackPipeline_RestoreUserHwnd: user=" . userHwnd . " companion=" . companionHwnd . " ok=" . ok)
+        return ok
+    } catch as e {
+        OutputDebug("PackPipeline_RestoreUserHwnd: exception " . e.Message)
     }
     return false
 }
 
 ; Information Only: user may leave the companion — pack wait is hwnd-only in background.
-PackPipeline_NotifyUserFree() {
+; Anchors banner to userHwnd so focus side-effects return to the right window.
+; restoredOk: -1 = attempt restore here; true/false = caller already restored.
+PackPipeline_NotifyUserFree(restoredOk := -1) {
     global g_PackPipeline
     if (!PackPipeline_IsActive())
         return
+    userHwnd := g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0
     label := g_PackPipeline.HasProp("label") ? g_PackPipeline.label : "pack"
-    msg := "ℹ Free to work — watching " . label . " in background"
-    try ShowCenteredOverlay_Utils(msg, 4500, BANNER_ACCENT_INFO)
-    catch {
+    if (restoredOk = -1) {
+        restoredOk := false
+        if (userHwnd && WinExist("ahk_id " userHwnd))
+            restoredOk := PackPipeline_RestoreUserHwnd()
     }
+    snap := PackPipeline_FgSnapshot()
+    ; #region agent log
+    PackPipeline_AgentLog("B", "pack_pipeline.ahk:NotifyUserFree", "after restore decision", Map(
+        "restoredOk", restoredOk ? 1 : 0, "userHwnd", userHwnd,
+        "companion", g_PackPipeline.HasProp("hwnd") ? g_PackPipeline.hwnd : 0,
+        "fg", snap["fg"], "title", snap["title"], "fgIsUser", (snap["fg"] = userHwnd) ? 1 : 0,
+        "fgIsCompanion", (g_PackPipeline.HasProp("hwnd") && snap["fg"] = g_PackPipeline.hwnd) ? 1 : 0))
+    ; #endregion
+    if (!restoredOk || !userHwnd || !WinExist("ahk_id " userHwnd)) {
+        try ShowCenteredOverlay_Utils("⚠ Pack watching in background — could not restore your window", 3200,
+            BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Pack pipeline", "Watching in background — could not restore your window")
+        }
+        return
+    }
+    msg := "ℹ Free to work — watching " . label . " in background"
+    try {
+        StandardLoadingBar_Show(msg, BANNER_ACCENT_INFO, {
+            passive: true,
+            centerOnHwnd: userHwnd,
+            textWidth: 520,
+            fontSize: 17,
+            passiveBgColor: BANNER_ACCENT_INFO
+        })
+        StandardLoadingBar_Hide(4500)
+        StandardLoadingBar_ArmForceHide()
+    } catch {
+        try ShowCenteredOverlay_Utils(msg, 4500, BANNER_ACCENT_INFO)
+        catch {
+        }
+    }
+    snap2 := PackPipeline_FgSnapshot()
+    ; #region agent log
+    PackPipeline_AgentLog("B", "pack_pipeline.ahk:NotifyUserFree", "after banner show", Map(
+        "fg", snap2["fg"], "title", snap2["title"], "userHwnd", userHwnd,
+        "fgIsCompanion", (g_PackPipeline.HasProp("hwnd") && snap2["fg"] = g_PackPipeline.hwnd) ? 1 : 0))
+    ; #endregion
 }
 
 ; Brief activate companion for copy/paste; captures userHwnd first.
 PackPipeline_ActivateCompanionBriefly(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
+    ; #region agent log
+    snap := PackPipeline_FgSnapshot()
+    PackPipeline_AgentLog("D", "pack_pipeline.ahk:ActivateCompanionBriefly", "about to activate companion", Map(
+        "hwnd", hwnd, "fg", snap["fg"], "title", snap["title"]))
+    ; #endregion
     PackPipeline_CaptureUserHwnd()
     try {
         if (!WinActive("ahk_id " hwnd)) {
@@ -231,16 +445,13 @@ PackPipeline_Arm(key, item, companionId := "", hwnd := 0, userHwnd := 0) {
         }
     }
     PackPipeline_StopMonitor()
-    ; Prefer caller-supplied origin (pre-companion); else foreground if not companion.
-    if (!userHwnd || (hwnd && userHwnd = hwnd) || !WinExist("ahk_id " userHwnd)) {
-        userHwnd := 0
-        try {
-            fg := WinGetID("A")
-            if (fg && (!hwnd || fg != hwnd))
-                userHwnd := fg
-        } catch {
-        }
-    }
+    ; Prefer caller-supplied origin (pre-companion); else resolve a non-companion window.
+    if (!userHwnd || (hwnd && userHwnd = hwnd) || !WinExist("ahk_id " userHwnd))
+        userHwnd := PackPipeline_ResolveUserHwnd(hwnd, userHwnd)
+    ; #region agent log
+    PackPipeline_AgentLog("A", "pack_pipeline.ahk:Arm", "armed with userHwnd", Map(
+        "companion", hwnd, "userHwnd", userHwnd, "key", key))
+    ; #endregion
     g_PackPipeline := {
         active: true,
         key: key,
@@ -257,7 +468,7 @@ PackPipeline_Arm(key, item, companionId := "", hwnd := 0, userHwnd := 0) {
     g_PackPipelineMonitorRetry := 0
     g_PackPipelineMonitorButtonSeen := false
     PackPipeline_StartMonitor()
-    PackPipeline_NotifyUserFree()
+    ; Caller restores focus then PackPipeline_NotifyUserFree (Prompt Manager / D2C / fix-submit).
     return true
 }
 
@@ -339,20 +550,40 @@ PackPipeline_MonitorTick(*) {
         if (!hwnd)
             return
     }
-    ; Passive status every ~15s — no focus steal; remind user they can keep working.
-    if (Mod(g_PackPipelineMonitorRetry, 30) = 0) {
-        PackPipeline_NotifyUserFree()
+    ; TrayTip reminder every ~30s — no overlay (avoids focus side-effects).
+    if (Mod(g_PackPipelineMonitorRetry, 60) = 0) {
+        try TrayTip("Pack pipeline", "Still watching " . g_PackPipeline.label . " in background — free to work")
+        catch {
+        }
     }
     generating := PackPipeline_CompanionIsGenerating(hwnd, companionId)
+    OutputDebug("PackPipeline_MonitorTick: retry=" . g_PackPipelineMonitorRetry
+        . " generating=" . generating . " buttonSeen=" . g_PackPipelineMonitorButtonSeen)
+    ; #region agent log
+    if (Mod(g_PackPipelineMonitorRetry, 10) = 1) {
+        snap := PackPipeline_FgSnapshot()
+        PackPipeline_AgentLog("B", "pack_pipeline.ahk:MonitorTick", "focus during wait", Map(
+            "retry", g_PackPipelineMonitorRetry, "generating", generating ? 1 : 0,
+            "buttonSeen", g_PackPipelineMonitorButtonSeen ? 1 : 0,
+            "companion", hwnd, "user", g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0,
+            "fg", snap["fg"], "title", snap["title"],
+            "fgIsCompanion", (snap["fg"] = hwnd) ? 1 : 0))
+    }
+    ; #endregion
     if (generating) {
         g_PackPipelineMonitorButtonSeen := true
         return
     }
     if (!g_PackPipelineMonitorButtonSeen) {
-        ; Not started yet — keep waiting for Stop to appear.
-        if (g_PackPipelineMonitorRetry < 20)
+        ; Not started yet — keep waiting for Stop to appear (~60s before fallback).
+        if (g_PackPipelineMonitorRetry < 120)
             return
-        ; After ~10s with no Stop, assume already complete (fast response / missed start).
+        ; After ~60s with no Stop, assume already complete (fast response / missed start).
+        ; #region agent log
+        PackPipeline_AgentLog("D", "pack_pipeline.ahk:MonitorTick", "no-Stop fallback firing — will extract", Map(
+            "retry", g_PackPipelineMonitorRetry))
+        ; #endregion
+        OutputDebug("PackPipeline_MonitorTick: no-Stop fallback after 60s")
         g_PackPipelineMonitorButtonSeen := true
     }
     ; Verify Stop stayed gone.
@@ -378,15 +609,35 @@ PackPipeline_MonitorTick(*) {
 PackPipeline_OnGenerationComplete(*) {
     if (!PackPipeline_IsActive())
         return
+    ; #region agent log
+    snap := PackPipeline_FgSnapshot()
+    PackPipeline_AgentLog("D", "pack_pipeline.ahk:OnGenerationComplete", "extract starting", Map(
+        "fg", snap["fg"], "title", snap["title"],
+        "companion", g_PackPipeline.HasProp("hwnd") ? g_PackPipeline.hwnd : 0,
+        "user", g_PackPipeline.HasProp("userHwnd") ? g_PackPipeline.userHwnd : 0))
+    ; #endregion
     try StandardLoadingBar_Show("⏳ Extracting pack…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    catch {
+    }
+    clipBefore := ""
+    try clipBefore := Trim(A_Clipboard)
     catch {
     }
     text := PackPipeline_Extract()
     try StandardLoadingBar_Hide(0)
     catch {
     }
-    if (Trim(text) = "") {
-        PackPipeline_HandleInvalid("Empty extraction (no code block or message)")
+    trimmed := Trim(text)
+    ; Empty / unchanged clipboard → AI likely has not replied yet; resume wait (do not send fix).
+    if (trimmed = "" || StrLen(trimmed) < 20 || (clipBefore != "" && trimmed = clipBefore)) {
+        OutputDebug("PackPipeline_OnGenerationComplete: extract not ready (empty/unchanged) — resume monitor")
+        try TrayTip("Pack pipeline", "Reply not ready yet — still watching in background")
+        catch {
+        }
+        global g_PackPipelineMonitorButtonSeen, g_PackPipelineMonitorRetry
+        g_PackPipelineMonitorButtonSeen := false
+        g_PackPipelineMonitorRetry := 0
+        PackPipeline_StartMonitor()
         return
     }
     if (!PackPipeline_ValidateStructure(text)) {
@@ -709,7 +960,7 @@ PackPipeline_HandleImportOutcome(importOk, importStartStamp, errMsg := "") {
     catch {
         fixText := ""
     }
-    if (Trim(fixMsg) = "")
+    if (Trim(errMsg) = "")
         errMsg := "Import validation failed"
     PackPipeline_HandleInvalid(errMsg, fixText)
 }
@@ -749,8 +1000,8 @@ PackPipeline_SendFixAndSubmit(fixText) {
     if (hwnd)
         g_PackPipeline.hwnd := hwnd
     ; Restore user focus before re-entering background wait.
-    PackPipeline_RestoreUserHwnd()
-    PackPipeline_NotifyUserFree()
+    restored := PackPipeline_RestoreUserHwnd()
+    PackPipeline_NotifyUserFree(restored)
     return true
 }
 

@@ -1025,8 +1025,8 @@ class D2C_FlowManager {
                 if (PackPipeline_IsActive()) {
                     if (this.OriginHwnd)
                         PackPipeline_SetUserHwnd(this.OriginHwnd)
-                    PackPipeline_RestoreUserHwnd()
-                    PackPipeline_NotifyUserFree()
+                    restored := PackPipeline_RestoreUserHwnd()
+                    PackPipeline_NotifyUserFree(restored)
                 } else if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
                     WinActivate("ahk_id " this.OriginHwnd)
                 }
