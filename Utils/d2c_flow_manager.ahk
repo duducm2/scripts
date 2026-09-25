@@ -1019,11 +1019,16 @@ class D2C_FlowManager {
                 Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
             if (presetMode = "finance_daily" || presetMode = "task_pack") {
                 ; Pack pipeline owns completion → extract → Desktop → import confirm.
-                try PackPipeline_ArmFromPreset(presetMode, this.CompanionId, this.GeminiHwnd)
+                try PackPipeline_ArmFromPreset(presetMode, this.CompanionId, this.GeminiHwnd, this.OriginHwnd)
                 catch {
                 }
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                if (PackPipeline_IsActive()) {
+                    if (this.OriginHwnd)
+                        PackPipeline_SetUserHwnd(this.OriginHwnd)
+                    PackPipeline_RestoreUserHwnd()
+                } else if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
                     WinActivate("ahk_id " this.OriginHwnd)
+                }
                 global g_D2C_DictationSubmitMenuCycleFinished
                 g_D2C_DictationSubmitMenuCycleFinished := true
                 this.Reset()

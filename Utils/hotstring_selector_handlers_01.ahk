@@ -1352,7 +1352,7 @@ UtilitySelector_RestoreConsumerGeminiFocus(*) {
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
     contextEntries := "", pasteChoice := "") {
-    global g_lastExpansion, g_PromptPasteBusyActive
+    global g_lastExpansion, g_PromptPasteBusyActive, g_UtilitySelectorRestoreHwnd
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
     ; Keep Prompt Manager Loading Indication; do not wipe it with the passive Gemini banner.
@@ -1362,6 +1362,16 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         usedBusyBar := true
     } else {
         HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
+    }
+    ; Origin before companion focus — dictation-style restore target after pack send.
+    originHwnd := 0
+    try {
+        if (g_UtilitySelectorRestoreHwnd && WinExist("ahk_id " g_UtilitySelectorRestoreHwnd))
+            originHwnd := g_UtilitySelectorRestoreHwnd
+        else
+            originHwnd := WinGetID("A")
+    } catch {
+        originHwnd := 0
     }
     restoreFocus := ""
     playGeminiChime := false
@@ -1389,6 +1399,9 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             if (!companionHwnd)
                 companionHwnd := WinExist("A")
         }
+        ; Drop origin if it is the companion (no useful restore target).
+        if (originHwnd && companionHwnd && originHwnd = companionHwnd)
+            originHwnd := 0
         if (doAttach) {
             if (usedBusyBar)
                 PromptPaste_BusyEnsure("⏳ Attaching context…")
@@ -1415,8 +1428,16 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         }
         PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus, submitOpts)
         ; Pack auto-pipeline: after send, wait for generation → Desktop → import confirm.
-        try PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companion, companionHwnd)
+        armed := false
+        try armed := PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companion, companionHwnd, originHwnd)
         catch {
+            armed := false
+        }
+        ; Dictation-style: restore origin immediately so user can work during background wait.
+        if (armed && PackPipeline_IsActive()) {
+            if (originHwnd)
+                PackPipeline_SetUserHwnd(originHwnd)
+            PackPipeline_RestoreUserHwnd()
         }
     } else if (appendClip != "") {
         g_lastExpansion := 0

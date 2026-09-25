@@ -139,7 +139,8 @@ PackPipeline_ActivateCompanionBriefly(hwnd) {
 }
 
 ; Arm from Utility prompt object after Gemini send.
-PackPipeline_ArmFromPrompt(prompt, companionId := "", hwnd := 0) {
+; userHwnd: origin window before companion focus (dictation-style restore target).
+PackPipeline_ArmFromPrompt(prompt, companionId := "", hwnd := 0, userHwnd := 0) {
     if (!PackPipeline_IsOwnerProcess())
         return false
     if (!IsObject(prompt))
@@ -148,7 +149,7 @@ PackPipeline_ArmFromPrompt(prompt, companionId := "", hwnd := 0) {
     item := PackPipeline_Lookup(ch)
     if (!IsObject(item))
         return false
-    return PackPipeline_Arm(ch, item, companionId, hwnd)
+    return PackPipeline_Arm(ch, item, companionId, hwnd, userHwnd)
 }
 
 ; True when prompt char is a pack-pipeline catalog entry (Finance/Palace/Plan/Task).
@@ -160,25 +161,39 @@ PackPipeline_IsCatalogPrompt(prompt) {
 }
 
 ; Arm after Prompt Manager / companion send when pasteChoice is "send" and prompt is catalog.
-PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companionId := "", hwnd := 0) {
+PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companionId := "", hwnd := 0, userHwnd := 0) {
     if (pasteChoice != "send")
         return false
     if (!PackPipeline_IsCatalogPrompt(prompt))
         return false
-    return PackPipeline_ArmFromPrompt(prompt, companionId, hwnd)
+    return PackPipeline_ArmFromPrompt(prompt, companionId, hwnd, userHwnd)
 }
 
 ; Arm from D2C presetMode ("finance_daily" | "task_pack").
-PackPipeline_ArmFromPreset(presetMode, companionId := "", hwnd := 0) {
+PackPipeline_ArmFromPreset(presetMode, companionId := "", hwnd := 0, userHwnd := 0) {
     if (!PackPipeline_IsOwnerProcess())
         return false
     item := PackPipeline_Lookup(presetMode)
     if (!IsObject(item))
         return false
-    return PackPipeline_Arm(presetMode, item, companionId, hwnd)
+    return PackPipeline_Arm(presetMode, item, companionId, hwnd, userHwnd)
 }
 
-PackPipeline_Arm(key, item, companionId := "", hwnd := 0) {
+; Override restore target after arm (e.g. origin captured before companion focus).
+PackPipeline_SetUserHwnd(userHwnd) {
+    global g_PackPipeline
+    if (!IsObject(g_PackPipeline))
+        return false
+    if (!userHwnd || !WinExist("ahk_id " userHwnd))
+        return false
+    companionHwnd := g_PackPipeline.HasProp("hwnd") ? g_PackPipeline.hwnd : 0
+    if (companionHwnd && userHwnd = companionHwnd)
+        return false
+    g_PackPipeline.userHwnd := userHwnd
+    return true
+}
+
+PackPipeline_Arm(key, item, companionId := "", hwnd := 0, userHwnd := 0) {
     global g_PackPipeline, g_PackPipelineMaxAttempts, g_PackPipelineMonitorRetry,
         g_PackPipelineMonitorButtonSeen
     if (!IsObject(item))
@@ -204,12 +219,15 @@ PackPipeline_Arm(key, item, companionId := "", hwnd := 0) {
         }
     }
     PackPipeline_StopMonitor()
-    userHwnd := 0
-    try {
-        fg := WinGetID("A")
-        if (fg && (!hwnd || fg != hwnd))
-            userHwnd := fg
-    } catch {
+    ; Prefer caller-supplied origin (pre-companion); else foreground if not companion.
+    if (!userHwnd || (hwnd && userHwnd = hwnd) || !WinExist("ahk_id " userHwnd)) {
+        userHwnd := 0
+        try {
+            fg := WinGetID("A")
+            if (fg && (!hwnd || fg != hwnd))
+                userHwnd := fg
+        } catch {
+        }
     }
     g_PackPipeline := {
         active: true,
