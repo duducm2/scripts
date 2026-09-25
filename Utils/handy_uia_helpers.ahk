@@ -407,65 +407,12 @@ Handy_IsUserVisible(hwnd := 0) {
     return true
 }
 
-; #region agent log
-Handy_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        path := A_ScriptDir "\debug-e946b7.log"
-        ts := A_TickCount
-        dataJson := "{}"
-        if (data != "") {
-            if (data is String)
-                dataJson := '{"raw":"' . StrReplace(StrReplace(data, "\", "\\"), '"', '\"') . '"}'
-            else if (IsObject(data)) {
-                parts := []
-                for k, v in data.OwnProps() {
-                    vv := v
-                    if !(vv is Number)
-                        vv := '"' . StrReplace(StrReplace(String(vv), "\", "\\"), '"', '\"') . '"'
-                    parts.Push('"' k '":' vv)
-                }
-                dataJson := "{"
-                for i, p in parts {
-                    if (i > 1)
-                        dataJson .= ","
-                    dataJson .= p
-                }
-                dataJson .= "}"
-            }
-        }
-        line := '{"sessionId":"e946b7","hypothesisId":"' hypothesisId '","location":"' location '","message":"' .
-            StrReplace(StrReplace(message, "\", "\\"), '"', '\"') . '","data":' dataJson ',"timestamp":' ts ',"runId":"post-fix"}`n'
-        FileAppend(line, path)
-    } catch {
-    }
-}
-; #endregion
-
 ; Utility Shortcuts: toggle Handy visible ↔ background-suppressed (for manual settings edits).
 Handy_ToggleVisible(*) {
-    global g_HandySuppressActive, g_HandySuppressHadSavedPos
-    ; #region agent log
-    Handy_DebugLog("A", "Handy_ToggleVisible:entry", "toggle invoked", {
-        script: A_ScriptName, suppress: g_HandySuppressActive, hadSaved: g_HandySuppressHadSavedPos })
-    ; #endregion
+    global g_HandySuppressActive
     hwnd := Handy_MainHwnd()
-    ; #region agent log
-    posX := "", posY := "", posW := "", posH := "", visDll := -1
-    if (hwnd) {
-        try {
-            WinGetPos(&posX, &posY, &posW, &posH, "ahk_id " hwnd)
-            visDll := DllCall("IsWindowVisible", "ptr", hwnd)
-        } catch {
-        }
-    }
-    Handy_DebugLog("B", "Handy_ToggleVisible:hwnd", "main hwnd probe", {
-        hwnd: hwnd, x: posX, y: posY, w: posW, h: posH, isVisibleDll: visDll })
-    ; #endregion
     if (!hwnd) {
         hwnd := Handy_ActivateOrLaunch()
-        ; #region agent log
-        Handy_DebugLog("B", "Handy_ToggleVisible:launch", "no hwnd path ActivateOrLaunch", { hwnd: hwnd })
-        ; #endregion
         if (!hwnd) {
             ShowCenteredOverlay_Utils("❌ Handy not available", 2000, BANNER_ACCENT_ERROR)
             return false
@@ -473,28 +420,12 @@ Handy_ToggleVisible(*) {
         ShowCenteredOverlay_Utils("✅ Handy open", 900, BANNER_ACCENT_SUCCESS)
         return true
     }
-    userVis := Handy_IsUserVisible(hwnd)
-    ; #region agent log
-    Handy_DebugLog("C", "Handy_ToggleVisible:branch", "visibility branch", {
-        userVisible: userVis, suppress: g_HandySuppressActive })
-    ; #endregion
-    if (userVis) {
+    if (Handy_IsUserVisible(hwnd)) {
         Handy_BeginSuppress(hwnd)
         ShowCenteredOverlay_Utils("👻 Handy hidden (background)", 900, BANNER_ACCENT_INFO)
         return true
     }
     hwnd := Handy_ActivateOrLaunch()
-    ; #region agent log
-    ax := "", ay := "", aw := "", ah := "", afterSuppress := g_HandySuppressActive
-    if (hwnd) {
-        try WinGetPos(&ax, &ay, &aw, &ah, "ahk_id " hwnd)
-        catch {
-        }
-    }
-    Handy_DebugLog("D", "Handy_ToggleVisible:afterShow", "ActivateOrLaunch result", {
-        hwnd: hwnd, x: ax, y: ay, w: aw, h: ah, suppressAfter: afterSuppress,
-        active: WinActive("ahk_id " hwnd) })
-    ; #endregion
     if (!hwnd) {
         ShowCenteredOverlay_Utils("❌ Could not show Handy", 2000, BANNER_ACCENT_ERROR)
         return false
@@ -505,29 +436,15 @@ Handy_ToggleVisible(*) {
 
 ; Activate existing Handy window or launch it; returns hwnd or 0.
 ; Ends suppress first so the window is visible for interactive flows.
+; Also recovers windows left off-screen after a script reload (suppress flag cleared).
 Handy_ActivateOrLaunch() {
     matchingHwnd := Handy_MainHwnd()
     if (matchingHwnd) {
         global g_HandySuppressActive
-        ; #region agent log
-        Handy_DebugLog("D", "Handy_ActivateOrLaunch:existing", "found hwnd", {
-            hwnd: matchingHwnd, suppress: g_HandySuppressActive })
-        ; #endregion
-        parked := Handy_IsParkedOffscreen(matchingHwnd)
-        if (g_HandySuppressActive || parked)
+        if (g_HandySuppressActive || Handy_IsParkedOffscreen(matchingHwnd))
             Handy_EndSuppress(matchingHwnd, true)
-        else {
+        else
             Handy_ClearSuppressOpacity(matchingHwnd)
-        }
-        ; #region agent log
-        ; Also detect physical off-screen even if suppress flag cleared (e.g. after reload).
-        try {
-            WinGetPos(&ex, &ey, &ew, &eh, "ahk_id " matchingHwnd)
-            Handy_DebugLog("E", "Handy_ActivateOrLaunch:preActivate", "geometry before activate", {
-                x: ex, y: ey, w: ew, h: eh, suppress: g_HandySuppressActive, parked: parked })
-        } catch {
-        }
-        ; #endregion
         WinActivate("ahk_id " . matchingHwnd)
         WinWaitActive("ahk_id " . matchingHwnd, , 2)
         Handy_WaitForMainUiReady(matchingHwnd, 2000)
