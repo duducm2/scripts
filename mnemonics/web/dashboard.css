@@ -338,6 +338,12 @@ input[type="search"] {
   border-color: rgba(212, 160, 23, 0.55);
   background: rgba(212, 160, 23, 0.08);
 }
+#studyModal .qr-line .qr-thumb-pair {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
 #studyModal .qr-line .qr-thumb {
   flex: 0 0 auto;
   width: 28px;
@@ -929,6 +935,12 @@ a.btn-gallery {
   color: var(--text);
   overflow: visible;
   position: relative;
+}
+.beast-cluster-head .beast-name .beast-thumb-pair {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 .beast-cluster-head .beast-name .beast-thumb {
   flex: 0 0 auto;

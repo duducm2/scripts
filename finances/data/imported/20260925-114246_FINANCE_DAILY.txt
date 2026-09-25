@@ -1,0 +1,8 @@
+﻿===PREVIEW===
+1 row(s) · suit / clothing gift on credit card (default CARD_MP)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Suite boyfriend,"22,97",card_expense,CAT_ROUPA,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===

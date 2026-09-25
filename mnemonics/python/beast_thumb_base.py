@@ -2,8 +2,8 @@
 
 Rules:
 - Custom 2-letter pegs (Bone goat, Fire goat, …) share the A–Z beast for the
-  second letter → one icon per base animal.
-- Lynne Kelly / single-letter codes keep a distinct icon per name.
+  second letter → one icon per base animal, plus an adj_{adjective} modifier icon.
+- Lynne Kelly / single-letter codes keep a distinct icon per name (no adj).
 - CSV names like "Bone goat" without metadata also collapse onto the A–Z base
   when the leading word is a known Custom adjective from bestiary.json.
 """
@@ -47,18 +47,23 @@ def load_bestiary() -> dict:
     }
     az_name_to_slug = {name.lower(): slug(name) for name in az_by_letter.values()}
     custom_adjectives: set[str] = set()
+    # First letter of Custom digraph → adjective word (e.g. B → "bone")
+    letter_to_adjective: dict[str, str] = {}
     for it in items:
         code = it.get("code") or ""
         if it.get("source") == "Custom" and len(code) == 2:
             parts = (it.get("name") or "").split(" ", 1)
             if len(parts) == 2 and parts[0]:
-                custom_adjectives.add(parts[0].lower())
+                adj = parts[0].lower()
+                custom_adjectives.add(adj)
+                letter_to_adjective.setdefault(code[0].upper(), adj)
     return {
         "items": items,
         "by_code": by_code,
         "az_by_letter": az_by_letter,
         "az_name_to_slug": az_name_to_slug,
         "custom_adjectives": frozenset(custom_adjectives),
+        "letter_to_adjective": dict(letter_to_adjective),
         "total_count": data.get("total_count") or len(items),
     }
 
@@ -81,6 +86,67 @@ def _match_az_tail(label: str, data: dict) -> str | None:
             best = s
             best_len = len(name_l)
     return best
+
+
+def _leading_custom_adjective(label: str, data: dict) -> str | None:
+    """If label is '{CustomAdj} {A-Z beast name}', return the adjective word."""
+    lower = label.lower().strip()
+    az_name_to_slug = data["az_name_to_slug"]
+    adjs = data["custom_adjectives"]
+    best_adj = None
+    best_len = 0
+    for name_l in az_name_to_slug:
+        suffix = " " + name_l
+        if not lower.endswith(suffix) or len(name_l) <= best_len:
+            continue
+        head = lower[: -len(suffix)].strip()
+        if head in adjs:
+            best_adj = head
+            best_len = len(name_l)
+    return best_adj
+
+
+def adjective_modifier(
+    name: str,
+    code: str | None = None,
+    source: str | None = None,
+) -> str | None:
+    """Return Custom adjective word (e.g. 'bone'), or None for plain beasts."""
+    data = load_bestiary()
+    label = short_label(name)
+    code = (code or "").strip()
+    source = (source or "").strip()
+
+    if not source and code and code in data["by_code"]:
+        source = data["by_code"][code].get("source") or ""
+
+    if source == "Custom" and len(code) == 2:
+        adj = data["letter_to_adjective"].get(code[0].upper())
+        if adj:
+            return adj
+        parts = label.split(" ", 1)
+        if len(parts) == 2 and parts[0].lower() in data["custom_adjectives"]:
+            return parts[0].lower()
+
+    return _leading_custom_adjective(label, data)
+
+
+def adjective_slug(
+    name: str,
+    code: str | None = None,
+    source: str | None = None,
+) -> str | None:
+    """Return adj_* thumb slug (e.g. 'adj_bone'), or None when no modifier."""
+    adj = adjective_modifier(name, code=code, source=source)
+    if not adj:
+        return None
+    return f"adj_{slug(adj)}"
+
+
+def all_adjective_slugs() -> list[str]:
+    """Sorted list of adj_* slugs for every known Custom adjective."""
+    data = load_bestiary()
+    return sorted(f"adj_{slug(a)}" for a in data["custom_adjectives"])
 
 
 def canonical_slug(
@@ -174,6 +240,42 @@ def thumb_png_path(canonical: str) -> Path:
     return THUMBS_DIR / f"{canonical}.png"
 
 
+def icon_adj_fields(
+    name: str,
+    code: str | None = None,
+    source: str | None = None,
+) -> dict:
+    """Optional adjective / adj_filename / adj_url fields for a manifest icon entry."""
+    adj = adjective_modifier(name, code=code, source=source)
+    if not adj:
+        return {"adjective": None, "adj_filename": None, "adj_url": None}
+    s = f"adj_{slug(adj)}"
+    if not thumb_png_path(s).is_file():
+        return {"adjective": adj, "adj_filename": None, "adj_url": None}
+    return {
+        "adjective": adj,
+        "adj_filename": f"{s}.png",
+        "adj_url": f"/assets/beast-thumbs/{s}.png",
+    }
+
+
+def _md_rel_src(filename: str, *, from_dir: str) -> str:
+    if from_dir == "practice":
+        return f"../../web/assets/beast-thumbs/{filename}"
+    if from_dir == "output":
+        return f"../web/assets/beast-thumbs/{filename}"
+    raise ValueError(f"unknown from_dir: {from_dir!r}")
+
+
+def _md_img_tag(src: str, alt: str, width: int) -> str:
+    safe_alt = alt.replace('"', "'")
+    w = max(12, min(int(width), 128))
+    return (
+        f'<img src="{src}" alt="{safe_alt}" width="{w}" height="{w}" '
+        f'style="vertical-align:middle;height:{w}px;width:{w}px;" />'
+    )
+
+
 def beast_thumb_md_src(
     name: str,
     code: str | None = None,
@@ -190,13 +292,21 @@ def beast_thumb_md_src(
     s = canonical_slug(name, code=code, source=source)
     if not thumb_png_path(s).is_file():
         return None
-    if from_dir == "practice":
-        # output/practice/*.md → mnemonics/web/assets/...
-        return f"../../web/assets/beast-thumbs/{s}.png"
-    if from_dir == "output":
-        # output/Quick Recall.md → mnemonics/web/assets/...
-        return f"../web/assets/beast-thumbs/{s}.png"
-    raise ValueError(f"unknown from_dir: {from_dir!r}")
+    return _md_rel_src(f"{s}.png", from_dir=from_dir)
+
+
+def adjective_thumb_md_src(
+    name: str,
+    code: str | None = None,
+    source: str | None = None,
+    *,
+    from_dir: str = "practice",
+) -> str | None:
+    """Relative markdown src for the adjective modifier icon, or None."""
+    s = adjective_slug(name, code=code, source=source)
+    if not s or not thumb_png_path(s).is_file():
+        return None
+    return _md_rel_src(f"{s}.png", from_dir=from_dir)
 
 
 def beast_thumb_md_image(
@@ -208,18 +318,19 @@ def beast_thumb_md_image(
     alt: str | None = None,
     width: int = 28,
 ) -> str | None:
-    """GitHub-friendly HTML thumb (sized); None if no thumb file.
+    """GitHub-friendly HTML thumb(s); None if no beast thumb file.
 
+    Custom adjective beasts emit adj icon then beast icon (side by side).
     Plain Markdown ![…](…) ignores width on GitHub/mobile, so we emit <img>.
     """
-    src = beast_thumb_md_src(name, code=code, source=source, from_dir=from_dir)
-    if not src:
+    beast_src = beast_thumb_md_src(name, code=code, source=source, from_dir=from_dir)
+    if not beast_src:
         return None
     label = short_label(name) or (alt or "beast")
-    # Escape quotes in alt only
-    safe_alt = label.replace('"', "'")
-    w = max(12, min(int(width), 128))
-    return (
-        f'<img src="{src}" alt="{safe_alt}" width="{w}" height="{w}" '
-        f'style="vertical-align:middle;height:{w}px;width:{w}px;" />'
-    )
+    adj = adjective_modifier(name, code=code, source=source)
+    parts: list[str] = []
+    adj_src = adjective_thumb_md_src(name, code=code, source=source, from_dir=from_dir)
+    if adj_src and adj:
+        parts.append(_md_img_tag(adj_src, adj, width))
+    parts.append(_md_img_tag(beast_src, label, width))
+    return "".join(parts)

@@ -66,7 +66,7 @@ _No keywords yet_
 
 ### [Bv] [Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.
 
-<img src="../../web/assets/beast-thumbs/vulture.png" alt="Bone vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/vulture.png" alt="Bone vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 —
@@ -82,7 +82,7 @@ _No keywords yet_
 
 ### [Bw] [Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.
 
-<img src="../../web/assets/beast-thumbs/wombat.png" alt="Bone wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/wombat.png" alt="Bone wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 —
@@ -98,7 +98,7 @@ _No keywords yet_
 
 ### [Bx] [Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.
 
-<img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Bone Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Bone Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intelligence-is-starving-for-1d91fb5bf59f
@@ -133,7 +133,7 @@ _No gallery images._
 
 ### [Bq] Bone Quetzalcoatl
 
-<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Bone Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Bone Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A research question is the core target your study attempts to answer, and it must have a singular focus without cramming multiple variables together.
@@ -165,7 +165,7 @@ A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. It
 
 ### [Bs] Bone skull
 
-<img src="../../web/assets/beast-thumbs/skull.png" alt="Bone skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/skull.png" alt="Bone skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 A question must be practical and possible to answer with available methods.
@@ -181,7 +181,7 @@ A floating Bone skull hovers over the distant crosswalk, trying to bite a tantal
 
 ### [Bt] Bone toucan
 
-<img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Your question must stem from a clear gap in existing literature so you do not repeat old work.
@@ -216,7 +216,7 @@ _No gallery images._
 
 ### [Bn] Bone Neanderthal
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Bone Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Bone Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Participatory Action Research shifts power from traditional extraction by empowering marginalized groups to co-create research that translates into tangible tools for social change.
@@ -248,7 +248,7 @@ A giant bower-bird weaves a nest out of four colored arrows that glow like neon 
 
 ### [Bp] Bone panther
 
-<img src="../../web/assets/beast-thumbs/panther.png" alt="Bone panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/panther.png" alt="Bone panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 People experiencing a problem are uniquely qualified to investigate it, guiding the inquiry themselves.
@@ -283,7 +283,7 @@ _No gallery images._
 
 ### [Bk] Bone kitten
 
-<img src="../../web/assets/beast-thumbs/kitten.png" alt="Bone kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Bone kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Open coding breaks raw qualitative data into small meaningful pieces and gives them concept labels.
@@ -315,7 +315,7 @@ A colossal bloodhound bites loose concept tags and pulls them into a spinning wh
 
 ### [Bm] Bone marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Selective coding chooses one core category and connects the main categories around it to build a theory.
@@ -350,7 +350,7 @@ _No gallery images._
 
 ### [Bf] Bone frog
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The theory side can fit into one beast: people make meaning through lived experience, shared labels, and context.
@@ -366,7 +366,7 @@ The Bone frog carries the theory pack through the same Bosch UX street. Ada Love
 
 ### [Bg] Bone goat
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 IPA means understanding how one person makes sense of a personal experience. IPA pronunciation: Interpretative Phenomenological Analysis /?n't??rpr?t?t?v f??n??m?'n??l?d??k?l ?'n�l?s?s/.
@@ -382,7 +382,7 @@ The Bone goat stands beside a Bosch UX interview table. The goat is not counting
 
 ### [Bh] Bone Hydra
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 For Bosch UX research, IPA starts with open questions about human experience.
@@ -414,7 +414,7 @@ The bison stands heavy and slow beside a Bosch research board. A thick transcrip
 
 ### [Bj] Bone jester
 
-<img src="../../web/assets/beast-thumbs/jester.png" alt="Bone jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Bone jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 IPA turns each case into themes first, compares cases later, and keeps the researcher�s own role visible.
@@ -449,7 +449,7 @@ _No gallery images._
 
 ### [Bb] Bone Bear
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone Bear" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone Bear" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Reasoning uses what you already know to build explanations and guess what happens next.[cite: 1]
@@ -465,7 +465,7 @@ A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] She
 
 ### [Bc] Bone Cat
 
-<img src="../../web/assets/beast-thumbs/cat.png" alt="Bone Cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Bone Cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Deductive thinking works from the top down, where true starting facts guarantee a true final answer.[cite: 1]
@@ -481,7 +481,7 @@ A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a 
 
 ### [Bd] Bone Dog
 
-<img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone Dog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone Dog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Inductive thinking works from specific details up to a big rule to prove an idea with real-world clues.[cite: 1]

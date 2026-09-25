@@ -9,7 +9,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from beast_thumb_base import canonical_slug, slug
+from beast_thumb_base import all_adjective_slugs, canonical_slug, slug
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "web" / "assets"
@@ -63,25 +63,39 @@ def main() -> None:
         action="store_true",
         help="Also chroma every unique canonical target from bestiary.json",
     )
+    ap.add_argument(
+        "--adjectives-only",
+        action="store_true",
+        help="Only process adj_* adjective modifier sources",
+    )
     args = ap.parse_args()
     sources = args.sources
-    if not MANIFEST.is_file():
+    if not MANIFEST.is_file() and not args.adjectives_only:
         raise SystemExit(f"missing manifest: {MANIFEST}")
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    icons = manifest.get("icons") or {}
 
     by_slug: dict[str, list[tuple[str, str]]] = defaultdict(list)
-    for bid, meta in icons.items():
-        label = meta.get("label") or bid
-        peg = meta.get("peg_code") or ""
-        s = meta.get("source_slug") or canonical_slug(label, code=peg or None)
-        by_slug[s].append((bid, label))
+
+    if not args.adjectives_only and MANIFEST.is_file():
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        icons = manifest.get("icons") or {}
+        for bid, meta in icons.items():
+            label = meta.get("label") or bid
+            peg = meta.get("peg_code") or ""
+            s = meta.get("source_slug") or canonical_slug(label, code=peg or None)
+            by_slug[s].append((bid, label))
 
     if args.slugs_from_bestiary:
         from beast_thumb_base import unique_canonical_targets
 
         for t in unique_canonical_targets():
             by_slug.setdefault(t["slug"], []).append(("", t["label"]))
+
+    # Always include adjective modifier icons when their sources exist
+    for adj_s in all_adjective_slugs():
+        by_slug.setdefault(adj_s, []).append(("", adj_s))
+
+    if args.adjectives_only:
+        by_slug = {s: v for s, v in by_slug.items() if s.startswith("adj_")}
 
     THUMBS.mkdir(parents=True, exist_ok=True)
     done = 0

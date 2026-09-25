@@ -7,7 +7,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from beast_thumb_base import canonical_slug, short_label
+from beast_thumb_base import canonical_slug, icon_adj_fields, short_label
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,18 +26,21 @@ def main() -> None:
         bid = b["id"]
         label = short_label(b.get("beast_name") or bid)
         peg = b.get("peg_code") or ""
-        s = canonical_slug(label, code=peg or None)
+        src = (b.get("beast_source") or "").strip() or None
+        s = canonical_slug(label, code=peg or None, source=src)
         icons[bid] = {
             "label": label,
             "peg_code": peg,
             "filename": f"{s}.png",
             "url": f"/assets/beast-thumbs/{s}.png",
             "source_slug": s,
+            **icon_adj_fields(label, code=peg or None, source=src),
         }
 
     unique_slugs = {meta["source_slug"] for meta in icons.values()}
+    adj_count = sum(1 for m in icons.values() if m.get("adj_url"))
     manifest = {
-        "version": 3,
+        "version": 4,
         "style": {
             "name": "Memory Quest Bestiary",
             "description": (
@@ -49,7 +52,8 @@ def main() -> None:
             "background": "transparent",
             "generated_with": "Cursor GenerateImage",
             "source_layout": (
-                "Custom adjective variants share the A–Z second-letter base icon; "
+                "Custom adjective variants share the A–Z second-letter base icon "
+                "plus an adj_{adjective} modifier icon shown beside it; "
                 "Lynne Kelly / unique pegs each get their own canonical slug PNG"
             ),
             "generation_prompt_template": (
@@ -58,10 +62,17 @@ def main() -> None:
                 "warm gold and dark navy accents, chunky readable silhouette, "
                 "no text, no letters; solid chroma-key magenta background (#FF00FF)."
             ),
+            "adjective_prompt_template": (
+                "Isolated RPG inventory item icon of {adjective}, polished mobile "
+                "fantasy-game art, soft isometric 3D cartoon style, warm gold and "
+                "dark navy accents, chunky readable silhouette, no text, no letters; "
+                "solid chroma-key magenta background (#FF00FF)."
+            ),
             "catalog_scope": (
                 f"{len(qr_beasts)} Quick Recall beasts across "
                 f"{len(palace_ids)} included palaces / "
-                f"{len(unique_slugs)} shared thumb files"
+                f"{len(unique_slugs)} shared thumb files / "
+                f"{adj_count} with adjective icons"
             ),
         },
         "icons": icons,
@@ -72,7 +83,7 @@ def main() -> None:
     (assets / "beast-thumbs").mkdir(parents=True, exist_ok=True)
     out = assets / "beast-thumb-manifest.json"
     out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"wrote {out} icons={len(icons)}")
+    print(f"wrote {out} icons={len(icons)} with_adj={adj_count}")
 
     by_name: dict[str, list[str]] = defaultdict(list)
     for b in qr_beasts:

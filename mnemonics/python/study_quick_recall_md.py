@@ -204,7 +204,13 @@ def render_atom_line(beast: dict[str, str], atom: dict[str, str]) -> str:
             concept, keyword_display_terms(atom.get("keywords"))
         )
     parts: list[str] = []
-    img = beast_thumb_md_image(name, code=peg or None, from_dir="output", width=44)
+    img = beast_thumb_md_image(
+        name,
+        code=peg or None,
+        source=(beast.get("beast_source") or "").strip() or None,
+        from_dir="output",
+        width=44,
+    )
     if img:
         parts.append(img)
     else:

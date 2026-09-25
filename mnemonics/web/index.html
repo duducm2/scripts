@@ -1775,6 +1775,36 @@
         return entry?.url || "";
       }
 
+      /** @returns {{ beast: string, adj: string }} URLs; adj empty when no modifier. */
+      function beastThumbPair(beastId) {
+        const icons = state.beastThumbManifest?.icons;
+        if (!icons || !beastId) return { beast: "", adj: "" };
+        const entry = icons[beastId];
+        if (!entry) return { beast: "", adj: "" };
+        return {
+          beast: entry.url || "",
+          adj: entry.adj_url || "",
+        };
+      }
+
+      function beastThumbPairHtml(beastId, { imgClass, size }) {
+        const { beast, adj } = beastThumbPair(beastId);
+        if (!beast) return "";
+        const dim = `width="${size}" height="${size}"`;
+        const imgs = [];
+        if (adj) {
+          imgs.push(
+            `<img class="${imgClass}" src="${esc(adj)}" alt="" ${dim} loading="lazy" decoding="async">`,
+          );
+        }
+        imgs.push(
+          `<img class="${imgClass}" src="${esc(beast)}" alt="" ${dim} loading="lazy" decoding="async">`,
+        );
+        const wrapClass =
+          imgClass === "qr-thumb" ? "qr-thumb-pair" : "beast-thumb-pair";
+        return `<span class="${wrapClass}">${imgs.join("")}</span>`;
+      }
+
       function renderQuickRecall() {
         const host = document.getElementById("quickRecallList");
         if (!host) return;
@@ -1828,10 +1858,10 @@
                 if (peg) bodyParts.push(`[${esc(peg)}]`);
                 if (name) bodyParts.push(esc(name));
                 if (conceptHtml) bodyParts.push(conceptHtml);
-                const thumbUrl = beastThumbUrl(b.id);
-                const thumbHtml = thumbUrl
-                  ? `<img class="qr-thumb" src="${esc(thumbUrl)}" alt="" width="28" height="28" loading="lazy" decoding="async">`
-                  : "";
+                const thumbHtml = beastThumbPairHtml(b.id, {
+                  imgClass: "qr-thumb",
+                  size: 28,
+                });
                 const marksHtml = marks.length
                   ? `<span class="qr-marks">${marks.join("")}</span>`
                   : "";
@@ -2519,10 +2549,10 @@
             const cards =
               ats.map((a) => renderAtomCard(a)).join("") ||
               '<p class="empty">No atoms</p>';
-            const thumbUrl = beastThumbUrl(b.id);
-            const thumbHtml = thumbUrl
-              ? `<img class="beast-thumb" src="${esc(thumbUrl)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
-              : "";
+            const thumbHtml = beastThumbPairHtml(b.id, {
+              imgClass: "beast-thumb",
+              size: 32,
+            });
             return `<section class="beast-cluster" data-beast-id="${escAttr(b.id)}" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">
               <span class="lbl">Beast</span>

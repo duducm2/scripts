@@ -11,7 +11,7 @@
 
 ### [Bs] Bone Shark
 
-<img src="../../web/assets/beast-thumbs/skull.png" alt="Bone Shark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/skull.png" alt="Bone Shark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Syllabic L [l̩] takes over the entire syllable when the vowel is reduced.
@@ -27,7 +27,7 @@ _No keywords yet_
 
 ### [Bt] Bone Toad
 
-<img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone Toad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone Toad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Syllabic N [n̩] frequently occurs after alveolar consonants like /t/ or /s/, often utilizing a glottal stop.
@@ -78,7 +78,7 @@ _No gallery images._
 
 ### [Bq] Boulder quail
 
-<img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Boulder quail" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Boulder quail" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Intrusion is the addition of a new sound.
@@ -145,7 +145,7 @@ _No keywords yet_
 
 ### [Bm] Bone marmoset
 
-<img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Assimilation is when a sound changes to be more like its neighbor.
@@ -161,7 +161,7 @@ _No keywords yet_
 
 ### [Bn] Blazing nightjar
 
-<img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Blazing nightjar" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Blazing nightjar" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Preparing for /b/ by closing lips early changes /n/ to /m/.
@@ -193,7 +193,7 @@ _No keywords yet_
 
 ### [Bp] Blackwater penguin
 
-<img src="../../web/assets/beast-thumbs/panther.png" alt="Blackwater penguin" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/panther.png" alt="Blackwater penguin" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Final 't' or 'd' sounds are the most commonly lost in English.
@@ -228,7 +228,7 @@ _No gallery images._
 
 ### [Bh] Bitter hare
 
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Bitter hare" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/hydra.png" alt="Bitter hare" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Thought groups involve using short pauses to break down sentences.
@@ -260,7 +260,7 @@ _No keywords yet_
 
 ### [Bj] Basil jellyfish
 
-<img src="../../web/assets/beast-thumbs/jester.png" alt="Basil jellyfish" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Basil jellyfish" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Linking occurs when the end of one word blends directly into the start of the next word.
@@ -276,7 +276,7 @@ _No keywords yet_
 
 ### [Bk] Bloodmoon kestrel
 
-<img src="../../web/assets/beast-thumbs/kitten.png" alt="Bloodmoon kestrel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Bloodmoon kestrel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Shadowing is actively repeating a text simultaneously to absorb natural rhythm.
@@ -311,7 +311,7 @@ _No gallery images._
 
 ### [Bf] Blackwater ferret
 
-<img src="../../web/assets/beast-thumbs/frog.png" alt="Blackwater ferret" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Blackwater ferret" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Linguistically, only the relative values of pitch matter, not the absolute values.
@@ -327,7 +327,7 @@ _No keywords yet_
 
 ### [Bg] Boulder giraffe
 
-<img src="../../web/assets/beast-thumbs/goat.png" alt="Boulder giraffe" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Boulder giraffe" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 The IPA chart has a dedicated section for suprasegmental symbols.
@@ -410,7 +410,7 @@ _No keywords yet_
 
 ### [Bb] Brass bison
 
-<img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Brass bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Brass bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 Stress can alter a word's meaning, pitch, and sound properties.
