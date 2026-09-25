@@ -360,7 +360,6 @@ input[type="search"] {
     border-color 0.18s ease;
   position: relative;
   z-index: 1;
-  cursor: none;
 }
 #studyModal .qr-line .qr-thumb:hover,
 #studyModal .qr-line:hover .qr-thumb:hover {
@@ -952,7 +951,6 @@ a.btn-gallery {
     border-color 0.18s ease;
   position: relative;
   z-index: 1;
-  cursor: none;
 }
 .beast-cluster-head .beast-name .beast-thumb:hover {
   transform: scale(2.15);
