@@ -1121,6 +1121,8 @@ FileDialog_ImportCsvLoad() {
         Excel_FormatImportedTable()
         ; Dark surround: entire sheet gray, imported table fill cleared
         Excel_ShadeOutsideImportedTable()
+        ; Same as one Shift+N: scale columns to ActiveWindow.UsableWidth (Balanced first)
+        Excel_Layout_CyclePillar()
     } catch {
         try StandardLoadingBar_Update("❌ Import failed", BANNER_ACCENT_ERROR)
         catch {
