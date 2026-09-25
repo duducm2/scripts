@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "style": {
     "name": "Memory Quest Bestiary",
-    "description": "Cartoon RPG inventory icons for Quick Recall beast pegs — warm gold and navy accents, chunky readable silhouette.",
+    "description": "Cartoon RPG inventory icons for beast pegs — warm gold and navy accents, chunky readable silhouette.",
     "format": "PNG RGBA",
     "dimensions_px": [
       256,
@@ -10,287 +10,2545 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "source_layout": "Per unique beast_name icon, chroma-keyed magenta then copied to each beast id filename",
+    "generated_at": "2026-09-24",
+    "source_layout": "One chroma-keyed PNG per unique short-label slug; all beast ids sharing that label point at the same shared file",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "46 Quick Recall beasts across 13 included palaces",
-    "generated_at": "2026-09-24"
+    "catalog_scope": "362 beasts / 109 unique labels / 91 shared thumb files"
   },
   "icons": {
-    "BEAST_DATAANALYST_06_Aa": {
-      "label": "aardvark",
-      "peg_code": "Aa",
-      "filename": "BEAST_DATAANALYST_06_Aa.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Aa.png"
+    "BEAST_AI_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
     },
-    "BEAST_DATAANALYST_06_Ab": {
-      "label": "Abyssinian cat",
-      "peg_code": "Ab",
-      "filename": "BEAST_DATAANALYST_06_Ab.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Ab.png"
+    "BEAST_AI_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
     },
-    "BEAST_DATAANALYST_06_Ac": {
-      "label": "acorn",
-      "peg_code": "Ac",
-      "filename": "BEAST_DATAANALYST_06_Ac.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Ac.png"
+    "BEAST_AI_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
     },
-    "BEAST_DATAANALYST_06_Y": {
+    "BEAST_AI_02_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_AI_02_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_AI_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_AI_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_AI_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_AI_03_I": {
+      "label": "imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_COMMUNICATIO_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_COMMUNICATIO_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_COMMUNICATIO_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_COMMUNICATIO_02_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_COMMUNICATIO_02_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_COMMUNICATIO_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_COMMUNICATIO_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_COMMUNICATIO_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_ENGLISH_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_ENGLISH_01_B": {
+      "label": "Bird of Paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_ENGLISH_01_C": {
+      "label": "Cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_ENGLISH_01_E": {
+      "label": "Eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_ENGLISH_02_F": {
+      "label": "Frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_ENGLISH_02_G": {
+      "label": "Goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_ENGLISH_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_ENGLISH_02_I": {
+      "label": "Imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_ENGLISH_02_J": {
+      "label": "Jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_ENGLISH_03_K": {
+      "label": "Kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_ENGLISH_03_L": {
+      "label": "Lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_ENGLISH_04_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_ENGLISH_04_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_ENGLISH_04_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_ENGLISH_04_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_ENGLISH_04_Q": {
+      "label": "Quetzalcoatl",
+      "peg_code": "Q",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
+    },
+    "BEAST_ENGLISH_05_R": {
+      "label": "rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_ENGLISH_05_S": {
+      "label": "skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_ENGLISH_06_T": {
+      "label": "toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_ENGLISH_06_U": {
+      "label": "unicorn",
+      "peg_code": "U",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png",
+      "source_slug": "unicorn"
+    },
+    "BEAST_ENGLISH_06_V": {
+      "label": "vulture",
+      "peg_code": "V",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
+    },
+    "BEAST_ENGLISH_06_W": {
+      "label": "wombat",
+      "peg_code": "W",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
+    },
+    "BEAST_ENGLISH_07_X": {
+      "label": "Xena, warrior woman",
+      "peg_code": "X",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
+    },
+    "BEAST_ENGLISH_07_Y": {
       "label": "yak",
       "peg_code": "Y",
-      "filename": "BEAST_DATAANALYST_06_Y.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Y.png"
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png",
+      "source_slug": "yak"
     },
-    "BEAST_DATAANALYST_06_Z": {
+    "BEAST_ENGLISH_07_Z": {
       "label": "Zeus",
       "peg_code": "Z",
-      "filename": "BEAST_DATAANALYST_06_Z.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_06_Z.png"
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus"
     },
-    "BEAST_DATAANALYST_07_Ad": {
+    "BEAST_ENGLISH_07_AA": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png",
+      "source_slug": "aardvark"
+    },
+    "BEAST_ENGLISH_07_AB": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png",
+      "source_slug": "abyssinian_cat"
+    },
+    "BEAST_ENGLISH_08_AC": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png",
+      "source_slug": "acorn"
+    },
+    "BEAST_ENGLISH_08_AD": {
       "label": "adder",
       "peg_code": "Ad",
-      "filename": "BEAST_DATAANALYST_07_Ad.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_07_Ad.png"
+      "filename": "adder.png",
+      "url": "/assets/beast-thumbs/adder.png",
+      "source_slug": "adder"
     },
-    "BEAST_DATAANALYST_08_Ae": {
+    "BEAST_ENGLISH_08_AE": {
       "label": "aerialist",
       "peg_code": "Ae",
-      "filename": "BEAST_DATAANALYST_08_Ae.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ae.png"
+      "filename": "aerialist.png",
+      "url": "/assets/beast-thumbs/aerialist.png",
+      "source_slug": "aerialist"
     },
-    "BEAST_DATAANALYST_08_Af": {
+    "BEAST_ENGLISH_08_AF": {
       "label": "Afghan hound",
       "peg_code": "Af",
-      "filename": "BEAST_DATAANALYST_08_Af.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Af.png"
+      "filename": "afghan_hound.png",
+      "url": "/assets/beast-thumbs/afghan_hound.png",
+      "source_slug": "afghan_hound"
     },
-    "BEAST_DATAANALYST_08_Ag": {
+    "BEAST_ENGLISH_08_AG": {
       "label": "Agaric fungi",
       "peg_code": "Ag",
-      "filename": "BEAST_DATAANALYST_08_Ag.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ag.png"
+      "filename": "agaric_fungi.png",
+      "url": "/assets/beast-thumbs/agaric_fungi.png",
+      "source_slug": "agaric_fungi"
     },
-    "BEAST_DATAANALYST_08_Ah": {
+    "BEAST_ENGLISH_09_AH": {
       "label": "Ah!—a sigh",
       "peg_code": "Ah",
-      "filename": "BEAST_DATAANALYST_08_Ah.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ah.png"
+      "filename": "ah_a_sigh.png",
+      "url": "/assets/beast-thumbs/ah_a_sigh.png",
+      "source_slug": "ah_a_sigh"
     },
-    "BEAST_DATAANALYST_08_Ai": {
+    "BEAST_ENGLISH_09_AI": {
       "label": "Airedale terrier",
       "peg_code": "Ai",
-      "filename": "BEAST_DATAANALYST_08_Ai.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_08_Ai.png"
+      "filename": "airedale_terrier.png",
+      "url": "/assets/beast-thumbs/airedale_terrier.png",
+      "source_slug": "airedale_terrier"
     },
-    "BEAST_DATAANALYST_09_Aj": {
+    "BEAST_ENGLISH_10_AJ": {
       "label": "Ajax",
       "peg_code": "Aj",
-      "filename": "BEAST_DATAANALYST_09_Aj.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Aj.png"
+      "filename": "ajax.png",
+      "url": "/assets/beast-thumbs/ajax.png",
+      "source_slug": "ajax"
     },
-    "BEAST_DATAANALYST_09_Ak": {
+    "BEAST_ENGLISH_10_AK": {
       "label": "Akita (dog breed)",
       "peg_code": "Ak",
-      "filename": "BEAST_DATAANALYST_09_Ak.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Ak.png"
+      "filename": "akita_dog_breed.png",
+      "url": "/assets/beast-thumbs/akita_dog_breed.png",
+      "source_slug": "akita_dog_breed"
     },
-    "BEAST_DATAANALYST_09_Al": {
+    "BEAST_ENGLISH_10_AL": {
       "label": "alligator",
       "peg_code": "Al",
-      "filename": "BEAST_DATAANALYST_09_Al.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Al.png"
+      "filename": "alligator.png",
+      "url": "/assets/beast-thumbs/alligator.png",
+      "source_slug": "alligator"
     },
-    "BEAST_DATAANALYST_09_Am": {
+    "BEAST_ENGLISH_10_AM": {
       "label": "amulet",
       "peg_code": "Am",
-      "filename": "BEAST_DATAANALYST_09_Am.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_Am.png"
+      "filename": "amulet.png",
+      "url": "/assets/beast-thumbs/amulet.png",
+      "source_slug": "amulet"
     },
-    "BEAST_DATAANALYST_09_An": {
+    "BEAST_ENGLISH_10_AN": {
       "label": "angel",
       "peg_code": "An",
-      "filename": "BEAST_DATAANALYST_09_An.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_09_An.png"
+      "filename": "angel.png",
+      "url": "/assets/beast-thumbs/angel.png",
+      "source_slug": "angel"
     },
-    "BEAST_DATAANALYST_10_Ao": {
+    "BEAST_ENGLISH_11_AO": {
       "label": "aoudad",
       "peg_code": "Ao",
-      "filename": "BEAST_DATAANALYST_10_Ao.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Ao.png"
+      "filename": "aoudad.png",
+      "url": "/assets/beast-thumbs/aoudad.png",
+      "source_slug": "aoudad"
     },
-    "BEAST_DATAANALYST_10_Ap": {
+    "BEAST_ENGLISH_11_AP": {
       "label": "ape",
       "peg_code": "Ap",
-      "filename": "BEAST_DATAANALYST_10_Ap.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Ap.png"
+      "filename": "ape.png",
+      "url": "/assets/beast-thumbs/ape.png",
+      "source_slug": "ape"
     },
-    "BEAST_DATAANALYST_10_Aq": {
+    "BEAST_ENGLISH_11_AQ": {
       "label": "aquatic leech",
       "peg_code": "Aq",
-      "filename": "BEAST_DATAANALYST_10_Aq.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Aq.png"
+      "filename": "aquatic_leech.png",
+      "url": "/assets/beast-thumbs/aquatic_leech.png",
+      "source_slug": "aquatic_leech"
     },
-    "BEAST_DATAANALYST_10_Ar": {
+    "BEAST_ENGLISH_11_AR": {
       "label": "armadillo",
       "peg_code": "Ar",
-      "filename": "BEAST_DATAANALYST_10_Ar.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_Ar.png"
+      "filename": "armadillo.png",
+      "url": "/assets/beast-thumbs/armadillo.png",
+      "source_slug": "armadillo"
     },
-    "BEAST_DATAANALYST_10_As": {
+    "BEAST_ENGLISH_11_AS": {
       "label": "asp",
       "peg_code": "As",
-      "filename": "BEAST_DATAANALYST_10_As.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_10_As.png"
+      "filename": "asp.png",
+      "url": "/assets/beast-thumbs/asp.png",
+      "source_slug": "asp"
     },
-    "BEAST_DATAANALYST_11_At": {
+    "BEAST_ENGLISH_12_AT": {
       "label": "atlas",
       "peg_code": "At",
-      "filename": "BEAST_DATAANALYST_11_At.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_At.png"
+      "filename": "atlas.png",
+      "url": "/assets/beast-thumbs/atlas.png",
+      "source_slug": "atlas"
     },
-    "BEAST_DATAANALYST_11_Au": {
+    "BEAST_ENGLISH_12_AU": {
       "label": "auroch",
       "peg_code": "Au",
-      "filename": "BEAST_DATAANALYST_11_Au.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Au.png"
+      "filename": "auroch.png",
+      "url": "/assets/beast-thumbs/auroch.png",
+      "source_slug": "auroch"
     },
-    "BEAST_DATAANALYST_11_Av": {
+    "BEAST_ENGLISH_12_AV": {
       "label": "avocet",
       "peg_code": "Av",
-      "filename": "BEAST_DATAANALYST_11_Av.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Av.png"
+      "filename": "avocet.png",
+      "url": "/assets/beast-thumbs/avocet.png",
+      "source_slug": "avocet"
     },
-    "BEAST_DATAANALYST_11_Aw": {
+    "BEAST_ENGLISH_12_AW": {
       "label": "awassi sheep",
       "peg_code": "Aw",
-      "filename": "BEAST_DATAANALYST_11_Aw.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Aw.png"
+      "filename": "awassi_sheep.png",
+      "url": "/assets/beast-thumbs/awassi_sheep.png",
+      "source_slug": "awassi_sheep"
     },
-    "BEAST_DATAANALYST_11_Ax": {
+    "BEAST_ENGLISH_12_AX": {
       "label": "axolotl",
       "peg_code": "Ax",
-      "filename": "BEAST_DATAANALYST_11_Ax.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_11_Ax.png"
+      "filename": "axolotl.png",
+      "url": "/assets/beast-thumbs/axolotl.png",
+      "source_slug": "axolotl"
     },
-    "BEAST_DATAANALYST_12_Ay": {
+    "BEAST_ENGLISH_13_AY": {
       "label": "aye-aye",
       "peg_code": "Ay",
-      "filename": "BEAST_DATAANALYST_12_Ay.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_12_Ay.png"
+      "filename": "aye_aye.png",
+      "url": "/assets/beast-thumbs/aye_aye.png",
+      "source_slug": "aye_aye"
     },
-    "BEAST_DATAANALYST_12_Az": {
+    "BEAST_ENGLISH_13_AZ": {
       "label": "Aztec",
       "peg_code": "Az",
-      "filename": "BEAST_DATAANALYST_12_Az.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_12_Az.png"
+      "filename": "aztec.png",
+      "url": "/assets/beast-thumbs/aztec.png",
+      "source_slug": "aztec"
     },
-    "BEAST_DATAANALYST_13_Ba": {
+    "BEAST_ENGLISH_13_BA": {
       "label": "bat",
       "peg_code": "Ba",
-      "filename": "BEAST_DATAANALYST_13_Ba.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Ba.png"
+      "filename": "bat.png",
+      "url": "/assets/beast-thumbs/bat.png",
+      "source_slug": "bat"
     },
-    "BEAST_DATAANALYST_13_Bb": {
-      "label": "Bone bird of paradise",
+    "BEAST_ENGLISH_13_BB": {
+      "label": "Brass bison",
       "peg_code": "Bb",
-      "filename": "BEAST_DATAANALYST_13_Bb.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Bb.png"
+      "filename": "brass_bison.png",
+      "url": "/assets/beast-thumbs/brass_bison.png",
+      "source_slug": "brass_bison"
     },
-    "BEAST_DATAANALYST_13_Bc": {
-      "label": "Bone cat",
-      "peg_code": "Bc",
-      "filename": "BEAST_DATAANALYST_13_Bc.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Bc.png"
-    },
-    "BEAST_DATAANALYST_13_Bd": {
-      "label": "Bone dragon",
-      "peg_code": "Bd",
-      "filename": "BEAST_DATAANALYST_13_Bd.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_13_Bd.png"
-    },
-    "BEAST_DATAANALYST_14_Be": {
+    "BEAST_ENGLISH_13_BE": {
       "label": "bee",
       "peg_code": "Be",
-      "filename": "BEAST_DATAANALYST_14_Be.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_14_Be.png"
+      "filename": "bee.png",
+      "url": "/assets/beast-thumbs/bee.png",
+      "source_slug": "bee"
     },
-    "BEAST_DATAANALYST_14_Bf": {
-      "label": "Bone frog",
+    "BEAST_ENGLISH_14_BF": {
+      "label": "Blackwater ferret",
       "peg_code": "Bf",
-      "filename": "BEAST_DATAANALYST_14_Bf.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_14_Bf.png"
+      "filename": "blackwater_ferret.png",
+      "url": "/assets/beast-thumbs/blackwater_ferret.png",
+      "source_slug": "blackwater_ferret"
     },
-    "BEAST_DATAANALYST_14_Bg": {
-      "label": "Bone goat",
+    "BEAST_ENGLISH_14_BG": {
+      "label": "Boulder giraffe",
       "peg_code": "Bg",
-      "filename": "BEAST_DATAANALYST_14_Bg.png",
-      "url": "/assets/beast-thumbs/BEAST_DATAANALYST_14_Bg.png"
+      "filename": "boulder_giraffe.png",
+      "url": "/assets/beast-thumbs/boulder_giraffe.png",
+      "source_slug": "boulder_giraffe"
+    },
+    "BEAST_ENGLISH_15_BH": {
+      "label": "Bitter hare",
+      "peg_code": "Bh",
+      "filename": "bitter_hare.png",
+      "url": "/assets/beast-thumbs/bitter_hare.png",
+      "source_slug": "bitter_hare"
+    },
+    "BEAST_ENGLISH_15_BI": {
+      "label": "bison",
+      "peg_code": "Bi",
+      "filename": "bison.png",
+      "url": "/assets/beast-thumbs/bison.png",
+      "source_slug": "bison"
+    },
+    "BEAST_ENGLISH_15_BJ": {
+      "label": "Basil jellyfish",
+      "peg_code": "Bj",
+      "filename": "basil_jellyfish.png",
+      "url": "/assets/beast-thumbs/basil_jellyfish.png",
+      "source_slug": "basil_jellyfish"
+    },
+    "BEAST_ENGLISH_15_BK": {
+      "label": "Bloodmoon kestrel",
+      "peg_code": "Bk",
+      "filename": "bloodmoon_kestrel.png",
+      "url": "/assets/beast-thumbs/bloodmoon_kestrel.png",
+      "source_slug": "bloodmoon_kestrel"
+    },
+    "BEAST_ENGLISH_16_BL": {
+      "label": "bloodhound",
+      "peg_code": "Bl",
+      "filename": "bloodhound.png",
+      "url": "/assets/beast-thumbs/bloodhound.png",
+      "source_slug": "bloodhound"
+    },
+    "BEAST_ENGLISH_16_BM": {
+      "label": "Bone marmoset",
+      "peg_code": "Bm",
+      "filename": "bone_marmoset.png",
+      "url": "/assets/beast-thumbs/bone_marmoset.png",
+      "source_slug": "bone_marmoset"
+    },
+    "BEAST_ENGLISH_16_BN": {
+      "label": "Blazing nightjar",
+      "peg_code": "Bn",
+      "filename": "blazing_nightjar.png",
+      "url": "/assets/beast-thumbs/blazing_nightjar.png",
+      "source_slug": "blazing_nightjar"
+    },
+    "BEAST_ENGLISH_16_BO": {
+      "label": "bower-bird",
+      "peg_code": "Bo",
+      "filename": "bower_bird.png",
+      "url": "/assets/beast-thumbs/bower_bird.png",
+      "source_slug": "bower_bird"
+    },
+    "BEAST_ENGLISH_16_BP": {
+      "label": "Blackwater penguin",
+      "peg_code": "Bp",
+      "filename": "blackwater_penguin.png",
+      "url": "/assets/beast-thumbs/blackwater_penguin.png",
+      "source_slug": "blackwater_penguin"
+    },
+    "BEAST_ENGLISH_17_BQ": {
+      "label": "Boulder quail",
+      "peg_code": "Bq",
+      "filename": "boulder_quail.png",
+      "url": "/assets/beast-thumbs/boulder_quail.png",
+      "source_slug": "boulder_quail"
+    },
+    "BEAST_ENGLISH_17_BR": {
+      "label": "brontosaurus",
+      "peg_code": "Br",
+      "filename": "brontosaurus.png",
+      "url": "/assets/beast-thumbs/brontosaurus.png",
+      "source_slug": "brontosaurus"
+    },
+    "BEAST_ENGLISH_18_BS": {
+      "label": "Bone Shark",
+      "peg_code": "Bs",
+      "filename": "bone_shark.png",
+      "url": "/assets/beast-thumbs/bone_shark.png",
+      "source_slug": "bone_shark"
+    },
+    "BEAST_ENGLISH_18_BT": {
+      "label": "Bone Toad",
+      "peg_code": "Bt",
+      "filename": "bone_toad.png",
+      "url": "/assets/beast-thumbs/bone_toad.png",
+      "source_slug": "bone_toad"
+    },
+    "BEAST_ENGLISH_18_BU": {
+      "label": "butterfly",
+      "peg_code": "Bu",
+      "filename": "butterfly.png",
+      "url": "/assets/beast-thumbs/butterfly.png",
+      "source_slug": "butterfly"
+    },
+    "BEAST_GERMAN_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_GERMAN_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_GERMAN_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_GERMAN_01_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_GERMAN_01_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_GERMAN_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_GERMAN_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_GERMAN_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_GERMAN_03_I": {
+      "label": "imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_GERMAN_03_J": {
+      "label": "jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_GERMAN_03_K": {
+      "label": "kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_GERMAN_03_L": {
+      "label": "lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_GERMAN_03_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_GERMAN_04_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_GERMAN_04_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_GERMAN_04_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_GERMAN_04_Q": {
+      "label": "Quetzalcoatl",
+      "peg_code": "Q",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
+    },
+    "BEAST_GERMAN_05_R": {
+      "label": "Rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_GERMAN_05_S": {
+      "label": "Skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_GERMAN_05_T": {
+      "label": "Toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_GERMAN_05_U": {
+      "label": "Unicorn",
+      "peg_code": "U",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png",
+      "source_slug": "unicorn"
+    },
+    "BEAST_GERMAN_05_V": {
+      "label": "Vulture",
+      "peg_code": "V",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
+    },
+    "BEAST_GERMAN_06_W": {
+      "label": "Wombat",
+      "peg_code": "W",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
+    },
+    "BEAST_GERMAN_06_X": {
+      "label": "Xena, warrior woman",
+      "peg_code": "X",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
+    },
+    "BEAST_GERMAN_07_Y": {
+      "label": "yak",
+      "peg_code": "Y",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png",
+      "source_slug": "yak"
+    },
+    "BEAST_GERMAN_07_Z": {
+      "label": "Zeus",
+      "peg_code": "Z",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus"
+    },
+    "BEAST_GERMAN_07_AA": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png",
+      "source_slug": "aardvark"
+    },
+    "BEAST_GERMAN_07_AB": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png",
+      "source_slug": "abyssinian_cat"
+    },
+    "BEAST_GERMAN_07_AC": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png",
+      "source_slug": "acorn"
+    },
+    "BEAST_GERMAN_08_AD": {
+      "label": "adder",
+      "peg_code": "Ad",
+      "filename": "adder.png",
+      "url": "/assets/beast-thumbs/adder.png",
+      "source_slug": "adder"
+    },
+    "BEAST_GERMAN_08_AE": {
+      "label": "aerialqist",
+      "peg_code": "Ae",
+      "filename": "aerialqist.png",
+      "url": "/assets/beast-thumbs/aerialqist.png",
+      "source_slug": "aerialqist"
+    },
+    "BEAST_GERMAN_08_AF": {
+      "label": "Afghan hound",
+      "peg_code": "Af",
+      "filename": "afghan_hound.png",
+      "url": "/assets/beast-thumbs/afghan_hound.png",
+      "source_slug": "afghan_hound"
+    },
+    "BEAST_PIANO_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_PIANO_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_PIANO_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_PIANO_01_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_PIANO_01_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_PIANO_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_PIANO_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_PIANO_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_PIANO_02_I": {
+      "label": "imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_PIANO_02_J": {
+      "label": "jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_PIANO_03_K": {
+      "label": "kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_PIANO_03_L": {
+      "label": "lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_PIANO_03_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_PIANO_03_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_PIANO_03_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_PIANO_04_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_PIANO_04_Q": {
+      "label": "Quetzalcoatl",
+      "peg_code": "Q",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
+    },
+    "BEAST_PIANO_04_R": {
+      "label": "rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_PIANO_05_S": {
+      "label": "skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_PIANO_05_T": {
+      "label": "toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_PIANO_05_U": {
+      "label": "unicorn",
+      "peg_code": "U",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png",
+      "source_slug": "unicorn"
+    },
+    "BEAST_PIANO_05_V": {
+      "label": "vulture",
+      "peg_code": "V",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
+    },
+    "BEAST_PIANO_05_W": {
+      "label": "wombat",
+      "peg_code": "W",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
+    },
+    "BEAST_PIANO_06_X": {
+      "label": "Xena, warrior woman",
+      "peg_code": "X",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
+    },
+    "BEAST_PIANO_06_Y": {
+      "label": "yak",
+      "peg_code": "Y",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png",
+      "source_slug": "yak"
+    },
+    "BEAST_PIANO_06_Z": {
+      "label": "Zeus",
+      "peg_code": "Z",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus"
+    },
+    "BEAST_PIANO_06_AA": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png",
+      "source_slug": "aardvark"
+    },
+    "BEAST_PIANO_06_AB": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png",
+      "source_slug": "abyssinian_cat"
+    },
+    "BEAST_PIANO_07_AC": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png",
+      "source_slug": "acorn"
+    },
+    "BEAST_PIANO_07_AD": {
+      "label": "adder",
+      "peg_code": "Ad",
+      "filename": "adder.png",
+      "url": "/assets/beast-thumbs/adder.png",
+      "source_slug": "adder"
+    },
+    "BEAST_PIANO_07_AE": {
+      "label": "aerialist",
+      "peg_code": "Ae",
+      "filename": "aerialist.png",
+      "url": "/assets/beast-thumbs/aerialist.png",
+      "source_slug": "aerialist"
     },
     "BEAST_PIANO_08_AF": {
       "label": "Afghan hound",
       "peg_code": "Af",
-      "filename": "BEAST_PIANO_08_AF.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_08_AF.png"
+      "filename": "afghan_hound.png",
+      "url": "/assets/beast-thumbs/afghan_hound.png",
+      "source_slug": "afghan_hound"
     },
     "BEAST_PIANO_08_AG": {
       "label": "Agaric fungi",
       "peg_code": "Ag",
-      "filename": "BEAST_PIANO_08_AG.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_08_AG.png"
+      "filename": "agaric_fungi.png",
+      "url": "/assets/beast-thumbs/agaric_fungi.png",
+      "source_slug": "agaric_fungi"
     },
     "BEAST_PIANO_08_AH": {
       "label": "Ah!—a sigh",
       "peg_code": "Ah",
-      "filename": "BEAST_PIANO_08_AH.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_08_AH.png"
+      "filename": "ah_a_sigh.png",
+      "url": "/assets/beast-thumbs/ah_a_sigh.png",
+      "source_slug": "ah_a_sigh"
     },
     "BEAST_PIANO_09_AI": {
       "label": "Airedale terrier",
       "peg_code": "Ai",
-      "filename": "BEAST_PIANO_09_AI.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_09_AI.png"
+      "filename": "airedale_terrier.png",
+      "url": "/assets/beast-thumbs/airedale_terrier.png",
+      "source_slug": "airedale_terrier"
     },
     "BEAST_PIANO_10_AJ": {
       "label": "Ajax",
       "peg_code": "Aj",
-      "filename": "BEAST_PIANO_10_AJ.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_10_AJ.png"
+      "filename": "ajax.png",
+      "url": "/assets/beast-thumbs/ajax.png",
+      "source_slug": "ajax"
     },
     "BEAST_PIANO_10_AK": {
       "label": "Akita (dog breed)",
       "peg_code": "Ak",
-      "filename": "BEAST_PIANO_10_AK.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_10_AK.png"
+      "filename": "akita_dog_breed.png",
+      "url": "/assets/beast-thumbs/akita_dog_breed.png",
+      "source_slug": "akita_dog_breed"
+    },
+    "BEAST_SCIENCE_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_SCIENCE_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_SCIENCE_02_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_SCIENCE_02_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_SCIENCE_02_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_SCIENCE_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_SCIENCE_03_G": {
+      "label": "Goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_SCIENCE_03_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_SCIENCE_03_I": {
+      "label": "Imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_SCIENCE_03_J": {
+      "label": "Jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_SCIENCE_03_K": {
+      "label": "Kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_SCIENCE_04_L": {
+      "label": "Lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_SCIENCE_04_M": {
+      "label": "Marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_SCIENCE_04_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_SCIENCE_05_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_SCIENCE_05_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_SCIENCE_05_Q": {
+      "label": "Quetzalcoatl",
+      "peg_code": "Q",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
+    },
+    "BEAST_SCIENCE_05_R": {
+      "label": "rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_SCIENCE_06_S": {
+      "label": "skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_SCIENCE_06_T": {
+      "label": "toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_SCIENCE_06_U": {
+      "label": "unicorn",
+      "peg_code": "U",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png",
+      "source_slug": "unicorn"
+    },
+    "BEAST_SCIENCE_06_V": {
+      "label": "vulture",
+      "peg_code": "V",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
+    },
+    "BEAST_SCIENCE_06_W": {
+      "label": "wombat",
+      "peg_code": "W",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
+    },
+    "BEAST_SCIENCE_07_X": {
+      "label": "Xena, warrior woman",
+      "peg_code": "X",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
+    },
+    "BEAST_SCIENCE_07_Y": {
+      "label": "yak",
+      "peg_code": "Y",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png",
+      "source_slug": "yak"
+    },
+    "BEAST_SCIENCE_07_Z": {
+      "label": "Zeus",
+      "peg_code": "Z",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus"
+    },
+    "BEAST_SCIENCE_07_AA": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png",
+      "source_slug": "aardvark"
+    },
+    "BEAST_SCIENCE_07_AB": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png",
+      "source_slug": "abyssinian_cat"
+    },
+    "BEAST_SCIENCE_08_AC": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png",
+      "source_slug": "acorn"
+    },
+    "BEAST_SCIENCE_08_AD": {
+      "label": "adder",
+      "peg_code": "Ad",
+      "filename": "adder.png",
+      "url": "/assets/beast-thumbs/adder.png",
+      "source_slug": "adder"
+    },
+    "BEAST_SCIENCE_09_AE": {
+      "label": "aerialist",
+      "peg_code": "Ae",
+      "filename": "aerialist.png",
+      "url": "/assets/beast-thumbs/aerialist.png",
+      "source_slug": "aerialist"
+    },
+    "BEAST_SCIENCE_09_AF": {
+      "label": "Afghan hound",
+      "peg_code": "Af",
+      "filename": "afghan_hound.png",
+      "url": "/assets/beast-thumbs/afghan_hound.png",
+      "source_slug": "afghan_hound"
+    },
+    "BEAST_SCIENCE_09_AG": {
+      "label": "Agaric fungi",
+      "peg_code": "Ag",
+      "filename": "agaric_fungi.png",
+      "url": "/assets/beast-thumbs/agaric_fungi.png",
+      "source_slug": "agaric_fungi"
+    },
+    "BEAST_SCIENCE_09_AH": {
+      "label": "Ah!�a sigh",
+      "peg_code": "Ah",
+      "filename": "ah_a_sigh.png",
+      "url": "/assets/beast-thumbs/ah_a_sigh.png",
+      "source_slug": "ah_a_sigh"
+    },
+    "BEAST_SCIENCE_09_AI": {
+      "label": "Airedale terrier",
+      "peg_code": "Ai",
+      "filename": "airedale_terrier.png",
+      "url": "/assets/beast-thumbs/airedale_terrier.png",
+      "source_slug": "airedale_terrier"
+    },
+    "BEAST_SCIENCE_10_AJ": {
+      "label": "Ajax",
+      "peg_code": "Aj",
+      "filename": "ajax.png",
+      "url": "/assets/beast-thumbs/ajax.png",
+      "source_slug": "ajax"
+    },
+    "BEAST_SCIENCE_10_AK": {
+      "label": "Akita (dog breed)",
+      "peg_code": "Ak",
+      "filename": "akita_dog_breed.png",
+      "url": "/assets/beast-thumbs/akita_dog_breed.png",
+      "source_slug": "akita_dog_breed"
+    },
+    "BEAST_SCIENCE_10_AL": {
+      "label": "alligator",
+      "peg_code": "Al",
+      "filename": "alligator.png",
+      "url": "/assets/beast-thumbs/alligator.png",
+      "source_slug": "alligator"
+    },
+    "BEAST_SCIENCE_10_AM": {
+      "label": "amulet",
+      "peg_code": "Am",
+      "filename": "amulet.png",
+      "url": "/assets/beast-thumbs/amulet.png",
+      "source_slug": "amulet"
+    },
+    "BEAST_SCIENCE_10_AN": {
+      "label": "angel",
+      "peg_code": "An",
+      "filename": "angel.png",
+      "url": "/assets/beast-thumbs/angel.png",
+      "source_slug": "angel"
+    },
+    "BEAST_SCIENCE_11_AO": {
+      "label": "aoudad",
+      "peg_code": "Ao",
+      "filename": "aoudad.png",
+      "url": "/assets/beast-thumbs/aoudad.png",
+      "source_slug": "aoudad"
+    },
+    "BEAST_SCIENCE_11_AP": {
+      "label": "ape",
+      "peg_code": "Ap",
+      "filename": "ape.png",
+      "url": "/assets/beast-thumbs/ape.png",
+      "source_slug": "ape"
+    },
+    "BEAST_SCIENCE_11_AQ": {
+      "label": "aquatic leech",
+      "peg_code": "Aq",
+      "filename": "aquatic_leech.png",
+      "url": "/assets/beast-thumbs/aquatic_leech.png",
+      "source_slug": "aquatic_leech"
+    },
+    "BEAST_SCIENCE_11_AR": {
+      "label": "armadillo",
+      "peg_code": "Ar",
+      "filename": "armadillo.png",
+      "url": "/assets/beast-thumbs/armadillo.png",
+      "source_slug": "armadillo"
+    },
+    "BEAST_SCIENCE_12_AS": {
+      "label": "asp",
+      "peg_code": "As",
+      "filename": "asp.png",
+      "url": "/assets/beast-thumbs/asp.png",
+      "source_slug": "asp"
+    },
+    "BEAST_SCIENCE_12_AT": {
+      "label": "atlas",
+      "peg_code": "At",
+      "filename": "atlas.png",
+      "url": "/assets/beast-thumbs/atlas.png",
+      "source_slug": "atlas"
+    },
+    "BEAST_SCIENCE_12_AU": {
+      "label": "auroch",
+      "peg_code": "Au",
+      "filename": "auroch.png",
+      "url": "/assets/beast-thumbs/auroch.png",
+      "source_slug": "auroch"
+    },
+    "BEAST_SCIENCE_12_AV": {
+      "label": "avocet",
+      "peg_code": "Av",
+      "filename": "avocet.png",
+      "url": "/assets/beast-thumbs/avocet.png",
+      "source_slug": "avocet"
+    },
+    "BEAST_SCIENCE_13_AW": {
+      "label": "awassi sheep",
+      "peg_code": "Aw",
+      "filename": "awassi_sheep.png",
+      "url": "/assets/beast-thumbs/awassi_sheep.png",
+      "source_slug": "awassi_sheep"
+    },
+    "BEAST_SCIENCE_13_AX": {
+      "label": "axolotl",
+      "peg_code": "Ax",
+      "filename": "axolotl.png",
+      "url": "/assets/beast-thumbs/axolotl.png",
+      "source_slug": "axolotl"
+    },
+    "BEAST_SCIENCE_13_AY": {
+      "label": "aye-aye",
+      "peg_code": "Ay",
+      "filename": "aye_aye.png",
+      "url": "/assets/beast-thumbs/aye_aye.png",
+      "source_slug": "aye_aye"
+    },
+    "BEAST_SCIENCE_13_AZ": {
+      "label": "Aztec",
+      "peg_code": "Az",
+      "filename": "aztec.png",
+      "url": "/assets/beast-thumbs/aztec.png",
+      "source_slug": "aztec"
+    },
+    "BEAST_SCIENCE_13_BA": {
+      "label": "bat",
+      "peg_code": "Ba",
+      "filename": "bat.png",
+      "url": "/assets/beast-thumbs/bat.png",
+      "source_slug": "bat"
+    },
+    "BEAST_SCIENCE_14_BB": {
+      "label": "Bone Bear",
+      "peg_code": "Bb",
+      "filename": "bone_bear.png",
+      "url": "/assets/beast-thumbs/bone_bear.png",
+      "source_slug": "bone_bear"
+    },
+    "BEAST_SCIENCE_14_BC": {
+      "label": "Bone Cat",
+      "peg_code": "Bc",
+      "filename": "bone_cat.png",
+      "url": "/assets/beast-thumbs/bone_cat.png",
+      "source_slug": "bone_cat"
+    },
+    "BEAST_SCIENCE_14_BD": {
+      "label": "Bone Dog",
+      "peg_code": "Bd",
+      "filename": "bone_dog.png",
+      "url": "/assets/beast-thumbs/bone_dog.png",
+      "source_slug": "bone_dog"
+    },
+    "BEAST_SCIENCE_14_BE": {
+      "label": "bee",
+      "peg_code": "Be",
+      "filename": "bee.png",
+      "url": "/assets/beast-thumbs/bee.png",
+      "source_slug": "bee"
+    },
+    "BEAST_SCIENCE_15_BF": {
+      "label": "Bone frog",
+      "peg_code": "Bf",
+      "filename": "bone_frog.png",
+      "url": "/assets/beast-thumbs/bone_frog.png",
+      "source_slug": "bone_frog"
+    },
+    "BEAST_SCIENCE_15_BG": {
+      "label": "Bone goat",
+      "peg_code": "Bg",
+      "filename": "bone_goat.png",
+      "url": "/assets/beast-thumbs/bone_goat.png",
+      "source_slug": "bone_goat"
+    },
+    "BEAST_SCIENCE_15_BH": {
+      "label": "Bone Hydra",
+      "peg_code": "Bh",
+      "filename": "bone_hydra.png",
+      "url": "/assets/beast-thumbs/bone_hydra.png",
+      "source_slug": "bone_hydra"
+    },
+    "BEAST_SCIENCE_15_BI": {
+      "label": "bison",
+      "peg_code": "Bi",
+      "filename": "bison.png",
+      "url": "/assets/beast-thumbs/bison.png",
+      "source_slug": "bison"
+    },
+    "BEAST_SCIENCE_15_BJ": {
+      "label": "Bone jester",
+      "peg_code": "Bj",
+      "filename": "bone_jester.png",
+      "url": "/assets/beast-thumbs/bone_jester.png",
+      "source_slug": "bone_jester"
+    },
+    "BEAST_SCIENCE_16_BK": {
+      "label": "Bone kitten",
+      "peg_code": "Bk",
+      "filename": "bone_kitten.png",
+      "url": "/assets/beast-thumbs/bone_kitten.png",
+      "source_slug": "bone_kitten"
+    },
+    "BEAST_SCIENCE_16_BL": {
+      "label": "bloodhound",
+      "peg_code": "Bl",
+      "filename": "bloodhound.png",
+      "url": "/assets/beast-thumbs/bloodhound.png",
+      "source_slug": "bloodhound"
+    },
+    "BEAST_SCIENCE_16_BM": {
+      "label": "Bone marmoset",
+      "peg_code": "Bm",
+      "filename": "bone_marmoset.png",
+      "url": "/assets/beast-thumbs/bone_marmoset.png",
+      "source_slug": "bone_marmoset"
+    },
+    "BEAST_SCIENCE_17_BN": {
+      "label": "Bone Neanderthal",
+      "peg_code": "Bn",
+      "filename": "bone_neanderthal.png",
+      "url": "/assets/beast-thumbs/bone_neanderthal.png",
+      "source_slug": "bone_neanderthal"
+    },
+    "BEAST_SCIENCE_17_BO": {
+      "label": "bower-bird",
+      "peg_code": "Bo",
+      "filename": "bower_bird.png",
+      "url": "/assets/beast-thumbs/bower_bird.png",
+      "source_slug": "bower_bird"
+    },
+    "BEAST_SCIENCE_17_BP": {
+      "label": "Bone panther",
+      "peg_code": "Bp",
+      "filename": "bone_panther.png",
+      "url": "/assets/beast-thumbs/bone_panther.png",
+      "source_slug": "bone_panther"
+    },
+    "BEAST_SCIENCE_18_BQ": {
+      "label": "Bone Quetzalcoatl",
+      "peg_code": "Bq",
+      "filename": "bone_quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/bone_quetzalcoatl.png",
+      "source_slug": "bone_quetzalcoatl"
+    },
+    "BEAST_SCIENCE_18_BR": {
+      "label": "brontosaurus",
+      "peg_code": "Br",
+      "filename": "brontosaurus.png",
+      "url": "/assets/beast-thumbs/brontosaurus.png",
+      "source_slug": "brontosaurus"
+    },
+    "BEAST_SCIENCE_18_BS": {
+      "label": "Bone skull",
+      "peg_code": "Bs",
+      "filename": "bone_skull.png",
+      "url": "/assets/beast-thumbs/bone_skull.png",
+      "source_slug": "bone_skull"
+    },
+    "BEAST_SCIENCE_18_BT": {
+      "label": "Bone toucan",
+      "peg_code": "Bt",
+      "filename": "bone_toucan.png",
+      "url": "/assets/beast-thumbs/bone_toucan.png",
+      "source_slug": "bone_toucan"
+    },
+    "BEAST_SCIENCE_19_BU": {
+      "label": "butterfly",
+      "peg_code": "Bu",
+      "filename": "butterfly.png",
+      "url": "/assets/beast-thumbs/butterfly.png",
+      "source_slug": "butterfly"
+    },
+    "BEAST_SCIENCE_19_BV": {
+      "label": "Bone vulture",
+      "peg_code": "Bv",
+      "filename": "bone_vulture.png",
+      "url": "/assets/beast-thumbs/bone_vulture.png",
+      "source_slug": "bone_vulture"
+    },
+    "BEAST_SCIENCE_19_BW": {
+      "label": "Bone wombat",
+      "peg_code": "Bw",
+      "filename": "bone_wombat.png",
+      "url": "/assets/beast-thumbs/bone_wombat.png",
+      "source_slug": "bone_wombat"
+    },
+    "BEAST_SCIENCE_19_BX": {
+      "label": "Bone Xena, warrior woman",
+      "peg_code": "Bx",
+      "filename": "bone_xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/bone_xena_warrior_woman.png",
+      "source_slug": "bone_xena_warrior_woman"
+    },
+    "BEAST_SKILLS_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_SKILLS_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_SKILLS_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_SKILLS_01_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_SKILLS_01_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_SKILLS_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_SKILLS_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_SKILLS_03_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_SKILLS_03_I": {
+      "label": "imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_SKILLS_04_J": {
+      "label": "jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_SKILLS_04_K": {
+      "label": "kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_SKILLS_04_L": {
+      "label": "lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_SKILLS_04_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_SKILLS_05_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_SKILLS_05_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_TAOISM_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_TAOISM_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_TAOISM_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_TAOISM_01_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_TAOISM_01_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_TAOISM_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_TAOISM_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_TAOISM_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_TAOISM_02_I": {
+      "label": "imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_TAOISM_02_J": {
+      "label": "jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_TAOISM_03_K": {
+      "label": "kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_TAOISM_03_L": {
+      "label": "lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_TAOISM_03_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_TAOISM_03_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_TAOISM_03_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_TAOISM_04_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_TAOISM_04_Q": {
+      "label": "Quetzalcoatl",
+      "peg_code": "Q",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
+    },
+    "BEAST_TAOISM_04_R": {
+      "label": "rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_TAOISM_04_S": {
+      "label": "skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_TAOISM_04_T": {
+      "label": "toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_GERMAN_09_AG": {
+      "label": "Agaric fungi",
+      "peg_code": "Ag",
+      "filename": "agaric_fungi.png",
+      "url": "/assets/beast-thumbs/agaric_fungi.png",
+      "source_slug": "agaric_fungi"
+    },
+    "BEAST_GERMAN_09_AH": {
+      "label": "Ah!—a sigh",
+      "peg_code": "Ah",
+      "filename": "ah_a_sigh.png",
+      "url": "/assets/beast-thumbs/ah_a_sigh.png",
+      "source_slug": "ah_a_sigh"
+    },
+    "BEAST_GERMAN_09_AI": {
+      "label": "Airedale terrier",
+      "peg_code": "Ai",
+      "filename": "airedale_terrier.png",
+      "url": "/assets/beast-thumbs/airedale_terrier.png",
+      "source_slug": "airedale_terrier"
+    },
+    "BEAST_GERMAN_09_AK": {
+      "label": "Akita (dog breed)",
+      "peg_code": "Ak",
+      "filename": "akita_dog_breed.png",
+      "url": "/assets/beast-thumbs/akita_dog_breed.png",
+      "source_slug": "akita_dog_breed"
+    },
+    "BEAST_GERMAN_10_AL": {
+      "label": "alligator",
+      "peg_code": "Al",
+      "filename": "alligator.png",
+      "url": "/assets/beast-thumbs/alligator.png",
+      "source_slug": "alligator"
+    },
+    "BEAST_GERMAN_10_AM": {
+      "label": "amulet",
+      "peg_code": "Am",
+      "filename": "amulet.png",
+      "url": "/assets/beast-thumbs/amulet.png",
+      "source_slug": "amulet"
+    },
+    "BEAST_GERMAN_10_AN": {
+      "label": "angel",
+      "peg_code": "An",
+      "filename": "angel.png",
+      "url": "/assets/beast-thumbs/angel.png",
+      "source_slug": "angel"
+    },
+    "BEAST_GERMAN_10_AO": {
+      "label": "aoudad",
+      "peg_code": "Ao",
+      "filename": "aoudad.png",
+      "url": "/assets/beast-thumbs/aoudad.png",
+      "source_slug": "aoudad"
+    },
+    "BEAST_GERMAN_10_AP": {
+      "label": "ape",
+      "peg_code": "Ap",
+      "filename": "ape.png",
+      "url": "/assets/beast-thumbs/ape.png",
+      "source_slug": "ape"
+    },
+    "BEAST_GERMAN_11_AQ": {
+      "label": "aquatic leech",
+      "peg_code": "Aq",
+      "filename": "aquatic_leech.png",
+      "url": "/assets/beast-thumbs/aquatic_leech.png",
+      "source_slug": "aquatic_leech"
     },
     "BEAST_PIANO_Al": {
       "label": "alligator",
       "peg_code": "Al",
-      "filename": "BEAST_PIANO_Al.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_Al.png"
+      "filename": "alligator.png",
+      "url": "/assets/beast-thumbs/alligator.png",
+      "source_slug": "alligator"
     },
     "BEAST_PIANO_Am": {
       "label": "amulet",
       "peg_code": "Am",
-      "filename": "BEAST_PIANO_Am.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_Am.png"
+      "filename": "amulet.png",
+      "url": "/assets/beast-thumbs/amulet.png",
+      "source_slug": "amulet"
     },
     "BEAST_PIANO_An": {
       "label": "angel",
       "peg_code": "An",
-      "filename": "BEAST_PIANO_An.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_An.png"
+      "filename": "angel.png",
+      "url": "/assets/beast-thumbs/angel.png",
+      "source_slug": "angel"
     },
     "BEAST_PIANO_Ao": {
       "label": "aoudad",
       "peg_code": "Ao",
-      "filename": "BEAST_PIANO_Ao.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_Ao.png"
+      "filename": "aoudad.png",
+      "url": "/assets/beast-thumbs/aoudad.png",
+      "source_slug": "aoudad"
     },
     "BEAST_PIANO_Ap": {
       "label": "ape",
       "peg_code": "Ap",
-      "filename": "BEAST_PIANO_Ap.png",
-      "url": "/assets/beast-thumbs/BEAST_PIANO_Ap.png"
+      "filename": "ape.png",
+      "url": "/assets/beast-thumbs/ape.png",
+      "source_slug": "ape"
+    },
+    "BEAST_COMMUNICATION_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_COMMUNICATION_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_COMMUNICATION_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_COMMUNICATION_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_COMMUNICATION_Q": {
+      "label": "rat",
+      "peg_code": "Q",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_COMMUNICATION_04_R": {
+      "label": "rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_COMMUNICATION_04_S": {
+      "label": "skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_COMMUNICATION_04_T": {
+      "label": "toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_COMMUNICATION_04_U": {
+      "label": "unicorn",
+      "peg_code": "U",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png",
+      "source_slug": "unicorn"
+    },
+    "BEAST_COMMUNICATION_04_V": {
+      "label": "vulture",
+      "peg_code": "V",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
+    },
+    "BEAST_COMMUNICATIO_05_W": {
+      "label": "wombat",
+      "peg_code": "W",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
+    },
+    "BEAST_COMMUNICATIO_05_X": {
+      "label": "Xena, warrior woman",
+      "peg_code": "X",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
+    },
+    "BEAST_COMMUNICATIO_05_Y": {
+      "label": "yak",
+      "peg_code": "Y",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png",
+      "source_slug": "yak"
+    },
+    "BEAST_COMMUNICATIO_05_Z": {
+      "label": "Zeus",
+      "peg_code": "Z",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus"
+    },
+    "BEAST_COMMUNICATIO_05_Aa": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png",
+      "source_slug": "aardvark"
+    },
+    "BEAST_COMMUNICATIO_06_Ab": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png",
+      "source_slug": "abyssinian_cat"
+    },
+    "BEAST_COMMUNICATIO_06_Ac": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png",
+      "source_slug": "acorn"
+    },
+    "BEAST_DATAANALYST_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne"
+    },
+    "BEAST_DATAANALYST_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise"
+    },
+    "BEAST_DATAANALYST_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat"
+    },
+    "BEAST_DATAANALYST_01_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon"
+    },
+    "BEAST_DATAANALYST_02_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle"
+    },
+    "BEAST_DATAANALYST_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog"
+    },
+    "BEAST_DATAANALYST_02_G": {
+      "label": "goat",
+      "peg_code": "G",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat"
+    },
+    "BEAST_DATAANALYST_02_H": {
+      "label": "Hydra",
+      "peg_code": "H",
+      "filename": "hydra.png",
+      "url": "/assets/beast-thumbs/hydra.png",
+      "source_slug": "hydra"
+    },
+    "BEAST_DATAANALYST_02_I": {
+      "label": "imp",
+      "peg_code": "I",
+      "filename": "imp.png",
+      "url": "/assets/beast-thumbs/imp.png",
+      "source_slug": "imp"
+    },
+    "BEAST_AI_05_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_AI_05_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_AI_05_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_DATAANALYST_03_J": {
+      "label": "jester",
+      "peg_code": "J",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester"
+    },
+    "BEAST_DATAANALYST_03_K": {
+      "label": "kitten",
+      "peg_code": "K",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten"
+    },
+    "BEAST_DATAANALYST_03_L": {
+      "label": "lion",
+      "peg_code": "L",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion"
+    },
+    "BEAST_DATAANALYST_03_M": {
+      "label": "marmoset",
+      "peg_code": "M",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset"
+    },
+    "BEAST_DATAANALYST_03_N": {
+      "label": "Neanderthal",
+      "peg_code": "N",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal"
+    },
+    "BEAST_DATAANALYST_04_O": {
+      "label": "owl",
+      "peg_code": "O",
+      "filename": "owl.png",
+      "url": "/assets/beast-thumbs/owl.png",
+      "source_slug": "owl"
+    },
+    "BEAST_DATAANALYST_04_P": {
+      "label": "panther",
+      "peg_code": "P",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther"
+    },
+    "BEAST_DATAANALYST_04_Q": {
+      "label": "Quetzalcoatl",
+      "peg_code": "Q",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl"
+    },
+    "BEAST_DATAANALYST_04_R": {
+      "label": "rat",
+      "peg_code": "R",
+      "filename": "rat.png",
+      "url": "/assets/beast-thumbs/rat.png",
+      "source_slug": "rat"
+    },
+    "BEAST_DATAANALYST_04_S": {
+      "label": "skull",
+      "peg_code": "S",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull"
+    },
+    "BEAST_SCIENCE_20_By": {
+      "label": "Byron",
+      "peg_code": "By",
+      "filename": "byron.png",
+      "url": "/assets/beast-thumbs/byron.png",
+      "source_slug": "byron"
+    },
+    "BEAST_DATAANALYST_05_T": {
+      "label": "toucan",
+      "peg_code": "T",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan"
+    },
+    "BEAST_DATAANALYST_05_U": {
+      "label": "unicorn",
+      "peg_code": "U",
+      "filename": "unicorn.png",
+      "url": "/assets/beast-thumbs/unicorn.png",
+      "source_slug": "unicorn"
+    },
+    "BEAST_DATAANALYST_05_V": {
+      "label": "vulture",
+      "peg_code": "V",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture"
+    },
+    "BEAST_DATAANALYST_05_W": {
+      "label": "wombat",
+      "peg_code": "W",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat"
+    },
+    "BEAST_DATAANALYST_05_X": {
+      "label": "Xena, warrior woman",
+      "peg_code": "X",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman"
+    },
+    "BEAST_DATAANALYST_06_Y": {
+      "label": "yak",
+      "peg_code": "Y",
+      "filename": "yak.png",
+      "url": "/assets/beast-thumbs/yak.png",
+      "source_slug": "yak"
+    },
+    "BEAST_DATAANALYST_06_Z": {
+      "label": "Zeus",
+      "peg_code": "Z",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus"
+    },
+    "BEAST_DATAANALYST_06_Aa": {
+      "label": "aardvark",
+      "peg_code": "Aa",
+      "filename": "aardvark.png",
+      "url": "/assets/beast-thumbs/aardvark.png",
+      "source_slug": "aardvark"
+    },
+    "BEAST_DATAANALYST_06_Ab": {
+      "label": "Abyssinian cat",
+      "peg_code": "Ab",
+      "filename": "abyssinian_cat.png",
+      "url": "/assets/beast-thumbs/abyssinian_cat.png",
+      "source_slug": "abyssinian_cat"
+    },
+    "BEAST_DATAANALYST_06_Ac": {
+      "label": "acorn",
+      "peg_code": "Ac",
+      "filename": "acorn.png",
+      "url": "/assets/beast-thumbs/acorn.png",
+      "source_slug": "acorn"
+    },
+    "BEAST_DATAANALYST_07_Ad": {
+      "label": "adder",
+      "peg_code": "Ad",
+      "filename": "adder.png",
+      "url": "/assets/beast-thumbs/adder.png",
+      "source_slug": "adder"
+    },
+    "BEAST_DATAANALYST_08_Ae": {
+      "label": "aerialist",
+      "peg_code": "Ae",
+      "filename": "aerialist.png",
+      "url": "/assets/beast-thumbs/aerialist.png",
+      "source_slug": "aerialist"
+    },
+    "BEAST_DATAANALYST_08_Af": {
+      "label": "Afghan hound",
+      "peg_code": "Af",
+      "filename": "afghan_hound.png",
+      "url": "/assets/beast-thumbs/afghan_hound.png",
+      "source_slug": "afghan_hound"
+    },
+    "BEAST_DATAANALYST_08_Ag": {
+      "label": "Agaric fungi",
+      "peg_code": "Ag",
+      "filename": "agaric_fungi.png",
+      "url": "/assets/beast-thumbs/agaric_fungi.png",
+      "source_slug": "agaric_fungi"
+    },
+    "BEAST_DATAANALYST_08_Ah": {
+      "label": "Ah!—a sigh",
+      "peg_code": "Ah",
+      "filename": "ah_a_sigh.png",
+      "url": "/assets/beast-thumbs/ah_a_sigh.png",
+      "source_slug": "ah_a_sigh"
+    },
+    "BEAST_DATAANALYST_08_Ai": {
+      "label": "Airedale terrier",
+      "peg_code": "Ai",
+      "filename": "airedale_terrier.png",
+      "url": "/assets/beast-thumbs/airedale_terrier.png",
+      "source_slug": "airedale_terrier"
+    },
+    "BEAST_DATAANALYST_09_Aj": {
+      "label": "Ajax",
+      "peg_code": "Aj",
+      "filename": "ajax.png",
+      "url": "/assets/beast-thumbs/ajax.png",
+      "source_slug": "ajax"
+    },
+    "BEAST_DATAANALYST_09_Ak": {
+      "label": "Akita (dog breed)",
+      "peg_code": "Ak",
+      "filename": "akita_dog_breed.png",
+      "url": "/assets/beast-thumbs/akita_dog_breed.png",
+      "source_slug": "akita_dog_breed"
+    },
+    "BEAST_DATAANALYST_09_Al": {
+      "label": "alligator",
+      "peg_code": "Al",
+      "filename": "alligator.png",
+      "url": "/assets/beast-thumbs/alligator.png",
+      "source_slug": "alligator"
+    },
+    "BEAST_DATAANALYST_09_Am": {
+      "label": "amulet",
+      "peg_code": "Am",
+      "filename": "amulet.png",
+      "url": "/assets/beast-thumbs/amulet.png",
+      "source_slug": "amulet"
+    },
+    "BEAST_DATAANALYST_09_An": {
+      "label": "angel",
+      "peg_code": "An",
+      "filename": "angel.png",
+      "url": "/assets/beast-thumbs/angel.png",
+      "source_slug": "angel"
+    },
+    "BEAST_DATAANALYST_10_Ao": {
+      "label": "aoudad",
+      "peg_code": "Ao",
+      "filename": "aoudad.png",
+      "url": "/assets/beast-thumbs/aoudad.png",
+      "source_slug": "aoudad"
+    },
+    "BEAST_DATAANALYST_10_Ap": {
+      "label": "ape",
+      "peg_code": "Ap",
+      "filename": "ape.png",
+      "url": "/assets/beast-thumbs/ape.png",
+      "source_slug": "ape"
+    },
+    "BEAST_DATAANALYST_10_Aq": {
+      "label": "aquatic leech",
+      "peg_code": "Aq",
+      "filename": "aquatic_leech.png",
+      "url": "/assets/beast-thumbs/aquatic_leech.png",
+      "source_slug": "aquatic_leech"
+    },
+    "BEAST_DATAANALYST_10_Ar": {
+      "label": "armadillo",
+      "peg_code": "Ar",
+      "filename": "armadillo.png",
+      "url": "/assets/beast-thumbs/armadillo.png",
+      "source_slug": "armadillo"
+    },
+    "BEAST_DATAANALYST_10_As": {
+      "label": "asp",
+      "peg_code": "As",
+      "filename": "asp.png",
+      "url": "/assets/beast-thumbs/asp.png",
+      "source_slug": "asp"
+    },
+    "BEAST_DATAANALYST_11_At": {
+      "label": "atlas",
+      "peg_code": "At",
+      "filename": "atlas.png",
+      "url": "/assets/beast-thumbs/atlas.png",
+      "source_slug": "atlas"
+    },
+    "BEAST_DATAANALYST_11_Au": {
+      "label": "auroch",
+      "peg_code": "Au",
+      "filename": "auroch.png",
+      "url": "/assets/beast-thumbs/auroch.png",
+      "source_slug": "auroch"
+    },
+    "BEAST_DATAANALYST_11_Av": {
+      "label": "avocet",
+      "peg_code": "Av",
+      "filename": "avocet.png",
+      "url": "/assets/beast-thumbs/avocet.png",
+      "source_slug": "avocet"
+    },
+    "BEAST_DATAANALYST_11_Aw": {
+      "label": "awassi sheep",
+      "peg_code": "Aw",
+      "filename": "awassi_sheep.png",
+      "url": "/assets/beast-thumbs/awassi_sheep.png",
+      "source_slug": "awassi_sheep"
+    },
+    "BEAST_DATAANALYST_11_Ax": {
+      "label": "axolotl",
+      "peg_code": "Ax",
+      "filename": "axolotl.png",
+      "url": "/assets/beast-thumbs/axolotl.png",
+      "source_slug": "axolotl"
+    },
+    "BEAST_DATAANALYST_12_Ay": {
+      "label": "aye-aye",
+      "peg_code": "Ay",
+      "filename": "aye_aye.png",
+      "url": "/assets/beast-thumbs/aye_aye.png",
+      "source_slug": "aye_aye"
+    },
+    "BEAST_DATAANALYST_12_Az": {
+      "label": "Aztec",
+      "peg_code": "Az",
+      "filename": "aztec.png",
+      "url": "/assets/beast-thumbs/aztec.png",
+      "source_slug": "aztec"
+    },
+    "BEAST_DATAANALYST_13_Ba": {
+      "label": "bat",
+      "peg_code": "Ba",
+      "filename": "bat.png",
+      "url": "/assets/beast-thumbs/bat.png",
+      "source_slug": "bat"
+    },
+    "BEAST_DATAANALYST_13_Bb": {
+      "label": "Bone bird of paradise",
+      "peg_code": "Bb",
+      "filename": "bone_bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bone_bird_of_paradise.png",
+      "source_slug": "bone_bird_of_paradise"
+    },
+    "BEAST_DATAANALYST_13_Bc": {
+      "label": "Bone cat",
+      "peg_code": "Bc",
+      "filename": "bone_cat.png",
+      "url": "/assets/beast-thumbs/bone_cat.png",
+      "source_slug": "bone_cat"
+    },
+    "BEAST_DATAANALYST_13_Bd": {
+      "label": "Bone dragon",
+      "peg_code": "Bd",
+      "filename": "bone_dragon.png",
+      "url": "/assets/beast-thumbs/bone_dragon.png",
+      "source_slug": "bone_dragon"
+    },
+    "BEAST_DATAANALYST_14_Be": {
+      "label": "bee",
+      "peg_code": "Be",
+      "filename": "bee.png",
+      "url": "/assets/beast-thumbs/bee.png",
+      "source_slug": "bee"
+    },
+    "BEAST_DATAANALYST_14_Bf": {
+      "label": "Bone frog",
+      "peg_code": "Bf",
+      "filename": "bone_frog.png",
+      "url": "/assets/beast-thumbs/bone_frog.png",
+      "source_slug": "bone_frog"
+    },
+    "BEAST_DATAANALYST_14_Bg": {
+      "label": "Bone goat",
+      "peg_code": "Bg",
+      "filename": "bone_goat.png",
+      "url": "/assets/beast-thumbs/bone_goat.png",
+      "source_slug": "bone_goat"
     }
   }
 }

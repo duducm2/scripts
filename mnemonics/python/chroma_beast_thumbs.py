@@ -1,10 +1,9 @@
-"""Chroma-key magenta beast icon sources into transparent 256x256 PNGs per beast id."""
+"""Chroma-key magenta beast icon sources into one transparent 256x256 PNG per slug."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import shutil
 from collections import defaultdict
 from pathlib import Path
 
@@ -74,33 +73,35 @@ def main() -> None:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     icons = manifest.get("icons") or {}
 
-    by_name: dict[str, list[str]] = defaultdict(list)
+    by_slug: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for bid, meta in icons.items():
-        by_name[meta["label"]].append(bid)
+        label = meta.get("label") or bid
+        s = meta.get("source_slug") or slug(label)
+        by_slug[s].append((bid, label))
 
     THUMBS.mkdir(parents=True, exist_ok=True)
     done = 0
     missing = []
-    for name, bids in sorted(by_name.items(), key=lambda x: x[0].lower()):
-        src = sources / f"{slug(name)}.png"
+    for s, pairs in sorted(by_slug.items()):
+        src = sources / f"{s}.png"
         if not src.is_file():
-            # also accept first beast id as filename
-            alt = sources / f"{bids[0]}.png"
+            alt = sources / f"{pairs[0][0]}.png"
             if alt.is_file():
                 src = alt
             else:
-                missing.append(name)
+                missing.append(pairs[0][1])
                 continue
         rgba = chroma_to_rgba(src)
-        for bid in bids:
-            dest = THUMBS / f"{bid}.png"
-            rgba.save(dest, "PNG")
-            done += 1
-        print(f"ok {name} -> {len(bids)} file(s)")
+        dest = THUMBS / f"{s}.png"
+        rgba.save(dest, "PNG")
+        done += 1
+        print(f"ok {s} -> 1 file shared by {len(pairs)} id(s) ({pairs[0][1]})")
 
-    print(f"wrote={done} missing={len(missing)}")
-    for m in missing:
+    print(f"wrote={done} missing_labels={len(missing)}")
+    for m in missing[:40]:
         print(f"  MISSING {m}")
+    if len(missing) > 40:
+        print(f"  ... +{len(missing) - 40} more")
 
 
 if __name__ == "__main__":

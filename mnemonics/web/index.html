@@ -2516,11 +2516,15 @@
             const cards =
               ats.map((a) => renderAtomCard(a)).join("") ||
               '<p class="empty">No atoms</p>';
+            const thumbUrl = beastThumbUrl(b.id);
+            const thumbHtml = thumbUrl
+              ? `<img class="beast-thumb" src="${esc(thumbUrl)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
+              : "";
             return `<section class="beast-cluster" data-beast-id="${escAttr(b.id)}" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">
               <span class="lbl">Beast</span>
               <div class="beast-head-row">
-                <p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> ${dash(b.beast_name || b.peg_code)}</p>
+                <p class="beast-name">${thumbHtml}<span class="emoji" aria-hidden="true">🟧</span> ${dash(b.beast_name || b.peg_code)}</p>
               </div>
             </header>
             <div class="beast-cluster-atoms">${cards}</div>
@@ -2560,18 +2564,22 @@
         const hasPrompt = !!(p.image_prompt || "").trim();
         btnCopy.disabled = !hasPrompt;
         btnCopy.onclick = () => copyImageComposePrompt(p.image_prompt, btnCopy);
-        document.getElementById("ovAtoms").innerHTML = renderPalaceAtoms(id);
-        const ovAtoms = document.getElementById("ovAtoms");
-        const beastN = ovAtoms.querySelectorAll(
-          ":scope > .beast-cluster",
-        ).length;
-        if (beastN) {
-          ovAtoms.dataset.beastCount = String(beastN);
-          overlay.dataset.beastCount = String(beastN);
-        } else {
-          delete ovAtoms.dataset.beastCount;
-          delete overlay.dataset.beastCount;
-        }
+        const paintAtoms = () => {
+          document.getElementById("ovAtoms").innerHTML = renderPalaceAtoms(id);
+          const ovAtoms = document.getElementById("ovAtoms");
+          const beastN = ovAtoms.querySelectorAll(
+            ":scope > .beast-cluster",
+          ).length;
+          if (beastN) {
+            ovAtoms.dataset.beastCount = String(beastN);
+            overlay.dataset.beastCount = String(beastN);
+          } else {
+            delete ovAtoms.dataset.beastCount;
+            delete overlay.dataset.beastCount;
+          }
+        };
+        paintAtoms();
+        loadBeastThumbManifest().then(paintAtoms);
         document.getElementById("ovNotesInput").value = p.palace_notes || "";
         setNotesStatus("", "");
         renderGalleryGrid(id);

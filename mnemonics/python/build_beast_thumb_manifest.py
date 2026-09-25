@@ -1,12 +1,19 @@
 """Build beast-thumb-manifest.json for Quick Recall–scoped beasts."""
+
 from __future__ import annotations
 
 import csv
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def slug(name: str) -> str:
+    s = "".join(ch if ch.isalnum() else "_" for ch in name.lower())
+    return re.sub(r"_+", "_", s).strip("_") or "beast"
 
 
 def main() -> None:
@@ -21,13 +28,17 @@ def main() -> None:
     icons = {}
     for b in qr_beasts:
         bid = b["id"]
+        label = b["beast_name"]
+        s = slug(label)
         icons[bid] = {
-            "label": b["beast_name"],
+            "label": label,
             "peg_code": b.get("peg_code") or "",
-            "filename": f"{bid}.png",
-            "url": f"/assets/beast-thumbs/{bid}.png",
+            "filename": f"{s}.png",
+            "url": f"/assets/beast-thumbs/{s}.png",
+            "source_slug": s,
         }
 
+    unique_slugs = {meta["source_slug"] for meta in icons.values()}
     manifest = {
         "version": 1,
         "style": {
@@ -41,8 +52,8 @@ def main() -> None:
             "background": "transparent",
             "generated_with": "Cursor GenerateImage",
             "source_layout": (
-                "Per unique beast_name icon, chroma-keyed magenta then copied "
-                "to each beast id filename"
+                "One chroma-keyed PNG per unique beast_name slug; all beast ids "
+                "sharing that name point at the same shared file"
             ),
             "generation_prompt_template": (
                 "Isolated RPG inventory item icon of {beast_name}, polished "
@@ -52,7 +63,8 @@ def main() -> None:
             ),
             "catalog_scope": (
                 f"{len(qr_beasts)} Quick Recall beasts across "
-                f"{len(palace_ids)} included palaces"
+                f"{len(palace_ids)} included palaces / "
+                f"{len(unique_slugs)} shared thumb files"
             ),
         },
         "icons": icons,
@@ -62,7 +74,9 @@ def main() -> None:
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "beast-thumbs").mkdir(parents=True, exist_ok=True)
     out = assets / "beast-thumb-manifest.json"
-    out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"wrote {out} icons={len(icons)}")
 
     by_name: dict[str, list[str]] = defaultdict(list)

@@ -1,0 +1,532 @@
+[
+  {
+    "label": "aerialqist",
+    "slug": "aerialqist",
+    "ids": [
+      "BEAST_GERMAN_08_AE"
+    ]
+  },
+  {
+    "label": "Arachne",
+    "slug": "arachne",
+    "ids": [
+      "BEAST_AI_01_A",
+      "BEAST_COMMUNICATIO_01_A",
+      "BEAST_ENGLISH_01_A",
+      "BEAST_GERMAN_01_A",
+      "BEAST_PIANO_01_A",
+      "BEAST_SCIENCE_01_A",
+      "BEAST_SKILLS_01_A",
+      "BEAST_TAOISM_01_A",
+      "BEAST_DATAANALYST_01_A"
+    ]
+  },
+  {
+    "label": "Basil jellyfish",
+    "slug": "basil_jellyfish",
+    "ids": [
+      "BEAST_ENGLISH_15_BJ"
+    ]
+  },
+  {
+    "label": "bird of paradise",
+    "slug": "bird_of_paradise",
+    "ids": [
+      "BEAST_AI_01_B",
+      "BEAST_COMMUNICATIO_01_B",
+      "BEAST_GERMAN_01_B",
+      "BEAST_PIANO_01_B",
+      "BEAST_SCIENCE_01_B",
+      "BEAST_SKILLS_01_B",
+      "BEAST_TAOISM_01_B",
+      "BEAST_DATAANALYST_01_B"
+    ]
+  },
+  {
+    "label": "bison",
+    "slug": "bison",
+    "ids": [
+      "BEAST_ENGLISH_15_BI",
+      "BEAST_SCIENCE_15_BI"
+    ]
+  },
+  {
+    "label": "Bitter hare",
+    "slug": "bitter_hare",
+    "ids": [
+      "BEAST_ENGLISH_15_BH"
+    ]
+  },
+  {
+    "label": "Blackwater ferret",
+    "slug": "blackwater_ferret",
+    "ids": [
+      "BEAST_ENGLISH_14_BF"
+    ]
+  },
+  {
+    "label": "Blackwater penguin",
+    "slug": "blackwater_penguin",
+    "ids": [
+      "BEAST_ENGLISH_16_BP"
+    ]
+  },
+  {
+    "label": "Blazing nightjar",
+    "slug": "blazing_nightjar",
+    "ids": [
+      "BEAST_ENGLISH_16_BN"
+    ]
+  },
+  {
+    "label": "bloodhound",
+    "slug": "bloodhound",
+    "ids": [
+      "BEAST_ENGLISH_16_BL",
+      "BEAST_SCIENCE_16_BL"
+    ]
+  },
+  {
+    "label": "Bloodmoon kestrel",
+    "slug": "bloodmoon_kestrel",
+    "ids": [
+      "BEAST_ENGLISH_15_BK"
+    ]
+  },
+  {
+    "label": "Bone Bear",
+    "slug": "bone_bear",
+    "ids": [
+      "BEAST_SCIENCE_14_BB"
+    ]
+  },
+  {
+    "label": "Bone Dog",
+    "slug": "bone_dog",
+    "ids": [
+      "BEAST_SCIENCE_14_BD"
+    ]
+  },
+  {
+    "label": "Bone Hydra",
+    "slug": "bone_hydra",
+    "ids": [
+      "BEAST_SCIENCE_15_BH"
+    ]
+  },
+  {
+    "label": "Bone jester",
+    "slug": "bone_jester",
+    "ids": [
+      "BEAST_SCIENCE_15_BJ"
+    ]
+  },
+  {
+    "label": "Bone kitten",
+    "slug": "bone_kitten",
+    "ids": [
+      "BEAST_SCIENCE_16_BK"
+    ]
+  },
+  {
+    "label": "Bone marmoset",
+    "slug": "bone_marmoset",
+    "ids": [
+      "BEAST_ENGLISH_16_BM",
+      "BEAST_SCIENCE_16_BM"
+    ]
+  },
+  {
+    "label": "Bone Neanderthal",
+    "slug": "bone_neanderthal",
+    "ids": [
+      "BEAST_SCIENCE_17_BN"
+    ]
+  },
+  {
+    "label": "Bone panther",
+    "slug": "bone_panther",
+    "ids": [
+      "BEAST_SCIENCE_17_BP"
+    ]
+  },
+  {
+    "label": "Bone Quetzalcoatl",
+    "slug": "bone_quetzalcoatl",
+    "ids": [
+      "BEAST_SCIENCE_18_BQ"
+    ]
+  },
+  {
+    "label": "Bone Shark",
+    "slug": "bone_shark",
+    "ids": [
+      "BEAST_ENGLISH_18_BS"
+    ]
+  },
+  {
+    "label": "Bone skull",
+    "slug": "bone_skull",
+    "ids": [
+      "BEAST_SCIENCE_18_BS"
+    ]
+  },
+  {
+    "label": "Bone Toad",
+    "slug": "bone_toad",
+    "ids": [
+      "BEAST_ENGLISH_18_BT"
+    ]
+  },
+  {
+    "label": "Bone toucan",
+    "slug": "bone_toucan",
+    "ids": [
+      "BEAST_SCIENCE_18_BT"
+    ]
+  },
+  {
+    "label": "Bone vulture",
+    "slug": "bone_vulture",
+    "ids": [
+      "BEAST_SCIENCE_19_BV"
+    ]
+  },
+  {
+    "label": "Bone wombat",
+    "slug": "bone_wombat",
+    "ids": [
+      "BEAST_SCIENCE_19_BW"
+    ]
+  },
+  {
+    "label": "Bone Xena, warrior woman",
+    "slug": "bone_xena_warrior_woman",
+    "ids": [
+      "BEAST_SCIENCE_19_BX"
+    ]
+  },
+  {
+    "label": "Boulder giraffe",
+    "slug": "boulder_giraffe",
+    "ids": [
+      "BEAST_ENGLISH_14_BG"
+    ]
+  },
+  {
+    "label": "Boulder quail",
+    "slug": "boulder_quail",
+    "ids": [
+      "BEAST_ENGLISH_17_BQ"
+    ]
+  },
+  {
+    "label": "bower-bird",
+    "slug": "bower_bird",
+    "ids": [
+      "BEAST_ENGLISH_16_BO",
+      "BEAST_SCIENCE_17_BO"
+    ]
+  },
+  {
+    "label": "Brass bison",
+    "slug": "brass_bison",
+    "ids": [
+      "BEAST_ENGLISH_13_BB"
+    ]
+  },
+  {
+    "label": "brontosaurus",
+    "slug": "brontosaurus",
+    "ids": [
+      "BEAST_ENGLISH_17_BR",
+      "BEAST_SCIENCE_18_BR"
+    ]
+  },
+  {
+    "label": "butterfly",
+    "slug": "butterfly",
+    "ids": [
+      "BEAST_ENGLISH_18_BU",
+      "BEAST_SCIENCE_19_BU"
+    ]
+  },
+  {
+    "label": "Byron",
+    "slug": "byron",
+    "ids": [
+      "BEAST_SCIENCE_20_By"
+    ]
+  },
+  {
+    "label": "cat",
+    "slug": "cat",
+    "ids": [
+      "BEAST_AI_01_C",
+      "BEAST_COMMUNICATIO_01_C",
+      "BEAST_GERMAN_01_C",
+      "BEAST_PIANO_01_C",
+      "BEAST_SCIENCE_02_C",
+      "BEAST_SKILLS_01_C",
+      "BEAST_TAOISM_01_C",
+      "BEAST_DATAANALYST_01_C"
+    ]
+  },
+  {
+    "label": "dragon",
+    "slug": "dragon",
+    "ids": [
+      "BEAST_AI_02_D",
+      "BEAST_COMMUNICATIO_02_D",
+      "BEAST_GERMAN_01_D",
+      "BEAST_PIANO_01_D",
+      "BEAST_SCIENCE_02_D",
+      "BEAST_SKILLS_01_D",
+      "BEAST_TAOISM_01_D",
+      "BEAST_DATAANALYST_01_D"
+    ]
+  },
+  {
+    "label": "eagle",
+    "slug": "eagle",
+    "ids": [
+      "BEAST_AI_02_E",
+      "BEAST_COMMUNICATIO_02_E",
+      "BEAST_GERMAN_01_E",
+      "BEAST_PIANO_01_E",
+      "BEAST_SCIENCE_02_E",
+      "BEAST_SKILLS_01_E",
+      "BEAST_TAOISM_01_E",
+      "BEAST_DATAANALYST_02_E"
+    ]
+  },
+  {
+    "label": "frog",
+    "slug": "frog",
+    "ids": [
+      "BEAST_AI_02_F",
+      "BEAST_COMMUNICATIO_02_F",
+      "BEAST_GERMAN_02_F",
+      "BEAST_PIANO_02_F",
+      "BEAST_SCIENCE_02_F",
+      "BEAST_SKILLS_02_F",
+      "BEAST_TAOISM_02_F",
+      "BEAST_DATAANALYST_02_F"
+    ]
+  },
+  {
+    "label": "goat",
+    "slug": "goat",
+    "ids": [
+      "BEAST_AI_02_G",
+      "BEAST_COMMUNICATIO_02_G",
+      "BEAST_GERMAN_02_G",
+      "BEAST_PIANO_02_G",
+      "BEAST_SKILLS_02_G",
+      "BEAST_TAOISM_02_G",
+      "BEAST_DATAANALYST_02_G"
+    ]
+  },
+  {
+    "label": "Hydra",
+    "slug": "hydra",
+    "ids": [
+      "BEAST_AI_02_H",
+      "BEAST_COMMUNICATIO_02_H",
+      "BEAST_ENGLISH_02_H",
+      "BEAST_GERMAN_02_H",
+      "BEAST_PIANO_02_H",
+      "BEAST_SCIENCE_03_H",
+      "BEAST_SKILLS_03_H",
+      "BEAST_TAOISM_02_H",
+      "BEAST_DATAANALYST_02_H"
+    ]
+  },
+  {
+    "label": "imp",
+    "slug": "imp",
+    "ids": [
+      "BEAST_AI_03_I",
+      "BEAST_GERMAN_03_I",
+      "BEAST_PIANO_02_I",
+      "BEAST_SKILLS_03_I",
+      "BEAST_TAOISM_02_I",
+      "BEAST_DATAANALYST_02_I"
+    ]
+  },
+  {
+    "label": "Jester",
+    "slug": "jester",
+    "ids": [
+      "BEAST_ENGLISH_02_J",
+      "BEAST_SCIENCE_03_J"
+    ]
+  },
+  {
+    "label": "Kitten",
+    "slug": "kitten",
+    "ids": [
+      "BEAST_ENGLISH_03_K",
+      "BEAST_SCIENCE_03_K"
+    ]
+  },
+  {
+    "label": "Lion",
+    "slug": "lion",
+    "ids": [
+      "BEAST_ENGLISH_03_L",
+      "BEAST_SCIENCE_04_L"
+    ]
+  },
+  {
+    "label": "marmoset",
+    "slug": "marmoset",
+    "ids": [
+      "BEAST_ENGLISH_04_M",
+      "BEAST_GERMAN_03_M",
+      "BEAST_PIANO_03_M",
+      "BEAST_SKILLS_04_M",
+      "BEAST_TAOISM_03_M",
+      "BEAST_COMMUNICATION_M",
+      "BEAST_AI_05_M",
+      "BEAST_DATAANALYST_03_M"
+    ]
+  },
+  {
+    "label": "Neanderthal",
+    "slug": "neanderthal",
+    "ids": [
+      "BEAST_ENGLISH_04_N",
+      "BEAST_GERMAN_04_N",
+      "BEAST_PIANO_03_N",
+      "BEAST_SCIENCE_04_N",
+      "BEAST_SKILLS_05_N",
+      "BEAST_TAOISM_03_N",
+      "BEAST_COMMUNICATION_N",
+      "BEAST_AI_05_N",
+      "BEAST_DATAANALYST_03_N"
+    ]
+  },
+  {
+    "label": "owl",
+    "slug": "owl",
+    "ids": [
+      "BEAST_ENGLISH_04_O",
+      "BEAST_GERMAN_04_O",
+      "BEAST_PIANO_03_O",
+      "BEAST_SCIENCE_05_O",
+      "BEAST_SKILLS_05_O",
+      "BEAST_TAOISM_03_O",
+      "BEAST_COMMUNICATION_O",
+      "BEAST_AI_05_O",
+      "BEAST_DATAANALYST_04_O"
+    ]
+  },
+  {
+    "label": "panther",
+    "slug": "panther",
+    "ids": [
+      "BEAST_ENGLISH_04_P",
+      "BEAST_GERMAN_04_P",
+      "BEAST_PIANO_04_P",
+      "BEAST_SCIENCE_05_P",
+      "BEAST_TAOISM_04_P",
+      "BEAST_COMMUNICATION_P",
+      "BEAST_DATAANALYST_04_P"
+    ]
+  },
+  {
+    "label": "Quetzalcoatl",
+    "slug": "quetzalcoatl",
+    "ids": [
+      "BEAST_ENGLISH_04_Q",
+      "BEAST_GERMAN_04_Q",
+      "BEAST_PIANO_04_Q",
+      "BEAST_SCIENCE_05_Q",
+      "BEAST_TAOISM_04_Q",
+      "BEAST_DATAANALYST_04_Q"
+    ]
+  },
+  {
+    "label": "rat",
+    "slug": "rat",
+    "ids": [
+      "BEAST_ENGLISH_05_R",
+      "BEAST_PIANO_04_R",
+      "BEAST_SCIENCE_05_R",
+      "BEAST_TAOISM_04_R",
+      "BEAST_COMMUNICATION_Q",
+      "BEAST_COMMUNICATION_04_R",
+      "BEAST_DATAANALYST_04_R"
+    ]
+  },
+  {
+    "label": "skull",
+    "slug": "skull",
+    "ids": [
+      "BEAST_ENGLISH_05_S",
+      "BEAST_PIANO_05_S",
+      "BEAST_SCIENCE_06_S",
+      "BEAST_TAOISM_04_S",
+      "BEAST_COMMUNICATION_04_S",
+      "BEAST_DATAANALYST_04_S"
+    ]
+  },
+  {
+    "label": "toucan",
+    "slug": "toucan",
+    "ids": [
+      "BEAST_ENGLISH_06_T",
+      "BEAST_PIANO_05_T",
+      "BEAST_SCIENCE_06_T",
+      "BEAST_TAOISM_04_T",
+      "BEAST_COMMUNICATION_04_T",
+      "BEAST_DATAANALYST_05_T"
+    ]
+  },
+  {
+    "label": "unicorn",
+    "slug": "unicorn",
+    "ids": [
+      "BEAST_ENGLISH_06_U",
+      "BEAST_PIANO_05_U",
+      "BEAST_SCIENCE_06_U",
+      "BEAST_COMMUNICATION_04_U",
+      "BEAST_DATAANALYST_05_U"
+    ]
+  },
+  {
+    "label": "vulture",
+    "slug": "vulture",
+    "ids": [
+      "BEAST_ENGLISH_06_V",
+      "BEAST_PIANO_05_V",
+      "BEAST_SCIENCE_06_V",
+      "BEAST_COMMUNICATION_04_V",
+      "BEAST_DATAANALYST_05_V"
+    ]
+  },
+  {
+    "label": "wombat",
+    "slug": "wombat",
+    "ids": [
+      "BEAST_ENGLISH_06_W",
+      "BEAST_PIANO_05_W",
+      "BEAST_SCIENCE_06_W",
+      "BEAST_COMMUNICATIO_05_W",
+      "BEAST_DATAANALYST_05_W"
+    ]
+  },
+  {
+    "label": "Xena, warrior woman",
+    "slug": "xena_warrior_woman",
+    "ids": [
+      "BEAST_ENGLISH_07_X",
+      "BEAST_GERMAN_06_X",
+      "BEAST_PIANO_06_X",
+      "BEAST_SCIENCE_07_X",
+      "BEAST_COMMUNICATIO_05_X",
+      "BEAST_DATAANALYST_05_X"
+    ]
+  }
+]
