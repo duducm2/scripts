@@ -885,7 +885,7 @@ cheatSheets["EXCEL.EXE"] := "
     📊 [C][C]SV to columns (semicolon delimited)
     📐 [N]Cycle layout pillars (Balanced·Scan·Narrative·Reference·Titles·Triage·Immersive)
     🌐 [L]Open cell [L]ink in new Chrome
-    🔢 [F][F]ill series down to last used row
+    🔢 [F][F]ill series down to last table/used row (confirm · may clear undo)
     📐 [O][O]rganize (select all · center · font 11)
     🔍 [R][R]ead active cell (dark modal · Esc / Shift+R closes)
 )"

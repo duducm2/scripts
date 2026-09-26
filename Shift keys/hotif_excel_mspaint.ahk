@@ -1125,8 +1125,10 @@ Excel_OpenActiveCellHyperlinkInChrome() {
 
 +l:: Excel_OpenActiveCellHyperlinkInChrome()
 
-; Shift + F : Fill series downward (fill-handle equivalent) to sheet UsedRange last row.
-; Selection = seed pattern (1 cell, or 2+ for step); COM AutoFill xlFillDefault — no mouse drag.
+; Shift + F : Fill series downward (fill-handle equivalent) to last target row.
+; Target = max(UsedRange last row, enclosing ListObject last row) so empty table
+; body rows still count. Selection = seed (1 cell, or 2+ for step); COM AutoFill.
+; Confirm first: COM AutoFill can clear Excel's undo stack, so ask before committing.
 Excel_FillSeriesToUsedRange() {
     static XL_FILL_DEFAULT := 0
     try {
@@ -1155,10 +1157,33 @@ Excel_FillSeriesToUsedRange() {
         return false
     }
 
+    ; UsedRange often stops at last value and skips empty Excel Table rows.
+    lastRow := 0
     try {
         ur := ws.UsedRange
         lastRow := ur.Row + ur.Rows.Count - 1
     } catch {
+    }
+    try {
+        loCount := 0
+        try loCount := ws.ListObjects.Count
+        catch {
+        }
+        loop loCount {
+            lo := ws.ListObjects(A_Index)
+            try {
+                if xl.Intersect(src, lo.Range) {
+                    tableLast := lo.Range.Row + lo.Range.Rows.Count - 1
+                    if (tableLast > lastRow)
+                        lastRow := tableLast
+                    break
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    if (lastRow = 0) {
         ShowCenteredOverlay_Utils("❌ No used range on sheet", 2000, BANNER_ACCENT_ERROR)
         return false
     }
@@ -1167,6 +1192,15 @@ Excel_FillSeriesToUsedRange() {
         ShowCenteredOverlay_Utils("❌ Nothing to fill — already at last used row", 2200, BANNER_ACCENT_ERROR)
         return false
     }
+
+    filled := lastRow - srcEndRow
+    if MsgBox(
+        "Fill series down +" . filled . " row(s) to last table/used row?`n`n"
+        . "This may clear Excel's undo history (Ctrl+Z).",
+        "Confirm fill series",
+        "Icon? YesNo Default2"
+    ) != "Yes"
+        return false
 
     prevScreen := true
     try prevScreen := xl.ScreenUpdating
@@ -1181,7 +1215,6 @@ Excel_FillSeriesToUsedRange() {
         try xl.ScreenUpdating := prevScreen
     }
 
-    filled := lastRow - srcEndRow
     ShowCenteredOverlay_Utils("🔢 Filled series +" . filled . " row(s)", 1600, BANNER_ACCENT_SUCCESS)
     return true
 }
