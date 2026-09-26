@@ -99,12 +99,26 @@ StandardLoadingBar_Update("🚀 Launching apps...")
 ; Persistent keep-alive: Tasks (:8766), Memory Palace (:8767), Finance dashboard (:8765).
 ; Heartbeats every 30s; Utils reload no longer kills these Python servers.
 Run GetScriptPath("Utils\web_servers_warmup.ahk")
-Sleep 10000
 
-; Start QuickLookThat's interesting (study viewer) based on the current environment in env.ahk
+; Start QuickLook (study viewer) early so a long warmup sleep cannot skip it if Act is stopped.
 quicklookExe := GetQuickLookExePath()
-if (quicklookExe)
-    Run quicklookExe
+if (quicklookExe = "" || !FileExist(quicklookExe))
+    quicklookExe := "C:\QuickLook\QuickLook.exe"
+if (FileExist(quicklookExe)) {
+    StandardLoadingBar_Update("🚀 Starting QuickLook...")
+    try {
+        if !ProcessExist("QuickLook.exe")
+            Run '"' quicklookExe '"'
+    } catch as e {
+        StandardLoadingBar_Update("⚠ QuickLook launch failed", BANNER_ACCENT_ERROR)
+        Sleep 800
+    }
+} else {
+    StandardLoadingBar_Update("⚠ QuickLook.exe not found", BANNER_ACCENT_ERROR)
+    Sleep 800
+}
+
+Sleep 10000
 
 Run GetScriptPath("Shift keys.ahk")
 Run GetScriptPath("Gemini.ahk")
