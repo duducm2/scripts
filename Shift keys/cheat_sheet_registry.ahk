@@ -439,6 +439,7 @@ cheatSheets["Cursor.exe"] := "
     📄 [E] File: Op[E]n File (ahk)
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
+    🔀 [W] Focus other side (compare editor)
     💾 [S][S]tash and Pull (Git) (ahk)
     
     === Ctrl+Shift ===
@@ -553,6 +554,7 @@ cheatSheets["Code.exe"] := "
     📄 [E] File: Op[E]n File (ahk)
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
+    🔀 [W] Focus other side (compare editor)
     💾 [S][S]tash and Pull (Git) (ahk)
     
     === Ctrl+Shift ===
