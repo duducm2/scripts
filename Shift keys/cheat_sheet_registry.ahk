@@ -1160,7 +1160,7 @@ cheatSheets["Memory Palace"] := "
     🗑 [Delete] Delete selected palace(s)
     
     === Story Reduction ===
-    ✂️ Story Reduction button — toggle staging panel (bottom-right)
+    ✂️ [Shift+R] Toggle Story Reduction (Practice overview or palace overlay)
     🟧 Drag overlay beasts into Delete (REMOVE) or Merge groups (SMASH · max 4)
     📋 Generate Prompt — context (README · characters · bestiary · prior study) + filled story-reduction prompt
     
@@ -1495,7 +1495,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [H] > Help (glossary · Practice / Plans GitHub)
     Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
     Practice grid: [Ctrl+Click] toggle selection (does not open) · [Delete] delete selected palace(s)
-    Story Reduction: toggle panel · drag beasts to Delete/Merge (max 4/group) · Generate Prompt (context + filled prompt)
+    Story Reduction: [Shift+R] toggle (Practice overview or palace overlay) · drag beasts to Delete/Merge (max 4/group) · Generate Prompt (context + filled prompt)
     Overlay: [F] full-screen snapshot · [D] toggle Quote/Story (default Concept-only) · [Shift+C] copy compose prompt (README + preserve-background + street) · ← older · → newer
     Overlay Esc: exit full-screen first, then close overlay; Esc elsewhere returns toward Practice
     [Win+Alt+Shift+→] > Show square selector (right direction)

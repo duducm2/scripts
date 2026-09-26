@@ -503,7 +503,7 @@
         <button
           type="button"
           id="btnStoryReduction"
-          title="Toggle Story Reduction Mode"
+          title="Toggle Story Reduction Mode (Shift+R)"
         >
           Story Reduction
         </button>
@@ -4138,7 +4138,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Story Reduction</b> toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -4426,6 +4426,18 @@
         const ovOpen = document
           .getElementById("overlay")
           .classList.contains("open");
+        if (
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          (e.key === "R" || e.key === "r") &&
+          (ovOpen || state.view === "practice")
+        ) {
+          e.preventDefault();
+          toggleStoryReduction();
+          return;
+        }
         if (
           e.key === "Delete" &&
           !ovOpen &&
