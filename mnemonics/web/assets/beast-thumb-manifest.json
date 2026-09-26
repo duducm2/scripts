@@ -14,7 +14,7 @@
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "377 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 37 beasts with adj"
+    "catalog_scope": "372 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 37 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -3733,56 +3733,6 @@
       "filename": "frog.png",
       "url": "/assets/beast-thumbs/frog.png",
       "source_slug": "frog",
-      "adjective": null,
-      "adj_filename": null,
-      "adj_url": null
-    },
-    "BEAST_DOGS_02_G": {
-      "label": "goat",
-      "peg_code": "G",
-      "filename": "goat.png",
-      "url": "/assets/beast-thumbs/goat.png",
-      "source_slug": "goat",
-      "adjective": null,
-      "adj_filename": null,
-      "adj_url": null
-    },
-    "BEAST_DOGS_02_H": {
-      "label": "Hydra",
-      "peg_code": "H",
-      "filename": "hydra.png",
-      "url": "/assets/beast-thumbs/hydra.png",
-      "source_slug": "hydra",
-      "adjective": null,
-      "adj_filename": null,
-      "adj_url": null
-    },
-    "BEAST_DOGS_02_I": {
-      "label": "imp",
-      "peg_code": "I",
-      "filename": "imp.png",
-      "url": "/assets/beast-thumbs/imp.png",
-      "source_slug": "imp",
-      "adjective": null,
-      "adj_filename": null,
-      "adj_url": null
-    },
-    "BEAST_DOGS_02_J": {
-      "label": "jester",
-      "peg_code": "J",
-      "filename": "jester.png",
-      "url": "/assets/beast-thumbs/jester.png",
-      "source_slug": "jester",
-      "adjective": null,
-      "adj_filename": null,
-      "adj_url": null
-    },
-    "BEAST_DOGS_03_K": {
-      "label": "kitten",
-      "peg_code": "K",
-      "filename": "kitten.png",
-      "url": "/assets/beast-thumbs/kitten.png",
-      "source_slug": "kitten",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null

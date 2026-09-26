@@ -1,6 +1,19 @@
 # Quick Recall
 
 <details open>
+<summary><strong>Dogs</strong> · 2 palaces · 6 atoms</summary>
+
+<img src="../web/assets/beast-thumbs/frog.png" alt="frog" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [F] frog [<kbd><strong><u>Proprioception</u></strong></kbd> Training] [I <kbd><strong><u>guide</u></strong></kbd> the dog] [over raised Cavaletti <kbd><strong><u>poles</u></strong></kbd>] [to build <kbd><strong><u>hind-end</u></strong></kbd> awareness] — Note: This scientifically supports joint health and combats dysplasia risks.
+
+<img src="../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [A] Arachne [Breeding <kbd><strong><u>Lines</u></strong></kbd>] [I choose <kbd><strong><u>working</u></strong></kbd> <kbd><strong><u>lines</u></strong></kbd>] [for extreme <kbd><strong><u>intensity</u></strong></kbd>] [and <kbd><strong><u>pet</u></strong></kbd> <kbd><strong><u>lines</u></strong></kbd>] [for calm <kbd><strong><u>companions</u></strong></kbd>] — Note: Show <kbd><strong><u>lines</u></strong></kbd> prioritize physical conformation and structure.
+<img src="../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [B] bird of paradise [Proper <kbd><strong><u>Fulfillment</u></strong></kbd>] [I <kbd><strong><u>balance</u></strong></kbd> the dog] [with predictable <kbd><strong><u>routines</u></strong></kbd>] [and cognitive <kbd><strong><u>scent</u></strong></kbd> games] — Note: High drive can be satisfied through structured play and scatter feeding rather than professional sports.
+<img src="../web/assets/beast-thumbs/cat.png" alt="cat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [C] cat [Basic <kbd><strong><u>Obedience</u></strong></kbd>] [I teach the <kbd><strong><u>place</u></strong></kbd> command] [to build sustained <kbd><strong><u>focus</u></strong></kbd>] [and provide mental <kbd><strong><u>stimulation</u></strong></kbd>] — Note: This improves communication without needing advanced sports training.
+<img src="../web/assets/beast-thumbs/dragon.png" alt="dragon" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [D] dragon [<kbd><strong><u>Scent</u></strong></kbd> Work] [I <kbd><strong><u>scatter</u></strong></kbd> food] [across the garden <kbd><strong><u>grass</u></strong></kbd>] [to engage <kbd><strong><u>tracking</u></strong></kbd> instincts] — Note: Hiding food around the house with a go find command also works.
+<img src="../web/assets/beast-thumbs/eagle.png" alt="eagle" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [E] eagle [Controlled <kbd><strong><u>Protection</u></strong></kbd>] [I play <kbd><strong><u>tug-of-war</u></strong></kbd>] [paired with a <kbd><strong><u>drop-it</u></strong></kbd> command] [to channel instinctual <kbd><strong><u>drives</u></strong></kbd> safely] — Note: This structured game tires out high-drive dogs effectively.
+
+</details>
+
+<details open>
 <summary><strong>Data Analyst</strong> · 10 palaces · 41 atoms</summary>
 
 <img src="../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bh] Bone Hydra [<kbd><strong><u>LAG Function</u></strong></kbd>] [I <kbd><strong><u>query data</u></strong></kbd>] [from <kbd><strong><u>preceding rows</u></strong></kbd>] [relative to the <kbd><strong><u>current evaluation row</u></strong></kbd>] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
