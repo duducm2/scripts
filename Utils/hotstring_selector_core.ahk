@@ -39,9 +39,12 @@ global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "Hotstrings",
     "Memory Palace",
     "Tasks",
     "Import Management",
-    "Push"]
+    "Push",
+    "Handy English",
+    "Handy Multilang"]
 global g_UtilityTopCategoryById := Map("r", "Prompts", "p", "Projects", "m", "Macros", "h", "Hotstrings", "s",
-    "Sequences", "f", "Finance", "n", "Memory Palace", "t", "Tasks", "j", "Import Management", "g", "Push")
+    "Sequences", "f", "Finance", "n", "Memory Palace", "t", "Tasks", "j", "Import Management", "g", "Push",
+    "k", "Handy English", "l", "Handy Multilang")
 
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]

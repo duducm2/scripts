@@ -1389,6 +1389,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (picker slot 2; same as Win+Alt+Shift+C then 2)
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (picker slot 1; same as Win+Alt+Shift+C then 1)
     [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet Unified EN, 2 Nemotron Streaming, 3 Cohere Transcribe
+    [Win+Alt+Shift+U] then [K] > Handy English (slot 1; same as Win+Alt+Shift+C then 1)
+    [Win+Alt+Shift+U] then [L] > Handy Multilang / Cohere (slot 3; same as Win+Alt+Shift+C then 3)
     [Send dictation? B] > Toggle Parakeet Unified EN ↔ Cohere Transcribe, re-transcribe newest History entry, copy to clipboard, re-open menu
     [Send dictation? T] > Convert to Task pack (prompt char k → TASK_PACK.txt)
     
@@ -1466,7 +1468,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
     
     === GENERAL ===
-    [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes)
+    [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes, [K] Handy English / [L] Handy Multilang = #!+C slots 1/3)
     [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M); [1]/[2]/[3] set video/article/favorite from clipboard; [V]/[A]/[F] open stored video/article/favorite in new Chrome; [Q]/[M] AI companion Quick / Deep model
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; then return to previous window; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2

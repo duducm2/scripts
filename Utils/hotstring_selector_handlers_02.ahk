@@ -50,6 +50,17 @@ UtilitySelector_SwitchToCategory(category) {
         Utility_GitSyncPush()
         return
     }
+    ; Same as #!+C picker slots 1 / 3 (Parakeet Unified EN / Cohere Transcribe).
+    if (category = "Handy English") {
+        CleanupHotstringSelector()
+        ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
+        return
+    }
+    if (category = "Handy Multilang") {
+        CleanupHotstringSelector()
+        ExecuteHandyAiModelSelection(HANDY_AI_SLOT_MULTILANG)
+        return
+    }
     g_UtilitySelectorMode := "category"
     g_UtilitySelectorCategory := category
     UtilitySelector_RebuildGui()
@@ -338,7 +349,7 @@ UtilitySelector_PromptNameMatches(name, query) {
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
-        return "Char = open category   [S] Sequences   [F] Finance   [N] Memory Palace   [T] Tasks   [J] Import Management   [G] Push   Enter/double-click = open   Esc = close"
+        return "Char = open category   [S] Sequences   [F] Finance   [N] Memory Palace   [T] Tasks   [J] Import Management   [G] Push   [K] Handy English   [L] Handy Multilang   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
         return "Filter by name, tags, path   Enter = paste first match   Shift+Enter = paste + clipboard   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
@@ -363,7 +374,7 @@ UtilitySelector_PopulateLv() {
         counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
         "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length,
         "Sequences", ClickSeqData_SequenceCount(), "Finance", 1, "Memory Palace", 1, "Tasks", 1,
-        "Import Management", 1, "Push", 1)
+        "Import Management", 1, "Push", 1, "Handy English", 1, "Handy Multilang", 1)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById
             idByCat[cat] := id
