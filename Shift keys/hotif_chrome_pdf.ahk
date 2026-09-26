@@ -270,12 +270,15 @@ ChromePdf_TogglePresentMode() {
     ChromePdf_ClickByAutomationId("fit")
 }
 
-; Shift + P : Focus page number field - Page
+; Shift + P : Focus page number field and select contents - Page
 +p::
 {
     ; UIA tree: Edit AutomationId "pageSelector"
-    ; Per requirement: focus only (no select-all)
-    ChromePdf_FocusByAutomationId("pageSelector", 50004)
+    ; Focus then Ctrl+A so typing replaces the current page number.
+    if ChromePdf_FocusByAutomationId("pageSelector", 50004) {
+        Sleep 40
+        Send "^a"
+    }
 }
 
 ; Shift + T : Toggle thumbnails sidebar - Thumbnails

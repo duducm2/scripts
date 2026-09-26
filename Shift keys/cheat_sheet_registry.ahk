@@ -353,7 +353,7 @@ cheatSheets["Chrome PDF Viewer"] := "
     Chrome PDF Viewer (Shift)
     ⬇️ [D] [D]ownload PDF
     📏 [F] [F]it to page (zoom to fit)
-    🔢 [P] [P]age number field (focus)
+    🔢 [P] [P]age number field (focus + select)
     🗂️ [T] [T]humbnails sidebar (toggle)
     🔲 [2] Two-page view ([2] pages)
     🎬 [E] Present mode (pr[E]sent)
