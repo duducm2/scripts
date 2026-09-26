@@ -263,6 +263,120 @@ ChromePdf_TogglePresentMode() {
     return false
 }
 
+ChromePdf_GetPageSelectorElement() {
+    try {
+        uia := ChromePdf_GetActiveUia()
+        if (!uia)
+            return 0
+        root := ChromePdf_GetViewerRoot(uia)
+        if (!root)
+            return 0
+        return ChromePdf_FindByAutomationId(root, "pageSelector", 50004)
+    } catch {
+    }
+    return 0
+}
+
+ChromePdf_GetCurrentPageNumber() {
+    el := ChromePdf_GetPageSelectorElement()
+    if (!el)
+        return ""
+    val := ""
+    try val := Trim(String(el.Value))
+    if (val = "")
+        return ""
+    ; pageSelector is usually bare digits; tolerate "12 / 40" style values.
+    if RegExMatch(val, "(\d+)", &m)
+        return m[1]
+    return ""
+}
+
+ChromePdf_GotoPage(pageNum) {
+    pageNum := Trim(String(pageNum))
+    if (pageNum = "" || !RegExMatch(pageNum, "^\d+$"))
+        return false
+    if !ChromePdf_FocusByAutomationId("pageSelector", 50004)
+        return false
+    Sleep 40
+    Send "^a"
+    Sleep 20
+    SendText pageNum
+    Sleep 20
+    Send "{Enter}"
+    return true
+}
+
+ChromePdf_WaitForReloadSettled(savedPage, timeoutMs := 10000) {
+    ; Prefer: pageSelector vanishes then returns. Also accept Value reset to 1 when we
+    ; were elsewhere (fast reload where the gap was never sampled).
+    deadline := A_TickCount + timeoutMs
+    start := A_TickCount
+    sawGone := false
+    while (A_TickCount <= deadline) {
+        if !WinActive("ahk_exe chrome.exe")
+            return false
+        el := ChromePdf_GetPageSelectorElement()
+        if (!el) {
+            sawGone := true
+            Sleep 40
+            continue
+        }
+        val := ""
+        try val := Trim(String(el.Value))
+        if (val = "") {
+            Sleep 40
+            continue
+        }
+        cur := ""
+        if RegExMatch(val, "(\d+)", &m)
+            cur := m[1]
+        if (sawGone)
+            return true
+        if (savedPage != "" && savedPage != "1" && cur = "1")
+            return true
+        ; Already on page 1: no Value flip to observe — settle briefly then continue.
+        if (savedPage = "1" && cur = "1" && (A_TickCount - start) >= 500)
+            return true
+        Sleep 40
+    }
+    return !!ChromePdf_GetPageSelectorElement()
+}
+
+ChromePdf_RefreshKeepPage() {
+    ; F5 reloads the PDF (often resets to page 1); restore the page we were on.
+    global g_ChromePdf_CacheTick
+
+    page := ChromePdf_GetCurrentPageNumber()
+    if (page = "") {
+        ShowCenteredOverlay_Utils("❌ PDF: could not read current page", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    try StandardLoadingBar_Show("🔄 Refreshing PDF (page " page ")…", BANNER_ACCENT_INTERMEDIATE, {
+        passive: false })
+
+    Send "{F5}"
+    g_ChromePdf_CacheTick := 0  ; force IsChromePdfViewerActive to re-probe after reload
+
+    try StandardLoadingBar_Update("⏳ Waiting for PDF viewer…", BANNER_ACCENT_INTERMEDIATE)
+    if !ChromePdf_WaitForReloadSettled(page, 10000) {
+        try StandardLoadingBar_Update("❌ PDF: viewer did not return", BANNER_ACCENT_ERROR)
+        try StandardLoadingBar_Hide(2000)
+        return false
+    }
+
+    Sleep 80
+    if !ChromePdf_GotoPage(page) {
+        try StandardLoadingBar_Update("❌ PDF: refreshed, but could not go to page " page, BANNER_ACCENT_ERROR)
+        try StandardLoadingBar_Hide(2500)
+        return false
+    }
+
+    try StandardLoadingBar_Update("✅ PDF refreshed → page " page, BANNER_ACCENT_SUCCESS)
+    try StandardLoadingBar_Hide(1400)
+    return true
+}
+
 ; Shift + F : Fit to page (Zoom to Fit) - Fit
 +f::
 {
@@ -318,6 +432,12 @@ ChromePdf_TogglePresentMode() {
 +E::
 {
     ChromePdf_TogglePresentMode()
+}
+
+; Shift + R : Refresh PDF and restore current page - Refresh
++r::
+{
+    ChromePdf_RefreshKeepPage()
 }
 
 #HotIf

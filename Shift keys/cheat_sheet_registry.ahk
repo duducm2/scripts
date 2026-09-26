@@ -354,6 +354,7 @@ cheatSheets["Chrome PDF Viewer"] := "
     ⬇️ [D] [D]ownload PDF
     📏 [F] [F]it to page (zoom to fit)
     🔢 [P] [P]age number field (focus + select)
+    🔄 [R] [R]efresh PDF (keep current page)
     🗂️ [T] [T]humbnails sidebar (toggle)
     🔲 [2] Two-page view ([2] pages)
     🎬 [E] Present mode (pr[E]sent)
