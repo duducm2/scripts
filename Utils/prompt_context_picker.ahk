@@ -165,15 +165,31 @@ PromptContextPicker_BuildPool(prompt) {
         return []
     items := []
     seen := Map()
+    hasPracticeSelectable := false
+    practiceNeedle := StrLower(Palace_OutputDir() . "\practice\")
     for e in PromptData_SelectableContextEntriesForCurrentEnv(prompt) {
         abs := PromptData_ContextEntryPath(e)
-        if (abs = "" || !FileExist(abs))
+        if (abs = "")
+            continue
+        if (InStr(StrLower(abs), practiceNeedle))
+            hasPracticeSelectable := true
+        if (!FileExist(abs))
             continue
         key := StrLower(abs)
         if (seen.Has(key))
             continue
         seen[key] := true
         items.Push(PromptContextPicker_ItemFromPath(abs))
+    }
+    ; Keep attach pool in sync with studies.csv when prompt opts into practice MDs.
+    if (hasPracticeSelectable) {
+        for it in PromptContextCatalog_MnemonicStories() {
+            key := StrLower(it.path)
+            if (key = "" || seen.Has(key))
+                continue
+            seen[key] := true
+            items.Push(it)
+        }
     }
     PromptContextPicker_SortItemsByMtime(items)
     return items

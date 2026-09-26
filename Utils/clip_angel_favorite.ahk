@@ -888,6 +888,28 @@ ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
             return activeHwnd
     } catch {
     }
+    ; When Clip Angel is foreground, pick the next visible non-CA window in z-order.
+    try {
+        for cand in WinGetList() {
+            if !cand || !WinExist("ahk_id " cand)
+                continue
+            try {
+                if (StrLower(WinGetProcessName("ahk_id " cand)) = "clipangel.exe")
+                    continue
+                if !DllCall("IsWindowVisible", "ptr", cand)
+                    continue
+                if (WinGetTitle("ahk_id " cand) = "")
+                    continue
+                cls := WinGetClass("ahk_id " cand)
+                if (cls = "tooltips_class32" || cls = "Shell_TrayWnd" || cls = "DV2ControlHost"
+                    || cls = "Progman" || cls = "WorkerW")
+                    continue
+                return cand
+            } catch {
+            }
+        }
+    } catch {
+    }
     return 0
 }
 
@@ -1101,12 +1123,37 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
     return true
 }
 
-; Ctrl+Enter / Shift+Enter: copy focused list clip to OS clipboard, unmark favorite, minimize.
-; Returns true on success. Does not paste — content stays on the clipboard for the caller.
+; Copy the selected list row through ClipAngel itself so every clip type is preserved.
+ClipAngel_CopyFocusedListClip(hwnd) {
+    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    if (!dataGrid)
+        return false
+    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
+    seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
+    SendInput "^c"
+    deadline := A_TickCount + 900
+    while (A_TickCount < deadline) {
+        seqNow := DllCall("GetClipboardSequenceNumber", "uint")
+        if (seqNow && seqNow != seqBefore)
+            return true
+        Sleep 15
+    }
+    return false
+}
+
+; Ctrl+Enter / Shift+Enter: copy focused list clip → unmark favorite → paste into prior app.
+; Returns true when copy+unfavorite succeeded (paste may still warn if target focus fails).
 ClipAngel_CopyUnfavoriteSelectedClip() {
     hwnd := ClipAngel_MainHwnd()
     if (!hwnd || !ClipAngel_IsListPasteEnterContext(hwnd))
         return false
+
+    ; Clip Angel is foreground here — ResolvePriorHwnd alone returns 0; use z-order target.
+    priorHwnd := ClipAngel_ConstantPaste_ResolveTargetHwnd()
 
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -1122,7 +1169,18 @@ ClipAngel_CopyUnfavoriteSelectedClip() {
 
     SendInput "!w"
     Sleep 50
-    ClipAngel_CloseAndRestoreFocus(0)
+    ClipAngel_CloseAndRestoreFocus(priorHwnd)
+
+    if (!priorHwnd) {
+        ShowCenteredOverlay_Utils("❌ Copied & unfavorited — no paste target window.", 2200, BANNER_ACCENT_ERROR)
+        return true
+    }
+    if !ClipAngel_EnsureWindowActive(priorHwnd, 500) {
+        ShowCenteredOverlay_Utils("❌ Copied & unfavorited — could not focus paste target.", 2200, BANNER_ACCENT_ERROR)
+        return true
+    }
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "^v"
     return true
 }
 

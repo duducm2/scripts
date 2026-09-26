@@ -1,6 +1,19 @@
 # Quick Recall
 
 <details open>
+<summary><strong>Dogs</strong> · 2 palaces · 6 atoms</summary>
+
+<img src="../web/assets/beast-thumbs/frog.png" alt="frog" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [F] frog [Breed <kbd><strong><u>Suitability</u></strong></kbd>] [I <kbd><strong><u>score</u></strong></kbd> the breed poorly] [for <kbd><strong><u>novice</u></strong></kbd> tolerance] [and passive <kbd><strong><u>household</u></strong></kbd> life] — Note: They excel in trainability but represent poor candidates for owners seeking a low-maintenance, chill pet.
+
+<img src="../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [A] Arachne [<kbd><strong><u>Origins</u></strong></kbd>] [I breed German <kbd><strong><u>Shepherds</u></strong></kbd>] [to manage and guard <kbd><strong><u>sheep</u></strong></kbd>] [across open <kbd><strong><u>pasture</u></strong></kbd>] — Note: Max von Stephanitz founded the breed in the late 19th century.
+<img src="../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [B] bird of paradise [Breeding <kbd><strong><u>Lines</u></strong></kbd>] [I choose <kbd><strong><u>working</u></strong></kbd> <kbd><strong><u>lines</u></strong></kbd>] [for extreme <kbd><strong><u>intensity</u></strong></kbd>] [and <kbd><strong><u>pet</u></strong></kbd> <kbd><strong><u>lines</u></strong></kbd>] [for calm <kbd><strong><u>companions</u></strong></kbd>] — Note: Show <kbd><strong><u>lines</u></strong></kbd> prioritize physical conformation and structure.
+<img src="../web/assets/beast-thumbs/cat.png" alt="cat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [C] cat [<kbd><strong><u>Health</u></strong></kbd> Risks] [I <kbd><strong><u>monitor</u></strong></kbd> the dog] [for severe <kbd><strong><u>joint</u></strong></kbd> malformations] [and neurological <kbd><strong><u>decay</u></strong></kbd>] — Note: Primary vulnerabilities include hip and elbow dysplasia, along with fatal gastric bloat.
+<img src="../web/assets/beast-thumbs/dragon.png" alt="dragon" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [D] dragon [<kbd><strong><u>Shelter</u></strong></kbd> Reality] [I <kbd><strong><u>surrender</u></strong></kbd> the dog] [when I fail to <kbd><strong><u>channel</u></strong></kbd>] [its intense working <kbd><strong><u>drive</u></strong></kbd>] — Note: Unprepared owners acquire them for aesthetics but cannot manage the resulting reactive behaviors.
+<img src="../web/assets/beast-thumbs/eagle.png" alt="eagle" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [E] eagle [Proper <kbd><strong><u>Fulfillment</u></strong></kbd>] [I <kbd><strong><u>balance</u></strong></kbd> the dog] [with predictable <kbd><strong><u>routines</u></strong></kbd>] [and cognitive <kbd><strong><u>scent</u></strong></kbd> games] — Note: High drive can be satisfied through structured play and scatter feeding rather than professional sports.
+
+</details>
+
+<details open>
 <summary><strong>Data Analyst</strong> · 10 palaces · 41 atoms</summary>
 
 <img src="../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bh] Bone Hydra [<kbd><strong><u>LAG Function</u></strong></kbd>] [I <kbd><strong><u>query data</u></strong></kbd>] [from <kbd><strong><u>preceding rows</u></strong></kbd>] [relative to the <kbd><strong><u>current evaluation row</u></strong></kbd>] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.

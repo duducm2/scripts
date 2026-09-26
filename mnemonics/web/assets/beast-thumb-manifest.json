@@ -14,7 +14,7 @@
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "366 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 37 beasts with adj"
+    "catalog_scope": "372 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 37 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -3676,6 +3676,66 @@
       "adjective": "bone",
       "adj_filename": "adj_bone.png",
       "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DOGS_01_A": {
+      "label": "Arachne",
+      "peg_code": "A",
+      "filename": "arachne.png",
+      "url": "/assets/beast-thumbs/arachne.png",
+      "source_slug": "arachne",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DOGS_01_B": {
+      "label": "bird of paradise",
+      "peg_code": "B",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DOGS_01_C": {
+      "label": "cat",
+      "peg_code": "C",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DOGS_01_D": {
+      "label": "dragon",
+      "peg_code": "D",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DOGS_01_E": {
+      "label": "eagle",
+      "peg_code": "E",
+      "filename": "eagle.png",
+      "url": "/assets/beast-thumbs/eagle.png",
+      "source_slug": "eagle",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DOGS_02_F": {
+      "label": "frog",
+      "peg_code": "F",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
     }
   }
 }

@@ -1,0 +1,42 @@
+﻿===PREVIEW===
+STUDY_DOGS · 2 palaces · 6 beasts · 6 atoms
+Packing: 5+1 (remainder only on last **new** palace in this pack)
+
+PALACE 1 — German Shepherd Traits (Scooby-Doo) [PALACE_DOGS_01]
+  [A] Arachne — Concept: [Origins] [I breed German Shepherds] [to manage and guard sheep] [across open pasture]... | Quote: "They were actually livestock guardians They were bred to herd and protect sheep..." | Story: Arachne spins a massive wool web across the iron gate to trap a flock of sheep. The tall clumsy brown dog runs into the sticky threads and bounces off, dropping a German flag.
+  [B] bird of paradise — Concept: [Breeding Lines] [I choose working lines] [for extreme intensity] [and pet lines] [for calm companions]... | Quote: "There are the working line shepherds bred for extreme drive and intensity Showine shepherds bred..." | Story: A skyscraper-tall bird of paradise crashes onto a parked car, splitting the steel into three pieces. It rips out the engine with extreme intensity while gently rocking a calm teddy bear in its other wing.
+  [C] cat — Concept: [Health Risks] [I monitor the dog] [for severe joint malformations] [and neurological decay]... | Quote: "hip and elbow dysplasia are some of the most common issues in German shepherds" | Story: A colossal cat stretches against the building facade until its elbows shatter with a deafening crack. The brown dog wraps the cat's limbs in giant bandages while the cat swallows a massive balloon that inflates its stomach.
+  [D] dragon — Concept: [Shelter Reality] [I surrender the dog] [when I fail to channel] [its intense working drive]... | Quote: "They're brought by people who love the idea of having a big protective dog but..." | Story: A microscopic dragon trapped in a rusted birdcage on the roof breathes intense fire, melting the metal bars. It chews up a heavy work boot in barrier frustration while blasting smoke signals.
+  [E] eagle — Concept: [Proper Fulfillment] [I balance the dog] [with predictable routines] [and cognitive scent games]... | Quote: "German Shepherds thrive when they have structure clear communication and mental stimulation" | Story: An eagle wearing a referee whistle scatter-feeds glowing kibble into the brick wall, punching deep holes in the stone. The brown dog sniffs out the glowing pieces while the eagle shouts strict drop-it commands.
+
+PALACE 2 — German Shepherd Scoring (Snoopy) [PALACE_DOGS_02]
+  [F] frog — Concept: [Breed Suitability] [I score the breed poorly] [for novice tolerance] [and passive household life]... | Quote: "If you want a super chill relaxed dog probably not the one for you" | Story: A jelly-like frog melts onto the fire hydrant, tasting the bitter metal as it frantically grades a giant scorecard. The small white beagle tries to hand the frog a chill pill, but the frog slaps it away with high-strung panic.
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DOGS_01,STUDY_DOGS,1,German Shepherd Traits (Scooby-Doo),Scooby-Doo,,5,"A realistic street scene featuring an original fictional cartoon great dane dog who resembles a tall clumsy brown canine with black spots and a blue collar — not any copyrighted character. Depth slot: ForegroundLeft (iron gate) with a giant half-spider woman spinning a thick wool web. Depth slot: MidgroundRight (parked car) crushed by a skyscraper-tall bird of paradise. Depth slot: BackgroundCenter (building facade) showing a colossal cat stretching its joints against the bricks. Depth slot: Aerial (roof) holding a microscopic dragon breathing intense fire in a rusted birdcage. Depth slot: ForegroundRight (brick wall) where a large eagle scatters glowing kibble into the stone."
+PALACE_DOGS_02,STUDY_DOGS,2,German Shepherd Scoring (Snoopy),Snoopy,,1,"A realistic street scene featuring an original fictional cartoon beagle who resembles a small white dog with black ears and a red collar — not any copyrighted character. Depth slot: ForegroundLeft (fire hydrant) with a jelly-like frog melting over the metal, grading a giant scorecard."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DOGS_A,PALACE_DOGS_01,A,Arachne,Lynne Kelly,,0,1
+BEAST_DOGS_B,PALACE_DOGS_01,B,bird of paradise,Lynne Kelly,,0,2
+BEAST_DOGS_C,PALACE_DOGS_01,C,cat,Lynne Kelly,,0,3
+BEAST_DOGS_D,PALACE_DOGS_01,D,dragon,Lynne Kelly,,0,4
+BEAST_DOGS_E,PALACE_DOGS_01,E,eagle,Lynne Kelly,,0,5
+BEAST_DOGS_F,PALACE_DOGS_02,F,frog,Lynne Kelly,,0,1
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+,BEAST_DOGS_A,single,,,"[Origins] [I breed German Shepherds] [to manage and guard sheep] [across open pasture] — Note: Max von Stephanitz founded the breed in the late 19th century.","map | Origins || staff | Shepherds || wool | sheep || grass | pasture","They were actually livestock guardians They were bred to herd and protect sheep out in the German countryside","Arachne spins a massive wool web across the iron gate to trap a flock of sheep. The tall clumsy brown dog runs into the sticky threads and bounces off, dropping a German flag.",,1
+,BEAST_DOGS_B,single,,,"[Breeding Lines] [I choose working lines] [for extreme intensity] [and pet lines] [for calm companions] — Note: Show lines prioritize physical conformation and structure.","ruler | Lines || hardhat | working || fire | intensity || leash | pet || heart | companions","There are the working line shepherds bred for extreme drive and intensity Showine shepherds bred more for looks and structure and pet line shepherds bred to be calmer more familyfriendly companions","A skyscraper-tall bird of paradise crashes onto a parked car, splitting the steel into three pieces. It rips out the engine with extreme intensity while gently rocking a calm teddy bear in its other wing.",,1
+,BEAST_DOGS_C,single,,,"[Health Risks] [I monitor the dog] [for severe joint malformations] [and neurological decay] — Note: Primary vulnerabilities include hip and elbow dysplasia, along with fatal gastric bloat.","stethoscope | Health || screen | monitor || crutch | joint || skull | decay","hip and elbow dysplasia are some of the most common issues in German shepherds","A colossal cat stretches against the building facade until its elbows shatter with a deafening crack. The brown dog wraps the cat's limbs in giant bandages while the cat swallows a massive balloon that inflates its stomach.",,1
+,BEAST_DOGS_D,single,,,"[Shelter Reality] [I surrender the dog] [when I fail to channel] [its intense working drive] — Note: Unprepared owners acquire them for aesthetics but cannot manage the resulting reactive behaviors.","cage | Shelter || white flag | surrender || remote | channel || steering wheel | drive","They're brought by people who love the idea of having a big protective dog but they aren't prepared for the responsibility that comes with it","A microscopic dragon trapped in a rusted birdcage on the roof breathes intense fire, melting the metal bars. It chews up a heavy work boot in barrier frustration while blasting smoke signals.",,1
+,BEAST_DOGS_E,single,,,"[Proper Fulfillment] [I balance the dog] [with predictable routines] [and cognitive scent games] — Note: High drive can be satisfied through structured play and scatter feeding rather than professional sports.","trophy | Fulfillment || scale | balance || clock | routines || nose | scent","German Shepherds thrive when they have structure clear communication and mental stimulation","An eagle wearing a referee whistle scatter-feeds glowing kibble into the brick wall, punching deep holes in the stone. The brown dog sniffs out the glowing pieces while the eagle shouts strict drop-it commands.",,1
+,BEAST_DOGS_F,single,,,"[Breed Suitability] [I score the breed poorly] [for novice tolerance] [and passive household life] — Note: They excel in trainability but represent poor candidates for owners seeking a low-maintenance, chill pet.","clipboard | Suitability || red pen | score || L-plate | novice || sofa | household","If you want a super chill relaxed dog probably not the one for you","A jelly-like frog melts onto the fire hydrant, tasting the bitter metal as it frantically grades a giant scorecard. The small white beagle tries to hand the frog a chill pill, but the frog slaps it away with high-strung panic.",,1
+===END_FILE===
