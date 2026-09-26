@@ -2613,6 +2613,7 @@
             delete ovAtoms.dataset.beastCount;
             delete overlay.dataset.beastCount;
           }
+          bindStoryReductionDrag();
         };
         paintAtoms();
         loadBeastThumbManifest().then(paintAtoms);
@@ -2639,7 +2640,6 @@
         overlay.setAttribute("aria-hidden", "false");
         const imgPane = document.getElementById("ovImage");
         imgPane.onclick = () => toggleOverlayImageExpand();
-        bindStoryReductionDrag();
       }
 
       function syncExpandImageButton() {
