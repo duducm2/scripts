@@ -1,0 +1,34 @@
+﻿===PREVIEW===
+STUDY_DOGS · 1 palaces · 2 beasts · 2 atoms
+Packing: 2 (remainder only on last new palace in this pack)
+
+PALACE 3 — Chew Substitution and Safe Exchanges (Brian Griffin) [PALACE_DOGS_03]
+  [G] goat — Concept: [Toy Scenting] [I rub authorized chew items] [between my hands] [to transfer personal scent] — Note: Overnight contact with the handler also works to fulfill scent drives. | Quote: "Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent." | Story: A goat wearing a checkered scarf vigorously rubs a rubber chew bone between its cloven hooves, releasing a thick fragrant cloud of personal cologne that wafts across the sidewalk.
+  [H] Hydra — Concept: [The Trade Game] [I offer superior trades] [to prevent chase games] [when forbidden items are taken] — Note: Chasing turns theft into a self-reinforcing game. | Quote: "If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game." | Story: A multi-headed Hydra coils beside an iron gate, refusing to lunge after a dropped shoe while its central mouth calmly extends a steaming golden roast turkey leg in exchange.
+
+Discard candidates:
+- Target Access Elimination: removed by user request
+- Roaming Restriction: removed by user request
+- Texture Matching: removed by user request
+- Frozen Food Puzzles: removed by user request
+- Leave It Command: removed by user request
+- Mental Fatigue Enrichment: removed by user request
+- Physical Output Exercise: removed by user request
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DOGS_03,STUDY_DOGS,3,Chew Substitution and Safe Exchanges,Brian Griffin,dogs/images/3.png,2,"a street photograph of an urban corner. In ForegroundLeft, a mountain goat wearing a checkered scarf rubs a rubber bone between its hooves beside a stone lamppost. In MidgroundRight, a scaled three-headed serpent monster rests near an iron gate, offering a roasted poultry leg from its jaws toward the street. In ForegroundRight, an original fictional sophisticated bipedal white hound wearing a red collar (upright posture, dry calm expression, holding a warm mug) — not any real, living, historical, or named public figure and not any copyrighted character — watches the scene."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DOGS_03_G,PALACE_DOGS_03,G,goat,Lynne Kelly,,0,1
+BEAST_DOGS_03_H,PALACE_DOGS_03,H,Hydra,Lynne Kelly,,0,2
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+,BEAST_DOGS_03_G,single,,,"[Toy Scenting] [I rub authorized chew items] [between my hands] [to transfer personal scent] — Note: Overnight contact with the handler also works to fulfill scent drives.","perfume | Toy Scenting || bone | chew items || palms | hands || shirt | personal scent","Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent.","A goat wearing a checkered scarf vigorously rubs a rubber chew bone between its cloven hooves, releasing a thick fragrant cloud of personal cologne that wafts across the sidewalk.",,1
+,BEAST_DOGS_03_H,single,,,"[The Trade Game] [I offer superior trades] [to prevent chase games] [when forbidden items are taken] — Note: Chasing turns theft into a self-reinforcing game.","scale | The Trade Game || turkey | superior trades || hurdle | prevent chase || shoe | forbidden items","If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game.","A multi-headed Hydra coils beside an iron gate, refusing to lunge after a dropped shoe while its central mouth calmly extends a steaming golden roast turkey leg in exchange.",,2
+===END_FILE===

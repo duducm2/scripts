@@ -1550,6 +1550,7 @@ HotkeyCopy_DoConfirmDesktop() {
 
 ; [Y] Name Desktop file first, then copy, then save+rename (no companion focus during name UI).
 ; PALACE_QUICK_IMAGE → then Import Management [Q] (Palace quick image).
+; Same auto-import after #!+9 Quick Download rename (ClickSeqScript_DesktopCut skips cut).
 HotkeyCopy_YRunNameThenCopy() {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
     if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "Y")

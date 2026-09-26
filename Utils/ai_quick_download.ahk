@@ -2,6 +2,8 @@
 ; Utils module: ai_quick_download.ahk
 ; Quick Download: name pick first (same list as #!+p [Y]) → focus companion →
 ; configured click sequences → Desktop wait → rename staging → cut newest.
+; PALACE_QUICK_IMAGE: skip cut; leave file on Desktop → Import Management [Q]
+; (same auto-import as #!+p [Y] / ClipAngel export).
 ; Trigger: hold Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
 ; Slot chain lives in click_sequences.ini; name is chosen before any download.
 ; =============================================================================

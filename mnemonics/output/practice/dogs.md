@@ -1,6 +1,65 @@
 # Dogs
 
 <details open>
+<summary><strong>Memory Palace 3: Chew Substitution and Safe Exchanges</strong> · Character: Brian Griffin · 2 beasts · 2 atoms</summary>
+
+![Memory Palace 3](images/dogs/3.jpg)
+
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [G] goat
+
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>Toy Scenting</u></strong></kbd>] [I rub authorized <kbd><strong><u>chew items</u></strong></kbd>] [between my <kbd><strong><u>hands</u></strong></kbd>] [to transfer <kbd><strong><u>personal scent</u></strong></kbd>] — Note: Overnight contact with the handler also works to fulfill scent drives.
+
+🔑 **Keywords**
+
+- [**Toy Scenting**] → [perfume]
+- [**chew items**] → [bone]
+- [**hands**] → [palms]
+- [**personal scent**] → [shirt]
+
+**Quote**
+“Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent.”
+
+**Story**
+A goat wearing a checkered scarf vigorously rubs a rubber chew bone between its cloven hooves, releasing a thick fragrant cloud of personal cologne that wafts across the sidewalk.
+
+### [H] Hydra
+
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>The Trade Game</u></strong></kbd>] [I offer <kbd><strong><u>superior trades</u></strong></kbd>] [to <kbd><strong><u>prevent chase</u></strong></kbd> games] [when <kbd><strong><u>forbidden items</u></strong></kbd> are taken] — Note: Chasing turns theft into a self-reinforcing game.
+
+🔑 **Keywords**
+
+- [**The Trade Game**] → [scale]
+- [**superior trades**] → [turkey]
+- [**prevent chase**] → [hurdle]
+- [**forbidden items**] → [shoe]
+
+**Quote**
+“If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game.”
+
+**Story**
+A multi-headed Hydra coils beside an iron gate, refusing to lunge after a dropped shoe while its central mouth calmly extends a steaming golden roast turkey leg in exchange.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 2: German Shepherd Scoring and Activities (Snoopy)</strong> · Character: Snoopy · 1 beast · 1 atom</summary>
 
 ![Memory Palace 2](images/dogs/2.jpg)

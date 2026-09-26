@@ -351,3 +351,6 @@
 2026-09-25 21:22:39|4|Creating mnemonic stories|gemini|default|ctx=3+1|gemini
 2026-09-25 21:24:14|6|Curate knowledge atoms|gemini|default|ctx=1|direct
 2026-09-25 21:24:54|4|Creating mnemonic stories|gemini|default|ctx=3+1|gemini
+2026-09-26 12:26:52|6|Curate knowledge atoms|gemini|default|ctx=1|direct
+2026-09-26 12:30:11|u|Memory Palace atoms CSV import|gemini|default|ctx=3|direct
+2026-09-26 12:30:34|4|Creating mnemonic stories|gemini|default|ctx=3+1|gemini

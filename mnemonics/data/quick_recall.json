@@ -1,5 +1,6 @@
 {
   "included_palace_ids": [
+    "PALACE_DOGS_03",
     "PALACE_DOGS_02",
     "PALACE_DOGS_01",
     "PALACE_DATAANALYST_15",
@@ -113,6 +114,7 @@
     "PALACE_DATAANALYST_14",
     "PALACE_DATAANALYST_15",
     "PALACE_DOGS_01",
-    "PALACE_DOGS_02"
+    "PALACE_DOGS_02",
+    "PALACE_DOGS_03"
   ]
 }

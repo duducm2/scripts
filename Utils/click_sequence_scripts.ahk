@@ -114,6 +114,28 @@ ClickSeqScript_DesktopCut() {
         }
     }
 
+    ; PALACE_QUICK_IMAGE: leave on Desktop and run Import Management [Q] (same as #!+p [Y]).
+    savedBase := ""
+    if (path != "" && FileExist(path)) {
+        SplitPath(path, &savedName)
+        savedBase := ClipAngelExport_ListBaseName(savedName)
+    } else if (ctx.HasProp("desktopName")) {
+        savedBase := ctx.desktopName
+    }
+    if (ClipAngelExport_IsPalaceQuickImageName(savedBase)) {
+        if (path != "" && FileExist(path)) {
+            SplitPath(path, &toastName)
+            if (StrLen(toastName) > 48)
+                toastName := SubStr(toastName, 1, 45) "..."
+            ShowCenteredOverlay_Utils("✅ Saved: " toastName, 2200, BANNER_ACCENT_SUCCESS)
+            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            catch {
+            }
+        }
+        ClipAngelExport_MaybeRunPalaceQuickImage(savedBase)
+        return true
+    }
+
     try {
         if (path != "" && FileExist(path)) {
             if !DesktopCutNewest_CutPath(path) {

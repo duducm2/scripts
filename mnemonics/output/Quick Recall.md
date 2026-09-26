@@ -1,7 +1,10 @@
 # Quick Recall
 
 <details open>
-<summary><strong>Dogs</strong> · 2 palaces · 6 atoms</summary>
+<summary><strong>Dogs</strong> · 3 palaces · 8 atoms</summary>
+
+<img src="../web/assets/beast-thumbs/goat.png" alt="goat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [G] goat [<kbd><strong><u>Toy Scenting</u></strong></kbd>] [I rub authorized <kbd><strong><u>chew items</u></strong></kbd>] [between my <kbd><strong><u>hands</u></strong></kbd>] [to transfer <kbd><strong><u>personal scent</u></strong></kbd>] — Note: Overnight contact with the handler also works to fulfill scent drives.
+<img src="../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [H] Hydra [<kbd><strong><u>The Trade Game</u></strong></kbd>] [I offer <kbd><strong><u>superior trades</u></strong></kbd>] [to <kbd><strong><u>prevent chase</u></strong></kbd> games] [when <kbd><strong><u>forbidden items</u></strong></kbd> are taken] — Note: Chasing turns theft into a self-reinforcing game.
 
 <img src="../web/assets/beast-thumbs/frog.png" alt="frog" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [F] frog [<kbd><strong><u>Proprioception</u></strong></kbd> Training] [I <kbd><strong><u>guide</u></strong></kbd> the dog] [over raised Cavaletti <kbd><strong><u>poles</u></strong></kbd>] [to build <kbd><strong><u>hind-end</u></strong></kbd> awareness] — Note: This scientifically supports joint health and combats dysplasia risks.
 
