@@ -1483,6 +1483,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Shift+V] > Open study video in Chrome (new window)
     [Shift+A] > Open study article in Chrome (new window)
     [Shift+F] > Open favorite link in Chrome (new window)
+    [Shift+R] > Toggle Story Reduction (Practice overview or palace overlay)
     [Alt+V] > Set study video from clipboard
     [Alt+A] > Set study article from clipboard
     [Alt+F] > Set favorite link from clipboard

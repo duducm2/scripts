@@ -1,0 +1,36 @@
+﻿===PREVIEW===
+STUDY_DOGS · 1 palaces · 5 beasts · 5 atoms
+Packing: 5 (remainder only on last **new** palace in this pack)
+
+PALACE 3 — German Shepherd Activities (Pluto) [PALACE_DOGS_03]
+  [G] goat — Concept: [Basic Obedience] [I teach the place command] [to build sustained focus] [and provide mental stimulation]... | Quote: "Using commands like place to build focus, improve communication, and provide mental..." | Story: The goat stands on a floating yoga mat by the mailbox, blowing a silver whistle. The yellow dog stares with laser eyes at the mat while a glowing brain pulses above his head.
+  [H] Hydra — Concept: [Scent Work] [I scatter food] [across the garden grass] [to engage tracking instincts]... | Quote: "Scattering food on the floor or in the garden grass so the dog uses its nose, or hiding..." | Story: The Hydra sniffs the park bench with all its noses, spitting seeds across the freshly mowed grass. The yellow dog grabs a giant magnifying glass to track the glowing kibble hidden in the turf.
+  [I] imp — Concept: [Controlled Protection] [I play tug-of-war] [paired with a drop-it command] [to channel instinctual drives safely]... | Quote: "Engaging in a structured game of tug-of-war paired with a reliable drop it command to..." | Story: The imp holds a heavy medieval shield while yanking a thick ship rope tied to the gazebo. The yellow dog bites the rope until the imp throws a parachute that forces him to drop it, draining a giant battery.
+  [J] jester — Concept: [Proprioception Training] [I guide the dog] [over raised Cavaletti poles] [to build hind-end awareness]... | Quote: "Proprioception exercises like Cavaletti poles build rear-end body awareness, which is..." | Story: The jester juggles while walking a tightrope attached to the lamppost, holding a neon leash to guide the yellow dog. The dog steps carefully over high hurdles, wearing a rubber bumper on his hind legs to avoid knocking the poles.
+  [K] kitten — Concept: [Cooperative Care] [I train consent behaviors] [for veterinary handling] [using target touch points]... | Quote: "Scientific cooperative care training uses consent behaviors and target touching to ensure..." | Story: The kitten wears a stethoscope and offers a formal handshake to the yellow dog by the trash can for consent. The dog presses his nose against a red bullseye while the kitten pretends to administer a giant toy syringe.
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DOGS_03,STUDY_DOGS,3,German Shepherd Activities (Pluto),Pluto (Disney),,5,"A realistic street scene featuring an original fictional cartoon dog who resembles a medium-sized yellow hound with floppy black ears and a green collar — not any copyrighted character. Depth slot: ForegroundLeft (mailbox) with a goat standing on a floating yoga mat blowing a silver whistle. Depth slot: MidgroundRight (park bench) where a Hydra sniffs the wood and spits seeds onto the grass. Depth slot: BackgroundCenter (gazebo) showing an imp holding a heavy medieval shield and pulling a thick ship rope. Depth slot: Aerial (lamppost) with a jester walking a tightrope holding a neon leash. Depth slot: ForegroundRight (trash can) where a kitten wearing a stethoscope offers a formal handshake to the yellow dog."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DOGS_G,PALACE_DOGS_03,G,goat,Lynne Kelly,,0,1
+BEAST_DOGS_H,PALACE_DOGS_03,H,Hydra,Lynne Kelly,,0,2
+BEAST_DOGS_I,PALACE_DOGS_03,I,imp,Lynne Kelly,,0,3
+BEAST_DOGS_J,PALACE_DOGS_03,J,jester,Lynne Kelly,,0,4
+BEAST_DOGS_K,PALACE_DOGS_03,K,kitten,Lynne Kelly,,0,5
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+,BEAST_DOGS_G,single,,,"[Basic Obedience] [I teach the place command] [to build sustained focus] [and provide mental stimulation] — Note: This improves communication without needing advanced sports training.","whistle | Obedience || mat | place || laser | focus || brain | stimulation","Using commands like place to build focus, improve communication, and provide mental stimulation without the need for advanced sports training.","The goat stands on a floating yoga mat by the mailbox, blowing a silver whistle. The yellow dog stares with laser eyes at the mat while a glowing brain pulses above his head.",,1
+,BEAST_DOGS_H,single,,,"[Scent Work] [I scatter food] [across the garden grass] [to engage tracking instincts] — Note: Hiding food around the house with a go find command also works.","nose | Scent || seeds | scatter || mower | grass || magnifying glass | tracking","Scattering food on the floor or in the garden grass so the dog uses its nose, or hiding food around the house with a go find command to engage tracking instincts.","The Hydra sniffs the park bench with all its noses, spitting seeds across the freshly mowed grass. The yellow dog grabs a giant magnifying glass to track the glowing kibble hidden in the turf.",,1
+,BEAST_DOGS_I,single,,,"[Controlled Protection] [I play tug-of-war] [paired with a drop-it command] [to channel instinctual drives safely] — Note: This structured game tires out high-drive dogs effectively.","shield | Protection || rope | tug-of-war || parachute | drop-it || battery | drives","Engaging in a structured game of tug-of-war paired with a reliable drop it command to safely channel their instinctual drives and tire them out.","The imp holds a heavy medieval shield while yanking a thick ship rope tied to the gazebo. The yellow dog bites the rope until the imp throws a parachute that forces him to drop it, draining a giant battery.",,1
+,BEAST_DOGS_J,single,,,"[Proprioception Training] [I guide the dog] [over raised Cavaletti poles] [to build hind-end awareness] — Note: This scientifically supports joint health and combats dysplasia risks.","tightrope | Proprioception || leash | guide || hurdles | poles || bumper | hind-end","Proprioception exercises like Cavaletti poles build rear-end body awareness, which is scientifically proven to strengthen stabilizing muscles and mitigate joint dysplasia risks.","The jester juggles while walking a tightrope attached to the lamppost, holding a neon leash to guide the yellow dog. The dog steps carefully over high hurdles, wearing a rubber bumper on his hind legs to avoid knocking the poles.",,1
+,BEAST_DOGS_K,single,,,"[Cooperative Care] [I train consent behaviors] [for veterinary handling] [using target touch points] — Note: Crucial for large protective breeds to ensure safe and stress-free medical examinations.","stethoscope | Care || handshake | consent || syringe | veterinary || bullseye | target","Scientific cooperative care training uses consent behaviors and target touching to ensure safe, low-stress veterinary handling for large protective breeds.","The kitten wears a stethoscope and offers a formal handshake to the yellow dog by the trash can for consent. The dog presses his nose against a red bullseye while the kitten pretends to administer a giant toy syringe.",,1
+===END_FILE===
