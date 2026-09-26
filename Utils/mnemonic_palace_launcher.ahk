@@ -901,7 +901,10 @@ Palace_StudyModeAssertTick(*) {
 Palace_ApplyStudyModeChrome(hwnd) {
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
-    Palace_PickerMarkAutoSlotExclude(hwnd)
+    ; Leave picker-only AutoSlot exclusion so maximized study chrome counts as
+    ; occupancy again (lone-max free-half / SnapPair for other windows).
+    Palace_PickerClearAutoSlotExclude(hwnd)
+    Palace_EndAutoSlotSuppress()
     ; Fully opaque first so maximize does not animate a translucent frame.
     try WinSetTransparent("Off", "ahk_id " hwnd)
     catch {
