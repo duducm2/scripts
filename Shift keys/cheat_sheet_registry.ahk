@@ -654,7 +654,7 @@ cheatSheets["ClipAngel.exe"] := "
     🔁 [B]Constant pasting ↑ ([B]ottom-up; delimiter; native Ctrl+Alt+V paste+next; toggle stop)
     ⌨️ [Esc] Minimize window
     📋 [Enter] Paste selected clip (retain favorite)
-    ⭐ [Ctrl+Enter] Copy selected clip (all types) → unmark favorite → paste
+    ⭐ [Ctrl+Enter / Shift+Enter] Copy clip (all types) → unmark favorite → minimize
     ⌨️ [Alt+1] Paste current item, then minimize
     ⌨️ [Alt+2] Down 1, paste, then minimize
     ⌨️ [Alt+3] Down 2, paste, then minimize

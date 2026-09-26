@@ -59,9 +59,12 @@ ClipAngel_CopyFocusedListClip(hwnd) {
         return false
     ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
 
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
     seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
     SendInput "^c"
-    deadline := A_TickCount + 500
+    deadline := A_TickCount + 900
     while (A_TickCount < deadline) {
         seqNow := DllCall("GetClipboardSequenceNumber", "uint")
         if (seqNow && seqNow != seqBefore)
@@ -179,37 +182,21 @@ $Enter:: {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
-; Ctrl+Enter in Favorites: copy first, unmark (the row disappears), then paste to the prior app.
-; Everywhere else, preserve Clip Angel's native Ctrl+Enter behavior.
-$^Enter:: {
+; Ctrl+Enter / Shift+Enter on a list clip: copy to OS clipboard → unmark favorite → minimize.
+; No longer gated on Favorites filter (UIA MarkFilter misses were the main reliability failure).
+; Outside list context, pass through native chord without minimizing.
+ClipAngel_HotkeyCopyUnfavoriteOrPassthrough(nativeChord) {
     if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive() {
-        SendInput "^Enter"
+        SendInput nativeChord
         return
     }
-    hwnd := ClipAngel_MainHwnd()
-    if (!hwnd || !ClipAngel_IsListPasteEnterContext(hwnd)
-    || !ClipAngel_MarkFilterMatchesMode(false, ClipAngel_UiaGetMarkFilterValue(hwnd))) {
-        SendInput "^Enter"
-        Sleep 100
-        ClipAngel_CloseAndRestoreFocus(0)
+    if ClipAngel_CopyUnfavoriteSelectedClip()
         return
-    }
-
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    if !ClipAngel_CopyFocusedListClip(hwnd) {
-        ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    SendInput "!w"
-    Sleep 50
-    ClipAngel_CloseAndRestoreFocus(0)
-    try WinWaitNotActive("ahk_id " hwnd, , 0.5)
-    catch {
-    }
-    SendInput "^v"
+    SendInput nativeChord
 }
+
+$^Enter:: ClipAngel_HotkeyCopyUnfavoriteOrPassthrough("^Enter")
+$+Enter:: ClipAngel_HotkeyCopyUnfavoriteOrPassthrough("+Enter")
 
 ; Escape : minimize (process stays running). Fallback when I10 global Escape is off.
 Escape:: {

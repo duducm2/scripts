@@ -1101,6 +1101,31 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
     return true
 }
 
+; Ctrl+Enter / Shift+Enter: copy focused list clip to OS clipboard, unmark favorite, minimize.
+; Returns true on success. Does not paste — content stays on the clipboard for the caller.
+ClipAngel_CopyUnfavoriteSelectedClip() {
+    hwnd := ClipAngel_MainHwnd()
+    if (!hwnd || !ClipAngel_IsListPasteEnterContext(hwnd))
+        return false
+
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
+    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    if (dataGrid)
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+
+    if !ClipAngel_CopyFocusedListClip(hwnd) {
+        ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    SendInput "!w"
+    Sleep 50
+    ClipAngel_CloseAndRestoreFocus(0)
+    return true
+}
+
 ; Down N (optional), native Enter to paste selected clip, then minimize Clip Angel.
 ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
     ; Alt+1–5 leave Alt logically down; without release, Enter becomes Alt+Enter (paste file).
