@@ -60,48 +60,11 @@ ClipAngel_ConstantPaste_IsDelimiterPromptActive() {
 ; Skip other AHK hosts (AppLaunchers/Shift keys/Utils GUIs) — they often sit
 ; above the real paste target in z-order and steal Clip Angel's "previous window".
 ClipAngel_ConstantPaste_IsExcludedPasteTarget(hwnd) {
-    if !hwnd
-        return true
-    try {
-        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
-        if (exe = "clipangel.exe")
-            return true
-        if (exe = "autohotkey64.exe" || exe = "autohotkey32.exe" || exe = "autohotkey.exe"
-            || exe = "autohotkey64_u32.exe")
-            return true
-        cls := WinGetClass("ahk_id " hwnd)
-        if (cls = "tooltips_class32" || cls = "Shell_TrayWnd" || cls = "DV2ControlHost"
-            || cls = "Progman" || cls = "WorkerW")
-            return true
-        title := WinGetTitle("ahk_id " hwnd)
-        if (title = "")
-            return true
-    } catch {
-        return true
-    }
-    return false
+    return ClipAngel_IsExcludedPasteTarget(hwnd)
 }
 
 ClipAngel_ConstantPaste_ResolveTargetHwnd() {
-    prior := ClipAngel_ResolvePriorHwnd(0)
-    if (prior && !ClipAngel_ConstantPaste_IsExcludedPasteTarget(prior))
-        return prior
-    try {
-        for hwnd in WinGetList() {
-            if !hwnd || !WinExist("ahk_id " hwnd)
-                continue
-            try {
-                if ClipAngel_ConstantPaste_IsExcludedPasteTarget(hwnd)
-                    continue
-                if !DllCall("IsWindowVisible", "ptr", hwnd)
-                    continue
-                return hwnd
-            } catch {
-            }
-        }
-    } catch {
-    }
-    return 0
+    return ClipAngel_ResolvePriorHwnd(0)
 }
 
 ClipAngel_ConstantPaste_ClipboardHasImage() {

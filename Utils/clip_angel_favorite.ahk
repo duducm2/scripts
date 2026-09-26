@@ -884,25 +884,21 @@ ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
         return priorHwnd
     try {
         activeHwnd := WinGetID("A")
-        if (activeHwnd && !WinActive("ahk_exe ClipAngel.exe"))
+        if (activeHwnd && !WinActive("ahk_exe ClipAngel.exe")
+        && !ClipAngel_IsExcludedPasteTarget(activeHwnd))
             return activeHwnd
     } catch {
     }
     ; When Clip Angel is foreground, pick the next visible non-CA window in z-order.
+    ; Skip AHK hosts / shell chrome — they often sit above the real paste target.
     try {
         for cand in WinGetList() {
             if !cand || !WinExist("ahk_id " cand)
                 continue
             try {
-                if (StrLower(WinGetProcessName("ahk_id " cand)) = "clipangel.exe")
+                if ClipAngel_IsExcludedPasteTarget(cand)
                     continue
                 if !DllCall("IsWindowVisible", "ptr", cand)
-                    continue
-                if (WinGetTitle("ahk_id " cand) = "")
-                    continue
-                cls := WinGetClass("ahk_id " cand)
-                if (cls = "tooltips_class32" || cls = "Shell_TrayWnd" || cls = "DV2ControlHost"
-                    || cls = "Progman" || cls = "WorkerW")
                     continue
                 return cand
             } catch {
@@ -911,6 +907,29 @@ ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
     } catch {
     }
     return 0
+}
+
+; Skip Clip Angel, AHK overlay hosts, and shell chrome when picking a paste target.
+ClipAngel_IsExcludedPasteTarget(hwnd) {
+    if !hwnd
+        return true
+    try {
+        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+        if (exe = "clipangel.exe")
+            return true
+        if (exe = "autohotkey64.exe" || exe = "autohotkey32.exe" || exe = "autohotkey.exe"
+            || exe = "autohotkey64_u32.exe")
+            return true
+        cls := WinGetClass("ahk_id " hwnd)
+        if (cls = "tooltips_class32" || cls = "Shell_TrayWnd" || cls = "DV2ControlHost"
+            || cls = "Progman" || cls = "WorkerW")
+            return true
+        if (WinGetTitle("ahk_id " hwnd) = "")
+            return true
+    } catch {
+        return true
+    }
+    return false
 }
 
 ClipAngel_RestorePriorFocus(priorHwnd) {
@@ -1152,8 +1171,8 @@ ClipAngel_CopyUnfavoriteSelectedClip() {
     if (!hwnd || !ClipAngel_IsListPasteEnterContext(hwnd))
         return false
 
-    ; Clip Angel is foreground here — ResolvePriorHwnd alone returns 0; use z-order target.
-    priorHwnd := ClipAngel_ConstantPaste_ResolveTargetHwnd()
+    ; Clip Angel is foreground here — ResolvePriorHwnd walks z-order for the paste target.
+    priorHwnd := ClipAngel_ResolvePriorHwnd(0)
 
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
