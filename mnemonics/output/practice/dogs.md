@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 2: German Shepherd Scoring and Activities (Snoopy)</strong> · Character: Snoopy · 1 beast · 1 atom</summary>
 
-_No image_
+![Memory Palace 2](images/dogs/2.jpg)
 
 <p><em>1 beast · 1 Knowledge Atom</em></p>
 
@@ -42,7 +42,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 1: German Shepherd Traits (Scooby-Doo)</strong> · Character: Scooby-Doo · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 1](images/dogs/1.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
