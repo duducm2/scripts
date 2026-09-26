@@ -155,3 +155,5 @@ INFO_0188,project,PROJ_0030,Puppy Food Timeline and Calorie Density Notes,"Nutri
 - Food Density: High-quality foods are calorie-dense; fewer grams per meal are required compared to standard foods.
 - Calorie Calculation: Daily grams can be calculated precisely based on the specific brand's calorie content once brand details are known.",ℹ️,Feeding Schedule,4140,2026-09-24 13:05:52,,
 INFO_0189,project,PROJ_0030,Birth date & age,,🐕,,4150,2026-09-25 11:55:01,agent,2026-07-19
+INFO_0190,task,TASK_0333,Talvez você tenha que voltar a essa tabela posteriormente para checar se os capítulos permanecem os mesmos ou se as referências mudaram.,,ℹ️,,10,2026-09-26 16:54:01,,
+INFO_0191,task,TASK_0333,\ref{tab:mapa-perguntas-analises},,ℹ️,,20,2026-09-26 16:54:17,,
