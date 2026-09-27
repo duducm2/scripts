@@ -51,14 +51,13 @@ UtilitySelector_SwitchToCategory(category) {
         return
     }
     ; Same as #!+C picker slots 1 / 3 (Parakeet Unified EN / Cohere Transcribe).
-    if (category = "Handy English") {
+    ; Menu may be hosted outside AppLaunchers; the switch itself must run there.
+    if (category = "Handy English" || category = "Handy Multilang") {
+        global g_UtilitySelectorRestoreHwnd
+        restoreHwnd := g_UtilitySelectorRestoreHwnd
+        slot := (category = "Handy English") ? HANDY_AI_SLOT_ENGLISH : HANDY_AI_SLOT_MULTILANG
         CleanupHotstringSelector()
-        ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
-        return
-    }
-    if (category = "Handy Multilang") {
-        CleanupHotstringSelector()
-        ExecuteHandyAiModelSelection(HANDY_AI_SLOT_MULTILANG)
+        Handy_RequestAiModelSelection(slot, restoreHwnd)
         return
     }
     g_UtilitySelectorMode := "category"

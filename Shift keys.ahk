@@ -20,6 +20,10 @@
 
 #SingleInstance Force
 
+; Must exist before #include Utils. The keyboard hook can evaluate
+; #HotIf FastCopyMode_IsActive() while later includes are still starting.
+global gFastCopyModeActive := false
+
 SetTitleMatchMode 2
 
 ; -----------------------------------------------------------------------------

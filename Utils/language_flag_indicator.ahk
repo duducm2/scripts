@@ -335,3 +335,57 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
         g_HandyModelSwitchBusy := false
     }
 }
+
+; Utility Shortcuts (# !+U) is registered by every script that includes Utils.
+; After reboot the last script to start owns the menu. Model UIA and the language
+; flag only run in AppLaunchers, so other hosts must hand the slot across.
+HANDY_AI_MODEL_REQUEST_MSG_NAME := "EDU_HandyAi_SelectModel"
+
+Handy_FindAppLaunchersHwnd() {
+    prevDetect := A_DetectHiddenWindows
+    prevMatch := A_TitleMatchMode
+    DetectHiddenWindows true
+    SetTitleMatchMode 2
+    hwnd := 0
+    try hwnd := WinExist("AppLaunchers.ahk ahk_class AutoHotkey")
+    catch
+        hwnd := 0
+    DetectHiddenWindows prevDetect
+    SetTitleMatchMode prevMatch
+    return hwnd
+}
+
+Handy_AiModelRequestMsgId() {
+    static msg := 0
+    if (!msg)
+        msg := DllCall("RegisterWindowMessage", "Str", HANDY_AI_MODEL_REQUEST_MSG_NAME, "UInt")
+    return msg
+}
+
+Handy_OnAiModelRequest(wParam, lParam, *) {
+    slot := Integer(wParam)
+    restoreHwnd := Integer(lParam)
+    SetTimer((*) => ExecuteHandyAiModelSelection(slot, false, restoreHwnd), -1)
+}
+
+; Owner runs the switch here. Any other host posts the slot to AppLaunchers.
+Handy_RequestAiModelSelection(slot, restoreHwnd := 0) {
+    if (HandyAi_IsOwnerProcess()) {
+        ExecuteHandyAiModelSelection(slot, false, restoreHwnd)
+        return true
+    }
+    msg := Handy_AiModelRequestMsgId()
+    target := Handy_FindAppLaunchersHwnd()
+    if (msg && target) {
+        try {
+            PostMessage(msg, slot, restoreHwnd, , "ahk_id " target)
+            return true
+        } catch {
+        }
+    }
+    ShowCenteredOverlay_Utils("❌ Handy model switch needs AppLaunchers running.", 2000, BANNER_ACCENT_ERROR)
+    return false
+}
+
+if (HandyAi_IsOwnerProcess())
+    OnMessage(Handy_AiModelRequestMsgId(), Handy_OnAiModelRequest)

@@ -705,7 +705,7 @@ ExecuteSequentialPaste(actionCount) {
 
 FastCopyMode_IsActive() {
     global gFastCopyModeActive
-    return gFastCopyModeActive
+    return IsSet(gFastCopyModeActive) && gFastCopyModeActive
 }
 
 FastCopyMode_OnCopy() {
