@@ -8,7 +8,7 @@ You are producing a **strict CSV** for the Memory Palace importer.
 2. First line MUST be exactly this header:
 
 ```
-id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 ```
 
 3. Save guidance for the user (they will do this manually): Desktop file named `PALACE_ATOMS.csv`.
@@ -25,13 +25,13 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
 12. Do **not** invent `beast_id` values — only use IDs from the attached context.
 13. `concept` — the formal concept name MUST be its own first square-bracket group, followed by bracketed definition groups: `[Name] [definition group] […optional groups…]`. Keep **3–6** groups; optional ` — Note:` text stays unbracketed.
 14. `keywords` — required for new rows. Format: ordered `Keyword | RecognizableWord` pairs joined by ` || `. Generate **exactly one** pair from every concept bracket group and **3–6 pairs total** matching the group count. A RecognizableWord must come from its group. Preserve left-to-right group order. Never merge or deduplicate the dedicated name-group pair with the first definition-group pair, even when wording repeats. Never put two keys in one group. Never key Note text.
+15. Do **not** write a mnemonic narrative. If a `story` column is present in an attached file, leave it empty. The user writes stories later from the keywords.
 
 ## Knowledge Atom fields
 
 - **Concept** — rehearsal definition (`[Name] [thought group]` chunks on the compressed core + optional unbracketed Note; 3–6 groups)
-- **Keywords** — exactly one tangible Keyword/RecognizableWord pair per bracket group, 3–6 ordered pairs total (`Keyword | Word || …`)
+- **Keywords** — exactly one tangible Keyword/RecognizableWord pair per bracket group, 3–6 ordered pairs total (`Keyword | Word || …`). The user writes any mnemonic story later from these keywords.
 - **Quote** — verbatim source quote
-- **Story** — mnemonic narrative / action
 - **Beast** — comes from the parent beast row (`beast_id`), not a column in this CSV
 
 ## Vocabulary (software)
@@ -40,7 +40,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,ipa,sort_order
 - **Memory Palace** — location; one image per palace.
 - **Character** — one per Memory Palace (canon characters.json).
 - **Beast** — bestiary peg holder.
-- **Knowledge Atom** — discrete information on a beast (Concept + Keywords + Quote + Story).
+- **Knowledge Atom** — discrete information on a beast (Concept + Keywords + Quote).
 
 ## Attachments
 

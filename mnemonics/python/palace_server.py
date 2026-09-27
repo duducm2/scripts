@@ -48,7 +48,7 @@ GLOSSARY = [
     },
     {"term": "Character", "def": "Exactly one canon character per palace."},
     {"term": "Beast", "def": "Bestiary peg holder for knowledge atoms."},
-    {"term": "Knowledge Atom", "def": "Concept + Quote + Story on a beast."},
+    {"term": "Knowledge Atom", "def": "Concept + Keywords + Quote on a beast."},
     {"term": "Peg", "def": "Letter code from bestiary (never numeric)."},
     {"term": "Plan", "def": "Study checklist (plans / plan_items / plan_resources)."},
     {

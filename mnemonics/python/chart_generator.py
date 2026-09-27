@@ -3282,7 +3282,7 @@ def build_html(
       Object.values(PALACE_DATA).forEach(st => {{
         if (studyId && st.study_id !== studyId) return;
         (st.atoms || []).forEach(a => {{
-          const blob = [a.beast, a.concept, a.quote, a.story, a.zone, a.zone_label]
+          const blob = [a.beast, a.concept, a.quote, a.zone, a.zone_label]
             .map(x => (x || '').toString().toLowerCase()).join(' ');
           if (blob.includes(query)) {{
             hits.push({{ palaceId: st.id, palaceNumber: st.number, atom: a }});
@@ -3300,7 +3300,7 @@ def build_html(
         return '<button type="button" class="hit" data-palace-id="' + esc(h.palaceId)
           + '" data-atom-id="' + esc(h.atom.id) + '">'
           + '<span class="meta">Memory Palace ' + esc(h.palaceNumber) + ' · ' + dash(h.atom.beast) + '</span><br/>'
-          + dash(snip || h.atom.quote || h.atom.story)
+          + dash(snip || h.atom.quote)
           + '</button>';
       }}).join('');
       searchResults.querySelectorAll('.hit').forEach(btn => {{

@@ -673,7 +673,7 @@
           <button
             type="button"
             id="btnToggleAtomDetails"
-            title="Show or hide Quote &amp; Story (D)"
+            title="Show or hide Quote (D)"
           >
             Details (D)
           </button>
@@ -1359,7 +1359,7 @@
         lines.push(removes || "(none)");
         lines.push(
           "",
-          "Atom Concept/Quote/Story for in-scope beasts are in CONTEXT → In-scope working set.",
+          "Atom Concept/Quote for in-scope beasts are in CONTEXT → In-scope working set.",
           "Use the peg letters above exactly. Prefer beast peg_code over display name when re-pegging.",
           "=== END STAGED ===",
           "",
@@ -2711,7 +2711,7 @@
         if (!btn) return;
         const show = ov.classList.contains("show-atom-details");
         btn.textContent = show ? "Concepts (D)" : "Details (D)";
-        btn.title = show ? "Show concepts only (D)" : "Show Quote & Story (D)";
+        btn.title = show ? "Show concepts only (D)" : "Show Quote (D)";
         btn.setAttribute("aria-pressed", show ? "true" : "false");
       }
 
@@ -4017,7 +4017,6 @@
         );
         if (keywordsRaw == null) return;
         const quote = prompt("Quote", a?.quote || "") || "";
-        const story = prompt("Story", a?.story || "") || "";
         const zone = prompt("Zone (optional)", a?.zone || "") || "";
         const zone_label = prompt("Zone label", a?.zone_label || "") || "";
         const body = {
@@ -4026,7 +4025,7 @@
           concept,
           keywords: keywordsRaw,
           quote,
-          story,
+          story: a?.story || "",
           zone,
           zone_label,
         };

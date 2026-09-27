@@ -19,9 +19,6 @@
 **Quote**
 “Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent.”
 
-**Story**
-A goat wearing a checkered scarf vigorously rubs a rubber chew bone between its cloven hooves, releasing a thick fragrant cloud of personal cologne that wafts across the sidewalk.
-
 ### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -31,9 +28,6 @@ A goat wearing a checkered scarf vigorously rubs a rubber chew bone between its 
 
 **Quote**
 “If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game.”
-
-**Story**
-A multi-headed Hydra coils beside an iron gate, refusing to lunge after a dropped shoe while its central mouth calmly extends a steaming golden roast turkey leg in exchange.
 
 #### Notes
 
@@ -64,9 +58,6 @@ _No gallery images._
 **Quote**
 “Proprioception exercises like Cavaletti poles build rear-end body awareness, which is scientifically proven to strengthen stabilizing muscles and mitigate joint dysplasia risks.”
 
-**Story**
-A giant frog juggles while walking a tightrope attached to the fire hydrant, holding a neon leash to guide the small white beagle. The beagle steps carefully over high hurdles, wearing a rubber bumper on his hind legs to avoid knocking the poles.
-
 #### Notes
 
 _No notes._
@@ -96,9 +87,6 @@ _No gallery images._
 **Quote**
 “There are the working line shepherds bred for extreme drive and intensity Showine shepherds bred more for looks and structure and pet line shepherds bred to be calmer more familyfriendly companions”
 
-**Story**
-A skyscraper-tall half-spider woman crashes onto the iron gate, splitting the steel into three pieces. She rips out the gate's lock with extreme intensity while gently rocking a calm teddy bear in her other arm.
-
 ### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -108,9 +96,6 @@ A skyscraper-tall half-spider woman crashes onto the iron gate, splitting the st
 
 **Quote**
 “German Shepherds thrive when they have structure clear communication and mental stimulation”
-
-**Story**
-A bird of paradise wearing a referee whistle scatter-feeds glowing kibble onto the parked car, punching deep holes in the metal hood. The brown dog sniffs out the glowing pieces while the bird shouts strict drop-it commands.
 
 ### [C] cat
 
@@ -122,9 +107,6 @@ A bird of paradise wearing a referee whistle scatter-feeds glowing kibble onto t
 **Quote**
 “Using commands like place to build focus, improve communication, and provide mental stimulation without the need for advanced sports training.”
 
-**Story**
-The cat stands on a floating yoga mat by the building facade, blowing a silver whistle. The small white beagle stares with laser eyes at the mat while a glowing brain pulses above his head.
-
 ### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -135,9 +117,6 @@ The cat stands on a floating yoga mat by the building facade, blowing a silver w
 **Quote**
 “Scattering food on the floor or in the garden grass so the dog uses its nose, or hiding food around the house with a go find command to engage tracking instincts.”
 
-**Story**
-A dragon on the roof sniffs the shingles with its massive snout, spitting seeds across the tiles. The small white beagle grabs a giant magnifying glass to track the glowing kibble hidden in the gutters.
-
 ### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -147,9 +126,6 @@ A dragon on the roof sniffs the shingles with its massive snout, spitting seeds 
 
 **Quote**
 “Engaging in a structured game of tug-of-war paired with a reliable drop it command to safely channel their instinctual drives and tire them out.”
-
-**Story**
-The eagle holds a heavy medieval shield in its talons while yanking a thick ship rope tied to the brick wall. The small white beagle bites the rope until the eagle throws a parachute that forces him to drop it, draining a giant battery.
 
 #### Notes
 

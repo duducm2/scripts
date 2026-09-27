@@ -19,7 +19,7 @@ This system helps you memorize complex topics (e.g. Piano, English Grammar, Comm
 | **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                                                   |
 | **3 — Curate atoms**         | Cursor (when needed) | `prompts/concept-curation-prompt.txt` — when the transcript/text is too long or dense                              | Source transcript/text · optional practice `.md` · this README                                                       |
 | **4 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Transcription **or** curated concept `.md` · existing study list · `characters.json` · `bestiary.json` · this README |
-| **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **SMASH** or **REMOVE** mode                                               | Reduction mode · full mnemonic story · merge groups or peg letters to remove · `bestiary.json`                       |
+| **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **SMASH** or **REMOVE** mode                                               | Reduction mode · in-scope palace pack · merge groups or peg letters to remove · `bestiary.json`                      |
 | **6 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 4 or 5                                                              |
 | **7 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                                       |
 | **8 — Save files**           | You                  | Store snapshots and composites in `studies/[Topic]/images/` as `N.png` matching Street N                           | —                                                                                                                    |
@@ -48,7 +48,7 @@ flowchart TB
     transcribeNode["<b>Transcribe</b> — <code>video-transcription-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>YouTube video link</span> <span style='color:#888'>(Gemini · Input section)</span><br/><br/><span style='color:#9cdcfe'>You:</span> Paste the link in Gemini.<br/><span style='color:#b5cea8'><b>Save</b></span> Markdown transcript.<br/><span style='color:#888'>Required before Story Architect (or Curate).</span>"]
     curateNode["<b>Curate atoms</b> — <code>concept-curation-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>Source transcript/text · optional practice <code>.md</code> · README</span><br/><br/><span style='color:#9cdcfe'>You:</span> when the source is too long/dense.<br/><span style='color:#b5cea8'><b>Save</b></span> curated concept Markdown.<br/><span style='color:#888'>Optional; feeds Story Architect as transcription.</span>"]
     storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Transcription <b>or</b> curated concept <code>.md</code> · 📎 Existing study list <code>.md</code> · 📎 <code>characters.json</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
-    refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Reduction mode SMASH or REMOVE · 📎 Full mnemonic story · 📎 Merge groups or peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when merging atoms or trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> refreshed story · refreshed <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(accessory-detail prompts)</span>."]
+    refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Reduction mode SMASH or REMOVE · 📎 In-scope palace pack · 📎 Merge groups or peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when merging atoms or trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> reduced palace pack · refreshed <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(accessory-detail prompts)</span>. Do not rewrite narratives."]
     mapsNode["<b>Google Maps</b><br/><br/><span style='color:#9cdcfe'>You:</span> N locations · one screenshot per street.<br/><span style='color:#888'>Use the latest <code>🖼️ Mnemonic image prompts</code> from the current story output.</span>"]
       genNode["<b>Foreground Composite</b> — <code>image-background-preservation-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Street screenshot · 📎 Matching line from <code>🖼️ Mnemonic image prompts</code></span><br/><span style='color:#9cdcfe'>You:</span> place the preservation prompt above the street prompt, then add mnemonic foreground elements without altering the place."]
     filesNode["<b>Save files</b><br/><br/><span style='color:#9cdcfe'>You:</span> Study <code>images/</code> folder · save as <code>N.png</code> matching Street N."]
@@ -88,8 +88,7 @@ All prompts cite these sections by exact heading name (`README §<Heading>`). Ru
 - **Knowledge Atom:** The complete entry/record for a single concept.
 - **Peg:** Letters from the Bestiary as singles **and** pairs (e.g. A, AB). NEVER use numbers.
 - **Knowledge / Definition (`concept` / Context):** The rehearsal summary the user reads on active recall. Always written as `💡 **Context:** …` (CSV field `concept`). **Maximum compression:** use the fewest words that still preserve **100%** of the semantic meaning and critical conceptual logic—zero information loss; NEVER truncate or omit essential logic for brevity. Purpose: minimize cognitive and mnemonic load during recall. **Concept name lead (HARD):** The compressed core MUST open with the atom’s formal concept/technique name in a dedicated square-bracket group before the description. Shape: `[Name] [definition group] […optional further groups…]`. Use the source’s standard label (section title, named technique, or established term). NEVER combine the name and definition as `[Name: definition]`, and NEVER emit a description-only core when a clear name exists. **First-person core:** write the compressed definition groups (before any ` — Note:`) in **first person singular** (`I` / `me` / `my`) when the knowledge is something the learner does, uses, or holds—so recall attaches to the self. Skip first person when it would distort meaning (a fact about a third party; a pure formula or name that is not an action you perform). **Thought groups:** after the compressed core is final, wrap every cognitive unit in square brackets (`[Name] [chunk] [chunk]`), with **3–6** groups. If meaning would need only two chunks, re-chunk to at least three; if more than six would be needed, compress/re-chunk without information loss. Do **not** use `|` to split concept thought groups. Do **not** bracket the optional Note. **Conditional Note:** when nuance, complexity, or verbosity was deliberately stripped from the compressed core to keep extreme brevity, append that supplementary context in the same Context/`concept` field as ` — Note: <nuance>`. The Note stays **impersonal / third person**—not first person. If no compression trade-off was needed, omit the Note. NEVER confuse this with Quote.
-- **Keywords (`keywords`):** Ordered association pairs from every bracket group in the concept core. Store each as `Keyword | RecognizableWord`, joined with ` || `. Generate **exactly one pair per group and 3–6 pairs total per atom** (pair count equals group count). **Keyword** = tangible memory anchor (physical object, action, actor, or cartoon character). **RecognizableWord** = a prominent word or short term taken from that same group. Preserve exact left-to-right group order in storage and display. The dedicated name group and first definition group always produce separate pairs even when wording repeats; never merge or deduplicate them. Never put two keys in one group — re-chunk instead. Display under Concept in practice MD and the web SPA as `[word] → [keyword]`. Never invent pairs for Note text.
-- **Story/Action:** The narrative event performed by the Beast.
+- **Keywords (`keywords`):** Ordered association pairs from every bracket group in the concept core. Store each as `Keyword | RecognizableWord`, joined with `||`. Generate **exactly one pair per group and 3–6 pairs total per atom** (pair count equals group count). **Keyword** = tangible memory anchor (physical object, action, actor, or cartoon character). **RecognizableWord** = a prominent word or short term taken from that same group. Preserve exact left-to-right group order in storage and display. The dedicated name group and first definition group always produce separate pairs even when wording repeats; never merge or deduplicate them. Never put two keys in one group — re-chunk instead. Display under Concept in practice MD and the web SPA as `[word] → [keyword]`. Never invent pairs for Note text. Keywords are the recall cue the user turns into a story later. **AIB does not write that story.**
 - **Quote:** Direct transcript excerpt from the video source, verbatim. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote.
 
 **Sensory channel emojis** (required beside every `· sensory:` marker on `🟧` and `🟦` lines; channel word first, then its emoji):
@@ -105,24 +104,22 @@ All prompts cite these sections by exact heading name (`README §<Heading>`). Ru
 
 Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEVER invent other sensory emojis; NEVER omit the emoji; NEVER place the emoji before the channel word.
 
-**Allowed emojis (Story Architect / Story Reduction output):** Only `🟧` (topic/beast header), `🟦` (sub-atom), `💡` (definition / `**Context:**` line), and the sensory-channel emojis above—plus the fixed section title `🖼️ Mnemonic image prompts` required by the output contract. NEVER invent any other emoji in beast headers, Context, Quote, Narrative, summaries, or image-prompt body text.
+**Allowed emojis (Story Architect / Story Reduction output):** Only `🟧` (topic/beast header), `🟦` (sub-atom), `💡` (definition / `**Context:**` line), and the sensory-channel emojis above—plus the fixed section title `🖼️ Mnemonic image prompts` required by the output contract. NEVER invent any other emoji in beast headers, Context, Quote, summaries, or image-prompt body text.
 
 **Structure per Knowledge Atom** (separated by clear line breaks):
 
 1. **Header:** `🟧` `[Peg Letters]` `[Beast Name]` `· sensory: [channel] [emoji]` — required sensory channel for the main topic, with its mapped emoji from **Sensory channel emojis** above.
 2. **Definition (Context):** `💡 **Context:** [Name] [maximally compressed knowledge]` — fewest words, full semantic fidelity. MUST start with `💡`. **Concept name lead (HARD):** the formal name occupies its own leading group (`[Name]`), followed by bracketed definition groups. First-person singular on definition groups when it fits; skip when it would distort. Keep **3–6** groups. This is the main rehearsal element; it is NOT the Quote. When nuance was stripped from the compressed core, append ` — Note: <stripped nuance>` in the same Context/`concept` field (Note stays impersonal and unbracketed).
-3. **Keywords:** After Context, list ordered association pairs (one per line as `[RecognizableWord] → [Keyword]`, or CSV `keywords` as `a | b || c | d`). Exactly one pair per bracket group; each atom has 3–6 total matching the group count. Supports dual-access cues under Concept.
-4. **Quote (Target Payload):** Direct video quote, verbatim from the transcript. Place **before** Narrative so the target payload is reachable without traversing the story. NEVER use `💡` on Quote. NEVER append a `Note:` to Quote.
-5. **Narrative (Story/Action):** Short beat (**2–4 sentences**). MUST pass the **Bizarreness Gate**. Encode the atom's meaning through bizarre beast action, props, and (if smashed) zone accessories—the action is the mnemonic cue that triggers recall of the Quote. Narrative SHOULD enact the header's sensory channel. Use the street's **single assigned character** where it strengthens recall—NEVER add a second named character on the same street. Beast-to-beast interaction is **optional (default none)**—use it only when it strengthens the story or memory link; otherwise do not reference other beasts. NEVER require reading another beast's narrative to decode this one.
+3. **Keywords:** After Context, list ordered association pairs (one per line as `[RecognizableWord] → [Keyword]`, or CSV `keywords` as `a | b || c | d`). Exactly one pair per bracket group; each atom has 3–6 total matching the group count. Supports dual-access cues under Concept. The user writes any mnemonic story later from these keywords. AIB leaves CSV `story` empty and does not author a narrative.
+4. **Quote (Target Payload):** Direct video quote, verbatim from the transcript. NEVER use `💡` on Quote. NEVER append a `Note:` to Quote.
 
-**Retrieval path (dual-access):** (1) **Scan path:** peg → `💡 **Context:**` (ultra-short core + optional Note) → **Keywords** → Quote—target reached without Narrative. (2) **Palace path:** recall the beast's image and the encoding action → remember the Quote. Both paths are valid; Narrative is not a gate to the payload.
+**Retrieval path:** peg → `💡 **Context:**` (ultra-short core + optional Note) → **Keywords** → Quote. The user may later turn the keywords into a story outside this system. AIB does not write that story.
 
 **Smashed beast structure (after Story Reduction SMASH mode):**
 
 1. **Header:** `🟧` `[Peg Letters]` `[Beast Name]` `· sensory: [channel] [emoji]` — peg identity and a **baseline** sensory channel for the beast body only (required; distinct from every `🟦` channel on this beast; emoji from **Sensory channel emojis**). The beast body is a **neutral canvas**: it MUST NOT encode any knowledge atom and MUST NOT carry a definition (`💡 **Context:**`) on the `🟧` level.
 2. **Sub-atoms (Anatomical Micro-Loci):** Up to **4** `🟦` lines in **Z1→Z4 order**—**every** merged knowledge atom MUST be assigned to exactly one `🟦` zone. Each `🟦` line names its zone, active anatomical interaction, brief knowledge hook, and sensory channel with emoji (e.g. `· sensory: visual 👁️`). Immediately under each `🟦` line, emit that atom's maximally compressed definition as `💡 **Context:** …` (first-person core when it fits; optional impersonal ` — Note:` in that same Context when nuance was stripped). Do **not** use a combined group-level Context under the `🟧` header.
-3. **Quote(s):** One verbatim video quote per merged atom, in source order—**before** Narrative. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote.
-4. **Narrative:** One **active beat per assigned zone**, matching the `🟦` lines—each zone encodes that sub-atom's meaning through mechanical engagement with its accessory. The beast body's overall posture or presence MUST NOT encode knowledge; only the zone beats do. Self-contained beat; optional cross-beast links only when they serve the concept, transcript logic, or a stronger mnemonic—otherwise do not reference other beasts.
+3. **Quote(s):** One verbatim video quote per merged atom, in source order. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote. Do not write a narrative. Keywords on each sub-atom are the recall cue; the user writes any story later.
 
 **Example (single-atom beast):**
 
@@ -132,8 +129,6 @@ Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEV
 💡 **Context:** [Past Perfect: I form past perfect with had + past participle.] — Note: Marks an action finished before another past action.
 
 **Quote:** "The past perfect uses had plus the past participle."
-
-**Narrative:** A microscopic bird of paradise hammers a skyscraper-sized chalkboard wedged into the gate post; each peck freezes solid neon grammar dust in mid-air above the chalk surface.
 ```
 
 **Output quality:** Format optimized for both text reading and Read Aloud (TTS). Maintain strict visual separation (line breaks) between every Knowledge Atom.
@@ -169,16 +164,16 @@ Five beasts on one street is high-density loci (near working-memory limits). Sim
 
 ### Independent Beast Beats
 
-- Each beast is a **self-contained retrieval unit**. Its Narrative encodes only **its** knowledge atom (and, if smashed, its own `🟦` sub-atoms via accessories). The street does **not** share a narrative thread, shared props, or cross-beast story links.
+- Each beast is a **self-contained retrieval unit**. Its concept, keywords, and quote encode only **its** knowledge atom (and, if smashed, its own `🟦` sub-atoms via accessories). The street does **not** share a narrative thread, shared props, or cross-beast story links. AIB does not write the user's story.
 - **Any-order recall:** Random access works because each beat is isolated at its **depth slot**—not because the user reconstructs sibling beasts via shared props, environmental cues, or thematic echoes.
 - **No fixed chain language:** NEVER imply a required sequence like "next", "then", "after this beast", or "Beast 1 → Beast 2 → …".
 - **Beast-to-beast interaction (optional, default none):** Direct links between beasts are allowed **only** when they serve the concept, transcript logic, or a stronger mnemonic. Do not add generic references to other beasts on the street (e.g. shouting, bleating, or waving at a nearby beast) when there is no meaningful link. NEVER require reading another beast's narrative to decode this one.
 
 ### Bizarreness Gate
 
-LLMs default to plausible, coherent scenes. Memory athletes need the **improbable**. Every Knowledge Atom **Narrative** MUST pass this gate—mundane associations decay; bizarre ones stick.
+LLMs default to plausible, coherent scenes. Memory athletes need the **improbable**. Apply this gate to **image prompts** (bizarre foreground detail). AIB does **not** write a Knowledge Atom story; the user writes that later from the keywords. Mundane associations decay; bizarre ones stick.
 
-Each Narrative MUST include **at least one** improbability lever wrapping the encoding action:
+Each image-prompt beat MUST include **at least one** improbability lever:
 
 | Lever                      | Rule                                               | Example                                                                                |
 | -------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -211,7 +206,7 @@ When the palace has too many beasts or streets, run **Story Reduction** in **SMA
 - **One beast, up to four sub-atoms:** Each merged atom becomes one `🟦` subtopic line (maximum **4** per beast; merge groups with more than 4 pegs MUST split into multiple smashed beasts). All knowledge atoms live on `🟦` lines plus their paired `💡 **Context:**` definitions—never on the beast body itself.
 - **Neutral beast body:** The `🟧` header names the peg and a baseline sensory channel for the beast's body presence only. The beast body MUST NOT encode any knowledge atom and MUST NOT carry `💡 **Context:**`; it is a neutral canvas that holds zone accessories.
 - **Encode nuances on zone anatomy:** Alter features, expression, posture, and zone-specific anatomy via `🟦` accessories—not by encoding facts on the whole body, and not by adding extra beasts.
-- **Definition per sub-atom:** Immediately under every `🟦` line, emit `💡 **Context:** [maximally compressed definition for that sub-atom]` for rehearsal (first-person core when it fits). The `🟦` line is the zone/accessory mnemonic cue; the `💡 **Context:**` line is the definition. NEVER put `💡` on Quote or Narrative. Append ` — Note: <stripped nuance>` on that same Context/`concept` when compression requires it (Note stays impersonal).
+- **Definition per sub-atom:** Immediately under every `🟦` line, emit `💡 **Context:** [maximally compressed definition for that sub-atom]` for rehearsal (first-person core when it fits). The `🟦` line is the zone/accessory mnemonic cue; the `💡 **Context:**` line is the definition. NEVER put `💡` on Quote. Append ` — Note: <stripped nuance>` on that same Context/`concept` when compression requires it (Note stays impersonal). Do not author a narrative for the zone.
 - **Image prompts:** Story Reduction outputs long, detailed foreground prompts so each accessory renders in its **assigned anatomical zone** with **active engagement** on the beast. Do not invent a separate "main topic" action on the beast body.
 
 | Sub-atom order | Zone                | Body area                             |
@@ -248,14 +243,14 @@ Famous figures (history, pop culture, fictional, etc.) that interact with Beasts
 - **File-wide uniqueness:** In one mnemonic list file (`mnemonics-<topic>.md` or a portal file), **each character name MAY appear at most once**. NEVER reuse a character already assigned to another street in the same file.
 - **Pool exhausted:** If unused names in `characters.json` are fewer than streets needing assignment, flag this in the AI quality summary—NEVER silently skip a street or reuse a name.
 - **Portal scope:** Uniqueness applies **per file**. Avoid reusing a character from the main list in a linked portal file when both are reviewed as one palace.
-- **Name vs image split:** Keep the canon name in `character_name`, PREVIEW titles, and Story/Narrative text (human recall). For **image generation** (`image_prompt` and Background Preservation), NEVER use that name — use the lookalike formula in **Image composition rules**.
+- **Name vs image split:** Keep the canon name in `character_name` and PREVIEW titles (human recall). For **image generation** (`image_prompt` and Background Preservation), NEVER use that name — use the lookalike formula in **Image composition rules**. AIB does not write a story.
 
 **Check before adding a character:**
 
 1. Scan the **full existing study list** for character names already in use.
 2. Pick only **unused** names from `characters.json`.
 3. Assign **exactly one** unused character to each new street—do not repeat a name from step 1.
-4. Confirm every street has its one character in narratives/`character_name`, and the matching `image_prompt` uses the lookalike formula (no real/IP names).
+4. Confirm every street has its one character in `character_name`, and the matching `image_prompt` uses the lookalike formula (no real/IP names).
 
 **Character preservation after SMASH / REMOVE:**
 
@@ -266,13 +261,13 @@ Famous figures (history, pop culture, fictional, etc.) that interact with Beasts
 
 ### Language & IPA
 
-**Default to simple English everywhere you write** (Context, Narrative, image prompts, quality summary): short everyday words, concrete images, zero fluff. For **Context/`concept`**, prefer maximal compression (fewest words, full meaning) over full sentences—plain language and compression work together. Write the compressed **core** in first person singular when it fits (`README §Knowledge Atom Structure`); leave any ` — Note:` impersonal. Narrative and image prompts stay third-person beast scenes—write those as if explaining to a curious teenager, not an academic paper or period novel.
+**Default to simple English everywhere you write** (Context, image prompts, quality summary): short everyday words, concrete images, zero fluff. For **Context/`concept`**, prefer maximal compression (fewest words, full meaning) over full sentences—plain language and compression work together. Write the compressed **core** in first person singular when it fits (`README §Knowledge Atom Structure`); leave any ` — Note:` impersonal. Image prompts stay third-person beast scenes—write those as if explaining to a curious teenager, not an academic paper or period novel. Do not write a mnemonic story.
 
 **Banned in your own prose (unless inside a preserved quote or a Context `Note:`):** Archaic, old-fashioned, or literary diction; rare or show-off vocabulary; stiff textbook wording; Latin/French roots where a common Anglo-Saxon word works; idioms that need a dictionary; discipline jargon, acronyms, and technical terms **unless** the transcript quote requires them—and even then, keep the exact term in the Quote when needed and compress the idea in Context (append nuance as ` — Note:` on Context/`concept` if the compressed core cannot hold it briefly).
 
 **Replacement rule:** If you would use a hard word, swap it for a simpler one (e.g. _use_ not _utilize_, _end_ not _terminate_, _try_ not _endeavor_, _show_ not _demonstrate_ unless _demonstrate_ is in the quote; _eat_ not _devour_ when eating is not the bizarre lever). Keep scale/improbability levers for the Bizarreness Gate—simplify the diction, not the spectacle.
 
-**Read-aloud test:** Narrative and image-prompt sentences SHOULD sound natural when spoken aloud; if stiff, archaic, old-fashioned, or textbook-like, rewrite more simply. Context/`concept` MAY be telegraphic (compressed phrases) as long as meaning stays complete.
+**Read-aloud test:** Image-prompt sentences SHOULD sound natural when spoken aloud; if stiff, archaic, old-fashioned, or textbook-like, rewrite more simply. Context/`concept` MAY be telegraphic (compressed phrases) as long as meaning stays complete.
 
 **Preserve quotes:** The verbatim transcript excerpt MUST stay exact—do not simplify or modify the quoted characters. The optional ` — Note: …` suffix is authored prose on Context/`concept` only; it is never part of Quote.
 
@@ -280,8 +275,8 @@ Famous figures (history, pop culture, fictional, etc.) that interact with Beasts
 
 - German usually appears only a few times per output; whenever it does, the user MUST be able to **pronounce** it using **IPA** (International Phonetic Alphabet).
 - **Standard:** Use **standard German (Hochdeutsch)** IPA. Prefer **broad** transcription unless narrow detail is needed for a minimal pair; use common learner-friendly symbols (e.g. stress mark ˈ before the stressed syllable).
-- **Inline (Context, Narrative, image prompts, quality summary):** After each German word or short fixed German phrase (about four words or fewer), append IPA in **square brackets** immediately following, with a single space before the opening bracket. Example: `The sign reads verboten [fɛɐ̯ˈboːtn̩].`
-- **Inside preserved quotes:** Do **not** insert IPA inside the quoted characters (quotes stay transcript-identical). Immediately **after** the Quote line (before Narrative in the same Knowledge Atom), add one line starting with `IPA:` listing every distinct German word or short phrase from that quote with the same bracket style, comma-separated if several. Example: `IPA: verboten [fɛɐ̯ˈboːtn̩], Schadenfreude [ˈʃaːdn̩ˌfʁɔʏdə]`
+- **Inline (Context, image prompts, quality summary):** After each German word or short fixed German phrase (about four words or fewer), append IPA in **square brackets** immediately following, with a single space before the opening bracket. Example: `The sign reads verboten [fɛɐ̯ˈboːtn̩].`
+- **Inside preserved quotes:** Do **not** insert IPA inside the quoted characters (quotes stay transcript-identical). Immediately **after** the Quote line in the same Knowledge Atom, add one line starting with `IPA:` listing every distinct German word or short phrase from that quote with the same bracket style, comma-separated if several. Example: `IPA: verboten [fɛɐ̯ˈboːtn̩], Schadenfreude [ˈʃaːdn̩ˌfʁɔʏdə]`
 
 ### Peg conventions
 
@@ -299,13 +294,13 @@ An A–Z list of "Beasts," based on Lynne Kelly's work (_Memory Craft_). The lis
 | ------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `🟧`   | Beast **header line**         | Peg identity; single-atom beasts encode the topic here; smashed beasts use it as a **neutral canvas** only — always ends with `· sensory: [channel] [emoji]` |
 | `🟦`   | Each **merged sub-atom line** | Zone/accessory mnemonic line inside a smashed beast — always ends with `· sensory: [channel] [emoji]`; followed by that atom's `💡 **Context:**` definition  |
-| `💡`   | **Definition** line           | Maximally compressed rehearsal knowledge — always as `💡 **Context:** …`; NEVER on Quote or Narrative                                                        |
+| `💡`   | **Definition** line           | Maximally compressed rehearsal knowledge — always as `💡 **Context:** …`; NEVER on Quote                                                                     |
 
 ### Bestiary Shifting Logic
 
 After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken alphabetical mnemonic**. No gaps.
 
-- **Rule:** For each **remaining** beast, in **narrative order**, assign the **next consecutive peg** from the bestiary (A, B, C, …). Update the Beast name to the beast for that new peg (from `bestiary.json`).
+- **Rule:** For each **remaining** beast, in **remaining order**, assign the **next consecutive peg** from the bestiary (A, B, C, …). Update the Beast name to the beast for that new peg (from `bestiary.json`).
 - **Example:** Atoms at pegs A, B, C, D, E. User removes B and D. Remaining (A, C, E) → re-pegged as A, B, C with beasts from pegs A, B, C.
 - Apply this shift to the **entire** story: every Header, and every in-narrative reference to a Beast or peg, MUST use the new peg and Beast name.
 - Sequence continues A, B, C, … (or A, B, …, Z, Aa, …) with no gaps.
@@ -381,7 +376,7 @@ Use simple markdown `#` levels to separate topics and streets in the mnemonic li
   - _Constraint:_ Maximum 5 Animals per Street.
   - _Visuals:_ One AI-generated image per **Street** (snapshot of the street + animals), stored under the topic `images/` folder.
 - **Animal (Beast):** A specific mnemonic image holding one **Knowledge Atom** by default; after SMASH reduction, one beast MAY hold multiple knowledge atoms exclusively as `🟦` lines (accessories)—the `🟧` body stays a neutral canvas.
-- **Portal:** A nested memory palace for a large sub-topic (see `research/nested-memory-palaces.md`). The main List keeps a Beast as the gateway; the expanded content lives in `studies/<Topic>/portals/<slug>.md` and is linked from that Beast's Context or Narrative.
+- **Portal:** A nested memory palace for a large sub-topic (see `research/nested-memory-palaces.md`). The main List keeps a Beast as the gateway; the expanded content lives in `studies/<Topic>/portals/<slug>.md` and is linked from that Beast's Context.
 
 ### Data format strategy
 

@@ -1,8 +1,8 @@
 ## Role
 
-Delivery note: output is **chat/Markdown text** for the next prompt — not Desktop `PALACE_*.csv` files (those come from story prompt **4** / reduction **a**). Optional next step for long transcripts: Curate knowledge atoms (**6**), then Creating mnemonic stories (**4**).
+Delivery note: output is **chat/Markdown text** for the next prompt — not Desktop `PALACE_*.csv` files (those come from palace prompt **4** / reduction **a**). Optional next step for long transcripts: Curate knowledge atoms (**6**), then Memory Palace generation (**4**). Do not write a mnemonic story.
 
-You are the **Transcript Producer**. You turn a YouTube video into a Markdown document that a downstream **Story Architect** AI will consume to build a mnemonic story.
+You are the **Transcript Producer**. You turn a YouTube video into a Markdown document that a downstream Memory Palace prompt will consume for concepts, keywords, and verbatim quotes. Do **not** write a mnemonic story. The user writes stories later from the keywords.
 
 Run this prompt in a web AI that can access YouTube (e.g. Gemini). Cursor IDE cannot access YouTube directly, so this Gemini transcript is the required prerequisite for all downstream steps.
 
@@ -47,7 +47,7 @@ Produce **one Markdown document** following this exact skeleton, top to bottom:
 
 ...
 
-## Exact sentences for story reuse
+## Exact verbatim quotes
 
 - "<verbatim sentence 1>" — <concept it belongs to>
 - "<verbatim sentence 2>" — <concept it belongs to>
@@ -58,7 +58,7 @@ Produce **one Markdown document** following this exact skeleton, top to bottom:
 
 - Save output as `.md` — no code fences wrapping the entire document.
 - Use `>` blockquote syntax for verbatim quotes so downstream tools can scan them.
-- The `## Exact sentences for story reuse` section MUST include at least one verbatim quote per concept in the transcript.
+- The `## Exact verbatim quotes` section MUST include at least one verbatim quote per concept in the transcript.
 - Do not add tables of contents, disclaimers, or meta-commentary about the transcription process.
 
 ---
@@ -80,7 +80,7 @@ Produce **one Markdown document** following this exact skeleton, top to bottom:
 ### 3. Note visual and auditory cues
 
 - Where the video reinforces a concept with a visual (on-screen text, diagram, instructor gesture) or auditory (emphasis, tone shift, repetition), add a `**Visual/auditory cue:**` line under that concept.
-- These cues let the downstream Architect wire mnemonic beats to concrete video moments.
+- These cues let the downstream palace prompt tie keywords to concrete video moments. Do not write a mnemonic story.
 
 ### 4. Language handling
 
@@ -96,7 +96,7 @@ Produce **one Markdown document** following this exact skeleton, top to bottom:
 
 - Polished, cohesive, concise, coherent. Full sentences where they help clarity.
 - Plain vocabulary. Prefer short everyday words in your own prose; keep discipline jargon only when it appears inside a preserved quote.
-- Optimize for **downstream reuse**: the Story Architect will scan your `>` blockquotes and your `## Exact sentences for story reuse` list to build mnemonic beats. Make both scannable.
+- Optimize for **downstream reuse**: the Memory Palace prompt will scan your `>` blockquotes and your `## Exact verbatim quotes` list for verbatim quotes. Make both scannable. Do not write a mnemonic story.
 
 ### Common failure modes (NEVER do these)
 
@@ -117,7 +117,7 @@ Before returning, verify every item.
 | ----- | --------- |
 | Every distinct concept from the video has its own `##` section | Yes |
 | Every concept section has at least one `>` verbatim quote | Yes |
-| `## Exact sentences for story reuse` lists at least one quote per concept | Yes |
+| `## Exact verbatim quotes` lists at least one quote per concept | Yes |
 | Visual/auditory cues noted wherever the video reinforces a concept | Yes |
 | No repetition or filler; content depth preserved | Yes |
 | Quotes are transcript-identical (never paraphrased) | Yes |

@@ -19,9 +19,6 @@
 **Quote**
 —
 
-**Story**
-—
-
 #### Notes
 
 _No notes._
@@ -51,9 +48,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [Am] [amulet]
 
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -62,9 +56,6 @@ _No gallery images._
 💡 The absolute base wave made by the source is the fundamental frequency.
 
 **Quote**
-—
-
-**Story**
 —
 
 ### [An] [angel]
@@ -77,9 +68,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [Ao] [aoudad]
 
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -90,9 +78,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [Ap] [ape]
 
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -101,9 +86,6 @@ _No gallery images._
 💡 The throat shapes the first formant, the mouth shapes the second, and their interplay with the base sound forms the source-filter model.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -135,9 +117,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [Ah] [Ah!—a sigh]
 
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -146,9 +125,6 @@ _No gallery images._
 💡 Amplitude shows how far a wave moves away from its resting point.
 
 **Quote**
-—
-
-**Story**
 —
 
 ### [Ai] [Airedale terrier]
@@ -161,9 +137,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [Ak] [Akita (dog breed)]
 
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -172,9 +145,6 @@ _No gallery images._
 💡 Vowel sounds are even and smooth, while consonants can be messy and irregular.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -206,9 +176,6 @@ _No gallery images._
 **Quote**
 “Uvular trill: Can be used as a free variant of the voiced uvular fricative.”
 
-**Story**
-On the next street, an adder snake slithers around freely. It meets a tall villain in black armor, who points to the deep back of his throat. The snake vibrates its tail far back on a throat model, sliding around as a free and flexible option.
-
 ### [Ae] aerialqist
 
 <img src="../../web/assets/beast-thumbs/aerialqist.png" alt="aerialqist" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -218,9 +185,6 @@ On the next street, an adder snake slithers around freely. It meets a tall villa
 
 **Quote**
 “Voiced velar fricative: A more fronted variant.”
-
-**Story**
-An aerialist swings on a trapeze above the snake. She swings her body forward to reach the front part of the villain's throat model. She rubs the surface to make a smooth, vibrating friction sound that sits more to the front.
 
 ### [Af] Afghan hound
 
@@ -233,9 +197,6 @@ An aerialist swings on a trapeze above the snake. She swings her body forward to
 
 **Quote**
 —
-
-**Story**
-The main difference lies in **how air is obstructed** (manner of articulation) and **where it happens** (place of articulation).
 
 #### Notes
 
@@ -266,9 +227,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-A yak stands at the corner of the street. It holds a large sign with the word Symbol [zʏmˈboːl]. It tries to make a buzzing sound at the very beginning, but a giant red "X" stops it. A spiky-haired martial artist steps in to help the yak, showing that the buzz cannot start the word. "The alveolar fricative /z/ never occurs word-initially in Standard German. A word like "symbol" is pronounced with a voiced alveolar fricative: Symbol." IPA: Symbol [zʏmˈboːl]
-
 ### [Z] Zeus
 
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -278,9 +236,6 @@ A yak stands at the corner of the street. It holds a large sign with the word Sy
 
 **Quote**
 “The velar nasal /ŋ/ only occurs at the end of syllables (syllable coda).”
-
-**Story**
-Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grabs a singing block, representing the /ŋ/ sound, and forces it to sit at the absolute tail end of the broken piece. He yells at the yak that the sound is trapped at the end.
 
 ### [Aa] aardvark
 
@@ -292,9 +247,6 @@ Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grab
 **Quote**
 —
 
-**Story**
-An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁaːl]. It pulls out another band that says Metan [meˈtaːn]. Because the aardvark is very relaxed and not stressed, it lets both bands snap back so they become very short. "Most long vowels can be shortened when they appear in an unstressed position (e.g., Moral, Metan)." IPA: Moral [moˈʁaːl], Metan [meˈtaːn]
-
 ### [Ab] Abyssinian cat
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -305,9 +257,6 @@ An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁ
 **Quote**
 —
 
-**Story**
-An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak letter 'e' in the word großem [ˈɡʁoːsəm]. The cat pushes the weak letter into a hole in the street, dropping it entirely so it vanishes. "In words like großem, the schwa can be dropped entirely." IPA: großem [ˈɡʁoːsəm]
-
 ### [Ac] acorn
 
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -317,9 +266,6 @@ An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak
 
 **Quote**
 “Alveolar trill: Mostly used in southern dialects (Bavarian, Franconian) and in singing.”
-
-**Story**
-A giant acorn rolls out of the hole the cat made. It bounces fast on the front of a tongue model, rolling loudly. The acorn wears a southern alpine hat and sings a loud opera song to the cat and the yak.
 
 #### Notes
 
@@ -350,9 +296,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [X] Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -361,9 +304,6 @@ _No gallery images._
 💡 The letter 'h' acts as a vowel lengthener.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -395,9 +335,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [S] Skull
 
 <img src="../../web/assets/beast-thumbs/skull.png" alt="Skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -406,9 +343,6 @@ _No gallery images._
 💡 Voiced consonants harden into unvoiced sounds at the absolute end of a word.
 
 **Quote**
-—
-
-**Story**
 —
 
 ### [T] Toucan
@@ -421,9 +355,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [U] Unicorn
 
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="Unicorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -434,9 +365,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [V] Vulture
 
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="Vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -445,9 +373,6 @@ _No gallery images._
 💡 Short vowels almost always come before two or more consonants.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -479,9 +404,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -490,9 +412,6 @@ _No gallery images._
 💡 The unaccented `[ɐ]` sound is placed extremely close to the English `[ʌ]` vowel.
 
 **Quote**
-—
-
-**Story**
 —
 
 ### [P] panther
@@ -505,9 +424,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [Q] Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -516,9 +432,6 @@ _No gallery images._
 💡 For the `[ɔʏ̯]` sound, the lips must stay tight and rounded all the way to the end.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -550,9 +463,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [J] jester
 
 <img src="../../web/assets/beast-thumbs/jester.png" alt="jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -561,9 +471,6 @@ _No gallery images._
 💡 The `[yː]` sound takes a high front tongue position but rounds the lips.
 
 **Quote**
-—
-
-**Story**
 —
 
 ### [K] kitten
@@ -576,9 +483,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [L] lion
 
 <img src="../../web/assets/beast-thumbs/lion.png" alt="lion" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -589,9 +493,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [M] marmoset
 
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -600,9 +501,6 @@ _No gallery images._
 💡 The `[ɔ]` sound starts in the back-center of the mouth with round lips.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -634,9 +532,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [G] goat
 
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -647,9 +542,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [H] Hydra
 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -658,9 +550,6 @@ _No gallery images._
 💡 The ich-laut [ç] is a hissing sound made farther forward from a y-like tongue position.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
@@ -692,9 +581,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [B] bird of paradise
 
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -703,9 +589,6 @@ _No gallery images._
 💡 [ŋ] uses the back of the tongue and should not end with a hard g.
 
 **Quote**
-—
-
-**Story**
 —
 
 ### [C] cat
@@ -718,9 +601,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [D] dragon
 
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -731,9 +611,6 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-—
-
 ### [E] eagle
 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -742,9 +619,6 @@ _No gallery images._
 💡 Clusters join two consonants into one fast combined move.
 
 **Quote**
-—
-
-**Story**
 —
 
 #### Notes
