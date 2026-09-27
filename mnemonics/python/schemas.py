@@ -6,6 +6,7 @@ import html
 import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 STUDIES_HEADERS = ["id", "title", "notes_rel_path", "sort_order", "active"]
 PALACES_HEADERS = [
@@ -251,15 +252,25 @@ def _find_term(text: str, term: str) -> re.Match[str] | None:
     return re.search(pattern, text)
 
 
+# Bright orange field, dark text. GitHub's <mark> wash is too dim on a black page.
+_KEYWORD_ORANGE = "ffd966"
+
+
 def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
     """Highlight only the concept phrase. The mnemonic stays plain text.
 
-    `<mark><strong>` is the orange highlight GitHub actually paints (it strips
-    custom colors). The web app uses the same tags and the same orange.
+    GitHub strips custom colors, and its `<mark>` orange has almost no contrast
+    in dark mode. A flat badge is a light orange chip with dark text, which is
+    the same pairing the web app paints.
     """
     safe_phrase = html.escape(phrase, quote=True)
     safe_mnemonic = html.escape(mnemonic, quote=True)
-    return f"<mark><strong>[{safe_phrase}]</strong></mark>({safe_mnemonic})"
+    message = quote(f"[{phrase}]", safe="")
+    src = (
+        "https://img.shields.io/static/v1?style=flat-square"
+        f"&label=&message={message}&color={_KEYWORD_ORANGE}"
+    )
+    return f'<img alt="[{safe_phrase}]" src="{src}" />({safe_mnemonic})'
 
 
 def _top_level_group_spans(core: str) -> list[tuple[int, int]] | None:

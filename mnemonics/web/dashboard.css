@@ -396,10 +396,10 @@ input[type="search"] {
   min-width: 0;
 }
 #studyModal .qr-line mark.kw-phrase {
-  background-color: rgba(210, 153, 34, 0.35);
-  color: #d29922;
+  background-color: #ffd966;
+  color: #1a1200;
   font-weight: 700;
-  padding: 0.05em 0.2em;
+  padding: 0.05em 0.35em;
   border-radius: 2px;
   border: none;
   text-decoration: none;

@@ -19,7 +19,14 @@ PARALLEL_KEYWORDS = "fence | Parallel Coordinates || easel | draw || bead | tupl
 
 
 def _chip(phrase: str, mnemonic: str) -> str:
-    return f"<mark><strong>[{phrase}]</strong></mark>({mnemonic})"
+    from urllib.parse import quote
+
+    message = quote(f"[{phrase}]", safe="")
+    src = (
+        "https://img.shields.io/static/v1?style=flat-square"
+        f"&label=&message={message}&color=ffd966"
+    )
+    return f'<img alt="[{phrase}]" src="{src}" />({mnemonic})'
 
 
 def test_parallel_coordinates_contract_and_render_order() -> None:
