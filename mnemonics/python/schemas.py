@@ -252,14 +252,14 @@ def _find_term(text: str, term: str) -> re.Match[str] | None:
 
 
 def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
-    """`[phrase](mnemonic)` as two different chips GitHub still paints.
+    """Highlight only the concept phrase. The mnemonic stays plain text.
 
-    The phrase is a bold key chip (`kbd`). The mnemonic is a monospace code
-    pill. Neither is plain text, and the difference is shape, not color.
+    `<mark><strong>` is the orange highlight GitHub actually paints (it strips
+    custom colors). The web app uses the same tags and the same orange.
     """
     safe_phrase = html.escape(phrase, quote=True)
     safe_mnemonic = html.escape(mnemonic, quote=True)
-    return f"<kbd><strong>[{safe_phrase}]</strong></kbd><code>({safe_mnemonic})</code>"
+    return f"<mark><strong>[{safe_phrase}]</strong></mark>({safe_mnemonic})"
 
 
 def _top_level_group_spans(core: str) -> list[tuple[int, int]] | None:

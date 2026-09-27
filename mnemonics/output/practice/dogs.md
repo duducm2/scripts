@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <kbd><strong>[Toy Scenting]</strong></kbd><code>(perfume)</code> [I rub authorized <kbd><strong>[chew items]</strong></kbd><code>(bone)</code>] [between my <kbd><strong>[hands]</strong></kbd><code>(palms)</code>] [to transfer <kbd><strong>[personal scent]</strong></kbd><code>(shirt)</code>] — Note: Overnight contact with the handler also works to fulfill scent drives.
+💡 <mark><strong>[Toy Scenting]</strong></mark>(perfume) [I rub authorized <mark><strong>[chew items]</strong></mark>(bone)] [between my <mark><strong>[hands]</strong></mark>(palms)] [to transfer <mark><strong>[personal scent]</strong></mark>(shirt)] — Note: Overnight contact with the handler also works to fulfill scent drives.
 
 **Quote**
 “Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent.”
@@ -27,7 +27,7 @@ A goat wearing a checkered scarf vigorously rubs a rubber chew bone between its 
 <img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <kbd><strong>[The Trade Game]</strong></kbd><code>(scale)</code> [I offer <kbd><strong>[superior trades]</strong></kbd><code>(turkey)</code>] [to <kbd><strong>[prevent chase]</strong></kbd><code>(hurdle)</code> games] [when <kbd><strong>[forbidden items]</strong></kbd><code>(shoe)</code> are taken] — Note: Chasing turns theft into a self-reinforcing game.
+💡 <mark><strong>[The Trade Game]</strong></mark>(scale) [I offer <mark><strong>[superior trades]</strong></mark>(turkey)] [to <mark><strong>[prevent chase]</strong></mark>(hurdle) games] [when <mark><strong>[forbidden items]</strong></mark>(shoe) are taken] — Note: Chasing turns theft into a self-reinforcing game.
 
 **Quote**
 “If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game.”
@@ -59,7 +59,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<kbd><strong>[Proprioception]</strong></kbd><code>(tightrope)</code> Training] [I <kbd><strong>[guide]</strong></kbd><code>(leash)</code> the dog] [over raised Cavaletti <kbd><strong>[poles]</strong></kbd><code>(hurdles)</code>] [to build <kbd><strong>[hind-end]</strong></kbd><code>(bumper)</code> awareness] — Note: This scientifically supports joint health and combats dysplasia risks.
+💡 [<mark><strong>[Proprioception]</strong></mark>(tightrope) Training] [I <mark><strong>[guide]</strong></mark>(leash) the dog] [over raised Cavaletti <mark><strong>[poles]</strong></mark>(hurdles)] [to build <mark><strong>[hind-end]</strong></mark>(bumper) awareness] — Note: This scientifically supports joint health and combats dysplasia risks.
 
 **Quote**
 “Proprioception exercises like Cavaletti poles build rear-end body awareness, which is scientifically proven to strengthen stabilizing muscles and mitigate joint dysplasia risks.”
@@ -91,7 +91,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Breeding <kbd><strong>[Lines]</strong></kbd><code>(ruler)</code>] [I choose <kbd><strong>[working]</strong></kbd><code>(hardhat)</code> lines] [for extreme <kbd><strong>[intensity]</strong></kbd><code>(fire)</code>] [and <kbd><strong>[pet]</strong></kbd><code>(leash)</code> lines] [for calm <kbd><strong>[companions]</strong></kbd><code>(heart)</code>] — Note: Show lines prioritize physical conformation and structure.
+💡 [Breeding <mark><strong>[Lines]</strong></mark>(ruler)] [I choose <mark><strong>[working]</strong></mark>(hardhat) lines] [for extreme <mark><strong>[intensity]</strong></mark>(fire)] [and <mark><strong>[pet]</strong></mark>(leash) lines] [for calm <mark><strong>[companions]</strong></mark>(heart)] — Note: Show lines prioritize physical conformation and structure.
 
 **Quote**
 “There are the working line shepherds bred for extreme drive and intensity Showine shepherds bred more for looks and structure and pet line shepherds bred to be calmer more familyfriendly companions”
@@ -104,7 +104,7 @@ A skyscraper-tall half-spider woman crashes onto the iron gate, splitting the st
 <img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Proper <kbd><strong>[Fulfillment]</strong></kbd><code>(trophy)</code>] [I <kbd><strong>[balance]</strong></kbd><code>(scale)</code> the dog] [with predictable <kbd><strong>[routines]</strong></kbd><code>(clock)</code>] [and cognitive <kbd><strong>[scent]</strong></kbd><code>(nose)</code> games] — Note: High drive can be satisfied through structured play and scatter feeding rather than professional sports.
+💡 [Proper <mark><strong>[Fulfillment]</strong></mark>(trophy)] [I <mark><strong>[balance]</strong></mark>(scale) the dog] [with predictable <mark><strong>[routines]</strong></mark>(clock)] [and cognitive <mark><strong>[scent]</strong></mark>(nose) games] — Note: High drive can be satisfied through structured play and scatter feeding rather than professional sports.
 
 **Quote**
 “German Shepherds thrive when they have structure clear communication and mental stimulation”
@@ -117,7 +117,7 @@ A bird of paradise wearing a referee whistle scatter-feeds glowing kibble onto t
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Basic <kbd><strong>[Obedience]</strong></kbd><code>(whistle)</code>] [I teach the <kbd><strong>[place]</strong></kbd><code>(mat)</code> command] [to build sustained <kbd><strong>[focus]</strong></kbd><code>(laser)</code>] [and provide mental <kbd><strong>[stimulation]</strong></kbd><code>(brain)</code>] — Note: This improves communication without needing advanced sports training.
+💡 [Basic <mark><strong>[Obedience]</strong></mark>(whistle)] [I teach the <mark><strong>[place]</strong></mark>(mat) command] [to build sustained <mark><strong>[focus]</strong></mark>(laser)] [and provide mental <mark><strong>[stimulation]</strong></mark>(brain)] — Note: This improves communication without needing advanced sports training.
 
 **Quote**
 “Using commands like place to build focus, improve communication, and provide mental stimulation without the need for advanced sports training.”
@@ -130,7 +130,7 @@ The cat stands on a floating yoga mat by the building facade, blowing a silver w
 <img src="../../web/assets/beast-thumbs/dragon.png" alt="dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<kbd><strong>[Scent]</strong></kbd><code>(nose)</code> Work] [I <kbd><strong>[scatter]</strong></kbd><code>(seeds)</code> food] [across the garden <kbd><strong>[grass]</strong></kbd><code>(mower)</code>] [to engage <kbd><strong>[tracking]</strong></kbd><code>(magnifying glass)</code> instincts] — Note: Hiding food around the house with a go find command also works.
+💡 [<mark><strong>[Scent]</strong></mark>(nose) Work] [I <mark><strong>[scatter]</strong></mark>(seeds) food] [across the garden <mark><strong>[grass]</strong></mark>(mower)] [to engage <mark><strong>[tracking]</strong></mark>(magnifying glass) instincts] — Note: Hiding food around the house with a go find command also works.
 
 **Quote**
 “Scattering food on the floor or in the garden grass so the dog uses its nose, or hiding food around the house with a go find command to engage tracking instincts.”
@@ -143,7 +143,7 @@ A dragon on the roof sniffs the shingles with its massive snout, spitting seeds 
 <img src="../../web/assets/beast-thumbs/eagle.png" alt="eagle" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Controlled <kbd><strong>[Protection]</strong></kbd><code>(shield)</code>] [I play <kbd><strong>[tug-of-war]</strong></kbd><code>(rope)</code>] [paired with a <kbd><strong>[drop-it]</strong></kbd><code>(parachute)</code> command] [to channel instinctual <kbd><strong>[drives]</strong></kbd><code>(battery)</code> safely] — Note: This structured game tires out high-drive dogs effectively.
+💡 [Controlled <mark><strong>[Protection]</strong></mark>(shield)] [I play <mark><strong>[tug-of-war]</strong></mark>(rope)] [paired with a <mark><strong>[drop-it]</strong></mark>(parachute) command] [to channel instinctual <mark><strong>[drives]</strong></mark>(battery) safely] — Note: This structured game tires out high-drive dogs effectively.
 
 **Quote**
 “Engaging in a structured game of tug-of-war paired with a reliable drop it command to safely channel their instinctual drives and tire them out.”
