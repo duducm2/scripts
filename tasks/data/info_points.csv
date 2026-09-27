@@ -157,3 +157,5 @@ INFO_0189,project,PROJ_0030,Birth date & age,,🐕,,4150,2026-09-25 11:55:01,age
 INFO_0190,task,TASK_0333,Talvez você tenha que voltar a essa tabela posteriormente para checar se os capítulos permanecem os mesmos ou se as referências mudaram.,,ℹ️,,10,2026-09-26 16:54:01,,
 INFO_0191,task,TASK_0333,\ref{tab:mapa-perguntas-analises},,ℹ️,,20,2026-09-26 16:54:17,,
 INFO_0192,task,TASK_0335,image.png,,ℹ️,,10,2026-09-27 15:55:47,,
+INFO_0193,task,TASK_0335,You are removing some articles related to sentiment analysis. So you need to update your literature review numbers,,ℹ️,,20,2026-09-27 16:12:51,,
+INFO_0194,task,TASK_0335,image.png,,ℹ️,,30,2026-09-27 16:13:06,,
