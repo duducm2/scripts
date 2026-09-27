@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **<mark>[Context]</mark><kbd>(giant window)</kbd>:** I experience the <mark>[dumb]</mark><kbd>(foggy helmet)</kbd> zone as degraded <mark>[attention]</mark><kbd>(droopy eyes)</kbd> and performance when processing a massive context window over an extended <mark>[session]</mark><kbd>(hourglass)</kbd>.
+💡 💡 **<strong><ins>[Context]</ins></strong><kbd>(giant window)</kbd>:** I experience the <strong><ins>[dumb]</ins></strong><kbd>(foggy helmet)</kbd> zone as degraded <strong><ins>[attention]</ins></strong><kbd>(droopy eyes)</kbd> and performance when processing a massive context window over an extended <strong><ins>[session]</ins></strong><kbd>(hourglass)</kbd>.
 
 **Quote**
 “In Artificial Intelligence, the "dumb zone" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.”
@@ -27,7 +27,7 @@ A microscopic marmoset juggles thousands of glowing text windows; as the session
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **Context:** I use a <mark>[meta]</mark><kbd>(iron curtain)</kbd> prompt as a behind-the-scenes <mark>[instruction]</mark><kbd>(whisper)</kbd> that establishes an AI's baseline parameters like tone, <mark>[rules]</mark><kbd>(rule book)</kbd>, and <mark>[boundaries]</mark><kbd>(fence)</kbd>.
+💡 💡 **Context:** I use a <strong><ins>[meta]</ins></strong><kbd>(iron curtain)</kbd> prompt as a behind-the-scenes <strong><ins>[instruction]</ins></strong><kbd>(whisper)</kbd> that establishes an AI's baseline parameters like tone, <strong><ins>[rules]</ins></strong><kbd>(rule book)</kbd>, and <strong><ins>[boundaries]</ins></strong><kbd>(fence)</kbd>.
 
 **Quote**
 “A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
@@ -42,7 +42,7 @@ A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggr
 🟦 **Z1 · The Horse**
 
 **Concept**
-💡 💡 **Context:** I use the <mark>[Horse]</mark><kbd>(wild horse)</kbd> to represent the foundational AI model itself, which possesses raw <mark>[power]</mark><kbd>(lightning bolt)</kbd> but no inherent <mark>[direction]</mark><kbd>(broken compass)</kbd>.
+💡 💡 **Context:** I use the <strong><ins>[Horse]</ins></strong><kbd>(wild horse)</kbd> to represent the foundational AI model itself, which possesses raw <strong><ins>[power]</ins></strong><kbd>(lightning bolt)</kbd> but no inherent <strong><ins>[direction]</ins></strong><kbd>(broken compass)</kbd>.
 
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
@@ -55,7 +55,7 @@ A wild, directionless mane of raw electrical power erupts from the owl's beak, v
 🟦 **Z2 · Harness Layer**
 
 **Concept**
-💡 💡 **Context:** I build a <mark>[Harness]</mark><kbd>(iron harness)</kbd> or <mark>[Tack]</mark><kbd>(leather tack)</kbd> as the engineering layer to <mark>[steer]</mark><kbd>(steering wheel)</kbd> and <mark>[connect]</mark><kbd>(plug)</kbd> the model's raw power.
+💡 💡 **Context:** I build a <strong><ins>[Harness]</ins></strong><kbd>(iron harness)</kbd> or <strong><ins>[Tack]</ins></strong><kbd>(leather tack)</kbd> as the engineering layer to <strong><ins>[steer]</ins></strong><kbd>(steering wheel)</kbd> and <strong><ins>[connect]</ins></strong><kbd>(plug)</kbd> the model's raw power.
 
 **Quote**
 “The Harness/Tack acts as the engineering layer that interacts with the model.”
@@ -68,7 +68,7 @@ A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snappi
 🟦 **Z3 · The Cart Task**
 
 **Concept**
-💡 💡 **Context:** I view the <mark>[Cart]</mark><kbd>(wooden cart)</kbd> as the ultimate <mark>[task]</mark><kbd>(trophy)</kbd> or <mark>[destination]</mark><kbd>(neon sign)</kbd> that needs to be accomplished once the model is harnessed.
+💡 💡 **Context:** I view the <strong><ins>[Cart]</ins></strong><kbd>(wooden cart)</kbd> as the ultimate <strong><ins>[task]</ins></strong><kbd>(trophy)</kbd> or <strong><ins>[destination]</ins></strong><kbd>(neon sign)</kbd> that needs to be accomplished once the model is harnessed.
 
 **Quote**
 “The Cart represents the ultimate Task that needs to be accomplished.”

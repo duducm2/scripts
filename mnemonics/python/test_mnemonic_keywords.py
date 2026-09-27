@@ -19,7 +19,7 @@ PARALLEL_KEYWORDS = "fence | Parallel Coordinates || easel | draw || bead | tupl
 
 
 def _chip(phrase: str, mnemonic: str) -> str:
-    return f"<mark>[{phrase}]</mark><kbd>({mnemonic})</kbd>"
+    return f"<strong><ins>[{phrase}]</ins></strong><kbd>({mnemonic})</kbd>"
 
 
 def test_parallel_coordinates_contract_and_render_order() -> None:

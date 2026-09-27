@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/byron.png" alt="Byron" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I translate <mark>[multidimensional]</mark><kbd>(cube)</kbd> data] [into visual and <mark>[geometric]</mark><kbd>(triangle)</kbd> forms] [to leverage human <mark>[cognitive]</mark><kbd>(brain)</kbd> processing] [for pattern recognition and <mark>[anomaly]</mark><kbd>(glitch)</kbd> detection]
+💡 [I translate <strong><ins>[multidimensional]</ins></strong><kbd>(cube)</kbd> data] [into visual and <strong><ins>[geometric]</ins></strong><kbd>(triangle)</kbd> forms] [to leverage human <strong><ins>[cognitive]</ins></strong><kbd>(brain)</kbd> processing] [for pattern recognition and <strong><ins>[anomaly]</ins></strong><kbd>(glitch)</kbd> detection]
 
 **Quote**
 “Visual analysis is the translation of multidimensional data into visual, geometric, and topological representations to leverage human cognitive processing for pattern recognition, anomaly detection, and hypothesis generation.”

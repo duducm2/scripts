@@ -252,15 +252,17 @@ def _find_term(text: str, term: str) -> re.Match[str] | None:
 
 
 def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
-    """`[phrase](mnemonic)` using tags GitHub still paints.
+    """`[phrase](mnemonic)` with shape cues GitHub cannot strip.
 
-    `<mark>` is the amber phrase highlight and `<kbd>` is the mnemonic chip.
-    Inline color is omitted because GitHub strips `style`. The tags sit between
-    `]` and `(`, so Markdown does not read the pair as a link.
+    The phrase is bold and underlined. The mnemonic sits in a bordered `<kbd>`
+    chip. Color is not the distinction, because GitHub drops `style` and the
+    two roles must stay separate without hue.
     """
     safe_phrase = html.escape(phrase, quote=True)
     safe_mnemonic = html.escape(mnemonic, quote=True)
-    return f"<mark>[{safe_phrase}]</mark><kbd>({safe_mnemonic})</kbd>"
+    return (
+        f"<strong><ins>[{safe_phrase}]</ins></strong>" f"<kbd>({safe_mnemonic})</kbd>"
+    )
 
 
 def _top_level_group_spans(core: str) -> list[tuple[int, int]] | None:
