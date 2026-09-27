@@ -201,8 +201,6 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; Background path: Handy stays off-screen/transparent (BeginSuppress); no WinClose.
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
-    if (!HandyAi_IsOwnerProcess() && A_ScriptName != "WindowManagement.ahk")
-        return false
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
     global g_HandyModelSwitchBusy, g_HandySuppressActive
 
@@ -291,11 +289,13 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
             return false
         }
 
-        ; Update persistent language flag indicator (slot 1 = UK, slot 2 = BR, slot 3 = multi).
-        if (selection >= 1 && selection <= 3)
-            LanguageFlag_Show(selection)
-        else
-            LanguageFlag_Hide()
+        ; Flag GUIs belong to AppLaunchers. Other hosts still switch Handy and save the slot.
+        if (HandyAi_IsOwnerProcess()) {
+            if (selection >= 1 && selection <= 3)
+                LanguageFlag_Show(selection)
+            else
+                LanguageFlag_Hide()
+        }
 
         soundPath := A_ScriptDir . "\assets\sounds\handy-model-chosen.mp3"
         if (FileExist(soundPath))
@@ -350,6 +350,25 @@ Handy_FindAppLaunchersHwnd() {
     try hwnd := WinExist("AppLaunchers.ahk ahk_class AutoHotkey")
     catch
         hwnd := 0
+    if (!hwnd) {
+        for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe", "AutoHotkey.exe"] {
+            try list := WinGetList("ahk_exe " exe)
+            catch
+                continue
+            for candidate in list {
+                title := ""
+                try title := WinGetTitle("ahk_id " candidate)
+                catch
+                    continue
+                if (InStr(title, "AppLaunchers.ahk")) {
+                    hwnd := candidate
+                    break
+                }
+            }
+            if (hwnd)
+                break
+        }
+    }
     DetectHiddenWindows prevDetect
     SetTitleMatchMode prevMatch
     return hwnd
@@ -368,7 +387,9 @@ Handy_OnAiModelRequest(wParam, lParam, *) {
     SetTimer((*) => ExecuteHandyAiModelSelection(slot, false, restoreHwnd), -1)
 }
 
-; Owner runs the switch here. Any other host posts the slot to AppLaunchers.
+; Owner runs the switch here. Another host asks AppLaunchers when that script is up
+; (so the language flag updates). After a reboot the menu often belongs to a
+; different script while AppLaunchers is still down — switch Handy locally then.
 Handy_RequestAiModelSelection(slot, restoreHwnd := 0) {
     if (HandyAi_IsOwnerProcess()) {
         ExecuteHandyAiModelSelection(slot, false, restoreHwnd)
@@ -383,8 +404,8 @@ Handy_RequestAiModelSelection(slot, restoreHwnd := 0) {
         } catch {
         }
     }
-    ShowCenteredOverlay_Utils("❌ Handy model switch needs AppLaunchers running.", 2000, BANNER_ACCENT_ERROR)
-    return false
+    ExecuteHandyAiModelSelection(slot, false, restoreHwnd)
+    return true
 }
 
 if (HandyAi_IsOwnerProcess())

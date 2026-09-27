@@ -127,8 +127,8 @@
 ### 5. Advanced Analytics
 
 - [✅] Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)
-- [ ] Use LEAD and LAG for row-relative comparisons without collapsing grain
-- [ ] Practice PARTITION BY windows that preserve row grain while adding running metrics
+- [✅] Use LEAD and LAG for row-relative comparisons without collapsing grain
+- [✅] Practice PARTITION BY windows that preserve row grain while adding running metrics
 
 **🔗 Resources:**
 
@@ -137,9 +137,9 @@
 
 ### 6. Portfolio Integration
 
-- [ ] Run Exploratory Data Analysis in SQL on a real-world dataset (e.g. COVID / demographic data)
-- [ ] Document findings in a clean GitHub markdown logbook
-- [ ] Import an unstructured public dataset into PostgreSQL for portfolio EDA
+- [✅] Run Exploratory Data Analysis in SQL on a real-world dataset (e.g. COVID / demographic data)
+- [✅] Document findings in a clean GitHub markdown logbook
+- [✅] Import an unstructured public dataset into PostgreSQL for portfolio EDA
 
 **🔗 Resources:**
 
@@ -149,9 +149,9 @@
 
 ### 1. Interface and Data Ingestion
 
-- [ ] Install Power BI Desktop and import practice datasets
-- [ ] Navigate the workspace: Report, Data, and Model views
-- [ ] Leverage UX background: treat every dashboard as a user interface with journey mapping
+- [✅] Install Power BI Desktop and import practice datasets
+- [✅] Navigate the workspace: Report, Data, and Model views
+- [✅] Leverage UX background: treat every dashboard as a user interface with journey mapping
 
 **🔗 Resources:**
 
@@ -160,9 +160,9 @@
 
 ### 2. Advanced Power Query
 
-- [ ] Transform datasets in Power BI Power Query (types, splits, merges)
-- [ ] Handle API or external source integrations when needed
-- [ ] Reuse Phase 1 Power Query skills at the gallery loading dock (same ETL engine)
+- [✅] Transform datasets in Power BI Power Query (types, splits, merges)
+- [✅] Handle API or external source integrations when needed
+- [✅] Reuse Phase 1 Power Query skills at the gallery loading dock (same ETL engine)
 
 **🔗 Resources:**
 
