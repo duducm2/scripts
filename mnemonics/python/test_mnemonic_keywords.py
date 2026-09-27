@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from palace_practice_render import format_keywords_lines
+from palace_practice_render import render_atom_block_md
 from palace_store import PalaceStore
 from schemas import (
     concept_bracket_groups,
+    embed_keyword_mnemonics,
     iter_keyword_pairs,
     normalize_atom_keywords,
     validate_atom_mnemonics,
@@ -17,13 +18,59 @@ PARALLEL_CONCEPT = (
 PARALLEL_KEYWORDS = "fence | Parallel Coordinates || easel | draw || bead | tuple"
 
 
+def _chip(phrase: str, mnemonic: str) -> str:
+    return (
+        '&#91;<span style="color:#e67e22;font-weight:700">'
+        f"{phrase}</span>&#93;"
+        '(<span style="color:#3b82f6;font-weight:700">'
+        f"{mnemonic}</span>)"
+    )
+
+
 def test_parallel_coordinates_contract_and_render_order() -> None:
     assert validate_atom_mnemonics(PARALLEL_CONCEPT, PARALLEL_KEYWORDS) is None
-    assert format_keywords_lines(PARALLEL_KEYWORDS) == [
-        "[**Parallel Coordinates**] → [fence]",
-        "[**draw**] → [easel]",
-        "[**tuple**] → [bead]",
-    ]
+    assert embed_keyword_mnemonics(PARALLEL_CONCEPT, PARALLEL_KEYWORDS) == (
+        f"{_chip('Parallel Coordinates', 'fence')} "
+        f"[I {_chip('draw', 'easel')} each variable as a parallel axis] "
+        f"[and turn each {_chip('tuple', 'bead')} into a polyline]"
+    )
+
+
+def test_inline_whole_group_reuses_brackets_and_substring_nests() -> None:
+    concept = "[Parallel] [I draw a parallel axis] [as one line]"
+    keywords = "fence | Parallel || rails | parallel || pen | line"
+    assert embed_keyword_mnemonics(concept, keywords) == (
+        f"{_chip('Parallel', 'fence')} "
+        f"[I draw a {_chip('parallel', 'rails')} axis] "
+        f"[as one {_chip('line', 'pen')}]"
+    )
+
+
+def test_note_suffix_is_not_wrapped() -> None:
+    concept = "[Name] [I define it] [clearly] — Note: supplemental nuance"
+    keywords = "tag | Name || die | define || net | clearly"
+    rendered = embed_keyword_mnemonics(concept, keywords)
+    core, note = rendered.split(" — Note:", 1)
+    assert note == " supplemental nuance"
+    assert "<span" not in note
+    assert _chip("clearly", "net") in core
+    assert "nuance" not in core
+
+
+def test_atom_block_omits_keywords_section() -> None:
+    text = "\n".join(
+        render_atom_block_md(
+            {
+                "concept": PARALLEL_CONCEPT,
+                "keywords": PARALLEL_KEYWORDS,
+                "quote": "q",
+                "story": "s",
+            }
+        )
+    )
+    assert "Keywords" not in text
+    assert "No keywords yet" not in text
+    assert _chip("Parallel Coordinates", "fence") in text
 
 
 def test_repeated_term_stays_separate_across_groups() -> None:

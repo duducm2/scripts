@@ -16,9 +16,6 @@
 **Concept**
 💡 Bass F sits on the second line from the top and acts as a symmetrical mirror image to Treble G around Middle C.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Treble G is up this far and bass F is down this far So they're like mirrors of each other”
 
@@ -31,9 +28,6 @@ Claude Monet watches an enormous alligator balance vertically on its tail upon a
 
 **Concept**
 💡 Middle C for the left hand is drawn with a downward stem on a ledger line above the bass staff.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “So I can draw this middle C also for my left hand just by drawing a ledger line above the bass staff”
@@ -48,9 +42,6 @@ A heavy, cursed amulet floats above a drawn bass staff, radiating dark energy. C
 **Concept**
 💡 Moving to an adjacent white key on the piano means stepping between a line note and a space note on the musical staff.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “when we play on the piano we move between line notes and space notes line space line space line space”
 
@@ -64,9 +55,6 @@ A skyscraper-sized angel lands on the street and physically hops between the pai
 **Concept**
 💡 Treble F is located in the first space at the very bottom of the treble staff
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “directly below the Treble G line.”
 
@@ -79,9 +67,6 @@ this note is now in space one which is the space below the g line this note is f
 
 **Concept**
 💡 Musical note names must be written in uppercase letters because lowercase letters represent different concepts in music theory notation.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “now whenever we write the names of notes in music we always use capital letters because uh if we use lowercase letters that actually means something slightly different in music”
@@ -115,9 +100,6 @@ _No gallery images._
 **Concept**
 💡 Stacked notes sharing a single stem mean the notes are played simultaneously.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “these notes are lined up stacked with one stem can you guess what that might mean it means play the notes at the same time”
 
@@ -130,9 +112,6 @@ The towering Greek warrior Ajax slams his bronze shield into the pavement, split
 
 **Concept**
 💡 Good posture involves sitting straight with the head lifted upward as if pulled by a string, while keeping the shoulders relaxed.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “I'm imagining that my head is being almost lifted up by a little string someone's holding a hair on my head so I've got very good posture but at the same time my shoulders are relaxed”
@@ -166,9 +145,6 @@ _No gallery images._
 **Concept**
 💡 Counting out loud and clapping physically reinforces the rhythm and prevents speed changes.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “when we count in music we always count out loud this is so important um if we count in our heads we don't always notice if we stop counting or count a little slower or faster”
 
@@ -201,9 +177,6 @@ _No gallery images._
 **Concept**
 💡 A line note has a staff line passing directly through its center, similar to a bead on a string.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “we would call this one a line note because it has a line going through the middle of it just like a bead on a string going right through the middle of the bead”
 
@@ -217,9 +190,6 @@ Marilyn Monroe watches in awe as an Afghan hound bites down hard on a massive, g
 **Concept**
 💡 A space note is a musical note that rests entirely in the empty gap between two staff lines.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “A space note sits completely between two staff lines without any line passing through it.”
 
@@ -232,9 +202,6 @@ Giant, glowing Agaric fungi sprout exclusively inside the floating gap between t
 
 **Concept**
 💡 A cadence is a harmonic progression at the end of a musical phrase that provides a sense of resolution or punctuation.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “A musical cadence is a progression of at least two chords that concludes a phrase, section, or piece of music.”
@@ -268,9 +235,6 @@ _No gallery images._
 **Concept**
 💡 An accidental is a symbol that alters a note's pitch temporarily, such as sharps, flats, or naturals.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “An accidental is a symbol in musical notation that temporarily alters the pitch of a note.”
 
@@ -283,9 +247,6 @@ Goku throws a giant, glowing acorn that crashes into a metal street sign, warpin
 
 **Concept**
 💡 A melody combines pitch and rhythm into a primary, cohesive musical line.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “A melody is a linear succession of musical tones—combining pitch and rhythm—that the listener perceives as a single, cohesive entity.”
@@ -302,9 +263,6 @@ A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shat
 **Concept**
 💡 she catches a heavy, rough-textured punctuation mark with her teeth, biting down hard to create a resting point
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.”
 
@@ -317,9 +275,6 @@ An aerialist swings upside down from a streetlamp, leaving a thick trail of burn
 
 **Concept**
 💡 she stacks huge, glowing concrete highway segments together like children's blocks using her hands
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.”
@@ -353,9 +308,6 @@ _No gallery images._
 **Concept**
 💡 An inversion changes which note sits at the bottom of the chord.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “an inversion just means that the note that's played at the very bottom is a different one of these notes”
 
@@ -371,9 +323,6 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 **Concept**
 💡 - Many notes came flying and gathered together a single note. That single note was growing in size, getting bigger and bigger, till it was so heavy that it fell onto the yaks head.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -386,9 +335,6 @@ _No keywords yet_
 
 **Concept**
 💡 stamping three distinct lightning bolts into the pavement
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -405,9 +351,6 @@ stamping three distinct lightning bolts into the pavement · sensory: tactile �
 **Concept**
 💡 resting his cheek heavily against a massive, calming iron ship anchor
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Composers use dissonance intentionally to create emotional tension, which typically drives the music forward”
 
@@ -420,9 +363,6 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 
 **Concept**
 💡 violently scratching sheet metal to shoot burning sparks
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Composers use dissonance intentionally to create emotional tension, which typically drives the music forward”
@@ -437,9 +377,6 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 **Concept**
 💡 A chord progression is a sequence of chords that dictates the emotional arc and key of a song.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “A chord progression is a specific sequence of chords played over time. This movement dictates the emotional arc of a song”
 
@@ -452,9 +389,6 @@ A colossal aardvark hops along a drawn timeline on the road while Neo tracks its
 
 **Concept**
 💡 Harmony provides the underlying context that can completely change the emotional feeling of the same melody.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “The exact same melody line can sound joyful, melancholic, or suspenseful depending entirely on the underlying harmony.”
@@ -488,9 +422,6 @@ _No gallery images._
 **Concept**
 💡 Chords are constructed by skipping keys between the notes you play.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “for whatever note you start on the next notes that follow will skip over keys”
 
@@ -503,9 +434,6 @@ A giant floating skull rolls along the street, explicitly skipping over every ot
 
 **Concept**
 💡 Primary chords (I, IV, V) produce a cheerful, major sound.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “they all have a cheerful sound they all sound what we call major”
@@ -520,9 +448,6 @@ A skyscraper-sized toucan flaps its wings to project a blindingly bright rainbow
 **Concept**
 💡 Secondary chords (ii, iii, vi) produce a darker, minor sound in major keys.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “these three red chords which i have written are called the secondary chords and when we play secondary chords in major keys they always have a minor sound”
 
@@ -536,9 +461,6 @@ A shadowy unicorn bleeds thick red ink from its horn onto the pavement to draw t
 **Concept**
 💡 Diminished chords have an edgy, dissonant sound because they skip fewer keys.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “this one is called diminished so when you play a diminished chord it has um it has more of a dissonant sound”
 
@@ -551,9 +473,6 @@ A vulture violently scratches a chalkboard wall on the street with its talons, l
 
 **Concept**
 💡 A chord is in root position when the root note is on the very bottom.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “they're in root position if we have the root letter on the bottom”
@@ -589,9 +508,6 @@ _No gallery images._
 **Concept**
 💡 The panther wears white mushrooms growing only along its white-key collar.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Accidental that raises a note by one half step.”
 
@@ -605,9 +521,6 @@ A panther crouches across the street piano with white mushrooms growing only alo
 **Concept**
 💡 The panther carries a drooping key charm pushed down and left.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Accidental that raises a note by one half step.”
 
@@ -620,9 +533,6 @@ A panther crouches across the street piano with white mushrooms growing only alo
 
 **Concept**
 💡 The panther carries a bright spike charm lifting a key upward and right.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Accidental that raises a note by one half step.”
@@ -639,9 +549,6 @@ A panther crouches across the street piano with white mushrooms growing only alo
 **Concept**
 💡 Quetzalcoatl presses two piano keys at the same time with a wide coiled body.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “A three-note chord built from a root note with alternating scale tones above it.”
 
@@ -655,9 +562,6 @@ Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a th
 **Concept**
 💡 Quetzalcoatl stacks three piano stones labeled by position: root, skip, next, skip, next.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “A three-note chord built from a root note with alternating scale tones above it.”
 
@@ -670,9 +574,6 @@ Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a th
 
 **Concept**
 💡 The damper pedal keeps notes ringing after the keys are released.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Pedal that sustains notes after the keys are released.”
@@ -706,9 +607,6 @@ _No gallery images._
 **Concept**
 💡 Practice rhythm and pitch apart before putting them together.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Practice timing and note locations independently before combining them.”
 
@@ -724,9 +622,6 @@ A kitten divides the street piano into two clear work tables. One table holds a 
 **Concept**
 💡 The lion pulls a tiny piano house to one note and parks there.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Finish C-major exercises on C to reinforce tonal resolution.”
 
@@ -739,9 +634,6 @@ A lion pulls a tiny piano house along the street and parks it on one note, makin
 
 **Concept**
 💡 The lion places a bright C finish stone at the end of a C-major path.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Finish C-major exercises on C to reinforce tonal resolution.”
@@ -758,9 +650,6 @@ A lion pulls a tiny piano house along the street and parks it on one note, makin
 **Concept**
 💡 The marmoset squeezes between two side-by-side piano keys with no space between them.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “A distance equal to two half steps.”
 
@@ -773,9 +662,6 @@ A marmoset crouches between two side-by-side piano keys and finds no space at al
 
 **Concept**
 💡 The marmoset leaps over exactly one glowing skipped key and lands on the next key.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “A distance equal to two half steps.”
@@ -792,9 +678,6 @@ A marmoset crouches between two side-by-side piano keys and finds no space at al
 **Concept**
 💡 The Neanderthal carries a cracked acorn with five tiny piano keys growing from it.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -810,9 +693,6 @@ The Neanderthal carries a cracked acorn with five tiny piano keys growing from i
 **Concept**
 💡 The owl lands on eight sung step markers that rise and fall like do-re-mi.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Any note can be the tonic of a major scale when the correct interval formula is applied.”
 
@@ -825,9 +705,6 @@ An owl spreads its wings above the street piano and lands on eight sung step mar
 
 **Concept**
 💡 The owl carries a golden start flag that moves between black and white keys while the same gap path appears.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Any note can be the tonic of a major scale when the correct interval formula is applied.”
@@ -863,9 +740,6 @@ _No gallery images._
 **Concept**
 💡 The frog holds one big hollow note shield while four drum hits shake the street.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Note lasting one beat in common time.”
 
@@ -878,9 +752,6 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 
 **Concept**
 💡 The frog carries a note with a stem and takes exactly two steps.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Note lasting one beat in common time.”
@@ -895,9 +766,6 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 **Concept**
 💡 The frog presses one black note shape into wet clay with one loud footstep.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Note lasting one beat in common time.”
 
@@ -910,9 +778,6 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 
 **Concept**
 💡 A double bar line marks the end of a part or piece.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Symbol used to mark the end of a section or piece of music.”
@@ -929,9 +794,6 @@ A goat drops two thick black bars across the street staff. Every sound stops at 
 **Concept**
 💡 The Hydra balances a small orange under its softly arched playing hand.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Keep the thumb relaxed and naturally positioned.”
 
@@ -945,9 +807,6 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 **Concept**
 💡 Its glowing soft fingertip pads press the keys instead of sharp claws.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Keep the thumb relaxed and naturally positioned.”
 
@@ -960,9 +819,6 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 
 **Concept**
 💡 A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Keep the thumb relaxed and naturally positioned.”
@@ -979,9 +835,6 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 **Concept**
 💡 The imp lowers a wet sponge onto a piano key so water slowly squeezes out.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Transfer the arm's weight efficiently into the fingertips.”
 
@@ -994,9 +847,6 @@ An imp sits at the street piano wearing a heavy cloth sleeve that hangs from sho
 
 **Concept**
 💡 The imp wears a heavy cloth sleeve from shoulder to fingertip, letting weight flow into the key.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Transfer the arm's weight efficiently into the fingertips.”
@@ -1013,9 +863,6 @@ An imp sits at the street piano wearing a heavy cloth sleeve that hangs from sho
 **Concept**
 💡 The jester balances soft cushions under lifted wrists above the keys.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Allow the elbows to remain slightly away from the body.”
 
@@ -1028,9 +875,6 @@ A jester sits at the piano while Maurice Ravel places soft cushions under the je
 
 **Concept**
 💡 The jester opens wing-like sleeves slightly away from the body.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Allow the elbows to remain slightly away from the body.”
@@ -1066,9 +910,6 @@ _No gallery images._
 **Concept**
 💡 A thick white web wraps the middle C key between high and low staff signs.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The distance between one note and the next note with the same name.”
 
@@ -1082,9 +923,6 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 **Concept**
 💡 Seven bright feathers form a C D E F G A B loop across the piano keys.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The distance between one note and the next note with the same name.”
 
@@ -1097,9 +935,6 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 
 **Concept**
 💡 Arachne springs from one C-key house to the next C-key house with the same letter farther away.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “The distance between one note and the next note with the same name.”
@@ -1116,9 +951,6 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 **Concept**
 💡 The bird scratches five long black staff lines across the road.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Combination of treble and bass staves connected by a brace.”
 
@@ -1132,9 +964,6 @@ The bird of paradise lands beside the piano and drags one claw across the street
 **Concept**
 💡 Its folded wings form a heavy bass clef shape low on the lines.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Combination of treble and bass staves connected by a brace.”
 
@@ -1147,9 +976,6 @@ The bird of paradise lands beside the piano and drags one claw across the street
 
 **Concept**
 💡 A large metal brace hangs from its beak, joining two music staffs into one system.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Combination of treble and bass staves connected by a brace.”
@@ -1166,9 +992,6 @@ The bird of paradise lands beside the piano and drags one claw across the street
 **Concept**
 💡 The cat carries a small flag planted on a low C key.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “F note landmark used for reading notes in the bass clef.”
 
@@ -1181,9 +1004,6 @@ A cat walks low across the bass staff with two clear landmarks attached to its b
 
 **Concept**
 💡 The cat wears a soft tooth-shaped ring gently locked around a low F key.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “F note landmark used for reading notes in the bass clef.”
@@ -1200,9 +1020,6 @@ A cat walks low across the bass staff with two clear landmarks attached to its b
 **Concept**
 💡 The dragon stamps one claw on the road again and again while street lamps blink with each pulse.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The speed at which the beat is played.”
 
@@ -1216,9 +1033,6 @@ A dragon stands over the street piano and stamps one claw on the road in a stead
 **Concept**
 💡 The dragon turns a speed dial beside the piano, making the pulse faster or slower.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The speed at which the beat is played.”
 
@@ -1231,9 +1045,6 @@ A dragon stands over the street piano and stamps one claw on the road in a stead
 
 **Concept**
 💡 A time signature tells how beats fit inside each measure.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Notation that indicates how many beats are in each measure and which note value receives the beat.”

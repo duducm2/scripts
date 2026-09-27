@@ -12,7 +12,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import load_all  # noqa: E402
-from schemas import bold_keyword_terms, keyword_display_terms  # noqa: E402
+from schemas import embed_keyword_mnemonics, format_concept_thought_groups  # noqa: E402
 from beast_thumb_base import beast_thumb_md_image, short_label  # noqa: E402
 
 STATE_NAME = "quick_recall.json"
@@ -200,8 +200,8 @@ def render_atom_line(beast: dict[str, str], atom: dict[str, str]) -> str:
     name = short_label(beast.get("beast_name") or "")
     concept = collapse_concept(atom.get("concept"))
     if concept:
-        concept = bold_keyword_terms(
-            concept, keyword_display_terms(atom.get("keywords"))
+        concept = embed_keyword_mnemonics(
+            format_concept_thought_groups(concept), atom.get("keywords")
         )
     parts: list[str] = []
     img = beast_thumb_md_image(

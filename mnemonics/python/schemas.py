@@ -238,42 +238,147 @@ def iter_keyword_pairs(raw: str | None) -> list[tuple[str, str]]:
     return out
 
 
-def keyword_display_terms(raw: str | None) -> list[str]:
-    """Concept-side pair terms (RecognizableWord), longest first."""
-    terms: list[str] = []
-    seen: set[str] = set()
-    for _left, right in iter_keyword_pairs(raw):
-        key = right.casefold()
-        if key not in seen and len(right) >= 2:
-            seen.add(key)
-            terms.append(right)
-    terms.sort(key=len, reverse=True)
-    return terms
+# Orange phrase, blue mnemonic. Bold survives if a viewer strips color.
+_KW_PHRASE_STYLE = "color:#e67e22;font-weight:700"
+_KW_MNEMONIC_STYLE = "color:#3b82f6;font-weight:700"
 
 
-def highlight_keyword_term_md(term: str) -> str:
-    """Emphasize a concept keyword in practice Markdown without relying on hue.
-
-    GitHub dark mode strips most inline CSS and default <mark> is low-contrast
-    for many color-vision types. <kbd> draws a bordered chip; underline + bold
-    add shape cues that survive sanitization.
-    """
-    safe = html.escape(term, quote=True)
-    return f"<kbd><strong><u>{safe}</u></strong></kbd>"
+def _term_pattern(term: str) -> str | None:
+    if len(term) < 2:
+        return None
+    return rf"(?i)(?<![A-Za-z0-9]){re.escape(term)}(?![A-Za-z0-9])"
 
 
-def bold_keyword_terms(text: str, terms: list[str]) -> str:
-    """Wrap concept-side keyword terms with gold highlight + bold."""
-    if not text or not terms:
-        return text
-    pattern = "|".join(re.escape(t) for t in terms)
+def _find_term(text: str, term: str) -> re.Match[str] | None:
+    pattern = _term_pattern(term)
     if not pattern:
-        return text
-    return re.sub(
-        rf"(?i)(?<![A-Za-z0-9])(?:{pattern})(?![A-Za-z0-9])",
-        lambda m: highlight_keyword_term_md(m.group(0)),
-        text,
+        return None
+    return re.search(pattern, text)
+
+
+def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
+    """`[phrase](mnemonic)` with orange phrase text and blue mnemonic text.
+
+    Brackets are HTML entities so Markdown does not read the pair as a link.
+    The characters still render as brackets and parentheses.
+    """
+    safe_phrase = html.escape(phrase, quote=True)
+    safe_mnemonic = html.escape(mnemonic, quote=True)
+    return (
+        f'&#91;<span style="{_KW_PHRASE_STYLE}">{safe_phrase}</span>&#93;'
+        f'(<span style="{_KW_MNEMONIC_STYLE}">{safe_mnemonic}</span>)'
     )
+
+
+def _top_level_group_spans(core: str) -> list[tuple[int, int]] | None:
+    """Inclusive `[start, end]` of each top-level group, or None if not only groups."""
+    spans: list[tuple[int, int]] = []
+    outside: list[str] = []
+    depth = 0
+    open_at = -1
+    for index, char in enumerate(core):
+        if char == "[":
+            if depth == 0:
+                if "".join(outside).strip():
+                    return None
+                outside = []
+                open_at = index
+            depth += 1
+        elif char == "]":
+            if depth == 0:
+                return None
+            depth -= 1
+            if depth == 0:
+                if open_at < 0:
+                    return None
+                inner = core[open_at + 1 : index].strip()
+                if not inner:
+                    return None
+                spans.append((open_at, index))
+                open_at = -1
+        elif depth == 0:
+            outside.append(char)
+    if depth or "".join(outside).strip():
+        return None
+    return spans
+
+
+def _apply_span_replacements(text: str, reps: list[tuple[int, int, str]]) -> str:
+    for start, end, chip in sorted(reps, key=lambda item: item[0], reverse=True):
+        text = text[:start] + chip + text[end:]
+    return text
+
+
+def _embed_aligned(
+    core: str,
+    spans: list[tuple[int, int]],
+    pairs: list[tuple[str, str]],
+) -> str:
+    reps: list[tuple[int, int, str]] = []
+    for (start, end), (mnemonic, term) in zip(spans, pairs):
+        inner = core[start + 1 : end]
+        match = _find_term(inner, term)
+        if match is None:
+            continue
+        lead = len(inner) - len(inner.lstrip())
+        trail_end = len(inner.rstrip())
+        chip = _keyword_chip_md(match.group(0), mnemonic)
+        if match.start() == lead and match.end() == trail_end:
+            reps.append((start, end + 1, chip))
+        else:
+            reps.append((start + 1 + match.start(), start + 1 + match.end(), chip))
+    return _apply_span_replacements(core, reps)
+
+
+def _embed_legacy(core: str, pairs: list[tuple[str, str]]) -> str:
+    """First non-overlapping core match for each pair. Unmatched pairs are omitted."""
+    claimed: list[tuple[int, int]] = []
+    reps: list[tuple[int, int, str]] = []
+    for mnemonic, term in pairs:
+        pattern = _term_pattern(term)
+        if not pattern:
+            continue
+        for match in re.finditer(pattern, core):
+            overlaps = any(
+                match.start() < end and match.end() > start for start, end in claimed
+            )
+            if overlaps:
+                continue
+            claimed.append((match.start(), match.end()))
+            reps.append(
+                (match.start(), match.end(), _keyword_chip_md(match.group(0), mnemonic))
+            )
+            break
+    return _apply_span_replacements(core, reps)
+
+
+def embed_keyword_mnemonics(text: str, keywords: str | None) -> str:
+    """Inline each keyword as orange `[phrase]` plus blue `(mnemonic)`.
+
+    When pairs line up with bracket groups, each phrase is rewritten inside its
+    own group and a phrase that fills the group reuses that group's brackets.
+    Otherwise each pair wraps its first match in the core. Note text is unchanged.
+    """
+    if not text:
+        return text
+    pairs = iter_keyword_pairs(keywords)
+    if not pairs:
+        return text
+    core, note = split_concept_note(text)
+    spans = _top_level_group_spans(core)
+    aligned = (
+        spans is not None
+        and len(spans) == len(pairs)
+        and all(
+            _find_term(core[start + 1 : end], term) is not None
+            for (start, end), (_mnemonic, term) in zip(spans, pairs)
+        )
+    )
+    if aligned and spans is not None:
+        rewritten = _embed_aligned(core, spans, pairs)
+    else:
+        rewritten = _embed_legacy(core, pairs)
+    return rewritten + note
 
 
 PLANS_HEADERS = ["id", "study_id", "title", "sort_order", "active"]

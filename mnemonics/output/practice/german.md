@@ -16,9 +16,6 @@
 **Concept**
 💡 Reharse the german alphabet depicted here: https://github.com/duducm2/scripts/blob/main/mnemonics/studies/german/portals/mnemonics-aquatic-leech.md
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -51,9 +48,6 @@ _No gallery images._
 **Concept**
 💡 A sound gets louder when the space around it boosts the vibration.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -66,9 +60,6 @@ _No keywords yet_
 
 **Concept**
 💡 The absolute base wave made by the source is the fundamental frequency.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -83,9 +74,6 @@ _No keywords yet_
 **Concept**
 💡 Resonance bundles multiply the base frequency to create speech formants.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -99,9 +87,6 @@ _No keywords yet_
 **Concept**
 💡 The fundamental pitch comes directly from the vocal folds buzzing.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -114,9 +99,6 @@ _No keywords yet_
 
 **Concept**
 💡 The throat shapes the first formant, the mouth shapes the second, and their interplay with the base sound forms the source-filter model.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -150,9 +132,6 @@ _No gallery images._
 **Concept**
 💡 Simple waves move evenly and repeat in a regular pattern.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -165,9 +144,6 @@ _No keywords yet_
 
 **Concept**
 💡 Amplitude shows how far a wave moves away from its resting point.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -182,9 +158,6 @@ _No keywords yet_
 **Concept**
 💡 Real sounds are usually made of messy, overlapping vibrations.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -197,9 +170,6 @@ _No keywords yet_
 
 **Concept**
 💡 Vowel sounds are even and smooth, while consonants can be messy and irregular.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -233,9 +203,6 @@ _No gallery images._
 **Concept**
 💡 The 'r' can vibrate far back in the throat as a flexible option.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Uvular trill: Can be used as a free variant of the voiced uvular fricative.”
 
@@ -248,9 +215,6 @@ On the next street, an adder snake slithers around freely. It meets a tall villa
 
 **Concept**
 💡 The 'r' can be a friction sound pushed more to the front.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Voiced velar fricative: A more fronted variant.”
@@ -266,9 +230,6 @@ An aerialist swings on a trapeze above the snake. She swings her body forward to
 
 **Concept**
 💡 Reharse the german alphabet depicted here:
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -302,9 +263,6 @@ _No gallery images._
 **Concept**
 💡 The /z/ sound never starts a word in Standard German.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -317,9 +275,6 @@ A yak stands at the corner of the street. It holds a large sign with the word Sy
 
 **Concept**
 💡 The /ŋ/ sound only happens at the end of syllables.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “The velar nasal /ŋ/ only occurs at the end of syllables (syllable coda).”
@@ -334,9 +289,6 @@ Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grab
 **Concept**
 💡 Long vowels get short when they are not stressed.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -350,9 +302,6 @@ An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁ
 **Concept**
 💡 The weak 'e' sound can be completely dropped.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -365,9 +314,6 @@ An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak
 
 **Concept**
 💡 The 'r' can be rolled loudly in southern areas or in singing.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Alveolar trill: Mostly used in southern dialects (Bavarian, Franconian) and in singing.”
@@ -401,9 +347,6 @@ _No gallery images._
 **Concept**
 💡 Long vowels usually come before one or fewer consonants.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -416,9 +359,6 @@ _No keywords yet_
 
 **Concept**
 💡 The letter 'h' acts as a vowel lengthener.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -452,9 +392,6 @@ _No gallery images._
 **Concept**
 💡 Compound words keep their original stress patterns, but one primary stress dominates the whole word.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -467,9 +404,6 @@ _No keywords yet_
 
 **Concept**
 💡 Voiced consonants harden into unvoiced sounds at the absolute end of a word.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -484,9 +418,6 @@ _No keywords yet_
 **Concept**
 💡 Word elements keep their strict pronunciation rules even when trapped inside compound words.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -500,9 +431,6 @@ _No keywords yet_
 **Concept**
 💡 To pronounce a short vowel, move to the consonants early and hold them.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -515,9 +443,6 @@ _No keywords yet_
 
 **Concept**
 💡 Short vowels almost always come before two or more consonants.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -551,9 +476,6 @@ _No gallery images._
 **Concept**
 💡 The `[ʏ]` sound uses a slightly lower tongue position while keeping lips round.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -566,9 +488,6 @@ _No keywords yet_
 
 **Concept**
 💡 The unaccented `[ɐ]` sound is placed extremely close to the English `[ʌ]` vowel.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -583,9 +502,6 @@ _No keywords yet_
 **Concept**
 💡 Germans transition to the second vowel in a diphthong much faster than English speakers.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -598,9 +514,6 @@ _No keywords yet_
 
 **Concept**
 💡 For the `[ɔʏ̯]` sound, the lips must stay tight and rounded all the way to the end.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -634,9 +547,6 @@ _No gallery images._
 **Concept**
 💡 The long `[aː]` sound pushes the tongue slightly closer to the front of the mouth.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -649,9 +559,6 @@ _No keywords yet_
 
 **Concept**
 💡 The `[yː]` sound takes a high front tongue position but rounds the lips.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -666,9 +573,6 @@ _No keywords yet_
 **Concept**
 💡 The `[øː]` sound moves the tongue slightly down but keeps the lips round.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -682,9 +586,6 @@ _No keywords yet_
 **Concept**
 💡 The `[œ]` sound uses a mid-mouth tongue shape with rounded lips.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -697,9 +598,6 @@ _No keywords yet_
 
 **Concept**
 💡 The `[ɔ]` sound starts in the back-center of the mouth with round lips.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -733,9 +631,6 @@ _No gallery images._
 **Concept**
 💡 German [r] is made deep in the throat with the back of the tongue.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -749,9 +644,6 @@ _No keywords yet_
 **Concept**
 💡 The ach-laut [x] is a tight back-of-mouth air sound, like controlled choking air.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -764,9 +656,6 @@ _No keywords yet_
 
 **Concept**
 💡 The ich-laut [ç] is a hissing sound made farther forward from a y-like tongue position.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -800,9 +689,6 @@ _No gallery images._
 **Concept**
 💡 German l is lighter than English l.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -815,9 +701,6 @@ _No keywords yet_
 
 **Concept**
 💡 [ŋ] uses the back of the tongue and should not end with a hard g.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -832,9 +715,6 @@ _No keywords yet_
 **Concept**
 💡 [ʃ] in German pulls the tongue farther back for a sharper sch feel.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -848,9 +728,6 @@ _No keywords yet_
 **Concept**
 💡 German uses glottal stops often before vowel-starting words.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -863,9 +740,6 @@ _No keywords yet_
 
 **Concept**
 💡 Clusters join two consonants into one fast combined move.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —

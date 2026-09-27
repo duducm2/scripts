@@ -9,10 +9,8 @@ from __future__ import annotations
 from typing import Any
 
 from schemas import (
-    bold_keyword_terms,
+    embed_keyword_mnemonics,
     format_concept_thought_groups,
-    iter_keyword_pairs,
-    keyword_display_terms,
 )
 from beast_thumb_base import beast_thumb_md_image, short_label
 
@@ -46,7 +44,7 @@ def format_concept(value: str | None, keywords: str | None = None) -> str:
     t = md_escape(format_concept_thought_groups(value or ""))
     if not t:
         return "—"
-    t = bold_keyword_terms(t, keyword_display_terms(keywords))
+    t = embed_keyword_mnemonics(t, keywords)
     return f"💡 {t}"
 
 
@@ -55,14 +53,6 @@ def format_quote(value: str | None) -> str:
     if not t:
         return "—"
     return f"\u201c{t}\u201d"
-
-
-def format_keywords_lines(value: str | None) -> list[str]:
-    """Render pairs in stored concept-group order, one pair per line."""
-    out: list[str] = []
-    for left, right in iter_keyword_pairs(value):
-        out.append(f"[**{right}**] \u2192 [{left}]")
-    return out
 
 
 def format_field_block(label: str, body: str) -> list[str]:
@@ -87,16 +77,6 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
             "Concept", format_concept(atom.get("concept"), atom.get("keywords"))
         )
     )
-    kw_lines = format_keywords_lines(atom.get("keywords"))
-    if kw_lines:
-        lines.append("🔑 **Keywords**")
-        lines.append("")
-        lines.extend(f"- {row}" for row in kw_lines)
-        lines.append("")
-    else:
-        lines.append("**Keywords**")
-        lines.append("_No keywords yet_")
-        lines.append("")
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
     lines.extend(format_field_block("Story", dash(atom.get("story"))))
     return lines

@@ -395,17 +395,19 @@ input[type="search"] {
   flex: 1 1 auto;
   min-width: 0;
 }
-#studyModal .qr-line .kw-hit {
-  background: rgba(212, 160, 23, 0.38);
-  color: #fff4d4;
-  border-radius: 3px;
-  padding: 0.05em 0.18em;
+#studyModal .qr-line .kw-phrase {
+  background: #d4a017;
+  color: #1a1408;
   font-weight: 700;
-  text-decoration: underline;
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 2px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  padding: 0 0.2em;
+  border-radius: 3px;
+}
+#studyModal .qr-line .kw-mnemonic {
+  background: #3b82f6;
+  color: #f8fbff;
+  font-weight: 700;
+  padding: 0 0.2em;
+  border-radius: 3px;
 }
 #studyModal .qr-empty {
   color: var(--muted);

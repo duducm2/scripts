@@ -18,9 +18,6 @@
 **Concept**
 💡 massive jaw aggressively chewing a glowing, random word generator that shoots out floating, emotionally neutral letters
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.”
 
@@ -34,9 +31,6 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 **Concept**
 💡 thick, hairy hands violently crushing a sharp, freezing-cold holographic calendar of worries
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.”
 
@@ -49,9 +43,6 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 
 **Concept**
 💡 chest cavity bursting open to vomit a stream of sweet, pastel-colored marshmallows that drown out buzzing hornets
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.”
@@ -68,9 +59,6 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 **Concept**
 💡 sharp beak ripping a giant, screaming letter "B" out of a cake and firing it like a machine gun
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.”
 
@@ -84,9 +72,6 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 **Concept**
 💡 wings aggressively flapping a thick, pungent cloud of heavy dream-sand that melts the pavement
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.”
 
@@ -99,9 +84,6 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 
 **Concept**
 💡 heavy torso vigorously lifting a massive barbell made of solid cheese, sweating under the physical pressure
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.”
@@ -135,9 +117,6 @@ _No gallery images._
 **Concept**
 💡 Behavioral activation works because taking physical action forcefully shifts brain chemistry before motivation ever appears.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “a ação ela é soberana a ação vem antes da sensação a ação vem antes da motivação”
 
@@ -150,9 +129,6 @@ A colossal medieval jester refuses to wait for hope; it aggressively bites Goku'
 
 **Concept**
 💡 The first five minutes involve gentle physical rotations of the neck, shoulders, and wrists to release an immediate energy boost.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “você vai fazer 10 movimentos leves de rotação do seu pescoço dos seus ombros e dos seus punhos”
@@ -167,9 +143,6 @@ A majestic kitten violently twists its neck, shoulders, and wrists exactly ten t
 **Concept**
 💡 The second block emotionally warms the brain by placing a hand on the chest and deeply visualizing a simple pleasant experience.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “você coloca uma das mãos no seu peito fecha os olhos por um instante e você pode falar: eu me dou permissão para ir no meu ritmo devagar constante”
 
@@ -182,9 +155,6 @@ A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against 
 
 **Concept**
 💡 The final five minutes require a small, practical action focused on personal sensory meaning rather than societal productivity.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “agir isso é importantíssimo você entender não focado na produtividade mas focado no significado”
@@ -220,9 +190,6 @@ _No gallery images._
 **Concept**
 💡 massive jaws crunching down on thick, rubbery arteries, bursting them open loudly
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.”
 
@@ -236,9 +203,6 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 **Concept**
 💡 front claws frantically splashing boiling, glowing red blood that scorches the ground
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.”
 
@@ -251,9 +215,6 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 
 **Concept**
 💡 a giant, heavy iron scale violently branded into its chest, physically balancing the top and bottom blood pools while emitting burning smoke
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.”
@@ -270,9 +231,6 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 **Concept**
 💡 a giant stopwatch swallowed whole, glowing blindingly through its throat
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “For a healthy, resting adult, the normal range is 60 to 100 BPM.”
 
@@ -285,9 +243,6 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 
 **Concept**
 💡 arms violently vibrating and shooting electric shocks
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “For a healthy, resting adult, the normal range is 60 to 100 BPM.”
@@ -321,9 +276,6 @@ _No gallery images._
 **Concept**
 💡 Asking questions before reading primes the brain to filter for relevant information.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -336,9 +288,6 @@ _No keywords yet_
 
 **Concept**
 💡 Highlighting everything defeats the purpose of highlighting.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -372,9 +321,6 @@ _No gallery images._
 **Concept**
 💡 The habit of pronouncing words in your head slows down reading.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -387,9 +333,6 @@ _No keywords yet_
 
 **Concept**
 💡 Eyes backtracking or back skipping wastes time and ruins focus.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —
@@ -404,9 +347,6 @@ _No keywords yet_
 **Concept**
 💡 Familiar words don't need to be pronounced internally to be understood.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -420,9 +360,6 @@ _No keywords yet_
 **Concept**
 💡 Using a visual guide prevents regression and focuses attention.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 —
 
@@ -435,9 +372,6 @@ _No keywords yet_
 
 **Concept**
 💡 Capturing multiple words per fixation expands reading speed.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 —

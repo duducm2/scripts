@@ -14,14 +14,7 @@
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **<kbd><strong><u>Context</u></strong></kbd>:** I experience the <kbd><strong><u>dumb</u></strong></kbd> zone as degraded <kbd><strong><u>attention</u></strong></kbd> and performance when processing a massive <kbd><strong><u>context</u></strong></kbd> window over an extended <kbd><strong><u>session</u></strong></kbd>.
-
-🔑 **Keywords**
-
-- [**dumb**] → [foggy helmet]
-- [**attention**] → [droopy eyes]
-- [**context**] → [giant window]
-- [**session**] → [hourglass]
+💡 💡 **&#91;<span style="color:#e67e22;font-weight:700">Context</span>&#93;(<span style="color:#3b82f6;font-weight:700">giant window</span>):** I experience the &#91;<span style="color:#e67e22;font-weight:700">dumb</span>&#93;(<span style="color:#3b82f6;font-weight:700">foggy helmet</span>) zone as degraded &#91;<span style="color:#e67e22;font-weight:700">attention</span>&#93;(<span style="color:#3b82f6;font-weight:700">droopy eyes</span>) and performance when processing a massive context window over an extended &#91;<span style="color:#e67e22;font-weight:700">session</span>&#93;(<span style="color:#3b82f6;font-weight:700">hourglass</span>).
 
 **Quote**
 “In Artificial Intelligence, the "dumb zone" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.”
@@ -34,14 +27,7 @@ A microscopic marmoset juggles thousands of glowing text windows; as the session
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **Context:** I use a <kbd><strong><u>meta</u></strong></kbd> prompt as a behind-the-scenes <kbd><strong><u>instruction</u></strong></kbd> that establishes an AI's baseline parameters like tone, <kbd><strong><u>rules</u></strong></kbd>, and <kbd><strong><u>boundaries</u></strong></kbd>.
-
-🔑 **Keywords**
-
-- [**meta**] → [iron curtain]
-- [**instruction**] → [whisper]
-- [**rules**] → [rule book]
-- [**boundaries**] → [fence]
+💡 💡 **Context:** I use a &#91;<span style="color:#e67e22;font-weight:700">meta</span>&#93;(<span style="color:#3b82f6;font-weight:700">iron curtain</span>) prompt as a behind-the-scenes &#91;<span style="color:#e67e22;font-weight:700">instruction</span>&#93;(<span style="color:#3b82f6;font-weight:700">whisper</span>) that establishes an AI's baseline parameters like tone, &#91;<span style="color:#e67e22;font-weight:700">rules</span>&#93;(<span style="color:#3b82f6;font-weight:700">rule book</span>), and &#91;<span style="color:#e67e22;font-weight:700">boundaries</span>&#93;(<span style="color:#3b82f6;font-weight:700">fence</span>).
 
 **Quote**
 “A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
@@ -56,13 +42,7 @@ A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggr
 🟦 **Z1 · The Horse**
 
 **Concept**
-💡 💡 **Context:** I use the <kbd><strong><u>Horse</u></strong></kbd> to represent the foundational AI model itself, which possesses raw <kbd><strong><u>power</u></strong></kbd> but no inherent <kbd><strong><u>direction</u></strong></kbd>.
-
-🔑 **Keywords**
-
-- [**Horse**] → [wild horse]
-- [**power**] → [lightning bolt]
-- [**direction**] → [broken compass]
+💡 💡 **Context:** I use the &#91;<span style="color:#e67e22;font-weight:700">Horse</span>&#93;(<span style="color:#3b82f6;font-weight:700">wild horse</span>) to represent the foundational AI model itself, which possesses raw &#91;<span style="color:#e67e22;font-weight:700">power</span>&#93;(<span style="color:#3b82f6;font-weight:700">lightning bolt</span>) but no inherent &#91;<span style="color:#e67e22;font-weight:700">direction</span>&#93;(<span style="color:#3b82f6;font-weight:700">broken compass</span>).
 
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
@@ -75,14 +55,7 @@ A wild, directionless mane of raw electrical power erupts from the owl's beak, v
 🟦 **Z2 · Harness Layer**
 
 **Concept**
-💡 💡 **Context:** I build a <kbd><strong><u>Harness</u></strong></kbd> or <kbd><strong><u>Tack</u></strong></kbd> as the engineering layer to <kbd><strong><u>steer</u></strong></kbd> and <kbd><strong><u>connect</u></strong></kbd> the model's raw power.
-
-🔑 **Keywords**
-
-- [**Harness**] → [iron harness]
-- [**Tack**] → [leather tack]
-- [**steer**] → [steering wheel]
-- [**connect**] → [plug]
+💡 💡 **Context:** I build a &#91;<span style="color:#e67e22;font-weight:700">Harness</span>&#93;(<span style="color:#3b82f6;font-weight:700">iron harness</span>) or &#91;<span style="color:#e67e22;font-weight:700">Tack</span>&#93;(<span style="color:#3b82f6;font-weight:700">leather tack</span>) as the engineering layer to &#91;<span style="color:#e67e22;font-weight:700">steer</span>&#93;(<span style="color:#3b82f6;font-weight:700">steering wheel</span>) and &#91;<span style="color:#e67e22;font-weight:700">connect</span>&#93;(<span style="color:#3b82f6;font-weight:700">plug</span>) the model's raw power.
 
 **Quote**
 “The Harness/Tack acts as the engineering layer that interacts with the model.”
@@ -95,13 +68,7 @@ A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snappi
 🟦 **Z3 · The Cart Task**
 
 **Concept**
-💡 💡 **Context:** I view the <kbd><strong><u>Cart</u></strong></kbd> as the ultimate <kbd><strong><u>task</u></strong></kbd> or <kbd><strong><u>destination</u></strong></kbd> that needs to be accomplished once the model is harnessed.
-
-🔑 **Keywords**
-
-- [**Cart**] → [wooden cart]
-- [**destination**] → [neon sign]
-- [**task**] → [trophy]
+💡 💡 **Context:** I view the &#91;<span style="color:#e67e22;font-weight:700">Cart</span>&#93;(<span style="color:#3b82f6;font-weight:700">wooden cart</span>) as the ultimate &#91;<span style="color:#e67e22;font-weight:700">task</span>&#93;(<span style="color:#3b82f6;font-weight:700">trophy</span>) or &#91;<span style="color:#e67e22;font-weight:700">destination</span>&#93;(<span style="color:#3b82f6;font-weight:700">neon sign</span>) that needs to be accomplished once the model is harnessed.
 
 **Quote**
 “The Cart represents the ultimate Task that needs to be accomplished.”
@@ -137,9 +104,6 @@ _No gallery images._
 **Concept**
 💡 a giant glowing green price tag clamps aggressively over its face, mutating its skull into a loudly ringing cash register
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.”
 
@@ -152,9 +116,6 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 
 **Concept**
 💡 its claws violently vomit blistering hot golden coins that visibly melt the concrete
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.”
@@ -188,9 +149,6 @@ _No gallery images._
 **Concept**
 💡 Retrieval-Augmented Generation (RAG) fetches external documents at query time instead of relying entirely on its training memory.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “the model grounds its answer in documents it fetches at query time instead of relying only on what it memorized in training”
 
@@ -203,9 +161,6 @@ A colossal dragon made of folded library pages refuses to use its own brain. Ins
 
 **Concept**
 💡 A flat, unstructured content store causes models to retrieve the loudest keyword match instead of the most accurate document.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “If your content store is a flat heap of unstructured, unlabeled, contradictory documents, retrieval doesn't work. It finds the loudest match — the one that shares the most surface words with the query, regardless of whether it is current, authoritative, or true.”
@@ -220,9 +175,6 @@ A skyscraper-sized eagle stands on a flat heap of rotting, messy file folders th
 **Concept**
 💡 Controlled vocabularies prevent slight word variations from fracturing one concept into multiple unrelated topics.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Controlled vocabularies — a fixed, agreed set of terms for the same thing — hold the language steady, so that “cancelled,” “canceled,” “terminated,” and “closed” don’t fracture one concept into four the system treats as unrelated.”
 
@@ -236,9 +188,6 @@ A microscopic frog sits on a distant brick wall, catching hundreds of chaotic, f
 **Concept**
 💡 AI agents require explicit structures, hierarchies, and boundaries to safely take action and update records.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “The moment an agent stops retrieving and starts doing — routing a ticket, updating a record, approving a request, calling another system — it needs more than the right passage. It needs to know relationships, hierarchies, and boundaries”
 
@@ -251,9 +200,6 @@ A three-headed goat tries to stamp its hooves to route banking tickets, but free
 
 **Concept**
 💡 Adding situational context to text chunks before indexing them drastically reduces retrieval failures.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “adding the context that situates each chunk before indexing it cut failed retrievals by up to 49 percent”
@@ -287,9 +233,6 @@ _No gallery images._
 **Concept**
 💡 Augmented analytics automates data analysis using AI and machine learning.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “Augmented analytics is the integration of Artificial Intelligence (AI) and Machine Learning (ML) into business intelligence and analytics tools to automate and enhance the data analysis process .”
 
@@ -302,9 +245,6 @@ A skyscraper-sized Arachne weaves a glowing web of binary code directly into a m
 
 **Concept**
 💡 Conversational interfaces allow you to query data using everyday language.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “It often features natural language processing (NLP), allowing everyday business users to ask questions in plain English (e.g., "Why did sales drop last month?") and receive automated, explainable answers .”
@@ -321,9 +261,6 @@ A neon-plumed bird of paradise perched on a wooden bench sings questions that in
 **Concept**
 💡 The cat's jaws violently gulp raw data-lake water and spit it out as neatly labeled golden folders that glow with piercing light.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
 
@@ -337,9 +274,6 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 **Concept**
 💡 The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_.
 
-**Keywords**
-_No keywords yet_
-
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
 
@@ -352,9 +286,6 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 
 **Concept**
 💡 The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating.
-
-**Keywords**
-_No keywords yet_
 
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
