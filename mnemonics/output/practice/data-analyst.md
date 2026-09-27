@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">No-Code Integration</span>&#93;(<span style="color:#3b82f6;font-weight:700">magic wand</span>) [I use an &#91;<span style="color:#e67e22;font-weight:700">intermediary platform</span>&#93;(<span style="color:#3b82f6;font-weight:700">bridge</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">connect data sources</span>&#93;(<span style="color:#3b82f6;font-weight:700">plug</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">Power BI</span>&#93;(<span style="color:#3b82f6;font-weight:700">battery</span>)] [in a &#91;<span style="color:#e67e22;font-weight:700">fully automated way</span>&#93;(<span style="color:#3b82f6;font-weight:700">robot</span>)] — Note: These platforms clean messy responses and schedule updates but may lack support for complex mechanics like pagination.
+💡 <mark>[No-Code Integration]</mark><kbd>(magic wand)</kbd> [I use an <mark>[intermediary platform]</mark><kbd>(bridge)</kbd>] [to <mark>[connect data sources]</mark><kbd>(plug)</kbd>] [to <mark>[Power BI]</mark><kbd>(battery)</kbd>] [in a <mark>[fully automated way]</mark><kbd>(robot)</kbd>] — Note: These platforms clean messy responses and schedule updates but may lack support for complex mechanics like pagination.
 
 **Quote**
 “coupler iio is a no code solution that allows you to connect almost any data source to powerbi and other Platforms in a fully automated way”
@@ -27,7 +27,7 @@ A colossal bloodhound sniffs the iron gate, then uses a glowing magic wand to bu
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">Native Web Connection</span>&#93;(<span style="color:#3b82f6;font-weight:700">spider web</span>) [I &#91;<span style="color:#e67e22;font-weight:700">connect a web endpoint</span>&#93;(<span style="color:#3b82f6;font-weight:700">cable</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">Power BI</span>&#93;(<span style="color:#3b82f6;font-weight:700">battery</span>)] [by &#91;<span style="color:#e67e22;font-weight:700">specifying parameters</span>&#93;(<span style="color:#3b82f6;font-weight:700">dial</span>)] &#91;<span style="color:#e67e22;font-weight:700">directly in the URL</span>&#93;(<span style="color:#3b82f6;font-weight:700">address bar</span>) — Note: This method is free and simple for one-time imports but lacks scalability for rate limits or complex authentication.
+💡 <mark>[Native Web Connection]</mark><kbd>(spider web)</kbd> [I <mark>[connect a web endpoint]</mark><kbd>(cable)</kbd>] [to <mark>[Power BI]</mark><kbd>(battery)</kbd>] [by <mark>[specifying parameters]</mark><kbd>(dial)</kbd>] <mark>[directly in the URL]</mark><kbd>(address bar)</kbd> — Note: This method is free and simple for one-time imports but lacks scalability for rate limits or complex authentication.
 
 **Quote**
 “you can connect an endpoint to powerbi by specifying parameters directly in the URL”
@@ -40,7 +40,7 @@ A skeleton marmoset sits on a wooden bench, spinning a sticky spider web cable t
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Bone Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">Custom Scripting</span>&#93;(<span style="color:#3b82f6;font-weight:700">scroll</span>) [I &#91;<span style="color:#e67e22;font-weight:700">write custom scripts</span>&#93;(<span style="color:#3b82f6;font-weight:700">quill</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">fetch API data</span>&#93;(<span style="color:#3b82f6;font-weight:700">fishing rod</span>)] [and &#91;<span style="color:#e67e22;font-weight:700">load it</span>&#93;(<span style="color:#3b82f6;font-weight:700">dump truck</span>)] [into a &#91;<span style="color:#e67e22;font-weight:700">data warehouse</span>&#93;(<span style="color:#3b82f6;font-weight:700">forklift</span>)] — Note: This provides unmatched flexibility and optimization for big data, but requires significant coding complexity and infrastructure maintenance.
+💡 <mark>[Custom Scripting]</mark><kbd>(scroll)</kbd> [I <mark>[write custom scripts]</mark><kbd>(quill)</kbd>] [to <mark>[fetch API data]</mark><kbd>(fishing rod)</kbd>] [and <mark>[load it]</mark><kbd>(dump truck)</kbd>] [into a <mark>[data warehouse]</mark><kbd>(forklift)</kbd>] — Note: This provides unmatched flexibility and optimization for big data, but requires significant coding complexity and infrastructure maintenance.
 
 **Quote**
 “whether you send data directly to powerbi or via a data warehouse custom scripts provide unmatched flexibility compared to the other two options”
@@ -53,7 +53,7 @@ A towering Bone Neanderthal smashes the brick facade with a heavy dump truck, us
 <img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">Push Datasets</span>&#93;(<span style="color:#3b82f6;font-weight:700">button</span>) [I &#91;<span style="color:#e67e22;font-weight:700">stream data</span>&#93;(<span style="color:#3b82f6;font-weight:700">hose</span>)] [directly into &#91;<span style="color:#e67e22;font-weight:700">Power BI</span>&#93;(<span style="color:#3b82f6;font-weight:700">battery</span>)] [using its &#91;<span style="color:#e67e22;font-weight:700">REST API</span>&#93;(<span style="color:#3b82f6;font-weight:700">menu</span>)] — Note: This method does not support relationships or joins, so all complex data models must be flattened before ingestion.
+💡 <mark>[Push Datasets]</mark><kbd>(button)</kbd> [I <mark>[stream data]</mark><kbd>(hose)</kbd>] [directly into <mark>[Power BI]</mark><kbd>(battery)</kbd>] [using its <mark>[REST API]</mark><kbd>(menu)</kbd>] — Note: This method does not support relationships or joins, so all complex data models must be flattened before ingestion.
 
 **Quote**
 “you can only send data using power bi's push data sets method which doesn't support relationships or joins meaning complex data models must be flattened before ingestion”
@@ -87,7 +87,7 @@ _No gallery images._
 🟦 **Z1 · LAG Function**
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">LAG Function</span>&#93;(<span style="color:#3b82f6;font-weight:700">lagging foot</span>) [I &#91;<span style="color:#e67e22;font-weight:700">query data</span>&#93;(<span style="color:#3b82f6;font-weight:700">magnifying glass</span>)] [from &#91;<span style="color:#e67e22;font-weight:700">preceding rows</span>&#93;(<span style="color:#3b82f6;font-weight:700">footprints</span>)] [relative to the &#91;<span style="color:#e67e22;font-weight:700">current evaluation row</span>&#93;(<span style="color:#3b82f6;font-weight:700">anchor</span>)] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
+💡 <mark>[LAG Function]</mark><kbd>(lagging foot)</kbd> [I <mark>[query data]</mark><kbd>(magnifying glass)</kbd>] [from <mark>[preceding rows]</mark><kbd>(footprints)</kbd>] [relative to the <mark>[current evaluation row]</mark><kbd>(anchor)</kbd>] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
 
 **Quote**
 “a lag is going to be for previous days and so notice how on the first day in the results there's no previous day so you see null there”
@@ -100,7 +100,7 @@ The Bone Hydra clamps a heavy iron anchor in its jaws, chewing on the metal whil
 🟦 **Z2 · LEAD Function**
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">LEAD Function</span>&#93;(<span style="color:#3b82f6;font-weight:700">leash</span>) [I &#91;<span style="color:#e67e22;font-weight:700">query data</span>&#93;(<span style="color:#3b82f6;font-weight:700">binoculars</span>)] [from &#91;<span style="color:#e67e22;font-weight:700">subsequent rows</span>&#93;(<span style="color:#3b82f6;font-weight:700">stepping stone</span>)] [relative to the &#91;<span style="color:#e67e22;font-weight:700">current evaluation row</span>&#93;(<span style="color:#3b82f6;font-weight:700">compass</span>)] — Note: It returns a null value at the final dataset record where no subsequent row exists.
+💡 <mark>[LEAD Function]</mark><kbd>(leash)</kbd> [I <mark>[query data]</mark><kbd>(binoculars)</kbd>] [from <mark>[subsequent rows]</mark><kbd>(stepping stone)</kbd>] [relative to the <mark>[current evaluation row]</mark><kbd>(compass)</kbd>] — Note: It returns a null value at the final dataset record where no subsequent row exists.
 
 **Quote**
 “notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead”
@@ -113,7 +113,7 @@ The Bone Hydra's front claws grip a glowing neon leash attached to a golden comp
 <img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">PARTITION BY</span>&#93;(<span style="color:#3b82f6;font-weight:700">glass divider</span>) [I &#91;<span style="color:#e67e22;font-weight:700">divide the result set</span>&#93;(<span style="color:#3b82f6;font-weight:700">pizza slicer</span>)] &#91;<span style="color:#e67e22;font-weight:700">into partitions</span>&#93;(<span style="color:#3b82f6;font-weight:700">cubicle</span>) [and &#91;<span style="color:#e67e22;font-weight:700">calculate the window function</span>&#93;(<span style="color:#3b82f6;font-weight:700">abacus</span>)] [while &#91;<span style="color:#e67e22;font-weight:700">preserving individual row details</span>&#93;(<span style="color:#3b82f6;font-weight:700">magnifying glass</span>)] — Note: GROUP BY reduces the output by collapsing multiple rows into a single summary row.
+💡 <mark>[PARTITION BY]</mark><kbd>(glass divider)</kbd> [I <mark>[divide the result set]</mark><kbd>(pizza slicer)</kbd>] <mark>[into partitions]</mark><kbd>(cubicle)</kbd> [and <mark>[calculate the window function]</mark><kbd>(abacus)</kbd>] [while <mark>[preserving individual row details]</mark><kbd>(magnifying glass)</kbd>] — Note: GROUP BY reduces the output by collapsing multiple rows into a single summary row.
 
 **Quote**
 “the group by statement is going to reduce the number of rows in our output by actually rolling them up and then calculating the sums or averages for each group whereas partition by actually divides the result set into partitions and changes how the window function is calculated”
@@ -126,7 +126,7 @@ A gigantic bison uses a pizza slicer to chop a glowing glass divider into small 
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Bone jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">Isolated Aggregation</span>&#93;(<span style="color:#3b82f6;font-weight:700">test tube</span>) [I &#91;<span style="color:#e67e22;font-weight:700">isolate a single column</span>&#93;(<span style="color:#3b82f6;font-weight:700">tweezers</span>)] [for an &#91;<span style="color:#e67e22;font-weight:700">aggregate function</span>&#93;(<span style="color:#3b82f6;font-weight:700">blender</span>)] [without changing the &#91;<span style="color:#e67e22;font-weight:700">query&#x27;s granularity</span>&#93;(<span style="color:#3b82f6;font-weight:700">sandglass</span>)]
+💡 <mark>[Isolated Aggregation]</mark><kbd>(test tube)</kbd> [I <mark>[isolate a single column]</mark><kbd>(tweezers)</kbd>] [for an <mark>[aggregate function]</mark><kbd>(blender)</kbd>] [without changing the <mark>[query&#x27;s granularity]</mark><kbd>(sandglass)</kbd>]
 
 **Quote**
 “because we're using the partition by we're able to isolate just one column that we want to perform our aggregate function on”
@@ -139,7 +139,7 @@ A Bone jester grabs a test tube with silver tweezers, dumping the liquid into a 
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Bone kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">Inline Aggregate Shortcut</span>&#93;(<span style="color:#3b82f6;font-weight:700">syringe</span>) [I &#91;<span style="color:#e67e22;font-weight:700">inject aggregated metrics</span>&#93;(<span style="color:#3b82f6;font-weight:700">needle</span>)] [directly into an &#91;<span style="color:#e67e22;font-weight:700">un-grouped query</span>&#93;(<span style="color:#3b82f6;font-weight:700">open book</span>)] [using a &#91;<span style="color:#e67e22;font-weight:700">single OVER clause</span>&#93;(<span style="color:#3b82f6;font-weight:700">blanket</span>)]
+💡 <mark>[Inline Aggregate Shortcut]</mark><kbd>(syringe)</kbd> [I <mark>[inject aggregated metrics]</mark><kbd>(needle)</kbd>] [directly into an <mark>[un-grouped query]</mark><kbd>(open book)</kbd>] [using a <mark>[single OVER clause]</mark><kbd>(blanket)</kbd>]
 
 **Quote**
 “what the partition by is doing is basically taking this query right here and sticking it on one line in the select statement”
@@ -171,7 +171,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">INNER JOIN</span>&#93;(<span style="color:#3b82f6;font-weight:700">bullseye</span>) [I return only the &#91;<span style="color:#e67e22;font-weight:700">records</span>&#93;(<span style="color:#3b82f6;font-weight:700">vinyl record</span>)] [that have &#91;<span style="color:#e67e22;font-weight:700">matching values</span>&#93;(<span style="color:#3b82f6;font-weight:700">puzzle piece</span>)] [in &#91;<span style="color:#e67e22;font-weight:700">both tables</span>&#93;(<span style="color:#3b82f6;font-weight:700">twins</span>)] — Note: Unmatched rows are completely excluded.
+💡 <mark>[INNER JOIN]</mark><kbd>(bullseye)</kbd> [I return only the <mark>[records]</mark><kbd>(vinyl record)</kbd>] [that have <mark>[matching values]</mark><kbd>(puzzle piece)</kbd>] [in <mark>[both tables]</mark><kbd>(twins)</kbd>] — Note: Unmatched rows are completely excluded.
 
 **Quote**
 “Returns only the records that have matching values in both tables. If a row in the first table does not have a corresponding match in the second table based on the join condition, that row is completely excluded from the final result.”
@@ -184,7 +184,7 @@ A microscopic bee drops puzzle pieces onto a spinning vinyl record, keeping only
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">LEFT JOIN</span>&#93;(<span style="color:#3b82f6;font-weight:700">left hand</span>) [I return all &#91;<span style="color:#e67e22;font-weight:700">records</span>&#93;(<span style="color:#3b82f6;font-weight:700">vinyl record</span>)] [from the &#91;<span style="color:#e67e22;font-weight:700">left table</span>&#93;(<span style="color:#3b82f6;font-weight:700">table</span>)] [and fill missing right matches with &#91;<span style="color:#e67e22;font-weight:700">NULLs</span>&#93;(<span style="color:#3b82f6;font-weight:700">ghost</span>)]
+💡 <mark>[LEFT JOIN]</mark><kbd>(left hand)</kbd> [I return all <mark>[records]</mark><kbd>(vinyl record)</kbd>] [from the <mark>[left table]</mark><kbd>(table)</kbd>] [and fill missing right matches with <mark>[NULLs]</mark><kbd>(ghost)</kbd>]
 
 **Quote**
 “Returns all records from the left table, along with the matched records from the right table. If a record in the left table has no match in the right table, the query still returns the left table's row, but populates the right table's columns with NULL values.”
@@ -197,7 +197,7 @@ A Bone frog kicks a wooden table with its glowing left webbed foot, catching all
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">FULL OUTER JOIN</span>&#93;(<span style="color:#3b82f6;font-weight:700">outer space</span>) [I return all &#91;<span style="color:#e67e22;font-weight:700">records</span>&#93;(<span style="color:#3b82f6;font-weight:700">vinyl record</span>)] [from &#91;<span style="color:#e67e22;font-weight:700">both tables</span>&#93;(<span style="color:#3b82f6;font-weight:700">table</span>)] [and fill any missing sides with &#91;<span style="color:#e67e22;font-weight:700">NULLs</span>&#93;(<span style="color:#3b82f6;font-weight:700">ghost</span>)] — Note: It essentially combines the results of both a left join and a right join.
+💡 <mark>[FULL OUTER JOIN]</mark><kbd>(outer space)</kbd> [I return all <mark>[records]</mark><kbd>(vinyl record)</kbd>] [from <mark>[both tables]</mark><kbd>(table)</kbd>] [and fill any missing sides with <mark>[NULLs]</mark><kbd>(ghost)</kbd>] — Note: It essentially combines the results of both a left join and a right join.
 
 **Quote**
 “Commonly referred to as FULL OUTER JOIN, it returns all records when there is a match in either the left or the right table. It essentially combines the results of both a LEFT JOIN and a RIGHT JOIN. Any missing matches on either side are filled with NULL values.”
@@ -229,7 +229,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">SQL Advanced Analytics</span>&#93;(<span style="color:#3b82f6;font-weight:700">dashboard</span>) [I &#91;<span style="color:#e67e22;font-weight:700">extract</span>&#93;(<span style="color:#3b82f6;font-weight:700">tweezers</span>) nested subqueries using CTEs] [and apply &#91;<span style="color:#e67e22;font-weight:700">window functions</span>&#93;(<span style="color:#3b82f6;font-weight:700">window</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">evaluate</span>&#93;(<span style="color:#3b82f6;font-weight:700">scales</span>) specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
+💡 <mark>[SQL Advanced Analytics]</mark><kbd>(dashboard)</kbd> [I <mark>[extract]</mark><kbd>(tweezers)</kbd> nested subqueries using CTEs] [and apply <mark>[window functions]</mark><kbd>(window)</kbd>] [to <mark>[evaluate]</mark><kbd>(scales)</kbd> specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
 
 **Quote**
 “a window function always has two components... now this whole section is called a CTE and we know that because it has this with keyword”
@@ -242,7 +242,7 @@ A gigantic bat uses silver tweezers to extract nested glowing code blocks from a
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">Temporary Tables</span>&#93;(<span style="color:#3b82f6;font-weight:700">tent</span>) [I &#91;<span style="color:#e67e22;font-weight:700">store</span>&#93;(<span style="color:#3b82f6;font-weight:700">freezer</span>) the output of heavy computation] [in a &#91;<span style="color:#e67e22;font-weight:700">temporary table</span>&#93;(<span style="color:#3b82f6;font-weight:700">clipboard</span>)] [to prevent the database from &#91;<span style="color:#e67e22;font-weight:700">re-executing</span>&#93;(<span style="color:#3b82f6;font-weight:700">hamster wheel</span>) it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
+💡 <mark>[Temporary Tables]</mark><kbd>(tent)</kbd> [I <mark>[store]</mark><kbd>(freezer)</kbd> the output of heavy computation] [in a <mark>[temporary table]</mark><kbd>(clipboard)</kbd>] [to prevent the database from <mark>[re-executing]</mark><kbd>(hamster wheel)</kbd> it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
 
 **Quote**
 “if you find yourself using the same CTE again and again especially if your data set is large and your queries are taking a really long time to run then consider creating a temp table”
@@ -255,7 +255,7 @@ A Bone bird of paradise drags a humming chest freezer into a camping tent to sto
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Bone cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">HAVING Clause</span>&#93;(<span style="color:#3b82f6;font-weight:700">funnel</span>) [I &#91;<span style="color:#e67e22;font-weight:700">filter</span>&#93;(<span style="color:#3b82f6;font-weight:700">coffee filter</span>) summary rows] [after they have been &#91;<span style="color:#e67e22;font-weight:700">processed</span>&#93;(<span style="color:#3b82f6;font-weight:700">blender</span>)] [by the GROUP BY &#91;<span style="color:#e67e22;font-weight:700">aggregation</span>&#93;(<span style="color:#3b82f6;font-weight:700">snowball</span>)] — Note: The WHERE clause filters individual rows before any data grouping occurs.
+💡 <mark>[HAVING Clause]</mark><kbd>(funnel)</kbd> [I <mark>[filter]</mark><kbd>(coffee filter)</kbd> summary rows] [after they have been <mark>[processed]</mark><kbd>(blender)</kbd>] [by the GROUP BY <mark>[aggregation]</mark><kbd>(snowball)</kbd>] — Note: The WHERE clause filters individual rows before any data grouping occurs.
 
 **Quote**
 “The `HAVING` clause in SQL is used to filter records after they have been aggregated by a `GROUP BY` clause.”
@@ -268,7 +268,7 @@ A Bone cat pours a giant snowball through a roaring blender, using a plastic fun
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 &#91;<span style="color:#e67e22;font-weight:700">GROUP BY Scope</span>&#93;(<span style="color:#3b82f6;font-weight:700">lasso</span>) [I &#91;<span style="color:#e67e22;font-weight:700">include</span>&#93;(<span style="color:#3b82f6;font-weight:700">vacuum</span>) any non-aggregated column] [from the &#91;<span style="color:#e67e22;font-weight:700">SELECT statement</span>&#93;(<span style="color:#3b82f6;font-weight:700">menu</span>)] [inside the &#91;<span style="color:#e67e22;font-weight:700">GROUP BY clause</span>&#93;(<span style="color:#3b82f6;font-weight:700">folder</span>)] — Note: This ensures identical data combinations correctly collapse into a single summary row.
+💡 <mark>[GROUP BY Scope]</mark><kbd>(lasso)</kbd> [I <mark>[include]</mark><kbd>(vacuum)</kbd> any non-aggregated column] [from the <mark>[SELECT statement]</mark><kbd>(menu)</kbd>] [inside the <mark>[GROUP BY clause]</mark><kbd>(folder)</kbd>] — Note: This ensures identical data combinations correctly collapse into a single summary row.
 
 **Quote**
 “Any non-aggregated column present in the SELECT list must appear in the GROUP BY clause.”
@@ -300,7 +300,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Viewpoint</span>&#93;(<span style="color:#3b82f6;font-weight:700">twin</span>) Controls: I show two windows together] [&#91;<span style="color:#e67e22;font-weight:700">overview</span>&#93;(<span style="color:#3b82f6;font-weight:700">map</span>) plus enlarged &#91;<span style="color:#e67e22;font-weight:700">detail</span>&#93;(<span style="color:#3b82f6;font-weight:700">lens</span>) of one area]
+💡 [<mark>[Viewpoint]</mark><kbd>(twin)</kbd> Controls: I show two windows together] [<mark>[overview]</mark><kbd>(map)</kbd> plus enlarged <mark>[detail]</mark><kbd>(lens)</kbd> of one area]
 
 **Quote**
 “Consiste em mostrar duas janelas em conjunto: uma contendo uma visão geral da estrutura visual [e] outra apresentando em detalhes uma área específica dessa estrutura, com foco ampliado.”
@@ -313,7 +313,7 @@ A tiny-then-huge aye-aye carries twin glass panes: one shows the whole hive map,
 <img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Rearrangement</span>&#93;(<span style="color:#3b82f6;font-weight:700">shuffle</span>): I change marks and &#91;<span style="color:#e67e22;font-weight:700">axis</span>&#93;(<span style="color:#3b82f6;font-weight:700">dial</span>) values] [so the new layout can change what I &#91;<span style="color:#e67e22;font-weight:700">understand</span>&#93;(<span style="color:#3b82f6;font-weight:700">lightbulb</span>)]
+💡 [<mark>[Rearrangement]</mark><kbd>(shuffle)</kbd>: I change marks and <mark>[axis]</mark><kbd>(dial)</kbd> values] [so the new layout can change what I <mark>[understand]</mark><kbd>(lightbulb)</kbd>]
 
 **Quote**
 “Permitindo ao usuário modificar a disposição de marcas e de valores de eixos no espaço, a nova visão formada desse rearranjo pode levar a diferentes compreensões dos fatos mostrados na estrutura visual”
@@ -345,7 +345,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Glyph</span>&#93;(<span style="color:#3b82f6;font-weight:700">puppet</span>): a graphic entity] [whose &#91;<span style="color:#e67e22;font-weight:700">attributes</span>&#93;(<span style="color:#3b82f6;font-weight:700">dial</span>) are &#91;<span style="color:#e67e22;font-weight:700">driven</span>&#93;(<span style="color:#3b82f6;font-weight:700">remote</span>) by data attributes]
+💡 [<mark>[Glyph]</mark><kbd>(puppet)</kbd>: a graphic entity] [whose <mark>[attributes]</mark><kbd>(dial)</kbd> are <mark>[driven]</mark><kbd>(remote)</kbd> by data attributes]
 
 **Quote**
 “Glyph: representação visual de um pedaço de dados ou informação em que uma entidade gráfica e seus atributos são controlados por um ou mais atributos de dados”
@@ -358,7 +358,7 @@ A huge atlas wears a face-glyph mask whose eyes, smile, and horns twist whenever
 <img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Dense &#91;<span style="color:#e67e22;font-weight:700">Pixel</span>&#93;(<span style="color:#3b82f6;font-weight:700">mosaic</span>) Displays: I &#91;<span style="color:#e67e22;font-weight:700">map</span>&#93;(<span style="color:#3b82f6;font-weight:700">tile</span>) each value to individual pixels] [and form a &#91;<span style="color:#e67e22;font-weight:700">polygon</span>&#93;(<span style="color:#3b82f6;font-weight:700">shape</span>) per data dimension]
+💡 [Dense <mark>[Pixel]</mark><kbd>(mosaic)</kbd> Displays: I <mark>[map]</mark><kbd>(tile)</kbd> each value to individual pixels] [and form a <mark>[polygon]</mark><kbd>(shape)</kbd> per data dimension]
 
 **Quote**
 “Mapeiam cada valor para pixels individuais e criam um polígono para representar cada dimensão dos dados.”
@@ -371,7 +371,7 @@ A towering auroch stitches a carpet of single glowing pixels that crawl into spi
 <img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [View &#91;<span style="color:#e67e22;font-weight:700">Transformation</span>&#93;(<span style="color:#3b82f6;font-weight:700">switch</span>): creates new &#91;<span style="color:#e67e22;font-weight:700">views</span>&#93;(<span style="color:#3b82f6;font-weight:700">window</span>)] [of the visual structure] [for my &#91;<span style="color:#e67e22;font-weight:700">needs</span>&#93;(<span style="color:#3b82f6;font-weight:700">wrench</span>)]
+💡 [View <mark>[Transformation]</mark><kbd>(switch)</kbd>: creates new <mark>[views]</mark><kbd>(window)</kbd>] [of the visual structure] [for my <mark>[needs]</mark><kbd>(wrench)</kbd>]
 
 **Quote**
 “Transformação de visão: cria novas visões da estrutura visual de acordo com a necessidade do usuário.”
@@ -384,7 +384,7 @@ A gigantic avocet flips a structure like a Rubik cube; each twist births a new v
 <img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Location</span>&#93;(<span style="color:#3b82f6;font-weight:700">pin</span>) Investigations: I use a data mark's location] [to &#91;<span style="color:#e67e22;font-weight:700">reveal</span>&#93;(<span style="color:#3b82f6;font-weight:700">flashlight</span>) extra table &#91;<span style="color:#e67e22;font-weight:700">information</span>&#93;(<span style="color:#3b82f6;font-weight:700">card</span>)]
+💡 [<mark>[Location]</mark><kbd>(pin)</kbd> Investigations: I use a data mark's location] [to <mark>[reveal]</mark><kbd>(flashlight)</kbd> extra table <mark>[information]</mark><kbd>(card)</kbd>]
 
 **Quote**
 “Usam o local em que um dado está em uma estrutura visual para revelar informações adicionais da tabela de dados.”
@@ -397,7 +397,7 @@ A huge awassi sheep taps one glowing pin on the map; the pin sprouts a detail-ca
 <img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Distortions</span>&#93;(<span style="color:#3b82f6;font-weight:700">magnifier</span>): show focus and &#91;<span style="color:#e67e22;font-weight:700">context</span>&#93;(<span style="color:#3b82f6;font-weight:700">frame</span>)] [in the &#91;<span style="color:#e67e22;font-weight:700">same</span>&#93;(<span style="color:#3b82f6;font-weight:700">stretch</span>) visual structure at once]
+💡 [<mark>[Distortions]</mark><kbd>(magnifier)</kbd>: show focus and <mark>[context]</mark><kbd>(frame)</kbd>] [in the <mark>[same]</mark><kbd>(stretch)</kbd> visual structure at once]
 
 **Quote**
 “Criam visões com foco e contexto simultaneamente em uma mesma estrutura visual.”
@@ -429,7 +429,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Multivariate</span>&#93;(<span style="color:#3b82f6;font-weight:700">crayon</span>) Line Charts: I tell dimensions apart] [by color, &#91;<span style="color:#e67e22;font-weight:700">width</span>&#93;(<span style="color:#3b82f6;font-weight:700">rope</span>), or line &#91;<span style="color:#e67e22;font-weight:700">style</span>&#93;(<span style="color:#3b82f6;font-weight:700">stripe</span>)]
+💡 [<mark>[Multivariate]</mark><kbd>(crayon)</kbd> Line Charts: I tell dimensions apart] [by color, <mark>[width]</mark><kbd>(rope)</kbd>, or line <mark>[style]</mark><kbd>(stripe)</kbd>]
 
 **Quote**
 “Diferenciação das dimensões por atributos gráficos como cor, largura ou estilo de linha”
@@ -442,7 +442,7 @@ A colossal aoudad paints giant noodles of lines in different colors and thicknes
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Parallel</span>&#93;(<span style="color:#3b82f6;font-weight:700">fence</span>) Coordinates: I draw each variable as a parallel axis] [and turn each &#91;<span style="color:#e67e22;font-weight:700">tuple</span>&#93;(<span style="color:#3b82f6;font-weight:700">bead</span>) into a &#91;<span style="color:#e67e22;font-weight:700">polyline</span>&#93;(<span style="color:#3b82f6;font-weight:700">wire</span>)]
+💡 [<mark>[Parallel]</mark><kbd>(fence)</kbd> Coordinates: I draw each variable as a parallel axis] [and turn each <mark>[tuple]</mark><kbd>(bead)</kbd> into a <mark>[polyline]</mark><kbd>(wire)</kbd>]
 
 **Quote**
 “Representa cada variável por um eixo Eixos são paralelos entre si Tupla se transforma em linha poligonal (polyline).”
@@ -455,7 +455,7 @@ A huge ape strings tall parallel fence-poles and weaves each data row as a zigza
 <img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Radial</span>&#93;(<span style="color:#3b82f6;font-weight:700">clock</span>) Axis Techniques: I use polar axes] [to study &#91;<span style="color:#e67e22;font-weight:700">cyclical</span>&#93;(<span style="color:#3b82f6;font-weight:700">loop</span>) events and &#91;<span style="color:#e67e22;font-weight:700">seasonality</span>&#93;(<span style="color:#3b82f6;font-weight:700">calendar</span>)]
+💡 [<mark>[Radial]</mark><kbd>(clock)</kbd> Axis Techniques: I use polar axes] [to study <mark>[cyclical]</mark><kbd>(loop)</kbd> events and <mark>[seasonality]</mark><kbd>(calendar)</kbd>]
 
 **Quote**
 “Pode ser útil para estudar eventos de natureza cíclica Ex.: hipóteses sobre a sazonalidade de um evento”
@@ -468,7 +468,7 @@ A gigantic aquatic leech spins a giant clock-plot where months loop forever; sea
 <img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Table &#91;<span style="color:#e67e22;font-weight:700">Lens</span>&#93;(<span style="color:#3b82f6;font-weight:700">shuffle</span>): I combine reordering, bar-sized &#91;<span style="color:#e67e22;font-weight:700">marks</span>&#93;(<span style="color:#3b82f6;font-weight:700">bar</span>), and semantic &#91;<span style="color:#e67e22;font-weight:700">zoom</span>&#93;(<span style="color:#3b82f6;font-weight:700">lens</span>)] [by row and column]
+💡 [Table <mark>[Lens]</mark><kbd>(shuffle)</kbd>: I combine reordering, bar-sized <mark>[marks]</mark><kbd>(bar)</kbd>, and semantic <mark>[zoom]</mark><kbd>(lens)</kbd>] [by row and column]
 
 **Quote**
 “Table Lens: combina características: Reordenação de linhas e de colunas Tamanho de marcas (estilo gráfico de barras, para dados quantitativos) Zoom semântico por linha e por coluna”
@@ -481,7 +481,7 @@ A huge armadillo shuffles a living spreadsheet like cards, grows cells into bar 
 <img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Parallel &#91;<span style="color:#e67e22;font-weight:700">Sets</span>&#93;(<span style="color:#3b82f6;font-weight:700">ribbon</span>): like Parallel Coordinates] [but focused on &#91;<span style="color:#e67e22;font-weight:700">nominal</span>&#93;(<span style="color:#3b82f6;font-weight:700">tag</span>) variables]
+💡 [Parallel <mark>[Sets]</mark><kbd>(ribbon)</kbd>: like Parallel Coordinates] [but focused on <mark>[nominal]</mark><kbd>(tag)</kbd> variables]
 
 **Quote**
 “Similar a Coordenadas Paralelas, porém com uso focado em variáveis nominais”
@@ -513,7 +513,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Visual &#91;<span style="color:#e67e22;font-weight:700">Mapping</span>&#93;(<span style="color:#3b82f6;font-weight:700">plug</span>): I link each data-table &#91;<span style="color:#e67e22;font-weight:700">variable</span>&#93;(<span style="color:#3b82f6;font-weight:700">dial</span>)] [to a graphical or spatial &#91;<span style="color:#e67e22;font-weight:700">property</span>&#93;(<span style="color:#3b82f6;font-weight:700">paint</span>)]
+💡 [Visual <mark>[Mapping]</mark><kbd>(plug)</kbd>: I link each data-table <mark>[variable]</mark><kbd>(dial)</kbd>] [to a graphical or spatial <mark>[property]</mark><kbd>(paint)</kbd>]
 
 **Quote**
 “Objetivo: associar cada variável da tabela de dados a uma propriedade gráfica ou espacial.”
@@ -526,7 +526,7 @@ A huge Ajax plugs each table column into a different paint hose—color, size, p
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Automatic</span>&#93;(<span style="color:#3b82f6;font-weight:700">flashlight</span>) Visual Processing: I aid search and pattern detection] [with automatically &#91;<span style="color:#e67e22;font-weight:700">processed</span>&#93;(<span style="color:#3b82f6;font-weight:700">pop</span>) properties] [like &#91;<span style="color:#e67e22;font-weight:700">color</span>&#93;(<span style="color:#3b82f6;font-weight:700">paint</span>) and size]
+💡 [<mark>[Automatic]</mark><kbd>(flashlight)</kbd> Visual Processing: I aid search and pattern detection] [with automatically <mark>[processed]</mark><kbd>(pop)</kbd> properties] [like <mark>[color]</mark><kbd>(paint)</kbd> and size]
 
 **Quote**
 “Mapeamentos visuais que pretendem auxiliar buscas e detecção de padrões podem ser feitos usando propriedades processadas de maneira automática, como cores e tamanhos;”
@@ -539,7 +539,7 @@ A gigantic Akita (dog breed) flashes color and size balloons that pop out of the
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Expressiveness</span>&#93;(<span style="color:#3b82f6;font-weight:700">truth</span>): my visual mapping must express all table &#91;<span style="color:#e67e22;font-weight:700">data</span>&#93;(<span style="color:#3b82f6;font-weight:700">ledger</span>)] [and &#91;<span style="color:#e67e22;font-weight:700">only</span>&#93;(<span style="color:#3b82f6;font-weight:700">filter</span>) that data]
+💡 [<mark>[Expressiveness]</mark><kbd>(truth)</kbd>: my visual mapping must express all table <mark>[data]</mark><kbd>(ledger)</kbd>] [and <mark>[only]</mark><kbd>(filter)</kbd> that data]
 
 **Quote**
 “De acordo com esse conceito, o mapeamento visual deve fazer com que a estrutura visual expresse todos os dados da tabela de dados, e somente eles.”
@@ -552,7 +552,7 @@ A living alligator rips fake neighbor-links off a chart and stamps a glowing fil
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Effectiveness</span>&#93;(<span style="color:#3b82f6;font-weight:700">stopwatch</span>): fast easy &#91;<span style="color:#e67e22;font-weight:700">distinction</span>&#93;(<span style="color:#3b82f6;font-weight:700">magnifier</span>) of data] [with as few interpretation &#91;<span style="color:#e67e22;font-weight:700">errors</span>&#93;(<span style="color:#3b82f6;font-weight:700">eraser</span>) as possible]
+💡 [<mark>[Effectiveness]</mark><kbd>(stopwatch)</kbd>: fast easy <mark>[distinction]</mark><kbd>(magnifier)</kbd> of data] [with as few interpretation <mark>[errors]</mark><kbd>(eraser)</kbd> as possible]
 
 **Quote**
 “Capacidade de permitir rápida interpretação dos dados e fácil distinção entre eles, levando à menor quantidade possível de erros de interpretação.”
@@ -565,7 +565,7 @@ A racing amulet sorts glowing bars against a stopwatch; wrong interpretations sh
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">RadViz</span>&#93;(<span style="color:#3b82f6;font-weight:700">ring</span>): I place N anchors on a circle] [and &#91;<span style="color:#e67e22;font-weight:700">pull</span>&#93;(<span style="color:#3b82f6;font-weight:700">magnet</span>) points by &#91;<span style="color:#e67e22;font-weight:700">Hooke</span>&#93;(<span style="color:#3b82f6;font-weight:700">spring</span>) spring balance]
+💡 [<mark>[RadViz]</mark><kbd>(ring)</kbd>: I place N anchors on a circle] [and <mark>[pull]</mark><kbd>(magnet)</kbd> points by <mark>[Hooke]</mark><kbd>(spring)</kbd> spring balance]
 
 **Quote**
 “Técnica baseada na lei de Hooke para equilíbrio. Tabela de dados N-dimensionais; M pontos. Define-se N âncoras em uma circunferência”
@@ -597,7 +597,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Database &#91;<span style="color:#e67e22;font-weight:700">Schema</span>&#93;(<span style="color:#3b82f6;font-weight:700">blueprint</span>): I treat it as the structural blueprint] [of my &#91;<span style="color:#e67e22;font-weight:700">database</span>&#93;(<span style="color:#3b82f6;font-weight:700">building</span>)] [including tables, fields, &#91;<span style="color:#e67e22;font-weight:700">relationships</span>&#93;(<span style="color:#3b82f6;font-weight:700">chain</span>), and constraints]
+💡 [Database <mark>[Schema]</mark><kbd>(blueprint)</kbd>: I treat it as the structural blueprint] [of my <mark>[database]</mark><kbd>(building)</kbd>] [including tables, fields, <mark>[relationships]</mark><kbd>(chain)</kbd>, and constraints]
 
 **Quote**
 “A database schema is the structural blueprint of a database. It defines the logical organization of data, including tables, fields, relationships, and constraints.”
@@ -610,7 +610,7 @@ A skyscraper-tall aerialist hangs upside down from a glowing blueprint sheet and
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Visual &#91;<span style="color:#e67e22;font-weight:700">Structure</span>&#93;(<span style="color:#3b82f6;font-weight:700">kit</span>): the set of visual elements] [that &#91;<span style="color:#e67e22;font-weight:700">represent</span>&#93;(<span style="color:#3b82f6;font-weight:700">mirror</span>) a &#91;<span style="color:#e67e22;font-weight:700">dataset</span>&#93;(<span style="color:#3b82f6;font-weight:700">box</span>)]
+💡 [Visual <mark>[Structure]</mark><kbd>(kit)</kbd>: the set of visual elements] [that <mark>[represent]</mark><kbd>(mirror)</kbd> a <mark>[dataset]</mark><kbd>(box)</kbd>]
 
 **Quote**
 “Conjunto de elementos visuais que representam um conjunto de dados.”
@@ -623,7 +623,7 @@ A gigantic Afghan hound dumps a toolbox of glowing points, lines, and areas onto
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Spatial &#91;<span style="color:#e67e22;font-weight:700">Substrate</span>&#93;(<span style="color:#3b82f6;font-weight:700">stage</span>): the area available] [to &#91;<span style="color:#e67e22;font-weight:700">display</span>&#93;(<span style="color:#3b82f6;font-weight:700">screen</span>) the &#91;<span style="color:#e67e22;font-weight:700">dataset</span>&#93;(<span style="color:#3b82f6;font-weight:700">box</span>)]
+💡 [Spatial <mark>[Substrate]</mark><kbd>(stage)</kbd>: the area available] [to <mark>[display]</mark><kbd>(screen)</kbd> the <mark>[dataset]</mark><kbd>(box)</kbd>]
 
 **Quote**
 “Área disponível para exibição do conjunto de dados.”
@@ -636,7 +636,7 @@ A giant Agaric fungi unrolls a rubber stage that stretches like chewing gum acro
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [&#91;<span style="color:#e67e22;font-weight:700">Marks</span>&#93;(<span style="color:#3b82f6;font-weight:700">toy</span>): objects present] [in the &#91;<span style="color:#e67e22;font-weight:700">chart</span>&#93;(<span style="color:#3b82f6;font-weight:700">frame</span>) &#91;<span style="color:#e67e22;font-weight:700">space</span>&#93;(<span style="color:#3b82f6;font-weight:700">room</span>)] — Note: Marks use graphical and spatial properties to show data values.
+💡 [<mark>[Marks]</mark><kbd>(toy)</kbd>: objects present] [in the <mark>[chart]</mark><kbd>(frame)</kbd> <mark>[space]</mark><kbd>(room)</kbd>] — Note: Marks use graphical and spatial properties to show data values.
 
 **Quote**
 “Objetos presentes no espaço do gráfico”
@@ -649,7 +649,7 @@ A huge Ah!—a sigh coughs up toy marks—points, lines, icons—that bounce ins
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Small &#91;<span style="color:#e67e22;font-weight:700">Multiples</span>&#93;(<span style="color:#3b82f6;font-weight:700">stamps</span>): they force visual &#91;<span style="color:#e67e22;font-weight:700">comparison</span>&#93;(<span style="color:#3b82f6;font-weight:700">eyes</span>)] [of changes, differences, and &#91;<span style="color:#e67e22;font-weight:700">alternatives</span>&#93;(<span style="color:#3b82f6;font-weight:700">fork</span>)]
+💡 [Small <mark>[Multiples]</mark><kbd>(stamps)</kbd>: they force visual <mark>[comparison]</mark><kbd>(eyes)</kbd>] [of changes, differences, and <mark>[alternatives]</mark><kbd>(fork)</kbd>]
 
 **Quote**
 “A técnica força a comparação visual de alterações, das diferenças entre objetos, do escopo de alternativas.”
@@ -681,7 +681,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I store data without fixed &#91;<span style="color:#e67e22;font-weight:700">tables</span>&#93;(<span style="color:#3b82f6;font-weight:700">cloud</span>)] [using flexible &#91;<span style="color:#e67e22;font-weight:700">formats</span>&#93;(<span style="color:#3b82f6;font-weight:700">origami</span>)] [for horizontal &#91;<span style="color:#e67e22;font-weight:700">scaling</span>&#93;(<span style="color:#3b82f6;font-weight:700">accordion</span>)] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
+💡 [I store data without fixed <mark>[tables]</mark><kbd>(cloud)</kbd>] [using flexible <mark>[formats]</mark><kbd>(origami)</kbd>] [for horizontal <mark>[scaling]</mark><kbd>(accordion)</kbd>] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
 
 **Quote**
 “A NoSQL database stores data without fixed tables, using flexible formats like documents, key-value pairs, wide columns, or graphs.”
@@ -713,7 +713,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I unpivot multiple &#91;<span style="color:#e67e22;font-weight:700">columns</span>&#93;(<span style="color:#3b82f6;font-weight:700">pillar</span>) into rows] [to &#91;<span style="color:#e67e22;font-weight:700">model</span>&#93;(<span style="color:#3b82f6;font-weight:700">clay</span>) my data more easily] — Note: Column headers become an attribute column paired with a single value column.
+💡 [I unpivot multiple <mark>[columns]</mark><kbd>(pillar)</kbd> into rows] [to <mark>[model]</mark><kbd>(clay)</kbd> my data more easily] — Note: Column headers become an attribute column paired with a single value column.
 
 **Quote**
 “so unpivoting means I have columns and I want to see those columns in the rows”
@@ -726,7 +726,7 @@ A colossal yak uses its curved horns as crowbars to rip tall stone columns out o
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [My unpivot step automatically &#91;<span style="color:#e67e22;font-weight:700">deletes</span>&#93;(<span style="color:#3b82f6;font-weight:700">trash can</span>) all rows] [with &#91;<span style="color:#e67e22;font-weight:700">null</span>&#93;(<span style="color:#3b82f6;font-weight:700">ghost</span>) values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
+💡 [My unpivot step automatically <mark>[deletes]</mark><kbd>(trash can)</kbd> all rows] [with <mark>[null]</mark><kbd>(ghost)</kbd> values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
 
 **Quote**
 “now the characteristic of the unpivot function in power query is that by the default it actually removes the null values”
@@ -739,7 +739,7 @@ A gigantic Zeus hurls blinding neon lightning bolts at an enormous ledger, vapor
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I replace nulls with a temporary &#91;<span style="color:#e67e22;font-weight:700">placeholder</span>&#93;(<span style="color:#3b82f6;font-weight:700">scarecrow</span>)] [before &#91;<span style="color:#e67e22;font-weight:700">unpivoting</span>&#93;(<span style="color:#3b82f6;font-weight:700">jack</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">swap</span>&#93;(<span style="color:#3b82f6;font-weight:700">boomerang</span>) them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
+💡 [I replace nulls with a temporary <mark>[placeholder]</mark><kbd>(scarecrow)</kbd>] [before <mark>[unpivoting]</mark><kbd>(jack)</kbd>] [to <mark>[swap]</mark><kbd>(boomerang)</kbd> them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
 
 **Quote**
 “you can select the columns where you have the null values and you need to replace those with a placeholder”
@@ -754,7 +754,7 @@ An aardvark with a vacuum snout loudly slurps empty holes out of a wooden table 
 🟦 **Z1 · Reusing query steps**
 
 **Concept**
-💡 [I &#91;<span style="color:#e67e22;font-weight:700">reuse</span>&#93;(<span style="color:#3b82f6;font-weight:700">stamp</span>) my query steps] [across different &#91;<span style="color:#e67e22;font-weight:700">files</span>&#93;(<span style="color:#3b82f6;font-weight:700">binder</span>)] [sharing the exact same table &#91;<span style="color:#e67e22;font-weight:700">structure</span>&#93;(<span style="color:#3b82f6;font-weight:700">twin</span>)] — Note: Identical column headers and data formats are required so the query steps run without error.
+💡 [I <mark>[reuse]</mark><kbd>(stamp)</kbd> my query steps] [across different <mark>[files]</mark><kbd>(binder)</kbd>] [sharing the exact same table <mark>[structure]</mark><kbd>(twin)</kbd>] — Note: Identical column headers and data formats are required so the query steps run without error.
 
 **Quote**
 “since the format of both files are the same I want to apply the exact same steps to my second file”
@@ -767,7 +767,7 @@ A heavy twin-stamping iron helmet fused into its forehead slams down to press id
 🟦 **Z2 · Copying transformation steps**
 
 **Concept**
-💡 [I &#91;<span style="color:#e67e22;font-weight:700">copy</span>&#93;(<span style="color:#3b82f6;font-weight:700">scissors</span>) all transformation steps] [below the initial &#91;<span style="color:#e67e22;font-weight:700">source</span>&#93;(<span style="color:#3b82f6;font-weight:700">anchor</span>) line] [from the Advanced &#91;<span style="color:#e67e22;font-weight:700">Editor</span>&#93;(<span style="color:#3b82f6;font-weight:700">scroll</span>)] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
+💡 [I <mark>[copy]</mark><kbd>(scissors)</kbd> all transformation steps] [below the initial <mark>[source]</mark><kbd>(anchor)</kbd> line] [from the Advanced <mark>[Editor]</mark><kbd>(scroll)</kbd>] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
 
 **Quote**
 “the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy”
@@ -780,7 +780,7 @@ Its front paws sprout white-hot glowing claws that slice and copy rows of burnin
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I &#91;<span style="color:#e67e22;font-weight:700">store</span>&#93;(<span style="color:#3b82f6;font-weight:700">chest</span>) data] [in rigid &#91;<span style="color:#e67e22;font-weight:700">tables</span>&#93;(<span style="color:#3b82f6;font-weight:700">grid</span>) of rows and columns] [linked by predefined &#91;<span style="color:#e67e22;font-weight:700">relationships</span>&#93;(<span style="color:#3b82f6;font-weight:700">chain</span>)] — Note: Enforces schemas and data integrity using SQL validation rules.
+💡 [I <mark>[store]</mark><kbd>(chest)</kbd> data] [in rigid <mark>[tables]</mark><kbd>(grid)</kbd> of rows and columns] [linked by predefined <mark>[relationships]</mark><kbd>(chain)</kbd>] — Note: Enforces schemas and data integrity using SQL validation rules.
 
 **Quote**
 “A relational database stores data in fixed tables made of rows and columns, linked together by predefined relationships.”
@@ -812,7 +812,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the power query &#91;<span style="color:#e67e22;font-weight:700">mashup</span>&#93;(<span style="color:#3b82f6;font-weight:700">blender</span>) engine] [as the underlying &#91;<span style="color:#e67e22;font-weight:700">technology</span>&#93;(<span style="color:#3b82f6;font-weight:700">engine block</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">execute</span>&#93;(<span style="color:#3b82f6;font-weight:700">lightning bolt</span>) my data queries.]
+💡 [I use the power query <mark>[mashup]</mark><kbd>(blender)</kbd> engine] [as the underlying <mark>[technology]</mark><kbd>(engine block)</kbd>] [to <mark>[execute]</mark><kbd>(lightning bolt)</kbd> my data queries.]
 
 **Quote**
 “at the base you know of this technology is something called the power query mashup engine that's the thing that executes your query”
@@ -825,7 +825,7 @@ A giant toucan violently drops a roaring car engine block into a massive blender
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I avoid using &#91;<span style="color:#e67e22;font-weight:700">spaces</span>&#93;(<span style="color:#3b82f6;font-weight:700">vacuum</span>)] [in my step &#91;<span style="color:#e67e22;font-weight:700">names</span>&#93;(<span style="color:#3b82f6;font-weight:700">name tag</span>)] [to keep the underlying M code &#91;<span style="color:#e67e22;font-weight:700">clean</span>&#93;(<span style="color:#3b82f6;font-weight:700">sponge</span>).] - Note: Spaces force the variables to be wrapped in quotes and a hash sign.
+💡 [I avoid using <mark>[spaces]</mark><kbd>(vacuum)</kbd>] [in my step <mark>[names]</mark><kbd>(name tag)</kbd>] [to keep the underlying M code <mark>[clean]</mark><kbd>(sponge)</kbd>.] - Note: Spaces force the variables to be wrapped in quotes and a hash sign.
 
 **Quote**
 “if you put spaces in your step names it makes the applied steps thing look better yeah but it makes the uh you know m code look a lot worse”
@@ -838,7 +838,7 @@ A unicorn uses a vacuum attached to its horn to suck all the empty air out of gl
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use query &#91;<span style="color:#e67e22;font-weight:700">folding</span>&#93;(<span style="color:#3b82f6;font-weight:700">origami</span>)] [to &#91;<span style="color:#e67e22;font-weight:700">push</span>&#93;(<span style="color:#3b82f6;font-weight:700">bulldozer</span>) transformation work] [back to the data &#91;<span style="color:#e67e22;font-weight:700">source</span>&#93;(<span style="color:#3b82f6;font-weight:700">well</span>)] [to maximize processing &#91;<span style="color:#e67e22;font-weight:700">efficiency</span>&#93;(<span style="color:#3b82f6;font-weight:700">stopwatch</span>).]
+💡 [I use query <mark>[folding]</mark><kbd>(origami)</kbd>] [to <mark>[push]</mark><kbd>(bulldozer)</kbd> transformation work] [back to the data <mark>[source]</mark><kbd>(well)</kbd>] [to maximize processing <mark>[efficiency]</mark><kbd>(stopwatch)</kbd>.]
 
 **Quote**
 “the idea of query folding is that you want the power query mashup engine you know to be as efficient as possible so the mashup engine will push work back to the data source”
@@ -851,7 +851,7 @@ A giant vulture folds an enormous glowing origami swan with its talons, using a 
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [The OData connector uses a &#91;<span style="color:#e67e22;font-weight:700">discovery</span>&#93;(<span style="color:#3b82f6;font-weight:700">binoculars</span>) mechanism] [to automatically determine the &#91;<span style="color:#e67e22;font-weight:700">schema</span>&#93;(<span style="color:#3b82f6;font-weight:700">skeleton</span>)] [of the external &#91;<span style="color:#e67e22;font-weight:700">table</span>&#93;(<span style="color:#3b82f6;font-weight:700">picnic table</span>).]
+💡 [The OData connector uses a <mark>[discovery]</mark><kbd>(binoculars)</kbd> mechanism] [to automatically determine the <mark>[schema]</mark><kbd>(skeleton)</kbd>] [of the external <mark>[table]</mark><kbd>(picnic table)</kbd>.]
 
 **Quote**
 “odata has a discovery mechanism you know where now power query is kind of looking at the table and figuring out what it is”
@@ -864,7 +864,7 @@ A skyscraper-sized wombat peers through glowing binoculars at a wooden picnic ta
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [The OData connector suffers from &#91;<span style="color:#e67e22;font-weight:700">network</span>&#93;(<span style="color:#3b82f6;font-weight:700">spider web</span>) latency] [because it makes redundant metadata &#91;<span style="color:#e67e22;font-weight:700">calls</span>&#93;(<span style="color:#3b82f6;font-weight:700">megaphone</span>)] [at &#91;<span style="color:#e67e22;font-weight:700">runtime</span>&#93;(<span style="color:#3b82f6;font-weight:700">running shoes</span>).]
+💡 [The OData connector suffers from <mark>[network]</mark><kbd>(spider web)</kbd> latency] [because it makes redundant metadata <mark>[calls]</mark><kbd>(megaphone)</kbd>] [at <mark>[runtime]</mark><kbd>(running shoes)</kbd>.]
 
 **Quote**
 “the problem uh with odata is that at runtime it has to make metadata calls to basically get the metadata and that makes a second call”
@@ -896,7 +896,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Lake: I &#91;<span style="color:#e67e22;font-weight:700">store</span>&#93;(<span style="color:#3b82f6;font-weight:700">bucket</span>) structured, semi-structured, and unstructured raw data] [in a &#91;<span style="color:#e67e22;font-weight:700">centralized</span>&#93;(<span style="color:#3b82f6;font-weight:700">swimming pool</span>), low-cost object storage system[cite: 1].]
+💡 [Data Lake: I <mark>[store]</mark><kbd>(bucket)</kbd> structured, semi-structured, and unstructured raw data] [in a <mark>[centralized]</mark><kbd>(swimming pool)</kbd>, low-cost object storage system[cite: 1].]
 
 **Quote**
 “Centralized storage for structured, semi-structured, and unstructured raw data in low-cost object storage."[cite: 1]”
@@ -909,7 +909,7 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Warehouse: A highly &#91;<span style="color:#e67e22;font-weight:700">structured</span>&#93;(<span style="color:#3b82f6;font-weight:700">filing cabinet</span>), schema-on-write repository] [optimized for SQL &#91;<span style="color:#e67e22;font-weight:700">analytics</span>&#93;(<span style="color:#3b82f6;font-weight:700">magnifying glass</span>)] [and business &#91;<span style="color:#e67e22;font-weight:700">intelligence</span>&#93;(<span style="color:#3b82f6;font-weight:700">briefcase</span>)[cite: 1].]
+💡 [Data Warehouse: A highly <mark>[structured]</mark><kbd>(filing cabinet)</kbd>, schema-on-write repository] [optimized for SQL <mark>[analytics]</mark><kbd>(magnifying glass)</kbd>] [and business <mark>[intelligence]</mark><kbd>(briefcase)</kbd>[cite: 1].]
 
 **Quote**
 “Highly structured, schema-on-write repository optimized for SQL analytics and business intelligence."[cite: 1]”
@@ -922,7 +922,7 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Lakehouse: A &#91;<span style="color:#e67e22;font-weight:700">hybrid</span>&#93;(<span style="color:#3b82f6;font-weight:700">centaur</span>) architecture] [combining the scale and &#91;<span style="color:#e67e22;font-weight:700">flexibility</span>&#93;(<span style="color:#3b82f6;font-weight:700">rubber band</span>) of a data lake] [with the &#91;<span style="color:#e67e22;font-weight:700">reliability</span>&#93;(<span style="color:#3b82f6;font-weight:700">vault</span>) of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
+💡 [Data Lakehouse: A <mark>[hybrid]</mark><kbd>(centaur)</kbd> architecture] [combining the scale and <mark>[flexibility]</mark><kbd>(rubber band)</kbd> of a data lake] [with the <mark>[reliability]</mark><kbd>(vault)</kbd> of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
 
 **Quote**
 “Hybrid architecture combining the scale and flexibility of a data lake with the reliability and ACID features of a warehouse (e.g., Delta Lake on top of cloud storage)."[cite: 1]”
@@ -935,7 +935,7 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Swamp: A poorly &#91;<span style="color:#e67e22;font-weight:700">governed</span>&#93;(<span style="color:#3b82f6;font-weight:700">broken crown</span>) data lake] [where data is &#91;<span style="color:#e67e22;font-weight:700">uncataloged</span>&#93;(<span style="color:#3b82f6;font-weight:700">shredder</span>), undocumented,] [and difficult to &#91;<span style="color:#e67e22;font-weight:700">retrieve</span>&#93;(<span style="color:#3b82f6;font-weight:700">fishing rod</span>)[cite: 1].]
+💡 [Data Swamp: A poorly <mark>[governed]</mark><kbd>(broken crown)</kbd> data lake] [where data is <mark>[uncataloged]</mark><kbd>(shredder)</kbd>, undocumented,] [and difficult to <mark>[retrieve]</mark><kbd>(fishing rod)</kbd>[cite: 1].]
 
 **Quote**
 “A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve."[cite: 1]”
@@ -948,7 +948,7 @@ Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Mart: A &#91;<span style="color:#e67e22;font-weight:700">specialized</span>&#93;(<span style="color:#3b82f6;font-weight:700">scalpel</span>) subset of a data warehouse] [&#91;<span style="color:#e67e22;font-weight:700">focused</span>&#93;(<span style="color:#3b82f6;font-weight:700">spotlight</span>) on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
+💡 [Data Mart: A <mark>[specialized]</mark><kbd>(scalpel)</kbd> subset of a data warehouse] [<mark>[focused]</mark><kbd>(spotlight)</kbd> on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
 
 **Quote**
 “A subset of a data warehouse focused on a specific business line or department (e.g., Finance, Marketing)."[cite: 1]”

@@ -387,18 +387,24 @@
         overflow: visible !important;
       }
       #overlay .atom-card .field-concept .kw-phrase {
-        background: #d4a017;
-        color: #1a1408;
+        background: rgba(212, 160, 23, 0.22);
+        color: #f0d9a0;
         font-weight: 700;
         padding: 0 0.2em;
         border-radius: 3px;
+        white-space: nowrap;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
       }
       #overlay .atom-card .field-concept .kw-mnemonic {
-        background: #3b82f6;
-        color: #f8fbff;
+        background: rgba(94, 158, 140, 0.22);
+        color: #d7ebe4;
         font-weight: 700;
         padding: 0 0.2em;
         border-radius: 3px;
+        white-space: nowrap;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
       }
       #overlay .overlay-details {
         display: grid;
@@ -2470,7 +2476,7 @@
         return [text, ""];
       }
       function keywordChipHtml(phrase, mnemonic) {
-        return `[<span class="kw-phrase">${esc(phrase)}</span>](<span class="kw-mnemonic">${esc(mnemonic)}</span>)`;
+        return `<span class="kw-phrase">[${esc(phrase)}]</span><span class="kw-mnemonic">(${esc(mnemonic)})</span>`;
       }
       function embedKeywordMnemonics(text, keywords) {
         const raw = String(text || "");

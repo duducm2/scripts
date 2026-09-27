@@ -238,11 +238,6 @@ def iter_keyword_pairs(raw: str | None) -> list[tuple[str, str]]:
     return out
 
 
-# Orange phrase, blue mnemonic. Bold survives if a viewer strips color.
-_KW_PHRASE_STYLE = "color:#e67e22;font-weight:700"
-_KW_MNEMONIC_STYLE = "color:#3b82f6;font-weight:700"
-
-
 def _term_pattern(term: str) -> str | None:
     if len(term) < 2:
         return None
@@ -257,17 +252,15 @@ def _find_term(text: str, term: str) -> re.Match[str] | None:
 
 
 def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
-    """`[phrase](mnemonic)` with orange phrase text and blue mnemonic text.
+    """`[phrase](mnemonic)` using tags GitHub still paints.
 
-    Brackets are HTML entities so Markdown does not read the pair as a link.
-    The characters still render as brackets and parentheses.
+    `<mark>` is the amber phrase highlight and `<kbd>` is the mnemonic chip.
+    Inline color is omitted because GitHub strips `style`. The tags sit between
+    `]` and `(`, so Markdown does not read the pair as a link.
     """
     safe_phrase = html.escape(phrase, quote=True)
     safe_mnemonic = html.escape(mnemonic, quote=True)
-    return (
-        f'&#91;<span style="{_KW_PHRASE_STYLE}">{safe_phrase}</span>&#93;'
-        f'(<span style="{_KW_MNEMONIC_STYLE}">{safe_mnemonic}</span>)'
-    )
+    return f"<mark>[{safe_phrase}]</mark><kbd>({safe_mnemonic})</kbd>"
 
 
 def _top_level_group_spans(core: str) -> list[tuple[int, int]] | None:

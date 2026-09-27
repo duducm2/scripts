@@ -396,18 +396,24 @@ input[type="search"] {
   min-width: 0;
 }
 #studyModal .qr-line .kw-phrase {
-  background: #d4a017;
-  color: #1a1408;
+  background: rgba(212, 160, 23, 0.22);
+  color: #f0d9a0;
   font-weight: 700;
   padding: 0 0.2em;
   border-radius: 3px;
+  white-space: nowrap;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 #studyModal .qr-line .kw-mnemonic {
-  background: #3b82f6;
-  color: #f8fbff;
+  background: rgba(94, 158, 140, 0.22);
+  color: #d7ebe4;
   font-weight: 700;
   padding: 0 0.2em;
   border-radius: 3px;
+  white-space: nowrap;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 #studyModal .qr-empty {
   color: var(--muted);

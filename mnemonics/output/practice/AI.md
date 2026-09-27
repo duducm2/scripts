@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **&#91;<span style="color:#e67e22;font-weight:700">Context</span>&#93;(<span style="color:#3b82f6;font-weight:700">giant window</span>):** I experience the &#91;<span style="color:#e67e22;font-weight:700">dumb</span>&#93;(<span style="color:#3b82f6;font-weight:700">foggy helmet</span>) zone as degraded &#91;<span style="color:#e67e22;font-weight:700">attention</span>&#93;(<span style="color:#3b82f6;font-weight:700">droopy eyes</span>) and performance when processing a massive context window over an extended &#91;<span style="color:#e67e22;font-weight:700">session</span>&#93;(<span style="color:#3b82f6;font-weight:700">hourglass</span>).
+💡 💡 **<mark>[Context]</mark><kbd>(giant window)</kbd>:** I experience the <mark>[dumb]</mark><kbd>(foggy helmet)</kbd> zone as degraded <mark>[attention]</mark><kbd>(droopy eyes)</kbd> and performance when processing a massive context window over an extended <mark>[session]</mark><kbd>(hourglass)</kbd>.
 
 **Quote**
 “In Artificial Intelligence, the "dumb zone" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.”
@@ -27,7 +27,7 @@ A microscopic marmoset juggles thousands of glowing text windows; as the session
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **Context:** I use a &#91;<span style="color:#e67e22;font-weight:700">meta</span>&#93;(<span style="color:#3b82f6;font-weight:700">iron curtain</span>) prompt as a behind-the-scenes &#91;<span style="color:#e67e22;font-weight:700">instruction</span>&#93;(<span style="color:#3b82f6;font-weight:700">whisper</span>) that establishes an AI's baseline parameters like tone, &#91;<span style="color:#e67e22;font-weight:700">rules</span>&#93;(<span style="color:#3b82f6;font-weight:700">rule book</span>), and &#91;<span style="color:#e67e22;font-weight:700">boundaries</span>&#93;(<span style="color:#3b82f6;font-weight:700">fence</span>).
+💡 💡 **Context:** I use a <mark>[meta]</mark><kbd>(iron curtain)</kbd> prompt as a behind-the-scenes <mark>[instruction]</mark><kbd>(whisper)</kbd> that establishes an AI's baseline parameters like tone, <mark>[rules]</mark><kbd>(rule book)</kbd>, and <mark>[boundaries]</mark><kbd>(fence)</kbd>.
 
 **Quote**
 “A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
@@ -42,7 +42,7 @@ A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggr
 🟦 **Z1 · The Horse**
 
 **Concept**
-💡 💡 **Context:** I use the &#91;<span style="color:#e67e22;font-weight:700">Horse</span>&#93;(<span style="color:#3b82f6;font-weight:700">wild horse</span>) to represent the foundational AI model itself, which possesses raw &#91;<span style="color:#e67e22;font-weight:700">power</span>&#93;(<span style="color:#3b82f6;font-weight:700">lightning bolt</span>) but no inherent &#91;<span style="color:#e67e22;font-weight:700">direction</span>&#93;(<span style="color:#3b82f6;font-weight:700">broken compass</span>).
+💡 💡 **Context:** I use the <mark>[Horse]</mark><kbd>(wild horse)</kbd> to represent the foundational AI model itself, which possesses raw <mark>[power]</mark><kbd>(lightning bolt)</kbd> but no inherent <mark>[direction]</mark><kbd>(broken compass)</kbd>.
 
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
@@ -55,7 +55,7 @@ A wild, directionless mane of raw electrical power erupts from the owl's beak, v
 🟦 **Z2 · Harness Layer**
 
 **Concept**
-💡 💡 **Context:** I build a &#91;<span style="color:#e67e22;font-weight:700">Harness</span>&#93;(<span style="color:#3b82f6;font-weight:700">iron harness</span>) or &#91;<span style="color:#e67e22;font-weight:700">Tack</span>&#93;(<span style="color:#3b82f6;font-weight:700">leather tack</span>) as the engineering layer to &#91;<span style="color:#e67e22;font-weight:700">steer</span>&#93;(<span style="color:#3b82f6;font-weight:700">steering wheel</span>) and &#91;<span style="color:#e67e22;font-weight:700">connect</span>&#93;(<span style="color:#3b82f6;font-weight:700">plug</span>) the model's raw power.
+💡 💡 **Context:** I build a <mark>[Harness]</mark><kbd>(iron harness)</kbd> or <mark>[Tack]</mark><kbd>(leather tack)</kbd> as the engineering layer to <mark>[steer]</mark><kbd>(steering wheel)</kbd> and <mark>[connect]</mark><kbd>(plug)</kbd> the model's raw power.
 
 **Quote**
 “The Harness/Tack acts as the engineering layer that interacts with the model.”
@@ -68,7 +68,7 @@ A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snappi
 🟦 **Z3 · The Cart Task**
 
 **Concept**
-💡 💡 **Context:** I view the &#91;<span style="color:#e67e22;font-weight:700">Cart</span>&#93;(<span style="color:#3b82f6;font-weight:700">wooden cart</span>) as the ultimate &#91;<span style="color:#e67e22;font-weight:700">task</span>&#93;(<span style="color:#3b82f6;font-weight:700">trophy</span>) or &#91;<span style="color:#e67e22;font-weight:700">destination</span>&#93;(<span style="color:#3b82f6;font-weight:700">neon sign</span>) that needs to be accomplished once the model is harnessed.
+💡 💡 **Context:** I view the <mark>[Cart]</mark><kbd>(wooden cart)</kbd> as the ultimate <mark>[task]</mark><kbd>(trophy)</kbd> or <mark>[destination]</mark><kbd>(neon sign)</kbd> that needs to be accomplished once the model is harnessed.
 
 **Quote**
 “The Cart represents the ultimate Task that needs to be accomplished.”
