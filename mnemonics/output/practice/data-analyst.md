@@ -1,6 +1,108 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 16: API to Power BI</strong> · Character: Albert Einstein · 4 beasts · 4 atoms</summary>
+
+![Memory Palace 16](images/data-analyst/16.jpg)
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Bl] bloodhound
+
+<img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>No-Code Integration</u></strong></kbd>] [I use an <kbd><strong><u>intermediary platform</u></strong></kbd>] [to <kbd><strong><u>connect data sources</u></strong></kbd>] [to <kbd><strong><u>Power BI</u></strong></kbd>] [in a <kbd><strong><u>fully automated way</u></strong></kbd>] — Note: These platforms clean messy responses and schedule updates but may lack support for complex mechanics like pagination.
+
+🔑 **Keywords**
+
+- [**No-Code Integration**] → [magic wand]
+- [**intermediary platform**] → [bridge]
+- [**connect data sources**] → [plug]
+- [**Power BI**] → [battery]
+- [**fully automated way**] → [robot]
+
+**Quote**
+“coupler iio is a no code solution that allows you to connect almost any data source to powerbi and other Platforms in a fully automated way”
+
+**Story**
+A colossal bloodhound sniffs the iron gate, then uses a glowing magic wand to build a neon bridge; it forces a massive plug into a giant battery while a robot made of automated gears vomits data across the pavement.
+
+### [Bm] Bone marmoset
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>Native Web Connection</u></strong></kbd>] [I <kbd><strong><u>connect a web endpoint</u></strong></kbd>] [to <kbd><strong><u>Power BI</u></strong></kbd>] [by <kbd><strong><u>specifying parameters</u></strong></kbd>] [<kbd><strong><u>directly in the URL</u></strong></kbd>] — Note: This method is free and simple for one-time imports but lacks scalability for rate limits or complex authentication.
+
+🔑 **Keywords**
+
+- [**Native Web Connection**] → [spider web]
+- [**connect a web endpoint**] → [cable]
+- [**Power BI**] → [battery]
+- [**specifying parameters**] → [dial]
+- [**directly in the URL**] → [address bar]
+
+**Quote**
+“you can connect an endpoint to powerbi by specifying parameters directly in the URL”
+
+**Story**
+A skeleton marmoset sits on a wooden bench, spinning a sticky spider web cable that wraps tightly around a glowing battery; it twists heavy brass dials on a floating address bar until the glass shatters.
+
+### [Bn] Bone Neanderthal
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Bone Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>Custom Scripting</u></strong></kbd>] [I <kbd><strong><u>write custom scripts</u></strong></kbd>] [to <kbd><strong><u>fetch API data</u></strong></kbd>] [and <kbd><strong><u>load it</u></strong></kbd>] [into a <kbd><strong><u>data warehouse</u></strong></kbd>] — Note: This provides unmatched flexibility and optimization for big data, but requires significant coding complexity and infrastructure maintenance.
+
+🔑 **Keywords**
+
+- [**Custom Scripting**] → [scroll]
+- [**write custom scripts**] → [quill]
+- [**fetch API data**] → [fishing rod]
+- [**load it**] → [dump truck]
+- [**data warehouse**] → [forklift]
+
+**Quote**
+“whether you send data directly to powerbi or via a data warehouse custom scripts provide unmatched flexibility compared to the other two options”
+
+**Story**
+A towering Bone Neanderthal smashes the brick facade with a heavy dump truck, using a massive forklift to stack glowing scrolls while whipping a fishing rod that hooks API data from the sky.
+
+### [Bo] bower-bird
+
+<img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<kbd><strong><u>Push Datasets</u></strong></kbd>] [I <kbd><strong><u>stream data</u></strong></kbd>] [directly into <kbd><strong><u>Power BI</u></strong></kbd>] [using its <kbd><strong><u>REST API</u></strong></kbd>] — Note: This method does not support relationships or joins, so all complex data models must be flattened before ingestion.
+
+🔑 **Keywords**
+
+- [**Push Datasets**] → [button]
+- [**stream data**] → [hose]
+- [**Power BI**] → [battery]
+- [**REST API**] → [menu]
+
+**Quote**
+“you can only send data using power bi's push data sets method which doesn't support relationships or joins meaning complex data models must be flattened before ingestion”
+
+**Story**
+A giant bower-bird perched on the lamp post screams loudly while pressing a giant red button; it points a blasting fire hose at a golden battery, selecting items from a glowing restaurant menu as the water flattens everything below.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 15: SQL Window Functions</strong> · Character: Socrates · 4 beasts · 5 atoms</summary>
 
 ![Memory Palace 15](images/data-analyst/15.jpg)
