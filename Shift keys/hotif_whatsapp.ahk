@@ -74,17 +74,41 @@ WhatsApp_FindInTree(uia, condition) {
     return el ? el : 0
 }
 
+; The visible "Unread" label is a text node. The chip is a parent tab item (same kind as all-filter).
+WhatsApp_AsClickableFilter(el) {
+    cur := el
+    loop 5 {
+        if (!cur)
+            return 0
+        id := ""
+        typ := ""
+        inv := false
+        sel := false
+        try id := cur.AutomationId
+        try typ := cur.LocalizedControlType
+        try inv := !!cur.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+        try sel := !!cur.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+        if (id != "" || inv || sel || InStr(typ, "tab"))
+            return cur
+        parent := 0
+        try parent := cur.Parent
+        if (!parent || parent = cur)
+            return el
+        cur := parent
+    }
+    return el
+}
+
 ; Page document, not the browser chrome. Id first (EN/PT), then the visible label.
 WhatsApp_FindFilter(uia, automationId, namePattern) {
     el := WhatsApp_FindInTree(uia, { AutomationId: automationId })
-    if (el)
-        return el
-    el := WhatsApp_FindInTree(uia, { AutomationId: automationId, Type: "TabItem" })
-    if (el)
-        return el
-    if (namePattern != "")
+    if (!el)
+        el := WhatsApp_FindInTree(uia, { AutomationId: automationId, Type: "TabItem" })
+    if (!el && namePattern != "")
+        el := WhatsApp_FindInTree(uia, { Type: "TabItem", Name: namePattern, matchmode: "RegEx" })
+    if (!el && namePattern != "")
         el := WhatsApp_FindInTree(uia, { Name: namePattern, matchmode: "RegEx" })
-    return el ? el : 0
+    return el ? WhatsApp_AsClickableFilter(el) : 0
 }
 
 WhatsApp_FilterIsOn(el) {
