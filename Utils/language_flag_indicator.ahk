@@ -156,6 +156,21 @@ LanguageFlag_InitFromPersistedSlot() {
         LanguageFlag_Show(slot)
 }
 
+LanguageFlag_InitRetry1s() {
+    LanguageFlag_InitFromPersistedSlot()
+}
+
+LanguageFlag_InitRetry3s() {
+    LanguageFlag_InitFromPersistedSlot()
+}
+
+; AppLaunchers may still be settling right after Act. One early timer can miss the flag.
+if (HandyAi_IsOwnerProcess()) {
+    SetTimer(LanguageFlag_InitFromPersistedSlot, -250)
+    SetTimer(LanguageFlag_InitRetry1s, -1000)
+    SetTimer(LanguageFlag_InitRetry3s, -3000)
+}
+
 ; Small banner for Clip Angel (uses standard loading indicator).
 ClipAngelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 200, fontSize: 17,
@@ -200,7 +215,7 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; Returns true on success, false on failure.
 ; Background path: Handy stays off-screen/transparent (BeginSuppress); no WinClose.
 ; =============================================================================
-ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
+ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, restartDictationIfStopped := false) {
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
     global g_HandyModelSwitchBusy, g_HandySuppressActive
 
@@ -223,7 +238,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
     modelClickName := modelInfo.HasProp("modelClickName") ? modelInfo.modelClickName : modelInfo.name
 
     ; Accidental English <-> multi-lang while recording: stop before the model UI runs.
-    Handy_StopDictationIfEnglishMultilangSwitch(selection)
+    stoppedDictation := Handy_StopDictationIfEnglishMultilangSwitch(selection)
 
     handyHwnd := 0
     try {
@@ -292,12 +307,15 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
             return false
         }
 
-        ; Flag GUIs belong to AppLaunchers. Other hosts still switch Handy and save the slot.
+        ; Flag GUIs belong to AppLaunchers. Other hosts still switch Handy and save the slot,
+        ; then ask AppLaunchers to draw the flag (the menu often lives in another script after Act).
         if (HandyAi_IsOwnerProcess()) {
             if (selection >= 1 && selection <= 3)
                 LanguageFlag_Show(selection)
             else
                 LanguageFlag_Hide()
+        } else if (selection >= 1 && selection <= 3) {
+            Handy_NotifyLanguageFlag(selection)
         }
 
         soundPath := A_ScriptDir . "\assets\sounds\handy-model-chosen.mp3"
@@ -325,6 +343,9 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
         Sleep 350
         AiModelBanner_Hide()
         Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
+        ; Utility Shortcuts K/L during a take: model is switched; start dictation again.
+        if (restartDictationIfStopped && stoppedDictation)
+            Handy_RestartDictationAfterLanguageSwitch()
         return true
 
     } catch Error as e {
@@ -385,29 +406,55 @@ Handy_AiModelRequestMsgId() {
 }
 
 Handy_OnAiModelRequest(wParam, lParam, *) {
-    slot := Integer(wParam)
+    raw := Integer(wParam)
+    slot := raw & 0xFF
+    ; Flag only: another process already switched Handy. Do not run model UIA again.
+    if (raw & 0x200) {
+        if (slot >= 1 && slot <= 3)
+            SetTimer((*) => LanguageFlag_Show(slot), -1)
+        return
+    }
+    restartDictationIfStopped := (raw & 0x100) != 0
     restoreHwnd := Integer(lParam)
-    SetTimer((*) => ExecuteHandyAiModelSelection(slot, false, restoreHwnd), -1)
+    SetTimer((*) => ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped), -1)
+}
+
+; Ask AppLaunchers to show the language flag for a slot this process just saved.
+Handy_NotifyLanguageFlag(slot) {
+    if (slot < 1 || slot > 3 || HandyAi_IsOwnerProcess())
+        return false
+    msg := Handy_AiModelRequestMsgId()
+    target := Handy_FindAppLaunchersHwnd()
+    if (!msg || !target)
+        return false
+    try {
+        PostMessage(msg, slot | 0x200, 0, , "ahk_id " target)
+        return true
+    } catch {
+        return false
+    }
 }
 
 ; Owner runs the switch here. Another host asks AppLaunchers when that script is up
 ; (so the language flag updates). After a reboot the menu often belongs to a
 ; different script while AppLaunchers is still down — switch Handy locally then.
-Handy_RequestAiModelSelection(slot, restoreHwnd := 0) {
+; restartDictationIfStopped: Utility Shortcuts K/L only. If a take was running, start again after the switch.
+Handy_RequestAiModelSelection(slot, restoreHwnd := 0, restartDictationIfStopped := false) {
     if (HandyAi_IsOwnerProcess()) {
-        ExecuteHandyAiModelSelection(slot, false, restoreHwnd)
+        ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped)
         return true
     }
     msg := Handy_AiModelRequestMsgId()
     target := Handy_FindAppLaunchersHwnd()
+    packed := restartDictationIfStopped ? (slot | 0x100) : slot
     if (msg && target) {
         try {
-            PostMessage(msg, slot, restoreHwnd, , "ahk_id " target)
+            PostMessage(msg, packed, restoreHwnd, , "ahk_id " target)
             return true
         } catch {
         }
     }
-    ExecuteHandyAiModelSelection(slot, false, restoreHwnd)
+    ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped)
     return true
 }
 

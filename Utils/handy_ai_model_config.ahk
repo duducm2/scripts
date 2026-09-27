@@ -246,9 +246,5 @@ Handy_SetPersistedAiModelSlot(slot) {
 
 Handy_GetPersistedAiModelSlot()
 
-; Restore the persistent flag on script load (Reload-safe). Deferred so the GUI
-
-; subsystem is ready and any concurrent auto-execute side-effects settle first.
-
-if (HandyAi_IsOwnerProcess())
-    SetTimer(LanguageFlag_InitFromPersistedSlot, -250)
+; Language flag startup retries live next to LanguageFlag_InitFromPersistedSlot
+; (250 ms, 1 s, 3 s) so a single early timer cannot be the only attempt after Act.

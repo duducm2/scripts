@@ -37,6 +37,10 @@ global g_DictationHotkeyIsOwner := false ; True only in the single process that 
 global g_DictationFlagGuis := []  ; Recording language flags, one GUI per monitor
 global g_DictationFlagSlot := -1  ; Slot last shown (-1 = none; 0 = unknown/? fallback)
 global g_DictationFlagFollowCache := ""  ; Skip redundant flag Move when geometry/slot unchanged
+; Aborted EN <-> multi-lang take: monitor may hide the flag, but must not chime, hook clipboard, or banner.
+global g_DictationSuppressCompletion := false
+; After a language-switch restart, ignore "overlay gone" until the new Recording window has been seen.
+global g_DictationAwaitRecordingWindow := false
 
 ; AppLaunchers.ahk is the single long-lived owner for ~#!+0, Recording flag, and
 ; Send dictation? banner — same script-name pin as HandyAi_IsOwnerProcess().
@@ -404,17 +408,33 @@ SafePlayDictationSound(filePath) {
 
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
+    global g_DictationSuppressCompletion, g_PendingGeminiPromptAfterDictation
     ; Remove handler immediately to prevent multiple triggers
     OnClipboardChange(DictationClipboardHandler, 0)
 
+    ; Aborted wrong-language take: its transcription must not complete the next session.
+    if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation)
+        return
+
     ; Trigger completion logic immediately
     PlayDictationCompletionChime()
+}
+
+; Drop a queued stop chime and clipboard hook (aborted take, or the moment the new overlay appears).
+Dictation_DisarmCompletionHooks() {
+    global g_DictationCompletionChimeScheduled
+    g_DictationCompletionChimeScheduled := false
+    SetTimer(PlayDictationCompletionChime, 0)
+    try OnClipboardChange(DictationClipboardHandler, 0)
+    catch {
+    }
 }
 
 ; Play completion chime after transcription finishes
 PlayDictationCompletionChime(*) {
     global g_DictationCompletionChimeScheduled, g_PendingDictationAction,
         g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
+    global g_DictationSuppressCompletion
 
     ; Ensure clipboard handler is removed (safe to call even if already removed)
     try {
@@ -433,6 +453,9 @@ PlayDictationCompletionChime(*) {
 
     ; Only play if flag was set (prevent duplicate execution)
     if (chimeShouldPlay) {
+        ; Aborted take: consume the flag so it cannot steal the next stop's chime, and do not banner.
+        if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation)
+            return
         g_D2C_DictationSubmitMenuCycleFinished := false
         SafePlayDictationSound(g_DictationStopSound)
 
@@ -500,17 +523,21 @@ Dictation_RecordingWindowExists() {
 ; English (slot 1) <-> multi-lang (slot 3) while Handy is recording: stop the session.
 ; The synthetic chord is ignored by ~#!+0 so "Send dictation?" does not open.
 ; Only the dictation owner may inject the chord; other hosts would look like a user stop.
+; Returns true when a recording was stopped.
 Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
-    global g_ProgrammaticDictationStop, HANDY_AI_SLOT_ENGLISH, HANDY_AI_SLOT_MULTILANG
+    global g_ProgrammaticDictationStop, g_DictationSuppressCompletion, HANDY_AI_SLOT_ENGLISH, HANDY_AI_SLOT_MULTILANG
     if (!Dictation_IsOwnerProcess())
-        return
+        return false
     current := Handy_GetPersistedAiModelSlot()
     if (current = targetSlot)
-        return
+        return false
     crossing := (current = HANDY_AI_SLOT_ENGLISH && targetSlot = HANDY_AI_SLOT_MULTILANG)
     || (current = HANDY_AI_SLOT_MULTILANG && targetSlot = HANDY_AI_SLOT_ENGLISH)
     if (!crossing || !Dictation_RecordingWindowExists())
-        return
+        return false
+    ; Aborted take must not arm a chime, clipboard hook, or Send dictation? banner.
+    g_DictationSuppressCompletion := true
+    Dictation_DisarmCompletionHooks()
     g_ProgrammaticDictationStop := true
     Send "#!+0"
     loop 30 {
@@ -518,17 +545,63 @@ Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
             break
         Sleep 50
     }
+    return true
+}
+
+; After a mid-dictation English <-> multi-lang switch: start a normal take again.
+; The chord still reaches Handy. The hotkey treats it as a start, not a stop.
+Handy_RestartDictationAfterLanguageSwitch() {
+    global g_ProgrammaticDictationStart, g_ProgrammaticDictationStop, g_DictationActive, g_DictationSoundPlayed
+    global g_PendingGeminiPromptAfterDictation
+    global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow
+    if (!Dictation_IsOwnerProcess())
+        return false
+    ; A leftover stop flag would swallow this chord and the user's later stop.
+    g_ProgrammaticDictationStop := false
+    g_ProgrammaticDictationStart := false
+    g_DictationActive := false
+    g_DictationSoundPlayed := false
+    g_PendingGeminiPromptAfterDictation := false
+    g_DictationSuppressCompletion := true
+    g_DictationAwaitRecordingWindow := true
+    Dictation_DisarmCompletionHooks()
+    g_ProgrammaticDictationStart := true
+    ; The synthetic chord must consume this. It must not still be set when the user stops.
+    SetTimer(Dictation_ExpireProgrammaticStart, -400)
+    Send "#!+0"
+    return true
+}
+
+Dictation_ExpireProgrammaticStart(*) {
+    global g_ProgrammaticDictationStart
+    g_ProgrammaticDictationStart := false
+}
+
+; First sight of the Recording overlay after a language-switch restart.
+Dictation_AcceptRestartedRecordingWindow() {
+    global g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion, g_DictationStartClipboardText
+    g_DictationAwaitRecordingWindow := false
+    g_DictationSuppressCompletion := false
+    Dictation_DisarmCompletionHooks()
+    try g_DictationStartClipboardText := A_Clipboard
+    catch {
+        g_DictationStartClipboardText := ""
+    }
 }
 
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
-    global g_DictationHotkeyIsOwner
+    global g_DictationHotkeyIsOwner, g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion
     ; Non-owners must never drive Recording flag / chime / banner (Act used to steal this).
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
 
     windowExists := Dictation_RecordingWindowExists()
+
+    ; New take's overlay: drop the aborted take's completion so it cannot swallow this stop.
+    if (windowExists && g_DictationAwaitRecordingWindow)
+        Dictation_AcceptRestartedRecordingWindow()
 
     ; Handle Start: window exists
     if (windowExists) {
@@ -565,6 +638,22 @@ CheckDictationRecordingWindow() {
     }
     ; Handle Stop: window gone and was active
     else if (!windowExists && g_DictationActive) {
+        ; Gap before the restarted overlay appears. Not a user stop.
+        if (g_DictationAwaitRecordingWindow)
+            return
+
+        ; Aborted wrong-language take closed. Hide the flag; do not chime or banner.
+        if (g_DictationSuppressCompletion) {
+            g_DictationActive := false
+            g_DictationSoundPlayed := false
+            g_LastStateTransitionTick := A_TickCount
+            StopDictationPulseTimer()
+            try HideDictationIndicator()
+            catch {
+            }
+            return
+        }
+
         Critical "On"
         if (!g_DictationActive || g_DictationCompletionChimeScheduled) {
             Critical "Off"
@@ -670,8 +759,10 @@ OnExit(CleanupDictationIndicator)
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
-    global g_ProgrammaticDictationStop, g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
+    global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart, g_PendingGeminiPromptAfterDictation,
+        g_D2C_DictationSubmitMenuCycleFinished
     global g_DictationHotkeyIsOwner, g_DictationCompletionChimeScheduled
+    global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -690,57 +781,74 @@ OnExit(CleanupDictationIndicator)
         return
     }
 
-    if (isProcessing)
+    ; Language switch while a take was running: this chord is a new start.
+    forcedStart := false
+    if (g_ProgrammaticDictationStart) {
+        g_ProgrammaticDictationStart := false
+        SetTimer(Dictation_ExpireProgrammaticStart, 0)
+        g_DictationActive := false
+        g_PendingGeminiPromptAfterDictation := false
+        forcedStart := true
+    }
+
+    if (!forcedStart && isProcessing)
         return
 
     currentTick := A_TickCount
-    if (currentTick - lastHotkeyTick < 200)
+    if (!forcedStart && currentTick - lastHotkeyTick < 200)
         return
     lastHotkeyTick := currentTick
     isProcessing := true
-    ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
-    ; so by the time we reach if/else it can be false even when user intended to stop.
-    dictationWasActiveOnKeyPress := g_DictationActive
+    try {
+        ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
+        ; so by the time we reach if/else it can be false even when user intended to stop.
+        dictationWasActiveOnKeyPress := g_DictationActive
 
-    KeyWait("0", "L")
+        ; Synthetic restart: Send has not released 0 yet, so KeyWait would never return.
+        if (!forcedStart)
+            KeyWait("0", "L")
 
-    if (dictationWasActiveOnKeyPress) {
-        ; Explicit STOP. Never fall into the start branch if Recording closed during KeyWait
-        ; (that re-showed the recording flag and skipped/queued the command banner wrongly).
-        g_PendingGeminiPromptAfterDictation := true
-        g_D2C_DictationSubmitMenuCycleFinished := false
-        g_DictationGeminiConfirmBannerVisible := false
+        if (dictationWasActiveOnKeyPress) {
+            ; Explicit STOP. Never fall into the start branch if Recording closed during KeyWait
+            ; (that re-showed the recording flag and skipped/queued the command banner wrongly).
+            ; A language-switch restart must not keep this stop suppressed.
+            g_DictationSuppressCompletion := false
+            g_DictationAwaitRecordingWindow := false
+            g_PendingGeminiPromptAfterDictation := true
+            g_D2C_DictationSubmitMenuCycleFinished := false
+            g_DictationGeminiConfirmBannerVisible := false
 
-        if (!g_DictationActive) {
-            ; Monitor already ended the session during KeyWait — chime may have run before
-            ; pendingGemini was set. Force banner path once.
-            try HideDictationIndicator()
-            catch {
+            if (!g_DictationActive) {
+                ; Monitor already ended the session during KeyWait — chime may have run before
+                ; pendingGemini was set. Force banner path once.
+                try HideDictationIndicator()
+                catch {
+                }
+                try StopDictationPulseTimer()
+                catch {
+                }
+                if (!g_DictationCompletionChimeScheduled)
+                    SetTimer(Dictation_ForceSubmitMenuAfterStop, -50)
+            } else {
+                ToggleDictationMode()
             }
-            try StopDictationPulseTimer()
-            catch {
+        } else if (!g_DictationActive) {
+            ; START
+            g_DictationActive := true
+            g_LastStateTransitionTick := A_TickCount
+            ShowDictationIndicator()
+            StartDictationPulseTimer()
+            try {
+                RunSetMicVolumeScript()
+            } catch {
             }
-            if (!g_DictationCompletionChimeScheduled)
-                SetTimer(Dictation_ForceSubmitMenuAfterStop, -50)
+            ToggleDictationMode()
         } else {
             ToggleDictationMode()
         }
-    } else if (!g_DictationActive) {
-        ; START
-        g_DictationActive := true
-        g_LastStateTransitionTick := A_TickCount
-        ShowDictationIndicator()
-        StartDictationPulseTimer()
-        try {
-            RunSetMicVolumeScript()
-        } catch {
-        }
-        ToggleDictationMode()
-    } else {
-        ToggleDictationMode()
+    } finally {
+        isProcessing := false
     }
-
-    isProcessing := false
 }
 
 ; After an explicit stop where the monitor already cleared g_DictationActive during KeyWait.
