@@ -19,6 +19,10 @@ global g_DictationCheckTimer := false  ; Timer to check if Recording window stil
 global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple completion chimes
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
 global g_DictationStartSound := A_ScriptDir . "\assets\sounds\speach-start.wav"
+; Multi-lang (Handy slot 3) start cue. CC0: Robin Lamb, "UI Sound Effects",
+; https://opengameart.org/content/ui-sound-effects-button-clicks-user-feedback-notifications
+; Pack file chimes.wav — not reused from any other asset in this repo.
+global g_DictationStartSoundMultilang := A_ScriptDir . "\assets\sounds\dictation-start-multilang.wav"
 global g_DictationStopSound := A_ScriptDir . "\assets\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" (reserved for future)
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send dictation? Y (4s)" after completion
@@ -355,15 +359,27 @@ StopDictationPulseTimer() {
     }
 }
 
+; English / Portuguese use speach-start.wav. Multi-lang (slot 3) uses a different chime.
+Dictation_StartSoundForCurrentModel() {
+    global g_DictationStartSound, g_DictationStartSoundMultilang, HANDY_AI_SLOT_MULTILANG
+    slot := 0
+    try slot := Handy_GetPersistedAiModelSlot()
+    catch
+        slot := 0
+    if (slot = HANDY_AI_SLOT_MULTILANG)
+        return g_DictationStartSoundMultilang
+    return g_DictationStartSound
+}
+
 ; Audio firewall: Throttle dictation sounds to prevent duplicates
 ; Enforces a minimum 1000ms gap between sounds regardless of how many times logic fires
 SafePlayDictationSound(filePath) {
     Critical  ; Prevents thread interruption - ensures atomic check-and-update sequence
-    global g_LastDictationSoundTick, g_DictationStartSound
+    global g_LastDictationSoundTick, g_DictationStartSound, g_DictationStartSoundMultilang
     static lastStartSoundTick := 0
 
-    ; Special handling for start sound: 7 second cooldown to prevent duplicates
-    if (InStr(filePath, "speach-start.wav")) {
+    ; Start cues: 7 second cooldown to prevent duplicates (English and multi-lang).
+    if (filePath = g_DictationStartSound || filePath = g_DictationStartSoundMultilang) {
         if (A_TickCount - lastStartSoundTick < 7000) {
             return
         }
@@ -481,6 +497,29 @@ Dictation_RecordingWindowExists() {
     return false
 }
 
+; English (slot 1) <-> multi-lang (slot 3) while Handy is recording: stop the session.
+; The synthetic chord is ignored by ~#!+0 so "Send dictation?" does not open.
+; Only the dictation owner may inject the chord; other hosts would look like a user stop.
+Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
+    global g_ProgrammaticDictationStop, HANDY_AI_SLOT_ENGLISH, HANDY_AI_SLOT_MULTILANG
+    if (!Dictation_IsOwnerProcess())
+        return
+    current := Handy_GetPersistedAiModelSlot()
+    if (current = targetSlot)
+        return
+    crossing := (current = HANDY_AI_SLOT_ENGLISH && targetSlot = HANDY_AI_SLOT_MULTILANG)
+    || (current = HANDY_AI_SLOT_MULTILANG && targetSlot = HANDY_AI_SLOT_ENGLISH)
+    if (!crossing || !Dictation_RecordingWindowExists())
+        return
+    g_ProgrammaticDictationStop := true
+    Send "#!+0"
+    loop 30 {
+        if (!Dictation_RecordingWindowExists())
+            break
+        Sleep 50
+    }
+}
+
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
@@ -519,7 +558,7 @@ CheckDictationRecordingWindow() {
         if (!g_DictationSoundPlayed) {
             g_DictationSoundPlayed := true
             Critical "Off"
-            SafePlayDictationSound(g_DictationStartSound)
+            SafePlayDictationSound(Dictation_StartSoundForCurrentModel())
         } else {
             Critical "Off"
         }

@@ -222,6 +222,9 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
     modelDisplayName := modelInfo.name
     modelClickName := modelInfo.HasProp("modelClickName") ? modelInfo.modelClickName : modelInfo.name
 
+    ; Accidental English <-> multi-lang while recording: stop before the model UI runs.
+    Handy_StopDictationIfEnglishMultilangSwitch(selection)
+
     handyHwnd := 0
     try {
         verified := false
