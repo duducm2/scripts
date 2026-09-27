@@ -8,162 +8,310 @@
 ;-------------------------------------------------------------------
 ; WhatsApp Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("WhatsApp")
-
+; Foreground gate: title often becomes the contact name, so WinActive("WhatsApp") misses
+; the Chrome PWA. Check this hwnd only (exe, title, or app id). Cache per hwnd.
+global g_WhatsApp_HotkeyHwnd := 0
+global g_WhatsApp_HotkeyResult := false
 global isRecording := false          ; persists between hotkey presses
+
+IsWhatsAppShiftActive() {
+    global g_WhatsApp_HotkeyHwnd, g_WhatsApp_HotkeyResult
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return false
+
+    ; Cheap checks every press. Title changes when the open chat changes; hwnd does not.
+    try {
+        if (WinGetProcessName("ahk_id " hwnd) = "WhatsApp.exe")
+            return true
+    } catch {
+    }
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (title != "" && InStr(title, "WhatsApp"))
+        return true
+
+    ; App-id lookup is the expensive path. Cache it per hwnd.
+    if (hwnd = g_WhatsApp_HotkeyHwnd && WinExist("ahk_id " hwnd))
+        return g_WhatsApp_HotkeyResult
+    result := false
+    try result := !!WhatsAppJump_IsWhatsAppChromeAppHwnd(hwnd)
+    catch
+        result := false
+    g_WhatsApp_HotkeyHwnd := hwnd
+    g_WhatsApp_HotkeyResult := result
+    return result
+}
+
+; Loading Indication while the shortcut runs, then a short success or error line.
+WhatsApp_Begin(label) {
+    try StandardLoadingBar_Show("⏳ WhatsApp: " label, BANNER_ACCENT_INTERMEDIATE, { passive: false })
+}
+
+WhatsApp_Ok(label) {
+    try StandardLoadingBar_Update("✅ WhatsApp: " label, BANNER_ACCENT_SUCCESS)
+    try StandardLoadingBar_Hide(700)
+}
+
+WhatsApp_Fail(text) {
+    try StandardLoadingBar_Update(text, BANNER_ACCENT_ERROR)
+    try StandardLoadingBar_Hide(1600)
+}
+
+WhatsApp_FindInTree(uia, condition) {
+    if (!uia)
+        return 0
+    doc := 0
+    try doc := uia.GetCurrentDocumentElement()
+    if (doc) {
+        el := 0
+        try el := doc.FindElement(condition)
+        if (el)
+            return el
+    }
+    el := 0
+    try el := uia.FindElement(condition)
+    return el ? el : 0
+}
+
+; Page document, not the browser chrome. Id first (EN/PT), then the visible label.
+WhatsApp_FindFilter(uia, automationId, namePattern) {
+    el := WhatsApp_FindInTree(uia, { AutomationId: automationId })
+    if (el)
+        return el
+    el := WhatsApp_FindInTree(uia, { AutomationId: automationId, Type: "TabItem" })
+    if (el)
+        return el
+    if (namePattern != "")
+        el := WhatsApp_FindInTree(uia, { Name: namePattern, matchmode: "RegEx" })
+    return el ? el : 0
+}
+
+WhatsApp_FilterIsOn(el) {
+    if (!el)
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable))
+            return !!el.SelectionItemPattern.IsSelected
+    } catch {
+    }
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable))
+            return el.TogglePattern.ToggleState = UIA.ToggleState.On
+    } catch {
+    }
+    return false
+}
+
+WhatsApp_GetActiveUia() {
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return 0
+    try return UIA_Browser("ahk_id " hwnd)
+    catch
+        return 0
+}
+
+; FindFirst rejects MatchMode RegEx; FindElement is the one-lookup path that accepts it.
+WhatsApp_FindNamedButton(uia, pattern, timeoutMs := 0) {
+    if (!uia)
+        return 0
+    deadline := A_TickCount + timeoutMs
+    loop {
+        el := 0
+        try el := uia.FindElement({ Type: "Button", Name: pattern, matchmode: "RegEx" })
+        if (el)
+            return el
+        if (A_TickCount >= deadline)
+            return 0
+        Sleep 40
+    }
+}
+
+WhatsApp_InvokeOrClick(btn) {
+    if (!btn)
+        return false
+    supportsInvoke := false
+    try supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+    catch
+        supportsInvoke := false
+    if (supportsInvoke) {
+        try {
+            btn.Invoke()
+            return true
+        } catch {
+        }
+    }
+    try {
+        btn.Click()
+        return true
+    } catch {
+    }
+    return false
+}
+
+#HotIf IsWhatsAppShiftActive()
 
 ; Shift + V : Toggle voice message - Voice
 +v:: ToggleVoiceMessage()
 
 ; Shift + S : Search chats - Search
-+s:: Send("!k")
++s::
+{
+    WhatsApp_Begin("Search")
+    Send("!k")
+    WhatsApp_Ok("Search")
+}
 
 ; Shift + R : Reply - Reply
-+r:: Send("!r")
++r::
+{
+    WhatsApp_Begin("Reply")
+    Send("!r")
+    WhatsApp_Ok("Reply")
+}
 
 ; Shift + E : Emoji panel - Emoji
-+e:: Send("^!s")
++e::
+{
+    WhatsApp_Begin("Emoji")
+    Send("^!s")
+    WhatsApp_Ok("Emoji")
+}
 
 ; Shift + U : Toggle Unread filter - Unread
 +u::
 {
-    try
-    {
-        uia := UIA_Browser()
-        Sleep 300 ; Give UIA time to attach
+    WhatsApp_Begin("Unread filter")
+    try {
+        uia := WhatsApp_GetActiveUia()
+        if (!uia) {
+            WhatsApp_Fail("❌ WhatsApp: could not attach")
+            return
+        }
 
-        ; Find the "Unread" and "All" filter buttons
-        unreadButton := uia.FindElement({ Name: "Unread", AutomationId: "unread-filter", Type: "TabItem" })
-        allButton := uia.FindElement({ Name: "All", AutomationId: "all-filter", Type: "TabItem" })
+        unreadButton := WhatsApp_FindFilter(uia, "unread-filter", "i)^(Unread|Não lidas|Nao lidas)$")
+        allButton := WhatsApp_FindFilter(uia, "all-filter", "i)^(All|Tudo|Todas)$")
 
         if (unreadButton && allButton) {
-            ; Check if the "Unread" button is currently selected.
-            ; The .IsSelected property is part of the SelectionItemPattern.
-            if (unreadButton.IsSelected) {
-                allButton.Click() ; If Unread is selected, click All
+            if (WhatsApp_FilterIsOn(unreadButton)) {
+                if (WhatsApp_InvokeOrClick(allButton))
+                    WhatsApp_Ok("All chats")
+                else
+                    WhatsApp_Fail("❌ WhatsApp: could not show all chats")
+            }
+            else if (WhatsApp_InvokeOrClick(unreadButton)) {
+                WhatsApp_Ok("Unread only")
             }
             else {
-                unreadButton.Click() ; Otherwise, click Unread
+                WhatsApp_Fail("❌ WhatsApp: could not open Unread filter")
             }
         }
-        else if (unreadButton) {
-            ; Fallback if only the Unread button is found
-            unreadButton.Click()
+        else if (unreadButton && WhatsApp_InvokeOrClick(unreadButton)) {
+            WhatsApp_Ok("Unread filter")
         }
         else {
-            MsgBox "Could not find the 'Unread' filter button."
+            WhatsApp_Fail("❌ WhatsApp: could not find Unread filter")
         }
     }
     catch Error as e {
-        MsgBox "An error occurred: " e.Message
+        WhatsApp_Fail("❌ WhatsApp: " e.Message)
     }
 }
 
 ; Shift + F : Focus current chat - Focus
 +f::
 {
-    try
-    {
-        ; WhatsApp desktop is Chromium-based, so we can use UIA_Browser.
-        ; It should attach to the active window, which is WhatsApp thanks to #HotIf.
-        uia := UIA_Browser()
-        Sleep 300 ; Give UIA time to attach to the browser. A similar delay is in the reference script.
+    WhatsApp_Begin("Focus chat")
+    try {
+        uia := WhatsApp_GetActiveUia()
+        if (!uia) {
+            WhatsApp_Fail("❌ WhatsApp: could not attach")
+            return
+        }
 
-        ; Find the "Archived" button to use as an anchor.
-        ; The user provided: Name:"Archived "
-        archivedButton := uia.FindElement({ Name: "Archived ", Type: "Button" })
-
+        ; Archived / Arquivadas (trailing space on the English name). Anchor, then Tab into the chat list.
+        archivedButton := WhatsApp_FindNamedButton(uia, "i)(Archived|Arquivad)")
+        if (!archivedButton)
+            archivedButton := WhatsApp_FindInTree(uia, { Name: "i)(Archived|Arquivad)", matchmode: "RegEx" })
         if (archivedButton) {
-            ; Focus the button without clicking it.
             archivedButton.SetFocus()
-            ; Send Tab to move to the main conversation list.
-            ; From there, the focus should be on the selected chat.
             SendInput "{Tab}"
+            WhatsApp_Ok("Focus chat")
         }
         else {
-            MsgBox "Could not find the 'Archived' button."
+            WhatsApp_Fail("❌ WhatsApp: could not find Archived")
         }
     }
     catch Error as e {
-        MsgBox "An error occurred while trying to focus WhatsApp conversation: " e.Message
+        WhatsApp_Fail("❌ WhatsApp: " e.Message)
     }
 }
 
 ; Shift + M : Mark as read or unread - Mark
-+m:: Send "^!+u"
++m::
+{
+    WhatsApp_Begin("Mark read")
+    Send "^!+u"
+    WhatsApp_Ok("Mark read")
+}
 
 ; Shift + P : Pin chat or unpin chat - Pin
-+p:: Send "^!+p"
++p::
+{
+    WhatsApp_Begin("Pin")
+    Send "^!+p"
+    WhatsApp_Ok("Pin")
+}
 
 ; ---------------------------------------------------------------------------
 ToggleVoiceMessage() {
     global isRecording
 
+    WhatsApp_Begin("Voice message")
     try {
-        chrome := UIA_Browser()      ; top-level Chrome UIA element
+        chrome := WhatsApp_GetActiveUia()
         if !IsObject(chrome) {
-            MsgBox "Can't attach to Chrome."
+            WhatsApp_Fail("❌ WhatsApp: could not attach")
             return
         }
-
-        Sleep 100                    ; reduced from 400ms - let Chrome finish drawing
 
         ; Exact-name regexes (case-insensitive, anchored ^ $)
         voicePattern := "i)^(Voice message|Record voice message)$"
         sendPattern := "i)^(Send|Stop recording)$"
 
-        ; Helper to grab a button by pattern
-        ; Use longer timeout (3000ms) for voice message button to allow WhatsApp UI to restore
-        FindBtn(p) => WaitForButton(chrome, p, 3000)
-
-        if (isRecording) {           ; â–º we're supposed to stop & send
-            if (btn := FindBtn(sendPattern)) {
-                ; Determine if this button supports Invoke
-                supportsInvoke := false
-                try {
-                    supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-                } catch {
-                    supportsInvoke := false
-                }
-
-                ; Try multi-strategy activation: prefer Invoke when available, fallback to Click
-                clicked := false
-                if (supportsInvoke) {
-                    try {
-                        btn.Invoke()
-                        clicked := true
-                    } catch {
-                    }
-                }
-                if (!clicked) {
-                    try {
-                        btn.Click()
-                        clicked := true
-                    } catch {
-                    }
-                }
-
-                isRecording := false
-                ; Give WhatsApp time to restore the UI after sending
-                Sleep 300
+        if (isRecording) {
+            ; Short poll: the send control replaces the mic after recording starts.
+            if (btn := WhatsApp_FindNamedButton(chrome, sendPattern, 400)) {
+                if (WhatsApp_InvokeOrClick(btn)) {
+                    isRecording := false
+                    WhatsApp_Ok("Voice sent")
+                } else
+                    WhatsApp_Fail("❌ WhatsApp: could not send voice message")
             } else {
                 ; Assume you clicked Send manually > reset & start new rec
                 isRecording := false
-                if (btn := FindBtn(voicePattern)) {
-                    btn.Click()
-                    isRecording := true
+                if (btn := WhatsApp_FindNamedButton(chrome, voicePattern, 400)) {
+                    if (WhatsApp_InvokeOrClick(btn)) {
+                        isRecording := true
+                        WhatsApp_Ok("Recording")
+                    } else
+                        WhatsApp_Fail("❌ WhatsApp: could not start voice message")
                 } else
-                    MsgBox "Couldn't restart recording (Voice-message button missing)."
+                    WhatsApp_Fail("❌ WhatsApp: voice button missing")
             }
-        } else {                     ; â–º start recording
-            if (btn := FindBtn(voicePattern)) {
-                btn.Click()
-                isRecording := true
+        } else {
+            if (btn := WhatsApp_FindNamedButton(chrome, voicePattern, 400)) {
+                if (WhatsApp_InvokeOrClick(btn)) {
+                    isRecording := true
+                    WhatsApp_Ok("Recording")
+                } else
+                    WhatsApp_Fail("❌ WhatsApp: could not start voice message")
             } else
-                MsgBox "Couldn't find the Voice-message button."
+                WhatsApp_Fail("❌ WhatsApp: voice button missing")
         }
     } catch Error as err {
-        MsgBox "Error:`n" err.Message
+        WhatsApp_Fail("❌ WhatsApp: " err.Message)
     }
 }
 

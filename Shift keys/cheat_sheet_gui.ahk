@@ -157,7 +157,8 @@ PickChromeAppSheetKey(chromeTitle) {
     key := ""
     if IsChromePdfViewerActive()
         key := "Chrome PDF Viewer"
-    if InStr(chromeTitle, "WhatsApp")
+    ; Contact-titled PWA has no "WhatsApp" in the title; same gate as the Shift hotkeys.
+    if (IsWhatsAppShiftActive() || InStr(chromeTitle, "WhatsApp"))
         key := "WhatsApp"
     if InStr(chromeTitle, "Gmail")
         key := "Gmail"
