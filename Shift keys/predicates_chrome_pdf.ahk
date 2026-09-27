@@ -30,6 +30,8 @@ IsChromePdfViewerActive() {
         && g_ChromePdf_CacheTick
         && (now - g_ChromePdf_CacheTick) < g_ChromePdf_CacheTtlMs
         && WinExist("ahk_id " g_ChromePdf_CacheHwnd)) {
+        if (!g_ChromePdf_CacheResult)
+            ChromePdf_InvalidateSession()
         return g_ChromePdf_CacheResult
     }
 
@@ -46,12 +48,15 @@ IsChromePdfViewerActive() {
             result := true
         }
     } catch {
-        ; UIA failed; do not cache so next call retries
+        ; UIA failed; do not cache so next call retries. Drop any toolbar session too.
+        ChromePdf_InvalidateSession()
         return false
     }
 
     g_ChromePdf_CacheHwnd := hwnd
     g_ChromePdf_CacheTick := A_TickCount  ; stamp after UIA so TTL is from completion, not start
     g_ChromePdf_CacheResult := result
+    if (!result)
+        ChromePdf_InvalidateSession()
     return result
 }

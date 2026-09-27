@@ -5,21 +5,25 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf IsChromePdfViewerActive()
+; Foreground-hwnd session: one UIA_Browser + viewer root per Chrome window.
+; Invalidated when the window changes, an element op fails, F5 runs, or the
+; PDF predicate reports this tab is no longer a PDF. TTL stays in the predicate.
+global g_ChromePdf_SessHwnd := 0
+global g_ChromePdf_SessUia := 0
+global g_ChromePdf_SessRoot := 0
 
-ChromePdf_GetActiveUia() {
-    ; Bind to the specific foreground Chrome window (efficiency-canon §11).
-    if !WinActive("ahk_exe chrome.exe")
-        return 0
-    hwnd := WinExist("A")
-    if (!hwnd)
-        return 0
-    try {
-        return UIA_Browser("ahk_id " hwnd)
-    } catch {
-    }
-    return 0
+ChromePdf_InvalidateSession() {
+    global g_ChromePdf_SessHwnd, g_ChromePdf_SessUia, g_ChromePdf_SessRoot
+    g_ChromePdf_SessHwnd := 0
+    g_ChromePdf_SessUia := 0
+    g_ChromePdf_SessRoot := 0
 }
+
+ChromePdf_SessionMap(hwnd, uia, root) {
+    return Map("hwnd", hwnd, "uia", uia, "root", root)
+}
+
+#HotIf IsChromePdfViewerActive()
 
 ChromePdf_GetViewerRoot(uia) {
     ; Prefer the extension's RootWebArea (most stable for the PDF viewer UI)
@@ -39,6 +43,49 @@ ChromePdf_GetViewerRoot(uia) {
     return root
 }
 
+; Cache-first attach. Same hwnd + live root is reused. A missing root re-finds
+; on the existing UIA_Browser (reload poll) instead of constructing a new one.
+ChromePdf_GetSession() {
+    global g_ChromePdf_SessHwnd, g_ChromePdf_SessUia, g_ChromePdf_SessRoot
+    if !WinActive("ahk_exe chrome.exe")
+        return 0
+    hwnd := WinExist("A")
+    if (!hwnd)
+        return 0
+
+    if (hwnd = g_ChromePdf_SessHwnd && g_ChromePdf_SessUia) {
+        if (g_ChromePdf_SessRoot)
+            return ChromePdf_SessionMap(hwnd, g_ChromePdf_SessUia, g_ChromePdf_SessRoot)
+        root := 0
+        try {
+            root := ChromePdf_GetViewerRoot(g_ChromePdf_SessUia)
+        } catch {
+            g_ChromePdf_SessUia := 0
+            g_ChromePdf_SessRoot := 0
+        }
+        if (g_ChromePdf_SessUia) {
+            if (root) {
+                g_ChromePdf_SessRoot := root
+                return ChromePdf_SessionMap(hwnd, g_ChromePdf_SessUia, root)
+            }
+            return 0
+        }
+    }
+
+    uia := 0
+    try uia := UIA_Browser("ahk_id " hwnd)
+    if (!uia)
+        return 0
+    root := 0
+    try root := ChromePdf_GetViewerRoot(uia)
+    g_ChromePdf_SessHwnd := hwnd
+    g_ChromePdf_SessUia := uia
+    g_ChromePdf_SessRoot := root
+    if (!root)
+        return 0
+    return ChromePdf_SessionMap(hwnd, uia, root)
+}
+
 ChromePdf_InvokeElement(el) {
     if (!el)
         return false
@@ -55,21 +102,40 @@ ChromePdf_InvokeElement(el) {
     return false
 }
 
+ChromePdf_FocusElement(el) {
+    if (!el)
+        return false
+    try {
+        el.SetFocus()
+        return true
+    } catch {
+        try {
+            el.Click()
+            return true
+        } catch {
+        }
+    }
+    return false
+}
+
+; One typed FindFirst. Name list runs only after that miss.
+; No second FindFirst under a different control type when typeHint is already set.
 ChromePdf_FindByAutomationId(root, automationId, typeHint := 0, fallbackNames := 0) {
     if (!root || automationId = "")
         return 0
     el := 0
-    if (typeHint) {
-        try el := root.FindFirst({ Type: typeHint, AutomationId: automationId })
+    try {
+        if (typeHint)
+            el := root.FindFirst({ Type: typeHint, AutomationId: automationId })
+        else
+            el := root.FindFirst({ AutomationId: automationId })
+    } catch {
     }
-    if (!el)
-        try el := root.FindFirst({ Type: 50000, AutomationId: automationId })
-    if (!el)
-        try el := root.FindFirst({ AutomationId: automationId })
 
     if (!el && IsObject(fallbackNames)) {
+        nameType := typeHint ? typeHint : 50000
         for , name in fallbackNames {
-            try el := root.FindFirst({ Type: 50000, Name: name })
+            try el := root.FindFirst({ Type: nameType, Name: name })
             if (el)
                 break
         }
@@ -77,88 +143,80 @@ ChromePdf_FindByAutomationId(root, automationId, typeHint := 0, fallbackNames :=
     return el
 }
 
+; Find once; on a miss, drop the session and resolve a single time.
+ChromePdf_ResolveElement(automationId, typeHint := 0, fallbackNames := 0) {
+    loop 2 {
+        sess := ChromePdf_GetSession()
+        if (!sess) {
+            ChromePdf_InvalidateSession()
+            continue
+        }
+        el := ChromePdf_FindByAutomationId(sess["root"], automationId, typeHint, fallbackNames)
+        if (el)
+            return el
+        ChromePdf_InvalidateSession()
+    }
+    return 0
+}
+
 ChromePdf_ClickByAutomationId(automationId, fallbackNames := 0) {
     try {
-        uia := ChromePdf_GetActiveUia()
-        if (!uia)
+        btn := ChromePdf_ResolveElement(automationId, 50000, fallbackNames)
+        if (!btn)
             return false
-
-        root := ChromePdf_GetViewerRoot(uia)
-        if (!root)
-            return false
-
-        btn := ChromePdf_FindByAutomationId(root, automationId, 50000, fallbackNames)
-        if (btn)
-            return ChromePdf_InvokeElement(btn)
+        if (ChromePdf_InvokeElement(btn))
+            return true
+        ChromePdf_InvalidateSession()
     } catch {
+        ChromePdf_InvalidateSession()
     }
     return false
 }
 
-; PDF toolbar: two buttons share AutomationId "save" (Save to Google Drive vs Download). Never use FindFirst(save) alone.
+ChromePdf_FindDownloadButton(root) {
+    if (!root)
+        return 0
+    downloadNames := ["Baixar", "Download"]
+    btn := 0
+    for , name in downloadNames {
+        try btn := root.FindFirst({ Type: 50000, Name: name, cs: false })
+        if (btn)
+            return btn
+    }
+
+    ; Two toolbar buttons share AutomationId "save". Never take FindFirst(save) alone.
+    try saves := root.FindAll({ Type: 50000, AutomationId: "save" })
+    if (IsObject(saves)) {
+        for , cand in saves {
+            n := ""
+            try n := cand.Name
+            if (n = "")
+                continue
+            if InStr(StrLower(n), "drive")
+                continue
+            return cand
+        }
+    }
+    return 0
+}
+
+; PDF toolbar: two buttons share AutomationId "save" (Save to Google Drive vs Download).
 ChromePdf_ClickDownload() {
     try {
-        uia := ChromePdf_GetActiveUia()
-        if (!uia)
-            return false
-
-        root := ChromePdf_GetViewerRoot(uia)
-        if (!root)
-            return false
-
-        downloadNames := ["Baixar", "Download"]
-        btn := 0
-        for , name in downloadNames {
-            try btn := root.FindFirst({ Type: 50000, Name: name, cs: false })
-            if (btn)
-                break
-        }
-
-        if (!btn) {
-            try saves := root.FindAll({ Type: 50000, AutomationId: "save" })
-            if (IsObject(saves)) {
-                for , cand in saves {
-                    n := ""
-                    try n := cand.Name
-                    if (n = "")
-                        continue
-                    if InStr(StrLower(n), "drive")
-                        continue
-                    btn := cand
-                    break
-                }
+        loop 2 {
+            sess := ChromePdf_GetSession()
+            if (!sess) {
+                ChromePdf_InvalidateSession()
+                continue
             }
-        }
-
-        if (btn)
-            return ChromePdf_InvokeElement(btn)
-    } catch {
-    }
-    return false
-}
-
-ChromePdf_FocusByAutomationId(automationId, controlType := 0) {
-    try {
-        uia := ChromePdf_GetActiveUia()
-        if (!uia)
-            return false
-
-        root := ChromePdf_GetViewerRoot(uia)
-        if (!root)
-            return false
-
-        el := ChromePdf_FindByAutomationId(root, automationId, controlType)
-        if (el) {
-            try {
-                el.SetFocus()
-                return true
-            } catch {
-                try {
-                    el.Click()
+            btn := ChromePdf_FindDownloadButton(sess["root"])
+            if (btn) {
+                if (ChromePdf_InvokeElement(btn))
                     return true
-                } catch {
-                }
+                ChromePdf_InvalidateSession()
+                return false
             }
+            ChromePdf_InvalidateSession()
         }
     } catch {
     }
@@ -177,43 +235,38 @@ ChromePdf_FindPresentMenuItem(root) {
         "Modo de apresentação"
     ]
 
-    ; Prefer stable attributes first, then localized names.
+    ; One stable find, then localized names (menu item, then button) only on a miss.
     try presentItem := root.FindFirst({ Type: 50011, AutomationId: "present" })
-    if (!presentItem)
-        try presentItem := root.FindFirst({ AutomationId: "present" })
-    if (!presentItem)
-        try presentItem := root.FindFirst({ Type: 50000, AutomationId: "present" })
+    if (presentItem)
+        return presentItem
 
-    if (!presentItem) {
-        for , candidateName in selectorNames {
-            try presentItem := root.FindFirst({ Type: 50011, Name: candidateName })
-            if (presentItem)
-                break
-            try presentItem := root.FindFirst({ Type: 50000, Name: candidateName })
-            if (presentItem)
-                break
-        }
+    for , candidateName in selectorNames {
+        try presentItem := root.FindFirst({ Type: 50011, Name: candidateName })
+        if (presentItem)
+            return presentItem
+        try presentItem := root.FindFirst({ Type: 50000, Name: candidateName })
+        if (presentItem)
+            return presentItem
     }
-    return presentItem
+    return 0
 }
 
-ChromePdf_WaitForMoreMenuReady(uia, timeoutMs := 400) {
-    ; Condition wait: More menu populated (any MenuItem under the PDF viewer root).
-    if (!uia)
-        return false
+ChromePdf_WaitForMoreMenuReady(timeoutMs := 400) {
+    ; Condition wait: More menu populated (any MenuItem under the cached viewer root).
     deadline := A_TickCount + timeoutMs
     while (A_TickCount <= deadline) {
         try {
-            root := ChromePdf_GetViewerRoot(uia)
-            if (root) {
+            sess := ChromePdf_GetSession()
+            if (sess) {
                 item := 0
-                try item := root.FindFirst({ Type: 50011 })
+                try item := sess["root"].FindFirst({ Type: 50011 })
                 if (!item)
-                    try item := ChromePdf_FindPresentMenuItem(root)
+                    try item := ChromePdf_FindPresentMenuItem(sess["root"])
                 if (item)
                     return true
             }
         } catch {
+            ChromePdf_InvalidateSession()
         }
         Sleep 25
     }
@@ -225,28 +278,21 @@ ChromePdf_TogglePresentMode() {
     ; Legacy directional-key fallback remains optional behind feature flag.
     global USE_CHROME_PDF_PRESENT_FALLBACK
 
-    uia := ChromePdf_GetActiveUia()
-    if (!uia)
-        return false
-
-    root := ChromePdf_GetViewerRoot(uia)
-    if (!root)
-        return false
-
-    moreBtn := ChromePdf_FindByAutomationId(root, "more", 50000, ["More actions", "Mais ações"])
+    moreBtn := ChromePdf_ResolveElement("more", 50000, ["More actions", "Mais ações"])
     if !ChromePdf_InvokeElement(moreBtn)
         return false
 
     deadline := A_TickCount + 700
     while (A_TickCount <= deadline) {
         try {
-            root := ChromePdf_GetViewerRoot(uia)
-            presentItem := ChromePdf_FindPresentMenuItem(root)
-            if (presentItem) {
-                if ChromePdf_InvokeElement(presentItem)
+            sess := ChromePdf_GetSession()
+            if (sess) {
+                presentItem := ChromePdf_FindPresentMenuItem(sess["root"])
+                if (presentItem && ChromePdf_InvokeElement(presentItem))
                     return true
             }
         } catch {
+            ChromePdf_InvalidateSession()
         }
         Sleep 40
     }
@@ -263,22 +309,26 @@ ChromePdf_TogglePresentMode() {
     return false
 }
 
-ChromePdf_GetPageSelectorElement() {
+ChromePdf_PollPageSelector() {
+    ; Reload poll: reuse the session UIA. A missing control clears only the root
+    ; so the next tick re-finds the viewer without a new UIA_Browser.
+    global g_ChromePdf_SessRoot
+    sess := ChromePdf_GetSession()
+    if (!sess)
+        return 0
+    el := 0
     try {
-        uia := ChromePdf_GetActiveUia()
-        if (!uia)
-            return 0
-        root := ChromePdf_GetViewerRoot(uia)
-        if (!root)
-            return 0
-        return ChromePdf_FindByAutomationId(root, "pageSelector", 50004)
+        el := sess["root"].FindFirst({ Type: 50004, AutomationId: "pageSelector" })
     } catch {
+        ChromePdf_InvalidateSession()
+        return 0
     }
-    return 0
+    if (!el)
+        g_ChromePdf_SessRoot := 0
+    return el
 }
 
-ChromePdf_GetCurrentPageNumber() {
-    el := ChromePdf_GetPageSelectorElement()
+ChromePdf_PageNumberFromElement(el) {
     if (!el)
         return ""
     val := ""
@@ -291,13 +341,21 @@ ChromePdf_GetCurrentPageNumber() {
     return ""
 }
 
-ChromePdf_GotoPage(pageNum) {
+ChromePdf_GetCurrentPageNumber() {
+    el := ChromePdf_ResolveElement("pageSelector", 50004)
+    return ChromePdf_PageNumberFromElement(el)
+}
+
+ChromePdf_GotoPage(pageNum, el := 0) {
     pageNum := Trim(String(pageNum))
     if (pageNum = "" || !RegExMatch(pageNum, "^\d+$"))
         return false
-    if !ChromePdf_FocusByAutomationId("pageSelector", 50004)
+    if (!el)
+        el := ChromePdf_ResolveElement("pageSelector", 50004)
+    if !ChromePdf_FocusElement(el) {
+        ChromePdf_InvalidateSession()
         return false
-    Sleep 40
+    }
     Send "^a"
     Sleep 20
     SendText pageNum
@@ -309,20 +367,34 @@ ChromePdf_GotoPage(pageNum) {
 ChromePdf_WaitForReloadSettled(savedPage, timeoutMs := 10000) {
     ; Prefer: pageSelector vanishes then returns. Also accept Value reset to 1 when we
     ; were elsewhere (fast reload where the gap was never sampled).
+    ; Returns the settled page-selector element, or 0.
+    global g_ChromePdf_SessRoot
     deadline := A_TickCount + timeoutMs
     start := A_TickCount
     sawGone := false
+    lastEl := 0
     while (A_TickCount <= deadline) {
         if !WinActive("ahk_exe chrome.exe")
-            return false
-        el := ChromePdf_GetPageSelectorElement()
+            return 0
+        el := ChromePdf_PollPageSelector()
         if (!el) {
             sawGone := true
+            lastEl := 0
             Sleep 40
             continue
         }
+        lastEl := el
         val := ""
-        try val := Trim(String(el.Value))
+        try {
+            val := Trim(String(el.Value))
+        } catch {
+            ; Stale node after reload: drop the root and treat the viewer as gone.
+            g_ChromePdf_SessRoot := 0
+            sawGone := true
+            lastEl := 0
+            Sleep 40
+            continue
+        }
         if (val = "") {
             Sleep 40
             continue
@@ -331,15 +403,15 @@ ChromePdf_WaitForReloadSettled(savedPage, timeoutMs := 10000) {
         if RegExMatch(val, "(\d+)", &m)
             cur := m[1]
         if (sawGone)
-            return true
+            return el
         if (savedPage != "" && savedPage != "1" && cur = "1")
-            return true
+            return el
         ; Already on page 1: no Value flip to observe — settle briefly then continue.
         if (savedPage = "1" && cur = "1" && (A_TickCount - start) >= 500)
-            return true
+            return el
         Sleep 40
     }
-    return !!ChromePdf_GetPageSelectorElement()
+    return lastEl
 }
 
 ChromePdf_RefreshKeepPage() {
@@ -356,17 +428,18 @@ ChromePdf_RefreshKeepPage() {
         passive: false })
 
     Send "{F5}"
+    ChromePdf_InvalidateSession()
     g_ChromePdf_CacheTick := 0  ; force IsChromePdfViewerActive to re-probe after reload
 
     try StandardLoadingBar_Update("⏳ Waiting for PDF viewer…", BANNER_ACCENT_INTERMEDIATE)
-    if !ChromePdf_WaitForReloadSettled(page, 10000) {
+    el := ChromePdf_WaitForReloadSettled(page, 10000)
+    if (!el) {
         try StandardLoadingBar_Update("❌ PDF: viewer did not return", BANNER_ACCENT_ERROR)
         try StandardLoadingBar_Hide(2000)
         return false
     }
 
-    Sleep 80
-    if !ChromePdf_GotoPage(page) {
+    if !ChromePdf_GotoPage(page, el) {
         try StandardLoadingBar_Update("❌ PDF: refreshed, but could not go to page " page, BANNER_ACCENT_ERROR)
         try StandardLoadingBar_Hide(2500)
         return false
@@ -388,11 +461,15 @@ ChromePdf_RefreshKeepPage() {
 +p::
 {
     ; UIA tree: Edit AutomationId "pageSelector"
-    ; Focus then Ctrl+A so typing replaces the current page number.
-    if ChromePdf_FocusByAutomationId("pageSelector", 50004) {
-        Sleep 40
-        Send "^a"
+    ; SetFocus is the readiness gate; Ctrl+A selects so typing replaces the number.
+    el := ChromePdf_ResolveElement("pageSelector", 50004)
+    if (!el)
+        return
+    if !ChromePdf_FocusElement(el) {
+        ChromePdf_InvalidateSession()
+        return
     }
+    Send "^a"
 }
 
 ; Shift + T : Toggle thumbnails sidebar - Thumbnails
@@ -414,16 +491,10 @@ ChromePdf_RefreshKeepPage() {
 {
     ; UIA: Button Type 50000, Name "More actions", AutomationId "more"
     ; Keep Down/Enter (no stable AutomationId for two-page in tree dump); wait for menu ready.
-    uia := ChromePdf_GetActiveUia()
-    if (!uia)
-        return
-    root := ChromePdf_GetViewerRoot(uia)
-    if (!root)
-        return
-    moreBtn := ChromePdf_FindByAutomationId(root, "more", 50000, ["More actions", "Mais ações"])
+    moreBtn := ChromePdf_ResolveElement("more", 50000, ["More actions", "Mais ações"])
     if !ChromePdf_InvokeElement(moreBtn)
         return
-    ChromePdf_WaitForMoreMenuReady(uia, 400)
+    ChromePdf_WaitForMoreMenuReady(400)
     Send "{Down}"
     Send "{Enter}"
 }
