@@ -411,7 +411,6 @@ def synthesize_inscope_inventory(
                 lines.append(f"- {head} id={a.get('id') or '?'}")
                 lines.append(f"  Concept: {(a.get('concept') or '').strip() or '—'}")
                 lines.append(f"  Quote: {(a.get('quote') or '').strip() or '—'}")
-                lines.append(f"  Story: {(a.get('story') or '').strip() or '—'}")
         lines.append("")
     return "\n".join(lines)
 

@@ -374,9 +374,8 @@
         font-size: 0.62rem;
         margin-bottom: 0.05rem;
       }
-      /* Concept-first: hide Quote/Story until Details (D) */
-      #overlay:not(.show-atom-details) .atom-card .field-quote,
-      #overlay:not(.show-atom-details) .atom-card .field-story {
+      /* Concept-first: hide Quote until Details (D) */
+      #overlay:not(.show-atom-details) .atom-card .field-quote {
         display: none !important;
       }
       #overlay:not(.image-expanded) .atom-card .field-concept {
@@ -513,7 +512,7 @@
           <input
             type="search"
             id="atomSearch"
-            placeholder="Beast, concept, keywords, quote, story…"
+            placeholder="Beast, concept, keywords, quote…"
             autocomplete="off"
           />
         </div>
@@ -2582,7 +2581,6 @@
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
           <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept, a.keywords)}</p>
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
-          <p class="field field-story"><span class="lbl">Story</span>${dash(a.story)}</p>
         </article>`;
       }
 

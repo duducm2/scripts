@@ -36,10 +36,9 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 | **Memory Palace**  | Location; **one** generated image per palace.                               |
 | **Character**      | From `characters.json`; one per Memory Palace.                              |
 | **Beast**          | From `bestiary.json`; peg animal that carries a Knowledge Atom.             |
-| **Knowledge Atom** | Discrete information on a Beast, made of Concept + Quote + Story.           |
+| **Knowledge Atom** | Discrete information on a Beast, made of Concept + Keywords + Quote.        |
 | **Concept**        | Rehearsal definition of the fact.                                           |
 | **Quote**          | Verbatim source payload.                                                    |
-| **Story**          | Bizarre mnemonic narrative / action.                                        |
 | **Mapping**        | One atom per beast, or up to four zoned atoms (Z1–Z4).                      |
 
 ## Web app views

@@ -78,7 +78,6 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
         )
     )
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
-    lines.extend(format_field_block("Story", dash(atom.get("story"))))
     return lines
 
 

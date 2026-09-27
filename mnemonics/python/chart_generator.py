@@ -1623,7 +1623,7 @@ def build_html(
       <button type="button" id="btnMethod" title="Method docs (M)">Method</button>
       <div>
         <label for="atomSearch">Search Knowledge Atoms</label>
-        <input type="search" id="atomSearch" placeholder="Beast, concept, quote, story…" autocomplete="off"/>
+        <input type="search" id="atomSearch" placeholder="Beast, concept, quote…" autocomplete="off"/>
       </div>
     </div>
   </header>
@@ -2211,7 +2211,6 @@ def build_html(
         + '<p class="field field-concept"><span class="lbl">Concept</span>'
         + formatConcept(a.concept) + '</p>'
         + '<p class="field"><span class="lbl">Quote</span>' + formatQuote(a.quote) + '</p>'
-        + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
         + '</article>';
     }}
 
