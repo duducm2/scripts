@@ -48,6 +48,12 @@
 ;
 ; ppShowTypeWindow=2
 ;
+; Shift+Z — Fit the slide to the window (center + fill)
+; ------------------------------------------------------
+; COM View.ZoomToFit. A brief zoom-out first forces PowerPoint to rebuild the
+; viewport, so a slide stuck in the corner after zooming out is centered and
+; then scaled to the largest size that still fits the pane.
+;
 ; =============================================================================
 
 ; ppFixedFormatTypePDF = 2; ppSaveAsPDF = 32
@@ -195,6 +201,30 @@ PowerPoint_SaveAsPdf() {
         return
     } catch Error as err {
         ShowCenteredOverlay_Utils("❌ PDF export failed`n" err.Message, 2800, BANNER_ACCENT_ERROR)
+    }
+}
+
+;-------------------------------------------------------------------
+; Fit slide to window (Shift+Z)
+;-------------------------------------------------------------------
+
+PowerPoint_FitSlideToWindow() {
+    try {
+        pp := ComObjActive("PowerPoint.Application")
+    } catch {
+        ShowCenteredOverlay_Utils("❌ PowerPoint COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+    if (PowerPoint_IsFocusedSlideView(pp)) {
+        ShowCenteredOverlay_Utils("❌ Exit the slide show first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        view := pp.ActiveWindow.View
+        try view.Zoom := 10
+        view.ZoomToFit()
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Fit slide failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -377,6 +407,9 @@ $+o:: {
     KeyWait("o")
     PowerPoint_ToggleFocusedSlideView()
 }
+
+; --- Fit slide to the window (center + fill) ---
+$+z:: PowerPoint_FitSlideToWindow()
 
 ; --- Align (relative to slide) ---
 +c:: PowerPoint_CenterOnSlide()          ; Center (H+V)

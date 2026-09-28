@@ -899,6 +899,7 @@ cheatSheets["POWERPNT.EXE"] := "
     PowerPoint (Shift)
     📄 [P]Save as [P]DF on Desktop (COM)
     🔍 [O]F[O]cus current slide (windowed From Current ↔ Esc)
+    🔍 [Z]oom slide to window (center + fill)
     🎯 [C]enter on slide (center + middle)
     ⬅️ [L]Align [L]eft
     ➡️ [R]Align [R]ight
