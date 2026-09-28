@@ -12,9 +12,22 @@ global g_FinanceD_DoubleTapArmed := false
 global g_FinanceD_LastPressTick := 0
 global g_FinanceD_DoubleTapTimer := 0
 
+; Hotkey bodies only see these globals if auto-execute reached the assignments above.
+; A startup error earlier in Utils aborts that thread and leaves them unset.
+FinanceD_EnsureState() {
+    global g_FinanceD_DoubleTapArmed, g_FinanceD_LastPressTick, g_FinanceD_DoubleTapTimer
+    if !IsSet(g_FinanceD_DoubleTapArmed)
+        g_FinanceD_DoubleTapArmed := false
+    if !IsSet(g_FinanceD_LastPressTick)
+        g_FinanceD_LastPressTick := 0
+    if !IsSet(g_FinanceD_DoubleTapTimer)
+        g_FinanceD_DoubleTapTimer := 0
+}
+
 class FinanceD_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
         global g_FinanceD_DoubleTapArmed, g_FinanceD_DoubleTapTimer
+        FinanceD_EnsureState()
         if (!g_FinanceD_DoubleTapArmed)
             return
         g_FinanceD_DoubleTapArmed := false
@@ -26,6 +39,7 @@ class FinanceD_DoubleTapTimerObj {
 FinanceD_DisarmDoubleTap() {
     global g_FinanceD_DoubleTapArmed, g_FinanceD_DoubleTapTimer
     global g_FinanceD_LastPressTick
+    FinanceD_EnsureState()
     g_FinanceD_DoubleTapArmed := false
     g_FinanceD_LastPressTick := 0
     if (g_FinanceD_DoubleTapTimer) {
@@ -36,6 +50,7 @@ FinanceD_DisarmDoubleTap() {
 
 #!+d:: {
     global g_FinanceD_DoubleTapArmed, g_FinanceD_LastPressTick, g_FinanceD_DoubleTapTimer
+    FinanceD_EnsureState()
 
     ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
     ; released (those start with D already up and would otherwise arm single-tap Tasks).
