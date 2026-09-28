@@ -139,6 +139,7 @@ class TaskHandler(BaseHTTPRequestHandler):
                         "import",
                         "open",
                         "icons",
+                        "project-export",
                     ],
                 },
             )
@@ -226,6 +227,30 @@ class TaskHandler(BaseHTTPRequestHandler):
             elif file_path.suffix.lower() == ".svg":
                 ctype = "image/svg+xml"
             self._bytes(200, data, ctype)
+            return
+
+        export_suffix = "/export.json"
+        export_prefix = "/api/projects/"
+        if path.startswith(export_prefix) and path.endswith(export_suffix):
+            pid = path[len(export_prefix) : -len(export_suffix)].strip("/")
+            store = get_store(self.data_dir)
+            result = store.export_project(pid)
+            if not result.get("ok"):
+                self._json(404, result)
+                return
+            body = json.dumps(result["document"], ensure_ascii=False, indent=2).encode(
+                "utf-8"
+            )
+            filename = result.get("filename") or "project.json"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self._cors()
+            self.send_header(
+                "Content-Disposition", f'attachment; filename="{filename}"'
+            )
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
             return
 
         if path == "/api/state":

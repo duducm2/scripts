@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import re
 import shutil
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -145,6 +145,143 @@ INBOX_TITLES = {
 
 def now_stamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _export_sort_key(row: dict) -> tuple:
+    try:
+        so = int(row.get("sort_order") or 0)
+    except ValueError:
+        so = 0
+    return (so, (row.get("title") or "").lower())
+
+
+def _status_name(emoji: str) -> str:
+    em = (emoji or "").strip()
+    for name, glyph in STATUS_EMOJIS.items():
+        if em == glyph:
+            return name
+    key = em.lower().strip(" .,;:!?")
+    aliased = STATUS_EMOJI_ALIASES.get(key)
+    if aliased:
+        return aliased
+    if key in STATUS_EMOJIS:
+        return key
+    return "custom"
+
+
+def _status_glyph(raw: str) -> tuple[str, str]:
+    status = _status_name(raw)
+    if status == "custom":
+        return ((raw or "").strip(), "custom")
+    return (STATUS_EMOJIS[status], status)
+
+
+def _age_months(birth: str, as_of: date) -> int | None:
+    raw = (birth or "").strip()[:10]
+    try:
+        bday = datetime.strptime(raw, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    months = (as_of.year - bday.year) * 12 + (as_of.month - bday.month)
+    if as_of.day < bday.day:
+        months -= 1
+    return max(0, months)
+
+
+def project_export_filename(project: dict) -> str:
+    title = (project.get("title") or "project").strip()
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-") or "project"
+    pid = (
+        re.sub(r"[^A-Za-z0-9_-]+", "", (project.get("id") or "project").strip())
+        or "project"
+    )
+    return f"{slug}__{pid}.json"
+
+
+def _export_attachments(rows: list[dict]) -> list[dict]:
+    out: list[dict] = []
+    for a in sorted(rows, key=_export_sort_key):
+        doc: dict[str, Any] = {
+            "id": a.get("id") or "",
+            "kind": (a.get("kind") or "").strip(),
+        }
+        desc = (a.get("description") or "").strip()
+        if desc:
+            doc["description"] = desc
+        ref = (a.get("ref") or "").replace("\\", "/").strip()
+        if ref:
+            doc["file"] = ref
+        out.append(doc)
+    return out
+
+
+def _export_info(info: dict, atts_by_parent: dict, as_of: date) -> dict:
+    doc: dict[str, Any] = {
+        "id": info.get("id") or "",
+        "title": (info.get("title") or "").strip(),
+    }
+    body = (info.get("body") or "").strip()
+    if body and body != doc["title"]:
+        doc["body"] = body
+    category = (info.get("section_path") or "").strip()
+    if category:
+        doc["category"] = category
+    emoji = (info.get("emoji") or "").strip()
+    if emoji:
+        doc["emoji"] = emoji
+    birth = (info.get("birth_date") or "").strip()
+    if birth:
+        doc["birth_date"] = birth[:10]
+        months = _age_months(birth, as_of)
+        if months is not None:
+            unit = "month" if months == 1 else "months"
+            doc["age"] = f"{months} {unit}"
+    if (info.get("edit_lock") or "").strip().lower() == "agent":
+        doc["edit_lock"] = "agent"
+    created = (info.get("created_at") or "").strip()
+    if created:
+        doc["created_at"] = created
+    atts = _export_attachments(atts_by_parent.get(("info", info.get("id") or ""), []))
+    if atts:
+        doc["attachments"] = atts
+    return doc
+
+
+def _export_task(
+    task: dict, infos_by_parent: dict, atts_by_parent: dict, as_of: date
+) -> dict:
+    kind = (task.get("kind") or "punctual").strip() or "punctual"
+    active = (task.get("active") or "1") != "0"
+    emoji, status = _status_glyph(str(task.get("emoji") or ""))
+    doc: dict[str, Any] = {
+        "id": task.get("id") or "",
+        "title": (task.get("title") or "").strip(),
+        "emoji": emoji,
+        "status": status,
+        "kind": kind,
+        "active": active,
+        "open": active and kind != "habitual" and status != "done",
+    }
+    rec = (task.get("recurrence") or "").strip()
+    if rec:
+        doc["recurrence"] = rec
+    for key in ("due_date", "next_due", "completed_at", "created_at"):
+        val = (task.get(key) or "").strip()
+        if val:
+            doc[key] = val
+    if (task.get("import_batch") or "").strip():
+        doc["newly_imported"] = True
+    tid = task.get("id") or ""
+    notes = [
+        _export_info(i, atts_by_parent, as_of)
+        for i in sorted(infos_by_parent.get(("task", tid), []), key=_export_sort_key)
+    ]
+    if notes:
+        doc["info"] = notes
+    atts = _export_attachments(atts_by_parent.get(("task", tid), []))
+    if atts:
+        doc["attachments"] = atts
+    return doc
 
 
 def today() -> str:
@@ -1359,6 +1496,137 @@ class TaskStore:
         else:
             base += timedelta(days=1)
         return base.strftime("%Y-%m-%d")
+
+    def export_project(self, project_id: str, *, as_of: date | None = None) -> dict:
+        """Nested snapshot of one project for an AI companion (no image bytes)."""
+        pid = (project_id or "").strip()
+        project = self.find("projects", pid)
+        if not project:
+            return {"ok": False, "error": "project not found"}
+        today = as_of or date.today()
+        sections = [s for s in self.load("sections") if s.get("project_id") == pid]
+        tasks = [t for t in self.load("tasks") if t.get("project_id") == pid]
+        task_ids = {t.get("id") or "" for t in tasks}
+        section_ids = {s.get("id") or "" for s in sections}
+        infos = [
+            i
+            for i in self.load("info_points")
+            if (i.get("parent_type") == "project" and i.get("parent_id") == pid)
+            or (i.get("parent_type") == "task" and i.get("parent_id") in task_ids)
+        ]
+        info_ids = {i.get("id") or "" for i in infos}
+        atts = [
+            a
+            for a in self.load("attachments")
+            if (a.get("parent_type") == "project" and a.get("parent_id") == pid)
+            or (a.get("parent_type") == "task" and a.get("parent_id") in task_ids)
+            or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
+        ]
+        infos_by_parent: dict[tuple[str, str], list[dict]] = {}
+        for i in infos:
+            infos_by_parent.setdefault(
+                ((i.get("parent_type") or ""), (i.get("parent_id") or "")), []
+            ).append(i)
+        atts_by_parent: dict[tuple[str, str], list[dict]] = {}
+        for a in atts:
+            atts_by_parent.setdefault(
+                ((a.get("parent_type") or ""), (a.get("parent_id") or "")), []
+            ).append(a)
+
+        section_docs: list[dict] = []
+        for s in sorted(sections, key=_export_sort_key):
+            sid = s.get("id") or ""
+            owned = [t for t in tasks if (t.get("section_id") or "") == sid]
+            section_docs.append(
+                {
+                    "id": sid,
+                    "title": (s.get("title") or "").strip() or GENERAL_SECTION,
+                    "tasks": [
+                        _export_task(t, infos_by_parent, atts_by_parent, today)
+                        for t in sorted(owned, key=_export_sort_key)
+                    ],
+                }
+            )
+        orphans = [t for t in tasks if (t.get("section_id") or "") not in section_ids]
+        if orphans:
+            section_docs.append(
+                {
+                    "id": "",
+                    "title": "Other",
+                    "tasks": [
+                        _export_task(t, infos_by_parent, atts_by_parent, today)
+                        for t in sorted(orphans, key=_export_sort_key)
+                    ],
+                }
+            )
+
+        proj_doc: dict[str, Any] = {
+            "id": project.get("id") or "",
+            "title": (project.get("title") or "").strip(),
+            "filter": (project.get("filter") or "").strip(),
+        }
+        path = (project.get("section_path") or "").strip()
+        if path:
+            proj_doc["section_path"] = path
+        created = (project.get("created_at") or "").strip()
+        if created:
+            proj_doc["created_at"] = created
+        icon = (project.get("icon_ref") or "").replace("\\", "/").strip()
+        if icon:
+            proj_doc["icon_file"] = icon
+        notes = [
+            _export_info(i, atts_by_parent, today)
+            for i in sorted(
+                infos_by_parent.get(("project", pid), []), key=_export_sort_key
+            )
+        ]
+        if notes:
+            proj_doc["info"] = notes
+        proj_atts = _export_attachments(atts_by_parent.get(("project", pid), []))
+        if proj_atts:
+            proj_doc["attachments"] = proj_atts
+        proj_doc["sections"] = section_docs
+
+        task_docs = [t for s in section_docs for t in s["tasks"]]
+        info_n = len(notes) + sum(len(t.get("info") or []) for t in task_docs)
+        att_n = len(proj_atts) + sum(len(t.get("attachments") or []) for t in task_docs)
+        att_n += sum(len(i.get("attachments") or []) for i in notes)
+        att_n += sum(
+            len(i.get("attachments") or [])
+            for t in task_docs
+            for i in (t.get("info") or [])
+        )
+        document = {
+            "schema": "tasks.project",
+            "schema_version": 1,
+            "exported_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "about": (
+                "Full snapshot of one project from the local Tasks app. "
+                "Use this file as the whole context when discussing the project. "
+                "sections[].tasks includes open, waiting, important, doubtful, and completed tasks. "
+                "info points are notes on the project or on a task. "
+                "attachments name image files; image bytes are not included."
+            ),
+            "status_legend": {
+                glyph: name for name, glyph in STATUS_EMOJIS.items() if glyph
+            },
+            "project": proj_doc,
+            "counts": {
+                "sections": len(section_docs),
+                "tasks": len(task_docs),
+                "open_tasks": sum(1 for t in task_docs if t.get("open")),
+                "completed_tasks": sum(
+                    1 for t in task_docs if t.get("status") == "done"
+                ),
+                "info_points": info_n,
+                "attachments": att_n,
+            },
+        }
+        return {
+            "ok": True,
+            "filename": project_export_filename(project),
+            "document": document,
+        }
 
     def ensure_inbox_project(self, filt: str) -> dict:
         title = INBOX_TITLES.get(filt, "Inbox")

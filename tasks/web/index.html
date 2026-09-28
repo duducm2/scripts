@@ -1871,6 +1871,34 @@
           }
         }
 
+        async function exportProjectJson(id) {
+          const pid = String(id || "").trim();
+          if (!pid) {
+            toast("Select a project first");
+            return;
+          }
+          const res = await fetch(
+            "/api/projects/" + encodeURIComponent(pid) + "/export.json",
+          );
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || "Export failed");
+          }
+          const blob = await res.blob();
+          const disp = res.headers.get("Content-Disposition") || "";
+          const match = /filename="([^"]+)"/.exec(disp);
+          const name = match ? match[1] : pid + ".json";
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          toast("Exported " + name);
+        }
+
         function toast(msg) {
           const el = $("#toast");
           el.textContent = msg;
@@ -2291,6 +2319,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="export-project" title="Export this project as JSON for an AI companion (Shift+X)">JSON</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -2388,6 +2417,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="export-project" title="Export this project as JSON for an AI companion (Shift+X)">JSON</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -2439,6 +2469,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="export-project" title="Export this project as JSON for an AI companion (Shift+X)">JSON</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -3355,6 +3386,15 @@
               return;
             }
             projectIconModal(pid);
+            return;
+          }
+          if (k === "x") {
+            const pid = selectedProjectId() || state.projectFocusId;
+            if (!pid) {
+              toast("Select a project first");
+              return;
+            }
+            await exportProjectJson(pid);
             return;
           }
           if (k === "v") {
@@ -5750,6 +5790,10 @@
             }
             if (act === "info-project") {
               infoListModal("project", id);
+              return;
+            }
+            if (act === "export-project") {
+              await exportProjectJson(id);
               return;
             }
             if (act === "icon-project") {
