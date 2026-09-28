@@ -1871,38 +1871,63 @@
           }
         }
 
+        function projectIdForExport(explicit) {
+          let pid = String(explicit || "").trim();
+          if (!pid) pid = selectedProjectId() || state.projectFocusId || "";
+          if (!pid && state.sel?.kind === "section") {
+            const raw = String(state.sel.id || "");
+            if (raw.startsWith("other:")) pid = raw.slice("other:".length);
+          }
+          const projects = state.data?.projects || [];
+          if (pid && projects.some((p) => p.id === pid)) return pid;
+          const el = document.querySelector(".kb-selected");
+          const fromDom =
+            el?.closest("details.project")?.getAttribute("data-pid") ||
+            el?.closest("details.project")?.getAttribute("data-id") ||
+            "";
+          if (fromDom && projects.some((p) => p.id === fromDom)) return fromDom;
+          return "";
+        }
+
+        async function copyProjectJsonText(text) {
+          const value = String(text || "");
+          if (navigator.clipboard?.writeText) {
+            try {
+              await navigator.clipboard.writeText(value);
+              return;
+            } catch (err) {
+              if (
+                typeof ClipboardItem !== "function" ||
+                !navigator.clipboard?.write
+              )
+                throw err;
+            }
+          }
+          // Promise ClipboardItem reports a missing text/plain type as "not found".
+          const blob = new Blob([value], { type: "text/plain" });
+          await navigator.clipboard.write([
+            new ClipboardItem({ "text/plain": blob }),
+          ]);
+        }
+
         async function exportProjectJson(id) {
-          const pid = String(id || "").trim();
+          const pid = projectIdForExport(id);
           if (!pid) {
             toast("Select a project first");
             return;
           }
           const url =
             "/api/projects/" + encodeURIComponent(pid) + "/export.json";
-          // Start the request before any await so clipboard.write stays in this gesture.
-          const loaded = fetch(url).then(async (res) => {
-            if (!res.ok) {
-              const err = await res.json().catch(() => ({}));
-              throw new Error(err.error || "Export failed");
-            }
-            const text = await res.text();
-            const disp = res.headers.get("Content-Disposition") || "";
-            const match = /filename="([^"]+)"/.exec(disp);
-            const name = match ? match[1] : pid + ".json";
-            return { text, name };
-          });
-          const copied =
-            typeof ClipboardItem === "function" && navigator.clipboard?.write
-              ? navigator.clipboard.write([
-                  new ClipboardItem({
-                    "text/plain": loaded.then(
-                      ({ text }) => new Blob([text], { type: "text/plain" }),
-                    ),
-                  }),
-                ])
-              : loaded.then(({ text }) => navigator.clipboard.writeText(text));
-          await copied;
-          const { text, name } = await loaded;
+          const res = await fetch(url);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || "Export failed");
+          }
+          const text = await res.text();
+          const disp = res.headers.get("Content-Disposition") || "";
+          const match = /filename="([^"]+)"/.exec(disp);
+          const name = match ? match[1] : pid + ".json";
+          await copyProjectJsonText(text);
           const blob = new Blob([text], {
             type: "application/json;charset=utf-8",
           });
@@ -3407,12 +3432,7 @@
             return;
           }
           if (k === "x") {
-            const pid = selectedProjectId() || state.projectFocusId;
-            if (!pid) {
-              toast("Select a project first");
-              return;
-            }
-            await exportProjectJson(pid);
+            await exportProjectJson(projectIdForExport());
             return;
           }
           if (k === "v") {
