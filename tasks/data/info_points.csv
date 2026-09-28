@@ -163,18 +163,34 @@ Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa �
   * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
 * ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
 * 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,20,2026-09-28 08:00:30,,
-INFO_0198,task,TASK_0339,Maia,,ℹ️,,10,2026-09-28 08:33:53,,
-INFO_0199,task,TASK_0339,Guilherme do tooling,,ℹ️,,20,2026-09-28 08:33:59,,
-INFO_0200,task,TASK_0339,Alex,,ℹ️,,30,2026-09-28 08:34:04,,
-INFO_0201,task,TASK_0339,You can say that you are participating on TAR,,ℹ️,,40,2026-09-28 08:34:32,,
-INFO_0202,task,TASK_0339,That man that one day said that he has a team of developers.,,ℹ️,,50,2026-09-28 11:19:03,,
-INFO_0203,task,TASK_0339,Amanda Sá,,ℹ️,,60,2026-09-28 11:19:13,,
-INFO_0204,task,TASK_0339,Daria,,ℹ️,,70,2026-09-28 11:19:33,,
+INFO_0198,task,TASK_0339,Maia,,ℹ️,person,20,2026-09-28 08:33:53,,
+INFO_0199,task,TASK_0339,Guilherme do tooling,,ℹ️,person,10,2026-09-28 08:33:59,,
+INFO_0200,task,TASK_0339,Alex,,ℹ️,person,30,2026-09-28 08:34:04,,
+INFO_0201,task,TASK_0339,You can say that you are participating on TAR,,ℹ️,person,40,2026-09-28 08:34:32,,
+INFO_0202,task,TASK_0339,That man that one day said that he has a team of developers.,,ℹ️,person,50,2026-09-28 11:19:03,,
+INFO_0203,task,TASK_0339,Amanda Sá,,ℹ️,person,60,2026-09-28 11:19:13,,
+INFO_0204,task,TASK_0339,Daria,,ℹ️,person,70,2026-09-28 11:19:33,,
 INFO_0205,task,TASK_0339,Perform a look over and all people that you might talk to on your e-mail,,ℹ️,,80,2026-09-28 11:21:37,,
-INFO_0206,task,TASK_0339,Leiry,,ℹ️,,90,2026-09-28 11:21:45,,
-INFO_0207,task,TASK_0339,Daniel Castelhano,,ℹ️,,100,2026-09-28 11:23:20,,
-INFO_0208,task,TASK_0339,Stefani,,ℹ️,,110,2026-09-28 11:23:41,,
-INFO_0209,task,TASK_0339,Linford,,ℹ️,,120,2026-09-28 11:24:08,,
-INFO_0210,task,TASK_0339,Martin Ralph,,ℹ️,,130,2026-09-28 11:25:06,,
-INFO_0211,task,TASK_0339,George Maurício,,ℹ️,,140,2026-09-28 11:29:36,,
-INFO_0212,task,TASK_0339,Larissa,,ℹ️,,150,2026-09-28 11:29:41,,
+INFO_0206,task,TASK_0339,Leiry,,ℹ️,person,90,2026-09-28 11:21:45,,
+INFO_0207,task,TASK_0339,Daniel Castelhano,,ℹ️,person,100,2026-09-28 11:23:20,,
+INFO_0208,task,TASK_0339,Stefani,,ℹ️,person,110,2026-09-28 11:23:41,,
+INFO_0209,task,TASK_0339,Linford,,ℹ️,person,120,2026-09-28 11:24:08,,
+INFO_0210,task,TASK_0339,Martin Ralph,,ℹ️,person,130,2026-09-28 11:25:06,,
+INFO_0211,task,TASK_0339,George Maurício,,ℹ️,person,140,2026-09-28 11:29:36,,
+INFO_0212,task,TASK_0339,Larissa,,ℹ️,person,150,2026-09-28 11:29:41,,
+INFO_0213,task,TASK_0339,"oi, [pessoa]! Há quanto tempo
+
+e aí, como que vão as coisas?
+
+eu estou entrando em contato porque estou buscando oportunidades de reposicionamento aqui dentro da Bosch
+
+Hoje eu atuo como pesquisador e analista de dados pleno para o time de UX na SO e quero progredir na carreira para me tornar sênior (já estou no TAR por indicação da liderança). Para conseguir esse sonho, eu acabei de terminar o meu mestrado na Unicamp, onde também fiz a minha graduação, trabalhando com agentes de inteligência artificial
+
+Já estou aqui na organização há 10 anos e quero me aposentar aqui. Gosto muito de trabalhar! Contudo, e eu acho que você já está sabendo, está acontecendo aquela absorção da SO pela GS e eu queria aproveitar essa oportunidade para tentar me reposicionar
+
+Eu gosto muito de recuperar dados e informação de diversos sistemas, trabalhar neles usando inteligência artificial e entregar insights estratégicos. Eu não sei se você trabalha com algo parecido no seu time e se vê alguma oportunidade, porque eu adoria saber mais
+
+
+Se não for o caso e tiver alguém que você possa indicar para eu conversar, também seria maravilhoso. Muito obrigado!
+
+* Segue meu currículo",,ℹ️,mensagem,160,2026-09-28 12:13:17,,
