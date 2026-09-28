@@ -24,7 +24,7 @@ def _chip(phrase: str, mnemonic: str) -> str:
     message = quote(f"[{phrase}]", safe="")
     src = (
         "https://img.shields.io/static/v1?style=flat-square"
-        f"&label=&message={message}&color=ffd966"
+        f"&label=&message={message}&color=9ecbff"
     )
     return f'<img alt="[{phrase}]" src="{src}" />({mnemonic})'
 

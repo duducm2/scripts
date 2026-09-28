@@ -252,15 +252,15 @@ def _find_term(text: str, term: str) -> re.Match[str] | None:
     return re.search(pattern, text)
 
 
-# Bright orange field, dark text. GitHub's <mark> wash is too dim on a black page.
-_KEYWORD_ORANGE = "ffd966"
+# Light blue field, dark text. GitHub's <mark> wash is too dim on a black page.
+_KEYWORD_BLUE = "9ecbff"
 
 
 def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
     """Highlight only the concept phrase. The mnemonic stays plain text.
 
-    GitHub strips custom colors, and its `<mark>` orange has almost no contrast
-    in dark mode. A flat badge is a light orange chip with dark text, which is
+    GitHub strips custom colors, and its `<mark>` wash has almost no contrast
+    in dark mode. A flat badge is a light blue chip with dark text, which is
     the same pairing the web app paints.
     """
     safe_phrase = html.escape(phrase, quote=True)
@@ -268,7 +268,7 @@ def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
     message = quote(f"[{phrase}]", safe="")
     src = (
         "https://img.shields.io/static/v1?style=flat-square"
-        f"&label=&message={message}&color={_KEYWORD_ORANGE}"
+        f"&label=&message={message}&color={_KEYWORD_BLUE}"
     )
     return f'<img alt="[{safe_phrase}]" src="{src}" />({safe_mnemonic})'
 
@@ -356,7 +356,7 @@ def _embed_legacy(core: str, pairs: list[tuple[str, str]]) -> str:
 
 
 def embed_keyword_mnemonics(text: str, keywords: str | None) -> str:
-    """Inline each keyword as orange `[phrase]` plus blue `(mnemonic)`.
+    """Inline each keyword as a blue `[phrase]` chip plus a plain `(mnemonic)`.
 
     When pairs line up with bracket groups, each phrase is rewritten inside its
     own group and a phrase that fills the group reuses that group's brackets.
