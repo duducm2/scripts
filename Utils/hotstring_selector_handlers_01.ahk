@@ -597,9 +597,7 @@ PromptContext_CountFileChips(uia, companionId := "", chipNeed := 0) {
     root := PromptContext_UploadSearchRoot(uia, companionId)
     if (!IsObject(root))
         return 0
-    static buttonCacheRequest := 0
-    if (!buttonCacheRequest)
-        buttonCacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    buttonCacheRequest := UIA_NameClassCacheRequest()
     ; Fast path: Gemini file preview chips by ClassName (avoids full Button enumeration).
     for clsNeedle in ["new-file-preview-file", "file-preview"] {
         try {
@@ -695,9 +693,7 @@ PromptContext_ProbeReadiness(hwnd, uia, companionId, attachCount := 0, scanUploa
     if (!IsObject(root))
         root := uia
 
-    static buttonCacheRequest := 0
-    if (!buttonCacheRequest)
-        buttonCacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    buttonCacheRequest := UIA_NameClassCacheRequest()
 
     sendBtn := 0
     chipNeed := Max(0, attachCount)

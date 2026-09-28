@@ -229,9 +229,7 @@ CopyLastGeminiMessageWithRetry(options := "", geminiHwnd := 0, maxRetries := GEM
 ; Resolves localized names (EN/PT) via GEMINI_TTS_PAUSE_NAMES / GEMINI_TTS_RESUME_NAMES and runs
 ; cached FindFirstBuildCache per name. No FindAll fallback (canon §3 / §4): one cheap COM call per name.
 FindGeminiPauseResumeButton(uia, which) {
-    static cacheRequest := ""
-    if (!cacheRequest)
-        cacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    static cacheRequest := UIA_NameClassCacheRequest()
     names := (which = "Resume") ? GEMINI_TTS_RESUME_NAMES : GEMINI_TTS_PAUSE_NAMES
     for n in names {
         try {

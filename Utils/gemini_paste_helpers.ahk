@@ -8,6 +8,13 @@ global g_HotstringGeminiRestoreHwnd := 0
 global g_GeminiDelayedSubmit_PreEnterDelayMs := 1000
 global g_GeminiDelayedSubmit_WaitContentMaxMs := 5000
 
+; AHK names are case-insensitive, so a parameter named uia hides the UIA class.
+; Cache requests must be created here, where UIA still refers to the library.
+UIA_NameClassCacheRequest() {
+    static cr := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    return cr
+}
+
 Gemini_GetSearchRoot(uia) {
     if (!IsObject(uia))
         return 0
@@ -123,9 +130,7 @@ Gemini_IsSendButtonCandidate(btn) {
 Gemini_FindSendButton(uia) {
     if (!IsObject(uia))
         return 0
-    static cacheRequest := 0
-    if (!cacheRequest)
-        cacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    static cacheRequest := UIA_NameClassCacheRequest()
     root := Gemini_GetSearchRoot(uia)
     if (!root)
         return 0
@@ -151,9 +156,7 @@ Gemini_FindSendButton(uia) {
 Gemini_HasGeneratingStopButtonForUia(uia) {
     if (!IsObject(uia))
         return false
-    static cacheRequest := 0
-    if (!cacheRequest)
-        cacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    static cacheRequest := UIA_NameClassCacheRequest()
     root := Gemini_GetSearchRoot(uia)
     if (!root)
         return false

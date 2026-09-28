@@ -23,13 +23,19 @@ global g_PronunciationLangHotkeysBound := false
 PronunciationHotkey_StartLookup(lang, selectedText) {
     if (lang = "" || selectedText = "")
         return
-    ; Finish selecting the configured Quick/Fast model before any lookup submits.
+    ; Prefer the configured Quick/Fast model. If the switch cannot be applied
+    ; (companion UI, chat, or model list), continue on whatever model is active.
     ShowSmallLoadingIndicator("⏳ Selecting Quick model…")
     modelReady := false
     try modelReady := MacroAICompanionQuickModel()
     finally HideSmallLoadingIndicator()
-    if !modelReady
-        return
+    if !modelReady {
+        hwnd := 0
+        label := ""
+        GlobalAICompanionHwndAndLabel(&hwnd, &label)
+        if (!hwnd)
+            return
+    }
     companion := ResolveGlobalAICompanion()
     if (companion = "enterprise")
         (GeminiEnterpriseAsyncLookup(lang, selectedText)).Start()
