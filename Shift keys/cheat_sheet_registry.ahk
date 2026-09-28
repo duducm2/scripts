@@ -1077,6 +1077,9 @@ cheatSheets["Tasks"] := "
     🏠 [Esc] Info list — close and keep dashboard selection and category filter
     ⬆️ [Up] Info list — previous info
     ⬇️ [Down] Info list — next info
+    🏠 [Home] / [Ctrl+Home] Info list — first info
+    🔚 [End] / [Ctrl+End] / [Ctrl+F] Info list — last info
+    🔤 [a-z 0-9] Info list — jump to next info whose first word starts with that character
     ⬆️ [Shift+Up] Info list — move highlighted info up
     ⬇️ [Shift+Down] Info list — move highlighted info down
     ⏎ [Enter] Info list — add info

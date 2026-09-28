@@ -2681,9 +2681,10 @@
         }
 
         function titleFirstChar(title) {
-          const m = String(title || "")
-            .normalize("NFKC")
-            .match(/[A-Za-z0-9]/);
+          const folded = String(title || "")
+            .normalize("NFD")
+            .replace(/\p{M}+/gu, "");
+          const m = folded.match(/[A-Za-z0-9]/);
           return m ? m[0].toLowerCase() : "";
         }
 
@@ -4140,6 +4141,9 @@
         <span><kbd>Shift+1</kbd> all</span>
         <span><kbd>Shift+2–9</kbd> categories</span>
         <span><kbd>Shift+0</kbd> more</span>
+        <span><kbd>Ctrl+Home</kbd> first</span>
+        <span><kbd>Ctrl+F</kbd> last</span>
+        <span><kbd>A–Z</kbd> first word</span>
       </div>
       <ul class="${listClass}">${
         rows.map(infoRowHtml).join("") ||
@@ -4316,6 +4320,40 @@
           idx = Math.max(0, Math.min(rows.length - 1, idx + dir));
           state.infoSelId = rows[idx].id;
           paintInfoSel();
+        }
+
+        function selectInfoEdge(which) {
+          const rows = infoRowsFiltered();
+          if (!rows.length) return;
+          state.infoSelId = which < 0 ? rows[0].id : rows[rows.length - 1].id;
+          paintInfoSel();
+        }
+
+        function infoFirstWordChar(text) {
+          const words = String(text || "")
+            .trim()
+            .split(/\s+/);
+          for (const word of words) {
+            const ch = titleFirstChar(word);
+            if (ch) return ch;
+          }
+          return "";
+        }
+
+        function infoLetterJump(ch) {
+          const rows = infoRowsFiltered();
+          if (!rows.length) return;
+          const cur = rows.findIndex((r) => r.id === state.infoSelId);
+          const n = rows.length;
+          const from = cur < 0 ? 0 : (cur + 1) % n;
+          for (let i = 0; i < n; i++) {
+            const idx = (from + i) % n;
+            if (infoFirstWordChar(infoText(rows[idx])) === ch) {
+              state.infoSelId = rows[idx].id;
+              paintInfoSel();
+              return;
+            }
+          }
         }
 
         async function moveInfoRow(dir) {
@@ -5840,6 +5878,18 @@
             if (inField) return;
             const k = (e.key || "").toLowerCase();
             if (state.infoUi === "list") {
+              if (e.key === "Home") {
+                e.preventDefault();
+                e.stopPropagation();
+                selectInfoEdge(-1);
+                return;
+              }
+              if (e.key === "End" || k === "f" || e.code === "KeyF") {
+                e.preventDefault();
+                e.stopPropagation();
+                selectInfoEdge(1);
+                return;
+              }
               if (k === "c" || e.code === "KeyC") {
                 e.preventDefault();
                 e.stopPropagation();
@@ -6090,6 +6140,21 @@
             if (e.key === "Backspace") {
               e.preventDefault();
               dismissInfoModal();
+              return;
+            }
+            if (e.key === "Home") {
+              e.preventDefault();
+              selectInfoEdge(-1);
+              return;
+            }
+            if (e.key === "End") {
+              e.preventDefault();
+              selectInfoEdge(1);
+              return;
+            }
+            if (!e.shiftKey && /^[a-z0-9]$/i.test(e.key)) {
+              e.preventDefault();
+              infoLetterJump(e.key.toLowerCase());
               return;
             }
             return;
