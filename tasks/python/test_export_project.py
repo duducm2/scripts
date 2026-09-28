@@ -7,7 +7,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from task_store import STATUS_EMOJIS, TaskStore
+from task_store import STATUS_EMOJIS, TaskStore, project_export_filename
 
 
 class ExportProjectTest(unittest.TestCase):
@@ -142,6 +142,44 @@ class ExportProjectTest(unittest.TestCase):
         self.assertEqual(doc["counts"]["completed_tasks"], 1)
         self.assertEqual(doc["counts"]["info_points"], 2)
         self.assertEqual(doc["counts"]["attachments"], 1)
+
+    def test_awkward_title_keeps_completed_task_and_multiline_note(self) -> None:
+        proj = self.store.upsert_project({"title": "«—»", "filter": "personal"})[
+            "project"
+        ]
+        done = self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "title": "Finished draft",
+                "filter": "personal",
+                "emoji": "done",
+                "kind": "punctual",
+            }
+        )["task"]
+        note = 'He said "hello"\nand left'
+        self.store.upsert_info(
+            {
+                "parent_type": "task",
+                "parent_id": done["id"],
+                "title": "Quote",
+                "body": note,
+            }
+        )
+        result = self.store.export_project(proj["id"], as_of=date(2026, 9, 28))
+        self.assertTrue(result["ok"])
+        filename = result["filename"]
+        self.assertEqual(filename, project_export_filename(proj))
+        self.assertEqual(filename, f"project__{proj['id']}.json")
+        self.assertRegex(filename, r"^project__[A-Za-z0-9_-]+\.json$")
+        self.assertTrue(filename.isascii())
+        tasks = [
+            t for s in result["document"]["project"]["sections"] for t in s["tasks"]
+        ]
+        finished = next(t for t in tasks if t["title"] == "Finished draft")
+        self.assertEqual(finished["status"], "done")
+        self.assertFalse(finished["open"])
+        self.assertEqual(finished["info"][0]["body"], note)
+        self.assertNotRegex(filename, r"[^\x00-\x7F]")
 
 
 if __name__ == "__main__":
