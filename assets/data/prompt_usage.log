@@ -358,3 +358,4 @@
 2026-09-27 11:09:32|6|Curate knowledge atoms|gemini|default|ctx=1|direct
 2026-09-27 11:19:53|4|Creating mnemonic stories|gemini|default|ctx=3+1|gemini
 2026-09-27 18:37:00|3|AI Text Optimizer|gemini|default|ctx=0|direct
+2026-09-28 07:57:33|k|Task - Convert to Task|enterprise|default|ctx=2|gemini
