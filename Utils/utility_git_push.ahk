@@ -160,6 +160,19 @@ Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
     return Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
 }
 
+; Personal repo path from env.ahk PERSONAL_REPO_PATH. Lives here (not env.ahk) so a
+; work PC that omits the global does not #Warn: a missing function call is an unset local.
+; Returns the path when configured and present; else "" (push soft-skips).
+GetPersonalRepoPath() {
+    global PERSONAL_REPO_PATH
+    if !IsSet(PERSONAL_REPO_PATH)
+        return ""
+    path := RTrim(Trim(PERSONAL_REPO_PATH), "\")
+    if (path != "" && DirExist(path))
+        return path
+    return ""
+}
+
 Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     status := GitCli_Run(scriptsRoot, "status --porcelain", 30000)
     if (status.exitCode != 0)
@@ -357,12 +370,8 @@ Utility_GitSyncPushWorker() {
             return
         }
 
-        ; Soft-skip when PERSONAL_REPO_PATH missing (typical on work PC).
-        personalRoot := ""
-        try personalRoot := GetPersonalRepoPath()
-        catch {
-            personalRoot := ""
-        }
+        ; Soft-skip when PERSONAL_REPO_PATH is unset or the folder is absent (typical on work).
+        personalRoot := GetPersonalRepoPath()
         personalResult := "noop"
         if (personalRoot != "") {
             personalResult := Utility_GitSyncPushOne(personalRoot, "Personal", commitMsg)
