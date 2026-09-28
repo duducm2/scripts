@@ -1,0 +1,16 @@
+﻿===PREVIEW===
+0 project(s) · 4 task(s) · 0 info · Added 4 backlog tasks to existing BPM project under section 'Ajustes necessários'
+===END_PREVIEW===
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+BPM,work,Verificar Status e fluxo de aprovação,🔲,punctual,,,,Ajustes necessários
+BPM,work,Incluir a Fran no fim fluxo para receber o email juntamente com COR,🔲,punctual,,,,Ajustes necessários
+BPM,work,Exportar planilha: ajustar nome do arquivo e verificar o banco de dados que ele trás,🔲,punctual,,,,Ajustes necessários
+BPM,work,"Verificar como cadastrar novos departamentos (talvez incluir uma aba de cadastro para os departamentos e deixar pré selecionado nos serviços)",🔲,punctual,,,,Ajustes necessários
+===END_FILE===
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,filter,title,body,section_path
+===END_FILE===
