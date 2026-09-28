@@ -168,11 +168,47 @@ LanguageFlag_InitRetry3s() {
     LanguageFlag_InitFromPersistedSlot()
 }
 
+; Redraw off the hotkey / OnMessage thread. A closure timer can miss the slot.
+global g_LanguageFlagQueuedSlot := 0
+
+LanguageFlag_QueueShow(slot) {
+    global g_LanguageFlagQueuedSlot
+    if (slot < 1 || slot > 3)
+        return
+    g_LanguageFlagQueuedSlot := slot
+    SetTimer(LanguageFlag_ApplyQueuedSlot, -1)
+}
+
+LanguageFlag_ApplyQueuedSlot(*) {
+    global g_LanguageFlagQueuedSlot, g_HandyAiPersistedSlot, g_LanguageFlagSlot
+    slot := g_LanguageFlagQueuedSlot
+    g_LanguageFlagQueuedSlot := 0
+    if (slot < 1 || slot > 3)
+        return
+    g_HandyAiPersistedSlot := slot
+    if (slot != g_LanguageFlagSlot)
+        LanguageFlag_Show(slot)
+}
+
+; Model switches often run in whichever script owns the Utility menu.
+; That process saves the INI; only AppLaunchers owns the bottom chips.
+LanguageFlag_SyncFromPersistedSlot(*) {
+    global g_LanguageFlagSlot, g_HandyAiPersistedSlot
+    slot := 0
+    try slot := Handy_ReadPersistedAiModelSlotFromIni()
+    if (slot < 1 || slot > 3)
+        return
+    g_HandyAiPersistedSlot := slot
+    if (slot != g_LanguageFlagSlot)
+        LanguageFlag_Show(slot)
+}
+
 ; AppLaunchers may still be settling right after Act. One early timer can miss the flag.
 if (HandyAi_IsOwnerProcess()) {
     SetTimer(LanguageFlag_InitFromPersistedSlot, -250)
     SetTimer(LanguageFlag_InitRetry1s, -1000)
     SetTimer(LanguageFlag_InitRetry3s, -3000)
+    SetTimer(LanguageFlag_SyncFromPersistedSlot, 300)
 }
 
 ; Small banner for Clip Angel (uses standard loading indicator).
@@ -315,7 +351,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
         ; then ask AppLaunchers to draw the flag (the menu often lives in another script after Act).
         if (HandyAi_IsOwnerProcess()) {
             if (selection >= 1 && selection <= 3)
-                LanguageFlag_Show(selection)
+                LanguageFlag_QueueShow(selection)
             else
                 LanguageFlag_Hide()
         } else if (selection >= 1 && selection <= 3) {
@@ -417,7 +453,7 @@ Handy_OnAiModelRequest(wParam, lParam, *) {
         if (slot >= 1 && slot <= 3) {
             global g_HandyAiPersistedSlot
             g_HandyAiPersistedSlot := slot
-            SetTimer((*) => LanguageFlag_Show(slot), -1)
+            LanguageFlag_QueueShow(slot)
         }
         return
     }
