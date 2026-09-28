@@ -141,6 +141,12 @@ ChromeTitleWithoutBrowser(title) {
     return t
 }
 
+; Page title after the browser suffix is removed. "Google Chrome" alone is not a search page.
+IsGoogleSearchTitle(title) {
+    t := ChromeTitleWithoutBrowser(title)
+    return (t = "Google" || InStr(t, " - Google Search") || InStr(t, " - Pesquisa Google"))
+}
+
 ; Same site key the overlay uses, from the focused Chrome/Edge window only.
 ActiveChromeSheetKey() {
     if !(WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe"))
@@ -195,7 +201,7 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Copilot Web"
     if InStr(chromeTitle, "Google Maps")
         key := "Google Maps"
-    if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
+    if (key = "" && IsGoogleSearchTitle(chromeTitle))
         key := "Google"
     ; Belt-and-suspenders: :8766 / :8767 when title matching missed (e.g. stale bare Habits/Work/Personal).
     if (key = "") {

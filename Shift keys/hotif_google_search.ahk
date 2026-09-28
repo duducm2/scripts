@@ -5,8 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(SafeWinGetTitle(), "Google") && !InStr(SafeWinGetTitle(),
-"Google Maps")
+#HotIf WinActive("ahk_exe chrome.exe") && IsGoogleSearchTitle(SafeWinGetTitle())
 
 ; Shift + S : Focus Google search box
 +s:: {
