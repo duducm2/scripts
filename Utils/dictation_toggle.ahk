@@ -271,13 +271,19 @@ DictationFlag_RepositionAll() {
 }
 
 ; Show or refresh recording flags on every monitor from the persisted Handy slot.
+; Same INI slot as the bottom chips, so both flags are the language to speak.
 DictationFlag_ShowForRecording() {
-    global g_DictationFlagGuis, g_DictationFlagSlot
+    global g_DictationFlagGuis, g_DictationFlagSlot, g_HandyAiPersistedSlot, g_LanguageFlagSlot
 
     slot := 0
     try slot := Handy_ReadPersistedAiModelSlotFromIni()
     if (slot < 1 || slot > 3)
         slot := 0
+    else {
+        g_HandyAiPersistedSlot := slot
+        if (g_LanguageFlagSlot != slot)
+            LanguageFlag_Show(slot)
+    }
 
     monitorCount := MonitorGetCount()
     if (monitorCount < 1) {

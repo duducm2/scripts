@@ -151,9 +151,13 @@ LanguageFlag_RepositionAllMonitors() {
 }
 
 LanguageFlag_InitFromPersistedSlot() {
-    slot := Handy_GetPersistedAiModelSlot()
-    if (slot >= 1 && slot <= 3)
+    global g_HandyAiPersistedSlot
+    slot := 0
+    try slot := Handy_ReadPersistedAiModelSlotFromIni()
+    if (slot >= 1 && slot <= 3) {
+        g_HandyAiPersistedSlot := slot
         LanguageFlag_Show(slot)
+    }
 }
 
 LanguageFlag_InitRetry1s() {
@@ -410,8 +414,11 @@ Handy_OnAiModelRequest(wParam, lParam, *) {
     slot := raw & 0xFF
     ; Flag only: another process already switched Handy. Do not run model UIA again.
     if (raw & 0x200) {
-        if (slot >= 1 && slot <= 3)
+        if (slot >= 1 && slot <= 3) {
+            global g_HandyAiPersistedSlot
+            g_HandyAiPersistedSlot := slot
             SetTimer((*) => LanguageFlag_Show(slot), -1)
+        }
         return
     }
     restartDictationIfStopped := (raw & 0x100) != 0
