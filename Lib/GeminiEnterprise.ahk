@@ -281,9 +281,10 @@ GeminiEnterprise_RunWithBusyBanner(message, fn, hwnd := 0) {
     }
 }
 
+; Do not use {Blind}: it re-injects a physically held Shift+letter into the focused field.
 GeminiEnterprise_ReturnToComposer() {
     Sleep 40
-    Send "{Blind}d{Backspace}"
+    Send "d{Backspace}"
 }
 
 GeminiEnterprise_PlayFocusedChime(minIntervalMs := 400) {

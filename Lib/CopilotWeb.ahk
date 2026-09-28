@@ -434,9 +434,10 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
 }
 
 ; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).
+; Do not use {Blind}: it re-injects a physically held Shift+letter into the focused field.
 CopilotWeb_ReturnToComposer() {
     Sleep 40
-    Send "{Blind}d{Backspace}"
+    Send "d{Backspace}"
 }
 
 CopilotWeb_WaitForComposerDiscoverable(uia, timeoutMs := 500) {

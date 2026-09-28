@@ -65,3 +65,38 @@ GetChatGPTWindowHwnd() {
     }
     return 0
 }
+
+; Letter from $*m / $+m (single a-z), ignoring hook and modifier prefixes.
+ShiftLetterHotkey_TriggerKey() {
+    hk := A_ThisHotkey
+    hk := RegExReplace(hk, "^[$*~]+")
+    hk := RegExReplace(hk, "[#^!+<>]+", "")
+    if RegExMatch(hk, "^[a-zA-Z]$")
+        return StrLower(hk)
+    return ""
+}
+
+; True when this keypress is Shift + the letter, with no Ctrl, Alt, or Win.
+ShiftLetterHotkey_IsBareShift() {
+    return GetKeyState("Shift", "P")
+    && !GetKeyState("Ctrl", "P")
+    && !GetKeyState("Alt", "P")
+    && !GetKeyState("LWin", "P")
+    && !GetKeyState("RWin", "P")
+}
+
+; Pass a normal letter or a non-bare-Shift chord through to the focused field.
+; The $ hotkey prefix keeps this Send from retriggering the hotkey.
+ShiftLetterHotkey_Relay() {
+    key := ShiftLetterHotkey_TriggerKey()
+    if (key != "")
+        Send "{Blind}" . key
+}
+
+; Wait out a still-held trigger key so a later Send cannot type it.
+ShiftLetterHotkey_Consume() {
+    key := ShiftLetterHotkey_TriggerKey()
+    if (key = "" || !GetKeyState(key, "P"))
+        return
+    KeyWait key, "T1"
+}
