@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+1 project(s) · 6 task(s) · 2 info · Linhas incompletas ou duplicadas foram desconsideradas.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+Projeto PT,work,
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Projeto PT,work,"Coletar informações públicas do Reclame Aqui",general,punctual,,,2026-10-31,
+Projeto PT,work,"Análise de qualidade dos concorrentes no ramo de ferramentas elétricas (respostas Reclame Aqui)",general,punctual,,,2026-10-31,
+Projeto PT,work,"Apresentar o projeto (Eduardo Borges)",important,punctual,,,2026-09-28,
+Projeto PT,work,"Fazer estudo do PROCON",general,punctual,,,2026-10-31,
+Projeto PT,work,"Falar com o Maciel (UX pro) para manter a boa convivência",general,punctual,,,,
+Projeto PT,work,"Validar hipótese: Tempo de tratativa e envio de ferramenta nova",general,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,filter,title,body,section_path
+project,Projeto PT,work,Escopo do Projeto,O projeto PT é considerado difícil. É um projeto pago pela cliente e o que puder ser feito servirá como abertura de portas.,
+project,Projeto PT,work,Restrições e Sugestões,Limitar a análise a quatro empresas (sugestão anterior). Eles já sabem quem são os concorrentes.,
+===END_FILE===
