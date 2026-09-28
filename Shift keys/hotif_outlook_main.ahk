@@ -187,23 +187,33 @@
 ; Shift + J : Jump to first mail and select it
 +J::
 {
-    if IsNewOutlookActive() {
-        Outlook_ActivateMainWindow()
-        ; Keep behavior mail-centric: if user is in Calendar, switch first.
-        Outlook_SwitchToMail()
+    jumpError := ""
+    try {
+        StandardLoadingBar_Show("⏳ Jumping to first mail...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        if IsNewOutlookActive() {
+            Outlook_ActivateMainWindow()
+            ; Keep behavior mail-centric: if user is in Calendar, switch first.
+            Outlook_SwitchToMail()
+            if Outlook_FocusMailMessageList(true)
+                return
+        }
+
+        ; Classic / fallback: try UIA first-item selection (with non-message filter), then keyboard skip-header path.
         if Outlook_FocusMailMessageList(true)
             return
+        if Outlook_FocusMailMessageList() {
+            Send "{Home}"
+            Sleep 40
+            if !Outlook_MailList_SkipDrawerHeadersByKeyboard()
+                jumpError := "row"
+        } else
+            jumpError := "list"
+    } finally {
+        try StandardLoadingBar_Hide(0)
     }
-
-    ; Classic / fallback: try UIA first-item selection (with non-message filter), then keyboard skip-header path.
-    if Outlook_FocusMailMessageList(true)
-        return
-    if Outlook_FocusMailMessageList() {
-        Send "{Home}"
-        Sleep 40
-        if !Outlook_MailList_SkipDrawerHeadersByKeyboard()
-            ShowCenteredOverlay_Utils("❌ Outlook: Could not focus a message row", 1200, BANNER_ACCENT_ERROR)
-    } else
+    if (jumpError = "row")
+        ShowCenteredOverlay_Utils("❌ Outlook: Could not focus a message row", 1200, BANNER_ACCENT_ERROR)
+    else if (jumpError = "list")
         ShowCenteredOverlay_Utils("❌ Outlook: Message list not found", 1200, BANNER_ACCENT_ERROR)
 }
 
