@@ -18,13 +18,14 @@ PARALLEL_CONCEPT = (
 PARALLEL_KEYWORDS = "fence | Parallel Coordinates || easel | draw || bead | tuple"
 
 
-def _chip(phrase: str, mnemonic: str) -> str:
+def _chip(phrase: str, mnemonic: str, *, lead: bool = False) -> str:
     from urllib.parse import quote
 
     message = quote(f"[{phrase}]", safe="")
+    color = "9fd4ff" if lead else "ffd966"
     src = (
         "https://img.shields.io/static/v1?style=flat-square"
-        f"&label=&message={message}&color=9ecbff"
+        f"&label=&message={message}&color={color}"
     )
     return f'<img alt="[{phrase}]" src="{src}" />({mnemonic})'
 
@@ -32,7 +33,7 @@ def _chip(phrase: str, mnemonic: str) -> str:
 def test_parallel_coordinates_contract_and_render_order() -> None:
     assert validate_atom_mnemonics(PARALLEL_CONCEPT, PARALLEL_KEYWORDS) is None
     assert embed_keyword_mnemonics(PARALLEL_CONCEPT, PARALLEL_KEYWORDS) == (
-        f"{_chip('Parallel Coordinates', 'fence')} "
+        f"{_chip('Parallel Coordinates', 'fence', lead=True)} "
         f"[I {_chip('draw', 'easel')} each variable as a parallel axis] "
         f"[and turn each {_chip('tuple', 'bead')} into a polyline]"
     )
@@ -42,7 +43,7 @@ def test_inline_whole_group_reuses_brackets_and_substring_nests() -> None:
     concept = "[Parallel] [I draw a parallel axis] [as one line]"
     keywords = "fence | Parallel || rails | parallel || pen | line"
     assert embed_keyword_mnemonics(concept, keywords) == (
-        f"{_chip('Parallel', 'fence')} "
+        f"{_chip('Parallel', 'fence', lead=True)} "
         f"[I draw a {_chip('parallel', 'rails')} axis] "
         f"[as one {_chip('line', 'pen')}]"
     )
@@ -72,7 +73,7 @@ def test_atom_block_omits_keywords_section() -> None:
     )
     assert "Keywords" not in text
     assert "No keywords yet" not in text
-    assert _chip("Parallel Coordinates", "fence") in text
+    assert _chip("Parallel Coordinates", "fence", lead=True) in text
 
 
 def test_repeated_term_stays_separate_across_groups() -> None:

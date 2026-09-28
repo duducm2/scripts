@@ -396,8 +396,8 @@ input[type="search"] {
   min-width: 0;
 }
 #studyModal .qr-line mark.kw-phrase {
-  background-color: #9ecbff;
-  color: #102033;
+  background-color: #ffd966;
+  color: #1a1200;
   font-weight: 700;
   padding: 0.05em 0.35em;
   border-radius: 2px;
@@ -410,6 +410,10 @@ input[type="search"] {
 #studyModal .qr-line mark.kw-phrase strong {
   font-weight: 700;
   color: inherit;
+}
+#studyModal .qr-line mark.kw-phrase.kw-lead {
+  background-color: #9fd4ff;
+  color: #0b1c33;
 }
 #studyModal .qr-empty {
   color: var(--muted);

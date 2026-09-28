@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/byron.png" alt="Byron" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I translate <img alt="[multidimensional]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmultidimensional%5D&color=9ecbff" />(cube) data] [into visual and <img alt="[geometric]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgeometric%5D&color=9ecbff" />(triangle) forms] [to leverage human <img alt="[cognitive]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcognitive%5D&color=9ecbff" />(brain) processing] [for pattern recognition and <img alt="[anomaly]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Banomaly%5D&color=9ecbff" />(glitch) detection]
+💡 [I translate <img alt="[multidimensional]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmultidimensional%5D&color=9fd4ff" />(cube) data] [into visual and <img alt="[geometric]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgeometric%5D&color=ffd966" />(triangle) forms] [to leverage human <img alt="[cognitive]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcognitive%5D&color=ffd966" />(brain) processing] [for pattern recognition and <img alt="[anomaly]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Banomaly%5D&color=ffd966" />(glitch) detection]
 
 **Quote**
 “Visual analysis is the translation of multidimensional data into visual, geometric, and topological representations to leverage human cognitive processing for pattern recognition, anomaly detection, and hypothesis generation.”

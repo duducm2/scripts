@@ -252,23 +252,26 @@ def _find_term(text: str, term: str) -> re.Match[str] | None:
     return re.search(pattern, text)
 
 
-# Light blue field, dark text. GitHub's <mark> wash is too dim on a black page.
-_KEYWORD_BLUE = "9ecbff"
+# Light fields, dark text. GitHub's <mark> wash is too dim on a black page.
+# The first concept phrase is blue; every later phrase stays orange.
+_KEYWORD_ORANGE = "ffd966"
+_KEYWORD_BLUE = "9fd4ff"
 
 
-def _keyword_chip_md(phrase: str, mnemonic: str) -> str:
+def _keyword_chip_md(phrase: str, mnemonic: str, *, lead: bool = False) -> str:
     """Highlight only the concept phrase. The mnemonic stays plain text.
 
     GitHub strips custom colors, and its `<mark>` wash has almost no contrast
-    in dark mode. A flat badge is a light blue chip with dark text, which is
-    the same pairing the web app paints.
+    in dark mode. A flat badge is a light chip with dark text, which is the
+    same pairing the web app paints. Only the first phrase in the concept is blue.
     """
     safe_phrase = html.escape(phrase, quote=True)
     safe_mnemonic = html.escape(mnemonic, quote=True)
     message = quote(f"[{phrase}]", safe="")
+    color = _KEYWORD_BLUE if lead else _KEYWORD_ORANGE
     src = (
         "https://img.shields.io/static/v1?style=flat-square"
-        f"&label=&message={message}&color={_KEYWORD_BLUE}"
+        f"&label=&message={message}&color={color}"
     )
     return f'<img alt="[{safe_phrase}]" src="{src}" />({safe_mnemonic})'
 
@@ -318,14 +321,14 @@ def _embed_aligned(
     pairs: list[tuple[str, str]],
 ) -> str:
     reps: list[tuple[int, int, str]] = []
-    for (start, end), (mnemonic, term) in zip(spans, pairs):
+    for index, ((start, end), (mnemonic, term)) in enumerate(zip(spans, pairs)):
         inner = core[start + 1 : end]
         match = _find_term(inner, term)
         if match is None:
             continue
         lead = len(inner) - len(inner.lstrip())
         trail_end = len(inner.rstrip())
-        chip = _keyword_chip_md(match.group(0), mnemonic)
+        chip = _keyword_chip_md(match.group(0), mnemonic, lead=index == 0)
         if match.start() == lead and match.end() == trail_end:
             reps.append((start, end + 1, chip))
         else:
@@ -337,6 +340,7 @@ def _embed_legacy(core: str, pairs: list[tuple[str, str]]) -> str:
     """First non-overlapping core match for each pair. Unmatched pairs are omitted."""
     claimed: list[tuple[int, int]] = []
     reps: list[tuple[int, int, str]] = []
+    lead_chip = True
     for mnemonic, term in pairs:
         pattern = _term_pattern(term)
         if not pattern:
@@ -349,14 +353,19 @@ def _embed_legacy(core: str, pairs: list[tuple[str, str]]) -> str:
                 continue
             claimed.append((match.start(), match.end()))
             reps.append(
-                (match.start(), match.end(), _keyword_chip_md(match.group(0), mnemonic))
+                (
+                    match.start(),
+                    match.end(),
+                    _keyword_chip_md(match.group(0), mnemonic, lead=lead_chip),
+                )
             )
+            lead_chip = False
             break
     return _apply_span_replacements(core, reps)
 
 
 def embed_keyword_mnemonics(text: str, keywords: str | None) -> str:
-    """Inline each keyword as a blue `[phrase]` chip plus a plain `(mnemonic)`.
+    """Inline each keyword phrase. The first phrase is blue; the rest are orange.
 
     When pairs line up with bracket groups, each phrase is rewritten inside its
     own group and a phrase that fills the group reuses that group's brackets.

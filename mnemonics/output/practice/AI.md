@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/marmoset.png" alt="marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **<img alt="[Context]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BContext%5D&color=9ecbff" />(giant window):** I experience the <img alt="[dumb]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdumb%5D&color=9ecbff" />(foggy helmet) zone as degraded <img alt="[attention]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Battention%5D&color=9ecbff" />(droopy eyes) and performance when processing a massive context window over an extended <img alt="[session]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsession%5D&color=9ecbff" />(hourglass).
+💡 💡 **<img alt="[Context]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BContext%5D&color=ffd966" />(giant window):** I experience the <img alt="[dumb]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdumb%5D&color=9fd4ff" />(foggy helmet) zone as degraded <img alt="[attention]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Battention%5D&color=ffd966" />(droopy eyes) and performance when processing a massive context window over an extended <img alt="[session]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsession%5D&color=ffd966" />(hourglass).
 
 **Quote**
 “In Artificial Intelligence, the "dumb zone" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.”
@@ -24,7 +24,7 @@
 <img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 💡 **Context:** I use a <img alt="[meta]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmeta%5D&color=9ecbff" />(iron curtain) prompt as a behind-the-scenes <img alt="[instruction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binstruction%5D&color=9ecbff" />(whisper) that establishes an AI's baseline parameters like tone, <img alt="[rules]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brules%5D&color=9ecbff" />(rule book), and <img alt="[boundaries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboundaries%5D&color=9ecbff" />(fence).
+💡 💡 **Context:** I use a <img alt="[meta]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmeta%5D&color=9fd4ff" />(iron curtain) prompt as a behind-the-scenes <img alt="[instruction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binstruction%5D&color=ffd966" />(whisper) that establishes an AI's baseline parameters like tone, <img alt="[rules]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brules%5D&color=ffd966" />(rule book), and <img alt="[boundaries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboundaries%5D&color=ffd966" />(fence).
 
 **Quote**
 “A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
@@ -36,7 +36,7 @@
 🟦 **Z1 · The Horse**
 
 **Concept**
-💡 💡 **Context:** I use the <img alt="[Horse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHorse%5D&color=9ecbff" />(wild horse) to represent the foundational AI model itself, which possesses raw <img alt="[power]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpower%5D&color=9ecbff" />(lightning bolt) but no inherent <img alt="[direction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdirection%5D&color=9ecbff" />(broken compass).
+💡 💡 **Context:** I use the <img alt="[Horse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHorse%5D&color=9fd4ff" />(wild horse) to represent the foundational AI model itself, which possesses raw <img alt="[power]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpower%5D&color=ffd966" />(lightning bolt) but no inherent <img alt="[direction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdirection%5D&color=ffd966" />(broken compass).
 
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
@@ -46,7 +46,7 @@
 🟦 **Z2 · Harness Layer**
 
 **Concept**
-💡 💡 **Context:** I build a <img alt="[Harness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHarness%5D&color=9ecbff" />(iron harness) or <img alt="[Tack]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTack%5D&color=9ecbff" />(leather tack) as the engineering layer to <img alt="[steer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsteer%5D&color=9ecbff" />(steering wheel) and <img alt="[connect]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%5D&color=9ecbff" />(plug) the model's raw power.
+💡 💡 **Context:** I build a <img alt="[Harness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHarness%5D&color=9fd4ff" />(iron harness) or <img alt="[Tack]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTack%5D&color=ffd966" />(leather tack) as the engineering layer to <img alt="[steer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsteer%5D&color=ffd966" />(steering wheel) and <img alt="[connect]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%5D&color=ffd966" />(plug) the model's raw power.
 
 **Quote**
 “The Harness/Tack acts as the engineering layer that interacts with the model.”
@@ -56,7 +56,7 @@
 🟦 **Z3 · The Cart Task**
 
 **Concept**
-💡 💡 **Context:** I view the <img alt="[Cart]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCart%5D&color=9ecbff" />(wooden cart) as the ultimate <img alt="[task]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btask%5D&color=9ecbff" />(trophy) or <img alt="[destination]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdestination%5D&color=9ecbff" />(neon sign) that needs to be accomplished once the model is harnessed.
+💡 💡 **Context:** I view the <img alt="[Cart]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCart%5D&color=9fd4ff" />(wooden cart) as the ultimate <img alt="[task]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btask%5D&color=ffd966" />(trophy) or <img alt="[destination]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdestination%5D&color=ffd966" />(neon sign) that needs to be accomplished once the model is harnessed.
 
 **Quote**
 “The Cart represents the ultimate Task that needs to be accomplished.”

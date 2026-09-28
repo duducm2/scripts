@@ -386,8 +386,8 @@
         overflow: visible !important;
       }
       #overlay .atom-card .field-concept mark.kw-phrase {
-        background-color: #9ecbff;
-        color: #102033;
+        background-color: #ffd966;
+        color: #1a1200;
         font-weight: 700;
         padding: 0.05em 0.35em;
         border-radius: 2px;
@@ -400,6 +400,10 @@
       #overlay .atom-card .field-concept mark.kw-phrase strong {
         font-weight: 700;
         color: inherit;
+      }
+      #overlay .atom-card .field-concept mark.kw-phrase.kw-lead {
+        background-color: #9fd4ff;
+        color: #0b1c33;
       }
       #overlay .overlay-details {
         display: grid;
@@ -2470,8 +2474,9 @@
         }
         return [text, ""];
       }
-      function keywordChipHtml(phrase, mnemonic) {
-        return `<mark class="kw-phrase"><strong>[${esc(phrase)}]</strong></mark>(${esc(mnemonic)})`;
+      function keywordChipHtml(phrase, mnemonic, lead) {
+        const cls = lead ? "kw-phrase kw-lead" : "kw-phrase";
+        return `<mark class="${cls}"><strong>[${esc(phrase)}]</strong></mark>(${esc(mnemonic)})`;
       }
       function embedKeywordMnemonics(text, keywords) {
         const raw = String(text || "");
@@ -2494,7 +2499,7 @@
             const match = findKeywordTerm(inner, term);
             const lead = inner.length - inner.trimStart().length;
             const trailEnd = inner.trimEnd().length;
-            const chip = keywordChipHtml(match.text, mnemonic);
+            const chip = keywordChipHtml(match.text, mnemonic, i === 0);
             if (match.start === lead && match.end === trailEnd) {
               reps.push([span[0], span[1] + 1, chip]);
             } else {
@@ -2507,6 +2512,7 @@
           });
         } else {
           const claimed = [];
+          let leadChip = true;
           for (const [mnemonic, term] of pairs) {
             if (!term || term.length < 2) continue;
             const pattern = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -2520,7 +2526,12 @@
               const end = match.index + match[0].length;
               if (claimed.some(([s, e]) => start < e && end > s)) continue;
               claimed.push([start, end]);
-              reps.push([start, end, keywordChipHtml(match[0], mnemonic)]);
+              reps.push([
+                start,
+                end,
+                keywordChipHtml(match[0], mnemonic, leadChip),
+              ]);
+              leadChip = false;
               break;
             }
           }

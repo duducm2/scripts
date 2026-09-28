@@ -14,7 +14,7 @@
 <img src="../../web/assets/beast-thumbs/bloodhound.png" alt="bloodhound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[No-Code Integration]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNo-Code%20Integration%5D&color=9ecbff" />(magic wand) [I use an <img alt="[intermediary platform]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bintermediary%20platform%5D&color=9ecbff" />(bridge)] [to <img alt="[connect data sources]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%20data%20sources%5D&color=9ecbff" />(plug)] [to <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=9ecbff" />(battery)] [in a <img alt="[fully automated way]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfully%20automated%20way%5D&color=9ecbff" />(robot)] — Note: These platforms clean messy responses and schedule updates but may lack support for complex mechanics like pagination.
+💡 <img alt="[No-Code Integration]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNo-Code%20Integration%5D&color=9fd4ff" />(magic wand) [I use an <img alt="[intermediary platform]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bintermediary%20platform%5D&color=ffd966" />(bridge)] [to <img alt="[connect data sources]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%20data%20sources%5D&color=ffd966" />(plug)] [to <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=ffd966" />(battery)] [in a <img alt="[fully automated way]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfully%20automated%20way%5D&color=ffd966" />(robot)] — Note: These platforms clean messy responses and schedule updates but may lack support for complex mechanics like pagination.
 
 **Quote**
 “coupler iio is a no code solution that allows you to connect almost any data source to powerbi and other Platforms in a fully automated way”
@@ -24,7 +24,7 @@
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Bone marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[Native Web Connection]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNative%20Web%20Connection%5D&color=9ecbff" />(spider web) [I <img alt="[connect a web endpoint]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%20a%20web%20endpoint%5D&color=9ecbff" />(cable)] [to <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=9ecbff" />(battery)] [by <img alt="[specifying parameters]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspecifying%20parameters%5D&color=9ecbff" />(dial)] <img alt="[directly in the URL]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdirectly%20in%20the%20URL%5D&color=9ecbff" />(address bar) — Note: This method is free and simple for one-time imports but lacks scalability for rate limits or complex authentication.
+💡 <img alt="[Native Web Connection]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNative%20Web%20Connection%5D&color=9fd4ff" />(spider web) [I <img alt="[connect a web endpoint]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%20a%20web%20endpoint%5D&color=ffd966" />(cable)] [to <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=ffd966" />(battery)] [by <img alt="[specifying parameters]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspecifying%20parameters%5D&color=ffd966" />(dial)] <img alt="[directly in the URL]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdirectly%20in%20the%20URL%5D&color=ffd966" />(address bar) — Note: This method is free and simple for one-time imports but lacks scalability for rate limits or complex authentication.
 
 **Quote**
 “you can connect an endpoint to powerbi by specifying parameters directly in the URL”
@@ -34,7 +34,7 @@
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Bone Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[Custom Scripting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCustom%20Scripting%5D&color=9ecbff" />(scroll) [I <img alt="[write custom scripts]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwrite%20custom%20scripts%5D&color=9ecbff" />(quill)] [to <img alt="[fetch API data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfetch%20API%20data%5D&color=9ecbff" />(fishing rod)] [and <img alt="[load it]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bload%20it%5D&color=9ecbff" />(dump truck)] [into a <img alt="[data warehouse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%20warehouse%5D&color=9ecbff" />(forklift)] — Note: This provides unmatched flexibility and optimization for big data, but requires significant coding complexity and infrastructure maintenance.
+💡 <img alt="[Custom Scripting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCustom%20Scripting%5D&color=9fd4ff" />(scroll) [I <img alt="[write custom scripts]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwrite%20custom%20scripts%5D&color=ffd966" />(quill)] [to <img alt="[fetch API data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfetch%20API%20data%5D&color=ffd966" />(fishing rod)] [and <img alt="[load it]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bload%20it%5D&color=ffd966" />(dump truck)] [into a <img alt="[data warehouse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%20warehouse%5D&color=ffd966" />(forklift)] — Note: This provides unmatched flexibility and optimization for big data, but requires significant coding complexity and infrastructure maintenance.
 
 **Quote**
 “whether you send data directly to powerbi or via a data warehouse custom scripts provide unmatched flexibility compared to the other two options”
@@ -44,7 +44,7 @@
 <img src="../../web/assets/beast-thumbs/bower_bird.png" alt="bower-bird" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[Push Datasets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPush%20Datasets%5D&color=9ecbff" />(button) [I <img alt="[stream data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstream%20data%5D&color=9ecbff" />(hose)] [directly into <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=9ecbff" />(battery)] [using its <img alt="[REST API]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BREST%20API%5D&color=9ecbff" />(menu)] — Note: This method does not support relationships or joins, so all complex data models must be flattened before ingestion.
+💡 <img alt="[Push Datasets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPush%20Datasets%5D&color=9fd4ff" />(button) [I <img alt="[stream data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstream%20data%5D&color=ffd966" />(hose)] [directly into <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=ffd966" />(battery)] [using its <img alt="[REST API]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BREST%20API%5D&color=ffd966" />(menu)] — Note: This method does not support relationships or joins, so all complex data models must be flattened before ingestion.
 
 **Quote**
 “you can only send data using power bi's push data sets method which doesn't support relationships or joins meaning complex data models must be flattened before ingestion”
@@ -75,7 +75,7 @@ _No gallery images._
 🟦 **Z1 · LAG Function**
 
 **Concept**
-💡 <img alt="[LAG Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLAG%20Function%5D&color=9ecbff" />(lagging foot) [I <img alt="[query data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%20data%5D&color=9ecbff" />(magnifying glass)] [from <img alt="[preceding rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpreceding%20rows%5D&color=9ecbff" />(footprints)] [relative to the <img alt="[current evaluation row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcurrent%20evaluation%20row%5D&color=9ecbff" />(anchor)] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
+💡 <img alt="[LAG Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLAG%20Function%5D&color=9fd4ff" />(lagging foot) [I <img alt="[query data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%20data%5D&color=ffd966" />(magnifying glass)] [from <img alt="[preceding rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpreceding%20rows%5D&color=ffd966" />(footprints)] [relative to the <img alt="[current evaluation row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcurrent%20evaluation%20row%5D&color=ffd966" />(anchor)] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
 
 **Quote**
 “a lag is going to be for previous days and so notice how on the first day in the results there's no previous day so you see null there”
@@ -85,7 +85,7 @@ _No gallery images._
 🟦 **Z2 · LEAD Function**
 
 **Concept**
-💡 <img alt="[LEAD Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLEAD%20Function%5D&color=9ecbff" />(leash) [I <img alt="[query data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%20data%5D&color=9ecbff" />(binoculars)] [from <img alt="[subsequent rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsubsequent%20rows%5D&color=9ecbff" />(stepping stone)] [relative to the <img alt="[current evaluation row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcurrent%20evaluation%20row%5D&color=9ecbff" />(compass)] — Note: It returns a null value at the final dataset record where no subsequent row exists.
+💡 <img alt="[LEAD Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLEAD%20Function%5D&color=9fd4ff" />(leash) [I <img alt="[query data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%20data%5D&color=ffd966" />(binoculars)] [from <img alt="[subsequent rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsubsequent%20rows%5D&color=ffd966" />(stepping stone)] [relative to the <img alt="[current evaluation row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcurrent%20evaluation%20row%5D&color=ffd966" />(compass)] — Note: It returns a null value at the final dataset record where no subsequent row exists.
 
 **Quote**
 “notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead”
@@ -95,7 +95,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/bison.png" alt="bison" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[PARTITION BY]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPARTITION%20BY%5D&color=9ecbff" />(glass divider) [I <img alt="[divide the result set]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdivide%20the%20result%20set%5D&color=9ecbff" />(pizza slicer)] <img alt="[into partitions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binto%20partitions%5D&color=9ecbff" />(cubicle) [and <img alt="[calculate the window function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalculate%20the%20window%20function%5D&color=9ecbff" />(abacus)] [while <img alt="[preserving individual row details]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpreserving%20individual%20row%20details%5D&color=9ecbff" />(magnifying glass)] — Note: GROUP BY reduces the output by collapsing multiple rows into a single summary row.
+💡 <img alt="[PARTITION BY]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPARTITION%20BY%5D&color=9fd4ff" />(glass divider) [I <img alt="[divide the result set]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdivide%20the%20result%20set%5D&color=ffd966" />(pizza slicer)] <img alt="[into partitions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binto%20partitions%5D&color=ffd966" />(cubicle) [and <img alt="[calculate the window function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalculate%20the%20window%20function%5D&color=ffd966" />(abacus)] [while <img alt="[preserving individual row details]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpreserving%20individual%20row%20details%5D&color=ffd966" />(magnifying glass)] — Note: GROUP BY reduces the output by collapsing multiple rows into a single summary row.
 
 **Quote**
 “the group by statement is going to reduce the number of rows in our output by actually rolling them up and then calculating the sums or averages for each group whereas partition by actually divides the result set into partitions and changes how the window function is calculated”
@@ -105,7 +105,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Bone jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[Isolated Aggregation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BIsolated%20Aggregation%5D&color=9ecbff" />(test tube) [I <img alt="[isolate a single column]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bisolate%20a%20single%20column%5D&color=9ecbff" />(tweezers)] [for an <img alt="[aggregate function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baggregate%20function%5D&color=9ecbff" />(blender)] [without changing the <img alt="[query&#x27;s granularity]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%27s%20granularity%5D&color=9ecbff" />(sandglass)]
+💡 <img alt="[Isolated Aggregation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BIsolated%20Aggregation%5D&color=9fd4ff" />(test tube) [I <img alt="[isolate a single column]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bisolate%20a%20single%20column%5D&color=ffd966" />(tweezers)] [for an <img alt="[aggregate function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baggregate%20function%5D&color=ffd966" />(blender)] [without changing the <img alt="[query&#x27;s granularity]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%27s%20granularity%5D&color=ffd966" />(sandglass)]
 
 **Quote**
 “because we're using the partition by we're able to isolate just one column that we want to perform our aggregate function on”
@@ -115,7 +115,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Bone kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[Inline Aggregate Shortcut]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BInline%20Aggregate%20Shortcut%5D&color=9ecbff" />(syringe) [I <img alt="[inject aggregated metrics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binject%20aggregated%20metrics%5D&color=9ecbff" />(needle)] [directly into an <img alt="[un-grouped query]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bun-grouped%20query%5D&color=9ecbff" />(open book)] [using a <img alt="[single OVER clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsingle%20OVER%20clause%5D&color=9ecbff" />(blanket)]
+💡 <img alt="[Inline Aggregate Shortcut]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BInline%20Aggregate%20Shortcut%5D&color=9fd4ff" />(syringe) [I <img alt="[inject aggregated metrics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binject%20aggregated%20metrics%5D&color=ffd966" />(needle)] [directly into an <img alt="[un-grouped query]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bun-grouped%20query%5D&color=ffd966" />(open book)] [using a <img alt="[single OVER clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsingle%20OVER%20clause%5D&color=ffd966" />(blanket)]
 
 **Quote**
 “what the partition by is doing is basically taking this query right here and sticking it on one line in the select statement”
@@ -144,7 +144,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/bee.png" alt="bee" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[INNER JOIN]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BINNER%20JOIN%5D&color=9ecbff" />(bullseye) [I return only the <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=9ecbff" />(vinyl record)] [that have <img alt="[matching values]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmatching%20values%5D&color=9ecbff" />(puzzle piece)] [in <img alt="[both tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboth%20tables%5D&color=9ecbff" />(twins)] — Note: Unmatched rows are completely excluded.
+💡 <img alt="[INNER JOIN]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BINNER%20JOIN%5D&color=9fd4ff" />(bullseye) [I return only the <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=ffd966" />(vinyl record)] [that have <img alt="[matching values]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmatching%20values%5D&color=ffd966" />(puzzle piece)] [in <img alt="[both tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboth%20tables%5D&color=ffd966" />(twins)] — Note: Unmatched rows are completely excluded.
 
 **Quote**
 “Returns only the records that have matching values in both tables. If a row in the first table does not have a corresponding match in the second table based on the join condition, that row is completely excluded from the final result.”
@@ -154,7 +154,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Bone frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[LEFT JOIN]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLEFT%20JOIN%5D&color=9ecbff" />(left hand) [I return all <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=9ecbff" />(vinyl record)] [from the <img alt="[left table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bleft%20table%5D&color=9ecbff" />(table)] [and fill missing right matches with <img alt="[NULLs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNULLs%5D&color=9ecbff" />(ghost)]
+💡 <img alt="[LEFT JOIN]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLEFT%20JOIN%5D&color=9fd4ff" />(left hand) [I return all <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=ffd966" />(vinyl record)] [from the <img alt="[left table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bleft%20table%5D&color=ffd966" />(table)] [and fill missing right matches with <img alt="[NULLs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNULLs%5D&color=ffd966" />(ghost)]
 
 **Quote**
 “Returns all records from the left table, along with the matched records from the right table. If a record in the left table has no match in the right table, the query still returns the left table's row, but populates the right table's columns with NULL values.”
@@ -164,7 +164,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Bone goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[FULL OUTER JOIN]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BFULL%20OUTER%20JOIN%5D&color=9ecbff" />(outer space) [I return all <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=9ecbff" />(vinyl record)] [from <img alt="[both tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboth%20tables%5D&color=9ecbff" />(table)] [and fill any missing sides with <img alt="[NULLs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNULLs%5D&color=9ecbff" />(ghost)] — Note: It essentially combines the results of both a left join and a right join.
+💡 <img alt="[FULL OUTER JOIN]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BFULL%20OUTER%20JOIN%5D&color=9fd4ff" />(outer space) [I return all <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=ffd966" />(vinyl record)] [from <img alt="[both tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboth%20tables%5D&color=ffd966" />(table)] [and fill any missing sides with <img alt="[NULLs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNULLs%5D&color=ffd966" />(ghost)] — Note: It essentially combines the results of both a left join and a right join.
 
 **Quote**
 “Commonly referred to as FULL OUTER JOIN, it returns all records when there is a match in either the left or the right table. It essentially combines the results of both a LEFT JOIN and a RIGHT JOIN. Any missing matches on either side are filled with NULL values.”
@@ -193,7 +193,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/bat.png" alt="bat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[SQL Advanced Analytics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSQL%20Advanced%20Analytics%5D&color=9ecbff" />(dashboard) [I <img alt="[extract]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bextract%5D&color=9ecbff" />(tweezers) nested subqueries using CTEs] [and apply <img alt="[window functions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwindow%20functions%5D&color=9ecbff" />(window)] [to <img alt="[evaluate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bevaluate%5D&color=9ecbff" />(scales) specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
+💡 <img alt="[SQL Advanced Analytics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSQL%20Advanced%20Analytics%5D&color=9fd4ff" />(dashboard) [I <img alt="[extract]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bextract%5D&color=ffd966" />(tweezers) nested subqueries using CTEs] [and apply <img alt="[window functions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwindow%20functions%5D&color=ffd966" />(window)] [to <img alt="[evaluate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bevaluate%5D&color=ffd966" />(scales) specific data subsets] — Note: This combines structural organization with advanced analytical evaluations in a single query.
 
 **Quote**
 “a window function always has two components... now this whole section is called a CTE and we know that because it has this with keyword”
@@ -203,7 +203,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Bone bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[Temporary Tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTemporary%20Tables%5D&color=9ecbff" />(tent) [I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=9ecbff" />(freezer) the output of heavy computation] [in a <img alt="[temporary table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btemporary%20table%5D&color=9ecbff" />(clipboard)] [to prevent the database from <img alt="[re-executing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bre-executing%5D&color=9ecbff" />(hamster wheel) it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
+💡 <img alt="[Temporary Tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTemporary%20Tables%5D&color=9fd4ff" />(tent) [I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=ffd966" />(freezer) the output of heavy computation] [in a <img alt="[temporary table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btemporary%20table%5D&color=ffd966" />(clipboard)] [to prevent the database from <img alt="[re-executing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bre-executing%5D&color=ffd966" />(hamster wheel) it] — Note: CTEs re-execute from scratch each time, which is inefficient for massive datasets.
 
 **Quote**
 “if you find yourself using the same CTE again and again especially if your data set is large and your queries are taking a really long time to run then consider creating a temp table”
@@ -213,7 +213,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Bone cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[HAVING Clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHAVING%20Clause%5D&color=9ecbff" />(funnel) [I <img alt="[filter]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfilter%5D&color=9ecbff" />(coffee filter) summary rows] [after they have been <img alt="[processed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bprocessed%5D&color=9ecbff" />(blender)] [by the GROUP BY <img alt="[aggregation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baggregation%5D&color=9ecbff" />(snowball)] — Note: The WHERE clause filters individual rows before any data grouping occurs.
+💡 <img alt="[HAVING Clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHAVING%20Clause%5D&color=9fd4ff" />(funnel) [I <img alt="[filter]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfilter%5D&color=ffd966" />(coffee filter) summary rows] [after they have been <img alt="[processed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bprocessed%5D&color=ffd966" />(blender)] [by the GROUP BY <img alt="[aggregation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baggregation%5D&color=ffd966" />(snowball)] — Note: The WHERE clause filters individual rows before any data grouping occurs.
 
 **Quote**
 “The `HAVING` clause in SQL is used to filter records after they have been aggregated by a `GROUP BY` clause.”
@@ -223,7 +223,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Bone dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 <img alt="[GROUP BY Scope]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGROUP%20BY%20Scope%5D&color=9ecbff" />(lasso) [I <img alt="[include]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binclude%5D&color=9ecbff" />(vacuum) any non-aggregated column] [from the <img alt="[SELECT statement]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSELECT%20statement%5D&color=9ecbff" />(menu)] [inside the <img alt="[GROUP BY clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGROUP%20BY%20clause%5D&color=9ecbff" />(folder)] — Note: This ensures identical data combinations correctly collapse into a single summary row.
+💡 <img alt="[GROUP BY Scope]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGROUP%20BY%20Scope%5D&color=9fd4ff" />(lasso) [I <img alt="[include]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binclude%5D&color=ffd966" />(vacuum) any non-aggregated column] [from the <img alt="[SELECT statement]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSELECT%20statement%5D&color=ffd966" />(menu)] [inside the <img alt="[GROUP BY clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGROUP%20BY%20clause%5D&color=ffd966" />(folder)] — Note: This ensures identical data combinations correctly collapse into a single summary row.
 
 **Quote**
 “Any non-aggregated column present in the SELECT list must appear in the GROUP BY clause.”
@@ -252,7 +252,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aye_aye.png" alt="aye-aye" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Viewpoint]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BViewpoint%5D&color=9ecbff" />(twin) Controls: I show two windows together] [<img alt="[overview]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Boverview%5D&color=9ecbff" />(map) plus enlarged <img alt="[detail]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdetail%5D&color=9ecbff" />(lens) of one area]
+💡 [<img alt="[Viewpoint]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BViewpoint%5D&color=9fd4ff" />(twin) Controls: I show two windows together] [<img alt="[overview]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Boverview%5D&color=ffd966" />(map) plus enlarged <img alt="[detail]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdetail%5D&color=ffd966" />(lens) of one area]
 
 **Quote**
 “Consiste em mostrar duas janelas em conjunto: uma contendo uma visão geral da estrutura visual [e] outra apresentando em detalhes uma área específica dessa estrutura, com foco ampliado.”
@@ -262,7 +262,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aztec.png" alt="Aztec" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Rearrangement]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRearrangement%5D&color=9ecbff" />(shuffle): I change marks and <img alt="[axis]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baxis%5D&color=9ecbff" />(dial) values] [so the new layout can change what I <img alt="[understand]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunderstand%5D&color=9ecbff" />(lightbulb)]
+💡 [<img alt="[Rearrangement]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRearrangement%5D&color=9fd4ff" />(shuffle): I change marks and <img alt="[axis]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baxis%5D&color=ffd966" />(dial) values] [so the new layout can change what I <img alt="[understand]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunderstand%5D&color=ffd966" />(lightbulb)]
 
 **Quote**
 “Permitindo ao usuário modificar a disposição de marcas e de valores de eixos no espaço, a nova visão formada desse rearranjo pode levar a diferentes compreensões dos fatos mostrados na estrutura visual”
@@ -291,7 +291,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/atlas.png" alt="atlas" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Glyph]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGlyph%5D&color=9ecbff" />(puppet): a graphic entity] [whose <img alt="[attributes]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Battributes%5D&color=9ecbff" />(dial) are <img alt="[driven]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdriven%5D&color=9ecbff" />(remote) by data attributes]
+💡 [<img alt="[Glyph]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGlyph%5D&color=9fd4ff" />(puppet): a graphic entity] [whose <img alt="[attributes]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Battributes%5D&color=ffd966" />(dial) are <img alt="[driven]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdriven%5D&color=ffd966" />(remote) by data attributes]
 
 **Quote**
 “Glyph: representação visual de um pedaço de dados ou informação em que uma entidade gráfica e seus atributos são controlados por um ou mais atributos de dados”
@@ -301,7 +301,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/auroch.png" alt="auroch" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Dense <img alt="[Pixel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPixel%5D&color=9ecbff" />(mosaic) Displays: I <img alt="[map]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmap%5D&color=9ecbff" />(tile) each value to individual pixels] [and form a <img alt="[polygon]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpolygon%5D&color=9ecbff" />(shape) per data dimension]
+💡 [Dense <img alt="[Pixel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPixel%5D&color=9fd4ff" />(mosaic) Displays: I <img alt="[map]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmap%5D&color=ffd966" />(tile) each value to individual pixels] [and form a <img alt="[polygon]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpolygon%5D&color=ffd966" />(shape) per data dimension]
 
 **Quote**
 “Mapeiam cada valor para pixels individuais e criam um polígono para representar cada dimensão dos dados.”
@@ -311,7 +311,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/avocet.png" alt="avocet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [View <img alt="[Transformation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTransformation%5D&color=9ecbff" />(switch): creates new <img alt="[views]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bviews%5D&color=9ecbff" />(window)] [of the visual structure] [for my <img alt="[needs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bneeds%5D&color=9ecbff" />(wrench)]
+💡 [View <img alt="[Transformation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTransformation%5D&color=9fd4ff" />(switch): creates new <img alt="[views]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bviews%5D&color=ffd966" />(window)] [of the visual structure] [for my <img alt="[needs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bneeds%5D&color=ffd966" />(wrench)]
 
 **Quote**
 “Transformação de visão: cria novas visões da estrutura visual de acordo com a necessidade do usuário.”
@@ -321,7 +321,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/awassi_sheep.png" alt="awassi sheep" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Location]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLocation%5D&color=9ecbff" />(pin) Investigations: I use a data mark's location] [to <img alt="[reveal]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breveal%5D&color=9ecbff" />(flashlight) extra table <img alt="[information]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binformation%5D&color=9ecbff" />(card)]
+💡 [<img alt="[Location]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLocation%5D&color=9fd4ff" />(pin) Investigations: I use a data mark's location] [to <img alt="[reveal]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breveal%5D&color=ffd966" />(flashlight) extra table <img alt="[information]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binformation%5D&color=ffd966" />(card)]
 
 **Quote**
 “Usam o local em que um dado está em uma estrutura visual para revelar informações adicionais da tabela de dados.”
@@ -331,7 +331,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/axolotl.png" alt="axolotl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Distortions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDistortions%5D&color=9ecbff" />(magnifier): show focus and <img alt="[context]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcontext%5D&color=9ecbff" />(frame)] [in the <img alt="[same]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsame%5D&color=9ecbff" />(stretch) visual structure at once]
+💡 [<img alt="[Distortions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDistortions%5D&color=9fd4ff" />(magnifier): show focus and <img alt="[context]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcontext%5D&color=ffd966" />(frame)] [in the <img alt="[same]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsame%5D&color=ffd966" />(stretch) visual structure at once]
 
 **Quote**
 “Criam visões com foco e contexto simultaneamente em uma mesma estrutura visual.”
@@ -360,7 +360,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Multivariate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMultivariate%5D&color=9ecbff" />(crayon) Line Charts: I tell dimensions apart] [by color, <img alt="[width]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwidth%5D&color=9ecbff" />(rope), or line <img alt="[style]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstyle%5D&color=9ecbff" />(stripe)]
+💡 [<img alt="[Multivariate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMultivariate%5D&color=9fd4ff" />(crayon) Line Charts: I tell dimensions apart] [by color, <img alt="[width]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwidth%5D&color=ffd966" />(rope), or line <img alt="[style]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstyle%5D&color=ffd966" />(stripe)]
 
 **Quote**
 “Diferenciação das dimensões por atributos gráficos como cor, largura ou estilo de linha”
@@ -370,7 +370,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/ape.png" alt="ape" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Parallel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BParallel%5D&color=9ecbff" />(fence) Coordinates: I draw each variable as a parallel axis] [and turn each <img alt="[tuple]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btuple%5D&color=9ecbff" />(bead) into a <img alt="[polyline]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpolyline%5D&color=9ecbff" />(wire)]
+💡 [<img alt="[Parallel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BParallel%5D&color=9fd4ff" />(fence) Coordinates: I draw each variable as a parallel axis] [and turn each <img alt="[tuple]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btuple%5D&color=ffd966" />(bead) into a <img alt="[polyline]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpolyline%5D&color=ffd966" />(wire)]
 
 **Quote**
 “Representa cada variável por um eixo Eixos são paralelos entre si Tupla se transforma em linha poligonal (polyline).”
@@ -380,7 +380,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aquatic_leech.png" alt="aquatic leech" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Radial]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRadial%5D&color=9ecbff" />(clock) Axis Techniques: I use polar axes] [to study <img alt="[cyclical]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcyclical%5D&color=9ecbff" />(loop) events and <img alt="[seasonality]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bseasonality%5D&color=9ecbff" />(calendar)]
+💡 [<img alt="[Radial]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRadial%5D&color=9fd4ff" />(clock) Axis Techniques: I use polar axes] [to study <img alt="[cyclical]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcyclical%5D&color=ffd966" />(loop) events and <img alt="[seasonality]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bseasonality%5D&color=ffd966" />(calendar)]
 
 **Quote**
 “Pode ser útil para estudar eventos de natureza cíclica Ex.: hipóteses sobre a sazonalidade de um evento”
@@ -390,7 +390,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/armadillo.png" alt="armadillo" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Table <img alt="[Lens]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLens%5D&color=9ecbff" />(shuffle): I combine reordering, bar-sized <img alt="[marks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmarks%5D&color=9ecbff" />(bar), and semantic <img alt="[zoom]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bzoom%5D&color=9ecbff" />(lens)] [by row and column]
+💡 [Table <img alt="[Lens]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLens%5D&color=9fd4ff" />(shuffle): I combine reordering, bar-sized <img alt="[marks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmarks%5D&color=ffd966" />(bar), and semantic <img alt="[zoom]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bzoom%5D&color=ffd966" />(lens)] [by row and column]
 
 **Quote**
 “Table Lens: combina características: Reordenação de linhas e de colunas Tamanho de marcas (estilo gráfico de barras, para dados quantitativos) Zoom semântico por linha e por coluna”
@@ -400,7 +400,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/asp.png" alt="asp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Parallel <img alt="[Sets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSets%5D&color=9ecbff" />(ribbon): like Parallel Coordinates] [but focused on <img alt="[nominal]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnominal%5D&color=9ecbff" />(tag) variables]
+💡 [Parallel <img alt="[Sets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSets%5D&color=9fd4ff" />(ribbon): like Parallel Coordinates] [but focused on <img alt="[nominal]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnominal%5D&color=ffd966" />(tag) variables]
 
 **Quote**
 “Similar a Coordenadas Paralelas, porém com uso focado em variáveis nominais”
@@ -429,7 +429,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/ajax.png" alt="Ajax" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Visual <img alt="[Mapping]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMapping%5D&color=9ecbff" />(plug): I link each data-table <img alt="[variable]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvariable%5D&color=9ecbff" />(dial)] [to a graphical or spatial <img alt="[property]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bproperty%5D&color=9ecbff" />(paint)]
+💡 [Visual <img alt="[Mapping]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMapping%5D&color=9fd4ff" />(plug): I link each data-table <img alt="[variable]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvariable%5D&color=ffd966" />(dial)] [to a graphical or spatial <img alt="[property]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bproperty%5D&color=ffd966" />(paint)]
 
 **Quote**
 “Objetivo: associar cada variável da tabela de dados a uma propriedade gráfica ou espacial.”
@@ -439,7 +439,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/akita_dog_breed.png" alt="Akita (dog breed)" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Automatic]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BAutomatic%5D&color=9ecbff" />(flashlight) Visual Processing: I aid search and pattern detection] [with automatically <img alt="[processed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bprocessed%5D&color=9ecbff" />(pop) properties] [like <img alt="[color]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcolor%5D&color=9ecbff" />(paint) and size]
+💡 [<img alt="[Automatic]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BAutomatic%5D&color=9fd4ff" />(flashlight) Visual Processing: I aid search and pattern detection] [with automatically <img alt="[processed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bprocessed%5D&color=ffd966" />(pop) properties] [like <img alt="[color]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcolor%5D&color=ffd966" />(paint) and size]
 
 **Quote**
 “Mapeamentos visuais que pretendem auxiliar buscas e detecção de padrões podem ser feitos usando propriedades processadas de maneira automática, como cores e tamanhos;”
@@ -449,7 +449,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/alligator.png" alt="alligator" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Expressiveness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BExpressiveness%5D&color=9ecbff" />(truth): my visual mapping must express all table <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=9ecbff" />(ledger)] [and <img alt="[only]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bonly%5D&color=9ecbff" />(filter) that data]
+💡 [<img alt="[Expressiveness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BExpressiveness%5D&color=9fd4ff" />(truth): my visual mapping must express all table <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(ledger)] [and <img alt="[only]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bonly%5D&color=ffd966" />(filter) that data]
 
 **Quote**
 “De acordo com esse conceito, o mapeamento visual deve fazer com que a estrutura visual expresse todos os dados da tabela de dados, e somente eles.”
@@ -459,7 +459,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/amulet.png" alt="amulet" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Effectiveness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BEffectiveness%5D&color=9ecbff" />(stopwatch): fast easy <img alt="[distinction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdistinction%5D&color=9ecbff" />(magnifier) of data] [with as few interpretation <img alt="[errors]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Berrors%5D&color=9ecbff" />(eraser) as possible]
+💡 [<img alt="[Effectiveness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BEffectiveness%5D&color=9fd4ff" />(stopwatch): fast easy <img alt="[distinction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdistinction%5D&color=ffd966" />(magnifier) of data] [with as few interpretation <img alt="[errors]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Berrors%5D&color=ffd966" />(eraser) as possible]
 
 **Quote**
 “Capacidade de permitir rápida interpretação dos dados e fácil distinção entre eles, levando à menor quantidade possível de erros de interpretação.”
@@ -469,7 +469,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/angel.png" alt="angel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[RadViz]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRadViz%5D&color=9ecbff" />(ring): I place N anchors on a circle] [and <img alt="[pull]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpull%5D&color=9ecbff" />(magnet) points by <img alt="[Hooke]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHooke%5D&color=9ecbff" />(spring) spring balance]
+💡 [<img alt="[RadViz]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRadViz%5D&color=9fd4ff" />(ring): I place N anchors on a circle] [and <img alt="[pull]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpull%5D&color=ffd966" />(magnet) points by <img alt="[Hooke]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHooke%5D&color=ffd966" />(spring) spring balance]
 
 **Quote**
 “Técnica baseada na lei de Hooke para equilíbrio. Tabela de dados N-dimensionais; M pontos. Define-se N âncoras em uma circunferência”
@@ -498,7 +498,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aerialist.png" alt="aerialist" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Database <img alt="[Schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSchema%5D&color=9ecbff" />(blueprint): I treat it as the structural blueprint] [of my <img alt="[database]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdatabase%5D&color=9ecbff" />(building)] [including tables, fields, <img alt="[relationships]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brelationships%5D&color=9ecbff" />(chain), and constraints]
+💡 [Database <img alt="[Schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSchema%5D&color=9fd4ff" />(blueprint): I treat it as the structural blueprint] [of my <img alt="[database]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdatabase%5D&color=ffd966" />(building)] [including tables, fields, <img alt="[relationships]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brelationships%5D&color=ffd966" />(chain), and constraints]
 
 **Quote**
 “A database schema is the structural blueprint of a database. It defines the logical organization of data, including tables, fields, relationships, and constraints.”
@@ -508,7 +508,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Visual <img alt="[Structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BStructure%5D&color=9ecbff" />(kit): the set of visual elements] [that <img alt="[represent]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brepresent%5D&color=9ecbff" />(mirror) a <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=9ecbff" />(box)]
+💡 [Visual <img alt="[Structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BStructure%5D&color=9fd4ff" />(kit): the set of visual elements] [that <img alt="[represent]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brepresent%5D&color=ffd966" />(mirror) a <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=ffd966" />(box)]
 
 **Quote**
 “Conjunto de elementos visuais que representam um conjunto de dados.”
@@ -518,7 +518,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/agaric_fungi.png" alt="Agaric fungi" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Spatial <img alt="[Substrate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSubstrate%5D&color=9ecbff" />(stage): the area available] [to <img alt="[display]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdisplay%5D&color=9ecbff" />(screen) the <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=9ecbff" />(box)]
+💡 [Spatial <img alt="[Substrate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSubstrate%5D&color=9fd4ff" />(stage): the area available] [to <img alt="[display]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdisplay%5D&color=ffd966" />(screen) the <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=ffd966" />(box)]
 
 **Quote**
 “Área disponível para exibição do conjunto de dados.”
@@ -528,7 +528,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/ah_a_sigh.png" alt="Ah!—a sigh" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [<img alt="[Marks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMarks%5D&color=9ecbff" />(toy): objects present] [in the <img alt="[chart]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bchart%5D&color=9ecbff" />(frame) <img alt="[space]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspace%5D&color=9ecbff" />(room)] — Note: Marks use graphical and spatial properties to show data values.
+💡 [<img alt="[Marks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMarks%5D&color=9fd4ff" />(toy): objects present] [in the <img alt="[chart]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bchart%5D&color=ffd966" />(frame) <img alt="[space]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspace%5D&color=ffd966" />(room)] — Note: Marks use graphical and spatial properties to show data values.
 
 **Quote**
 “Objetos presentes no espaço do gráfico”
@@ -538,7 +538,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/airedale_terrier.png" alt="Airedale terrier" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Small <img alt="[Multiples]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMultiples%5D&color=9ecbff" />(stamps): they force visual <img alt="[comparison]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcomparison%5D&color=9ecbff" />(eyes)] [of changes, differences, and <img alt="[alternatives]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Balternatives%5D&color=9ecbff" />(fork)]
+💡 [Small <img alt="[Multiples]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMultiples%5D&color=9fd4ff" />(stamps): they force visual <img alt="[comparison]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcomparison%5D&color=ffd966" />(eyes)] [of changes, differences, and <img alt="[alternatives]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Balternatives%5D&color=ffd966" />(fork)]
 
 **Quote**
 “A técnica força a comparação visual de alterações, das diferenças entre objetos, do escopo de alternativas.”
@@ -567,7 +567,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/adder.png" alt="adder" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I store data without fixed <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=9ecbff" />(cloud)] [using flexible <img alt="[formats]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bformats%5D&color=9ecbff" />(origami)] [for horizontal <img alt="[scaling]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bscaling%5D&color=9ecbff" />(accordion)] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
+💡 [I store data without fixed <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=9fd4ff" />(cloud)] [using flexible <img alt="[formats]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bformats%5D&color=ffd966" />(origami)] [for horizontal <img alt="[scaling]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bscaling%5D&color=ffd966" />(accordion)] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
 
 **Quote**
 “A NoSQL database stores data without fixed tables, using flexible formats like documents, key-value pairs, wide columns, or graphs.”
@@ -596,7 +596,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I unpivot multiple <img alt="[columns]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcolumns%5D&color=9ecbff" />(pillar) into rows] [to <img alt="[model]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmodel%5D&color=9ecbff" />(clay) my data more easily] — Note: Column headers become an attribute column paired with a single value column.
+💡 [I unpivot multiple <img alt="[columns]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcolumns%5D&color=9fd4ff" />(pillar) into rows] [to <img alt="[model]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmodel%5D&color=ffd966" />(clay) my data more easily] — Note: Column headers become an attribute column paired with a single value column.
 
 **Quote**
 “so unpivoting means I have columns and I want to see those columns in the rows”
@@ -606,7 +606,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/zeus.png" alt="Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [My unpivot step automatically <img alt="[deletes]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdeletes%5D&color=9ecbff" />(trash can) all rows] [with <img alt="[null]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnull%5D&color=9ecbff" />(ghost) values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
+💡 [My unpivot step automatically <img alt="[deletes]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdeletes%5D&color=9fd4ff" />(trash can) all rows] [with <img alt="[null]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnull%5D&color=ffd966" />(ghost) values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
 
 **Quote**
 “now the characteristic of the unpivot function in power query is that by the default it actually removes the null values”
@@ -616,7 +616,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I replace nulls with a temporary <img alt="[placeholder]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplaceholder%5D&color=9ecbff" />(scarecrow)] [before <img alt="[unpivoting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunpivoting%5D&color=9ecbff" />(jack)] [to <img alt="[swap]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bswap%5D&color=9ecbff" />(boomerang) them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
+💡 [I replace nulls with a temporary <img alt="[placeholder]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplaceholder%5D&color=9fd4ff" />(scarecrow)] [before <img alt="[unpivoting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunpivoting%5D&color=ffd966" />(jack)] [to <img alt="[swap]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bswap%5D&color=ffd966" />(boomerang) them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
 
 **Quote**
 “you can select the columns where you have the null values and you need to replace those with a placeholder”
@@ -628,7 +628,7 @@ _No gallery images._
 🟦 **Z1 · Reusing query steps**
 
 **Concept**
-💡 [I <img alt="[reuse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breuse%5D&color=9ecbff" />(stamp) my query steps] [across different <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=9ecbff" />(binder)] [sharing the exact same table <img alt="[structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructure%5D&color=9ecbff" />(twin)] — Note: Identical column headers and data formats are required so the query steps run without error.
+💡 [I <img alt="[reuse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breuse%5D&color=9fd4ff" />(stamp) my query steps] [across different <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(binder)] [sharing the exact same table <img alt="[structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructure%5D&color=ffd966" />(twin)] — Note: Identical column headers and data formats are required so the query steps run without error.
 
 **Quote**
 “since the format of both files are the same I want to apply the exact same steps to my second file”
@@ -638,7 +638,7 @@ _No gallery images._
 🟦 **Z2 · Copying transformation steps**
 
 **Concept**
-💡 [I <img alt="[copy]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcopy%5D&color=9ecbff" />(scissors) all transformation steps] [below the initial <img alt="[source]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsource%5D&color=9ecbff" />(anchor) line] [from the Advanced <img alt="[Editor]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BEditor%5D&color=9ecbff" />(scroll)] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
+💡 [I <img alt="[copy]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcopy%5D&color=9fd4ff" />(scissors) all transformation steps] [below the initial <img alt="[source]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsource%5D&color=ffd966" />(anchor) line] [from the Advanced <img alt="[Editor]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BEditor%5D&color=ffd966" />(scroll)] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
 
 **Quote**
 “the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy”
@@ -648,7 +648,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/acorn.png" alt="acorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=9ecbff" />(chest) data] [in rigid <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=9ecbff" />(grid) of rows and columns] [linked by predefined <img alt="[relationships]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brelationships%5D&color=9ecbff" />(chain)] — Note: Enforces schemas and data integrity using SQL validation rules.
+💡 [I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=9fd4ff" />(chest) data] [in rigid <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=ffd966" />(grid) of rows and columns] [linked by predefined <img alt="[relationships]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brelationships%5D&color=ffd966" />(chain)] — Note: Enforces schemas and data integrity using SQL validation rules.
 
 **Quote**
 “A relational database stores data in fixed tables made of rows and columns, linked together by predefined relationships.”
@@ -677,7 +677,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/toucan.png" alt="toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the power query <img alt="[mashup]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmashup%5D&color=9ecbff" />(blender) engine] [as the underlying <img alt="[technology]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btechnology%5D&color=9ecbff" />(engine block)] [to <img alt="[execute]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bexecute%5D&color=9ecbff" />(lightning bolt) my data queries.]
+💡 [I use the power query <img alt="[mashup]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmashup%5D&color=9fd4ff" />(blender) engine] [as the underlying <img alt="[technology]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btechnology%5D&color=ffd966" />(engine block)] [to <img alt="[execute]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bexecute%5D&color=ffd966" />(lightning bolt) my data queries.]
 
 **Quote**
 “at the base you know of this technology is something called the power query mashup engine that's the thing that executes your query”
@@ -687,7 +687,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/unicorn.png" alt="unicorn" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I avoid using <img alt="[spaces]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspaces%5D&color=9ecbff" />(vacuum)] [in my step <img alt="[names]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnames%5D&color=9ecbff" />(name tag)] [to keep the underlying M code <img alt="[clean]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bclean%5D&color=9ecbff" />(sponge).] - Note: Spaces force the variables to be wrapped in quotes and a hash sign.
+💡 [I avoid using <img alt="[spaces]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspaces%5D&color=9fd4ff" />(vacuum)] [in my step <img alt="[names]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnames%5D&color=ffd966" />(name tag)] [to keep the underlying M code <img alt="[clean]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bclean%5D&color=ffd966" />(sponge).] - Note: Spaces force the variables to be wrapped in quotes and a hash sign.
 
 **Quote**
 “if you put spaces in your step names it makes the applied steps thing look better yeah but it makes the uh you know m code look a lot worse”
@@ -697,7 +697,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/vulture.png" alt="vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use query <img alt="[folding]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfolding%5D&color=9ecbff" />(origami)] [to <img alt="[push]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpush%5D&color=9ecbff" />(bulldozer) transformation work] [back to the data <img alt="[source]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsource%5D&color=9ecbff" />(well)] [to maximize processing <img alt="[efficiency]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Befficiency%5D&color=9ecbff" />(stopwatch).]
+💡 [I use query <img alt="[folding]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfolding%5D&color=9fd4ff" />(origami)] [to <img alt="[push]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpush%5D&color=ffd966" />(bulldozer) transformation work] [back to the data <img alt="[source]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsource%5D&color=ffd966" />(well)] [to maximize processing <img alt="[efficiency]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Befficiency%5D&color=ffd966" />(stopwatch).]
 
 **Quote**
 “the idea of query folding is that you want the power query mashup engine you know to be as efficient as possible so the mashup engine will push work back to the data source”
@@ -707,7 +707,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/wombat.png" alt="wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [The OData connector uses a <img alt="[discovery]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdiscovery%5D&color=9ecbff" />(binoculars) mechanism] [to automatically determine the <img alt="[schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bschema%5D&color=9ecbff" />(skeleton)] [of the external <img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=9ecbff" />(picnic table).]
+💡 [The OData connector uses a <img alt="[discovery]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdiscovery%5D&color=9fd4ff" />(binoculars) mechanism] [to automatically determine the <img alt="[schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bschema%5D&color=ffd966" />(skeleton)] [of the external <img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=ffd966" />(picnic table).]
 
 **Quote**
 “odata has a discovery mechanism you know where now power query is kind of looking at the table and figuring out what it is”
@@ -717,7 +717,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [The OData connector suffers from <img alt="[network]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnetwork%5D&color=9ecbff" />(spider web) latency] [because it makes redundant metadata <img alt="[calls]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalls%5D&color=9ecbff" />(megaphone)] [at <img alt="[runtime]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bruntime%5D&color=9ecbff" />(running shoes).]
+💡 [The OData connector suffers from <img alt="[network]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnetwork%5D&color=9fd4ff" />(spider web) latency] [because it makes redundant metadata <img alt="[calls]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalls%5D&color=ffd966" />(megaphone)] [at <img alt="[runtime]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bruntime%5D&color=ffd966" />(running shoes).]
 
 **Quote**
 “the problem uh with odata is that at runtime it has to make metadata calls to basically get the metadata and that makes a second call”
@@ -746,7 +746,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Lake: I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=9ecbff" />(bucket) structured, semi-structured, and unstructured raw data] [in a <img alt="[centralized]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcentralized%5D&color=9ecbff" />(swimming pool), low-cost object storage system[cite: 1].]
+💡 [Data Lake: I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=9fd4ff" />(bucket) structured, semi-structured, and unstructured raw data] [in a <img alt="[centralized]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcentralized%5D&color=ffd966" />(swimming pool), low-cost object storage system[cite: 1].]
 
 **Quote**
 “Centralized storage for structured, semi-structured, and unstructured raw data in low-cost object storage."[cite: 1]”
@@ -756,7 +756,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/panther.png" alt="panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Warehouse: A highly <img alt="[structured]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructured%5D&color=9ecbff" />(filing cabinet), schema-on-write repository] [optimized for SQL <img alt="[analytics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Banalytics%5D&color=9ecbff" />(magnifying glass)] [and business <img alt="[intelligence]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bintelligence%5D&color=9ecbff" />(briefcase)[cite: 1].]
+💡 [Data Warehouse: A highly <img alt="[structured]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructured%5D&color=9fd4ff" />(filing cabinet), schema-on-write repository] [optimized for SQL <img alt="[analytics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Banalytics%5D&color=ffd966" />(magnifying glass)] [and business <img alt="[intelligence]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bintelligence%5D&color=ffd966" />(briefcase)[cite: 1].]
 
 **Quote**
 “Highly structured, schema-on-write repository optimized for SQL analytics and business intelligence."[cite: 1]”
@@ -766,7 +766,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Lakehouse: A <img alt="[hybrid]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhybrid%5D&color=9ecbff" />(centaur) architecture] [combining the scale and <img alt="[flexibility]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bflexibility%5D&color=9ecbff" />(rubber band) of a data lake] [with the <img alt="[reliability]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breliability%5D&color=9ecbff" />(vault) of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
+💡 [Data Lakehouse: A <img alt="[hybrid]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhybrid%5D&color=9fd4ff" />(centaur) architecture] [combining the scale and <img alt="[flexibility]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bflexibility%5D&color=ffd966" />(rubber band) of a data lake] [with the <img alt="[reliability]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breliability%5D&color=ffd966" />(vault) of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
 
 **Quote**
 “Hybrid architecture combining the scale and flexibility of a data lake with the reliability and ACID features of a warehouse (e.g., Delta Lake on top of cloud storage)."[cite: 1]”
@@ -776,7 +776,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/rat.png" alt="rat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Swamp: A poorly <img alt="[governed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgoverned%5D&color=9ecbff" />(broken crown) data lake] [where data is <img alt="[uncataloged]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Buncataloged%5D&color=9ecbff" />(shredder), undocumented,] [and difficult to <img alt="[retrieve]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bretrieve%5D&color=9ecbff" />(fishing rod)[cite: 1].]
+💡 [Data Swamp: A poorly <img alt="[governed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgoverned%5D&color=9fd4ff" />(broken crown) data lake] [where data is <img alt="[uncataloged]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Buncataloged%5D&color=ffd966" />(shredder), undocumented,] [and difficult to <img alt="[retrieve]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bretrieve%5D&color=ffd966" />(fishing rod)[cite: 1].]
 
 **Quote**
 “A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve."[cite: 1]”
@@ -786,7 +786,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/skull.png" alt="skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [Data Mart: A <img alt="[specialized]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspecialized%5D&color=9ecbff" />(scalpel) subset of a data warehouse] [<img alt="[focused]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfocused%5D&color=9ecbff" />(spotlight) on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
+💡 [Data Mart: A <img alt="[specialized]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspecialized%5D&color=9fd4ff" />(scalpel) subset of a data warehouse] [<img alt="[focused]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfocused%5D&color=ffd966" />(spotlight) on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
 
 **Quote**
 “A subset of a data warehouse focused on a specific business line or department (e.g., Finance, Marketing)."[cite: 1]”
