@@ -1114,19 +1114,19 @@ cheatSheets["Tasks"] := "
     ➕ [A] Inline new task if a column or project is in context; otherwise inline new project
     📁 [P] Inline new project
     📑 [B] Inline new section (select a project, section, or task first)
-    ✅ [C] Mark selected task done (not habits)
+    ✅ [C] Mark hovered or selected task done (not habits)
     ➡️ [D] Copy selected habit into Personal · General
     📝 [N] Open Info for the selected project or task
     🖼️ [H] Project icon — open Commons picker and auto-suggest top 5
     🖼️ [V] Paste clipboard image as an info point (selection or Info window)
     📂 [E] Expand all projects and sections, or collapse all projects
     🧹 [F] Clear emoji filter
-    ⚡ [T] Important — tag selected task, or filter the list if none selected
-    ⏳ [Q] Waiting — tag selected task, or filter if none selected
-    🔲 [G] General — tag selected task, or filter if none selected
-    ❓ [U] Doubt — DOUBT badge on the selected task (click the badge to clear), or filter if none selected
-    [O] Clear emoji on selected task (empty), or filter tasks with no emoji
-    ⚡ [I] Important on the selected task only (does not filter)
+    ⚡ [T] Important — tag hovered or selected task, or filter the list if none targeted
+    ⏳ [Q] Waiting — tag hovered or selected task, or filter if none targeted
+    🔲 [G] General — tag hovered or selected task, or filter if none targeted
+    ❓ [U] Doubt — DOUBT badge on the hovered or selected task (click the badge to clear), or filter if no task is targeted
+    [O] Clear emoji on the hovered or selected task, or filter tasks with no emoji if none targeted
+    ⚡ [I] Important on the hovered or selected task only (does not filter)
     
     === Alt ===
     🔍 [S] Show search field (toggle; Esc closes when empty)

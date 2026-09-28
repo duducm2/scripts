@@ -2081,7 +2081,13 @@
           if (em === undefined || em === null) return "🔲";
           // legacy: Shift+O before server restart saved the word "none"
           if (em === "none" || em === "None") return "";
+          // Packs may store the status word instead of the glyph.
+          if (String(em).trim().toLowerCase() === "doubt") return "❓";
           return em;
+        }
+
+        function isDoubtEmoji(em) {
+          return taskEmoji({ emoji: em }) === "❓";
         }
 
         function taskLi(t) {
@@ -2102,10 +2108,9 @@
             ? `<span class="new-tag" data-act="clear-new" title="Newly imported — click to clear">NEW</span>`
             : "";
           const em = taskEmoji(t);
-          const doubtTag =
-            em === "❓"
-              ? `<span class="doubt-tag" data-act="clear-doubt" title="In doubt — click to clear">DOUBT</span>`
-              : "";
+          const doubtTag = isDoubtEmoji(em)
+            ? `<span class="doubt-tag" data-act="clear-doubt" title="In doubt — click to clear">DOUBT</span>`
+            : "";
           const actions = isHabit
             ? `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
         <button class="btn" data-act="cut-task" title="Cut (Ctrl+X)">Cut</button>
@@ -2117,8 +2122,9 @@
             : `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
         <button class="btn" data-act="cut-task" title="Cut (Ctrl+X)">Cut</button>
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
-        <button class="btn" data-act="emoji" data-key="important">⚡</button>
+        <button class="btn" data-act="emoji" data-key="important" title="Important (Shift+T)">⚡</button>
         <button class="btn" data-act="emoji" data-key="waiting" title="Waiting (Shift+Q)">⏳</button>
+        <button class="btn" data-act="emoji" data-key="doubt" title="Doubt (Shift+U)">❓</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
@@ -2997,6 +3003,12 @@
           return "";
         }
 
+        // Keyboard selection wins. A hovered row is the target when the selection
+        // is a project, a section, or empty — same fallback as copy/cut.
+        function statusTargetTaskId() {
+          return selectedTaskId() || hoveredTaskId();
+        }
+
         function taskRowById(id) {
           if (!id) return null;
           return dataIndex().tasksById.get(id) || null;
@@ -3127,13 +3139,11 @@
           return "";
         }
 
-        async function setSelectedTaskEmoji(keyOrEmoji) {
-          const tid = selectedTaskId();
+        async function setTaskEmojiById(tid, keyOrEmoji) {
           if (!tid) {
             toast("Select a task first");
             return;
           }
-          const prev = state.sel;
           const r = await api(
             "/api/tasks/" + encodeURIComponent(tid) + "/emoji",
             {
@@ -3142,15 +3152,20 @@
             },
           );
           await afterEntitySave("task", r, () => {
-            if (prev?.id) {
-              const t = taskRowById(prev.id);
-              const kind =
-                t?.kind === "habitual" || prev.kind === "habit"
-                  ? "habit"
-                  : "task";
-              setSelection(kind, prev.id, false);
+            const stored = taskEmoji(r.task);
+            // A status filter hides the row once its mark no longer matches,
+            // and applySelection then drops the selection.
+            if (state.emojiFilter !== null && state.emojiFilter !== stored) {
+              applyEmojiFilter(null);
             }
+            const t = taskRowById(tid);
+            const kind = t?.kind === "habitual" ? "habit" : "task";
+            setSelection(kind, tid, false);
           });
+        }
+
+        async function setSelectedTaskEmoji(keyOrEmoji) {
+          return setTaskEmojiById(statusTargetTaskId(), keyOrEmoji);
         }
 
         async function sendHabitToPersonal(habitId) {
@@ -3246,9 +3261,9 @@
             return;
           }
           if (Object.prototype.hasOwnProperty.call(EMOJI_KEYS, k)) {
-            const tid = selectedTaskId();
+            const tid = statusTargetTaskId();
             if (tid) {
-              await setSelectedTaskEmoji(EMOJI_API_KEYS[k] || EMOJI_KEYS[k]);
+              await setTaskEmojiById(tid, EMOJI_API_KEYS[k] || EMOJI_KEYS[k]);
               return;
             }
             const em = EMOJI_KEYS[k];
@@ -3262,14 +3277,17 @@
             return;
           }
           if (k === "c") {
-            const t = (state.data.tasks || []).find(
-              (x) => x.id === selectedTaskId(),
-            );
-            if (t?.kind === "habitual") {
+            const tid = statusTargetTaskId();
+            const t = taskRowById(tid);
+            if (!t) {
+              toast("Select a task first");
+              return;
+            }
+            if (t.kind === "habitual") {
               toast("Habits cannot be completed");
               return;
             }
-            await setSelectedTaskEmoji("done");
+            await setTaskEmojiById(tid, "done");
             return;
           }
           if (k === "d") {
@@ -5685,14 +5703,7 @@
                 toast("Habits cannot be completed");
                 return;
               }
-              const r = await api(
-                "/api/tasks/" + encodeURIComponent(id) + "/emoji",
-                {
-                  method: "POST",
-                  body: JSON.stringify({ key }),
-                },
-              );
-              await afterEntitySave("task", r);
+              await setTaskEmojiById(id, key);
               return;
             }
             if (act === "habit-to-personal") {
