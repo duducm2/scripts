@@ -59,16 +59,12 @@ INFO_0099,project,PROJ_0004,20260828-142108.png,,ℹ️,,3810,2026-08-30 12:03:3
 INFO_0100,project,PROJ_0004,20260828-101254.png,,ℹ️,,3820,2026-08-30 12:03:36,,
 INFO_0101,project,PROJ_0004,20260828-101317.png,,ℹ️,,3830,2026-08-30 12:03:36,,
 INFO_0102,task,TASK_0007,20260820-105844.png,,ℹ️,,3840,2026-08-30 12:03:36,,
-INFO_0103,task,TASK_0009,20260812-103754.png,,ℹ️,,3850,2026-08-30 12:03:36,,
-INFO_0104,task,TASK_0009,20260812-171426.png,,ℹ️,,3860,2026-08-30 12:03:36,,
 INFO_0105,task,TASK_0029,20260817-165019.png,,ℹ️,,3870,2026-08-30 12:03:36,,
 INFO_0106,task,TASK_0033,20260824-110249.png,,ℹ️,,3880,2026-08-30 12:03:36,,
 INFO_0107,project,PROJ_0014,20260825-112514.png,,ℹ️,,3890,2026-08-30 12:03:36,,
 INFO_0108,project,PROJ_0014,20260825-112750.png,,ℹ️,,3900,2026-08-30 12:03:36,,
 INFO_0109,project,PROJ_0014,20260825-112558.png,,ℹ️,,3910,2026-08-30 12:03:36,,
 INFO_0112,task,TASK_0042,20260301-203740.png,,ℹ️,,3940,2026-08-30 12:03:36,,
-INFO_0115,task,TASK_0006,"Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to a Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to as BUD. This concept also exists in PT, alongside other areas apart from UX. She also believes it would be advantageous for me to focus on the Product Owner role.",,ℹ️,,3970,2026-08-30 15:08:00,,
-INFO_0116,task,TASK_0006,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,,ℹ️,,3980,2026-08-30 15:08:18,,
 INFO_0117,task,TASK_0212,"ℹ️ Check your PowerPoint confidenciality level
 
 ℹ️ Send Customer Feedback
@@ -121,10 +117,6 @@ Orientar os participantes sobre a aquisição dos agentes para Gemini, conforme 
 INFO_0123,task,TASK_0222,Tirar foto,,ℹ️,,4050,2026-08-31 09:36:21,,
 INFO_0124,task,TASK_0217,O treinamento de key-users é mandatório? sim,,ℹ️,,4060,2026-08-31 09:36:51,,
 INFO_0125,task,TASK_0222,Para os treinamentos de colaboradores: 4 grupos de 5,,ℹ️,,4070,2026-08-31 09:37:09,,
-INFO_0126,task,TASK_0223,"- A movimentação pelo TAR mantém meu vínculo e minha data de admissão atuais?
-- Haverá mudança de CNPJ?
-- Em algum momento haverá rescisão e nova admissão, ou será apenas transferencia?",,ℹ️,,4080,2026-08-31 12:05:02,,
-INFO_0128,task,TASK_0009,UR000114777,,ℹ️,,3870,2026-09-03 11:43:50,,
 INFO_0129,task,TASK_0241,https://opencode.ai/docs/,,ℹ️,,10,2026-09-03 20:08:43,,
 INFO_0130,task,TASK_0242,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM\05-Others\backlog-september\backlog-september.csv,,ℹ️,,10,2026-09-04 11:47:35,,
 INFO_0135,task,TASK_0248,"Perguntar no cartório
@@ -171,7 +163,34 @@ Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa �
   * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
 * ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
 * 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,20,2026-09-28 08:00:30,,
-INFO_0198,task,TASK_0339,Maia,,ℹ️,,10,2026-09-28 08:33:53,,
-INFO_0199,task,TASK_0339,Guilherme,,ℹ️,,20,2026-09-28 08:33:59,,
-INFO_0200,task,TASK_0339,Alex,,ℹ️,,30,2026-09-28 08:34:04,,
-INFO_0201,task,TASK_0339,You can say that you are participating on TAR,,ℹ️,,40,2026-09-28 08:34:32,,
+INFO_0198,task,TASK_0339,Maia,,ℹ️,person,20,2026-09-28 08:33:53,,
+INFO_0199,task,TASK_0339,Guilherme do tooling,,ℹ️,person,10,2026-09-28 08:33:59,,
+INFO_0200,task,TASK_0339,Alex,,ℹ️,person,30,2026-09-28 08:34:04,,
+INFO_0201,task,TASK_0339,You can say that you are participating on TAR,,ℹ️,person,40,2026-09-28 08:34:32,,
+INFO_0202,task,TASK_0339,That man that one day said that he has a team of developers.,,ℹ️,person,50,2026-09-28 11:19:03,,
+INFO_0203,task,TASK_0339,Amanda Sá,,ℹ️,person,60,2026-09-28 11:19:13,,
+INFO_0204,task,TASK_0339,Daria,,ℹ️,person,70,2026-09-28 11:19:33,,
+INFO_0205,task,TASK_0339,Perform a look over and all people that you might talk to on your e-mail,,ℹ️,,80,2026-09-28 11:21:37,,
+INFO_0206,task,TASK_0339,Leiry,,ℹ️,person,90,2026-09-28 11:21:45,,
+INFO_0207,task,TASK_0339,Daniel Castelhano,,ℹ️,person,100,2026-09-28 11:23:20,,
+INFO_0208,task,TASK_0339,Stefani,,ℹ️,person,110,2026-09-28 11:23:41,,
+INFO_0209,task,TASK_0339,Linford,,ℹ️,person,120,2026-09-28 11:24:08,,
+INFO_0210,task,TASK_0339,Martin Ralph,,ℹ️,person,130,2026-09-28 11:25:06,,
+INFO_0211,task,TASK_0339,George Maurício,,ℹ️,person,140,2026-09-28 11:29:36,,
+INFO_0212,task,TASK_0339,Larissa,,ℹ️,person,150,2026-09-28 11:29:41,,
+INFO_0213,task,TASK_0339,"oi, [pessoa]! Há quanto tempo
+
+e aí, como que vão as coisas?
+
+eu estou entrando em contato porque estou buscando oportunidades de reposicionamento aqui dentro da Bosch
+
+Hoje eu atuo como pesquisador e analista de dados pleno para o time de UX na SO e quero progredir na carreira para me tornar sênior (já estou no TAR por indicação da liderança). Para conseguir esse sonho, eu acabei de terminar o meu mestrado na Unicamp, onde também fiz a minha graduação, trabalhando com agentes de inteligência artificial
+
+Já estou aqui na organização há 10 anos e quero me aposentar aqui. Gosto muito de trabalhar! Contudo, e eu acho que você já está sabendo, está acontecendo aquela absorção da SO pela GS e eu queria aproveitar essa oportunidade para tentar me reposicionar
+
+Eu gosto muito de recuperar dados e informação de diversos sistemas, trabalhar neles usando inteligência artificial e entregar insights estratégicos. Eu não sei se você trabalha com algo parecido no seu time e se vê alguma oportunidade, porque eu adoria saber mais
+
+
+Se não for o caso e tiver alguém que você possa indicar para eu conversar, também seria maravilhoso. Muito obrigado!
+
+* Segue meu currículo",,ℹ️,mensagem,160,2026-09-28 12:13:17,,
