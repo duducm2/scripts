@@ -238,6 +238,10 @@ class TaskHandler(BaseHTTPRequestHandler):
             if not result.get("ok"):
                 self._json(404, result)
                 return
+            try:
+                store.write_project_json(pid)
+            except OSError:
+                pass
             body = json.dumps(result["document"], ensure_ascii=False, indent=2).encode(
                 "utf-8"
             )

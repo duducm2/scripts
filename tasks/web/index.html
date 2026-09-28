@@ -1973,7 +1973,12 @@
               loaded.text = pack.text;
               loaded.name = pack.name;
             }
-            await copyProjectJsonText(loaded.text);
+            try {
+              await copyProjectJsonText(loaded.text);
+              copied = true;
+            } catch (_) {
+              copied = false;
+            }
           }
           const blob = new Blob([loaded.text], {
             type: "application/json;charset=utf-8",
@@ -1986,7 +1991,11 @@
           a.click();
           a.remove();
           setTimeout(() => URL.revokeObjectURL(objUrl), 60000);
-          toast("Copied project JSON");
+          toast(
+            copied
+              ? "Copied project JSON"
+              : "Saved " + loaded.name + " (copy was blocked)",
+          );
         }
 
         function toast(msg) {
