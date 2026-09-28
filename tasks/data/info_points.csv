@@ -160,3 +160,17 @@ INFO_0192,task,TASK_0335,image.png,,ℹ️,,10,2026-09-27 15:55:47,,
 INFO_0193,task,TASK_0335,You are removing some articles related to sentiment analysis. So you need to update your literature review numbers,,ℹ️,,20,2026-09-27 16:12:51,,
 INFO_0194,task,TASK_0335,image.png,,ℹ️,,30,2026-09-27 16:13:06,,
 INFO_0195,task,TASK_0336,C:\Users\eduev\Documents\Web projects\ai-experiments\latex\defense-comments\arxiv-citados.md,,ℹ️,,10,2026-09-27 18:32:15,,
+INFO_0197,task,TASK_0337,"## 🎯 Objetivos de Larissa Oliveira para o Programa RISE
+
+Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa é:
+
+* 🔍 **Demonstrar o Processo Atual:** Ter o **Paulo Luz** demonstrando o método que utiliza hoje para compilar as horas de automação na SO.
+* 🚀 **Criar uma Solução Otimizada:** Idear um fluxo otimizado para o recebimento, compilação e envio desse report de horas economizadas para a **SO Global**.
+* 💡 **Avaliar Alternativas de Implementação:**
+  * **Via Forms:** Solução sem custos.
+  * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
+* ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
+* 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,20,2026-09-28 08:00:30,,
+INFO_0198,task,TASK_0339,Maia,,ℹ️,,10,2026-09-28 08:33:53,,
+INFO_0199,task,TASK_0339,Guilherme,,ℹ️,,20,2026-09-28 08:33:59,,
+INFO_0200,task,TASK_0339,Alex,,ℹ️,,30,2026-09-28 08:34:04,,
