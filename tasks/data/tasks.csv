@@ -98,7 +98,7 @@ TASK_0217,PROJ_0013,SEC_0013,Como indicar um key-user?,,punctual,,,,,work,3900,,
 TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1,
 TASK_0223,PROJ_0003,SEC_0003,Doubts,,punctual,,,,,work,3960,,2026-08-31 12:04:55,1,
 TASK_0226,PROJ_0005,SEC_0005,Check the Mercado Livre House insurance,⏳,punctual,,,,,work,3990,,2026-09-01 10:02:29,1,
-TASK_0229,PROJ_0005,SEC_0005,BPM Success Case,⏳,punctual,,,,,work,4020,,2026-09-02 10:41:14,1,
+TASK_0229,PROJ_0005,SEC_0005,BPM Success Case,🔲,punctual,,,,,work,4020,,2026-09-02 10:41:14,1,
 TASK_0230,PROJ_0005,SEC_0005,Data Insights Success Case,⏳,punctual,,,,,work,4030,,2026-09-02 10:41:40,1,
 TASK_0231,PROJ_0005,SEC_0005,RISE Success Case,⏳,punctual,,,,,work,4040,,2026-09-02 10:41:52,1,
 TASK_0232,PROJ_0005,SEC_0005,Add the links to the MIRO to your projects on DevOps,⚡,punctual,,,,,work,4050,,2026-09-02 10:43:15,1,
@@ -169,7 +169,10 @@ TASK_0335,PROJ_0026,SEC_0129,"You are adding some new articles, so you need to u
 TASK_0336,PROJ_0026,SEC_0129,You stopped here,⚡,punctual,,,,,personal,5090,,2026-09-27 18:32:11,1,
 TASK_0337,PROJ_0013,SEC_0070,Larissa's expectations regarding collecting these data.,🔲,punctual,,,,Projects/Governance,work,5100,,2026-09-28 08:00:02,1,
 TASK_0339,PROJ_0003,SEC_0003,"Get in touch with some people, checking if they have job openings, opportunities",🔲,punctual,,,,,work,5120,,2026-09-28 08:33:44,1,
-TASK_0340,PROJ_0011,SEC_0146,Verificar Status e fluxo de aprovação,🔲,punctual,,,,Ajustes necessários,work,5130,,2026-09-28 09:37:03,1,IMP-20260928-093703
-TASK_0341,PROJ_0011,SEC_0146,Incluir a Fran no fim fluxo para receber o email juntamente com COR,🔲,punctual,,,,Ajustes necessários,work,5140,,2026-09-28 09:37:03,1,IMP-20260928-093703
+TASK_0340,PROJ_0011,SEC_0146,"Verificar Status e fluxo de aprovação. Já verificamos o status, certo?",❓,punctual,,,,Ajustes necessários,work,5130,,2026-09-28 09:37:03,1,
+TASK_0341,PROJ_0011,SEC_0146,Incluir a Fran no fim fluxo para receber o email juntamente com COR. Quem é a Fran?,❓,punctual,,,,Ajustes necessários,work,5140,,2026-09-28 09:37:03,1,
 TASK_0342,PROJ_0011,SEC_0146,Exportar planilha: ajustar nome do arquivo e verificar o banco de dados que ele trás,🔲,punctual,,,,Ajustes necessários,work,5150,,2026-09-28 09:37:03,1,IMP-20260928-093703
 TASK_0343,PROJ_0011,SEC_0146,Verificar como cadastrar novos departamentos (talvez incluir uma aba de cadastro para os departamentos e deixar pré selecionado nos serviços),🔲,punctual,,,,Ajustes necessários,work,5160,,2026-09-28 09:37:03,1,IMP-20260928-093703
+TASK_0344,PROJ_0013,SEC_0013,Ler a conversa inteira d ochat,⚡,punctual,,,,,work,5170,,2026-09-28 10:33:30,1,
+TASK_0345,PROJ_0013,SEC_0013,Acompanhamento para fechar o programa. Não tem mais nenhum ponto.,🔲,punctual,,,,,work,5180,,2026-09-28 10:34:12,1,
+TASK_0346,PROJ_0005,SEC_0005,"09 de outubro, apresentar o resultado do seu mestrado para o time",⚡,punctual,,,,,work,5190,,2026-09-28 10:44:48,1,
