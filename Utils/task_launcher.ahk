@@ -338,8 +338,85 @@ Task_IsServerRunning(port := 0) {
     }
 }
 
-; Do NOT stop :8766 on Utils exit/reload — web_servers_warmup.ahk keeps servers warm.
-; Force-restart still available via Task_EnsureServer(true) / Task_StopServer().
+; Do NOT stop :8766 on a normal Utils exit — web_servers_warmup.ahk keeps servers warm.
+; Quick Update (/Updated) calls QuickUpdate_RefreshTasksServer so a new task_server.py is loaded.
+
+QuickUpdate_HttpGet(url) {
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", url, false)
+        whr.SetTimeouts(400, 400, 2000, 2000)
+        whr.Send()
+        return "status=" . whr.Status . " body=" . whr.ResponseText
+    } catch as e {
+        return "error=" . e.Message
+    }
+}
+
+; Restart the Tasks server after Quick Update and leave a snapshot the other machine can read.
+QuickUpdate_RefreshTasksServer() {
+    global IS_WORK_ENVIRONMENT
+    port := Task_ServerPort()
+    lines := []
+    lines.Push("when=" . FormatTime(, "yyyy-MM-dd HH:mm:ss"))
+    lines.Push("computer=" . A_ComputerName)
+    lines.Push("user=" . A_UserName)
+    work := false
+    try work := IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
+    catch {
+        work := false
+    }
+    lines.Push("is_work_environment=" . (work ? "yes" : "no"))
+    lines.Push("script_dir=" . A_ScriptDir)
+    listed := ""
+    try listed := GetScriptsDirectory()
+    catch {
+        listed := ""
+    }
+    lines.Push("quick_update_scripts_dir=" . listed)
+    lines.Push("script_dir_matches_quick_update_dir=" . (listed = A_ScriptDir ? "yes" : "no"))
+    py := A_ScriptDir . "\tasks\python\task_server.py"
+    lines.Push("task_server_py_exists=" . (FileExist(py) ? "yes" : "no"))
+    onDisk := "unread"
+    try {
+        src := FileRead(py, "UTF-8")
+        onDisk := InStr(src, "project-export") ? "yes" : "no"
+    } catch as e {
+        onDisk := "error=" . e.Message
+    }
+    lines.Push("disk_has_project_export=" . onDisk)
+    lines.Push("listen_pid_before=" . Task_PortListeningPid(port))
+    lines.Push("health_before=" . QuickUpdate_HttpGet("http://127.0.0.1:" . port . "/health"))
+    restarted := false
+    restartError := ""
+    try {
+        restarted := Task_EnsureServer(true)
+    } catch as e {
+        restartError := e.Message
+    }
+    lines.Push("tasks_server_restarted=" . (restarted ? "yes" : "no"))
+    if (restartError != "")
+        lines.Push("restart_error=" . restartError)
+    lines.Push("listen_pid_after=" . Task_PortListeningPid(port))
+    lines.Push("health_after=" . QuickUpdate_HttpGet("http://127.0.0.1:" . port . "/health"))
+    probe := QuickUpdate_HttpGet("http://127.0.0.1:" . port . "/api/projects/PROJ_MISSING/export.json")
+    lines.Push("export_route_probe=" . probe)
+    text := ""
+    for line in lines
+        text .= line . "`n"
+    name := work ? "quick_update_debug_work.txt" : "quick_update_debug_personal.txt"
+    path := A_ScriptDir . "\assets\data\" . name
+    try DirCreate(A_ScriptDir . "\assets\data")
+    catch {
+    }
+    try FileDelete(path)
+    catch {
+    }
+    try FileAppend(text, path, "UTF-8")
+    catch {
+    }
+    return restarted
+}
 
 Task_IsChromeWindowTitle(title) {
     t := Trim(title)

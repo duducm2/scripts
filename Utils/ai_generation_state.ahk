@@ -149,10 +149,10 @@ InitDpiAwareness() {
 
 InitDpiAwareness()
 
-; Auto-execute: show success after QuickUpdateScripts relaunches AppLaunchers.ahk (includes this file) with "/Updated".
+; Auto-execute: chime after QuickUpdateScripts relaunches AppLaunchers.ahk with "/Updated".
+; The success overlay is shown later, after the Tasks server is restarted (Utils.ahk).
 if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     try {
-        ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
         soundPath := A_ScriptDir "\assets\sounds\quick-update-success.wav"
         ; Play success chime to completion before scheduling volume: async SoundPlay can register a new session after
         ; the first Apply pass, leaving that session at a low default (~10% in the mixer) until something re-enumerates.
@@ -161,7 +161,7 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
                 ScriptSoundPlay(soundPath, true)
         } catch {
         }
-        ; After all scripts have been started (this block runs last in include order for AppLaunchers /Updated), apply AHK volume - not at Quick Update start (old sessions / dead timers).
+        ; Volume is applied here, while the other scripts are starting. The success overlay waits until the Tasks server has been restarted.
         ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate()
         if (HandyAi_IsOwnerProcess())
             LanguageFlag_InitFromPersistedSlot()
