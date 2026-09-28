@@ -131,13 +131,13 @@
         ; New Outlook: prefer the Quick Step buttons (stable IDs from outlook-mail.md).
         Outlook_ActivateMainWindow()
         OutlookMail_EnsureHomeTab()
+        saved := Outlook_MailList_CaptureSelectedRow()
         if OutlookClickFirst([{ AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db", ControlType: "RadioButton" }, ; Move to General
         { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
             matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
                 matchmode: "Substring" }
         ]) {
-            Sleep 120
-            Outlook_FocusMailMessageList(true)
+            Outlook_MailList_FocusRowAfterMove(saved.index, saved.name)
             return
         }
     }
@@ -155,13 +155,13 @@
         ; New Outlook: prefer the Quick Step buttons (stable IDs from outlook-mail.md).
         Outlook_ActivateMainWindow()
         OutlookMail_EnsureHomeTab()
+        saved := Outlook_MailList_CaptureSelectedRow()
         if OutlookClickFirst([{ AutomationId: "91476b25-0fb7-4460-f695-8905582291db", ControlType: "RadioButton" }, ; Move to Newsletter
         { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
             matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
                 matchmode: "Substring", ControlType: "RadioButton" }
         ]) {
-            Sleep 120
-            Outlook_FocusMailMessageList(true)
+            Outlook_MailList_FocusRowAfterMove(saved.index, saved.name)
             return
         }
     }

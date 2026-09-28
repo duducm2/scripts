@@ -80,7 +80,18 @@ Outlook_ToggleMailCalendarRail() {
     return true
 }
 
-Outlook_MailList_GetFirstListItem(root) {
+Outlook_MailList_CurrentRoot() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return 0
+    root := OutlookMail_RootElementForHwnd(hwnd)
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+    }
+    return root
+}
+
+Outlook_MailList_GetListElement(root) {
     if !root
         return 0
     listEl := 0
@@ -96,32 +107,40 @@ Outlook_MailList_GetFirstListItem(root) {
     if !listEl {
         try listEl := root.FindFirst({ Name: "Message list", Type: 50008 })
     }
-    if !listEl
-        return 0
+    return listEl
+}
 
-    ; New Outlook may expose date/header bars near the top of the list. Pick the first real
-    ; message row instead of UI chrome/header artifacts.
+; Message rows only, in list order. Date headers and other chrome are skipped.
+Outlook_MailList_GetMessageItems(root) {
+    listEl := Outlook_MailList_GetListElement(root)
+    if !listEl
+        return []
+    collected := []
     try {
         items := listEl.FindAll({ ControlType: "ListItem" })
         if IsObject(items) {
             for item in items {
                 if !Outlook_MailList_IsNonMessageItem(item)
-                    return item
+                    collected.Push(item)
             }
         }
     } catch {
     }
+    if collected.Length
+        return collected
 
     try {
         items := listEl.FindAll({ Type: 50007 })
         if IsObject(items) {
             for item in items {
                 if !Outlook_MailList_IsNonMessageItem(item)
-                    return item
+                    collected.Push(item)
             }
         }
     } catch {
     }
+    if collected.Length
+        return collected
 
     item := 0
     try item := listEl.FindFirst({ ControlType: "ListItem" })
@@ -129,8 +148,70 @@ Outlook_MailList_GetFirstListItem(root) {
         try item := listEl.FindFirst({ Type: 50007 })
     }
     if item && !Outlook_MailList_IsNonMessageItem(item)
-        return item
+        return [item]
+    return []
+}
+
+Outlook_MailList_GetFirstListItem(root) {
+    items := Outlook_MailList_GetMessageItems(root)
+    return items.Length ? items[1] : 0
+}
+
+Outlook_MailList_ItemLabel(item) {
+    name := ""
+    try name := Trim(item.Name)
+    return name
+}
+
+Outlook_MailList_ItemIsSelected(item) {
+    try {
+        if item.GetCurrentPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) && item.SelectionItemPattern.IsSelected
+            return true
+    } catch {
+    }
+    try {
+        if item.GetCurrentPropertyValue(UIA.Property.HasKeyboardFocus)
+            return true
+    } catch {
+    }
+    return false
+}
+
+Outlook_MailList_GetSelectedMessageIndex(root) {
+    items := Outlook_MailList_GetMessageItems(root)
+    for i, item in items {
+        if Outlook_MailList_ItemIsSelected(item)
+            return i
+    }
+    focused := ""
+    try focused := UIA.GetFocusedElement()
+    if !focused
+        return 0
+    for i, item in items {
+        try {
+            if UIA.CompareElementsEx(item, focused)
+                return i
+        } catch {
+        }
+    }
     return 0
+}
+
+; index + subject of the message that is about to be moved.
+Outlook_MailList_CaptureSelectedRow() {
+    index := 0
+    name := ""
+    try {
+        root := Outlook_MailList_CurrentRoot()
+        index := Outlook_MailList_GetSelectedMessageIndex(root)
+        if (index >= 1) {
+            items := Outlook_MailList_GetMessageItems(root)
+            if (index <= items.Length)
+                name := Outlook_MailList_ItemLabel(items[index])
+        }
+    } catch {
+    }
+    return { index: index, name: name }
 }
 
 Outlook_MailList_IsNonMessageItem(item) {
@@ -203,8 +284,7 @@ Outlook_MailList_SkipDrawerHeadersByKeyboard(maxSteps := 5) {
     return Outlook_MailList_FocusedIsLikelyMessageRow()
 }
 
-Outlook_MailList_TrySelectFirstItem(root) {
-    item := Outlook_MailList_GetFirstListItem(root)
+Outlook_MailList_SelectItem(item) {
     if !item
         return false
     try item.ScrollIntoView()
@@ -225,7 +305,50 @@ Outlook_MailList_TrySelectFirstItem(root) {
     return true
 }
 
-; selectFirst: when true, select the first message row in the list (if any) for faster triage after moves.
+Outlook_MailList_TrySelectFirstItem(root) {
+    return Outlook_MailList_SelectItem(Outlook_MailList_GetFirstListItem(root))
+}
+
+; After a message leaves the list, select the row now in its slot (the next message).
+; If it was the last row, select the new last message.
+Outlook_MailList_FocusRowAfterMove(savedIndex, savedName) {
+    Outlook_ActivateMainWindow()
+    if (savedIndex < 1) {
+        Outlook_MailList_FocusSelectedOrList()
+        return false
+    }
+    loop 8 {
+        root := Outlook_MailList_CurrentRoot()
+        items := Outlook_MailList_GetMessageItems(root)
+        if items.Length {
+            idx := savedIndex > items.Length ? items.Length : savedIndex
+            label := Outlook_MailList_ItemLabel(items[idx])
+            ; Same subject at the same index means the list has not dropped the moved row yet.
+            if (savedName = "" || label != savedName || idx != savedIndex)
+                return Outlook_MailList_SelectItem(items[idx])
+        }
+        Sleep 70
+    }
+    root := Outlook_MailList_CurrentRoot()
+    items := Outlook_MailList_GetMessageItems(root)
+    if !items.Length
+        return false
+    idx := savedIndex > items.Length ? items.Length : savedIndex
+    return Outlook_MailList_SelectItem(items[idx])
+}
+
+Outlook_MailList_FocusSelectedOrList() {
+    root := Outlook_MailList_CurrentRoot()
+    idx := Outlook_MailList_GetSelectedMessageIndex(root)
+    if (idx >= 1) {
+        items := Outlook_MailList_GetMessageItems(root)
+        if (idx <= items.Length && Outlook_MailList_SelectItem(items[idx]))
+            return true
+    }
+    return OutlookFocusFirst([{ AutomationId: "Skip to message list-region" }, { Name: "Message list", matchmode: "Substring" }])
+}
+
+; selectFirst: when true, select the first message row (Shift+J). Move-to-folder actions keep the vacated slot instead.
 Outlook_FocusMailMessageList(selectFirst := false) {
     Outlook_ActivateMainWindow()
     hwnd := WinExist("A")
