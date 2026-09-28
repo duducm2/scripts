@@ -137,7 +137,7 @@
             matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
                 matchmode: "Substring" }
         ]) {
-            Outlook_MailList_FocusRowAfterMove(saved.index, saved.name)
+            Outlook_MailList_FocusRowAfterMove(saved.index, saved.name, saved.nextName)
             return
         }
     }
@@ -161,7 +161,7 @@
             matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
                 matchmode: "Substring", ControlType: "RadioButton" }
         ]) {
-            Outlook_MailList_FocusRowAfterMove(saved.index, saved.name)
+            Outlook_MailList_FocusRowAfterMove(saved.index, saved.name, saved.nextName)
             return
         }
     }
