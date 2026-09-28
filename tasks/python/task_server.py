@@ -476,6 +476,7 @@ def main(argv: list[str] | None = None) -> int:
 
     handler = make_handler(data_dir, args.scripts_root.resolve())
     get_store(data_dir).migrate_sections()
+    get_store(data_dir).sync_project_json_files()
     server = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Tasks server listening on http://{args.host}:{args.port}", file=sys.stderr)
     try:

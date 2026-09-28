@@ -15,6 +15,8 @@ Maono*.rar
 aux/
 infra/aux/
 tasks/data/task_server.pid
+# Generated companion JSON; rewritten when projects are added or removed
+tasks/data/exports/
 mnemonics/data/palace_server.pid
 assets/data/web_servers_warmup.pid
 # Machine-local Memory Palace UI state (Chrome HWNDs, last study) — do not commit
