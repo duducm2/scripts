@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import re
 import shutil
 from datetime import date, datetime, timedelta
@@ -402,7 +403,9 @@ class TaskStore:
         self.imported_dir.mkdir(parents=True, exist_ok=True)
         self._row_cache: dict[str, list[dict[str, str]]] = {}
         self._mtime: dict[str, float] = {}
+        self._export_follow = False
         self.ensure_files()
+        self._export_follow = True
 
     def path(self, kind: str) -> Path:
         return self.data_dir / f"{kind}.csv"
@@ -632,15 +635,23 @@ class TaskStore:
 
     def save(self, kind: str, rows: list[dict]) -> None:
         headers = HEADERS[kind]
-        write_csv(self.path(kind), headers, rows)
-        if not TASK_STORE_CACHE:
-            return
+        path = self.path(kind)
+        old_rows = None
+        if self._export_follow and kind != "projects":
+            cached = self._row_cache.get(kind) if TASK_STORE_CACHE else None
+            old_rows = (
+                [dict(r) for r in cached] if cached is not None else read_csv(path)
+            )
+        write_csv(path, headers, rows)
         copied = [{h: str(r.get(h, "") or "") for h in headers} for r in rows]
-        self._row_cache[kind] = copied
-        try:
-            self._mtime[kind] = self.path(kind).stat().st_mtime
-        except OSError:
-            self._mtime[kind] = 0.0
+        if TASK_STORE_CACHE:
+            self._row_cache[kind] = copied
+            try:
+                self._mtime[kind] = path.stat().st_mtime
+            except OSError:
+                self._mtime[kind] = 0.0
+        if old_rows is not None:
+            self._refresh_exports_after_save(kind, old_rows, copied)
 
     def state(self) -> dict[str, Any]:
         projects = self.load("projects")
@@ -707,6 +718,7 @@ class TaskStore:
                 return {"ok": False, "error": "project not found"}
             self.save("projects", out)
             self.ensure_general_section(rid)
+            self.sync_project_json_files()
             return {"ok": True, "project": next(x for x in out if x["id"] == rid)}
         row = {
             "id": next_id("PROJ_", rows),
@@ -723,6 +735,7 @@ class TaskStore:
         rows.append(row)
         self.save("projects", rows)
         gen = self.ensure_general_section(row["id"])
+        self.sync_project_json_files()
         return {"ok": True, "project": row, "section": gen}
 
     def _icon_file_path(self, icon_ref: str) -> Path | None:
@@ -906,6 +919,7 @@ class TaskStore:
         self.save(
             "projects", [p for p in self.load("projects") if p.get("id") != project_id]
         )
+        self.sync_project_json_files()
         return {"ok": True}
 
     # --- sections ---
@@ -1627,6 +1641,121 @@ class TaskStore:
             "filename": project_export_filename(project),
             "document": document,
         }
+
+    def project_json_dir(self) -> Path:
+        folder = self.data_dir / "exports"
+        folder.mkdir(parents=True, exist_ok=True)
+        return folder
+
+    def write_project_json(self, project_id: str, *, update_index: bool = True) -> dict:
+        """Write one project's companion JSON and drop a stale filename for that id."""
+        result = self.export_project(project_id)
+        if not result.get("ok"):
+            return result
+        folder = self.project_json_dir()
+        filename = result["filename"]
+        token = re.sub(r"[^A-Za-z0-9_-]+", "", (project_id or "").strip())
+        if token:
+            for old in folder.glob(f"*__{token}.json"):
+                if old.name != filename:
+                    old.unlink(missing_ok=True)
+        text = json.dumps(result["document"], ensure_ascii=False, indent=2)
+        (folder / filename).write_text(text + "\n", encoding="utf-8")
+        if update_index:
+            self.write_projects_index()
+        return result
+
+    def write_projects_index(self) -> None:
+        """Catalog of current projects. Rewritten when projects are added or removed."""
+        entries = []
+        for project in sorted(self.load("projects"), key=_export_sort_key):
+            pid = (project.get("id") or "").strip()
+            if not pid:
+                continue
+            entries.append(
+                {
+                    "id": pid,
+                    "title": (project.get("title") or "").strip(),
+                    "filter": (project.get("filter") or "").strip(),
+                    "file": project_export_filename(project),
+                }
+            )
+        document = {
+            "schema": "tasks.projects",
+            "schema_version": 1,
+            "projects": entries,
+        }
+        path = self.project_json_dir() / "projects.json"
+        path.write_text(
+            json.dumps(document, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def sync_project_json_files(self) -> None:
+        """Rewrite every project JSON and delete files for projects that are gone."""
+        folder = self.project_json_dir()
+        keep: set[str] = set()
+        for project in self.load("projects"):
+            pid = (project.get("id") or "").strip()
+            if not pid:
+                continue
+            result = self.write_project_json(pid, update_index=False)
+            if result.get("ok"):
+                keep.add(result["filename"])
+        for path in folder.glob("*.json"):
+            if path.name == "projects.json" or path.name in keep:
+                continue
+            path.unlink(missing_ok=True)
+        self.write_projects_index()
+
+    def _refresh_exports_after_save(
+        self, kind: str, old_rows: list[dict], new_rows: list[dict]
+    ) -> None:
+        for pid in self._changed_project_ids(kind, old_rows, new_rows):
+            if self.find("projects", pid):
+                self.write_project_json(pid)
+            else:
+                token = re.sub(r"[^A-Za-z0-9_-]+", "", pid)
+                if not token:
+                    continue
+                for old in self.project_json_dir().glob(f"*__{token}.json"):
+                    old.unlink(missing_ok=True)
+                self.write_projects_index()
+
+    def _changed_project_ids(
+        self, kind: str, old_rows: list[dict], new_rows: list[dict]
+    ) -> set[str]:
+        def sig(row: dict) -> tuple:
+            return tuple(sorted((str(k), str(v or "")) for k, v in row.items()))
+
+        old_by = {r.get("id") or "": r for r in old_rows}
+        new_by = {r.get("id") or "": r for r in new_rows}
+        changed: set[str] = set()
+        for rid in set(old_by) | set(new_by):
+            if not rid or sig(old_by.get(rid) or {}) == sig(new_by.get(rid) or {}):
+                continue
+            row = new_by.get(rid) or old_by.get(rid) or {}
+            pid = self._project_id_of_saved_row(kind, row)
+            if pid:
+                changed.add(pid)
+        return changed
+
+    def _project_id_of_saved_row(self, kind: str, row: dict) -> str:
+        if kind in {"tasks", "sections"}:
+            return (row.get("project_id") or "").strip()
+        parent_type = (row.get("parent_type") or "").strip()
+        parent_id = (row.get("parent_id") or "").strip()
+        if parent_type == "project":
+            return parent_id
+        if parent_type == "task":
+            task = self.find("tasks", parent_id)
+            return (task or {}).get("project_id") or ""
+        if parent_type == "info":
+            info = self.find("info_points", parent_id)
+            if not info:
+                return ""
+            return self._project_id_of_saved_row("info_points", info)
+        return ""
 
     def ensure_inbox_project(self, filt: str) -> dict:
         title = INBOX_TITLES.get(filt, "Inbox")

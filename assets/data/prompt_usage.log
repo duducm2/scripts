@@ -57,15 +57,12 @@
 2026-08-23 11:41:28|3|🤖 AI Text Optimizer|gemini|default|ctx=0|direct
 2026-08-23 12:17:39|3|🤖 AI Text Optimizer|gemini|default|ctx=0|direct
 2026-08-23 14:25:31|3|🤖 AI Text Optimizer|gemini|default|ctx=0|direct
-<<<<<<< Updated upstream
-2026-08-24 13:38:00|3|🤖 AI Text Optimizer|gemini|default|ctx=0|direct
-=======
 2026-08-24 11:25:32|d|Finance daily transactions|enterprise|default|ctx=5|direct
 2026-08-24 11:29:18|d|Finance daily transactions|enterprise|default|ctx=5|direct
 2026-08-24 11:29:27|d|Finance daily transactions|enterprise|default|ctx=5|direct
 2026-08-24 13:27:54|d|Finance daily transactions|enterprise|default|ctx=5|direct
 2026-08-24 13:28:03|d|Finance daily transactions|enterprise|default|ctx=5|direct
->>>>>>> Stashed changes
+2026-08-24 13:38:00|3|🤖 AI Text Optimizer|gemini|default|ctx=0|direct
 2026-08-24 13:42:53|d|Finance daily transactions|enterprise|default|ctx=5|direct
 2026-08-24 13:43:49|d|Finance daily transactions|enterprise|default|ctx=5|direct
 2026-08-24 15:56:17|d|Finance daily transactions|enterprise|default|ctx=5|direct
@@ -150,13 +147,10 @@
 2026-08-27 20:21:41|j|Job search status update|gemini|default|ctx=1|direct
 2026-08-28 10:03:42|j|Job search status update|enterprise|default|ctx=1|direct
 2026-08-28 10:11:36|j|Job search status update|enterprise|default|ctx=1|direct
-<<<<<<< Updated upstream
-2026-08-28 10:45:17|j|Job search status update|gemini|default|ctx=1|direct
-=======
 2026-08-28 10:29:41|j|Job search status update|enterprise|default|ctx=1|direct
 2026-08-28 10:34:29|j|Job search status update|enterprise|default|ctx=1|direct
 2026-08-28 10:39:27|j|Job search status update|enterprise|default|ctx=1|direct
->>>>>>> Stashed changes
+2026-08-28 10:45:17|j|Job search status update|gemini|default|ctx=1|direct
 2026-08-28 10:50:48|j|Job search status update|enterprise|default|ctx=1|direct
 2026-08-28 11:40:49|j|Job search status update|enterprise|default|ctx=1|direct
 2026-08-28 11:43:39|j|Job search status update|enterprise|default|ctx=1|direct
@@ -358,11 +352,8 @@
 2026-09-27 11:09:32|6|Curate knowledge atoms|gemini|default|ctx=1|direct
 2026-09-27 11:19:53|4|Creating mnemonic stories|gemini|default|ctx=3+1|gemini
 2026-09-27 18:37:00|3|AI Text Optimizer|gemini|default|ctx=0|direct
-<<<<<<< HEAD
 2026-09-28 07:38:54|3|AI Text Optimizer|gemini|default|ctx=0|direct
-=======
 2026-09-28 07:57:33|k|Task - Convert to Task|enterprise|default|ctx=2|gemini
->>>>>>> 2b6014cef4d50b1999e2bcf5297db11e88452801
 2026-09-28 09:31:02|k|Task - Convert to Task|enterprise|default|ctx=2|gemini
 2026-09-28 09:36:13|k|Task - Convert to Task|enterprise|default|ctx=2|gemini
 2026-09-28 13:52:28|k|Task - Convert to Task|enterprise|default|ctx=2|gemini

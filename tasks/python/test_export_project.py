@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from datetime import date
@@ -180,6 +181,47 @@ class ExportProjectTest(unittest.TestCase):
         self.assertFalse(finished["open"])
         self.assertEqual(finished["info"][0]["body"], note)
         self.assertNotRegex(filename, r"[^\x00-\x7F]")
+
+    def test_json_files_follow_add_and_remove(self) -> None:
+        alpha = self.store.upsert_project({"title": "Alpha", "filter": "work"})[
+            "project"
+        ]
+        beta = self.store.upsert_project({"title": "Beta", "filter": "personal"})[
+            "project"
+        ]
+        folder = self.store.project_json_dir()
+        alpha_path = folder / project_export_filename(alpha)
+        beta_path = folder / project_export_filename(beta)
+        self.assertTrue(alpha_path.is_file())
+        self.assertTrue(beta_path.is_file())
+        index = json.loads((folder / "projects.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            [p["id"] for p in index["projects"]], [alpha["id"], beta["id"]]
+        )
+
+        self.store.upsert_task(
+            {
+                "project_id": beta["id"],
+                "title": "Hello from beta",
+                "filter": "personal",
+                "kind": "punctual",
+            }
+        )
+        self.assertIn("Hello from beta", beta_path.read_text(encoding="utf-8"))
+
+        renamed = self.store.upsert_project(
+            {"id": alpha["id"], "title": "Alpha Renamed", "filter": "work"}
+        )["project"]
+        self.assertFalse(alpha_path.is_file())
+        renamed_path = folder / project_export_filename(renamed)
+        self.assertTrue(renamed_path.is_file())
+
+        self.store.delete_project(alpha["id"])
+        self.assertFalse(renamed_path.is_file())
+        self.assertTrue(beta_path.is_file())
+        index = json.loads((folder / "projects.json").read_text(encoding="utf-8"))
+        self.assertEqual([p["id"] for p in index["projects"]], [beta["id"]])
+        self.assertNotIn(alpha["id"], beta_path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
