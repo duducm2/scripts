@@ -50,9 +50,9 @@
 ;
 ; Shift+Z — Fit the slide to the window (center + fill)
 ; ------------------------------------------------------
-; COM View.ZoomToFit. A brief zoom-out first forces PowerPoint to rebuild the
-; viewport, so a slide stuck in the corner after zooming out is centered and
-; then scaled to the largest size that still fits the pane.
+; Same command as the status-bar "Fit slide to current window" button
+; (CommandBars.ExecuteMso "ZoomFitToWindow"). Do not assign View.Zoom first:
+; that turns ZoomToFit off and leaves the slide tiny.
 ;
 ; =============================================================================
 
@@ -220,9 +220,18 @@ PowerPoint_FitSlideToWindow() {
         return
     }
     try {
-        view := pp.ActiveWindow.View
-        try view.Zoom := 10
-        view.ZoomToFit()
+        wnd := pp.ActiveWindow
+        try {
+            if (wnd.Panes.Count >= 2)
+                wnd.Panes.Item(2).Activate()
+        } catch {
+        }
+        try {
+            pp.CommandBars.ExecuteMso("ZoomFitToWindow")
+            return
+        } catch {
+        }
+        wnd.View.ZoomToFit := -1
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Fit slide failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
     }
