@@ -21,7 +21,7 @@ global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to thr
 global g_DictationStartSound := A_ScriptDir . "\assets\sounds\speach-start.wav"
 ; Multi-lang (Handy slot 3) start cue. CC0: Robin Lamb, "UI Sound Effects",
 ; https://opengameart.org/content/ui-sound-effects-button-clicks-user-feedback-notifications
-; Pack file chimes.wav — not reused from any other asset in this repo.
+; Pack file chimes.wav, raised 4.5 dB. Other pack chimes are much louder.
 global g_DictationStartSoundMultilang := A_ScriptDir . "\assets\sounds\dictation-start-multilang.wav"
 global g_DictationStopSound := A_ScriptDir . "\assets\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" (reserved for future)
