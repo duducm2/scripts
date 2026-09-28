@@ -1,0 +1,15 @@
+﻿when=2026-09-28 14:55:46
+computer=CA-C-00806
+user=FIE7CA
+is_work_environment=yes
+script_dir=C:\Users\fie7ca\Documents\scripts
+quick_update_scripts_dir=C:\Users\fie7ca\Documents\scripts
+script_dir_matches_quick_update_dir=yes
+task_server_py_exists=yes
+disk_has_project_export=yes
+listen_pid_before=0
+health_before=status=200 body={"ok": true, "service": "task_server", "port": 8766, "features": ["state", "crud", "attachments", "import", "open", "icons"]}
+tasks_server_restarted=yes
+listen_pid_after=0
+health_after=status=200 body={"ok": true, "service": "task_server", "port": 8766, "features": ["state", "crud", "attachments", "import", "open", "icons", "project-export"]}
+export_route_probe=status=404 body={"ok": false, "error": "project not found"}

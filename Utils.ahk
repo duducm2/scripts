@@ -376,6 +376,17 @@ catch {
 ; [Utils module] Dictation indicator, ~#!+0 hotkey, ToggleDictationMode -> Utils\dictation_toggle.ahk
 #include %A_ScriptDir%\Utils\dictation_toggle.ahk
 
+; Quick Update: restart Tasks (:8766) so the new task_server.py is what the banner refers to.
+; Warmup leaves an already-healthy Python process running, which kept the old export code.
+if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
+    try QuickUpdate_RefreshTasksServer()
+    catch {
+    }
+    try ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
+
 ; Handy model hotkeys and language flag: AppLaunchers.ahk only (after #!+C / ^!#9 / ^!#b are registered).
 HandyAi_ConfigureProcessOwnership()
 ; Desktop import watcher: AppLaunchers only (see ImportWatcher_IsOwnerProcess).
