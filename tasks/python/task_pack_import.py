@@ -15,7 +15,7 @@ from task_store import (
     VALID_FILTERS,
     VALID_KINDS,
     VALID_RECURRENCE,
-    STATUS_EMOJIS,
+    resolve_status_emoji,
     TaskStore,
     next_id,
     next_sort,
@@ -348,7 +348,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
             continue
         if kind == "punctual":
             recurrence = ""
-        emoji = (r.get("emoji") or "").strip() or STATUS_EMOJIS["general"]
+        emoji = resolve_status_emoji(r.get("emoji") or "")
         proj_title = (r.get("project_title") or "").strip()
         proj_id = ensure_project(proj_title, filt)
         section_id, section_path = ensure_section(proj_id, r.get("section_path") or "")
@@ -491,7 +491,8 @@ def preview_labels(pack: dict[str, Any]) -> list[str]:
             title = (r.get("title") or "").strip()
             kind = (r.get("kind") or "punctual").strip()
             proj = (r.get("project_title") or "").strip()
-            line = f"[TASK] {filt} · {title} ({kind})"
+            emoji = resolve_status_emoji(r.get("emoji") or "")
+            line = f"[TASK] {emoji} {filt} · {title} ({kind})"
             if proj:
                 line += f" @ {proj}"
             labels.append(line)

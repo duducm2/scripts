@@ -76,6 +76,47 @@ STATUS_EMOJIS = {
     "none": "",
 }
 
+# Spoken / pack words that mean a status. Glyphs in STATUS_EMOJIS pass through as-is.
+STATUS_EMOJI_ALIASES = {
+    "general": "general",
+    "default": "general",
+    "normal": "general",
+    "waiting": "waiting",
+    "wait": "waiting",
+    "blocked": "waiting",
+    "important": "important",
+    "priority": "important",
+    "urgent": "important",
+    "doubt": "doubt",
+    "unsure": "doubt",
+    "uncertain": "doubt",
+    "done": "done",
+    "complete": "done",
+    "completed": "done",
+    "none": "none",
+}
+
+
+def resolve_status_emoji(raw: str) -> str:
+    """Map a pack emoji cell to a stored glyph.
+
+    Empty and the words general / waiting / important / doubt / done (plus a few
+    spoken aliases) become the status glyphs. Any other value is kept, so a
+    custom emoji such as 🩺 still imports.
+    """
+    text = (raw or "").strip()
+    if not text:
+        return STATUS_EMOJIS["general"]
+    for glyph in STATUS_EMOJIS.values():
+        if glyph and text == glyph:
+            return glyph
+    key = text.lower().strip(" .,;:!?")
+    status = STATUS_EMOJI_ALIASES.get(key) or (key if key in STATUS_EMOJIS else "")
+    if status:
+        return STATUS_EMOJIS[status]
+    return text
+
+
 VALID_FILTERS = {"work", "personal", "habits"}
 VALID_KINDS = {"punctual", "habitual"}
 VALID_RECURRENCE = {

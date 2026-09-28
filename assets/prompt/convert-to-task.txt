@@ -83,7 +83,14 @@ RULES
 - The Habits column shows every active task with filter=habits (habitual or punctual). Prefer kind=habitual + recurrence for true cadence; one-shot dated milestones may stay punctual under a habits project and still appear in Habits.
 - project_title: exact or close match to a TASK_PROJECTS title or an attached projects.csv title for that filter. If empty, importer uses the filter inbox (Work inbox / Personal inbox / Habits & Health).
 - title: short actionable string (required).
-- emoji: optional. Common: 🔲 general, ⏳ waiting, ⚡ important, ✅ done, ❓ doubt. Custom allowed (e.g. 🩺). Empty → importer uses 🔲.
+- emoji: task status. Write exactly one of these words (the importer maps them): doubt, waiting, general, important, done.
+  When the speaker says the task is a doubt, they are unsure, or they are in doubt → doubt (❓).
+  When they say it is waiting, blocked, or on hold → waiting (⏳).
+  When they say it is important, a priority, or urgent → important (⚡).
+  When they say it is done or completed → done (✅).
+  When they say it is a general task, or they name no status → general (🔲).
+  Do not leave the status word in the title. Do not invent a status they did not state.
+  A custom emoji (e.g. 🩺) is allowed and is stored as that emoji. The status glyphs ❓ ⏳ ⚡ ✅ 🔲 are also accepted in this column.
 - kind: punctual | habitual. Default punctual. Use habitual only for recurring cadence items.
 - recurrence: empty for punctual. For habitual: daily | weekly | monthly | quarterly | biannual | yearly | every_2y | every_3y | every_5y | every_10y.
 - due_date / next_due: optional ISO yyyy-MM-dd. For habitual, prefer next_due when a next occurrence is known.
