@@ -249,3 +249,86 @@ INFO_0226,task,TASK_0361,n8n,,ℹ️,,10,2026-09-29 10:14:57,,
 INFO_0227,task,TASK_0361,https://bosch.sharepoint.com/:f:/r/sites/msteams_d8ea0823-PlanejamentoeGovernana/Shared%20Documents/Governan%C3%A7a/Treinamentos/Programa%20RISE/n8n?d=w3d61e328a2494f41afe088870901d16d&csf=1&web=1&e=SYXKAc,,ℹ️,,20,2026-09-29 10:14:59,,
 INFO_0228,task,TASK_0361,gemini,,ℹ️,,30,2026-09-29 10:19:14,,
 INFO_0229,task,TASK_0361,https://bosch-my.sharepoint.com/shared?listurl=https%3A%2F%2Fbosch%2Dmy%2Esharepoint%2Ecom%2Fpersonal%2Ffie7ca%5Fbosch%5Fcom%2FDocuments&id=%2Fpersonal%2Ffie7ca%5Fbosch%5Fcom%2FDocuments%2FRecordings&FolderCTID=0x012000EA8CCE0AACB0EF469FB676A7470D5B32,,ℹ️,,40,2026-09-29 10:19:18,,
+INFO_0230,task,TASK_0362,"9.29
+
+*Note: the links and images in this document may point to external sources. Please review them before opening.*
+
+# Projeto: Centralização e Gestão de Automações SO
+
+## 1. Contexto e Objetivo
+O objetivo principal é realizar uma **atualização cadastral e levantamento contínuo de todas as automações da SO** (focando em automações desenvolvidas *da SO para a SO*). Busca-se substituir processos manuais e descentralizados por uma solução integrada que permita mensurar ganhos, identificar responsáveis e manter a base constantemente atualizada.
+
+---
+
+## 2. Diagnóstico do Cenário Atual e Desafios
+
+| Desafio Identificado | Impacto Atual | Proposta de Mitigação |
+| :--- | :--- | :--- |
+| **Planilha de reporte em Excel** | Processo moroso e centralizado com o Paulo para o cálculo de ganhos. | Migração para uma aplicação web dinâmica que centraliza as regras e simplifica o reporte. |
+| **Falta de dados de proprietários** | A planilha atual não possui o nome dos donos das automações, dificultando o contato e a validação. | Tornar obrigatório o vínculo do proprietário no novo cadastro e planejar uma força-tarefa inicial de contato. |
+| **Múltiplos formulários isolados** | Criação pontual de Forms (ex.: projeto RISE) dispersa as informações. | Unificar a entrada de dados em uma plataforma única. |
+| **Engajamento e adesão** | Risco de baixa adesão espontânea ao preenchimento cadastral. | Estratégia combinada de comunicação, rotina com key-users e incentivos/reconhecimento. |
+
+---
+
+## 3. Definição da Solução Técnica
+
+* **Tecnologia Selecionada:** **Microsoft PowerApps**.
+* **Modelo da Aplicação:** Plataforma web dinâmica com funcionalidade completa de **CRUD** (Create, Read, Update, Delete) para as automações.
+* **Autonomia e Desacoplamento:** A ferramenta permitirá que os próprios donos das automações atualizem seus dados diretamente na plataforma, eliminando a dependência operacional da equipe central.
+* **Requisitos Técnicos Pendentes:**
+  * Definição de regras de permissão e perfis de edição (quem pode editar o quê).
+  * Padronização de unidades de medida para o cálculo de ganhos (tempo economizado, financeiro, etc.).
+
+---
+
+## 4. Divisão de Responsabilidades
+
+### Paulo (Responsável Global do Reporte)
+* Definir os campos mandatórios e opcionais para a coleta de dados e métricas de ganho.
+* Padronizar as fórmulas e a lógica de cálculo de ganhos que antes rodavam no Excel.
+* Validar a estrutura de dados a ser refletida na nova aplicação.
+
+### Eduardo (UX & Desenvolvimento PowerApps)
+* Mapear o fluxo de interação e navegação do usuário.
+* Elaborar protótipos/rascunhos das telas com base nos campos definidos pelo Paulo.
+* Construir a aplicação no PowerApps (telas de CRUD e regras de interface).
+* Utilizar como base de referência visual e funcional o Forms existente e a planilha histórica.
+
+---
+
+## 5. Estratégia de Comunicação, Engajamento e Coleta
+
+1. **Abordagem de Cadastro Humanizada (Sugestão César):**
+   * Manter o formulário de entrada inicial o mais simples e direto possível.
+   * A equipe central entra em contato com o autor para realizar o detalhamento técnico e cadastramento conjunto, aumentando a qualidade e confiabilidade do registro.
+
+2. **Incentivo e Reconhecimento (Sugestão Débora):**
+   * Estudar modelo de premiação ou gamificação semelhante ao aplicado no *Cross Selling*.
+   * *Atenção/Risco:* Estabelecer mecanismos de controle para evitar duplicidade de submissões ou reportes sob nomes distintos apenas para concorrência ao prêmio.
+
+3. **Canais e Marcos de Divulgação:**
+   * **SO Day:** Espaço para reforço institucional da iniciativa e demonstração de valor.
+   * **Management Meeting (08 de outubro):** Alinhamento executivo com lideranças para suporte e endosso da atualização cadastral.
+   * **Newsletter Interna:** Divulgação destacando o posicionamento: *“Automações da SO para a SO”*.
+   * **Rotina com Key-Users:** Atuação dos próprios treinadores no contato direto com os key-users para coletar percepções e acompanhar a adesão prática.
+   * **Compartilhando Sucessos:** Aproveitar os eventos e sessões para capturar novas automações e direcioná-las ao repositório oficial.
+
+---
+
+## 6. Próximos Passos Imediatos
+
+- [ ] **Paulo:** Finalizar e entregar a lista oficial de campos e fórmulas de ganhos (consultar post-its no Miro).
+- [ ] **Eduardo:** Mapear o fluxo de telas e prototipar a primeira versão do CRUD no PowerApps.
+- [ ] **Equipe:** Definir matriz de permissões e regras de edição no PowerApps.
+- [ ] **Comunicação:** Preparar material executivo para o *Management Meeting* de 08/10 e pauta para o *SO Day*.
+- [ ] **Treinadores:** Alinhar script de comunicação para a primeira rodada de contato com os key-users.
+
+---
+
+## 7. Links e Materiais de Apoio
+
+* **Quadro no Miro (Larissa):** Mapeamento do uso dos dados e descrições dos campos em post-its:
+  [Acessar Miro Board de Automações SO](https://miro.com/app/board/uXjVHirUsSs=/)
+* **Iniciativas Correlatas:** Formulário do projeto RISE e repositório de histórias do *Compartilhando Sucessos*.",,ℹ️,,10,2026-09-29 11:30:13,,
+INFO_0231,task,TASK_0363,https://miro.com/app/board/uXjVHirUsSs=/,,ℹ️,,10,2026-09-29 11:32:36,,
