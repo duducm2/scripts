@@ -769,13 +769,46 @@ GeminiEnterprise_SelectDeepReasoningModel(hwnd := 0) {
     return GeminiEnterprise_SelectModelByName(modelName, hwnd)
 }
 
+GeminiEnterprise_ComposerElementText(el) {
+    if (!IsObject(el))
+        return ""
+    text := ""
+    try text := Trim(el.Value)
+    catch
+        text := ""
+    if (text = "" || InStr(text, "Ask anything", false)) {
+        try text := Trim(el.TextPattern.DocumentRange.GetText(-1))
+        catch
+            text := ""
+    }
+    text := Trim(text)
+    if (text = "" || InStr(text, "Ask anything", false))
+        return ""
+    return text
+}
+
 GeminiEnterprise_SubmitComposer(hwnd) {
+    uia := 0
     try {
         uia := UIA_Browser("ahk_id " hwnd)
         GeminiEnterprise_TrySubmit(uia)
     } catch {
         Send "{Enter}"
     }
+    ; TrySubmit returns without a key when a Stop control is present. A new fix
+    ; still sitting in the composer must still get Ctrl+Enter. An empty composer
+    ; (a real in-progress reply) is left alone.
+    el := IsObject(uia) ? GeminiEnterprise_FocusComposer(uia, false) : 0
+    if (!el) {
+        root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+        el := GeminiEnterprise_FocusComposer(root, false)
+    }
+    if (!el || GeminiEnterprise_ComposerElementText(el) = "")
+        return
+    SendInput "^{Enter}"
+    Sleep 200
+    if (GeminiEnterprise_ComposerElementText(el) != "")
+        SendInput "{Enter}"
 }
 
 GeminiEnterprise_TrySubmit(uia := 0) {
