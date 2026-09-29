@@ -478,10 +478,23 @@
         border: 1px solid rgba(74, 74, 80, 0.55);
         border-radius: 5px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
         padding: 2px 4px;
         gap: 2px;
+      }
+      .task.kb-selected > .row-actions,
+      .task:hover > .row-actions,
+      .plain-row:hover .row-actions,
+      .plain-row.kb-selected .row-actions,
+      details.project.kb-selected > .proj-actions,
+      details.project:hover > .proj-actions,
+      .task-section:not(.is-general):hover
+        > .task-section-label
+        .sec-actions,
+      .task-section:not(.is-general).kb-selected
+        > .task-section-label
+        .sec-actions {
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
       .task > .row-actions .btn,
       .plain-row .row-actions .btn,
@@ -743,7 +756,8 @@
         letter-spacing: 0.01em;
       }
       .task.emoji-hidden,
-      .project.emoji-hidden {
+      .project.emoji-hidden,
+      .search-hidden {
         display: none !important;
       }
       .section-hidden {
@@ -775,6 +789,13 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        content-visibility: auto;
+        contain-intrinsic-size: auto 180px;
+      }
+      .column.bento > .project:hover,
+      .column.bento > .project.kb-selected,
+      .column.bento > .project:focus-within {
+        content-visibility: visible;
       }
       .column.bento > .project > summary {
         flex: 0 0 auto;
@@ -1466,41 +1487,84 @@
           state._dataIndex = null;
         }
 
+        function sortByOrder(arr) {
+          arr.sort(
+            (a, b) =>
+              Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+              String(a.title || "").localeCompare(String(b.title || "")),
+          );
+        }
+
+        function isOpenTaskRow(t) {
+          return (
+            t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅"
+          );
+        }
+
+        function isHabitColumnTask(t) {
+          if (t.active === "0") return false;
+          if ((t.filter || "") !== "habits") return false;
+          if (t.kind !== "habitual" && t.emoji === "✅") return false;
+          return true;
+        }
+
         function buildDataIndex() {
           const sectionsByProject = new Map();
           const tasksBySection = new Map();
           const tasksById = new Map();
           const infoByParent = new Map();
           const attachmentsByParent = new Map();
+          const projectsByFilter = new Map();
+          const openByFilterProject = new Map();
+          const habitTasksByProject = new Map();
+          const projectBirthById = new Map();
+          for (const p of state.data?.projects || []) {
+            if (p.active === "0") continue;
+            const filt = p.filter || "";
+            if (!projectsByFilter.has(filt)) projectsByFilter.set(filt, []);
+            projectsByFilter.get(filt).push(p);
+          }
+          for (const arr of projectsByFilter.values()) sortByOrder(arr);
           for (const s of state.data?.sections || []) {
             const pid = s.project_id || "";
             if (!sectionsByProject.has(pid)) sectionsByProject.set(pid, []);
             sectionsByProject.get(pid).push(s);
           }
-          for (const arr of sectionsByProject.values()) {
-            arr.sort(
-              (a, b) =>
-                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
-                a.title.localeCompare(b.title),
-            );
-          }
+          for (const arr of sectionsByProject.values()) sortByOrder(arr);
           for (const t of state.data?.tasks || []) {
             if (t.id) tasksById.set(t.id, t);
             const sid = t.section_id || "";
             if (!tasksBySection.has(sid)) tasksBySection.set(sid, []);
             tasksBySection.get(sid).push(t);
+            if (isOpenTaskRow(t)) {
+              const filt = t.filter || "";
+              if (!openByFilterProject.has(filt))
+                openByFilterProject.set(filt, new Map());
+              const byProj = openByFilterProject.get(filt);
+              const pid = t.project_id || "";
+              if (!byProj.has(pid)) byProj.set(pid, []);
+              byProj.get(pid).push(t);
+            }
+            if (isHabitColumnTask(t)) {
+              const pid = t.project_id || "";
+              if (!habitTasksByProject.has(pid))
+                habitTasksByProject.set(pid, []);
+              habitTasksByProject.get(pid).push(t);
+            }
           }
-          for (const arr of tasksBySection.values()) {
-            arr.sort(
-              (a, b) =>
-                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
-                a.title.localeCompare(b.title),
-            );
-          }
+          for (const arr of tasksBySection.values()) sortByOrder(arr);
           for (const i of state.data?.info_points || []) {
             const key = `${i.parent_type || ""}:${i.parent_id || ""}`;
             if (!infoByParent.has(key)) infoByParent.set(key, []);
             infoByParent.get(key).push(i);
+            if (
+              i.parent_type === "project" &&
+              i.parent_id &&
+              String(i.birth_date || "").trim() &&
+              !projectBirthById.has(i.parent_id)
+            ) {
+              projectBirthById.set(i.parent_id, i);
+            }
           }
           for (const a of state.data?.attachments || []) {
             const key = `${a.parent_type || ""}:${a.parent_id || ""}`;
@@ -1513,6 +1577,10 @@
             tasksById,
             infoByParent,
             attachmentsByParent,
+            projectsByFilter,
+            openByFilterProject,
+            habitTasksByProject,
+            projectBirthById,
           };
         }
 
@@ -1735,15 +1803,7 @@
         function projectBirthInfo(projectId) {
           const pid = String(projectId || "").trim();
           if (!pid) return null;
-          const rows = state.data?.info_points || [];
-          return (
-            rows.find(
-              (i) =>
-                i.parent_type === "project" &&
-                i.parent_id === pid &&
-                String(i.birth_date || "").trim(),
-            ) || null
-          );
+          return dataIndex().projectBirthById.get(pid) || null;
         }
 
         function projectAgeBadgeHtml(projectId) {
@@ -1791,6 +1851,36 @@
           const color = projectIconColor(project);
           const safeUrl = esc(src).replace(/'/g, "%27");
           return `<span class="proj-icon proj-icon-tint" style="--icon-color:${esc(color)};-webkit-mask-image:url('${safeUrl}');mask-image:url('${safeUrl}');" title="Project icon" role="img" aria-label="Project icon"></span>`;
+        }
+
+        function setIconSlot(parent, html) {
+          if (!parent) return;
+          const old = parent.querySelector(":scope > .proj-icon");
+          if (!html) {
+            if (old) old.remove();
+            return;
+          }
+          const wrap = document.createElement("template");
+          wrap.innerHTML = html.trim();
+          const next = wrap.content.firstElementChild;
+          if (!next) return;
+          if (old) old.replaceWith(next);
+          else parent.insertBefore(next, parent.firstChild);
+        }
+
+        function patchProjectIcon(project) {
+          if (!project?.id) return;
+          const html = projectIconHtml(project);
+          const sel = `#view details.project[data-id="${CSS.escape(project.id)}"] > summary`;
+          document.querySelectorAll(sel).forEach((summary) => {
+            setIconSlot(summary, html);
+          });
+          if (state.projectFocusId === project.id) {
+            setIconSlot(
+              document.querySelector("#sec-project-focus .project-focus-title"),
+              html,
+            );
+          }
         }
 
         async function copyInfoById(id) {
@@ -2032,20 +2122,22 @@
         }
 
         function projectsFor(filt) {
-          return (state.data.projects || [])
-            .filter((p) => p.active !== "0" && p.filter === filt)
-            .sort(
-              (a, b) =>
-                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
-                a.title.localeCompare(b.title),
-            );
+          return dataIndex().projectsByFilter.get(filt) || [];
+        }
+
+        function openTasksFor(filt) {
+          const byProj = dataIndex().openByFilterProject.get(filt);
+          if (!byProj) return [];
+          const out = [];
+          for (const arr of byProj.values()) out.push(...arr);
+          return out;
         }
 
         function openTasks() {
-          return (state.data.tasks || []).filter(
-            (t) =>
-              t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅",
-          );
+          const out = [];
+          for (const filt of dataIndex().openByFilterProject.keys())
+            out.push(...openTasksFor(filt));
+          return out;
         }
 
         function attSrc(a) {
@@ -2121,6 +2213,17 @@
           }
           out += esc(raw.slice(i));
           return out || esc(raw);
+        }
+
+        function projectLayoutPlan(p, pts) {
+          const secs = sectionsFor(p.id);
+          return {
+            show: true,
+            projectHit: false,
+            pts,
+            secs,
+            listForSection: (sid) => pts.filter((t) => t.section_id === sid),
+          };
         }
 
         function projectSearchPlan(p, pts) {
@@ -2348,18 +2451,11 @@
       </div>`);
           }
           parts.push(inlineSectionHtml(p.id));
-          if (
-            !pl.pts.length &&
-            !searchNeedle() &&
-            !inlineCreateInProject(p.id)
-          ) {
+          if (!pl.pts.length && !inlineCreateInProject(p.id)) {
             return (
               parts.join("") +
               '<p class="empty" style="padding:0 12px 10px">No open tasks</p>'
             );
-          }
-          if (!pl.pts.length && searchNeedle() && !parts.join("")) {
-            return '<p class="empty" style="padding:0 12px 10px">No matching tasks</p>';
           }
           return parts.join("");
         }
@@ -2393,20 +2489,12 @@
         }
 
         function renderColumn(heading, filt) {
-          const open = openTasks().filter((t) => t.filter === filt);
-          const byProj = {};
-          open.forEach((t) => {
-            const pid = t.project_id || "";
-            (byProj[pid] ||= []).push(t);
-          });
+          const byProj = dataIndex().openByFilterProject.get(filt) || new Map();
+          const open = openTasksFor(filt);
           const blocks = [];
-          let visibleOpen = [];
           for (const p of projectsFor(filt)) {
-            const allPts = byProj[p.id] || [];
-            const plan = projectSearchPlan(p, allPts);
-            if (!plan.show) continue;
-            const pts = plan.pts;
-            visibleOpen = visibleOpen.concat(pts);
+            const allPts = byProj.get(p.id) || [];
+            const plan = projectLayoutPlan(p, allPts);
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
@@ -2428,68 +2516,28 @@
       </details>`);
           }
           const known = new Set(projectsFor(filt).map((p) => p.id));
-          const orphans = open.filter((t) => {
-            if (known.has(t.project_id)) return false;
-            return !searchNeedle() || titleMatches(t.title);
-          });
+          const orphans = open.filter((t) => !known.has(t.project_id));
           if (orphans.length) {
-            visibleOpen = visibleOpen.concat(orphans);
             blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span></summary>
         <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
           }
-          const emptyMsg = searchNeedle()
-            ? '<p class="empty">No matches</p>'
-            : '<p class="empty">No projects</p>';
+          const emptyMsg = '<p class="empty">No projects</p>';
           const extra = inlineProjectHtml(filt);
           return `<section class="${focusColumnClass(filt)}" id="sec-${esc(filt)}">${sectionHeadHtml(heading)}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
 
         function habitTasksList() {
-          const q = searchNeedle();
-          return (state.data.tasks || []).filter((t) => {
-            if (t.active === "0") return false;
-            // Habits column: all tasks with filter=habits (habitual or punctual milestones).
-            if ((t.filter || "") !== "habits") return false;
-            if (t.kind !== "habitual" && t.emoji === "✅") return false;
-            if (!q) return true;
-            if (
-              String(t.title || "")
-                .toLowerCase()
-                .includes(q)
-            )
-              return true;
-            const p = (state.data.projects || []).find(
-              (x) => x.id === t.project_id,
-            );
-            if (
-              p &&
-              String(p.title || "")
-                .toLowerCase()
-                .includes(q)
-            )
-              return true;
-            const sec = (state.data.sections || []).find(
-              (s) => s.id === t.section_id,
-            );
-            return !!(
-              sec &&
-              String(sec.title || "")
-                .toLowerCase()
-                .includes(q)
-            );
-          });
+          const out = [];
+          for (const arr of dataIndex().habitTasksByProject.values())
+            out.push(...arr);
+          return out;
         }
 
         function renderHabitsColumn() {
-          const habitual = habitTasksList();
-          const byProj = {};
-          habitual.forEach((t) => {
-            const pid = t.project_id || "";
-            (byProj[pid] ||= []).push(t);
-          });
+          const byProj = dataIndex().habitTasksByProject;
           const idSet = new Set([
             ...projectsFor("habits").map((p) => p.id),
-            ...Object.keys(byProj).filter(Boolean),
+            ...[...byProj.keys()].filter(Boolean),
           ]);
           const projects = (state.data.projects || [])
             .filter((p) => p.active !== "0" && idSet.has(p.id))
@@ -2499,12 +2547,9 @@
                 a.title.localeCompare(b.title),
             );
           const blocks = [];
-          let visible = [];
           for (const p of projects) {
-            const allPts = byProj[p.id] || [];
-            const plan = projectSearchPlan(p, allPts);
-            if (!plan.show) continue;
-            visible = visible.concat(plan.pts);
+            const allPts = byProj.get(p.id) || [];
+            const plan = projectLayoutPlan(p, allPts);
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
@@ -2526,19 +2571,15 @@
       </details>`);
           }
           const known = new Set(projects.map((p) => p.id));
-          const orphans = habitual.filter(
-            (t) =>
-              !known.has(t.project_id) &&
-              (!searchNeedle() || titleMatches(t.title)),
-          );
+          const orphans = [];
+          for (const [pid, tasks] of byProj) {
+            if (!known.has(pid)) orphans.push(...tasks);
+          }
           if (orphans.length) {
-            visible = visible.concat(orphans);
             blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span></summary>
         <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
           }
-          const emptyMsg = searchNeedle()
-            ? '<p class="empty">No matches</p>'
-            : '<p class="empty">No habits</p>';
+          const emptyMsg = '<p class="empty">No habits</p>';
           const extra = inlineProjectHtml("habits");
           return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits")}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
@@ -2550,15 +2591,15 @@
           const filt = p.filter || "work";
           const allPts =
             filt === "habits"
-              ? habitTasksList().filter((t) => t.project_id === pid)
-              : openTasks().filter((t) => t.project_id === pid);
-          const plan = projectSearchPlan(p, allPts);
+              ? dataIndex().habitTasksByProject.get(pid) || []
+              : dataIndex().openByFilterProject.get(filt)?.get(pid) || [];
+          const plan = projectLayoutPlan(p, allPts);
           const pThumbs = thumbsHtml("project", p.id);
           const ageBadge = projectAgeBadgeHtml(p.id);
           const iconHtml = projectIconHtml(p);
           return `<section class="column panel project-focus" id="sec-project-focus">
       <div class="project-focus-head">
-        <h2 class="project-focus-title">${iconHtml}${highlightTitle(p.title)}${ageBadge}</h2>
+        <h2 class="project-focus-title">${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</h2>
         <span class="project-focus-hint"><kbd>Shift+Z</kbd> exit</span>
       </div>
       <details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
@@ -2579,8 +2620,23 @@
     </section>`;
         }
 
+        function renderDashboardHtml() {
+          if (state.projectFocusId) return renderProjectFocusHtml();
+          const f = state.sectionFocus || "";
+          if (f === "personal" || f === "work") {
+            const heading = f === "personal" ? "Personal" : "Work";
+            return `<div class="${focusTopRowClass()}">${renderColumn(heading, f)}</div>`;
+          }
+          if (f === "habits") return renderHabitsColumn();
+          return `
+      <div class="${focusTopRowClass()}">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
+      ${renderHabitsColumn()}`;
+        }
+
         function renderDashboard() {
           rebuildTaskIdsWithInfo();
+          kbSelectedEl = null;
+          invalidateNavCache();
           if (state.projectFocusId) {
             const p = (state.data.projects || []).find(
               (x) => x.id === state.projectFocusId,
@@ -2594,14 +2650,9 @@
             "project-focus-mode",
             !!state.projectFocusId,
           );
-          if (state.projectFocusId) {
-            $("#view").innerHTML = renderProjectFocusHtml();
-          } else {
-            $("#view").innerHTML = `
-      <div class="${focusTopRowClass()}">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
-      ${renderHabitsColumn()}`;
-          }
+          $("#view").innerHTML = renderDashboardHtml();
           applyEmojiFilter(state.emojiFilter);
+          applySearchDom();
           applySelection(false);
           syncInlineCreateUi();
           bindInlineCreateInput();
@@ -2713,12 +2764,130 @@
           const inp = $("#globalSearch");
           if (inp) inp.value = "";
           hideSearchBar();
+          if (state.view === "dashboard" && state.data && $("#view")) {
+            applySearchDom();
+            applySelection(false);
+          }
         }
 
+        let searchPaintFrame = 0;
         function applySearch(query) {
           state.search = query ?? "";
           if (searchNeedle()) showSearchBar();
-          if (state.view === "dashboard" && state.data) renderDashboard();
+          if (state.view !== "dashboard" || !state.data) return;
+          if (searchPaintFrame) return;
+          searchPaintFrame = requestAnimationFrame(() => {
+            searchPaintFrame = 0;
+            applySearchDom();
+            applySelection(false);
+          });
+        }
+
+        function titleRaw(el) {
+          if (!el) return "";
+          if (!el.hasAttribute("data-raw"))
+            el.setAttribute("data-raw", el.textContent || "");
+          return el.getAttribute("data-raw") || "";
+        }
+
+        function paintSearchTitle(el) {
+          if (!el) return;
+          const raw = titleRaw(el);
+          const stamp = searchNeedle();
+          if (el.getAttribute("data-q") === stamp) return;
+          el.setAttribute("data-q", stamp);
+          el.innerHTML = highlightTitle(raw);
+        }
+
+        function applySearchDom() {
+          const q = searchNeedle();
+          const view = $("#view");
+          if (!view) return;
+          view.querySelectorAll("details.project").forEach((proj) => {
+            if (proj.hasAttribute("data-inline-create")) {
+              proj.classList.remove("search-hidden");
+              return;
+            }
+            const pEl = proj.querySelector(":scope > summary .proj-title");
+            const projectHit =
+              !!q && titleRaw(pEl).toLowerCase().includes(q);
+            let projectShown = projectHit;
+            proj
+              .querySelectorAll(
+                ":scope > .task-section, :scope > .section-bento > .task-section",
+              )
+              .forEach((sec) => {
+                if (sec.hasAttribute("data-inline-create")) {
+                  sec.classList.remove("search-hidden");
+                  projectShown = true;
+                  return;
+                }
+                const sEl = sec.querySelector(
+                  ":scope > .task-section-label .sec-title",
+                );
+                const secHit =
+                  !!q && titleRaw(sEl).toLowerCase().includes(q);
+                let secShown = projectHit || secHit;
+                sec
+                  .querySelectorAll(":scope > .task-list > .task")
+                  .forEach((task) => {
+                    if (task.hasAttribute("data-inline-create")) {
+                      task.classList.remove("search-hidden");
+                      secShown = true;
+                      return;
+                    }
+                    const tEl = task.querySelector(".title");
+                    const taskHit =
+                      !!q && titleRaw(tEl).toLowerCase().includes(q);
+                    const show = !q || projectHit || secHit || taskHit;
+                    task.classList.toggle("search-hidden", !show);
+                    if (show) secShown = true;
+                    paintSearchTitle(tEl);
+                  });
+                const showSec = !q || secShown;
+                sec.classList.toggle("search-hidden", !showSec);
+                if (showSec) projectShown = true;
+                paintSearchTitle(sEl);
+              });
+            proj
+              .querySelectorAll(":scope > .task-list > .task")
+              .forEach((task) => {
+                const tEl = task.querySelector(".title");
+                const taskHit =
+                  !!q && titleRaw(tEl).toLowerCase().includes(q);
+                const show = !q || projectHit || taskHit;
+                task.classList.toggle("search-hidden", !show);
+                if (show) projectShown = true;
+                paintSearchTitle(tEl);
+              });
+            proj.classList.toggle("search-hidden", !!q && !projectShown);
+            paintSearchTitle(pEl);
+          });
+          view
+            .querySelectorAll(".project-focus-title .proj-title")
+            .forEach((el) => paintSearchTitle(el));
+          [
+            "sec-personal",
+            "sec-work",
+            "sec-habits",
+            "sec-project-focus",
+          ].forEach((id) => {
+            const root = document.getElementById(id);
+            if (!root) return;
+            let note = root.querySelector(":scope > .search-empty");
+            const any = root.querySelector(
+              "details.project:not(.search-hidden)",
+            );
+            if (q && !any) {
+              if (!note) {
+                note = document.createElement("p");
+                note.className = "empty search-empty";
+                note.textContent = "No matches";
+                root.appendChild(note);
+              }
+            } else if (note) note.remove();
+          });
+          invalidateNavCache();
         }
 
         function render() {
@@ -2770,6 +2939,20 @@
           syncDocumentTitle();
         }
 
+        function dashboardDomMatchesFocus() {
+          const has = (id) => !!document.getElementById(id);
+          if (state.projectFocusId) return has("sec-project-focus");
+          if (has("sec-project-focus")) return false;
+          const f = state.sectionFocus || "";
+          if (f === "personal")
+            return has("sec-personal") && !has("sec-work") && !has("sec-habits");
+          if (f === "work")
+            return has("sec-work") && !has("sec-personal") && !has("sec-habits");
+          if (f === "habits")
+            return has("sec-habits") && !has("sec-personal") && !has("sec-work");
+          return has("sec-personal") && has("sec-work") && has("sec-habits");
+        }
+
         function applySectionFocus(filt, opts = {}) {
           const toggle = !!opts.toggle;
           const fromProject = !!state.projectFocusId;
@@ -2783,7 +2966,7 @@
           const prev = state.sectionFocus || "";
           state.sectionFocus = filt || "";
           const f = state.sectionFocus;
-          if (fromProject) {
+          if (fromProject || !dashboardDomMatchesFocus()) {
             if (state.view === "dashboard" && state.data) renderDashboard();
             else syncDocumentTitle();
             if (opts.scrollHeader !== false && f && f !== prev)
@@ -2810,6 +2993,16 @@
           applySelection(opts.selectScroll !== false);
         }
 
+        let navCache = null;
+        let kbSelectedEl = null;
+        function invalidateNavCache() {
+          navCache = null;
+        }
+        function navTargets() {
+          if (!navCache) navCache = collectTargets();
+          return navCache;
+        }
+
         function titleFirstChar(title) {
           const folded = String(title || "")
             .normalize("NFD")
@@ -2821,17 +3014,27 @@
         function collectTargets() {
           const out = [];
           const pushProj = (proj) => {
-            if (proj.classList.contains("emoji-hidden")) return;
+            if (
+              proj.classList.contains("emoji-hidden") ||
+              proj.classList.contains("search-hidden")
+            )
+              return;
             const id =
               proj.getAttribute("data-id") || proj.getAttribute("data-pid");
             if (!id) return;
             const title =
               proj.querySelector(".proj-title")?.textContent?.trim() || "";
-            out.push({ kind: "project", id, title, el: proj });
+            out.push({
+              kind: "project",
+              id,
+              title,
+              ch: titleFirstChar(title),
+              el: proj,
+            });
             if (!proj.open) return;
             proj
               .querySelectorAll(
-                ":scope > .task-section:not(.emoji-hidden), :scope > .section-bento > .task-section:not(.emoji-hidden)",
+                ":scope > .task-section:not(.emoji-hidden):not(.search-hidden), :scope > .section-bento > .task-section:not(.emoji-hidden):not(.search-hidden)",
               )
               .forEach((sec) => {
                 if (sec.hasAttribute("data-inline-create")) return;
@@ -2841,11 +3044,17 @@
                   sec
                     .querySelector(".task-section-label")
                     ?.textContent?.trim() || "";
-                out.push({ kind: "section", id: sid, title: stitle, el: sec });
+                out.push({
+                  kind: "section",
+                  id: sid,
+                  title: stitle,
+                  ch: titleFirstChar(stitle),
+                  el: sec,
+                });
                 if (sec.classList.contains("collapsed")) return;
                 sec
                   .querySelectorAll(
-                    ".task:not(.emoji-hidden):not([data-inline-create])",
+                    ".task:not(.emoji-hidden):not(.search-hidden):not([data-inline-create])",
                   )
                   .forEach((t) => {
                     const tid = t.getAttribute("data-id");
@@ -2854,11 +3063,13 @@
                       t.getAttribute("data-kind") === "habitual"
                         ? "habit"
                         : "task";
+                    const ttitle =
+                      t.querySelector(".title")?.textContent?.trim() || "";
                     out.push({
                       kind,
                       id: tid,
-                      title:
-                        t.querySelector(".title")?.textContent?.trim() || "",
+                      title: ttitle,
+                      ch: titleFirstChar(ttitle),
                       el: t,
                     });
                   });
@@ -2866,17 +3077,20 @@
             // tasks not wrapped in a section (legacy / empty layouts)
             proj
               .querySelectorAll(
-                ":scope > .task-list > .task:not(.emoji-hidden)",
+                ":scope > .task-list > .task:not(.emoji-hidden):not(.search-hidden)",
               )
               .forEach((t) => {
                 const tid = t.getAttribute("data-id");
                 if (!tid) return;
                 const kind =
                   t.getAttribute("data-kind") === "habitual" ? "habit" : "task";
+                const ttitle =
+                  t.querySelector(".title")?.textContent?.trim() || "";
                 out.push({
                   kind,
                   id: tid,
-                  title: t.querySelector(".title")?.textContent?.trim() || "",
+                  title: ttitle,
+                  ch: titleFirstChar(ttitle),
                   el: t,
                 });
               });
@@ -2903,6 +3117,7 @@
             `details.project[data-id="${CSS.escape(id)}"]`,
           );
           if (el) el.open = !!expanded;
+          invalidateNavCache();
         }
 
         function setSectionExpanded(id, expanded) {
@@ -2912,11 +3127,12 @@
             `.task-section[data-id="${CSS.escape(id)}"]`,
           );
           if (el) el.classList.toggle("collapsed", !expanded);
+          invalidateNavCache();
         }
 
         function hierarchyNav(dir) {
           if (!state.sel) return;
-          const targets = collectTargets();
+          const targets = navTargets();
           const idx = targets.findIndex(
             (t) =>
               state.sel && t.kind === state.sel.kind && t.id === state.sel.id,
@@ -2984,22 +3200,20 @@
         }
 
         function applySelection(scroll) {
-          document.querySelectorAll(".kb-selected").forEach((el) => {
-            if (el.closest("#modalHost")) return;
-            el.classList.remove("kb-selected");
-          });
-          if (!state.sel) return;
-          const targets = collectTargets();
-          const hit = targets.find(
-            (t) => t.kind === state.sel.kind && t.id === state.sel.id,
-          );
-          if (!hit) {
-            state.sel = null;
-            return;
-          }
-          hit.el.classList.add("kb-selected");
+          const hit = state.sel
+            ? navTargets().find(
+                (t) => t.kind === state.sel.kind && t.id === state.sel.id,
+              )
+            : null;
+          if (state.sel && !hit) state.sel = null;
+          const next = hit?.el || null;
+          if (kbSelectedEl && kbSelectedEl !== next)
+            kbSelectedEl.classList.remove("kb-selected");
+          kbSelectedEl = next;
+          if (!next) return;
+          next.classList.add("kb-selected");
           if (scroll)
-            hit.el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            next.scrollIntoView({ block: "nearest", behavior: "instant" });
         }
 
         function setSelection(kind, id, scroll) {
@@ -3016,7 +3230,7 @@
           if (!kind || !id) return;
           setSelection(kind, id, true);
           requestAnimationFrame(() => {
-            const hit = collectTargets().find(
+            const hit = navTargets().find(
               (t) => t.kind === kind && t.id === id,
             );
             const el = hit?.el;
@@ -3041,7 +3255,7 @@
         }
 
         function moveSelection(delta) {
-          const targets = collectTargets();
+          const targets = navTargets();
           if (!targets.length) return;
           let idx = targets.findIndex(
             (t) =>
@@ -3056,7 +3270,7 @@
         }
 
         function letterJump(ch) {
-          const all = collectTargets();
+          const all = navTargets();
           if (!all.length) return;
           const cur = all.findIndex(
             (t) =>
@@ -3067,7 +3281,7 @@
           const from = cur < 0 ? 0 : (cur + 1) % n;
           for (let i = 0; i < n; i++) {
             const idx = (from + i) % n;
-            if (titleFirstChar(all[idx].title) === ch) {
+            if (all[idx].ch === ch) {
               setSelection(all[idx].kind, all[idx].id, true);
               return;
             }
@@ -3076,7 +3290,7 @@
 
         function currentPwSide() {
           if (!state.sel) return state.pwSide || "personal";
-          const targets = collectTargets();
+          const targets = navTargets();
           const hit = targets.find(
             (t) => t.kind === state.sel.kind && t.id === state.sel.id,
           );
@@ -3089,14 +3303,14 @@
           const sec = document.getElementById("sec-" + filt);
           if (!sec || sec.classList.contains("section-hidden")) return null;
           return (
-            collectTargets().find((t) => t.el.closest("#sec-" + filt)) || null
+            navTargets().find((t) => t.el.closest("#sec-" + filt)) || null
           );
         }
 
         function toggleFirstPersonalWork() {
           // With an active search, jump to the first visible filtered hit
           if (searchNeedle()) {
-            const targets = collectTargets();
+            const targets = navTargets();
             if (!targets.length) {
               toast("No matches");
               return;
@@ -3377,12 +3591,14 @@
               document
                 .querySelectorAll(".task-section.collapsed")
                 .forEach((s) => s.classList.remove("collapsed"));
+              invalidateNavCache();
             } else {
               nodes.forEach((n) => {
                 const id = n.getAttribute("data-id");
                 if (id) state.collapsedProjects.add(id);
                 n.open = false;
               });
+              invalidateNavCache();
             }
             applySelection(false);
             return;
@@ -3704,7 +3920,6 @@
           if (dismissTransientUi()) return true;
           if (searchNeedle()) {
             clearSearch();
-            if (state.view === "dashboard" && state.data) renderDashboard();
             return true;
           }
           if (state.emojiFilter !== null) {
@@ -3784,19 +3999,19 @@
           if (!fits) {
             list.scrollBy({
               top: elRect.top - listRect.top - pad,
-              behavior: "smooth",
+              behavior: "instant",
             });
             return;
           }
           if (elRect.top < listRect.top + pad) {
             list.scrollBy({
               top: elRect.top - listRect.top - pad,
-              behavior: "smooth",
+              behavior: "instant",
             });
           } else if (elRect.bottom > listRect.bottom - pad) {
             list.scrollBy({
               top: elRect.bottom - listRect.bottom + pad,
-              behavior: "smooth",
+              behavior: "instant",
             });
           }
         }
@@ -3957,7 +4172,7 @@
             row.classList.toggle("kb-selected", row === el);
           });
           if (el?.scrollIntoView)
-            el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            el.scrollIntoView({ block: "nearest", behavior: "instant" });
         }
 
         function infoCatPickerMoveSel(list, dir) {
@@ -4607,6 +4822,7 @@
         function applyEmojiFilter(emoji) {
           // null = clear filter; "" = tasks with no emoji; otherwise match that emoji
           state.emojiFilter = emoji === undefined ? null : emoji;
+          invalidateNavCache();
           const filtering = state.emojiFilter !== null;
           document.querySelectorAll(".task").forEach((el) => {
             const match =
@@ -4786,10 +5002,12 @@
                 },
               );
               if (r.project) mergeApiRow("projects", r.project);
-              const next = r.project || {};
-              tintOn = projectIconTint(next);
-              syncPreview(projectIconColor(next), tintOn);
-              render();
+              const saved =
+                (state.data?.projects || []).find((p) => p.id === projectId) ||
+                r.project;
+              tintOn = projectIconTint(saved || {});
+              syncPreview(projectIconColor(saved || {}), tintOn);
+              if (saved) patchProjectIcon(saved);
             } catch (err) {
               toast(err.message || String(err));
             }
@@ -6352,7 +6570,7 @@
           }
           if (e.key === "Home") {
             e.preventDefault();
-            const targets = collectTargets();
+            const targets = navTargets();
             if (targets.length)
               setSelection(targets[0].kind, targets[0].id, false);
             scrollToPageHeader();
@@ -6360,7 +6578,7 @@
           }
           if (e.key === "End") {
             e.preventDefault();
-            const targets = collectTargets();
+            const targets = navTargets();
             if (targets.length)
               setSelection(
                 targets[targets.length - 1].kind,
@@ -6400,6 +6618,7 @@
           if (!id) return;
           if (proj.open) state.collapsedProjects.delete(id);
           else state.collapsedProjects.add(id);
+          invalidateNavCache();
         });
         const searchInp = $("#globalSearch");
         if (searchInp) {

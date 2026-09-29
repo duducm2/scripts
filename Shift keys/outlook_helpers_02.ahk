@@ -146,6 +146,14 @@ Outlook_MailList_GetFirstListItem(root) {
     return items.Length ? items[1] : 0
 }
 
+Outlook_MailList_IsDateHeaderName(name, exact := false) {
+    if (name = "")
+        return false
+    if exact
+        return !!RegExMatch(name, "i)^(Today|Yesterday|Hoje|Ontem)$")
+    return !!RegExMatch(name, "i)^(Today|Yesterday|Hoje|Ontem)\b")
+}
+
 Outlook_MailList_IsNonMessageItem(item) {
     if !item
         return true
@@ -159,7 +167,7 @@ Outlook_MailList_IsNonMessageItem(item) {
     ; Date group headers / list chrome can appear before the first actual mail row.
     if (aid != "" && RegExMatch(aid, "i)^groupHeader"))
         return true
-    if (name != "" && RegExMatch(name, "i)^((Today|Yesterday)\b|Header action menu)$"))
+    if (Outlook_MailList_IsDateHeaderName(name, true) || RegExMatch(name, "i)^Header action menu$"))
         return true
 
     ; Tiny unnamed bars without selection pattern are not message rows.
@@ -180,7 +188,7 @@ Outlook_MailList_FocusedIsDrawerHeader() {
         try aid := fe.AutomationId
         if (aid != "" && RegExMatch(aid, "i)^groupHeader"))
             return true
-        if (name != "" && RegExMatch(name, "i)^(Today|Yesterday)\b"))
+        if Outlook_MailList_IsDateHeaderName(name)
             return true
     } catch {
     }
@@ -216,6 +224,69 @@ Outlook_MailList_SkipDrawerHeadersByKeyboard(maxSteps := 5) {
     return Outlook_MailList_FocusedIsLikelyMessageRow()
 }
 
+Outlook_MailList_SameElement(a, b) {
+    if !a || !b
+        return false
+    try {
+        idA := a.RuntimeId
+        idB := b.RuntimeId
+        if (idA != "" && idA = idB)
+            return true
+    } catch {
+    }
+    return false
+}
+
+Outlook_MailList_ItemIsSelected(item) {
+    if !item
+        return false
+    try {
+        if item.GetCurrentPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+            return !!item.SelectionItemPattern.IsSelected
+    } catch {
+    }
+    return false
+}
+
+; True when keyboard focus is the anchor row, the message list, or a descendant of either.
+Outlook_MailList_FocusIsInside(item, listEl) {
+    fe := 0
+    try fe := UIA.GetFocusedElement()
+    if !fe
+        return false
+    cur := fe
+    loop 16 {
+        if (item && Outlook_MailList_SameElement(cur, item))
+            return true
+        if (listEl && Outlook_MailList_SameElement(cur, listEl))
+            return true
+        parent := 0
+        try parent := cur.Parent
+        catch
+            break
+        if (!parent || Outlook_MailList_SameElement(parent, cur))
+            break
+        cur := parent
+    }
+    return false
+}
+
+Outlook_MailList_RowIsHighlighted(item, listEl) {
+    return Outlook_MailList_ItemIsSelected(item) && Outlook_MailList_FocusIsInside(item, listEl)
+}
+
+Outlook_MailList_GetActiveListElement() {
+    root := 0
+    try root := OutlookMail_RootElement()
+    if !root {
+        hwnd := WinExist("A")
+        if hwnd {
+            try root := UIA.ElementFromHandle(hwnd)
+        }
+    }
+    return Outlook_MailList_GetListElement(root)
+}
+
 Outlook_MailList_SelectItem(item) {
     if !item
         return false
@@ -223,18 +294,44 @@ Outlook_MailList_SelectItem(item) {
     catch {
     }
     Sleep 40
-    try item.Select()
-    catch {
-        try item.Click()
-        catch {
-            try item.Invoke()
-            catch {
-                return false
-            }
-        }
+    try {
+        if !item.GetCurrentPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+            return false
+        item.SelectionItemPattern.Select()
+    } catch {
+        return false
     }
     try item.SetFocus()
-    return true
+
+    listEl := Outlook_MailList_GetActiveListElement()
+    if Outlook_MailList_RowIsHighlighted(item, listEl)
+        return true
+    ; Select updated the reading pane, but the row highlight needs list keyboard focus.
+    if !Outlook_MailList_ItemIsSelected(item)
+        return false
+    if listEl {
+        try listEl.SetFocus()
+    }
+    Sleep 40
+    ; Down in the reading pane moves to the next message. Cue only inside the list.
+    if !Outlook_MailList_FocusIsInside(item, listEl)
+        return false
+
+    Send "{Down}"
+    Sleep 30
+    Send "{Up}"
+    Sleep 30
+    if (Outlook_MailList_FocusIsInside(item, listEl)
+    && (Outlook_MailList_FocusedIsDrawerHeader() || !Outlook_MailList_FocusedIsLikelyMessageRow()))
+        Outlook_MailList_SkipDrawerHeadersByKeyboard()
+
+    if Outlook_MailList_RowIsHighlighted(item, listEl)
+        return true
+    fe := 0
+    try fe := UIA.GetFocusedElement()
+    return Outlook_MailList_FocusedIsLikelyMessageRow()
+    && Outlook_MailList_ItemIsSelected(fe)
+    && Outlook_MailList_FocusIsInside(fe, listEl)
 }
 
 Outlook_MailList_TrySelectFirstItem(root) {
