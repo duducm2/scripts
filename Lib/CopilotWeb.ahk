@@ -434,12 +434,10 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
 }
 
 ; Release chord modifiers without AutoHotkey pressing them again afterward.
-; A normal Send restores modifiers it still thinks are down. {Blind} sends the ups
-; and does not press them back down. Any payload is a second Send after that.
+; A normal Send restores modifiers it still thinks are down. One {Blind} send
+; releases them and then types the payload, so a second Send cannot press Control again.
 ChordSend_WithoutRestoringModifiers(keys := "") {
-    SendInput "{Blind}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}{LWin up}{RWin up}"
-    if (keys != "")
-        SendInput keys
+    SendInput "{Blind}{vk11 up}{vkA2 up}{vkA3 up}{vk12 up}{vkA4 up}{vkA5 up}{vk10 up}{vkA0 up}{vkA1 up}{vk5B up}{vk5C up}" keys
 }
 
 ; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).

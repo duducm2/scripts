@@ -62,8 +62,11 @@ UtilityShortcuts_WaitForOpenerChord() {
 }
 
 ; Force Control/Alt/Shift/Win up. {Blind} so AutoHotkey does not press them again.
+; keybd_event covers the case where the hook already dropped the physical key-up.
 UtilityShortcuts_ReleaseStuckModifiers() {
     ChordSend_WithoutRestoringModifiers()
+    for vk in [0x11, 0xA2, 0xA3, 0x12, 0xA4, 0xA5, 0x10, 0xA0, 0xA1, 0x5B, 0x5C]
+        DllCall("keybd_event", "UChar", vk, "UChar", 0, "UInt", 2, "UPtr", 0)
 }
 
 MacroReleaseStuckControl(*) {
@@ -311,22 +314,11 @@ RegisterMacro(MacroAICompanionDeepModel, "🔄 AI companion Deep model", "m")
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)
 ^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
 
-#^!m::
+; $ so the forwarded chord does not re-enter this hotkey and swallow Control's key-up.
+$#^!m::
 {
-    ; Small delay to ensure previous key release is complete
     Sleep 50
-
-    ; Send Win+Ctrl+Alt+M using SendInput for better reliability
     SendInput "#^!m"
-
-    ; Show message box
-
-    Sleep 50
-
-    Send '""'
-
-    Sleep 50
-
-    Send "{Left}"
-
+    UtilityShortcuts_ReleaseStuckModifiers()
+    SendInput "{Blind}" "{Left}"
 }
