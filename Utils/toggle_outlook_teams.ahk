@@ -8,16 +8,16 @@
 ; =============================================================================
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
-; If both are open: Kills Outlook and Teams so their RAM is released.
-; If one or both are closed: Launches both applications.
+; If either is open: Kills both so their RAM is released. Closing wins over opening.
+; If neither is open: Launches both applications.
 ; =============================================================================
 ToggleOutlookAndTeams() {
     loadingShown := false
     try {
-        ; Check if both applications are running
+        ; Either app running means close. Open only when both are already gone.
         outlookRunning := OutlookProcessRunning()
         teamsRunning := ProcessExist("ms-teams.exe") || ProcessExist("Teams.exe") || ProcessExist("MSTeams.exe")
-        isOpeningFlow := !(outlookRunning && teamsRunning)
+        isOpeningFlow := !(outlookRunning || teamsRunning)
         hadError := false
         firstError := ""
 
@@ -35,8 +35,8 @@ ToggleOutlookAndTeams() {
             loadingShown := true
         }
 
-        if (outlookRunning && teamsRunning) {
-            ; Both are open: kill every matching process. ProcessClose stops one per call,
+        if (outlookRunning || teamsRunning) {
+            ; Kill every matching process. ProcessClose stops one per call,
             ; and Teams keeps several ms-teams.exe processes (plus the tray host).
             try {
                 KillAllProcessesByName("OUTLOOK.EXE")
@@ -53,7 +53,7 @@ ToggleOutlookAndTeams() {
                 MsgBox "Error closing Teams: " e.Message
             }
         } else {
-            ; One or both are closed: Launch both applications
+            ; Neither is running: launch both applications
             ; Launch Outlook
             if (!outlookRunning) {
                 StandardLoadingBar_Update("⏳ Opening Outlook...")
