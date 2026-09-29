@@ -281,6 +281,23 @@ Maps_Loading(msg, hwnd := 0) {
     StandardLoadingBar_Show(msg, BANNER_ACCENT_INTERMEDIATE, Maps_LoadingOptions(hwnd))
 }
 
+Maps_ShowSaved(name, hwnd := 0) {
+    global g_StandardLoadingBarGui
+    opts := Maps_LoadingOptions(hwnd)
+    opts.passive := true
+    opts.passiveBgColor := BANNER_ACCENT_SUCCESS
+    StandardLoadingBar_Show("✅ Saved on Desktop: " name, BANNER_ACCENT_SUCCESS, opts)
+    try {
+        if IsObject(g_StandardLoadingBarGui) {
+            barHwnd := g_StandardLoadingBarGui.Hwnd
+            ; HWND_TOPMOST so the maximized map does not cover the banner.
+            DllCall("SetWindowPos", "ptr", barHwnd, "ptr", -1, "int", 0, "int", 0, "int", 0, "int", 0, "uint", 0x0013)
+        }
+    } catch {
+    }
+    StandardLoadingBar_Hide(4500)
+}
+
 Maps_Fail(msg, hwnd := 0, hideMs := 2200) {
     global g_StandardLoadingBarGui
     if !IsObject(g_StandardLoadingBarGui)
@@ -1354,7 +1371,6 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
             return
         }
 
-        Maps_Loading("⏳ Restoring map...", browserHwnd)
         if (chromeHidden && uia) {
             try Maps_RestoreChrome(uia)
             catch {
@@ -1364,8 +1380,7 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
         Maps_RestoreMapTitle(uia)
         SplitPath(outPath, &savedName)
         Maps_DebugLog("saved", Map("path", outPath, "name", savedName))
-        StandardLoadingBar_Update("✅ Saved on Desktop: " savedName, BANNER_ACCENT_SUCCESS)
-        StandardLoadingBar_Hide(2800)
+        Maps_ShowSaved(savedName, browserHwnd)
         loadingShown := false
     } catch Error as e {
         extraText := ""
