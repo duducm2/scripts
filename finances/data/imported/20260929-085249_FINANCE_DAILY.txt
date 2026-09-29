@@ -1,0 +1,10 @@
+﻿===PREVIEW===
+4 row(s) · Successfully processed lunch credit card expense, haircut expense, and both the receipt and full expenditure of the meal voucher.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+launch,"26,25",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+haircut Rip,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1
+Meal voucher deposit,"500,00",income,CAT_SALARIO,ACC_MEALVOUC,,,1
+Meal voucher usage,"500,00",expense,CAT_ALIMENTA,ACC_MEALVOUC,,,1
+===END_FILE===
