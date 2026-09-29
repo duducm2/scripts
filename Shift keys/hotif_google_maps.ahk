@@ -331,105 +331,264 @@ Maps_IsDesktopPath(path) {
     return (StrLower(RTrim(dir, "\")) = StrLower(desktop))
 }
 
-Maps_RunPs(script) {
-    ps1 := A_Temp "\ahk_maps_capture.ps1"
-    try FileDelete(ps1)
+Maps_GdipStartup() {
+    static token := 0
+    if (token)
+        return true
+    si := Buffer(32, 0)
+    NumPut("uint", 1, si, 0)
+    newToken := 0
+    status := 1
+    try status := DllCall("gdiplus\GdiplusStartup", "uptr*", &newToken, "ptr", si, "ptr", 0)
     catch {
+        return false
     }
-    if !FileAppend(script, ps1, "UTF-8")
-        return -1
-    exitCode := -1
-    try exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' ps1 '"', , "Hide")
-    catch {
-        exitCode := -1
-    }
-    try FileDelete(ps1)
-    catch {
-    }
-    if (exitCode = "")
-        return -1
-    return Integer(exitCode)
+    if (status != 0 || !newToken)
+        return false
+    token := newToken
+    return true
 }
 
-Maps_PixelGatePs() {
-    return "
-(
-function Test-AhkMapPng([string]$path) {
-    if (-not (Test-Path -LiteralPath $path)) { return 4 }
-    $len = (Get-Item -LiteralPath $path).Length
-    if ($len -lt 8000) { return 3 }
-    Add-Type -AssemblyName System.Drawing
-    $fs = $null
-    $img = $null
-    $bmp = $null
-    try {
-        $fs = [System.IO.File]::Open($path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
-        $img = [System.Drawing.Image]::FromStream($fs, $false, $false)
-        $bmp = New-Object System.Drawing.Bitmap ([int]$img.Width), ([int]$img.Height), ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
-        $g = [System.Drawing.Graphics]::FromImage($bmp)
-        $g.DrawImage($img, 0, 0, $img.Width, $img.Height)
-        $g.Dispose()
-        $img.Dispose()
-        $img = $null
-    } catch {
-        if ($bmp) { $bmp.Dispose() }
+Maps_PngEncoderClsid() {
+    static clsid := 0
+    if IsObject(clsid)
+        return clsid
+    ; image/png {557CF406-1A04-11D3-9A73-0000F81EF32E}
+    clsid := Buffer(16, 0)
+    NumPut("uint", 0x557CF406, clsid, 0)
+    NumPut("ushort", 0x1A04, clsid, 4)
+    NumPut("ushort", 0x11D3, clsid, 6)
+    NumPut("uchar", 0x9A, clsid, 8)
+    NumPut("uchar", 0x73, clsid, 9)
+    NumPut("uchar", 0x00, clsid, 10)
+    NumPut("uchar", 0x00, clsid, 11)
+    NumPut("uchar", 0xF8, clsid, 12)
+    NumPut("uchar", 0x1E, clsid, 13)
+    NumPut("uchar", 0xF3, clsid, 14)
+    NumPut("uchar", 0x2E, clsid, 15)
+    return clsid
+}
+
+Maps_GdipSaveHBitmap(hbm, path, &err) {
+    err := ""
+    if !hbm {
+        err := "empty bitmap"
+        return false
+    }
+    if !Maps_GdipStartup() {
+        err := "gdiplus startup failed"
+        return false
+    }
+    pBitmap := 0
+    status := 1
+    try status := DllCall("gdiplus\GdipCreateBitmapFromHBITMAP", "ptr", hbm, "ptr", 0, "ptr*", &pBitmap)
+    catch as e {
+        err := e.Message
+        return false
+    }
+    if (status != 0 || !pBitmap) {
+        err := "bitmap convert failed " status
+        return false
+    }
+    try status := DllCall("gdiplus\GdipSaveImageToFile", "ptr", pBitmap, "wstr", path, "ptr", Maps_PngEncoderClsid(),
+    "ptr", 0)
+    catch as e {
+        status := 1
+        err := e.Message
+    }
+    DllCall("gdiplus\GdipDisposeImage", "ptr", pBitmap)
+    if (status != 0) {
+        if (err = "")
+            err := "png save failed " status
+        return false
+    }
+    if !FileExist(path) {
+        err := "png save failed"
+        return false
+    }
+    return true
+}
+
+; Same thresholds as the old PowerShell gate: std under 4.5, or 90% near-black, is blank.
+Maps_GdipSampleCode(pBitmap, w, h, &err) {
+    err := ""
+    rect := Buffer(16, 0)
+    NumPut("int", w, rect, 8)
+    NumPut("int", h, rect, 12)
+    bd := Buffer(48, 0)
+    status := 1
+    try status := DllCall("gdiplus\GdipBitmapLockBits", "ptr", pBitmap, "ptr", rect, "uint", 1, "int", 0x26200A, "ptr",
+        bd)
+    catch as e {
+        err := e.Message
         return 4
-    } finally {
-        if ($fs) { $fs.Dispose() }
     }
-    $w = $bmp.Width
-    $h = $bmp.Height
-    if ($w -lt 200 -or $h -lt 150 -or $w -gt 10000 -or $h -gt 10000) {
-        $bmp.Dispose()
-        return 3
+    if (status != 0) {
+        err := "lock bits failed " status
+        return 4
     }
-    $rect = New-Object System.Drawing.Rectangle 0, 0, $w, $h
-    $bits = $bmp.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::ReadOnly, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
-    $stride = [Math]::Abs($bits.Stride)
-    $raw = New-Object byte[] ($stride * $h)
-    [System.Runtime.InteropServices.Marshal]::Copy($bits.Scan0, $raw, 0, $raw.Length)
-    $bmp.UnlockBits($bits)
-    $bmp.Dispose()
-    $stepX = [Math]::Max(1, [int][Math]::Floor($w / 32))
-    $stepY = [Math]::Max(1, [int][Math]::Floor($h / 32))
-    $n = 0
-    $black = 0
-    $sum = 0.0
-    $sum2 = 0.0
-    for ($y = [int]($stepY / 2); $y -lt $h; $y += $stepY) {
-        for ($x = [int]($stepX / 2); $x -lt $w; $x += $stepX) {
-            $i = ($y * $stride) + ($x * 4)
-            if (($i + 3) -ge $raw.Length) { continue }
-            $bb = $raw[$i]
-            $gg = $raw[$i + 1]
-            $rr = $raw[$i + 2]
-            $aa = $raw[$i + 3]
-            $n++
-            $lum = (0.2126 * $rr) + (0.7152 * $gg) + (0.0722 * $bb)
-            $sum += $lum
-            $sum2 += ($lum * $lum)
-            if ($aa -lt 12 -or ($rr -lt 14 -and $gg -lt 14 -and $bb -lt 14)) { $black++ }
+    stride := NumGet(bd, 8, "int")
+    scan0 := NumGet(bd, 16, "ptr")
+    code := 0
+    if (!scan0 || stride = 0) {
+        err := "lock bits failed"
+        code := 4
+    } else {
+        stepX := Max(1, w // 32)
+        stepY := Max(1, h // 32)
+        n := 0
+        black := 0
+        sum := 0.0
+        sum2 := 0.0
+        px := Buffer(4, 0)
+        y := stepY // 2
+        while (y < h) {
+            x := stepX // 2
+            while (x < w) {
+                addr := scan0 + (y * stride) + (x * 4)
+                DllCall("RtlMoveMemory", "ptr", px, "ptr", addr, "uptr", 4)
+                bb := NumGet(px, 0, "UChar")
+                gg := NumGet(px, 1, "UChar")
+                rr := NumGet(px, 2, "UChar")
+                aa := NumGet(px, 3, "UChar")
+                n++
+                lum := (0.2126 * rr) + (0.7152 * gg) + (0.0722 * bb)
+                sum += lum
+                sum2 += lum * lum
+                if (aa < 12 || (rr < 14 && gg < 14 && bb < 14))
+                    black++
+                x += stepX
+            }
+            y += stepY
+        }
+        if (n < 16) {
+            err := "not a valid PNG"
+            code := 4
+        } else {
+            mean := sum / n
+            variance := (sum2 / n) - (mean * mean)
+            if (variance < 0)
+                variance := 0
+            std := Sqrt(variance)
+            ratio := black / n
+            if (std < 4.5 || ratio >= 0.90) {
+                err := "blank or black image"
+                code := 2
+            }
         }
     }
-    if ($n -lt 16) { return 4 }
-    $mean = $sum / $n
-    $variance = ($sum2 / $n) - ($mean * $mean)
-    if ($variance -lt 0) { $variance = 0 }
-    $std = [Math]::Sqrt($variance)
-    $ratio = $black / $n
-    if ($std -lt 4.5) { return 2 }
-    if ($ratio -ge 0.90) { return 2 }
-    return 0
-}
-)"
+    DllCall("gdiplus\GdipBitmapUnlockBits", "ptr", pBitmap, "ptr", bd)
+    return code
 }
 
-Maps_InvokePixelGate(path) {
-    if (path = "" || !FileExist(path))
+Maps_InvokePixelGate(path, &errDetail) {
+    errDetail := ""
+    if (path = "" || !FileExist(path)) {
+        errDetail := "capture file missing"
         return 4
-    safe := StrReplace(path, "'", "''")
-    script := Maps_PixelGatePs() "`r`n`$code = Test-AhkMapPng '" safe "'`r`nexit `$code`r`n"
-    return Maps_RunPs(script)
+    }
+    try {
+        if (FileGetSize(path) < 8000) {
+            errDetail := "blank or black image"
+            return 3
+        }
+    } catch {
+        errDetail := "capture file missing"
+        return 4
+    }
+    if !Maps_GdipStartup() {
+        errDetail := "gdiplus startup failed"
+        return 4
+    }
+    pBitmap := 0
+    status := 1
+    try status := DllCall("gdiplus\GdipLoadImageFromFile", "wstr", path, "ptr*", &pBitmap)
+    catch as e {
+        errDetail := e.Message
+        return 4
+    }
+    if (status != 0 || !pBitmap) {
+        errDetail := "png load failed " status
+        return 4
+    }
+    w := 0
+    h := 0
+    DllCall("gdiplus\GdipGetImageWidth", "ptr", pBitmap, "uint*", &w)
+    DllCall("gdiplus\GdipGetImageHeight", "ptr", pBitmap, "uint*", &h)
+    if (w < 200 || h < 150 || w > 10000 || h > 10000) {
+        errDetail := "image too small"
+        DllCall("gdiplus\GdipDisposeImage", "ptr", pBitmap)
+        return 3
+    }
+    code := Maps_GdipSampleCode(pBitmap, w, h, &errDetail)
+    DllCall("gdiplus\GdipDisposeImage", "ptr", pBitmap)
+    return code
+}
+
+Maps_ClientScreenRect(hwnd, &l, &t, &r, &b) {
+    l := 0
+    t := 0
+    r := 0
+    b := 0
+    if !hwnd
+        return false
+    cr := Buffer(16, 0)
+    if !DllCall("GetClientRect", "ptr", hwnd, "ptr", cr)
+        return false
+    pt := Buffer(8, 0)
+    if !DllCall("ClientToScreen", "ptr", hwnd, "ptr", pt)
+        return false
+    l := NumGet(pt, 0, "int")
+    t := NumGet(pt, 4, "int")
+    r := l + NumGet(cr, 8, "int")
+    b := t + NumGet(cr, 12, "int")
+    return (r > l && b > t)
+}
+
+; Prefer the pane when it sits inside the browser client. Otherwise intersect, then the client itself.
+Maps_FitCaptureRect(hwnd, paneL, paneT, paneR, paneB, &outL, &outT, &outW, &outH, &rule, &clientL, &clientT, &clientR,
+    &clientB) {
+    rule := "no_client"
+    outL := 0
+    outT := 0
+    outW := 0
+    outH := 0
+    clientL := 0
+    clientT := 0
+    clientR := 0
+    clientB := 0
+    if !Maps_ClientScreenRect(hwnd, &clientL, &clientT, &clientR, &clientB)
+        return false
+    paneL := Round(paneL)
+    paneT := Round(paneT)
+    paneR := Round(paneR)
+    paneB := Round(paneB)
+    if (paneR > paneL && paneB > paneT && paneL >= clientL && paneT >= clientT && paneR <= clientR && paneB <= clientB) {
+        rule := "pane"
+        outL := paneL
+        outT := paneT
+        outW := paneR - paneL
+        outH := paneB - paneT
+        return true
+    }
+    il := Max(paneL, clientL)
+    it := Max(paneT, clientT)
+    ir := Min(paneR, clientR)
+    ib := Min(paneB, clientB)
+    if ((ir - il) >= 200 && (ib - it) >= 150) {
+        rule := "intersect"
+        outL := il
+        outT := it
+        outW := ir - il
+        outH := ib - it
+        return true
+    }
+    rule := "client"
+    outL := clientL
+    outT := clientT
+    outW := clientR - clientL
+    outH := clientB - clientT
+    return (outW >= 200 && outH >= 150)
 }
 
 Maps_QualityReason(code) {
@@ -590,8 +749,9 @@ Maps_CommitDesktopPng(srcPath, destPath, hwnd, minW, minH, &err) {
         return false
     }
     Maps_DebugLog("commit_header", Map("ok", 1, "err", "", "w", imgW, "h", imgH, "bytes", bytes))
-    gate := Maps_InvokePixelGate(srcPath)
-    Maps_DebugLog("pixel_gate", Map("code", gate, "reason", gate = 0 ? "ok" : Maps_QualityReason(gate)))
+    gateErr := ""
+    gate := Maps_InvokePixelGate(srcPath, &gateErr)
+    Maps_DebugLog("pixel_gate", Map("code", gate, "reason", gate = 0 ? "ok" : Maps_QualityReason(gate), "err", gateErr))
     if (gate != 0) {
         err := Maps_QualityReason(gate)
         Maps_DiscardCaptureFile(srcPath, err)
@@ -734,67 +894,110 @@ Maps_CaptureCanvasViaDownload(uia, startStamp, &errMsg) {
 
 Maps_CapturePrintWindow(hwnd, x, y, w, h, outPath, &errMsg) {
     errMsg := ""
-    if (!hwnd || w <= 0 || h <= 0 || outPath = "") {
+    ok := false
+    hdcScreen := 0
+    hdcMem := 0
+    hbm := 0
+    hdcCrop := 0
+    hbmCrop := 0
+    old := 0
+    old2 := 0
+    x := Integer(Round(x))
+    y := Integer(Round(y))
+    w := Integer(Round(w))
+    h := Integer(Round(h))
+    if (!hwnd || w < 40 || h < 40 || outPath = "") {
         errMsg := "window capture failed"
-        return false
+    } else {
+        try {
+            wr := Buffer(16, 0)
+            if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", wr)
+                errMsg := "GetWindowRect failed"
+            else {
+                wl := NumGet(wr, 0, "int")
+                wt := NumGet(wr, 4, "int")
+                ww := NumGet(wr, 8, "int") - wl
+                wh := NumGet(wr, 12, "int") - wt
+                if (ww < 50 || wh < 50)
+                    errMsg := "window capture failed"
+                else {
+                    hdcScreen := DllCall("GetDC", "ptr", 0, "ptr")
+                    hdcMem := DllCall("CreateCompatibleDC", "ptr", hdcScreen, "ptr")
+                    hbm := DllCall("CreateCompatibleBitmap", "ptr", hdcScreen, "int", ww, "int", wh, "ptr")
+                    if (!hdcScreen || !hdcMem || !hbm)
+                        errMsg := "CreateCompatibleBitmap failed"
+                    else {
+                        old := DllCall("SelectObject", "ptr", hdcMem, "ptr", hbm, "ptr")
+                        printed := DllCall("PrintWindow", "ptr", hwnd, "ptr", hdcMem, "uint", 2)
+                        DllCall("SelectObject", "ptr", hdcMem, "ptr", old)
+                        old := 0
+                        if !printed
+                            errMsg := "PrintWindow failed"
+                        else {
+                            cx := x - wl
+                            cy := y - wt
+                            cw := w
+                            ch := h
+                            if (cx < 0) {
+                                cw += cx
+                                cx := 0
+                            }
+                            if (cy < 0) {
+                                ch += cy
+                                cy := 0
+                            }
+                            if (cx + cw > ww)
+                                cw := ww - cx
+                            if (cy + ch > wh)
+                                ch := wh - cy
+                            if (cw < 40 || ch < 40)
+                                errMsg := "image too small"
+                            else {
+                                hdcCrop := DllCall("CreateCompatibleDC", "ptr", hdcScreen, "ptr")
+                                hbmCrop := DllCall("CreateCompatibleBitmap", "ptr", hdcScreen, "int", cw, "int", ch,
+                                    "ptr")
+                                if (!hdcCrop || !hbmCrop)
+                                    errMsg := "CreateCompatibleBitmap failed"
+                                else {
+                                    old2 := DllCall("SelectObject", "ptr", hdcCrop, "ptr", hbmCrop, "ptr")
+                                    blt := DllCall("BitBlt", "ptr", hdcCrop, "int", 0, "int", 0, "int", cw, "int", ch,
+                                        "ptr", hdcMem, "int", cx, "int", cy, "uint", 0x00CC0020)
+                                    DllCall("SelectObject", "ptr", hdcCrop, "ptr", old2)
+                                    old2 := 0
+                                    if !blt
+                                        errMsg := "crop BitBlt failed"
+                                    else
+                                        ok := Maps_GdipSaveHBitmap(hbmCrop, outPath, &errMsg)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch Error as e {
+            ok := false
+            errMsg := e.Message
+        }
     }
-    safe := StrReplace(outPath, "'", "''")
-    script := "Add-Type -AssemblyName System.Drawing`r`n"
-    script .= "Add-Type -TypeDefinition @'`r`n"
-    script .= "using System;`r`n"
-    script .= "using System.Runtime.InteropServices;`r`n"
-    script .= "public class AhkMapCap {`r`n"
-    script .=
-        "  [DllImport(`"user32.dll`")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdc, uint flags);`r`n"
-    script .= "  [DllImport(`"user32.dll`")] public static extern bool GetWindowRect(IntPtr hwnd, out RECT rect);`r`n"
-    script .= "  [StructLayout(LayoutKind.Sequential)]`r`n"
-    script .= "  public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }`r`n"
-    script .=
-        "  public static RECT WindowRect(IntPtr hwnd) { RECT r = new RECT(); GetWindowRect(hwnd, out r); return r; }`r`n"
-    script .= "}`r`n"
-    script .= "'@`r`n"
-    script .= "$hwnd = [IntPtr]" Integer(hwnd) "`r`n"
-    script .= "$wantX = " Integer(x) "`r`n"
-    script .= "$wantY = " Integer(y) "`r`n"
-    script .= "$wantW = " Integer(w) "`r`n"
-    script .= "$wantH = " Integer(h) "`r`n"
-    script .= "$rect = [AhkMapCap]::WindowRect($hwnd)`r`n"
-    script .= "$ww = $rect.Right - $rect.Left`r`n"
-    script .= "$wh = $rect.Bottom - $rect.Top`r`n"
-    script .= "if ($ww -lt 50 -or $wh -lt 50) { exit 5 }`r`n"
-    script .= "$full = New-Object System.Drawing.Bitmap $ww, $wh`r`n"
-    script .= "$g = [System.Drawing.Graphics]::FromImage($full)`r`n"
-    script .= "$hdc = $g.GetHdc()`r`n"
-    script .= "$printed = [AhkMapCap]::PrintWindow($hwnd, $hdc, 2)`r`n"
-    script .= "$g.ReleaseHdc($hdc)`r`n"
-    script .= "$g.Dispose()`r`n"
-    script .= "if (-not $printed) { $full.Dispose(); exit 5 }`r`n"
-    script .= "$scaleX = $full.Width / [double]$ww`r`n"
-    script .= "$scaleY = $full.Height / [double]$wh`r`n"
-    script .= "$cx = [int][Math]::Round(($wantX - $rect.Left) * $scaleX)`r`n"
-    script .= "$cy = [int][Math]::Round(($wantY - $rect.Top) * $scaleY)`r`n"
-    script .= "$cw = [int][Math]::Round($wantW * $scaleX)`r`n"
-    script .= "$ch = [int][Math]::Round($wantH * $scaleY)`r`n"
-    script .= "if ($cx -lt 0) { $cw += $cx; $cx = 0 }`r`n"
-    script .= "if ($cy -lt 0) { $ch += $cy; $cy = 0 }`r`n"
-    script .= "if ($cx + $cw -gt $full.Width) { $cw = $full.Width - $cx }`r`n"
-    script .= "if ($cy + $ch -gt $full.Height) { $ch = $full.Height - $cy }`r`n"
-    script .= "if ($cw -lt 40 -or $ch -lt 40) { $full.Dispose(); exit 3 }`r`n"
-    script .= "$crop = New-Object System.Drawing.Bitmap $cw, $ch`r`n"
-    script .= "$cg = [System.Drawing.Graphics]::FromImage($crop)`r`n"
-    script .= "$dest = New-Object System.Drawing.Rectangle 0, 0, $cw, $ch`r`n"
-    script .= "$src = New-Object System.Drawing.Rectangle $cx, $cy, $cw, $ch`r`n"
-    script .= "$cg.DrawImage($full, $dest, $src, [System.Drawing.GraphicsUnit]::Pixel)`r`n"
-    script .= "$cg.Dispose()`r`n"
-    script .= "$full.Dispose()`r`n"
-    script .= "$crop.Save('" safe "', [System.Drawing.Imaging.ImageFormat]::Png)`r`n"
-    script .= "$crop.Dispose()`r`n"
-    script .= "exit 0`r`n"
-    code := Maps_RunPs(script)
-    Maps_DebugLog("print_window", Map("code", code, "hwnd", hwnd, "x", x, "y", y, "w", w, "h", h, "out", outPath,
-        "exists", FileExist(outPath) ? 1 : 0))
-    if (code != 0 || !FileExist(outPath)) {
-        errMsg := Maps_QualityReason(code = 0 ? 5 : code)
+    if (old && hdcMem)
+        DllCall("SelectObject", "ptr", hdcMem, "ptr", old)
+    if (old2 && hdcCrop)
+        DllCall("SelectObject", "ptr", hdcCrop, "ptr", old2)
+    if (hbmCrop)
+        DllCall("DeleteObject", "ptr", hbmCrop)
+    if (hbm)
+        DllCall("DeleteObject", "ptr", hbm)
+    if (hdcCrop)
+        DllCall("DeleteDC", "ptr", hdcCrop)
+    if (hdcMem)
+        DllCall("DeleteDC", "ptr", hdcMem)
+    if (hdcScreen)
+        DllCall("ReleaseDC", "ptr", 0, "ptr", hdcScreen)
+    Maps_DebugLog("print_window", Map("ok", ok ? 1 : 0, "err", errMsg, "hwnd", hwnd, "x", x, "y", y, "w", w, "h", h,
+        "out", outPath, "exists", (outPath != "" && FileExist(outPath)) ? 1 : 0))
+    if (!ok || outPath = "" || !FileExist(outPath)) {
+        if (errMsg = "")
+            errMsg := "window capture failed"
         Maps_DiscardCaptureFile(outPath, errMsg)
         return false
     }
@@ -803,24 +1006,54 @@ Maps_CapturePrintWindow(hwnd, x, y, w, h, outPath, &errMsg) {
 
 Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
     errMsg := ""
-    if (w <= 0 || h <= 0 || outPath = "") {
+    ok := false
+    hdcScreen := 0
+    hdcMem := 0
+    hbm := 0
+    old := 0
+    x := Integer(Round(x))
+    y := Integer(Round(y))
+    w := Integer(Round(w))
+    h := Integer(Round(h))
+    if (w < 40 || h < 40 || outPath = "") {
         errMsg := "capture failed"
-        return false
+    } else {
+        try {
+            hdcScreen := DllCall("GetDC", "ptr", 0, "ptr")
+            hdcMem := DllCall("CreateCompatibleDC", "ptr", hdcScreen, "ptr")
+            hbm := DllCall("CreateCompatibleBitmap", "ptr", hdcScreen, "int", w, "int", h, "ptr")
+            if (!hdcScreen || !hdcMem || !hbm)
+                errMsg := "CreateCompatibleBitmap failed"
+            else {
+                old := DllCall("SelectObject", "ptr", hdcMem, "ptr", hbm, "ptr")
+                ; CAPTUREBLT so the visible Chrome frame is included.
+                blt := DllCall("BitBlt", "ptr", hdcMem, "int", 0, "int", 0, "int", w, "int", h, "ptr", hdcScreen, "int",
+                    x, "int", y, "uint", 0x40CC0020)
+                DllCall("SelectObject", "ptr", hdcMem, "ptr", old)
+                old := 0
+                if !blt
+                    errMsg := "BitBlt failed"
+                else
+                    ok := Maps_GdipSaveHBitmap(hbm, outPath, &errMsg)
+            }
+        } catch Error as e {
+            ok := false
+            errMsg := e.Message
+        }
     }
-    safe := StrReplace(outPath, "'", "''")
-    script := "Add-Type -AssemblyName System.Drawing`r`n"
-    script .= "$b = New-Object System.Drawing.Bitmap " Integer(w) ", " Integer(h) "`r`n"
-    script .= "$g = [System.Drawing.Graphics]::FromImage($b)`r`n"
-    script .= "$g.CopyFromScreen(" Integer(x) ", " Integer(y) ", 0, 0, $b.Size)`r`n"
-    script .= "$b.Save('" safe "', [System.Drawing.Imaging.ImageFormat]::Png)`r`n"
-    script .= "$g.Dispose()`r`n"
-    script .= "$b.Dispose()`r`n"
-    script .= "exit 0`r`n"
-    code := Maps_RunPs(script)
-    Maps_DebugLog("copy_from_screen", Map("code", code, "x", x, "y", y, "w", w, "h", h, "out", outPath, "exists",
-        FileExist(outPath) ? 1 : 0))
-    if (code != 0 || !FileExist(outPath)) {
-        errMsg := "capture failed"
+    if (old && hdcMem)
+        DllCall("SelectObject", "ptr", hdcMem, "ptr", old)
+    if (hbm)
+        DllCall("DeleteObject", "ptr", hbm)
+    if (hdcMem)
+        DllCall("DeleteDC", "ptr", hdcMem)
+    if (hdcScreen)
+        DllCall("ReleaseDC", "ptr", 0, "ptr", hdcScreen)
+    Maps_DebugLog("copy_from_screen", Map("ok", ok ? 1 : 0, "err", errMsg, "x", x, "y", y, "w", w, "h", h, "out",
+        outPath, "exists", (outPath != "" && FileExist(outPath)) ? 1 : 0))
+    if (!ok || outPath = "" || !FileExist(outPath)) {
+        if (errMsg = "")
+            errMsg := "capture failed"
         Maps_DiscardCaptureFile(outPath, errMsg)
         return false
     }
@@ -1028,6 +1261,24 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
             }
             Maps_DebugLog("pane", Map("attempt", attempt, "ok", 1, "name", paneName, "l", br.l, "t", br.t, "r", br.r,
                 "b", br.b, "w", paneW, "h", paneH))
+            fitL := 0
+            fitT := 0
+            fitW := 0
+            fitH := 0
+            fitRule := ""
+            clientL := 0
+            clientT := 0
+            clientR := 0
+            clientB := 0
+            fitOk := Maps_FitCaptureRect(browserHwnd, br.l, br.t, br.r, br.b, &fitL, &fitT, &fitW, &fitH, &fitRule,
+                &clientL, &clientT, &clientR, &clientB)
+            Maps_DebugLog("rect_fit", Map("attempt", attempt, "rule", fitRule, "ok", fitOk ? 1 : 0, "paneL", br.l,
+                "paneT", br.t, "paneW", paneW, "paneH", paneH, "clientL", clientL, "clientT", clientT, "clientR",
+                clientR, "clientB", clientB, "l", fitL, "t", fitT, "w", fitW, "h", fitH))
+            if !fitOk {
+                lastErr := "invalid capture region"
+                continue
+            }
             for method in methods {
                 g_MapsDebugMethod := method
                 g_MapsDebugAttempt := attempt
@@ -1044,10 +1295,10 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
                 } else if (method = "print") {
                     src := A_Temp "\ahk-maps-cap.png"
                     Maps_DeleteCaptureFile(src)
-                    if !Maps_CapturePrintWindow(browserHwnd, br.l, br.t, paneW, paneH, src, &capErr)
+                    if !Maps_CapturePrintWindow(browserHwnd, fitL, fitT, fitW, fitH, src, &capErr)
                         src := ""
-                    minW := Max(200, Floor(paneW * 0.8))
-                    minH := Max(150, Floor(paneH * 0.8))
+                    minW := Max(200, Floor(fitW * 0.8))
+                    minH := Max(150, Floor(fitH * 0.8))
                 } else {
                     src := A_Temp "\ahk-maps-cap.png"
                     Maps_DeleteCaptureFile(src)
@@ -1055,18 +1306,18 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
                     StandardLoadingBar_Hide(0)
                     Sleep 90
                     grabbed := false
-                    try grabbed := Maps_CaptureCopyFromScreen(br.l, br.t, paneW, paneH, src, &capErr)
+                    try grabbed := Maps_CaptureCopyFromScreen(fitL, fitT, fitW, fitH, src, &capErr)
                     catch Error as screenErr {
                         grabbed := false
                         capErr := "capture failed"
-                        Maps_DebugLog("copy_from_screen", Map("code", -1, "err", screenErr.Message, "x", br.l, "y", br.t,
-                            "w", paneW, "h", paneH))
+                        Maps_DebugLog("copy_from_screen", Map("ok", 0, "err", screenErr.Message, "x", fitL, "y", fitT,
+                            "w", fitW, "h", fitH))
                     }
                     Maps_Loading("📸 Capturing map...", browserHwnd)
                     if !grabbed
                         src := ""
-                    minW := Max(200, Floor(paneW * 0.8))
-                    minH := Max(150, Floor(paneH * 0.8))
+                    minW := Max(200, Floor(fitW * 0.8))
+                    minH := Max(150, Floor(fitH * 0.8))
                 }
                 if (src = "" || !FileExist(src)) {
                     lastErr := capErr != "" ? capErr : "capture failed"
