@@ -6,9 +6,10 @@
 ; =============================================================================
 
 ; =============================================================================
-; Hotkey Handler: Windows + Alt + Shift + U (#!+U)
+; Hotkey Handler: Windows + Alt + Shift + U (*#!+U)
+; * so the menu still opens while Control is stuck down.
 ; =============================================================================
-#!+U::
+*#!+U::
 {
     global g_HotstringSelectorActive, g_HotstringSelectorGui
 
@@ -21,10 +22,56 @@
 
 ; Win+Alt+Shift+W — Utility Shortcuts → Macros
 ; Same UI as #!+U then [M]; toggles closed if Macros is already open.
-#!+w::
+; * so the menu still opens while Control is stuck down.
+*#!+w::
 {
     ShowHotstringSelector("Macros")
 }
+
+; Wait out the opener chord (briefly) so its key-up is not lost when the GUI takes focus.
+UtilityShortcuts_WaitForOpenerChord() {
+    th := ""
+    try th := A_ThisHotkey
+    catch {
+        th := ""
+    }
+    if (th = "")
+        return
+    tw := "T0.4"
+    if InStr(th, "#") {
+        try KeyWait "LWin", tw
+        try KeyWait "RWin", tw
+    }
+    if InStr(th, "!") {
+        try KeyWait "LAlt", tw
+        try KeyWait "RAlt", tw
+    }
+    if InStr(th, "+") {
+        try KeyWait "LShift", tw
+        try KeyWait "RShift", tw
+    }
+    if InStr(th, "^") {
+        try KeyWait "LControl", tw
+        try KeyWait "RControl", tw
+    }
+    hk := RegExReplace(th, "^[$*~]+")
+    hk := RegExReplace(hk, "[#^!+<>*]+", "")
+    if (StrLen(hk) = 1) {
+        try KeyWait hk, tw
+    }
+}
+
+; Force Control/Alt/Shift/Win up. {Blind} so AutoHotkey does not press them again.
+UtilityShortcuts_ReleaseStuckModifiers() {
+    ChordSend_WithoutRestoringModifiers()
+}
+
+MacroReleaseStuckControl(*) {
+    UtilityShortcuts_ReleaseStuckModifiers()
+    try ShowCenteredOverlay_Utils("Control released", 1200, BANNER_ACCENT_SUCCESS)
+}
+
+RegisterMacro(MacroReleaseStuckControl, "🔓 Release stuck Control", "u")
 
 ; Extract the first http(s) URL from plain text; normalize bare www. hosts.
 OpenClipboardLinkInChrome_ExtractHttpUrl(text) {

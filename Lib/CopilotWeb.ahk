@@ -433,11 +433,13 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
     return false
 }
 
-; Send keys without letting AutoHotkey press Ctrl/Alt/Shift/Win again afterward.
-; A normal Send restores modifiers it still thinks are down. After Win+Alt / Ctrl+Alt+Win
-; and a focus change, the physical keys are already up, so that restore leaves them stuck.
+; Release chord modifiers without AutoHotkey pressing them again afterward.
+; A normal Send restores modifiers it still thinks are down. {Blind} sends the ups
+; and does not press them back down. Any payload is a second Send after that.
 ChordSend_WithoutRestoringModifiers(keys := "") {
-    SendInput "{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}{LWin up}{RWin up}" keys
+    SendInput "{Blind}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}{LWin up}{RWin up}"
+    if (keys != "")
+        SendInput keys
 }
 
 ; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).

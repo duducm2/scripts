@@ -111,13 +111,15 @@ UtilitySelector_UnbindModalHotkeys() {
 
 UtilitySelector_BindOneChar(char, handler) {
     global g_HotstringHotkeyHandlers
-    key := UtilitySelector_HotkeyName(char)
+    ; [U] Release stuck Control must fire while Control is already held.
+    ; A second bare u would run the macro twice.
+    key := (char = "u") ? "*u" : UtilitySelector_HotkeyName(char)
     try {
         Hotkey(key, handler, "On")
         g_HotstringHotkeyHandlers.Push({ char: char, key: key, handler: handler })
     } catch {
     }
-    if (RegExMatch(char, "^[a-z]$")) {
+    if (char != "u" && RegExMatch(char, "^[a-z]$")) {
         upperKey := StrUpper(char)
         try {
             Hotkey(upperKey, handler, "On")
