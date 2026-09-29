@@ -8,7 +8,7 @@
 ; =============================================================================
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
-; If both are open: Closes Outlook and minimizes Teams to system tray.
+; If both are open: Kills Outlook and Teams so their RAM is released.
 ; If one or both are closed: Launches both applications.
 ; =============================================================================
 ToggleOutlookAndTeams() {
@@ -16,7 +16,7 @@ ToggleOutlookAndTeams() {
     try {
         ; Check if both applications are running
         outlookRunning := OutlookProcessRunning()
-        teamsRunning := ProcessExist("ms-teams.exe")
+        teamsRunning := ProcessExist("ms-teams.exe") || ProcessExist("Teams.exe") || ProcessExist("MSTeams.exe")
         isOpeningFlow := !(outlookRunning && teamsRunning)
         hadError := false
         firstError := ""
@@ -36,32 +36,21 @@ ToggleOutlookAndTeams() {
         }
 
         if (outlookRunning && teamsRunning) {
-            ; Both are open: Close Outlook and minimize Teams to system tray
-            ; Close Outlook process(es) - classic and/or Store (olk.exe)
+            ; Both are open: kill every matching process. ProcessClose stops one per call,
+            ; and Teams keeps several ms-teams.exe processes (plus the tray host).
             try {
-                if ProcessExist("OUTLOOK.EXE")
-                    ProcessClose("OUTLOOK.EXE")
-                if ProcessExist("olk.exe")
-                    ProcessClose("olk.exe")
+                KillAllProcessesByName("OUTLOOK.EXE")
+                KillAllProcessesByName("olk.exe")
             } catch Error as e {
                 MsgBox "Error closing Outlook: " e.Message
             }
 
-            ; Close all Teams windows (this keeps Teams in system tray)
             try {
-                ; Teams can have multiple process names, check all
-                for hwnd in WinGetList("ahk_exe ms-teams.exe") {
-                    WinClose(hwnd)
-                }
-                ; Also check for Teams.exe and MSTeams.exe variants
-                for hwnd in WinGetList("ahk_exe Teams.exe") {
-                    WinClose(hwnd)
-                }
-                for hwnd in WinGetList("ahk_exe MSTeams.exe") {
-                    WinClose(hwnd)
-                }
+                KillAllProcessesByName("ms-teams.exe")
+                KillAllProcessesByName("Teams.exe")
+                KillAllProcessesByName("MSTeams.exe")
             } catch Error as e {
-                MsgBox "Error closing Teams windows: " e.Message
+                MsgBox "Error closing Teams: " e.Message
             }
         } else {
             ; One or both are closed: Launch both applications
@@ -183,5 +172,14 @@ ToggleOutlookAndTeams() {
         if (loadingShown)
             StandardLoadingBar_Hide(0)
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
+    }
+}
+
+; ProcessClose terminates a single matching process. Loop until the name is gone.
+KillAllProcessesByName(name) {
+    loop 30 {
+        if !ProcessExist(name)
+            return
+        ProcessClose(name)
     }
 }
