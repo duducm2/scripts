@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-09-27",
+    "generated_at": "2026-09-29",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "378 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 39 beasts with adj"
+    "catalog_scope": "384 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 43 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -3793,6 +3793,66 @@
       "filename": "bower_bird.png",
       "url": "/assets/beast-thumbs/bower_bird.png",
       "source_slug": "bower_bird",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_17_Bp": {
+      "label": "Bone panther",
+      "peg_code": "Bp",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_17_Bq": {
+      "label": "Bone Quetzalcoatl",
+      "peg_code": "Bq",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_17_Br": {
+      "label": "brontosaurus",
+      "peg_code": "Br",
+      "filename": "brontosaurus.png",
+      "url": "/assets/beast-thumbs/brontosaurus.png",
+      "source_slug": "brontosaurus",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_17_Bs": {
+      "label": "Bone skull",
+      "peg_code": "Bs",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_17_Bt": {
+      "label": "Bone toucan",
+      "peg_code": "Bt",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_18_Bu": {
+      "label": "butterfly",
+      "peg_code": "Bu",
+      "filename": "butterfly.png",
+      "url": "/assets/beast-thumbs/butterfly.png",
+      "source_slug": "butterfly",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null

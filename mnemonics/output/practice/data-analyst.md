@@ -1,6 +1,104 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 18: Star Schema Best Practices</strong> · Character: Galileo Galilei · 1 beast · 1 atom</summary>
+
+![Memory Palace 18](images/data-analyst/18.png)
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### [Bu] butterfly
+
+<img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Lean Fact Table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLean%20Fact%20Table%5D&color=9fd4ff" />(razor) [I keep my fact table <img alt="[lean]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blean%5D&color=ffd966" />(ruler)] [by storing only keys and <img alt="[measures]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmeasures%5D&color=ffd966" />(safe)] [while placing descriptive fields in <img alt="[dimensions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdimensions%5D&color=ffd966" />(drawer)]
+
+**Quote**
+“keep your fact table lean only include keys and measures if possible avoid putting descriptive fields like product name in your fact table that's what the dimension tables are for”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 17: Star Schema Core Architecture</strong> · Character: Isaac Newton · 5 beasts · 5 atoms</summary>
+
+![Memory Palace 17](images/data-analyst/17.png)
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Bp] Bone panther
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/panther.png" alt="Bone panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Star Schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BStar%20Schema%5D&color=9fd4ff" />(badge) [I <img alt="[organize]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Borganize%5D&color=ffd966" />(binder) data into a central fact table] [<img alt="[surrounded]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsurrounded%5D&color=ffd966" />(fence) by dimension tables] [to <img alt="[optimize]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Boptimize%5D&color=ffd966" />(rocket) querying and reporting]
+
+**Quote**
+“the star schema is a widely used data modeling technique in PowerBI and other business intelligence tools it's designed to optimize querying and reporting by organizing data into a clear intuitive structure”
+
+### [Bq] Bone Quetzalcoatl
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Bone Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Fact Table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BFact%20Table%5D&color=9fd4ff" />(abacus) [I store quantitative <img alt="[metrics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetrics%5D&color=ffd966" />(chest)] [at the <img alt="[center]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcenter%5D&color=ffd966" />(bullseye) of the schema] [<img alt="[linked]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blinked%5D&color=ffd966" />(chain) to surrounding dimensions] — Note: Kept lean and numeric by excluding descriptive text fields.
+
+**Quote**
+“picture a star at the center is your fact table this holds the numbers sales revenue quantities or whatever else you capture in a transaction”
+
+### [Br] brontosaurus
+
+<img src="../../web/assets/beast-thumbs/brontosaurus.png" alt="brontosaurus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Dimension Table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDimension%20Table%5D&color=9fd4ff" />(tag) [I store descriptive <img alt="[attributes]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Battributes%5D&color=ffd966" />(label)] [that give <img alt="[context]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcontext%5D&color=ffd966" />(lens) to numerical facts] [for <img alt="[filtering]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiltering%5D&color=ffd966" />(funnel) and grouping]
+
+**Quote**
+“radiating out from the center are your dimension tables these describe the facts dimension tables are things like customers products dates and regions”
+
+### [Bs] Bone skull
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/skull.png" alt="Bone skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Denormalization]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDenormalization%5D&color=9fd4ff" />(steamroller) [I <img alt="[combine]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcombine%5D&color=ffd966" />(glue) related data] [into fewer <img alt="[wider]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwider%5D&color=ffd966" />(bench) tables] [to <img alt="[speed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspeed%5D&color=ffd966" />(speedometer) up analytical queries] — Note: Normalization splits data across many small tables to reduce redundancy for transactions.
+
+**Quote**
+“denormalization is about flattening the data you combine related information into fewer but wider tables this is ideal for analytics and it's exactly what the star schema does”
+
+### [Bt] Bone toucan
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/toucan.png" alt="Bone toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Surrogate Key]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSurrogate%20Key%5D&color=9fd4ff" />(brass key) [I assign an artificial unique <img alt="[identifier]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bidentifier%5D&color=ffd966" />(barcode)] [inside a <img alt="[dimension]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdimension%5D&color=ffd966" />(cabinet) table] [to maintain <img alt="[consistent]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconsistent%5D&color=ffd966" />(handcuffs) relationships] — Note: Has no business meaning and prevents broken links when natural names change.
+
+**Quote**
+“surrogate keys are made up they're unique IDs like customer key for example 101 102 103 they have no business meaning but they're great for performance and consistency”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 16: API to Power BI</strong> · Character: Albert Einstein · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 16](images/data-analyst/16.jpg)
