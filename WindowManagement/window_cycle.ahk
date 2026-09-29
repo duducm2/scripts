@@ -26,13 +26,15 @@ CycleWindowsOnMonitor(order) {
 
     hwndCur := 0
     try hwndCur := WinExist("A")
-    catch hwndCur := 0
-        ; Next window is the one after whatever is actually in front, when that
-        ; window is on this monitor. If it is not (focus still on another monitor,
-        ; or the last target never took focus), advance the stored index. Deleting
-        ; that index and always restarting at windows[1] left the cycle stuck on
-        ; the first window until a trip to another monitor made activation stick.
-        activeIdx := 0
+    catch {
+        hwndCur := 0
+    }
+    ; Next window is the one after whatever is actually in front, when that
+    ; window is on this monitor. If it is not (focus still on another monitor,
+    ; or the last target never took focus), advance the stored index. Deleting
+    ; that index and always restarting at windows[1] left the cycle stuck on
+    ; the first window until a trip to another monitor made activation stick.
+    activeIdx := 0
     loop windows.Length {
         if (windows[A_Index].hwnd = hwndCur) {
             activeIdx := A_Index
