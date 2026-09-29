@@ -9,7 +9,9 @@
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If either is open: Kills both so their RAM is released. Closing wins over opening.
-; That close also kills Edge, OneNote, Spotify, and WhatsApp. They are not relaunched.
+; That close also kills Edge, OneNote, Spotify, and WhatsApp, and stops the
+; Tasks, Finance, and Memory Palace servers. Those servers stay stopped until
+; you open each app. They are not relaunched with Outlook and Teams.
 ; If neither is open: Launches Outlook and Teams only.
 ; =============================================================================
 ToggleOutlookAndTeams() {
@@ -64,6 +66,10 @@ ToggleOutlookAndTeams() {
             try KillWhatsAppChromeApp()
             catch Error as e {
                 MsgBox "Error closing WhatsApp: " e.Message
+            }
+            try StopResidentWebServers()
+            catch Error as e {
+                MsgBox "Error closing Tasks, Finance, or Memory Palace: " e.Message
             }
         } else {
             ; Neither is running: launch both applications
@@ -185,6 +191,31 @@ ToggleOutlookAndTeams() {
         if (loadingShown)
             StandardLoadingBar_Hide(0)
         MsgBox "Error in ToggleOutlookAndTeams macro: " e.Message
+    }
+}
+
+; Pause the keep-alive, then stop Tasks, Finance, and Memory Palace.
+; Launchers start a server again when that app is opened. The pause file
+; stops web_servers_warmup.ahk from starting the other two on its own.
+StopResidentWebServers() {
+    path := A_Temp "\ahk-web-servers.paused"
+    try FileDelete(path)
+    catch {
+    }
+    try FileAppend("1", path)
+    catch {
+    }
+    try Task_CloseWebApp()
+    catch {
+    }
+    try Task_StopServer()
+    catch {
+    }
+    try Finance_StopDashboardServer()
+    catch {
+    }
+    try Palace_StopServer()
+    catch {
     }
 }
 

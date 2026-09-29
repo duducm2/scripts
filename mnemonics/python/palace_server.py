@@ -1015,6 +1015,15 @@ class PalaceHandler(BaseHTTPRequestHandler):
             )
 
 
+def _install_resident_debug(handler_cls: type, name: str) -> None:
+    infra = Path(__file__).resolve().parents[2] / "infra" / "python"
+    if str(infra) not in sys.path:
+        sys.path.insert(0, str(infra))
+    from resident_debug import install
+
+    install(handler_cls, name)
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Memory Palace web server")
     p.add_argument("--data-dir", type=Path, required=True)
@@ -1047,6 +1056,7 @@ def main(argv: list[str] | None = None) -> int:
     Handler.output_dir = output_dir
     Handler.studies_root = studies_root
     Handler.scripts_root = scripts_root
+    _install_resident_debug(Handler, "palace")
 
     class PalaceHTTPServer(ThreadingHTTPServer):
         allow_reuse_address = True

@@ -465,6 +465,15 @@ def make_handler(data_dir: Path, scripts_root: Path) -> type[TaskHandler]:
     return Handler
 
 
+def _install_resident_debug(handler_cls: type, name: str) -> None:
+    infra = Path(__file__).resolve().parents[2] / "infra" / "python"
+    if str(infra) not in sys.path:
+        sys.path.insert(0, str(infra))
+    from resident_debug import install
+
+    install(handler_cls, name)
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Tasks web HTTP server")
     p.add_argument("--data-dir", type=Path, required=True)
@@ -479,6 +488,7 @@ def main(argv: list[str] | None = None) -> int:
     (data_dir / "attachments" / "icons").mkdir(exist_ok=True)
 
     handler = make_handler(data_dir, args.scripts_root.resolve())
+    _install_resident_debug(handler, "tasks")
     get_store(data_dir).migrate_sections()
     get_store(data_dir).sync_project_json_files()
     server = ThreadingHTTPServer((args.host, args.port), handler)

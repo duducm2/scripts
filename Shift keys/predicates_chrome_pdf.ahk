@@ -15,6 +15,14 @@ global g_ChromePdf_CacheResult := false
 global g_ChromePdf_CacheTtlMs := 400
 
 IsChromePdfViewerActive() {
+    HookTiming_Begin("IsChromePdfViewerActive")
+    try
+        return IsChromePdfViewerActive_Run()
+    finally
+        HookTiming_End("IsChromePdfViewerActive")
+}
+
+IsChromePdfViewerActive_Run() {
     global g_ChromePdf_CacheHwnd, g_ChromePdf_CacheTick, g_ChromePdf_CacheResult, g_ChromePdf_CacheTtlMs
 
     ; Hard gate: avoid conflicts with non-Chrome apps

@@ -248,6 +248,23 @@ GeminiEnterprise_EnsureForegroundHook() {
 }
 
 IsGeminiEnterpriseChromeActiveForHotkey() {
+    ; Lib is included by scripts that do not load Shift keys\helpers.ahk.
+    timed := false
+    try {
+        HookTiming_Begin("IsGeminiEnterpriseChromeActiveForHotkey")
+        timed := true
+    } catch {
+        timed := false
+    }
+    try
+        return IsGeminiEnterpriseChromeActiveForHotkey_Run()
+    finally {
+        if timed
+            HookTiming_End("IsGeminiEnterpriseChromeActiveForHotkey")
+    }
+}
+
+IsGeminiEnterpriseChromeActiveForHotkey_Run() {
     GeminiEnterprise_EnsureForegroundHook()
     hwnd := WinExist("A")
     if (!hwnd || !GeminiEnterprise_IsChromeHwnd(hwnd))

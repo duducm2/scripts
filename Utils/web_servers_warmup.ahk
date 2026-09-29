@@ -238,6 +238,10 @@ WebWarmup_StartFinanceServer() {
 }
 
 WebWarmup_EnsureAll() {
+    ; Ctrl+Alt+Win+3 sets this so the heartbeat does not bring the servers back.
+    ; Each launcher still starts its own server when you open that app.
+    if FileExist(A_Temp "\ahk-web-servers.paused")
+        return
     WebWarmup_StartTaskServer()
     WebWarmup_StartPalaceServer()
     WebWarmup_StartFinanceServer()

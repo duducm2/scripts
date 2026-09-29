@@ -1327,6 +1327,23 @@ CopilotWeb_EnsureForegroundHook() {
 }
 
 IsCopilotWebChromeActiveForHotkey() {
+    ; Lib is included by scripts that do not load Shift keys\helpers.ahk.
+    timed := false
+    try {
+        HookTiming_Begin("IsCopilotWebChromeActiveForHotkey")
+        timed := true
+    } catch {
+        timed := false
+    }
+    try
+        return IsCopilotWebChromeActiveForHotkey_Run()
+    finally {
+        if timed
+            HookTiming_End("IsCopilotWebChromeActiveForHotkey")
+    }
+}
+
+IsCopilotWebChromeActiveForHotkey_Run() {
     CopilotWeb_EnsureForegroundHook()
     hwnd := WinExist("A")
     if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))

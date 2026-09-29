@@ -6,6 +6,14 @@
 ; =============================================================================
 
 IsConsumerGeminiChromeActive() {
+    HookTiming_Begin("IsConsumerGeminiChromeActive")
+    try
+        return IsConsumerGeminiChromeActive_Run()
+    finally
+        HookTiming_End("IsConsumerGeminiChromeActive")
+}
+
+IsConsumerGeminiChromeActive_Run() {
     if !(WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe"))
         return false
     try

@@ -15,6 +15,14 @@ global g_WhatsApp_HotkeyResult := false
 global isRecording := false          ; persists between hotkey presses
 
 IsWhatsAppShiftActive() {
+    HookTiming_Begin("IsWhatsAppShiftActive")
+    try
+        return IsWhatsAppShiftActive_Run()
+    finally
+        HookTiming_End("IsWhatsAppShiftActive")
+}
+
+IsWhatsAppShiftActive_Run() {
     global g_WhatsApp_HotkeyHwnd, g_WhatsApp_HotkeyResult
     hwnd := WinExist("A")
     if (!hwnd)

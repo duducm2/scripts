@@ -215,6 +215,15 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
 
+def _install_resident_debug(handler_cls: type, name: str) -> None:
+    infra = Path(__file__).resolve().parents[2] / "infra" / "python"
+    if str(infra) not in sys.path:
+        sys.path.insert(0, str(infra))
+    from resident_debug import install
+
+    install(handler_cls, name)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Serve finance cockpit + budget API")
     parser.add_argument("--data-dir", default="", help="Absolute path to finances/data")
@@ -230,6 +239,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     out_dir = _agg.OUTPUT
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    _install_resident_debug(DashboardHandler, "finance")
 
     def factory(*a, **kw):
         return DashboardHandler(*a, directory=str(out_dir), **kw)
