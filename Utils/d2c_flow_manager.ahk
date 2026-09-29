@@ -1012,11 +1012,18 @@ class D2C_FlowManager {
         if (autoSubmit) {
             ; Shared Prompt Manager path for all companions (upload idle / chips / Send / confirm).
             ; Consumer Gemini without registry attaches keeps the classic content+submit helper.
+            ; Completion watches start only after ConfirmAfterEnter returns working.
             if (this.CompanionId = "enterprise" || this.CompanionId = "copilot"
-                || (useRegistryPastePath && attachCount > 0)) {
-                PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
-            } else
-                Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
+                || (useRegistryPastePath && attachCount > 0))
+                submitted := PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
+            else
+                submitted := Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
+            if (!submitted) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                this.Reset()
+                return
+            }
             if (presetMode = "finance_daily" || presetMode = "task_pack") {
                 ; Pack pipeline owns completion → extract → Desktop → import confirm.
                 try PackPipeline_ArmFromPreset(presetMode, this.CompanionId, this.GeminiHwnd, this.OriginHwnd)

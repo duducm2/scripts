@@ -451,12 +451,8 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
     GeminiEnterprise_PlayFocusedChime()
     if (autoSubmit) {
         Sleep 1000
-        try {
-            uia := UIA_Browser("ahk_id " hwnd)
-            GeminiEnterprise_TrySubmit(uia)
-        } catch {
-            Send "{Enter}"
-        }
+        if (!AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd)))
+            return 0
     }
     if (hwnd)
         GeminiEnterprise_CacheHwnd(hwnd)
@@ -771,6 +767,15 @@ GeminiEnterprise_SelectDeepReasoningModel(hwnd := 0) {
     } catch {
     }
     return GeminiEnterprise_SelectModelByName(modelName, hwnd)
+}
+
+GeminiEnterprise_SubmitComposer(hwnd) {
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        GeminiEnterprise_TrySubmit(uia)
+    } catch {
+        Send "{Enter}"
+    }
 }
 
 GeminiEnterprise_TrySubmit(uia := 0) {

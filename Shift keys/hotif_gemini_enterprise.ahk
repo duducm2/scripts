@@ -175,23 +175,15 @@ $Enter:: {
         Send "{Enter}"
         return
     }
-    try {
-        uia := GeminiEnterprise_GetActiveUia()
-        GeminiEnterprise_TrySubmit(uia)
-    } catch {
-        Send "{Enter}"
-    }
-    SetTimer(() => GeminiEnterprise_WaitForGenerationComplete(300000), -1)
+    hwnd := WinExist("A")
+    if (AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd)))
+        SetTimer(() => GeminiEnterprise_WaitForGenerationComplete(300000), -1)
 }
 
 $^Enter:: {
-    try {
-        uia := GeminiEnterprise_GetActiveUia()
-        GeminiEnterprise_TrySubmit(uia)
-    } catch {
-        Send "{Enter}"
-    }
-    SetTimer(() => GeminiEnterprise_WaitForGenerationComplete(300000), -1)
+    hwnd := WinExist("A")
+    if (AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd)))
+        SetTimer(() => GeminiEnterprise_WaitForGenerationComplete(300000), -1)
 }
 
 #HotIf

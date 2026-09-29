@@ -811,27 +811,35 @@ PackPipeline_SendFixAndSubmit(fixText) {
     companionId := g_PackPipeline.companionId
     PackPipeline_CaptureUserHwnd()
     hwnd := 0
+    submitted := false
     try {
         switch companionId {
             case "enterprise":
                 hwnd := GeminiEnterprise_NavigateFocusAndPaste(fixText, true)
+                submitted := !!hwnd
             case "copilot":
                 hwnd := CopilotWeb_NavigateFocusAndPaste(fixText, true)
+                submitted := !!hwnd
             default:
                 ; GeminiNavigateFocusAndPasteFirstSnippet second arg is switchToFirstTab, not submit.
                 hwnd := GeminiNavigateFocusAndPasteFirstSnippet(fixText, false)
-                if (hwnd)
-                    try PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
+                if (hwnd) {
+                    try submitted := !!PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
                     catch {
-                        try Gemini_WaitForPromptContentAndSubmit(hwnd)
-                        catch {
-                        }
+                        try submitted := !!Gemini_WaitForPromptContentAndSubmit(hwnd)
+                        catch
+                            submitted := false
                     }
+                }
         }
     } catch as e {
         try ShowCenteredOverlay_Utils("❌ AI fix send failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         catch {
         }
+        PackPipeline_RestoreUserHwnd()
+        return false
+    }
+    if (!submitted) {
         PackPipeline_RestoreUserHwnd()
         return false
     }

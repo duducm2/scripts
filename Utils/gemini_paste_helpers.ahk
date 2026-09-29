@@ -170,10 +170,9 @@ Gemini_HasGeneratingStopButtonForUia(uia) {
     return false
 }
 
+; Stop control only. An empty composer is not proof the prompt was received or that work started.
 Gemini_SubmitAttemptSucceeded(uia) {
-    if (Gemini_HasGeneratingStopButtonForUia(uia))
-        return true
-    return GeminiPromptFieldGetTextFromUia(uia) = ""
+    return Gemini_HasGeneratingStopButtonForUia(uia)
 }
 
 GeminiPromptFieldGetTextFromUia(uia) {
@@ -288,17 +287,23 @@ Gemini_TrySubmit(geminiHwnd, uia := 0) {
     }
     if (!IsObject(uia))
         return false
+    snapStatus := ""
+    sentText := AiCompanion_SnapshotComposer(geminiHwnd, "gemini", &snapStatus)
+    if (snapStatus = "ok" && Trim(sentText) = "") {
+        AiCompanion_AnnounceConfirm("empty")
+        return false
+    }
+    state := "unreadable"
     for fallback in ["enter", "ctrlEnter"] {
         Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
         Gemini_TrySubmitOnce(uia, fallback)
-        endTick := A_TickCount + 2000
-        while (A_TickCount < endTick) {
-            if (Gemini_SubmitAttemptSucceeded(uia))
-                return true
-            Sleep 200
-        }
+        state := AiCompanion_ConfirmAfterEnter(geminiHwnd, "gemini", sentText, 3000, snapStatus = "ok")
+        ; A second chord is only useful when the prompt is still sitting in the composer.
+        if (state != "held")
+            break
     }
-    return false
+    AiCompanion_AnnounceConfirm(state)
+    return state = "working"
 }
 
 Gemini_WaitForPromptContentAndSubmit(geminiHwnd) {

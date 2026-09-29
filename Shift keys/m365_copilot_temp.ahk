@@ -269,6 +269,12 @@ M365CopilotContinue_DoSubmit(*) {
         M365CopilotContinue_Stop("❌ M365 Copilot: could not send continue")
         return
     }
+    state := AiCompanion_ConfirmAfterEnter(hwnd, "copilot", "continue", 3000, true)
+    if (state != "working") {
+        AiCompanion_AnnounceConfirm(state)
+        M365CopilotContinue_Stop("")
+        return
+    }
     g_M365CopilotContinuePhase := "waitAppear"
     g_M365CopilotContinueSawStop := false
     g_M365CopilotContinueSubmitTick := A_TickCount
