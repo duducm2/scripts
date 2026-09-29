@@ -3489,6 +3489,7 @@
             toast("Select a task first");
             return;
           }
+          const sibling = followingTaskSibling(tid);
           const r = await api(
             "/api/tasks/" + encodeURIComponent(tid) + "/emoji",
             {
@@ -3504,6 +3505,14 @@
               applyEmojiFilter(null);
             }
             const t = taskRowById(tid);
+            const leftList =
+              !t ||
+              t.active === "0" ||
+              (t.kind !== "habitual" && stored === "✅");
+            if (leftList && sibling) {
+              setSelection(sibling.kind, sibling.id, true);
+              return;
+            }
             const kind = t?.kind === "habitual" ? "habit" : "task";
             setSelection(kind, tid, false);
           });
@@ -3732,6 +3741,29 @@
           return (sec?.title || "").trim().toLowerCase() === "general";
         }
 
+        function taskListParent(el) {
+          return el?.closest(".task-section, .task-list") || null;
+        }
+
+        function followingTaskSibling(taskId) {
+          if (!taskId) return null;
+          const targets = navTargets();
+          const idx = targets.findIndex(
+            (t) =>
+              (t.kind === "task" || t.kind === "habit") && t.id === taskId,
+          );
+          if (idx < 0) return null;
+          const parent = taskListParent(targets[idx].el);
+          if (!parent) return null;
+          for (let i = idx + 1; i < targets.length; i++) {
+            const next = targets[i];
+            if (next.kind !== "task" && next.kind !== "habit") return null;
+            if (taskListParent(next.el) !== parent) return null;
+            return { kind: next.kind, id: next.id };
+          }
+          return null;
+        }
+
         function selectProjectAfterTaskDelete(projectId) {
           if (!projectId) {
             state.sel = null;
@@ -3748,6 +3780,14 @@
           }
           state.collapsedProjects.delete(projectId);
           setSelection("project", projectId, true);
+        }
+
+        function focusAfterTaskRemoved(sibling, projectId) {
+          if (sibling?.id) {
+            setSelection(sibling.kind, sibling.id, true);
+            return;
+          }
+          selectProjectAfterTaskDelete(projectId);
         }
 
         async function deleteSectionById(id) {
@@ -3794,16 +3834,16 @@
           }
           if (state.sel.kind === "task" || state.sel.kind === "habit") {
             if (!confirm("Delete task and its info/attachments?")) return;
-            const task = (state.data.tasks || []).find(
-              (t) => t.id === state.sel.id,
-            );
+            const taskId = state.sel.id;
+            const sibling = followingTaskSibling(taskId);
+            const task = (state.data.tasks || []).find((t) => t.id === taskId);
             const projectId = task?.project_id || "";
-            await api("/api/tasks/" + encodeURIComponent(state.sel.id), {
+            await api("/api/tasks/" + encodeURIComponent(taskId), {
               method: "DELETE",
             });
             toast("Deleted");
             await refresh();
-            selectProjectAfterTaskDelete(projectId);
+            focusAfterTaskRemoved(sibling, projectId);
           }
         }
 
@@ -6076,6 +6116,7 @@
             }
             if (act === "del-task") {
               if (!confirm("Delete task and its info/attachments?")) return;
+              const sibling = followingTaskSibling(id);
               const task = (state.data.tasks || []).find((x) => x.id === id);
               const projectId = task?.project_id || "";
               await api("/api/tasks/" + encodeURIComponent(id), {
@@ -6083,7 +6124,7 @@
               });
               toast("Deleted");
               await refresh();
-              selectProjectAfterTaskDelete(projectId);
+              focusAfterTaskRemoved(sibling, projectId);
               return;
             }
             if (act === "emoji") {
