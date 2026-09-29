@@ -269,6 +269,7 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 ### 4. Image prompts
 
 - One `image_prompt` per palace row: foreground only; depth slots + structural anchors; one character as a **lookalike** (`README §Image composition rules` — Character likeness / image-safety); plain English; bizarreness levers reflected.
+- Each beast physically engages the fantasy object of its first definition keyword (`README §Image composition rules`). That object is the Keyword on the left of the pair after the concept-name pair. Do not act out the concept phrase or the name-group mnemonic. For a smashed beast, each zone accessory is that sub-atom’s first definition mnemonic.
 - `character_name` keeps the canon name for recall. In `image_prompt` NEVER write that name (or any real/celebrity/historical/IP name). Use the lookalike formula: `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
 

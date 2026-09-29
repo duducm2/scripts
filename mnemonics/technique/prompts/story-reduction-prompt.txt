@@ -228,7 +228,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 
 ## Image prompts (both modes)
 
-After the reduced **in-scope** model is final, write a long concrete foreground `image_prompt` per surviving **in-scope** palace: depth slots, every zoned accessory with active engagement, one character via the lookalike formula (`an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`), realistic integration, bizarreness levers, **easy plain English** (PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`). Keep canon names only in `character_name` / PREVIEW — never in `image_prompt`. Do not regenerate image prompts for out-of-scope palaces.
+After the reduced **in-scope** model is final, write a long concrete foreground `image_prompt` per surviving **in-scope** palace: depth slots, every zoned accessory with active engagement, one character via the lookalike formula (`an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`), realistic integration, bizarreness levers, **easy plain English** (PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`). Keep canon names only in `character_name` / PREVIEW — never in `image_prompt`. Do not regenerate image prompts for out-of-scope palaces. Each beast physically engages the fantasy object of its first definition keyword (`README §Image composition rules`): the Keyword on the left of the pair after the concept-name pair. Do not act out the concept phrase or the name-group mnemonic. For a smashed beast, each zone accessory is that sub-atom’s first definition mnemonic.
 
 ---
 

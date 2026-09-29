@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 18: Star Schema Best Practices</strong> · Character: Galileo Galilei · 1 beast · 1 atom</summary>
 
-![Memory Palace 18](images/data-analyst/18.png)
+_No image_
 
 <p><em>1 beast · 1 Knowledge Atom</em></p>
 
@@ -32,7 +32,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 17: Star Schema Core Architecture</strong> · Character: Isaac Newton · 5 beasts · 5 atoms</summary>
 
-![Memory Palace 17](images/data-analyst/17.png)
+_No image_
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
