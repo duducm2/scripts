@@ -198,17 +198,12 @@ GeminiEnterprise_RefreshHotkeyContext(hwnd, useFull := false) {
     mode := useFull ? "full" : "fast"
     active := GeminiEnterprise_IsEnterpriseHwnd(hwnd, mode)
     g_GeminiEnterpriseHotkeyActive := active
-    if (active) {
-        g_GeminiEnterpriseCachedHwnd := hwnd
-        GeminiEnterprise_CacheHwnd(hwnd)
-        try {
-            g_GeminiEnterpriseCachedTitle := WinGetTitle("ahk_id " hwnd)
-        } catch {
-            g_GeminiEnterpriseCachedTitle := ""
-        }
-    } else {
-        if (g_GeminiEnterpriseCachedHwnd = hwnd)
-            g_GeminiEnterpriseCachedHwnd := 0
+    ; Keep hwnd and title when the answer is no, so the next key does not scan again.
+    g_GeminiEnterpriseCachedHwnd := hwnd
+    GeminiEnterprise_CacheHwnd(hwnd)
+    try {
+        g_GeminiEnterpriseCachedTitle := WinGetTitle("ahk_id " hwnd)
+    } catch {
         g_GeminiEnterpriseCachedTitle := ""
     }
     return active
@@ -261,17 +256,16 @@ IsGeminiEnterpriseChromeActiveForHotkey_Run() {
     if (!hwnd || !GeminiEnterprise_IsChromeHwnd(hwnd))
         return false
     global g_GeminiEnterpriseHotkeyActive, g_GeminiEnterpriseCachedHwnd, g_GeminiEnterpriseCachedTitle
-    if (g_GeminiEnterpriseHotkeyActive && hwnd = g_GeminiEnterpriseCachedHwnd) {
-        try {
-            title := WinGetTitle("ahk_id " hwnd)
-        } catch {
-            title := ""
-        }
-        if (title != g_GeminiEnterpriseCachedTitle)
-            return GeminiEnterprise_RefreshHotkeyContext(hwnd, false)
-        return true
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        title := ""
     }
-    return GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
+    ; Same window and title: cached yes/no. A title change uses fast mode only.
+    ; Full UI Automation stays on the foreground hook.
+    if (hwnd = g_GeminiEnterpriseCachedHwnd && title = g_GeminiEnterpriseCachedTitle)
+        return g_GeminiEnterpriseHotkeyActive
+    return GeminiEnterprise_RefreshHotkeyContext(hwnd, false)
 }
 
 GeminiEnterprise_GetActiveUia() {

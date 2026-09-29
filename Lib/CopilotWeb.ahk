@@ -1277,17 +1277,12 @@ CopilotWeb_RefreshHotkeyContext(hwnd, useFull := false) {
     mode := useFull ? "full" : "fast"
     active := CopilotWeb_IsCopilotHwnd(hwnd, mode)
     g_CopilotWebHotkeyActive := active
-    if (active) {
-        g_CopilotWebCachedHwnd := hwnd
-        CopilotWeb_CacheHwnd(hwnd)
-        try {
-            g_CopilotWebCachedTitle := WinGetTitle("ahk_id " hwnd)
-        } catch {
-            g_CopilotWebCachedTitle := ""
-        }
-    } else {
-        if (g_CopilotWebCachedHwnd = hwnd)
-            g_CopilotWebCachedHwnd := 0
+    ; Keep hwnd and title when the answer is no, so the next key does not scan again.
+    g_CopilotWebCachedHwnd := hwnd
+    CopilotWeb_CacheHwnd(hwnd)
+    try {
+        g_CopilotWebCachedTitle := WinGetTitle("ahk_id " hwnd)
+    } catch {
         g_CopilotWebCachedTitle := ""
     }
     return active
@@ -1340,17 +1335,16 @@ IsCopilotWebChromeActiveForHotkey_Run() {
     if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))
         return false
     global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
-    if (g_CopilotWebHotkeyActive && hwnd = g_CopilotWebCachedHwnd) {
-        try {
-            title := WinGetTitle("ahk_id " hwnd)
-        } catch {
-            title := ""
-        }
-        if (title != g_CopilotWebCachedTitle)
-            return CopilotWeb_RefreshHotkeyContext(hwnd, false)
-        return true
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        title := ""
     }
-    return CopilotWeb_RefreshHotkeyContext(hwnd, true)
+    ; Same window and title: cached yes/no. A title change uses fast mode only.
+    ; Full UI Automation stays on the foreground hook.
+    if (hwnd = g_CopilotWebCachedHwnd && title = g_CopilotWebCachedTitle)
+        return g_CopilotWebHotkeyActive
+    return CopilotWeb_RefreshHotkeyContext(hwnd, false)
 }
 
 CopilotWeb_GetActiveUia() {
