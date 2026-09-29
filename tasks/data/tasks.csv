@@ -158,10 +158,6 @@ TASK_0340,PROJ_0011,SEC_0146,"Verificar Status e fluxo de aprovação. Já verif
 TASK_0341,PROJ_0011,SEC_0146,Incluir a Fran no fim fluxo para receber o email juntamente com COR. Quem é a Fran?,❓,punctual,,,,Ajustes necessários,work,5140,,2026-09-28 09:37:03,1,
 TASK_0343,PROJ_0011,SEC_0146,Verificar como cadastrar novos departamentos (talvez incluir uma aba de cadastro para os departamentos e deixar pré selecionado nos serviços),🔲,punctual,,,,Ajustes necessários,work,5160,,2026-09-28 09:37:03,1,IMP-20260928-093703
 TASK_0346,PROJ_0005,SEC_0005,"09 de outubro, apresentar o resultado do seu mestrado para o time",⚡,punctual,,,,,work,5190,,2026-09-28 10:44:48,1,
-TASK_0347,PROJ_0033,SEC_0147,Coletar informações públicas do Reclame Aqui,🔲,punctual,,,2026-10-31,,work,5220,,2026-09-28 13:57:02,1,IMP-20260928-135702
-TASK_0348,PROJ_0033,SEC_0147,Análise de qualidade dos concorrentes no ramo de ferramentas elétricas (respostas Reclame Aqui),🔲,punctual,,,2026-10-31,,work,5230,,2026-09-28 13:57:02,1,IMP-20260928-135702
-TASK_0349,PROJ_0033,SEC_0147,Apresentar o projeto (Eduardo Borges),⚡,punctual,,,2026-09-28,,work,5240,,2026-09-28 13:57:02,1,IMP-20260928-135702
-TASK_0350,PROJ_0033,SEC_0147,Fazer estudo do PROCON,🔲,punctual,,,2026-10-31,,work,5250,,2026-09-28 13:57:02,1,IMP-20260928-135702
 TASK_0351,PROJ_0033,SEC_0147,Falar com o Maciel (UX pro) para manter a boa convivência,🔲,punctual,,,,,work,5260,,2026-09-28 13:57:02,1,IMP-20260928-135702
 TASK_0352,PROJ_0033,SEC_0147,Validar hipótese: Tempo de tratativa e envio de ferramenta nova,🔲,punctual,,,,,work,5270,,2026-09-28 13:57:02,1,IMP-20260928-135702
 TASK_0353,PROJ_0033,SEC_0147,Anotações,,punctual,,,,,work,5200,,2026-09-28 13:57:31,1,
@@ -182,5 +178,6 @@ TASK_0370,PROJ_0034,SEC_0149,"🐈 Flea and Tick Prevention: Administered topica
 TASK_0371,PROJ_0015,SEC_0015,Comprar vermífugo para todos nós.,🔲,punctual,,,,,personal,5440,,2026-09-29 13:02:06,1,
 TASK_0372,PROJ_0011,SEC_0146,"Marcar uma reunião com o Rafael Machado, para checar se já possui uma API para disponilizar dados. Colocar o Paulo na conversa",⚡,punctual,,,,Ajustes necessários,work,5450,,2026-09-29 13:38:32,1,
 TASK_0373,PROJ_0011,SEC_0146,Vamos deixar a Fran hardcoded,⚡,punctual,,,,Ajustes necessários,work,5460,,2026-09-29 13:49:44,1,
-TASK_0374,PROJ_0011,SEC_0146,Sprint planning,⚡,punctual,,,,Ajustes necessários,work,5470,,2026-09-29 13:51:53,1,
+TASK_0374,PROJ_0011,SEC_0146,Marcart Sprint planning,⚡,punctual,,,,Ajustes necessários,work,5470,,2026-09-29 13:51:53,1,
 TASK_0375,PROJ_0011,SEC_0146,Rever se estamos com uma rotina,⚡,punctual,,,,Ajustes necessários,work,5480,,2026-09-29 13:52:13,1,
+TASK_0376,PROJ_0011,SEC_0011,Bug do campo das anotações,🔲,punctual,,,,,work,5490,,2026-09-29 13:57:03,1,
