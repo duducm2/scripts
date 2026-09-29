@@ -1259,6 +1259,7 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
     }
 
     ok := false
+    confirmState := ""
     tDeadline := A_TickCount + PROMPT_PASTE_AUTO_SEND_CAP_MS
     try {
         ; Persistent Loading Indication for the whole [Y] auto-send wait/submit/confirm path.
@@ -1282,38 +1283,36 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             }
         }
 
+        confirmState := ""
         if (PromptPaste_SendRemainingMs(tDeadline) <= PROMPT_PASTE_SEND_MIN_SUBMIT_MS / 2) {
             ok := false
-        } else if (companionId != "" && PromptPaste_CompanionIsGenerating(hwnd, companionId)) {
-            ok := true
+        } else if (companionId != "") {
+            snapStatus := ""
+            sentText := AiCompanion_SnapshotComposer(hwnd, companionId, &snapStatus)
+            if (snapStatus = "ok" && Trim(sentText) = "") {
+                confirmState := "empty"
+                ok := false
+            } else {
+                PromptPaste_BusyUpdate("⏳ Sending…")
+                PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
+                PromptPaste_BusyUpdate("⏳ Confirming…")
+                confirmState := AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, 3000, snapStatus = "ok")
+                ok := (confirmState = "working")
+            }
         } else {
             PromptPaste_BusyUpdate("⏳ Sending…")
-            submitted := PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
-            if (companionId != "") {
-                PromptPaste_BusyUpdate("⏳ Confirming…")
-                ; Cap confirm — Stop button often lags; don't hold the busy bar multi-seconds.
-                confirmMs := Min(PromptPaste_SendRemainingMs(tDeadline), 1500)
-                ok := (confirmMs > 0 && PromptPaste_WaitForGenerationStarted(hwnd, companionId, confirmMs))
-                if (!ok && submitted)
-                    ok := true ; Enter/submit already fired; treat as sent if Stop not seen yet
-            } else {
-                ok := submitted
-            }
+            ok := PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
         }
     } finally {
         PromptPaste_BusyHide(0)
     }
 
-    if (companionId != "" || attachCount > 0) {
-        if (ok) {
-            try ShowCenteredOverlay_Utils("✅ Sent — AI is working", 1800, BANNER_ACCENT_SUCCESS)
-            catch {
-            }
-        } else {
-            msg := (A_TickCount >= tDeadline) ? "⚠ Send timed out (10s)" : "⚠ Send may not have started"
-            try ShowCenteredOverlay_Utils(msg, 2200, BANNER_ACCENT_ERROR)
-            catch {
-            }
+    if (confirmState != "")
+        AiCompanion_AnnounceConfirm(confirmState)
+    else if ((companionId != "" || attachCount > 0) && !ok) {
+        msg := (A_TickCount >= tDeadline) ? "⚠ Send timed out (10s)" : "⚠ Send may not have started"
+        try ShowCenteredOverlay_Utils(msg, 2200, BANNER_ACCENT_ERROR)
+        catch {
         }
     }
     return ok

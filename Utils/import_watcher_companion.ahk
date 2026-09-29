@@ -170,21 +170,25 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
     companionId := ImportWatcher_CompanionResolveTarget()
     label := ImportWatcher_CompanionLabel(companionId)
     hwnd := 0
+    submitted := false
     try {
         switch companionId {
             case "enterprise":
                 hwnd := GeminiEnterprise_NavigateFocusAndPaste(fixText, true)
+                submitted := !!hwnd
             case "copilot":
                 hwnd := CopilotWeb_NavigateFocusAndPaste(fixText, true)
+                submitted := !!hwnd
             default:
                 hwnd := GeminiNavigateFocusAndPasteFirstSnippet(fixText, false)
-                if (hwnd)
-                    try PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
+                if (hwnd) {
+                    try submitted := !!PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
                     catch {
-                        try Gemini_WaitForPromptContentAndSubmit(hwnd)
-                        catch {
-                        }
+                        try submitted := !!Gemini_WaitForPromptContentAndSubmit(hwnd)
+                        catch
+                            submitted := false
                     }
+                }
         }
     } catch as e {
         try ShowCenteredOverlay_Utils("❌ AI fix send failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
@@ -193,6 +197,8 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
         }
         return false
     }
+    if (!submitted)
+        return false
     msg := "AI fix sent to " . label
     try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
     catch {

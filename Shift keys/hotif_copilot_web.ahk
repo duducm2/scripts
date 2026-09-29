@@ -215,13 +215,15 @@ $Enter:: {
         Send "{Enter}"
         return
     }
-    Send "{Enter}"
-    SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+    hwnd := WinExist("A")
+    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => Send("{Enter}")))
+        SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
 }
 
 $^Enter:: {
-    Send "{Enter}"
-    SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+    hwnd := WinExist("A")
+    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => Send("{Enter}")))
+        SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
 }
 
 #HotIf

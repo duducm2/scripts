@@ -83,6 +83,302 @@ IsAnyAiGenerating() {
     return Cursor_HasGeneratingStopButton() || Gemini_HasGeneratingStopButton()
 }
 
+; =============================================================================
+; After Enter: prove the composer let go of the prompt and the stop control is up.
+; Returns working | held | empty | unconfirmed | unreadable.
+; snapOk false: the composer could not be read before Enter, so a blank sentText
+; is not "empty" — only a visible stop control counts, otherwise unreadable.
+; =============================================================================
+AiCompanion_IsComposerPlaceholder(text) {
+    t := Trim(text)
+    if (t = "")
+        return true
+    for p in ["Ask anything", "Ask Gemini", "Message Copilot", "Message ChatGPT", "Pergunte qualquer coisa"] {
+        if (t = p)
+            return true
+    }
+    return false
+}
+
+AiCompanion_NormalizeComposerText(text) {
+    return Trim(RegExReplace(text, "\s+", " "))
+}
+
+AiCompanion_ComposerHolds(composerText, sentText) {
+    sent := AiCompanion_NormalizeComposerText(sentText)
+    if (sent = "")
+        return false
+    cur := AiCompanion_NormalizeComposerText(composerText)
+    if (cur = "" || AiCompanion_IsComposerPlaceholder(cur))
+        return false
+    needle := SubStr(sent, 1, 80)
+    return InStr(cur, needle, false) > 0
+}
+
+AiCompanion_ReadElementText(el, &text) {
+    text := ""
+    if (!IsObject(el))
+        return false
+    got := false
+    try {
+        text := Trim(el.Value)
+        got := true
+    } catch {
+    }
+    if (text = "") {
+        try {
+            text := Trim(el.TextPattern.DocumentRange.GetText(-1))
+            got := true
+        } catch {
+        }
+    }
+    if (!got)
+        return false
+    if (AiCompanion_IsComposerPlaceholder(text))
+        text := ""
+    return true
+}
+
+; One targeted FindFirst. No FindAll, no UIA_Browser (that activates Chrome and walks the document).
+AiCompanion_FindComposerElement(root, companionId) {
+    if (!IsObject(root))
+        return 0
+    companionId := StrLower(Trim(companionId))
+    try {
+        if (companionId = "enterprise")
+            return GeminiEnterprise_FindComposer(root)
+        if (companionId = "copilot")
+            return CopilotWeb_FindComposer(root)
+        if (companionId = "chatgpt") {
+            try {
+                el := root.FindFirst({ AutomationId: "prompt-textarea" })
+                if (el)
+                    return el
+            } catch {
+            }
+            for name in ["Message ChatGPT", "Mensagem ChatGPT"] {
+                try {
+                    el := root.FindFirst({ Name: name, Type: 50004 })
+                    if (el)
+                        return el
+                } catch {
+                }
+            }
+            return 0
+        }
+        for name in GEMINI_PROMPT_FIELD_NAMES {
+            try {
+                el := root.FindFirst({ Name: name, Type: 50004 })
+                if (el)
+                    return el
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+AiCompanion_ComposerSlot(hwnd, companionId, el := 0, remember := false) {
+    static slot := { hwnd: 0, companionId: "", el: 0, tick: 0 }
+    companionId := StrLower(Trim(companionId))
+    if (remember) {
+        slot.hwnd := hwnd
+        slot.companionId := companionId
+        slot.el := el
+        slot.tick := A_TickCount
+        return el
+    }
+    if (!IsObject(slot.el) || slot.hwnd != hwnd || slot.companionId != companionId)
+        return 0
+    if ((A_TickCount - slot.tick) > 2500)
+        return 0
+    return slot.el
+}
+
+; Value only. TextPattern.GetText walks the element and is reserved for the one-time snapshot.
+AiCompanion_ReadElementValue(el, &text) {
+    text := ""
+    if (!IsObject(el))
+        return false
+    try {
+        text := Trim(el.Value)
+        if (AiCompanion_IsComposerPlaceholder(text))
+            text := ""
+        return true
+    } catch {
+    }
+    return false
+}
+
+AiCompanion_StopOnRoot(root, companionId) {
+    if (!IsObject(root))
+        return false
+    companionId := StrLower(Trim(companionId))
+    try {
+        if (companionId = "enterprise")
+            return !!GeminiEnterprise_FindStopButton(root)
+        if (companionId = "copilot")
+            return !!CopilotWeb_FindStopGenerating(root)
+        if (companionId = "chatgpt") {
+            for n in ["Stop streaming", "Interromper transmissão"] {
+                try {
+                    if (root.FindFirst({ Name: n, Type: 50000 }))
+                        return true
+                } catch {
+                }
+            }
+            return false
+        }
+        return Gemini_HasGeneratingStopButtonForUia(root)
+    } catch {
+    }
+    return false
+}
+
+; "ok" and text (maybe blank) when the composer element was read; "missing" otherwise.
+AiCompanion_ReadComposer(hwnd, companionId, &text) {
+    text := ""
+    companionId := StrLower(Trim(companionId))
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return "missing"
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (!IsObject(root))
+            return "missing"
+        pf := AiCompanion_ComposerSlot(hwnd, companionId)
+        if (!pf)
+            pf := AiCompanion_FindComposerElement(root, companionId)
+        if (!pf || !AiCompanion_ReadElementText(pf, &text))
+            return "missing"
+        AiCompanion_ComposerSlot(hwnd, companionId, pf, true)
+        return "ok"
+    } catch {
+    }
+    return "missing"
+}
+
+AiCompanion_SnapshotComposer(hwnd, companionId, &status) {
+    text := ""
+    status := AiCompanion_ReadComposer(hwnd, companionId, &text)
+    return text
+}
+
+AiCompanion_IsGenerating(hwnd, companionId) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        return AiCompanion_StopOnRoot(root, companionId)
+    } catch {
+    }
+    return false
+}
+
+; Runs only after a tracked Enter. One composer lookup, then at most a few stop-button
+; checks on that same window. Never UIA_Browser, never FindAll, never a background timer.
+; A prompt still in the composer returns in ~200ms. Hard cap is 1s even if timeoutMs is higher.
+AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, timeoutMs := 1000, snapOk := true) {
+    companionId := StrLower(Trim(companionId))
+    if (companionId = "" || !hwnd || !WinExist("ahk_id " hwnd))
+        return "unreadable"
+    if (snapOk && Trim(sentText) = "")
+        return "empty"
+    if (!snapOk)
+        return "unreadable"
+    if (timeoutMs > 1000)
+        timeoutMs := 1000
+    if (timeoutMs < 200)
+        timeoutMs := 200
+    tStart := A_TickCount
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        root := 0
+    if (!IsObject(root))
+        return "unreadable"
+    composer := AiCompanion_ComposerSlot(hwnd, companionId)
+    if (!composer)
+        composer := AiCompanion_FindComposerElement(root, companionId)
+    if (!composer)
+        return "unreadable"
+    cur := ""
+    if (!AiCompanion_ReadElementValue(composer, &cur)) {
+        if (!AiCompanion_ReadElementText(composer, &cur))
+            return "unreadable"
+    }
+    if (AiCompanion_ComposerHolds(cur, sentText)) {
+        Sleep 200
+        cur := ""
+        if (!AiCompanion_ReadElementValue(composer, &cur) || AiCompanion_ComposerHolds(cur, sentText))
+            return "held"
+    }
+    deadline := tStart + timeoutMs
+    loop {
+        if (AiCompanion_StopOnRoot(root, companionId))
+            return "working"
+        if (A_TickCount >= deadline)
+            break
+        Sleep 200
+    }
+    return "unconfirmed"
+}
+
+AiCompanion_AnnounceConfirm(state) {
+    global BANNER_ACCENT_SUCCESS, BANNER_ACCENT_ERROR
+    switch state {
+        case "working":
+            msg := "Prompt received — AI is working"
+            color := BANNER_ACCENT_SUCCESS
+            ms := 1800
+        case "held":
+            msg := "Prompt still in the composer"
+            color := BANNER_ACCENT_ERROR
+            ms := 2200
+        case "empty":
+            msg := "Composer was empty"
+            color := BANNER_ACCENT_ERROR
+            ms := 2200
+        case "unconfirmed":
+            msg := "No stop control — not confirmed"
+            color := BANNER_ACCENT_ERROR
+            ms := 2200
+        default:
+            msg := "Could not read this companion"
+            color := BANNER_ACCENT_ERROR
+            ms := 2200
+    }
+    try ShowCenteredOverlay_Utils(msg, ms, color)
+    catch {
+    }
+    return state
+}
+
+; True only when the stop control is visible. Announces every result.
+AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapOk := true) {
+    if (snapOk && Trim(sentText) = "") {
+        AiCompanion_AnnounceConfirm("empty")
+        return false
+    }
+    state := AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, 3000, snapOk)
+    AiCompanion_AnnounceConfirm(state)
+    return state = "working"
+}
+
+; Snapshot, skip a blank composer, call sendFn, then track. True only when working.
+AiCompanion_SendAndConfirm(hwnd, companionId, sendFn) {
+    snapStatus := ""
+    sentText := AiCompanion_SnapshotComposer(hwnd, companionId, &snapStatus)
+    if (snapStatus = "ok" && Trim(sentText) = "") {
+        AiCompanion_AnnounceConfirm("empty")
+        return false
+    }
+    try sendFn.Call()
+    catch {
+    }
+    return AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapStatus = "ok")
+}
+
 PlayAiWorkingStateSound(isWorking) {
     try {
         if (isWorking)

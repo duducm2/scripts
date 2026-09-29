@@ -183,42 +183,42 @@ MoveMouseToCenter(hwnd) {
 ; Uses size and motion for attention capture, minimizing GPU usage.
 ; ---------------------------------------------------------------------------
 ShowCursorFlash(cx, cy) {
-    static flashGui := 0, lastFlashTick := 0
-    ; Prevent duplicate flashes in quick succession
-    if (A_TickCount - lastFlashTick < 300)
+    static flashGui := 0, lastCx := "", lastCy := "", lastFlashTick := 0
+    static timerHide := 0, timerShow := 0, timerEnd := 0
+    ; Configuration: Large red square for visibility
+    static size := 250
+    static alpha := 220
+    static bgColor := "DF2935"
+
+    ; Same spot within 300ms is a duplicate (hotkey + foreground timer).
+    ; A new center always restarts the blink so the next cycled window is marked.
+    sameSpot := (cx = lastCx && cy = lastCy)
+    if (sameSpot && (A_TickCount - lastFlashTick) < 300)
         return
+    lastCx := cx
+    lastCy := cy
     lastFlashTick := A_TickCount
 
-    ; Clean up any previous flash that might still be displayed
-    if (flashGui && IsObject(flashGui)) {
-        try flashGui.Destroy()
-        flashGui := 0
-    }
+    if (timerHide)
+        SetTimer(timerHide, 0)
+    if (timerShow)
+        SetTimer(timerShow, 0)
+    if (timerEnd)
+        SetTimer(timerEnd, 0)
 
-    ; Configuration: Large red square with border for visibility
-    size := 250             ; 120×120 pixel square
-    borderWidth := 3        ; 3-pixel border for enhanced visibility
-    bgColor := "DF2935"     ; Bright red (colorblind-friendly)
-    borderColor := "FFFFFF" ; White border
-    alpha := 220            ; Semi-transparent
+    x := cx - (size // 2)
+    y := cy - (size // 2)
 
-    ; Create the flash indicator GUI (fully guarded so errors never surface to user)
+    ; Reuse one always-on-top GUI. Recreate only if the previous one is gone.
     try {
-        flashGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
-        flashGui.BackColor := bgColor
-
-        ; Add border by creating a slightly larger outer GUI
-        flashGui.Add("Text", "x0 y0 w" size " h" size " Background" bgColor)
-
-        ; Position centered on cursor
-        x := cx - (size // 2)
-        y := cy - (size // 2)
-
-        ; Show first flash
+        if !(flashGui && IsObject(flashGui)) {
+            flashGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 -DPIScale")
+            flashGui.BackColor := bgColor
+            flashGui.Add("Text", "x0 y0 w" size " h" size " Background" bgColor)
+        }
         flashGui.Show("NA x" x " y" y " w" size " h" size)
         WinSetTransparent(alpha, flashGui.Hwnd)
     } catch {
-        ; Best-effort cleanup; avoid throwing from visual-only helper
         try {
             if (flashGui && IsObject(flashGui))
                 flashGui.Destroy()
@@ -227,10 +227,13 @@ ShowCursorFlash(cx, cy) {
         return
     }
 
-    ; Schedule flash animation: hide after 150ms, show again after 250ms, destroy after 400ms
-    SetTimer(() => HideFlash(flashGui), -150)
-    SetTimer(() => ShowFlash(flashGui, alpha), -250)
-    SetTimer(() => DestroyFlash(flashGui), -400)
+    ; Same blink: on, hide at 150ms, show at 250ms, hide at 400ms. GUI stays for the next move.
+    timerHide := HideFlash.Bind(flashGui)
+    timerShow := ShowFlash.Bind(flashGui, alpha)
+    timerEnd := HideFlash.Bind(flashGui)
+    SetTimer(timerHide, -150)
+    SetTimer(timerShow, -250)
+    SetTimer(timerEnd, -400)
 }
 
 HideFlash(gui) {

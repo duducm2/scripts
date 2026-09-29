@@ -761,8 +761,9 @@ Enter:: {
         return
     }
 
-    ; Send Enter key to submit the prompt
-    Send "{Enter}"
+    hwnd := WinExist("A")
+    if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Send("{Enter}")))
+        return
 
     ; Phase 3: non-blocking daemon watch or legacy blocking monitor
     if (USE_DAEMON_MONITOR_GEMINI) {
@@ -774,8 +775,9 @@ Enter:: {
 
 ; Control + Enter : Send Enter and monitor for response completion
 ^Enter:: {
-    ; Send Enter key to submit the prompt
-    Send "{Enter}"
+    hwnd := WinExist("A")
+    if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Send("{Enter}")))
+        return
 
     ; Phase 3: non-blocking daemon watch or legacy blocking monitor
     if (USE_DAEMON_MONITOR_GEMINI) {

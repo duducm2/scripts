@@ -361,6 +361,15 @@ CopilotWeb_FindSendButton(uia) {
         matchmode: "Substring", ControlType: "Button" }])
 }
 
+CopilotWeb_SubmitComposer(hwnd) {
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        CopilotWeb_TrySubmit(uia)
+    } catch {
+        Send "{Enter}"
+    }
+}
+
 CopilotWeb_TrySubmit(uia) {
     if (!IsObject(uia))
         return false
@@ -606,12 +615,8 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
     CopilotWeb_PlayFocusedChime()
     if (autoSubmit) {
         Sleep 1000
-        try {
-            uia := UIA_Browser("ahk_id " copilotHwnd)
-            CopilotWeb_TrySubmit(uia)
-        } catch {
-            Send "{Enter}"
-        }
+        if (!AiCompanion_SendAndConfirm(copilotHwnd, "copilot", (*) => CopilotWeb_SubmitComposer(copilotHwnd)))
+            return 0
     }
     if (copilotHwnd)
         CopilotWeb_CacheHwnd(copilotHwnd)

@@ -24,40 +24,15 @@ CycleWindowsOnMonitor(order) {
         return
     }
 
-    ; If the currently active window is on a **different** monitor, reset the cycle
-    ; so we start from the topmost visible window instead of cycling to the next.
     hwndCur := 0
-    try {
-        hwndCur := WinExist("A")
-    } catch {
-        ; No active window available, will reset cycle
-        hwndCur := 0
-    }
-    hMonCur := 0
-    if (hwndCur) {
-        try {
-            hMonCur := DllCall("MonitorFromWindow", "ptr", hwndCur, "uint", 2, "ptr") ; nearest monitor
-        } catch {
-            hMonCur := 0
-        }
-    }
-
-    ; Get handle for the target monitor.
-    MonitorGet idx, &l, &t, &r, &b
-    cx := (l + r) // 2, cy := (t + b) // 2
-    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
-    hMonTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
-
-    if (hMonCur != hMonTarget) {
-        ; Coming from another monitor – reset cycle index to 0 so first pick is topmost
-        if (g_WindowCycleIndices.Has(idx))
-            g_WindowCycleIndices.Delete(idx)
-    }
-
-    ; Determine starting position: 1 past the currently-active window (if it belongs to this
-    ; monitor) or the very first window otherwise.  This avoids stale indices and always bases
-    ; cycling on the window that the user is actually looking at.
-    activeIdx := 0
+    try hwndCur := WinExist("A")
+    catch hwndCur := 0
+        ; Next window is the one after whatever is actually in front, when that
+        ; window is on this monitor. If it is not (focus still on another monitor,
+        ; or the last target never took focus), advance the stored index. Deleting
+        ; that index and always restarting at windows[1] left the cycle stuck on
+        ; the first window until a trip to another monitor made activation stick.
+        activeIdx := 0
     loop windows.Length {
         if (windows[A_Index].hwnd = hwndCur) {
             activeIdx := A_Index
@@ -65,12 +40,14 @@ CycleWindowsOnMonitor(order) {
         }
     }
 
-    pos := activeIdx ? activeIdx + 1 : 1
-    if (pos > windows.Length)
+    if (activeIdx)
+        pos := activeIdx + 1
+    else if (g_WindowCycleIndices.Has(idx))
+        pos := g_WindowCycleIndices[idx] + 1
+    else
         pos := 1
-
-    ; Remember the new position for subsequent cycles (only if we stayed on the same monitor).
-    g_WindowCycleIndices.Set(idx, pos)
+    if (pos > windows.Length || pos < 1)
+        pos := 1
 
     ; Ensure we don't stay on the same window if hotkey is pressed rapidly.
     startPos := pos
@@ -87,21 +64,60 @@ CycleWindowsOnMonitor(order) {
             break
     }
 
+    g_WindowCycleIndices.Set(idx, pos)
     target := windows[pos]
     try WinActivate "ahk_id " target.hwnd
     catch {
         ShowNotification_WM("Error: Target window not found.")
         return
     }
-    ; Wait until the window is active to avoid race conditions during rapid cycling
-    WinWaitActive "ahk_id " target.hwnd, , 0.3
-    ; The MonitorActiveWindow timer will centre the cursor automatically, so avoid
-    ; calling it here to prevent duplicate halo flashes.
-    Sleep 100  ; small delay for animation/focus stability
+    ; Short wait, then one foreground nudge if the target did not take focus
+    ; (common when the previous foreground is on another monitor).
+    if !WinWaitActive("ahk_id " target.hwnd, , 0.05)
+        Cycle_ForceForeground(target.hwnd)
+    WinWaitActive "ahk_id " target.hwnd, , 0.2
+    ; Draw the square now. MoveMouseToCenter ignores a second call for this hwnd
+    ; within 500ms, so the foreground timer does not flash again.
+    MoveMouseToCenter(target.hwnd)
 
-    keepMon := FocusMode_ReadKeepMonitorFromFile()
+    keepMon := Cycle_CachedKeepMonitor()
     if (keepMon && idx != keepMon)
         FocusMode_RequestDisableCrossProcess()
+}
+
+; Focus-mode sentinel lives under A_ScriptDir (often Google Drive). Repeat
+; presses of the cycle hotkey reuse the last read for about one second.
+Cycle_CachedKeepMonitor() {
+    static lastTick := 0, lastMon := 0
+    if (lastTick && (A_TickCount - lastTick) < 1000)
+        return lastMon
+    lastMon := FocusMode_ReadKeepMonitorFromFile()
+    lastTick := A_TickCount
+    return lastMon
+}
+
+; WinActivate often fails while the foreground window is on another monitor.
+; Attach this thread to that window's thread for one SetForegroundWindow call.
+Cycle_ForceForeground(hwnd) {
+    try {
+        fg := DllCall("GetForegroundWindow", "ptr")
+        if (!hwnd || fg = hwnd)
+            return
+        curTid := DllCall("GetCurrentThreadId", "UInt")
+        fgTid := DllCall("GetWindowThreadProcessId", "ptr", fg, "ptr", 0, "UInt")
+        tgtTid := DllCall("GetWindowThreadProcessId", "ptr", hwnd, "ptr", 0, "UInt")
+        if (fgTid && fgTid != curTid)
+            DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 1)
+        if (tgtTid && tgtTid != curTid)
+            DllCall("AttachThreadInput", "UInt", curTid, "UInt", tgtTid, "Int", 1)
+        DllCall("SetForegroundWindow", "ptr", hwnd)
+        DllCall("BringWindowToTop", "ptr", hwnd)
+        if (fgTid && fgTid != curTid)
+            DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 0)
+        if (tgtTid && tgtTid != curTid)
+            DllCall("AttachThreadInput", "UInt", curTid, "UInt", tgtTid, "Int", 0)
+    } catch {
+    }
 }
 
 GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {
@@ -211,20 +227,19 @@ GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {
             right := NumGet(rect, 8, "int")
             bottom := NumGet(rect, 12, "int")
 
-            ; --- visibility heuristic -------------------------------------
-            centerX := (left + right) // 2
-            centerY := (top + bottom) // 2
-
+            ; Skip only a window fully inside one already accepted (higher z-order).
+            ; A center-point test dropped windows that still stuck out, so they
+            ; never appeared in the cycle until z-order changed.
             covered := false
             for win in visible {
-                if (centerX >= win.left && centerX <= win.right
-                    && centerY >= win.top && centerY <= win.bottom) {
+                if (left >= win.left && right <= win.right
+                    && top >= win.top && bottom <= win.bottom) {
                     covered := true
                     break
                 }
             }
             if (covered)
-                continue            ; completely concealed by a higher window
+                continue            ; fully inside a higher window
 
             ; Otherwise, accept it as visible
             visible.Push({ hwnd: hwnd, left: left, top: top, right: right,

@@ -37,16 +37,17 @@
     ClipWait 1
     Send "^v"
     Sleep 100
-    Send "{Enter}"
-    Sleep 100
+    hwnd := GetChatGPTWindowHwnd()
+    if (!hwnd)
+        hwnd := WinExist("A")
+    if (!AiCompanion_SendAndConfirm(hwnd, "chatgpt", (*) => Send("{Enter}"))) {
+        A_Clipboard := oldClip
+        return
+    }
     A_Clipboard := oldClip
 
-    ; Step 3: Alt+Tab to previous window
     Send "!{Tab}"
-
-    ; After sending, show loading for Stop streaming
-    buttonNames := ["Stop streaming", "Interromper transmissÃ£o"]
-    WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, "Waiting for response...")
+    WaitForButtonAndShowSmallLoading_ChatGPT(["Stop streaming", "Interromper transmissão"], "Waiting for response...")
 }
 
 ; Shift + C: Copy last code block
@@ -69,25 +70,19 @@
 
 ; Function to submit ChatGPT message and show AI banner
 SubmitChatGPTMessage() {
-    ; --- Button Names (EN/PT) ---
-    pt_stopStreamingName := "Interromper transmissão"
-    en_stopStreamingName := "Stop streaming"
-    currentStopStreamingName := IS_WORK_ENVIRONMENT ? pt_stopStreamingName : en_stopStreamingName
-
-    ; Step 1: Send Escape to ensure composer is focused
+    hwnd := GetChatGPTWindowHwnd()
+    if (!hwnd)
+        hwnd := WinExist("A")
+    ; Escape focuses the composer before the snapshot, so a blank field is not a false send.
     SendEscape()
     Sleep 100
-    ; Step 2: Send Enter to submit the prompt
-    Send "{Enter}"
-    Sleep 100
-    ; Step 3: Alt+Tab to previous window
+    if (!AiCompanion_SendAndConfirm(hwnd, "chatgpt", (*) => Send("{Enter}")))
+        return
     Send "!{Tab}"
     Sleep 300
-    ; Step 4: Show banner immediately (debounced by helper), then wait for completion to auto-hide and chime
-    ShowSmallLoadingIndicator_ChatGPT("AI is respondingâ€¦")
-    ; Use infinite timeout so the banner persists for long responses
-    WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is respondingâ€¦",
-    0)
+    ShowSmallLoadingIndicator_ChatGPT("AI is responding...")
+    WaitForButtonAndShowSmallLoading_ChatGPT(["Stop streaming", "Interromper transmissão", "Stop", "Interromper"],
+        "AI is responding...", 0)
 }
 
 #HotIf
