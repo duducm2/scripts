@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-; On while diagnosing Maps capture on the work PC. Turn off after the failing run is understood.
+; On while diagnosing Maps capture. Each Shift+P replaces the environment log under assets/data/.
 global MAPS_CAPTURE_DEBUG := true
 global g_MapsDebugSession := ""
 global g_MapsDebugSeq := 0
@@ -18,6 +18,21 @@ Maps_DebugEnabled() {
     return IsSet(MAPS_CAPTURE_DEBUG) && MAPS_CAPTURE_DEBUG
 }
 
+Maps_DebugIsWork() {
+    global IS_WORK_ENVIRONMENT
+    try {
+        return IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
+    } catch {
+        return false
+    }
+}
+
+; Tracked file so a work run can be pushed and pulled. Same split as quick_update_debug_*.txt.
+Maps_DebugLogPath() {
+    name := Maps_DebugIsWork() ? "maps_capture_debug_work.txt" : "maps_capture_debug_personal.txt"
+    return A_ScriptDir "\assets\data\" name
+}
+
 Maps_DebugBegin() {
     global g_MapsDebugSession, g_MapsDebugSeq, g_MapsDebugMethod, g_MapsDebugAttempt, g_MapsDebugKept
     g_MapsDebugSession := A_Now
@@ -25,6 +40,22 @@ Maps_DebugBegin() {
     g_MapsDebugMethod := ""
     g_MapsDebugAttempt := 0
     g_MapsDebugKept := Map()
+    if !Maps_DebugEnabled()
+        return
+    path := Maps_DebugLogPath()
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    try FileDelete(path)
+    catch {
+    }
+    Maps_DebugLog("machine", Map(
+        "computer", A_ComputerName,
+        "user", A_UserName,
+        "work", Maps_DebugIsWork() ? "yes" : "no",
+        "scriptDir", A_ScriptDir,
+        "log", path
+    ))
 }
 
 Maps_DebugJsonEscape(s) {
@@ -70,7 +101,7 @@ Maps_DebugLog(step, data := "") {
             . '"step":"' Maps_DebugJsonEscape(step) '",'
             . '"data":' dataJson
             . '}'
-        FileAppend(line "`n", A_ScriptDir "\debug-maps-capture.log", "UTF-8")
+        FileAppend(line "`n", Maps_DebugLogPath(), "UTF-8")
     } catch {
     }
 }
