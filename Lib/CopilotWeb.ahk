@@ -433,11 +433,18 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
     return false
 }
 
+; Release chord modifiers without AutoHotkey pressing them again afterward.
+; A normal Send restores modifiers it still thinks are down. One {Blind} send
+; releases them and then types the payload, so a second Send cannot press Control again.
+ChordSend_WithoutRestoringModifiers(keys := "") {
+    SendInput "{Blind}{vk11 up}{vkA2 up}{vkA3 up}{vk12 up}{vkA4 up}{vkA5 up}{vk10 up}{vkA0 up}{vkA1 up}{vk5B up}{vk5C up}" keys
+}
+
 ; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).
 ; Do not use {Blind}: it re-injects a physically held Shift+letter into the focused field.
 CopilotWeb_ReturnToComposer() {
     Sleep 40
-    Send "d{Backspace}"
+    ChordSend_WithoutRestoringModifiers("d{Backspace}")
 }
 
 CopilotWeb_WaitForComposerDiscoverable(uia, timeoutMs := 500) {
@@ -1907,7 +1914,7 @@ CopilotWeb_SelectModelByName(modelName, uia := 0, hwnd := 0) {
     }
     if (item && CopilotWeb_ClickUiaElement(item))
         return true
-    Send "{Escape}"
+    ChordSend_WithoutRestoringModifiers("{Escape}")
     CopilotWeb_ShowErrorAfterBanner("❌ Model not found: " . modelName)
     return false
 }

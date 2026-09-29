@@ -310,6 +310,8 @@ AiCompanionModels_IsGeminiThinkingToggleName(modelName) {
 AiCompanionModels_FocusHwnd(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
+    ; Drop the triggering chord before focus moves, so its key-up is not lost.
+    ChordSend_WithoutRestoringModifiers()
     try {
         if WinActive("ahk_id " hwnd)
             return true

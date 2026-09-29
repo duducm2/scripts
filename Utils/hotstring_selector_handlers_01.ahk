@@ -90,6 +90,8 @@ HandleHotstringChar(char) {
         ; Same as Hotstrings: return focus to the window that had selection before the selector.
         UtilitySelector_RestorePreviousHwnd()
         Sleep 150
+        ; Drop a swallowed Win/Alt/Ctrl chord before the macro sends any keys.
+        UtilityShortcuts_ReleaseStuckModifiers()
         try fn()
         catch {
         }

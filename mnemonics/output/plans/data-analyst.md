@@ -14,6 +14,8 @@
 
 - [ ] data bricks
 
+- [ ] Fact tables and dimension tables
+
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
 ### 1. Interface and Navigation
