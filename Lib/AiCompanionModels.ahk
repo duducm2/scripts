@@ -306,7 +306,23 @@ AiCompanionModels_IsGeminiThinkingToggleName(modelName) {
         || RegExMatch(modelName, "i)extended\s*thinking|thinking\s*level"))
 }
 
-; Apply a model by exact UIA-visible name for the active companion window.
+; Bring a companion Chrome window forward so model-menu UIA and composer keystrokes hit it.
+AiCompanionModels_FocusHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        if WinActive("ahk_id " hwnd)
+            return true
+    } catch {
+    }
+    try WinActivate("ahk_id " hwnd)
+    catch {
+        return false
+    }
+    return !!WinWaitActive("ahk_id " hwnd, , 2)
+}
+
+; Apply a model by exact UIA-visible name for the companion window (focused first).
 AiCompanionModels_Apply(companion, modelName) {
     modelName := Trim(modelName)
     if (modelName = "")
@@ -375,16 +391,31 @@ AiCompanionModels_ApplyGemini(modelName) {
 }
 
 AiCompanionModels_ApplyEnterprise(modelName) {
+    hwnd := 0
+    try hwnd := GetGeminiEnterpriseWindowHwnd()
+    catch {
+        hwnd := 0
+    }
+    ; Global Q/M can run while another app is focused. Menu UIA is on this Chrome hwnd.
+    if (!hwnd || !AiCompanionModels_FocusHwnd(hwnd))
+        return false
     ok := GeminiEnterprise_RunWithBusyBanner("⏳ Selecting " . modelName . "… Don't move the mouse", (*) =>
-        GeminiEnterprise_SelectModelByName(modelName))
+        GeminiEnterprise_SelectModelByName(modelName, hwnd), hwnd)
     if (ok)
         GeminiEnterprise_ReturnToComposer()
     return !!ok
 }
 
 AiCompanionModels_ApplyCopilot(modelName) {
+    hwnd := 0
+    try hwnd := GetCopilotWebWindowHwnd()
+    catch {
+        hwnd := 0
+    }
+    if (!hwnd || !AiCompanionModels_FocusHwnd(hwnd))
+        return false
     ok := CopilotWeb_RunWithBusyBanner("⏳ Selecting " . modelName . "… Don't move the mouse", (*) =>
-        CopilotWeb_SelectModelByName(modelName))
+        CopilotWeb_SelectModelByName(modelName, 0, hwnd), hwnd)
     CopilotWeb_ReturnToComposer()
     return !!ok
 }
@@ -400,15 +431,28 @@ AiCompanionModels_SelectRole(companion, role) {
         return false
     }
     if (companion = AI_COMPANION_ENTERPRISE) {
-        if (GeminiEnterprise_IsModelSelected(modelName)) {
-            GeminiEnterprise_ReturnToComposer()
+        entHwnd := 0
+        try entHwnd := GetGeminiEnterpriseWindowHwnd()
+        catch {
+            entHwnd := 0
+        }
+        entUia := entHwnd ? GeminiEnterprise_ReadRootFromHwnd(entHwnd) : 0
+        if (GeminiEnterprise_IsModelSelected(modelName, entUia)) {
+            if (entHwnd && WinActive("ahk_id " entHwnd))
+                GeminiEnterprise_ReturnToComposer()
             return true
         }
     } else if (companion = AI_COMPANION_COPILOT) {
-        root := CopilotWeb_GetActiveUia()
+        copHwnd := 0
+        try copHwnd := GetCopilotWebWindowHwnd()
+        catch {
+            copHwnd := 0
+        }
+        root := copHwnd ? CopilotWeb_ReadRootFromHwnd(copHwnd) : CopilotWeb_GetActiveUia()
         btn := CopilotWeb_FindModelSelectorButton(root)
         if (btn && CopilotWeb_ModelLabelMatches(CopilotWeb_GetModelSelectorLabel(btn), modelName, role)) {
-            CopilotWeb_ReturnToComposer()
+            if (copHwnd && WinActive("ahk_id " copHwnd))
+                CopilotWeb_ReturnToComposer()
             return true
         }
     } else if (companion = AI_COMPANION_GEMINI) {

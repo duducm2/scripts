@@ -1878,11 +1878,13 @@ CopilotWeb_WaitForNamedModelMenuItem(hwnd, modelName, timeoutMs := 0) {
 }
 
 ; Select any Copilot web model by UIA-visible name (opens model menu if needed).
-CopilotWeb_SelectModelByName(modelName, uia := 0) {
+; hwnd: companion Chrome window. Defaults to the foreground window (in-app Shift+Q / Shift+M).
+CopilotWeb_SelectModelByName(modelName, uia := 0, hwnd := 0) {
     modelName := Trim(modelName)
     if (modelName = "")
         return false
-    hwnd := WinExist("A")
+    if (!hwnd)
+        hwnd := WinExist("A")
     if (!uia)
         uia := CopilotWeb_GetBoundUia(hwnd)
     if (!IsObject(uia))
