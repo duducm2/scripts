@@ -281,6 +281,18 @@ GlobalAICompanionSelectRole(role) {
     return ok
 }
 
+; Macros list Q/M — live Shift+L Fast/Deep name for the resolved companion.
+AICompanionRoleMacroTitle(role) {
+    id := GlobalAICompanionModelsId()
+    name := (role = "fast") ? AiCompanionModels_GetFast(id) : AiCompanionModels_GetDeep(id)
+    if (Trim(name) = "")
+        name := "(not set — Shift+L)"
+    label := AiCompanionModels_DisplayName(id)
+    if (role = "fast")
+        return "⚡ Quick — " . label . ": " . name
+    return "🔄 Deep — " . label . ": " . name
+}
+
 MacroAICompanionQuickModel(*) {
     return GlobalAICompanionSelectRole("fast")
 }

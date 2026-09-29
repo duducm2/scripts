@@ -122,7 +122,12 @@ UtilitySelector_MacroRows() {
         funcToChar[fn] := c
     for macro in g_Macros {
         ch := funcToChar.Has(macro.func) ? funcToChar[macro.func] : ""
-        rows.Push({ char: ch, title: macro.title, func: macro.func })
+        title := macro.title
+        if (ch = "q")
+            title := AICompanionRoleMacroTitle("fast")
+        else if (ch = "m")
+            title := AICompanionRoleMacroTitle("deep")
+        rows.Push({ char: ch, title: title, func: macro.func })
     }
     return rows
 }
