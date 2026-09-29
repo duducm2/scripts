@@ -443,7 +443,7 @@ InitMacros() {
     RegisterMacro(EmailNote_Create, "📧 Email note (both inboxes)", "o")
     RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
     ; Toggle Sound
-    RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
+    RegisterMacro(ToggleSoundState, "🔊 Toggle AutoHotkey mute (volume mixer)")
 }
 
 InitMacros()

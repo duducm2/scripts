@@ -72,21 +72,25 @@ ScriptMessageBeep(type := 0xFFFFFFFF) {
     }
 }
 
-; Toggle sound state and show visual feedback
+; Toggle AutoHotkey mute in the Windows volume mixer (the per-app speaker icon).
+; Keeps SoundEnabled in step so script chimes follow that same mute.
 ToggleSoundState() {
     settingsFile := A_ScriptDir . "\assets\data\settings.ini"
-    currentState := IsSoundEnabled()
-    newState := currentState ? "0" : "1"
-
-    ; Update INI file
-    IniWrite(newState, settingsFile, "Settings", "SoundEnabled")
-
-    ; Show visual feedback
-    if (newState = "1") {
-        ShowCenteredOverlay_Utils("🔊 Sound: ON", 2000, BANNER_ACCENT_INTERMEDIATE)
-    } else {
-        ShowCenteredOverlay_Utils("🔇 Sound: OFF", 2000, BANNER_ACCENT_INTERMEDIATE)
+    state := AutoHotkeyAudioSessionsMuteState()
+    if (state = "")
+        wantMute := IsSoundEnabled()
+    else
+        wantMute := (state = "unmuted")
+    n := SetAutoHotkeyAudioSessionsMute(wantMute)
+    if (n = 0 && state != "") {
+        ShowCenteredOverlay_Utils("❌ Could not change AutoHotkey mute", 2000, BANNER_ACCENT_ERROR)
+        return
     }
+    IniWrite(wantMute ? "0" : "1", settingsFile, "Settings", "SoundEnabled")
+    if (wantMute)
+        ShowCenteredOverlay_Utils("🔇 AutoHotkey muted", 2000, BANNER_ACCENT_INTERMEDIATE)
+    else
+        ShowCenteredOverlay_Utils("🔊 AutoHotkey unmuted", 2000, BANNER_ACCENT_INTERMEDIATE)
 }
 
 ; =============================================================================

@@ -31,7 +31,7 @@ GetAudioSessionProcessId(sessionObj) {
     }
 }
 
-; ISimpleAudioVolume: SetMasterVolume = slot 3, GetMasterVolume = slot 4 (after IUnknown).
+; ISimpleAudioVolume: SetMasterVolume = 3, GetMasterVolume = 4, SetMute = 5, GetMute = 6 (after IUnknown).
 ; Primary: QI session -> ISimpleAudioVolume. Fallback: GetGroupingParam (IAudioSessionControl slot 8) +
 ; IAudioSessionManager::GetSimpleAudioVolume (slot 4) — QI from enumerator often does not expose ISimpleAudioVolume on Win10/11.
 WASAPI_SetSessionScalar(sessionObj, scalar, mgr := 0) {
@@ -59,6 +59,54 @@ WASAPI_SetSessionScalar(sessionObj, scalar, mgr := 0) {
             return false
         vol := ComValue(13, pVol)
         ComCall(3, vol, "Float", scalar)
+        return true
+    } catch {
+        return false
+    }
+}
+
+WASAPI_SimpleAudioVolume(sessionObj, mgr := 0) {
+    try {
+        vol := ComObjQuery(sessionObj, WASAPI_IID_ISimpleAudioVolume)
+        if vol
+            return vol
+    } catch {
+    }
+    if !mgr
+        return 0
+    try {
+        guidBuf := Buffer(16, 0)
+        ComCall(8, sessionObj, "Ptr", guidBuf.Ptr)
+        pVol := 0
+        ComCall(4, mgr, "Ptr", guidBuf.Ptr, "UInt", 0, "Ptr*", &pVol := 0)
+        if !pVol
+            return 0
+        return ComValue(13, pVol)
+    } catch {
+        return 0
+    }
+}
+
+WASAPI_SetSessionMute(sessionObj, mute, mgr := 0) {
+    vol := WASAPI_SimpleAudioVolume(sessionObj, mgr)
+    if !vol
+        return false
+    try {
+        ComCall(5, vol, "Int", mute ? 1 : 0, "Ptr", 0)
+        return true
+    } catch {
+        return false
+    }
+}
+
+WASAPI_GetSessionMute(sessionObj, &outMute, mgr := 0) {
+    vol := WASAPI_SimpleAudioVolume(sessionObj, mgr)
+    if !vol
+        return false
+    try {
+        muted := 0
+        ComCall(6, vol, "Int*", &muted := 0)
+        outMute := (muted != 0)
         return true
     } catch {
         return false
@@ -262,6 +310,121 @@ ApplyAutoHotkeyAudioSessionsVolumePercent(percent) {
     }
     try ObjRelease(enum)
     return n
+}
+
+; Mute or unmute every playback session whose process name contains "AutoHotkey".
+; Same control as the speaker icon on the AutoHotkey row in the Windows volume mixer.
+; Returns the number of sessions updated.
+SetAutoHotkeyAudioSessionsMute(mute) {
+    mgr := GetDefaultSessionManager()
+    if !mgr
+        return 0
+    pEnum := 0
+    try ComCall(6, mgr, "Ptr*", &pEnum := 0)
+    catch {
+        return 0
+    }
+    if !pEnum
+        return 0
+    enum := ComValue(13, pEnum)
+    count := 0
+    try ComCall(3, enum, "Int*", &count := 0)
+    catch {
+        try ObjRelease(enum)
+        return 0
+    }
+    n := 0
+    loop count {
+        idx := A_Index - 1
+        pSess := 0
+        try ComCall(4, enum, "Int", idx, "Ptr*", &pSess := 0)
+        catch {
+            continue
+        }
+        if !pSess
+            continue
+        sess := ComValue(13, pSess)
+        sessPid := GetAudioSessionProcessId(sess)
+        if !sessPid {
+            try ObjRelease(sess)
+            continue
+        }
+        procName := ""
+        try procName := ProcessGetName(sessPid)
+        catch {
+            try ObjRelease(sess)
+            continue
+        }
+        if !InStr(StrLower(procName), "autohotkey") {
+            try ObjRelease(sess)
+            continue
+        }
+        if WASAPI_SetSessionMute(sess, mute, mgr)
+            n++
+        try ObjRelease(sess)
+    }
+    try ObjRelease(enum)
+    return n
+}
+
+; "muted" when every AutoHotkey session is muted, "unmuted" when at least one is not, "" when none exist.
+AutoHotkeyAudioSessionsMuteState() {
+    mgr := GetDefaultSessionManager()
+    if !mgr
+        return ""
+    pEnum := 0
+    try ComCall(6, mgr, "Ptr*", &pEnum := 0)
+    catch {
+        return ""
+    }
+    if !pEnum
+        return ""
+    enum := ComValue(13, pEnum)
+    count := 0
+    try ComCall(3, enum, "Int*", &count := 0)
+    catch {
+        try ObjRelease(enum)
+        return ""
+    }
+    found := 0
+    anyUnmuted := false
+    loop count {
+        idx := A_Index - 1
+        pSess := 0
+        try ComCall(4, enum, "Int", idx, "Ptr*", &pSess := 0)
+        catch {
+            continue
+        }
+        if !pSess
+            continue
+        sess := ComValue(13, pSess)
+        sessPid := GetAudioSessionProcessId(sess)
+        if !sessPid {
+            try ObjRelease(sess)
+            continue
+        }
+        procName := ""
+        try procName := ProcessGetName(sessPid)
+        catch {
+            try ObjRelease(sess)
+            continue
+        }
+        if !InStr(StrLower(procName), "autohotkey") {
+            try ObjRelease(sess)
+            continue
+        }
+        muted := false
+        if WASAPI_GetSessionMute(sess, &muted, mgr) {
+            found++
+            if !muted
+                anyUnmuted := true
+        }
+        try ObjRelease(sess)
+    }
+    try ObjRelease(enum)
+    if !found
+        return ""
+    return anyUnmuted ? "unmuted" : "muted"
 }
 
 QueryInterface(obj, iidStr) {

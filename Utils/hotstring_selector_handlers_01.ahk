@@ -565,6 +565,21 @@ PromptContext_IsFileChipButton(btn) {
     return PromptContext_IsFileChipButtonName(name)
 }
 
+; UIA value first. Enterprise ProseMirror often reports a blank value while the prompt is visible;
+; select-all copy only in that case. Callers cache a true result so later polls do not select-all again.
+PromptContext_EnterpriseHasText(hwnd) {
+    text := ""
+    try text := GeminiEnterprise_ComposerGetTextViaUia(hwnd)
+    catch
+        text := ""
+    if (Trim(text) != "")
+        return true
+    try text := GeminiEnterprise_ComposerGetText(hwnd)
+    catch
+        text := ""
+    return Trim(text) != ""
+}
+
 PromptContext_ProbeSendReady(hwnd, uia, companionId) {
     companionId := StrLower(Trim(companionId))
     uploadIdle := !PromptContext_IsUploading(uia, companionId)
@@ -573,7 +588,7 @@ PromptContext_ProbeSendReady(hwnd, uia, companionId) {
     try {
         if (companionId = "enterprise") {
             sendBtn := GeminiEnterprise_FindSubmitButton(uia)
-            hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+            hasText := PromptContext_EnterpriseHasText(hwnd)
         } else if (companionId = "copilot") {
             sendBtn := CopilotWeb_FindSendButton(uia)
             hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
@@ -661,7 +676,7 @@ PromptContext_ProbeChipReady(hwnd, uia, companionId, attachCount := 0) {
     hasText := false
     try {
         if (companionId = "enterprise")
-            hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+            hasText := PromptContext_EnterpriseHasText(hwnd)
         else if (companionId = "copilot")
             hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
         else
@@ -730,7 +745,7 @@ PromptContext_ProbeReadiness(hwnd, uia, companionId, attachCount := 0, scanUploa
     try {
         if (companionId = "enterprise") {
             sendBtn := GeminiEnterprise_FindSubmitButton(uia)
-            hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+            hasText := PromptContext_EnterpriseHasText(hwnd)
         } else if (companionId = "copilot") {
             sendBtn := CopilotWeb_FindSendButton(uia)
             hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
@@ -1174,7 +1189,7 @@ PromptPaste_SubmitViaEnterEnabled() {
     return !!(PROMPT_PASTE_SUBMIT_VIA_ENTER && PROMPT_PASTE_GEMINI_SUBMIT_VIA_ENTER)
 }
 
-; Shared submit leaf for gemini / enterprise / copilot: focus → Enter (preferred) or adapter TrySubmit.
+; Shared submit leaf: Enterprise uses SubmitComposer (click, then Ctrl+Enter). Others use Enter or TrySubmit.
 ; Do not restore prior focus here — PromptPaste_SubmitWhenReady confirms Stop on the companion window.
 PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     global g_GeminiDelayedSubmit_WaitContentMaxMs
@@ -1204,6 +1219,10 @@ PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
         return false
     }
     Sleep Max(0, PROMPT_PASTE_SUBMIT_FOCUS_SLEEP_MS)
+    if (companionId = "enterprise") {
+        GeminiEnterprise_SubmitComposer(hwnd)
+        return true
+    }
     if (PromptPaste_SubmitViaEnterEnabled()) {
         SendInput "{Enter}"
         return true
@@ -1216,8 +1235,6 @@ PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     if (!IsObject(uia))
         return false
     try {
-        if (companionId = "enterprise")
-            return !!GeminiEnterprise_TrySubmit(uia)
         if (companionId = "copilot")
             return !!CopilotWeb_TrySubmit(uia)
         if (PROMPT_PASTE_SUBMIT_MIN_SETTLE_MS > 0) {
