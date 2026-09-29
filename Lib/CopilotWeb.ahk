@@ -433,11 +433,18 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
     return false
 }
 
+; Send keys without letting AutoHotkey press Ctrl/Alt/Shift/Win again afterward.
+; A normal Send restores modifiers it still thinks are down. After Win+Alt / Ctrl+Alt+Win
+; and a focus change, the physical keys are already up, so that restore leaves them stuck.
+ChordSend_WithoutRestoringModifiers(keys := "") {
+    SendInput "{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}{LWin up}{RWin up}" keys
+}
+
 ; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).
 ; Do not use {Blind}: it re-injects a physically held Shift+letter into the focused field.
 CopilotWeb_ReturnToComposer() {
     Sleep 40
-    Send "d{Backspace}"
+    ChordSend_WithoutRestoringModifiers("d{Backspace}")
 }
 
 CopilotWeb_WaitForComposerDiscoverable(uia, timeoutMs := 500) {
@@ -1907,7 +1914,7 @@ CopilotWeb_SelectModelByName(modelName, uia := 0, hwnd := 0) {
     }
     if (item && CopilotWeb_ClickUiaElement(item))
         return true
-    Send "{Escape}"
+    ChordSend_WithoutRestoringModifiers("{Escape}")
     CopilotWeb_ShowErrorAfterBanner("❌ Model not found: " . modelName)
     return false
 }
