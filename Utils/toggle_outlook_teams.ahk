@@ -9,7 +9,8 @@
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If either is open: Kills both so their RAM is released. Closing wins over opening.
-; If neither is open: Launches both applications.
+; That close also kills Edge, OneNote, Spotify, and WhatsApp. They are not relaunched.
+; If neither is open: Launches Outlook and Teams only.
 ; =============================================================================
 ToggleOutlookAndTeams() {
     loadingShown := false
@@ -23,7 +24,7 @@ ToggleOutlookAndTeams() {
 
         ; Show start banner
         if (!isOpeningFlow) {
-            ShowCenteredOverlay_Utils("📤 Closing Outlook and Teams...", 1500, BANNER_ACCENT_INTERMEDIATE)
+            ShowCenteredOverlay_Utils("📤 Closing apps to free RAM...", 1500, BANNER_ACCENT_INTERMEDIATE)
         } else {
             StandardLoadingBar_Show("⏳ Opening Outlook and Teams...", BANNER_ACCENT_INTERMEDIATE, {
                 passive: false,
@@ -51,6 +52,18 @@ ToggleOutlookAndTeams() {
                 KillAllProcessesByName("MSTeams.exe")
             } catch Error as e {
                 MsgBox "Error closing Teams: " e.Message
+            }
+
+            ; Extra resident apps. Not part of the open/close decision, and not started again.
+            for procName in ["msedge.exe", "ONENOTE.EXE", "Spotify.exe", "WhatsApp.exe"] {
+                try KillAllProcessesByName(procName)
+                catch Error as e {
+                    MsgBox "Error closing " procName ": " e.Message
+                }
+            }
+            try KillWhatsAppChromeApp()
+            catch Error as e {
+                MsgBox "Error closing WhatsApp: " e.Message
             }
         } else {
             ; Neither is running: launch both applications
@@ -182,4 +195,45 @@ KillAllProcessesByName(name) {
             return
         ProcessClose(name)
     }
+}
+
+; #!+z starts native WhatsApp.exe at work, and a Chrome PWA at home
+; (apps do Chrome\WhatsApp Web.lnk). Kill a Chrome process only when it hosts
+; WhatsApp and no other Chrome window. Otherwise just close the WhatsApp window.
+KillWhatsAppChromeApp() {
+    waHwnds := []
+    waPids := Map()
+    otherPids := Map()
+    for hwnd in WinGetList("ahk_exe chrome.exe") {
+        pid := 0
+        isWa := false
+        try pid := WinGetPID("ahk_id " hwnd)
+        try isWa := WhatsAppJump_IsWhatsAppChromeAppHwnd(hwnd)
+        if isWa {
+            waHwnds.Push(hwnd)
+            if pid
+                waPids[pid] := true
+        } else if pid
+            otherPids[pid] := true
+    }
+    if (waHwnds.Length = 0)
+        return
+
+    for pid, _ in waPids {
+        if !otherPids.Has(pid)
+            ProcessClose(pid)
+    }
+    ; No other Chrome windows: drop leftover renderer processes too.
+    if (otherPids.Count = 0) {
+        KillAllProcessesByName("chrome.exe")
+    } else {
+        for hwnd in waHwnds {
+            try {
+                pid := WinGetPID("ahk_id " hwnd)
+                if otherPids.Has(pid)
+                    WinClose(hwnd)
+            }
+        }
+    }
+    try WhatsAppJump_InvalidateHwndCache()
 }
