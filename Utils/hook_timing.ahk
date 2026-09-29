@@ -13,6 +13,8 @@ global g_HookTimingStack := []
 global g_HookTimingBuf := []
 
 HookTiming_IsOn() {
+    global g_HookTimingOn, g_HookTimingCheckedAt, g_HookTimingTimerOn
+    global g_HookTimingBuf, g_HookTimingStack, HOOK_TIMING_FLAG
     now := A_TickCount
     if (g_HookTimingCheckedAt && (now - g_HookTimingCheckedAt) < 1000)
         return g_HookTimingOn
@@ -31,12 +33,14 @@ HookTiming_IsOn() {
 }
 
 HookTiming_Begin(name) {
+    global g_HookTimingStack
     if !HookTiming_IsOn()
         return
     g_HookTimingStack.Push(Map("name", name, "tick", A_TickCount))
 }
 
 HookTiming_End(name) {
+    global g_HookTimingStack, g_HookTimingBuf, HOOK_TIMING_MIN_MS
     if !g_HookTimingStack.Length
         return
     item := g_HookTimingStack.Pop()
@@ -50,6 +54,7 @@ HookTiming_End(name) {
 }
 
 HookTiming_Flush(*) {
+    global g_HookTimingBuf, HOOK_TIMING_LOG
     if !g_HookTimingBuf.Length
         return
     text := ""
