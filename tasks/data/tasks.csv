@@ -158,7 +158,6 @@ TASK_0336,PROJ_0026,SEC_0129,You stopped here,⚡,punctual,,,,,personal,5090,,20
 TASK_0339,PROJ_0003,SEC_0003,"Get in touch with some people, checking if they have job openings, opportunities",⚡,punctual,,,,,work,5120,,2026-09-28 08:33:44,1,
 TASK_0340,PROJ_0011,SEC_0146,"Verificar Status e fluxo de aprovação. Já verificamos o status, certo? A Gio disse que está certo.",❓,punctual,,,,Ajustes necessários,work,5130,,2026-09-28 09:37:03,1,
 TASK_0341,PROJ_0011,SEC_0146,Incluir a Fran no fim fluxo para receber o email juntamente com COR. Quem é a Fran?,❓,punctual,,,,Ajustes necessários,work,5140,,2026-09-28 09:37:03,1,
-TASK_0342,PROJ_0011,SEC_0146,Exportar planilha: ajustar nome do arquivo e verificar o banco de dados que ele trás,🔲,punctual,,,,Ajustes necessários,work,5150,,2026-09-28 09:37:03,1,IMP-20260928-093703
 TASK_0343,PROJ_0011,SEC_0146,Verificar como cadastrar novos departamentos (talvez incluir uma aba de cadastro para os departamentos e deixar pré selecionado nos serviços),🔲,punctual,,,,Ajustes necessários,work,5160,,2026-09-28 09:37:03,1,IMP-20260928-093703
 TASK_0346,PROJ_0005,SEC_0005,"09 de outubro, apresentar o resultado do seu mestrado para o time",⚡,punctual,,,,,work,5190,,2026-09-28 10:44:48,1,
 TASK_0347,PROJ_0033,SEC_0147,Coletar informações públicas do Reclame Aqui,🔲,punctual,,,2026-10-31,,work,5220,,2026-09-28 13:57:02,1,IMP-20260928-135702
@@ -170,13 +169,14 @@ TASK_0352,PROJ_0033,SEC_0147,Validar hipótese: Tempo de tratativa e envio de fe
 TASK_0353,PROJ_0033,SEC_0147,Anotações,,punctual,,,,,work,5200,,2026-09-28 13:57:31,1,
 TASK_0354,PROJ_0033,SEC_0147,Links,,punctual,,,,,work,5210,,2026-09-28 15:01:46,1,
 TASK_0355,PROJ_0011,SEC_0011,A API do For Fleet para conectar com o Genesys cancelada,🔲,punctual,,,,,work,5280,,2026-09-29 09:36:41,1,
-TASK_0356,PROJ_0011,SEC_0011,Existe outro repo além do Genesys?,❓,punctual,,,,,work,5290,,2026-09-29 09:37:45,1,
+TASK_0356,PROJ_0011,SEC_0146,Existe outro repo além do Genesys?,❓,punctual,,,,Ajustes necessários,work,5290,,2026-09-29 09:37:45,1,
 TASK_0357,PROJ_0011,SEC_0011,Precisamos ter o ambiente de QA a pedido da Larissa.,,punctual,,,,,work,5300,,2026-09-29 09:39:27,1,
 TASK_0358,PROJ_0011,SEC_0011,Fazer o pedido das roles necessárias para vc acessar o ambiente de QA. Pedir de aprovador e editor.,🔲,punctual,,,,,work,5310,,2026-09-29 09:40:24,1,
 TASK_0359,PROJ_0011,SEC_0011,O recebimento  de e-mails de conclusão deve ser dinâmico com base nos departamentos que a ctg partner. Este é o caso da Fran.,🔲,punctual,,,,,work,5320,,2026-09-29 09:57:18,1,
-TASK_0360,PROJ_0011,SEC_0011,Lê pediu para despriorizar,🔲,punctual,,,,,work,5330,,2026-09-29 10:02:30,1,
+TASK_0360,PROJ_0011,SEC_0146,Lê pediu para despriorizar,❓,punctual,,,,Ajustes necessários,work,5330,,2026-09-29 10:02:30,1,
 TASK_0361,PROJ_0013,SEC_0013,Adicionar as gravações dos treinamentos e materiais utilizados  em uma pasta unificada,⚡,punctual,,,,,work,5360,,2026-09-29 10:10:44,1,
 TASK_0362,PROJ_0013,SEC_0013,Reuniões,,punctual,,,,,work,5340,,2026-09-29 11:30:01,1,
 TASK_0363,PROJ_0013,SEC_0148,MIRO with the requirements of the automation tool,🔲,punctual,,,,Links,work,5350,,2026-09-29 11:31:54,1,
 TASK_0364,PROJ_0013,SEC_0013,Read the Myro board with the requirements of the CRUD tool and create a flow of user interaction together with some prototype drafts,⚡,punctual,,,,,work,5370,,2026-09-29 11:34:04,1,
 TASK_0365,PROJ_0005,SEC_0005,Cancel your therapy,⚡,punctual,,,,,work,5380,,2026-09-29 11:40:46,1,
+TASK_0366,PROJ_0011,SEC_0146,Are OCOR people the same for all CTG partners or we should also specify which is the COR person for a given batch of departments,❓,punctual,,,,Ajustes necessários,work,5390,,2026-09-29 11:59:35,1,
