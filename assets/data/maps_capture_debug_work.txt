@@ -1,1 +1,30 @@
-{"step":"waiting","data":{"note":"Shift+P on Google Maps replaces this file"}}
+﻿{"session":"20260929142324","seq":1,"t":19701859,"step":"machine","data":{"computer":"CA-C-00806","log":"C:\\Users\\fie7ca\\Documents\\scripts\\assets\\data\\maps_capture_debug_work.txt","scriptDir":"C:\\Users\\fie7ca\\Documents\\scripts","user":"FIE7CA","work":"yes"}}
+{"session":"20260929142324","seq":2,"t":19701859,"step":"enter","data":{"desktop":"C:\\Users\\fie7ca\\Desktop","dpi":"144","title":"Campinas, São Paulo - Google Maps - Google Chrome"}}
+{"session":"20260929142324","seq":3,"t":19702828,"step":"attach","data":{"hwnd":"5180418","ok":"1"}}
+{"session":"20260929142324","seq":4,"t":19702828,"step":"maximize","data":{"hwnd":"5180418","ok":"1"}}
+{"session":"20260929142324","seq":5,"t":19702859,"step":"document","data":{"ok":"1"}}
+{"session":"20260929142324","seq":6,"t":19702875,"step":"collapse_panel","data":{"ok":"0"}}
+{"session":"20260929142324","seq":7,"t":19703562,"step":"hide_chrome","data":{"ok":"1"}}
+{"session":"20260929142324","seq":8,"t":19704765,"step":"session_start","data":{"desktop":"C:\\Users\\fie7ca\\Desktop","dpi":"144","isWork":"1","methods":"canvas,print,screen","outPath":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png"}}
+{"session":"20260929142324","seq":9,"t":19704906,"step":"pane","data":{"attempt":"1","b":"4798","h":"2678","l":"5760","name":"Street View","ok":"1","r":"7380","t":"2120","w":"1620"}}
+{"session":"20260929142324","seq":10,"t":19704906,"step":"method_start","data":{"attempt":"1","method":"canvas"}}
+{"session":"20260929142324","seq":11,"t":19705234,"step":"canvas_token","data":{"title":"AHKMAPS:0:blank - Google Chrome","token":"0:blank"}}
+{"session":"20260929142324","seq":12,"t":19705281,"step":"method_fail","data":{"attempt":"1","bytes":"0","err":"blank or black image","h":"0","headerErr":"capture file missing","method":"canvas","w":"0"}}
+{"session":"20260929142324","seq":13,"t":19705281,"step":"method_start","data":{"attempt":"1","method":"print"}}
+{"session":"20260929142324","seq":14,"t":19705296,"step":"print_window","data":{"code":"-1","exists":"0","h":"2678","hwnd":"5180418","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"1620","x":"5760","y":"2120"}}
+{"session":"20260929142324","seq":15,"t":19705296,"step":"method_fail","data":{"attempt":"1","bytes":"0","err":"capture failed quality check","h":"0","headerErr":"capture file missing","method":"print","w":"0"}}
+{"session":"20260929142324","seq":16,"t":19705312,"step":"method_start","data":{"attempt":"1","method":"screen"}}
+{"session":"20260929142324","seq":17,"t":19705421,"step":"copy_from_screen","data":{"code":"-1","exists":"0","h":"2678","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"1620","x":"5760","y":"2120"}}
+{"session":"20260929142324","seq":18,"t":19705437,"step":"method_fail","data":{"attempt":"1","bytes":"0","err":"capture failed","h":"0","headerErr":"capture file missing","method":"screen","w":"0"}}
+{"session":"20260929142324","seq":19,"t":19705437,"step":"retry","data":{"attempt":"2","lastErr":"capture failed","lastMethod":"screen"}}
+{"session":"20260929142324","seq":20,"t":19706421,"step":"pane","data":{"attempt":"2","b":"4798","h":"2678","l":"5760","name":"Street View","ok":"1","r":"7380","t":"2120","w":"1620"}}
+{"session":"20260929142324","seq":21,"t":19706421,"step":"method_start","data":{"attempt":"2","method":"canvas"}}
+{"session":"20260929142324","seq":22,"t":19706531,"step":"canvas_token","data":{"title":"AHKMAPS:0:blank - Google Chrome","token":"0:blank"}}
+{"session":"20260929142324","seq":23,"t":19706593,"step":"method_fail","data":{"attempt":"2","bytes":"0","err":"blank or black image","h":"0","headerErr":"capture file missing","method":"canvas","w":"0"}}
+{"session":"20260929142324","seq":24,"t":19706593,"step":"method_start","data":{"attempt":"2","method":"print"}}
+{"session":"20260929142324","seq":25,"t":19706609,"step":"print_window","data":{"code":"-1","exists":"0","h":"2678","hwnd":"5180418","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"1620","x":"5760","y":"2120"}}
+{"session":"20260929142324","seq":26,"t":19706625,"step":"method_fail","data":{"attempt":"2","bytes":"0","err":"capture failed quality check","h":"0","headerErr":"capture file missing","method":"print","w":"0"}}
+{"session":"20260929142324","seq":27,"t":19706640,"step":"method_start","data":{"attempt":"2","method":"screen"}}
+{"session":"20260929142324","seq":28,"t":19706765,"step":"copy_from_screen","data":{"code":"-1","exists":"0","h":"2678","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"1620","x":"5760","y":"2120"}}
+{"session":"20260929142324","seq":29,"t":19706796,"step":"method_fail","data":{"attempt":"2","bytes":"0","err":"capture failed","h":"0","headerErr":"capture file missing","method":"screen","w":"0"}}
+{"session":"20260929142324","seq":30,"t":19706796,"step":"fail","data":{"err":"a1 canvas: blank or black image | a1 print: capture failed quality check | a1 screen: capture failed | a2 canvas: blank or black image | a2 print: capture failed quality check | a2 screen: capture failed","lastErr":"capture failed","lastMethod":"screen","outPath":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png"}}
