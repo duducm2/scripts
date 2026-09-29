@@ -328,3 +328,8 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 ---",,ℹ️,,10,2026-09-29 13:03:58,,
 INFO_0237,task,TASK_0372,"Dados:
 - Quantidade de tratativas (interações)",,ℹ️,,10,2026-09-29 13:38:47,,
+INFO_0238,task,TASK_0372,"Fluxo atual:
+Solicito para o Rafa Machado as interações
+Ele me manda por email
+Confiro se está dentro das 1000 interações mensais (320 USD), caso ultrapasse adiciono no cálculo (+0,32 USD)
+Adiciono na base de cobrança para faturamento via PO",,ℹ️,,20,2026-09-29 13:40:45,,
