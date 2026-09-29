@@ -298,3 +298,31 @@ Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa �
   * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
 * ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
 * 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,10,2026-09-29 11:50:35,,
+INFO_0233,task,TASK_0358,You should wait because geo is still providing that,,ℹ️,,10,2026-09-29 12:05:22,,
+INFO_0234,task,TASK_0214,Precisamos ter o ambiente de QA a pedido da Larissa.,,ℹ️,,4020,2026-09-29 12:05:37,,
+INFO_0235,task,TASK_0214,A API do For Fleet para conectar com o Genesys cancelada,,ℹ️,,4030,2026-09-29 12:05:50,,
+INFO_0236,task,TASK_0371,"**Filhotes de cachorro podem começar a tomar vermífago a partir de 2 semanas de vida (15 dias).** Como a sua pastora alemã já tem **cerca de 75 dias (aproximadamente 2 meses e meio)**, ela já está em idade perfeitamente adequada — e é essencial que o protocolo de vermifugação esteja em dia.
+
+---
+
+### 📅 Esquema Padrão de Vermifugação para Filhotes
+
+Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
+
+1. **Até os 6 meses:** 
+   * Administra-se uma dose do vermífago apropriado para filhotes (ou conforme o peso).
+   * **Reforço:** A maioria dos vermífugos exige uma **segunda dose 15 dias após a primeira** para eliminar os vermes que estavam em fase de larva/ovo na primeira aplicação.
+   * Esse ciclo costuma ser repetido **mensalmente** até ela completar cerca de 6 meses.
+2. **Após os 6 meses (e na fase adulta):** 
+   * A administração passa a ser preventiva, a cada **3 a 6 meses**, dependendo do estilo de vida (se tem acesso à rua, terra, contato com outros animais, etc.).
+
+---
+
+### ⚠️ Cuidados Importantes para a sua Pastora Alemã
+
+* **Pesar a filhote antes de dar a dose:** Filhotes de porte grande crescem rápido. A dosagem do vermífago é calculada rigorosamente por **quilo de peso corporal**. Dar dose a menos não faz efeito, e a mais pode causar intoxicação.
+* **Apresentação (Suspensão/Líquido vs. Comprimido):** Para a idade e peso dela, já existem opções em comprimido palatável ou líquido (suspensão oral).
+* **Vacinação:** O vermífago deve idealmente ser administrado **antes ou em conjunto com o ciclo de vacinas** (V8/V10, Raiva), pois um filhote com vermes pode ter a resposta imunológica comprometida.
+* **Consulte o veterinário:** Sempre confirme o princípio ativo e a marca com o veterinário que acompanha o calendário de vacinas dela, para adequar a dosagem exata ao peso atual.
+
+---",,ℹ️,,10,2026-09-29 13:03:58,,
