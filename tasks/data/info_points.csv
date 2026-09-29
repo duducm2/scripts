@@ -23,17 +23,6 @@ Sempre que possível, implementação inicial (piloto/MVP) realizada para valida
 INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29 15:48:39,,
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39,,
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39,,
-INFO_0034,task,TASK_0025,Canal para troca se experiências,Canal para troca se experiências,ℹ️,Projects/Communication Plan/TEAMS group,840,2026-08-29 15:48:39,,
-INFO_0052,task,TASK_0033,Apresentação explicativa do N8N,Apresentação explicativa do N8N,ℹ️,Projects/N8N,1120,2026-08-29 15:48:39,,
-INFO_0053,task,TASK_0033,N8N precisa da solicitação de acesso.,N8N precisa da solicitação de acesso.,ℹ️,Projects/N8N,1130,2026-08-29 15:48:39,,
-INFO_0054,task,TASK_0033,"Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.","Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.",ℹ️,Projects/N8N,1140,2026-08-29 15:48:39,,
-INFO_0055,task,TASK_0033,Trazer um exemplo.,Trazer um exemplo.,ℹ️,Projects/N8N,1150,2026-08-29 15:48:39,,
-INFO_0056,task,TASK_0033,A mensagem .,A mensagem .,ℹ️,Projects/N8N,1160,2026-08-29 15:48:39,,
-INFO_0057,task,TASK_0033,Reference aos key-users pode tentar 3 horas.,Reference aos key-users pode tentar 3 horas.,ℹ️,Projects/N8N,1170,2026-08-29 15:48:39,,
-INFO_0058,task,TASK_0033,"Recap explicando que essa rodada é uma nova ferramenta como alternativa. Assim, eles entendem que é diferente do Gemini Enterprise.","Recap explicando que essa rodada é uma nova ferramenta como alternativa. Assim, eles entendem que é diferente do Gemini Enterprise.",ℹ️,Projects/N8N,1180,2026-08-29 15:48:39,,
-INFO_0059,task,TASK_0033,"Ajustar a sessão de colaboradores e deixar mais parecida com a dos gestores, algo mais genérico para que aqueles quiserem se aprofundar, possam fazer.","Ajustar a sessão de colaboradores e deixar mais parecida com a dos gestores, algo mais genérico para que aqueles quiserem se aprofundar, possam fazer.",ℹ️,Projects/N8N,1190,2026-08-29 15:48:39,,
-INFO_0060,task,TASK_0033,Se tiver uma quantidade alta de colaboradores nós expandimos para mais.,Se tiver uma quantidade alta de colaboradores nós expandimos para mais.,ℹ️,Projects/N8N,1200,2026-08-29 15:48:39,,
-INFO_0061,task,TASK_0033,"Quando uma pessoa se autonominar key-user, o gestor precisa aprovar antes.","Quando uma pessoa se autonominar key-user, o gestor precisa aprovar antes.",ℹ️,Projects/N8N,1210,2026-08-29 15:48:39,,
 INFO_0062,project,PROJ_0014,O AI Roleplay é um módulo do QMAI. ℹ️ O AI Roleplay analisa as transcrições de ligações e analisa problemas. O AI Roleplay cria um treinamento específico para aquela pessoa ou time. O Treinamento tem ,O AI Roleplay é um módulo do QMAI. ℹ️ O AI Roleplay analisa as transcrições de ligações e analisa problemas. O AI Roleplay cria um treinamento específico para aquela pessoa ou time. O Treinamento tem que condizer com o tom de voz da empresa contratante.,ℹ️,Projects/AI Roleplay,1250,2026-08-29 15:48:39,,
 INFO_0063,project,PROJ_0014,Um agente pode solicitar um treinamento ou o gestor solicitar.,Um agente pode solicitar um treinamento ou o gestor solicitar.,ℹ️,Projects/AI Roleplay,1260,2026-08-29 15:48:39,,
 INFO_0064,project,PROJ_0014,Tem um quiz no final do treinamento.,Tem um quiz no final do treinamento.,ℹ️,Projects/AI Roleplay,1270,2026-08-29 15:48:39,,
@@ -60,7 +49,6 @@ INFO_0100,project,PROJ_0004,20260828-101254.png,,ℹ️,,3820,2026-08-30 12:03:3
 INFO_0101,project,PROJ_0004,20260828-101317.png,,ℹ️,,3830,2026-08-30 12:03:36,,
 INFO_0102,task,TASK_0007,20260820-105844.png,,ℹ️,,3840,2026-08-30 12:03:36,,
 INFO_0105,task,TASK_0029,20260817-165019.png,,ℹ️,,3870,2026-08-30 12:03:36,,
-INFO_0106,task,TASK_0033,20260824-110249.png,,ℹ️,,3880,2026-08-30 12:03:36,,
 INFO_0107,project,PROJ_0014,20260825-112514.png,,ℹ️,,3890,2026-08-30 12:03:36,,
 INFO_0108,project,PROJ_0014,20260825-112750.png,,ℹ️,,3900,2026-08-30 12:03:36,,
 INFO_0109,project,PROJ_0014,20260825-112558.png,,ℹ️,,3910,2026-08-30 12:03:36,,
@@ -95,28 +83,6 @@ Eu orientei a Letícia a entender quais são as expectativas da liderança em te
 ℹ️ Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.
 ℹ️ Provavelmente terão duas APIs com o Genesys o Apolo.
 ℹ️ As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.",,ℹ️,,4010,2026-08-30 15:25:13,,
-INFO_0120,task,TASK_0217,https://forms.office.com/e/uGVi4LaXff,,ℹ️,,4020,2026-08-30 15:28:57,,
-INFO_0122,task,TASK_0222,"Abertura e contextualização do treinamento
-Abertura e contextualização do treinamento
-Explicar os objetivos do treinamento.
-Apresentar a visão geral do programa RISE.
-Transição para o treinador técnico
-Ajudar na preparação da dinâmica hands-on, se necessário.
-Verificar se a estrutura para breakout rooms, grupos ou teams está pronta.
-Apoiar o treinador técnico na criação dos breakout rooms.
-Garantir que cada grupo tenha acesso ao case challenge correspondente.
-Durante a atividade hands-on, das 10h50 às 12h00
-Circular entre os breakout rooms. Perguntar se os participantes precisam de ajuda.
-Apoiar dúvidas operacionais ou direcionar dúvidas técnicas ao treinador técnico, quando necessário.
-Garantir que todos os grupos estejam trabalhando no case challenge proposto.
-Resultados e fechamento
-Apoiar a transição da apresentação dos resultados para o fechamento.
-Receber a palavra do apresentador técnico no momento final.
-Explicar os próximos passos do programa RISE.
-Orientar os participantes sobre a aquisição dos agentes para Gemini, conforme instruído pelo Rafael.",,ℹ️,,4040,2026-08-31 09:35:40,,
-INFO_0123,task,TASK_0222,Tirar foto,,ℹ️,,4050,2026-08-31 09:36:21,,
-INFO_0124,task,TASK_0217,O treinamento de key-users é mandatório? sim,,ℹ️,,4060,2026-08-31 09:36:51,,
-INFO_0125,task,TASK_0222,Para os treinamentos de colaboradores: 4 grupos de 5,,ℹ️,,4070,2026-08-31 09:37:09,,
 INFO_0129,task,TASK_0241,https://opencode.ai/docs/,,ℹ️,,10,2026-09-03 20:08:43,,
 INFO_0130,task,TASK_0242,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM\05-Others\backlog-september\backlog-september.csv,,ℹ️,,10,2026-09-04 11:47:35,,
 INFO_0135,task,TASK_0248,"Perguntar no cartório
@@ -152,17 +118,6 @@ INFO_0192,task,TASK_0335,image.png,,ℹ️,,10,2026-09-27 15:55:47,,
 INFO_0193,task,TASK_0335,You are removing some articles related to sentiment analysis. So you need to update your literature review numbers,,ℹ️,,20,2026-09-27 16:12:51,,
 INFO_0194,task,TASK_0335,image.png,,ℹ️,,30,2026-09-27 16:13:06,,
 INFO_0195,task,TASK_0336,C:\Users\eduev\Documents\Web projects\ai-experiments\latex\defense-comments\arxiv-citados.md,,ℹ️,,10,2026-09-27 18:32:15,,
-INFO_0197,task,TASK_0337,"## 🎯 Objetivos de Larissa Oliveira para o Programa RISE
-
-Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa é:
-
-* 🔍 **Demonstrar o Processo Atual:** Ter o **Paulo Luz** demonstrando o método que utiliza hoje para compilar as horas de automação na SO.
-* 🚀 **Criar uma Solução Otimizada:** Idear um fluxo otimizado para o recebimento, compilação e envio desse report de horas economizadas para a **SO Global**.
-* 💡 **Avaliar Alternativas de Implementação:**
-  * **Via Forms:** Solução sem custos.
-  * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
-* ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
-* 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,20,2026-09-28 08:00:30,,
 INFO_0198,task,TASK_0339,Maia,,ℹ️,person contacted,20,2026-09-28 08:33:53,,
 INFO_0199,task,TASK_0339,Guilherme do tooling,,ℹ️,person,10,2026-09-28 08:33:59,,
 INFO_0200,task,TASK_0339,Alex,,ℹ️,person contacted,30,2026-09-28 08:34:04,,
@@ -330,5 +285,16 @@ O objetivo principal é realizar uma **atualização cadastral e levantamento co
 
 * **Quadro no Miro (Larissa):** Mapeamento do uso dos dados e descrições dos campos em post-its:
   [Acessar Miro Board de Automações SO](https://miro.com/app/board/uXjVHirUsSs=/)
-* **Iniciativas Correlatas:** Formulário do projeto RISE e repositório de histórias do *Compartilhando Sucessos*.",,ℹ️,,10,2026-09-29 11:30:13,,
+* **Iniciativas Correlatas:** Formulário do projeto RISE e repositório de histórias do *Compartilhando Sucessos*.",,ℹ️,,20,2026-09-29 11:30:13,,
 INFO_0231,task,TASK_0363,https://miro.com/app/board/uXjVHirUsSs=/,,ℹ️,,10,2026-09-29 11:32:36,,
+INFO_0232,task,TASK_0362,"## 🎯 Objetivos de Larissa Oliveira para o Programa RISE
+
+Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa é:
+
+* 🔍 **Demonstrar o Processo Atual:** Ter o **Paulo Luz** demonstrando o método que utiliza hoje para compilar as horas de automação na SO.
+* 🚀 **Criar uma Solução Otimizada:** Idear um fluxo otimizado para o recebimento, compilação e envio desse report de horas economizadas para a **SO Global**.
+* 💡 **Avaliar Alternativas de Implementação:**
+  * **Via Forms:** Solução sem custos.
+  * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
+* ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
+* 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,10,2026-09-29 11:50:35,,
