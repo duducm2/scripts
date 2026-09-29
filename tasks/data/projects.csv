@@ -1,6 +1,6 @@
 id,title,filter,section_path,sort_order,active,created_at,icon_ref,icon_color,icon_tint
 PROJ_0002,Doctoral degree,work,Tasks,160,1,2026-08-29 15:48:39,attachments\icons\PROJ_0002.png,#ffffff,0
-PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,,#ffffff,0
+PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,attachments\icons\PROJ_0003.png,#ffffff,0
 PROJ_0004,TAR,work,Tasks,340,1,2026-08-29 15:48:39,,#ffffff,0
 PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,attachments\icons\PROJ_0005.png,#ffffff,0
 PROJ_0006,Trainings,work,Tasks,540,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0
