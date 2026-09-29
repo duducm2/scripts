@@ -1,6 +1,7 @@
 vendor/UIA-v2~
 env.ahk
 debug-*.log
+debug-maps-capture/
 mobills-run-error.log
 Untitled
 infra/tools/MonitorEnumerationSnapshot-out.txt

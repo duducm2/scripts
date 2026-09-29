@@ -5,6 +5,132 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
+; On while diagnosing Maps capture on the work PC. Turn off after the failing run is understood.
+global MAPS_CAPTURE_DEBUG := true
+global g_MapsDebugSession := ""
+global g_MapsDebugSeq := 0
+global g_MapsDebugMethod := ""
+global g_MapsDebugAttempt := 0
+global g_MapsDebugKept := Map()
+
+Maps_DebugEnabled() {
+    global MAPS_CAPTURE_DEBUG
+    return IsSet(MAPS_CAPTURE_DEBUG) && MAPS_CAPTURE_DEBUG
+}
+
+Maps_DebugBegin() {
+    global g_MapsDebugSession, g_MapsDebugSeq, g_MapsDebugMethod, g_MapsDebugAttempt, g_MapsDebugKept
+    g_MapsDebugSession := A_Now
+    g_MapsDebugSeq := 0
+    g_MapsDebugMethod := ""
+    g_MapsDebugAttempt := 0
+    g_MapsDebugKept := Map()
+}
+
+Maps_DebugJsonEscape(s) {
+    try {
+        if (s = "")
+            return ""
+    } catch {
+        return ""
+    }
+    s := "" s
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`r", "\r")
+    s := StrReplace(s, "`n", "\n")
+    return s
+}
+
+Maps_DebugLog(step, data := "") {
+    global g_MapsDebugSession, g_MapsDebugSeq
+    if !Maps_DebugEnabled()
+        return
+    try {
+        g_MapsDebugSeq += 1
+        dataJson := "{}"
+        if (IsObject(data)) {
+            parts := []
+            for k, v in data {
+                try parts.Push('"' Maps_DebugJsonEscape(k) '":"' Maps_DebugJsonEscape(v) '"')
+            }
+            joined := ""
+            if (parts.Length) {
+                for i, p in parts
+                    joined .= (i = 1 ? "" : ",") p
+            }
+            dataJson := "{" joined "}"
+        } else if (data != "") {
+            dataJson := '{"value":"' Maps_DebugJsonEscape(data) '"}'
+        }
+        line := '{'
+            . '"session":"' Maps_DebugJsonEscape(g_MapsDebugSession) '",'
+            . '"seq":' g_MapsDebugSeq ','
+            . '"t":' A_TickCount ','
+            . '"step":"' Maps_DebugJsonEscape(step) '",'
+            . '"data":' dataJson
+            . '}'
+        FileAppend(line "`n", A_ScriptDir "\debug-maps-capture.log", "UTF-8")
+    } catch {
+    }
+}
+
+Maps_DebugFileFacts(path) {
+    facts := Map("bytes", 0, "w", 0, "h", 0, "headerErr", "")
+    imgW := 0
+    imgH := 0
+    bytes := 0
+    err := ""
+    try Maps_PngHeaderOk(path, &imgW, &imgH, &bytes, &err, 1, 1)
+    catch {
+        err := "capture file missing"
+    }
+    facts["bytes"] := bytes
+    facts["w"] := imgW
+    facts["h"] := imgH
+    facts["headerErr"] := err
+    return facts
+}
+
+; Copy a rejected PNG into debug-maps-capture/ before it is deleted. Same file is kept once.
+Maps_DebugKeepPng(path, reason := "") {
+    global g_MapsDebugMethod, g_MapsDebugAttempt, g_MapsDebugKept
+    if !Maps_DebugEnabled()
+        return ""
+    if (path = "" || !FileExist(path))
+        return ""
+    try {
+        sz := FileGetSize(path)
+        modified := FileGetTime(path, "M")
+        sig := StrLower(path) "|" sz "|" modified
+        if g_MapsDebugKept.Has(sig)
+            return g_MapsDebugKept[sig]
+        dir := A_ScriptDir "\debug-maps-capture"
+        DirCreate(dir)
+        method := g_MapsDebugMethod != "" ? g_MapsDebugMethod : "capture"
+        attempt := g_MapsDebugAttempt > 0 ? g_MapsDebugAttempt : 1
+        name := FormatTime(, "yyyyMMdd-HHmmss") "-" method "-a" attempt ".png"
+        dest := dir "\" name
+        if FileExist(dest)
+            dest := dir "\" FormatTime(, "yyyyMMdd-HHmmss") "-" method "-a" attempt "-" A_TickCount ".png"
+        FileCopy(path, dest, 1)
+        g_MapsDebugKept[sig] := dest
+        Maps_DebugLog("keep_png", Map("src", path, "dest", dest, "reason", reason, "bytes", sz))
+        return dest
+    } catch {
+        return ""
+    }
+}
+
+Maps_DiscardCaptureFile(path, reason := "") {
+    Maps_DebugKeepPng(path, reason)
+    Maps_DeleteCaptureFile(path)
+}
+
+Maps_DebugHideMs() {
+    return Maps_DebugEnabled() ? 8000 : 2200
+}
+
 Maps_GetDocumentRoot(uia) {
     root := 0
     try root := uia.GetCurrentDocumentElement()
@@ -124,12 +250,12 @@ Maps_Loading(msg, hwnd := 0) {
     StandardLoadingBar_Show(msg, BANNER_ACCENT_INTERMEDIATE, Maps_LoadingOptions(hwnd))
 }
 
-Maps_Fail(msg, hwnd := 0) {
+Maps_Fail(msg, hwnd := 0, hideMs := 2200) {
     global g_StandardLoadingBarGui
     if !IsObject(g_StandardLoadingBarGui)
         StandardLoadingBar_Show(msg, BANNER_ACCENT_ERROR, Maps_LoadingOptions(hwnd))
     StandardLoadingBar_Update(msg, BANNER_ACCENT_ERROR)
-    StandardLoadingBar_Hide(2200)
+    StandardLoadingBar_Hide(hideMs)
 }
 
 Maps_DeleteCaptureFile(path) {
@@ -411,56 +537,69 @@ Maps_MoveOntoDesktop(srcPath, destPath, &err) {
 ; Pixel-check the temp capture, then paste it onto the Desktop and confirm the landed file.
 Maps_CommitDesktopPng(srcPath, destPath, hwnd, minW, minH, &err) {
     err := ""
+    Maps_DebugLog("commit_start", Map("src", srcPath, "dest", destPath, "minW", minW, "minH", minH))
     if (srcPath = "" || !FileExist(srcPath)) {
         err := "capture file missing"
+        Maps_DebugLog("commit_fail", Map("err", err))
         return false
     }
     Maps_Loading("⏳ Checking capture...", hwnd)
     if !Maps_WaitStableFile(srcPath, 2000) {
         err := "capture file was not ready"
-        Maps_DeleteCaptureFile(srcPath)
+        Maps_DebugLog("commit_fail", Map("err", err))
+        Maps_DiscardCaptureFile(srcPath, err)
         return false
     }
     imgW := 0
     imgH := 0
     bytes := 0
     if !Maps_PngHeaderOk(srcPath, &imgW, &imgH, &bytes, &err, minW, minH) {
-        Maps_DeleteCaptureFile(srcPath)
+        Maps_DebugLog("commit_header", Map("ok", 0, "err", err, "w", imgW, "h", imgH, "bytes", bytes))
+        Maps_DiscardCaptureFile(srcPath, err)
         return false
     }
+    Maps_DebugLog("commit_header", Map("ok", 1, "err", "", "w", imgW, "h", imgH, "bytes", bytes))
     gate := Maps_InvokePixelGate(srcPath)
+    Maps_DebugLog("pixel_gate", Map("code", gate, "reason", gate = 0 ? "ok" : Maps_QualityReason(gate)))
     if (gate != 0) {
         err := Maps_QualityReason(gate)
-        Maps_DeleteCaptureFile(srcPath)
+        Maps_DiscardCaptureFile(srcPath, err)
         return false
     }
     Maps_Loading("⏳ Pasting image on Desktop...", hwnd)
     if !Maps_MoveOntoDesktop(srcPath, destPath, &err) {
-        Maps_DeleteCaptureFile(srcPath)
+        Maps_DebugLog("commit_fail", Map("err", err))
+        Maps_DiscardCaptureFile(srcPath, err)
         return false
     }
     if !Maps_WaitStableFile(destPath, 2500) {
         err := "Desktop file was not ready"
-        Maps_DeleteCaptureFile(destPath)
+        Maps_DebugLog("commit_fail", Map("err", err, "dest", destPath))
+        Maps_DiscardCaptureFile(destPath, err)
         return false
     }
     landedW := 0
     landedH := 0
     landedBytes := 0
     if !Maps_PngHeaderOk(destPath, &landedW, &landedH, &landedBytes, &err, minW, minH) {
-        Maps_DeleteCaptureFile(destPath)
+        Maps_DebugLog("commit_fail", Map("err", err, "w", landedW, "h", landedH, "bytes", landedBytes))
+        Maps_DiscardCaptureFile(destPath, err)
         return false
     }
     if (landedBytes != bytes || landedW != imgW || landedH != imgH) {
         err := "Desktop file did not match the capture"
-        Maps_DeleteCaptureFile(destPath)
+        Maps_DebugLog("commit_fail", Map("err", err, "srcBytes", bytes, "destBytes", landedBytes, "srcW", imgW, "destW",
+            landedW, "srcH", imgH, "destH", landedH))
+        Maps_DiscardCaptureFile(destPath, err)
         return false
     }
     if !Maps_IsDesktopPath(destPath) || !FileExist(destPath) {
         err := "image is not on the Desktop"
-        Maps_DeleteCaptureFile(destPath)
+        Maps_DebugLog("commit_fail", Map("err", err, "dest", destPath))
+        Maps_DiscardCaptureFile(destPath, err)
         return false
     }
+    Maps_DebugLog("commit_ok", Map("dest", destPath, "w", landedW, "h", landedH, "bytes", landedBytes))
     return true
 }
 
@@ -505,17 +644,20 @@ Maps_CaptureCanvasViaDownload(uia, startStamp, &errMsg) {
     errMsg := ""
     if !uia {
         errMsg := "canvas export failed"
+        Maps_DebugLog("canvas_js", Map("err", "no uia"))
         return ""
     }
     Maps_PurgeCaptureTemps()
     js :=
-        "(function(){window.__ahkMapsTitle=window.__ahkMapsTitle||document.title;document.title='AHKMAPS:pending';requestAnimationFrame(function(){try{var canvases=Array.from(document.querySelectorAll('canvas')).filter(function(c){return c.offsetWidth>0&&c.offsetHeight>0;});if(!canvases.length){document.title='AHKMAPS:0:nocanvas';return;}var best=canvases.reduce(function(a,b){return (a.width*a.height)>(b.width*b.height)?a:b;});var w=best.width,h=best.height;if(!(w>0&&h>0)){document.title='AHKMAPS:0:nocanvas';return;}var off=document.createElement('canvas');off.width=w;off.height=h;var ctx=off.getContext('2d');canvases.forEach(function(c){try{if(c.width===w&&c.height===h)ctx.drawImage(c,0,0);}catch(e){}});var pts=[[0.15,0.2],[0.5,0.15],[0.85,0.2],[0.2,0.45],[0.5,0.5],[0.8,0.45],[0.2,0.75],[0.5,0.8],[0.8,0.75],[0.35,0.6],[0.65,0.35],[0.5,0.92]];var n=0,minR=255,minG=255,minB=255,maxR=0,maxG=0,maxB=0,black=0,pi,px;for(pi=0;pi<pts.length;pi++){try{px=ctx.getImageData(Math.max(0,Math.min(w-1,Math.floor(pts[pi][0]*w))),Math.max(0,Math.min(h-1,Math.floor(pts[pi][1]*h))),1,1).data;}catch(e){document.title='AHKMAPS:0:blank';return;}n++;if(px[3]<12||(px[0]<14&&px[1]<14&&px[2]<14))black++;if(px[0]<minR)minR=px[0];if(px[1]<minG)minG=px[1];if(px[2]<minB)minB=px[2];if(px[0]>maxR)maxR=px[0];if(px[1]>maxG)maxG=px[1];if(px[2]>maxB)maxB=px[2];}if(n<8||(maxR-minR<8&&maxG-minG<8&&maxB-minB<8)||(black/n>=0.90)){document.title='AHKMAPS:0:blank';return;}var url=off.toDataURL('image/png');if(!url||url.length<500){document.title='AHKMAPS:0:failed';return;}var a=document.createElement('a');a.href=url;a.download='ahk-maps-cap.png';document.body.appendChild(a);a.click();a.remove();document.title='AHKMAPS:1';}catch(e){document.title='AHKMAPS:0:failed';}});})();void(0);"
+        "(function(){window.__ahkMapsTitle=window.__ahkMapsTitle||document.title;document.title='AHKMAPS:pending';requestAnimationFrame(function(){try{var canvases=Array.from(document.querySelectorAll('canvas')).filter(function(c){return c.offsetWidth>0&&c.offsetHeight>0;});if(!canvases.length){document.title='AHKMAPS:0:nocanvas';return;}var best=canvases.reduce(function(a,b){return (a.width*a.height)>(b.width*b.height)?a:b;});var w=best.width,h=best.height;if(!(w>0&&h>0)){document.title='AHKMAPS:0:nocanvas';return;}var off=document.createElement('canvas');off.width=w;off.height=h;var ctx=off.getContext('2d');canvases.forEach(function(c){try{if(c.width===w&&c.height===h)ctx.drawImage(c,0,0);}catch(e){}});var pts=[[0.15,0.2],[0.5,0.15],[0.85,0.2],[0.2,0.45],[0.5,0.5],[0.8,0.45],[0.2,0.75],[0.5,0.8],[0.8,0.75],[0.35,0.6],[0.65,0.35],[0.5,0.92]];var n=0,minR=255,minG=255,minB=255,maxR=0,maxG=0,maxB=0,black=0,pi,px;for(pi=0;pi<pts.length;pi++){try{px=ctx.getImageData(Math.max(0,Math.min(w-1,Math.floor(pts[pi][0]*w))),Math.max(0,Math.min(h-1,Math.floor(pts[pi][1]*h))),1,1).data;}catch(e){var msg=String((e&&(e.name||e.message))||e||'');document.title=(/Security|taint/i.test(msg))?'AHKMAPS:0:tainted':'AHKMAPS:0:blank';return;}n++;if(px[3]<12||(px[0]<14&&px[1]<14&&px[2]<14))black++;if(px[0]<minR)minR=px[0];if(px[1]<minG)minG=px[1];if(px[2]<minB)minB=px[2];if(px[0]>maxR)maxR=px[0];if(px[1]>maxG)maxG=px[1];if(px[2]>maxB)maxB=px[2];}if(n<8||(maxR-minR<8&&maxG-minG<8&&maxB-minB<8)||(black/n>=0.90)){document.title='AHKMAPS:0:blank';return;}var url=off.toDataURL('image/png');if(!url||url.length<500){document.title='AHKMAPS:0:failed';return;}var a=document.createElement('a');a.href=url;a.download='ahk-maps-cap.png';document.body.appendChild(a);a.click();a.remove();document.title='AHKMAPS:1';}catch(e){var msg=String((e&&(e.name||e.message))||e||'');document.title=(/Security|taint/i.test(msg))?'AHKMAPS:0:tainted':'AHKMAPS:0:failed';}});})();void(0);"
     try uia.JSExecute(js)
-    catch {
+    catch Error as jsErr {
         errMsg := "canvas export failed"
+        Maps_DebugLog("canvas_js", Map("err", jsErr.Message))
         return ""
     }
     token := ""
+    title := ""
     deadline := A_TickCount + 2500
     while (A_TickCount < deadline && token = "") {
         title := ""
@@ -527,6 +669,11 @@ Maps_CaptureCanvasViaDownload(uia, startStamp, &errMsg) {
             token := m[1]
         else
             Sleep 60
+    }
+    Maps_DebugLog("canvas_token", Map("token", token = "" ? "(none)" : token, "title", title))
+    if (token = "0:tainted" || InStr(token, "tainted")) {
+        errMsg := "canvas tainted"
+        return ""
     }
     if (token = "" || token = "0:failed") {
         errMsg := "canvas export failed"
@@ -547,8 +694,10 @@ Maps_CaptureCanvasViaDownload(uia, startStamp, &errMsg) {
     found := Maps_FindFreshCaptureFile(startStamp, 3000)
     if (found = "") {
         errMsg := "download timed out"
+        Maps_DebugLog("canvas_download", Map("err", errMsg))
         return ""
     }
+    Maps_DebugLog("canvas_download", Map("path", found))
     return found
 }
 
@@ -611,9 +760,11 @@ Maps_CapturePrintWindow(hwnd, x, y, w, h, outPath, &errMsg) {
     script .= "$crop.Dispose()`r`n"
     script .= "exit 0`r`n"
     code := Maps_RunPs(script)
+    Maps_DebugLog("print_window", Map("code", code, "hwnd", hwnd, "x", x, "y", y, "w", w, "h", h, "out", outPath,
+        "exists", FileExist(outPath) ? 1 : 0))
     if (code != 0 || !FileExist(outPath)) {
-        Maps_DeleteCaptureFile(outPath)
         errMsg := Maps_QualityReason(code = 0 ? 5 : code)
+        Maps_DiscardCaptureFile(outPath, errMsg)
         return false
     }
     return true
@@ -635,9 +786,11 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
     script .= "$b.Dispose()`r`n"
     script .= "exit 0`r`n"
     code := Maps_RunPs(script)
+    Maps_DebugLog("copy_from_screen", Map("code", code, "x", x, "y", y, "w", w, "h", h, "out", outPath, "exists",
+        FileExist(outPath) ? 1 : 0))
     if (code != 0 || !FileExist(outPath)) {
-        Maps_DeleteCaptureFile(outPath)
         errMsg := "capture failed"
+        Maps_DiscardCaptureFile(outPath, errMsg)
         return false
     }
     return true
@@ -747,51 +900,74 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
 
 ; Shift + P : Clean PNG capture (hide chrome, screenshot map / Street View, paste onto Desktop)
 +p:: {
-    global IS_WORK_ENVIRONMENT
+    global IS_WORK_ENVIRONMENT, g_MapsDebugMethod, g_MapsDebugAttempt
     uia := 0
     chromeHidden := false
     loadingShown := false
     browserHwnd := 0
     outPath := ""
     saved := false
+    lastErr := ""
+    lastMethod := ""
+    failTrail := ""
     try {
+        Maps_DebugBegin()
+        pageTitle := ""
+        try pageTitle := SafeWinGetTitle()
+        catch {
+            pageTitle := ""
+        }
+        Maps_DebugLog("enter", Map("title", pageTitle, "dpi", A_ScreenDPI, "desktop", Palace_ResolveDesktopDir()))
         Maps_Loading("⏳ Preparing Maps capture...")
         loadingShown := true
         sessionStamp := A_Now
 
         uia := UIA_Browser()
         if !uia {
-            Maps_Fail("❌ Maps: could not attach to browser")
+            Maps_DebugLog("attach", Map("ok", 0))
+            Maps_Fail("❌ Maps: could not attach to browser", 0, Maps_DebugHideMs())
             loadingShown := false
             return
         }
         try browserHwnd := uia.BrowserId
+        Maps_DebugLog("attach", Map("ok", 1, "hwnd", browserHwnd))
 
         Maps_Loading("🔄 Maximizing window...", browserHwnd)
-        Maps_MaximizeBrowserWindow(uia)
+        maxOk := Maps_MaximizeBrowserWindow(uia)
+        Maps_DebugLog("maximize", Map("ok", maxOk ? 1 : 0, "hwnd", browserHwnd))
         root := Maps_GetDocumentRoot(uia)
         if !root {
-            Maps_Fail("❌ Maps: document not found", browserHwnd)
+            Maps_DebugLog("document", Map("ok", 0))
+            Maps_Fail("❌ Maps: document not found", browserHwnd, Maps_DebugHideMs())
             loadingShown := false
             return
         }
+        Maps_DebugLog("document", Map("ok", 1))
 
         Maps_Loading("🔄 Collapsing side panel...", browserHwnd)
-        Maps_CollapseSidePanel(root)
+        collapsed := Maps_CollapseSidePanel(root)
+        Maps_DebugLog("collapse_panel", Map("ok", collapsed ? 1 : 0))
         Sleep 600  ; side-panel collapse animation
 
         Maps_Loading("🔄 Hiding map chrome...", browserHwnd)
-        Maps_HideChrome(uia)
+        hideOk := Maps_HideChrome(uia)
         chromeHidden := true
+        Maps_DebugLog("hide_chrome", Map("ok", hideOk ? 1 : 0))
         Maps_Loading("⏳ Loading map tiles...", browserHwnd)
         Sleep 1200  ; let canvas resize and tiles finish loading before capture
 
         outPath := Palace_DesktopNextQuickImagePath()
         isWork := IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
         methods := isWork ? ["canvas", "print", "screen"] : ["print", "screen", "canvas"]
-        lastErr := ""
+        methodList := ""
+        for methodName in methods
+            methodList .= (methodList = "" ? "" : ",") methodName
+        Maps_DebugLog("session_start", Map("isWork", isWork ? 1 : 0, "methods", methodList, "desktop",
+            Palace_ResolveDesktopDir(), "dpi", A_ScreenDPI, "outPath", outPath))
         loop 2 {
-            if (A_Index > 1) {
+            attempt := A_Index
+            if (attempt > 1) {
+                Maps_DebugLog("retry", Map("attempt", attempt, "lastErr", lastErr, "lastMethod", lastMethod))
                 Maps_Loading("⏳ Capture did not pass quality check — retrying...", browserHwnd)
                 Sleep 800
             }
@@ -802,16 +978,30 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
             pane := Maps_FindMapPane(root)
             if !pane {
                 lastErr := "map pane not found"
+                Maps_DebugLog("pane", Map("attempt", attempt, "ok", 0, "err", lastErr))
                 continue
             }
             br := pane.BoundingRectangle
             paneW := br.r - br.l
             paneH := br.b - br.t
+            paneName := ""
+            try paneName := pane.Name
+            catch {
+                paneName := ""
+            }
             if (paneW <= 0 || paneH <= 0) {
                 lastErr := "invalid capture region"
+                Maps_DebugLog("pane", Map("attempt", attempt, "ok", 0, "name", paneName, "l", br.l, "t", br.t, "r", br.r,
+                    "b", br.b, "w", paneW, "h", paneH, "err", lastErr))
                 continue
             }
+            Maps_DebugLog("pane", Map("attempt", attempt, "ok", 1, "name", paneName, "l", br.l, "t", br.t, "r", br.r,
+                "b", br.b, "w", paneW, "h", paneH))
             for method in methods {
+                g_MapsDebugMethod := method
+                g_MapsDebugAttempt := attempt
+                lastMethod := method
+                Maps_DebugLog("method_start", Map("method", method, "attempt", attempt))
                 Maps_Loading("📸 Capturing map...", browserHwnd)
                 capErr := ""
                 src := ""
@@ -835,8 +1025,11 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
                     Sleep 90
                     grabbed := false
                     try grabbed := Maps_CaptureCopyFromScreen(br.l, br.t, paneW, paneH, src, &capErr)
-                    catch {
+                    catch Error as screenErr {
                         grabbed := false
+                        capErr := "capture failed"
+                        Maps_DebugLog("copy_from_screen", Map("code", -1, "err", screenErr.Message, "x", br.l, "y", br.t,
+                            "w", paneW, "h", paneH))
                     }
                     Maps_Loading("📸 Capturing map...", browserHwnd)
                     if !grabbed
@@ -846,22 +1039,35 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
                 }
                 if (src = "" || !FileExist(src)) {
                     lastErr := capErr != "" ? capErr : "capture failed"
-                    Maps_DeleteCaptureFile(src)
+                    failTrail .= (failTrail = "" ? "" : " | ") "a" attempt " " method ": " lastErr
+                    facts := Maps_DebugFileFacts(src)
+                    Maps_DebugLog("method_fail", Map("method", method, "attempt", attempt, "err", lastErr, "bytes",
+                        facts["bytes"], "w", facts["w"], "h", facts["h"], "headerErr", facts["headerErr"]))
+                    Maps_DiscardCaptureFile(src, lastErr)
                     continue
                 }
+                facts := Maps_DebugFileFacts(src)
+                Maps_DebugLog("method_file", Map("method", method, "attempt", attempt, "src", src, "bytes", facts[
+                    "bytes"], "w", facts["w"], "h", facts["h"], "headerErr", facts["headerErr"]))
                 if Maps_CommitDesktopPng(src, outPath, browserHwnd, minW, minH, &capErr) {
                     saved := true
                     break
                 }
                 lastErr := capErr != "" ? capErr : "capture failed quality check"
-                Maps_DeleteCaptureFile(src)
-                Maps_DeleteCaptureFile(outPath)
+                failTrail .= (failTrail = "" ? "" : " | ") "a" attempt " " method ": " lastErr
+                Maps_DebugLog("method_fail", Map("method", method, "attempt", attempt, "err", lastErr))
+                Maps_DiscardCaptureFile(src, lastErr)
+                Maps_DiscardCaptureFile(outPath, lastErr)
             }
             if (saved)
                 break
         }
         if (!saved || outPath = "" || !FileExist(outPath) || !Maps_IsDesktopPath(outPath)) {
-            Maps_Fail("❌ Maps: " . (lastErr != "" ? lastErr : "capture failed"), browserHwnd)
+            bannerErr := (Maps_DebugEnabled() && failTrail != "") ? failTrail : (lastErr != "" ? lastErr :
+                "capture failed")
+            Maps_DebugLog("fail", Map("err", bannerErr, "lastErr", lastErr, "lastMethod", lastMethod, "outPath",
+                outPath))
+            Maps_Fail("❌ Maps: " bannerErr, browserHwnd, Maps_DebugHideMs())
             loadingShown := false
             return
         }
@@ -875,11 +1081,19 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
         }
         Maps_RestoreMapTitle(uia)
         SplitPath(outPath, &savedName)
+        Maps_DebugLog("saved", Map("path", outPath, "name", savedName))
         StandardLoadingBar_Update("✅ Saved on Desktop: " savedName, BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(2800)
         loadingShown := false
     } catch Error as e {
-        Maps_Fail("❌ Maps: " . e.Message, browserHwnd)
+        extraText := ""
+        try extraText := "" e.Extra
+        catch {
+            extraText := ""
+        }
+        Maps_DebugLog("exception", Map("message", e.Message, "what", e.What, "extra", extraText, "file", e.File, "line",
+            e.Line))
+        Maps_Fail("❌ Maps: " . e.Message, browserHwnd, Maps_DebugHideMs())
         loadingShown := false
     } finally {
         if (chromeHidden && uia) {
