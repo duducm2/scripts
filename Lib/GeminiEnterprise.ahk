@@ -803,11 +803,14 @@ GeminiEnterprise_SubmitComposer(hwnd) {
         root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
         el := GeminiEnterprise_FocusComposer(root, false)
     }
-    if (!el || GeminiEnterprise_ComposerElementText(el) = "")
+    text := IsObject(el) ? GeminiEnterprise_ComposerElementText(el) : ""
+    if (text = "")
+        text := GeminiEnterprise_ComposerGetText(hwnd)
+    if (text = "")
         return
     SendInput "^{Enter}"
     Sleep 200
-    if (GeminiEnterprise_ComposerElementText(el) != "")
+    if (GeminiEnterprise_ComposerGetText(hwnd) != "")
         SendInput "{Enter}"
 }
 

@@ -90,9 +90,11 @@ IsAnyAiGenerating() {
 ; is not "empty" — only a visible stop control counts, otherwise unreadable.
 ; =============================================================================
 AiCompanion_IsComposerPlaceholder(text) {
+    ; A blank Value is not proof the field is empty. ProseMirror often reports no value
+    ; while the prompt is still visible.
     t := Trim(text)
     if (t = "")
-        return true
+        return false
     for p in ["Ask anything", "Ask Gemini", "Message Copilot", "Message ChatGPT", "Pergunte qualquer coisa"] {
         if (t = p)
             return true
@@ -249,9 +251,18 @@ AiCompanion_ReadComposer(hwnd, companionId, &text) {
         pf := AiCompanion_ComposerSlot(hwnd, companionId)
         if (!pf)
             pf := AiCompanion_FindComposerElement(root, companionId)
-        if (!pf || !AiCompanion_ReadElementText(pf, &text))
+        if (pf)
+            AiCompanion_ReadElementText(pf, &text)
+        if (Trim(text) = "" && companionId = "enterprise") {
+            ; Value/TextPattern stay blank on the ProseMirror composer. Clipboard is the read that sees the text.
+            try text := GeminiEnterprise_ComposerGetText(hwnd)
+            catch
+                text := ""
+        }
+        if (Trim(text) = "")
             return "missing"
-        AiCompanion_ComposerSlot(hwnd, companionId, pf, true)
+        if (pf)
+            AiCompanion_ComposerSlot(hwnd, companionId, pf, true)
         return "ok"
     } catch {
     }
@@ -284,8 +295,6 @@ AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, timeoutMs := 1000, sn
         return "unreadable"
     if (snapOk && Trim(sentText) = "")
         return "empty"
-    if (!snapOk)
-        return "unreadable"
     if (timeoutMs > 1000)
         timeoutMs := 1000
     if (timeoutMs < 200)
@@ -303,14 +312,28 @@ AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, timeoutMs := 1000, sn
     if (!composer)
         return "unreadable"
     cur := ""
-    if (!AiCompanion_ReadElementValue(composer, &cur)) {
-        if (!AiCompanion_ReadElementText(composer, &cur))
-            return "unreadable"
+    if (snapOk) {
+        if (!AiCompanion_ReadElementValue(composer, &cur) || Trim(cur) = "") {
+            if (companionId = "enterprise") {
+                try cur := GeminiEnterprise_ComposerGetText(hwnd)
+                catch
+                    cur := ""
+            } else if (!AiCompanion_ReadElementText(composer, &cur)) {
+                cur := ""
+            }
+        }
     }
-    if (AiCompanion_ComposerHolds(cur, sentText)) {
+    if (snapOk && AiCompanion_ComposerHolds(cur, sentText)) {
         Sleep 200
         cur := ""
-        if (!AiCompanion_ReadElementValue(composer, &cur) || AiCompanion_ComposerHolds(cur, sentText))
+        if (companionId = "enterprise") {
+            try cur := GeminiEnterprise_ComposerGetText(hwnd)
+            catch
+                cur := sentText
+        } else if (!AiCompanion_ReadElementValue(composer, &cur)) {
+            cur := sentText
+        }
+        if (AiCompanion_ComposerHolds(cur, sentText))
             return "held"
     }
     deadline := tStart + timeoutMs
