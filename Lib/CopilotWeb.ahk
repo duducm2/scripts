@@ -370,6 +370,18 @@ CopilotWeb_FindSendButton(uia) {
 }
 
 CopilotWeb_SubmitComposer(hwnd) {
+    ; A mapped Send click is the submit. Skip the browser attach and Enter.
+    try {
+        root := CopilotWeb_ReadRootFromHwnd(hwnd, 0)
+        if (IsObject(root)) {
+            saved := AiCompanionButtons_FindSaved(root, AI_COMPANION_COPILOT, "Send")
+            if (IsObject(saved) && !CopilotWeb_FindStopGenerating(root)) {
+                if (AiCompanionButtons_Click(saved))
+                    return
+            }
+        }
+    } catch {
+    }
     try {
         uia := UIA_Browser("ahk_id " hwnd)
         CopilotWeb_TrySubmit(uia)
