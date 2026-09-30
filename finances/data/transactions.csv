@@ -128,14 +128,14 @@ TX131,2026-09-08,Toilet paper container and zippers,"55,79",card_expense,CAT_MAT
 TX132,2026-09-10,Invoice payment — Mercado Pago,"8405,65",transfer,,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX133,2026-09-10,Balance adjustment,"266,98",adjustment,CAT_AJUSTE,ACC_MERCADOP,,,1,1,,0
 TX134,2026-09-10,Adjustment,"259,59",card_expense,CAT_AJUSTE,,CARD_MP,,1,1,,0
-TX135,2026-09-10,Bosch PowerTools,"1306,90",card_expense,CAT_NEWHOUSE,,CARD_NUBANK,,1,1,,0
+TX135,2026-09-10,Bosch PowerTools,"1306,90",card_expense,CAT_NEWHOUSE,,CARD_NUBANK,,1,1,,1
 TX136,2026-09-09,Gas station,"150,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX137,2026-09-09,Dining with fiancé,"79,90",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX139,2026-09-09,Educational books,"280,33",card_expense,CAT_EDUCACAO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX140,2026-09-10,Toll Booth,"50,00",card_expense,CAT_CARRO,,CARD_MP,,1,1,,0
 TX141,2026-09-11,Lunch,"47,15",card_expense,CAT_ALIMENTA,,CARD_MP,,1,1,,0
 TX142,2026-09-12,Dinner with mother in law,"195,25",card_expense,CAT_LAZER,,CARD_MP,,1,1,,0
-TX143,2026-09-12,Book,"40,00",card_expense,CAT_EDUCACAO,,CARD_NUBANK,,1,1,,0
+TX143,2026-09-12,Book,"40,00",card_expense,CAT_EDUCACAO,,CARD_NUBANK,,1,1,,1
 TX144,2026-09-14,Salary,"3546,10",income,CAT_SALARIO,ACC_MERCADOP,,,1,1,,0
 TX145,2026-09-14,Gym protector,"14,85",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX146,2026-09-15,Overleaf,"25,88",card_expense,CAT_EDUCACAO,ACC_MERCADOP,CARD_MP,,1,1,,0
@@ -185,3 +185,8 @@ TX190,2026-09-28,launch,"26,25",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,
 TX191,2026-09-28,haircut Rip,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
 TX192,2026-09-28,Meal voucher deposit,"500,00",income,CAT_SALARIO,ACC_MEALVOUC,,,1,1,,0
 TX193,2026-09-28,Meal voucher usage,"500,00",expense,CAT_ALIMENTA,ACC_MEALVOUC,,,1,1,,0
+TX194,2026-09-29,CACAMB - wreckage for new house,"350,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX195,2026-09-29,Received from husband,"40,00",income,CAT_PRESENTE,ACC_MERCADOP,,,1,1,,0
+TX196,2026-09-29,Therapy,"180,00",expense,CAT_SAUDE,ACC_MERCADOP,,,1,1,,0
+TX197,2026-09-29,,"452,28",transfer,,ACC_MERCADOP,,ACC_NUBANKMA,1,1,,0
+TX198,2026-09-30,Invoice payment — NuBank,"1346,90",transfer,,ACC_NUBANKMA,CARD_NUBANK,,1,1,,0
