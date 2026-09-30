@@ -13,6 +13,7 @@ CleanupHotstringSelector() {
     global g_UtilitySelectorFilterQuery, g_UtilitySelectorFilterTyping, g_UtilitySelectorSuppressFilterKillFocus
     global g_HotstringSelectorFilterCtrl, g_HotstringSelectorPathDetail
 
+    UtilityShortcuts_ClearOpenerKeySwallow()
     g_HotstringSelectorActive := false
     g_UtilitySelectorFilterTyping := false
     g_UtilitySelectorSuppressFilterKillFocus := false

@@ -13,6 +13,10 @@ HandleHotstringChar(char) {
     if (!g_HotstringSelectorActive)
         return
 
+    ; The opener letter (W on #!+W) is still down. Do not run that Macros entry.
+    if UtilityShortcuts_ShouldSwallowOpenerKey(char)
+        return
+
     if (g_UtilitySelectorMode = "top") {
         ch := StrLower(char)
         if (g_UtilityTopCategoryById.Has(ch))

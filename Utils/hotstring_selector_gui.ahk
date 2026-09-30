@@ -438,9 +438,8 @@ ShowHotstringSelector(initialCategory := "") {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRestoreHwnd
     global g_UtilitySelectorNoActivate, g_OnEscapePressed
 
-    ; Before the GUI takes focus: let the opener chord come up, then drop any leftover Control.
-    UtilityShortcuts_WaitForOpenerChord()
-    UtilityShortcuts_ReleaseStuckModifiers()
+    ; Drop Win/Alt/Shift/Ctrl immediately. Waiting for each key-up blocked the menu.
+    UtilityShortcuts_DismissOpenerChord()
 
     if (g_HotstringSelectorActive && UtilitySelector_GuiIsAlive()) {
         ; Same view again → toggle close. Different category → switch without full reopen.
