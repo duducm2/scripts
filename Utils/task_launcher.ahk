@@ -13,30 +13,11 @@ Task_ServerPort() {
 
 ; Work PC → work column; personal PC → personal column (IS_WORK_ENVIRONMENT).
 Task_EnvDefaultFocus() {
-    global IS_WORK_ENVIRONMENT
-    try {
-        if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
-            return "work"
-    } catch {
-    }
-    return "personal"
-}
-
-Task_WriteEnvDefaultFocus() {
-    focus := Task_EnvDefaultFocus()
-    path := Task_DataDir() . "\environment.txt"
-    try FileDelete(path)
-    catch {
-    }
-    try FileAppend(focus, path, "UTF-8")
-    catch {
-    }
-    return focus
+    return Task_DefaultFilterForEnv()
 }
 
 Task_LaunchApp() {
     Task_EnsureData()
-    Task_WriteEnvDefaultFocus()
     existing := Task_FindExistingDashboardHwnd()
     if (existing) {
         if (!Task_IsServerRunning()) {

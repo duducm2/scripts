@@ -92,20 +92,60 @@ Task_SettingsPath() {
     return Task_DataDir() . "\settings.ini"
 }
 
+; Work PC starts on Work; personal PC starts on Personal. A saved Filter in settings.ini wins.
+Task_DefaultFilterForEnv() {
+    global IS_WORK_ENVIRONMENT
+    try {
+        if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+            return "work"
+    } catch {
+    }
+    return "personal"
+}
+
+; Keys both PCs must have. Add a row here when a setting is introduced.
+; Task_EnsureSettings writes a row only when that key is absent, so a value set on
+; one machine is never replaced by a pull or by a run on the other machine.
+; Filter's default follows the environment; every other default is the same on both.
+Task_SettingsDefaults() {
+    return [
+        ["General", "Filter", Task_DefaultFilterForEnv()],
+        ["General", "LastProjectId", ""],
+        ["General", "DashboardChromeHwnd", ""],
+        ["Dashboard", "ShowByFilter", "1"],
+        ["Dashboard", "ShowByEmoji", "1"],
+        ["Dashboard", "ShowHabitsUpcoming", "1"],
+        ["Dashboard", "ShowCompletedRecent", "1"]
+    ]
+}
+
 Task_EnsureSettings() {
     path := Task_SettingsPath()
-    if (FileExist(path))
-        return
-    content := "[General]`n"
-        . "Filter=work`n"
-        . "LastProjectId=`n"
-        . "DashboardChromeHwnd=`n"
-        . "`n[Dashboard]`n"
-        . "ShowByFilter=1`n"
-        . "ShowByEmoji=1`n"
-        . "ShowHabitsUpcoming=1`n"
-        . "ShowCompletedRecent=1`n"
-    Task_WriteUtf8(path, content)
+    missing := Chr(1)
+    for item in Task_SettingsDefaults() {
+        current := missing
+        try current := IniRead(path, item[1], item[2], missing)
+        catch
+            current := missing
+        if (current != missing)
+            continue
+        try IniWrite(item[3], path, item[1], item[2])
+        catch {
+        }
+    }
+}
+
+; Dashboard default column. Rewritten on each ensure so a pulled copy cannot stick.
+Task_WriteEnvDefaultFocus() {
+    focus := Task_DefaultFilterForEnv()
+    path := Task_DataDir() . "\environment.txt"
+    try FileDelete(path)
+    catch {
+    }
+    try FileAppend(focus, path, "UTF-8")
+    catch {
+    }
+    return focus
 }
 
 Task_Setting(section, key, default := "") {
@@ -314,6 +354,7 @@ Task_Load(kind) {
 Task_EnsureData() {
     Task_DataDir()
     Task_EnsureSettings()
+    Task_WriteEnvDefaultFocus()
     for kind in ["projects", "sections", "tasks", "info_points", "attachments"] {
         path := Task_DataDir() . "\" . kind . ".csv"
         if (!FileExist(path)) {
@@ -328,9 +369,10 @@ Task_EnsureData() {
         }
     }
     global g_TaskFilter
-    g_TaskFilter := Task_Setting("General", "Filter", "work")
+    envFilt := Task_DefaultFilterForEnv()
+    g_TaskFilter := Task_Setting("General", "Filter", envFilt)
     if (g_TaskFilter = "" || g_TaskFilter = "all")
-        g_TaskFilter := "work"
+        g_TaskFilter := envFilt
 }
 
 Task_FindById(rows, id) {
@@ -994,7 +1036,8 @@ Task_Terms() {
         ["Project", "Container for tasks. Flat list; MD headings become section_path on children."],
         ["Task", "Actionable punctual item. Habits are separate (kind=habitual) and do not count as open."],
         ["Habit", "Recurring item (kind=habitual). Track due items on the Tasks dashboard."],
-        ["Filter", "Browse starts on Work. While browsing: 1=Work  2=Personal  3=Habits."],
+        ["Filter",
+            "Browse starts on this PC's environment (Work or Personal). While browsing: 1=Work  2=Personal  3=Habits."],
         ["Emoji", "🔲 general  ⏳ waiting  ⚡ important  ✅ done  ❓ doubt  ℹ️ info  or any custom."],
         ["Info point", "Non-actionable note attached to a project or task (large text)."],
         ["Attachment", "image | url | file | text refs under tasks/data/attachments or absolute paths."]

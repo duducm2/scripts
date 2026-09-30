@@ -142,6 +142,15 @@ WebWarmup_TaskEnvFocus() {
 WebWarmup_WriteTaskEnvFocus(dataDir) {
     focus := WebWarmup_TaskEnvFocus()
     path := dataDir . "\environment.txt"
+    existing := ""
+    try {
+        if (FileExist(path))
+            existing := Trim(FileRead(path, "UTF-8"), " `t`r`n")
+    } catch {
+        existing := ""
+    }
+    if (existing = focus)
+        return
     try FileDelete(path)
     catch {
     }
@@ -153,19 +162,20 @@ WebWarmup_WriteTaskEnvFocus(dataDir) {
 WebWarmup_StartTaskServer() {
     global WEB_WARMUP_TASK_PORT
     port := WEB_WARMUP_TASK_PORT
+    root := WebWarmup_ScriptsRoot()
+    dataDir := root . "\tasks\data"
+    WebWarmup_EnsureDir(dataDir)
+    ; Same work/personal rule as Task_DefaultFilterForEnv. Refresh even if the server is already up.
+    WebWarmup_WriteTaskEnvFocus(dataDir)
     if (WebWarmup_HealthOk(port))
         return true
-    root := WebWarmup_ScriptsRoot()
     py := root . "\tasks\python\task_server.py"
     if (!FileExist(py))
         return false
     pyCmd := WebWarmup_FindPythonCmd()
     if (pyCmd = "")
         return false
-    dataDir := root . "\tasks\data"
-    WebWarmup_EnsureDir(dataDir)
     WebWarmup_EnsureDir(dataDir . "\attachments")
-    WebWarmup_WriteTaskEnvFocus(dataDir)
     cmd := pyCmd . ' -u "' . py . '" --data-dir "' . dataDir . '" --scripts-root "' . root
         . '" --port ' . port
     try Run(cmd, root, "Hide")
