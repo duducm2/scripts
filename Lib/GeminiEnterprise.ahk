@@ -30,6 +30,7 @@ global g_GeminiEnterpriseHotkeyActive := false
 global g_GeminiEnterpriseCachedTitle := ""
 global g_GeminiEnterprise_ForegroundHookHandle := 0
 global g_GeminiEnterprise_ForegroundHookCallback := 0
+global g_GeminiEnterpriseGenWatchCb := ""
 
 ; Consumer Gemini title: contains "gemini" but is not Enterprise (avoids false HotIf).
 IsConsumerGeminiChromeTitle(title) {
@@ -62,9 +63,11 @@ GeminiEnterprise_IsChromeHwnd(hwnd) {
     }
 }
 
-GeminiEnterprise_ReadRootFromHwnd(hwnd) {
+; activateChromiumAccessibility 0 skips WM_GETOBJECT. The generation watcher uses 0 so
+; repeated polls do not keep Chrome's accessibility tree enabled.
+GeminiEnterprise_ReadRootFromHwnd(hwnd, activateChromiumAccessibility := 500) {
     try
-        return UIA.ElementFromHandle(hwnd)
+        return UIA.ElementFromHandle(hwnd, unset, activateChromiumAccessibility)
     catch
         return 0
 }
@@ -839,30 +842,56 @@ GeminiEnterprise_TrySubmit(uia := 0) {
     return true
 }
 
-GeminiEnterprise_WaitForGenerationComplete(timeoutMs := 300000) {
+GeminiEnterprise_StopGenerationWatch() {
+    global g_GeminiEnterpriseGenWatchCb
+    if (g_GeminiEnterpriseGenWatchCb != "") {
+        try SetTimer(g_GeminiEnterpriseGenWatchCb, 0)
+        g_GeminiEnterpriseGenWatchCb := ""
+    }
+}
+
+; One check per tick, then return, so Shift hotkeys are not blocked for the whole reply.
+GeminiEnterprise_WaitForGenerationComplete(timeoutMs := 180000) {
+    global g_GeminiEnterpriseGenWatchCb
     hwnd := WinExist("A")
     if (!hwnd || !GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast"))
         return
-    start := A_TickCount
-    sawStop := false
-    while (A_TickCount - start < timeoutMs) {
-        if (!WinExist("ahk_id " hwnd))
-            return
-        uia := GeminiEnterprise_ReadRootFromHwnd(hwnd)
-        stopBtn := IsObject(uia) ? GeminiEnterprise_FindStopButton(uia) : 0
-        if (stopBtn) {
-            sawStop := true
-        } else if (sawStop) {
-            if (IsSoundEnabled())
-                ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
-            return
-        } else {
-            ; No stop control ever appeared — do not block forever on landing submit.
-            if (A_TickCount - start > 2500)
-                return
-        }
-        Sleep 500
+    GeminiEnterprise_StopGenerationWatch()
+    capMs := 180000
+    if (timeoutMs > 0 && timeoutMs < capMs)
+        capMs := timeoutMs
+    state := { hwnd: hwnd, start: A_TickCount, sawStop: false, deadline: A_TickCount + capMs, cb: "" }
+    cb := GeminiEnterprise_GenerationWatchTick.Bind(state)
+    state.cb := cb
+    g_GeminiEnterpriseGenWatchCb := cb
+    SetTimer(cb, -400)
+}
+
+GeminiEnterprise_GenerationWatchTick(state) {
+    global g_GeminiEnterpriseGenWatchCb
+    if (g_GeminiEnterpriseGenWatchCb != state.cb)
+        return
+    if (!WinExist("ahk_id " state.hwnd) || A_TickCount > state.deadline) {
+        GeminiEnterprise_StopGenerationWatch()
+        return
     }
+    uia := GeminiEnterprise_ReadRootFromHwnd(state.hwnd, 0)
+    stopBtn := IsObject(uia) ? GeminiEnterprise_FindStopButton(uia) : 0
+    if (stopBtn) {
+        state.sawStop := true
+    } else if (state.sawStop) {
+        GeminiEnterprise_StopGenerationWatch()
+        if (IsSoundEnabled())
+            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
+        return
+    } else if (A_TickCount - state.start > 2500) {
+        ; No stop control ever appeared — do not watch a landing submit.
+        GeminiEnterprise_StopGenerationWatch()
+        return
+    }
+    if (g_GeminiEnterpriseGenWatchCb != state.cb)
+        return
+    SetTimer(state.cb, -400)
 }
 
 ; --- Copy last response + async streaming monitor (#!+8 pronunciation) ----------

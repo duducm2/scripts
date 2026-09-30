@@ -24,6 +24,7 @@ global g_CopilotWebHotkeyActive := false
 global g_CopilotWebCachedTitle := ""
 global g_CopilotWeb_ForegroundHookHandle := 0
 global g_CopilotWeb_ForegroundHookCallback := 0
+global g_CopilotWebGenWatchCb := ""
 COPILOT_READ_ALOUD_NAMES := ["Read aloud", "Read Aloud", "Ler em voz alta"]
 COPILOT_MORE_OPTIONS_NAMES := ["More options", "Show more options", "Mais opções"]
 COPILOT_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
@@ -164,9 +165,11 @@ CopilotWeb_TitleMatchesCopilot(title) {
 }
 
 ; Background-safe UIA root (no UIA_Browser init — avoids WinActivate side effects).
-CopilotWeb_ReadRootFromHwnd(hwnd) {
+; activateChromiumAccessibility 0 skips WM_GETOBJECT. The generation watcher uses 0 so
+; repeated polls do not keep Chrome's accessibility tree enabled.
+CopilotWeb_ReadRootFromHwnd(hwnd, activateChromiumAccessibility := 500) {
     try
-        return UIA.ElementFromHandle(hwnd)
+        return UIA.ElementFromHandle(hwnd, unset, activateChromiumAccessibility)
     catch
         return 0
 }
@@ -2436,39 +2439,56 @@ CopilotWeb_PlayCompletionChime() {
     }
 }
 
-CopilotWeb_WaitForGenerationComplete(timeout := 300000) {
+CopilotWeb_StopGenerationWatch() {
+    global g_CopilotWebGenWatchCb
+    if (g_CopilotWebGenWatchCb != "") {
+        try SetTimer(g_CopilotWebGenWatchCb, 0)
+        g_CopilotWebGenWatchCb := ""
+    }
+}
+
+; One check per tick, then return, so Shift hotkeys are not blocked for the whole reply.
+; Does not call CopilotWeb_VerifyStreamingStopped (that helper sleeps in a loop).
+CopilotWeb_WaitForGenerationComplete(timeout := 180000) {
+    global g_CopilotWebGenWatchCb
     hwnd := WinExist("A")
     if (!hwnd || !CopilotWeb_IsCopilotHwnd(hwnd, "fast"))
         return
-    uia := CopilotWeb_ReadRootFromHwnd(hwnd)
-    if (!uia)
+    CopilotWeb_StopGenerationWatch()
+    capMs := 180000
+    if (timeout > 0 && timeout < capMs)
+        capMs := timeout
+    state := { hwnd: hwnd, start: A_TickCount, sawStop: false, deadline: A_TickCount + capMs, cb: "" }
+    cb := CopilotWeb_GenerationWatchTick.Bind(state)
+    state.cb := cb
+    g_CopilotWebGenWatchCb := cb
+    SetTimer(cb, -400)
+}
+
+CopilotWeb_GenerationWatchTick(state) {
+    global g_CopilotWebGenWatchCb
+    if (g_CopilotWebGenWatchCb != state.cb)
         return
-    deadline := (timeout > 0) ? (A_TickCount + timeout) : 0
-    found := false
-    while (timeout <= 0 || A_TickCount < deadline) {
-        if (CopilotWeb_FindStopGenerating(uia)) {
-            found := true
-            break
-        }
-        Sleep 250
-        uia := CopilotWeb_ReadRootFromHwnd(hwnd)
-        if (!uia)
-            return
-    }
-    if (!found)
+    if (!WinExist("ahk_id " state.hwnd) || A_TickCount > state.deadline) {
+        CopilotWeb_StopGenerationWatch()
         return
-    while (timeout <= 0 || A_TickCount < deadline) {
-        while (CopilotWeb_FindStopGenerating(uia)) {
-            Sleep 250
-            uia := CopilotWeb_ReadRootFromHwnd(hwnd)
-            if (!uia)
-                return
-        }
-        if (CopilotWeb_VerifyStreamingStopped(hwnd)) {
-            CopilotWeb_PlayCompletionChime()
-            return
-        }
     }
+    uia := CopilotWeb_ReadRootFromHwnd(state.hwnd, 0)
+    stopBtn := IsObject(uia) ? CopilotWeb_FindStopGenerating(uia) : 0
+    if (stopBtn) {
+        state.sawStop := true
+    } else if (state.sawStop) {
+        CopilotWeb_StopGenerationWatch()
+        CopilotWeb_PlayCompletionChime()
+        return
+    } else if (A_TickCount - state.start > 2500) {
+        ; No stop control ever appeared — do not watch for the rest of the old 5 minute budget.
+        CopilotWeb_StopGenerationWatch()
+        return
+    }
+    if (g_CopilotWebGenWatchCb != state.cb)
+        return
+    SetTimer(state.cb, -400)
 }
 
 ; Pronunciation #!+8 language picker lives in Gemini\hotkey_pronunciation.ahk
