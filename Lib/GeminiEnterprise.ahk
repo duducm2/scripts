@@ -44,7 +44,12 @@ IsConsumerGeminiChromeTitle(title) {
 GeminiEnterprise_TitleMatches(title) {
     if (!title)
         return false
-    return InStr(title, GEMINI_ENTERPRISE_TITLE_NEEDLE, false)
+    if (InStr(title, GEMINI_ENTERPRISE_TITLE_NEEDLE, false))
+        return true
+    ; AskBosch / Vertex tabs often omit the words "Gemini Enterprise".
+    if (InStr(title, "AskBosch", false) || InStr(title, "Ask Bosch", false))
+        return true
+    return InStr(title, "Vertex AI Search", false)
 }
 
 GeminiEnterprise_UrlMatches(url) {
@@ -104,9 +109,9 @@ GeminiEnterprise_ClickUiaElement(el) {
     return false
 }
 
-GeminiEnterprise_TryUrlFromAddressBar(hwnd) {
+GeminiEnterprise_TryUrlFromAddressBar(hwnd, activateChromiumAccessibility := 500) {
     try {
-        root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+        root := GeminiEnterprise_ReadRootFromHwnd(hwnd, activateChromiumAccessibility)
         if (!root)
             return false
         edit := GeminiEnterprise_FindFirstInUia(root, [{ Name: "Address and search bar", ControlType: "Edit" }, { AutomationId: "view_1012",
@@ -167,7 +172,7 @@ GeminiEnterprise_IsEnterpriseHwnd(hwnd, mode := "full") {
             return true
     } catch {
     }
-    if (GeminiEnterprise_TryUrlFromAddressBar(hwnd))
+    if (GeminiEnterprise_TryUrlFromAddressBar(hwnd, 0))
         return true
     if (mode = "fast")
         return false
@@ -213,19 +218,24 @@ GeminiEnterprise_RefreshHotkeyContext(hwnd, useFull := false) {
 }
 
 GeminiEnterprise_OnForegroundChanged(hwnd) {
-    if (!hwnd || !WinExist("ahk_id " hwnd)) {
-        global g_GeminiEnterpriseHotkeyActive, g_GeminiEnterpriseCachedTitle
-        g_GeminiEnterpriseHotkeyActive := false
-        g_GeminiEnterpriseCachedTitle := ""
+    ; Title only. A UI Automation walk here runs on the script thread and holds the
+    ; keyboard hook, so Alt+P in WindowManagement never reaches Clip Angel.
+    if (!hwnd || !WinExist("ahk_id " hwnd) || !GeminiEnterprise_IsChromeHwnd(hwnd))
+        return
+    global g_GeminiEnterpriseHotkeyActive, g_GeminiEnterpriseCachedHwnd, g_GeminiEnterpriseCachedTitle
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (GeminiEnterprise_TitleMatches(title)) {
+        g_GeminiEnterpriseHotkeyActive := true
+        g_GeminiEnterpriseCachedHwnd := hwnd
+        GeminiEnterprise_CacheHwnd(hwnd)
+        g_GeminiEnterpriseCachedTitle := title
         return
     }
-    if (!GeminiEnterprise_IsChromeHwnd(hwnd)) {
-        global g_GeminiEnterpriseHotkeyActive, g_GeminiEnterpriseCachedTitle
+    if (hwnd = g_GeminiEnterpriseCachedHwnd) {
         g_GeminiEnterpriseHotkeyActive := false
-        g_GeminiEnterpriseCachedTitle := ""
-        return
+        g_GeminiEnterpriseCachedTitle := title
     }
-    GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
 }
 
 GeminiEnterprise_ForegroundHookProc(hHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
@@ -259,16 +269,18 @@ IsGeminiEnterpriseChromeActiveForHotkey_Run() {
     if (!hwnd || !GeminiEnterprise_IsChromeHwnd(hwnd))
         return false
     global g_GeminiEnterpriseHotkeyActive, g_GeminiEnterpriseCachedHwnd, g_GeminiEnterpriseCachedTitle
-    try {
-        title := WinGetTitle("ahk_id " hwnd)
-    } catch {
-        title := ""
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (GeminiEnterprise_TitleMatches(title)) {
+        g_GeminiEnterpriseHotkeyActive := true
+        g_GeminiEnterpriseCachedHwnd := hwnd
+        GeminiEnterprise_CacheHwnd(hwnd)
+        g_GeminiEnterpriseCachedTitle := title
+        return true
     }
-    ; Same window and title: cached yes/no. A title change uses fast mode only.
-    ; Full UI Automation stays on the foreground hook.
-    if (hwnd = g_GeminiEnterpriseCachedHwnd && title = g_GeminiEnterpriseCachedTitle)
-        return g_GeminiEnterpriseHotkeyActive
-    return GeminiEnterprise_RefreshHotkeyContext(hwnd, false)
+    if (hwnd = g_GeminiEnterpriseCachedHwnd && g_GeminiEnterpriseHotkeyActive)
+        return true
+    return false
 }
 
 GeminiEnterprise_GetActiveUia() {
@@ -854,8 +866,15 @@ GeminiEnterprise_StopGenerationWatch() {
 GeminiEnterprise_WaitForGenerationComplete(timeoutMs := 180000) {
     global g_GeminiEnterpriseGenWatchCb
     hwnd := WinExist("A")
-    if (!hwnd || !GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast"))
+    if (!hwnd || !GeminiEnterprise_IsChromeHwnd(hwnd))
         return
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (!GeminiEnterprise_TitleMatches(title)) {
+        global g_GeminiEnterpriseHotkeyActive, g_GeminiEnterpriseCachedHwnd
+        if !(hwnd = g_GeminiEnterpriseCachedHwnd && g_GeminiEnterpriseHotkeyActive)
+            return
+    }
     GeminiEnterprise_StopGenerationWatch()
     capMs := 180000
     if (timeoutMs > 0 && timeoutMs < capMs)

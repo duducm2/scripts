@@ -159,9 +159,11 @@ CopilotWeb_TitleMatchesCopilot(title) {
         return false
     if (COPILOT_WEB_TITLE_NEEDLE != "" && InStr(title, COPILOT_WEB_TITLE_NEEDLE, false))
         return true
-    if (InStr(title, "Chat | M365 Copilot", false))
+    if (InStr(title, "M365 Copilot", false))
         return true
-    return false
+    if (InStr(title, "Microsoft 365 Copilot", false))
+        return true
+    return InStr(title, "Microsoft Copilot", false)
 }
 
 ; Background-safe UIA root (no UIA_Browser init — avoids WinActivate side effects).
@@ -174,9 +176,9 @@ CopilotWeb_ReadRootFromHwnd(hwnd, activateChromiumAccessibility := 500) {
         return 0
 }
 
-CopilotWeb_TryUrlFromAddressBar(hwnd) {
+CopilotWeb_TryUrlFromAddressBar(hwnd, activateChromiumAccessibility := 500) {
     try {
-        root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        root := CopilotWeb_ReadRootFromHwnd(hwnd, activateChromiumAccessibility)
         if (!root)
             return false
         edit := CopilotWeb_FindFirstInUia(root, [{ Name: "Address and search bar", ControlType: "Edit" }, { AutomationId: "view_1012",
@@ -240,7 +242,7 @@ CopilotWeb_IsCopilotHwnd(hwnd, mode := "full") {
             return true
     } catch {
     }
-    if (CopilotWeb_TryUrlFromAddressBar(hwnd))
+    if (CopilotWeb_TryUrlFromAddressBar(hwnd, 0))
         return true
     if (mode = "fast")
         return false
@@ -1297,19 +1299,24 @@ CopilotWeb_RefreshHotkeyContext(hwnd, useFull := false) {
 }
 
 CopilotWeb_OnForegroundChanged(hwnd) {
-    if (!hwnd || !WinExist("ahk_id " hwnd)) {
-        global g_CopilotWebHotkeyActive, g_CopilotWebCachedTitle
-        g_CopilotWebHotkeyActive := false
-        g_CopilotWebCachedTitle := ""
+    ; Title only. A UI Automation walk here runs on the script thread and holds the
+    ; keyboard hook, so Alt+P in WindowManagement never reaches Clip Angel.
+    if (!hwnd || !WinExist("ahk_id " hwnd) || !CopilotWeb_IsChromeHwnd(hwnd))
+        return
+    global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (CopilotWeb_TitleMatchesCopilot(title)) {
+        g_CopilotWebHotkeyActive := true
+        g_CopilotWebCachedHwnd := hwnd
+        CopilotWeb_CacheHwnd(hwnd)
+        g_CopilotWebCachedTitle := title
         return
     }
-    if (!CopilotWeb_IsChromeHwnd(hwnd)) {
-        global g_CopilotWebHotkeyActive, g_CopilotWebCachedTitle
+    if (hwnd = g_CopilotWebCachedHwnd) {
         g_CopilotWebHotkeyActive := false
-        g_CopilotWebCachedTitle := ""
-        return
+        g_CopilotWebCachedTitle := title
     }
-    CopilotWeb_RefreshHotkeyContext(hwnd, true)
 }
 
 CopilotWeb_ForegroundHookProc(hHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
@@ -1343,16 +1350,18 @@ IsCopilotWebChromeActiveForHotkey_Run() {
     if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))
         return false
     global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
-    try {
-        title := WinGetTitle("ahk_id " hwnd)
-    } catch {
-        title := ""
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (CopilotWeb_TitleMatchesCopilot(title)) {
+        g_CopilotWebHotkeyActive := true
+        g_CopilotWebCachedHwnd := hwnd
+        CopilotWeb_CacheHwnd(hwnd)
+        g_CopilotWebCachedTitle := title
+        return true
     }
-    ; Same window and title: cached yes/no. A title change uses fast mode only.
-    ; Full UI Automation stays on the foreground hook.
-    if (hwnd = g_CopilotWebCachedHwnd && title = g_CopilotWebCachedTitle)
-        return g_CopilotWebHotkeyActive
-    return CopilotWeb_RefreshHotkeyContext(hwnd, false)
+    if (hwnd = g_CopilotWebCachedHwnd && g_CopilotWebHotkeyActive)
+        return true
+    return false
 }
 
 CopilotWeb_GetActiveUia() {
@@ -2452,8 +2461,15 @@ CopilotWeb_StopGenerationWatch() {
 CopilotWeb_WaitForGenerationComplete(timeout := 180000) {
     global g_CopilotWebGenWatchCb
     hwnd := WinExist("A")
-    if (!hwnd || !CopilotWeb_IsCopilotHwnd(hwnd, "fast"))
+    if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))
         return
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (!CopilotWeb_TitleMatchesCopilot(title)) {
+        global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd
+        if !(hwnd = g_CopilotWebCachedHwnd && g_CopilotWebHotkeyActive)
+            return
+    }
     CopilotWeb_StopGenerationWatch()
     capMs := 180000
     if (timeout > 0 && timeout < capMs)
