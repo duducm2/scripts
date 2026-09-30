@@ -22,8 +22,12 @@ global g_ReadingModeSnapLineH := 0
 global g_ReadingModeSnapCorrect := false
 
 ReadingMode_IsActive() {
+    ; #HotIf can call this before the super-global initializer is visible.
+    ; An unset flag is off; reading it unguarded throws.
     global g_ReadingModeOn
-    return !!g_ReadingModeOn
+    if !IsSet(g_ReadingModeOn)
+        g_ReadingModeOn := false
+    return g_ReadingModeOn
 }
 
 ReadingMode_CaptureContext() {
@@ -69,6 +73,8 @@ ReadingMode_StopContextMonitor() {
 ; Auto-off when active window changes, or Chrome/Edge tab changes (title changes).
 ReadingMode_ContextMonitor(*) {
     global g_ReadingModeOn, g_ReadingModeTrackedHwnd, g_ReadingModeTrackedTitle, g_ReadingModeOverlay
+    if !IsSet(g_ReadingModeOn)
+        g_ReadingModeOn := false
     if (!g_ReadingModeOn || !g_ReadingModeTrackedHwnd)
         return
 
@@ -326,6 +332,8 @@ ReadingMode_CorrectSnapOvershoot(bar, hwnd) {
 
 EnableReadingMode() {
     global g_ReadingModeOn
+    if !IsSet(g_ReadingModeOn)
+        g_ReadingModeOn := false
     if (g_ReadingModeOn)
         return
     g_ReadingModeOn := true
@@ -342,6 +350,8 @@ DisableReadingMode() {
     ReadingMode_CancelHoldSequence()
     ReadingMode_StopContextMonitor()
     ReadingMode_ClearTrackedContext()
+    if !IsSet(g_ReadingModeOn)
+        g_ReadingModeOn := false
     if (!g_ReadingModeOn) {
         ReadingMode_ClearOverlay()
         return
