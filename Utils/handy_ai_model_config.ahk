@@ -70,21 +70,11 @@ global g_AiModelBannerGui := false
 
 global g_HandyModelSwitchBusy := false
 
-; In-process slot cache (shortcuts, modal highlight, flag init share this after INI load).
+; In-process slot cache (shortcuts and the model picker share this after INI load).
 
 global g_HandyAiPersistedSlot := 0
 
-; Persistent language flag indicator (slot 1 = UK, slot 2 = Brazil, slot 3 = multi); see docs/standard_information_display.md "Persistent Indicators".
-
-global g_LanguageFlagGuis := []
-
-global g_LanguageFlagSlot := 0
-
-global LANGUAGE_FLAG_WIDTH := 45                ; px (~30% smaller than 64); aspect kept via Picture h:-1
-
-global LANGUAGE_FLAG_MARGIN := 20               ; px from work-area right/bottom
-
-; AppLaunchers.ahk is the single owner for the language flag and Handy model hotkeys.
+; AppLaunchers.ahk is the single owner for Handy model hotkeys and the recording flag.
 
 HandyAi_IsOwnerProcess() {
 
@@ -242,9 +232,6 @@ Handy_SetPersistedAiModelSlot(slot) {
 
 }
 
-; Warm in-process slot cache from INI at include time (modal correct before flag timer).
+; Warm in-process slot cache from INI at include time (modal highlight before any take).
 
 Handy_GetPersistedAiModelSlot()
-
-; Language flag startup retries live next to LanguageFlag_InitFromPersistedSlot
-; (250 ms, 1 s, 3 s) so a single early timer cannot be the only attempt after Act.

@@ -18,11 +18,11 @@ AiModelBanner_Hide() {
 }
 
 ; =============================================================================
-; Persistent Language Flag Indicator (slot 1 = UK, slot 2 = Brazil, slot 3 = multi)
+; Language flag images (slot 1 = UK, slot 2 = Brazil, slot 3 = multi)
 ; =============================================================================
-; Opaque, always-on-top flag chips pinned to the bottom-right of every monitor.
-; Slot 1 = English (UK), slot 2 = Portuguese (Brazil), slot 3 = multi-language (combined flag).
-; Use the visible flag as the spoken-language indicator across all screens.
+; The spoken-language flag is shown only while dictating (DictationFlag_*).
+; Do not pin a chip to the bottom-right of every monitor between takes.
+; LanguageFlag_GetImagePath is shared with the recording flag.
 ; =============================================================================
 
 LanguageFlag_GetImagePath(slot) {
@@ -42,173 +42,6 @@ LanguageFlag_GetImagePath(slot) {
             return p
     }
     return ""
-}
-
-LanguageFlag_CreateGui(slot, imagePath) {
-    global LANGUAGE_FLAG_WIDTH
-
-    ; Borderless, zero-margin window so the GUI sizes exactly to the bitmap.
-    ; Do NOT use WS_EX_TRANSPARENT (part of +E0x80020): that style suppresses
-    ; window painting and the flag can disappear entirely.
-    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-    flagGui.BackColor := "313244"
-    flagGui.MarginX := 0
-    flagGui.MarginY := 0
-
-    usedPicture := false
-    if (imagePath != "") {
-        try {
-            flagGui.Add("Picture", "w" . LANGUAGE_FLAG_WIDTH . " h-1", imagePath)
-            usedPicture := true
-        } catch {
-            usedPicture := false
-        }
-    }
-    if !usedPicture {
-        flagGui.SetFont("s13 cFFFFFF Bold", "Segoe UI")
-        label := (slot = 1) ? "EN" : (slot = 2) ? "PT" : (slot = 3) ? "EN+PT" : "?"
-        flagGui.Add("Text", "Center w" . LANGUAGE_FLAG_WIDTH . " h31 Background45475A", label)
-    }
-    flagGui.Show("AutoSize Hide")
-    return flagGui
-}
-
-LanguageFlag_Show(slot) {
-    global g_LanguageFlagGuis, g_LanguageFlagSlot
-
-    if (slot < 1 || slot > 3) {
-        LanguageFlag_Hide()
-        return
-    }
-
-    LanguageFlag_Hide()
-    g_LanguageFlagSlot := slot
-
-    imagePath := LanguageFlag_GetImagePath(slot)
-    monitorCount := MonitorGetCount()
-    if (monitorCount < 1)
-        return
-
-    loop monitorCount {
-        idx := A_Index
-        flagGui := LanguageFlag_CreateGui(slot, imagePath)
-        g_LanguageFlagGuis.Push({ monitor: idx, gui: flagGui })
-    }
-
-    LanguageFlag_RepositionAllMonitors()
-}
-
-LanguageFlag_Hide() {
-    global g_LanguageFlagGuis, g_LanguageFlagSlot
-    for item in g_LanguageFlagGuis {
-        try {
-            if IsObject(item.gui)
-                item.gui.Destroy()
-        } catch {
-        }
-    }
-    g_LanguageFlagGuis := []
-    g_LanguageFlagSlot := 0
-}
-
-LanguageFlag_RepositionAllMonitors() {
-    global g_LanguageFlagGuis, LANGUAGE_FLAG_MARGIN
-    if (!g_LanguageFlagGuis.Length)
-        return
-
-    for item in g_LanguageFlagGuis {
-        monitorIdx := item.monitor
-        flagGui := item.gui
-        if !IsObject(flagGui)
-            continue
-
-        try {
-            MonitorGetWorkArea(monitorIdx, &ml, &mt, &mr, &mb)
-            flagGui.GetPos(, , &gw, &gh)
-        } catch {
-            continue
-        }
-
-        guiX := mr - gw - LANGUAGE_FLAG_MARGIN
-        guiY := mb - gh - LANGUAGE_FLAG_MARGIN
-        if (guiX < ml)
-            guiX := ml
-        if (guiY < mt)
-            guiY := mt
-
-        try {
-            flagGui.Move(guiX, guiY)
-            hwnd := flagGui.Hwnd
-            if (hwnd) {
-                ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE = 0x0001 | 0x0004 | 0x0010 = 0x0015
-                DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0,
-                    "UInt", 0x0015)
-            }
-            flagGui.Show("NA")
-        } catch {
-        }
-    }
-}
-
-LanguageFlag_InitFromPersistedSlot() {
-    global g_HandyAiPersistedSlot
-    slot := 0
-    try slot := Handy_ReadPersistedAiModelSlotFromIni()
-    if (slot >= 1 && slot <= 3) {
-        g_HandyAiPersistedSlot := slot
-        LanguageFlag_Show(slot)
-    }
-}
-
-LanguageFlag_InitRetry1s() {
-    LanguageFlag_InitFromPersistedSlot()
-}
-
-LanguageFlag_InitRetry3s() {
-    LanguageFlag_InitFromPersistedSlot()
-}
-
-; Redraw off the hotkey / OnMessage thread. A closure timer can miss the slot.
-global g_LanguageFlagQueuedSlot := 0
-
-LanguageFlag_QueueShow(slot) {
-    global g_LanguageFlagQueuedSlot
-    if (slot < 1 || slot > 3)
-        return
-    g_LanguageFlagQueuedSlot := slot
-    SetTimer(LanguageFlag_ApplyQueuedSlot, -1)
-}
-
-LanguageFlag_ApplyQueuedSlot(*) {
-    global g_LanguageFlagQueuedSlot, g_HandyAiPersistedSlot, g_LanguageFlagSlot
-    slot := g_LanguageFlagQueuedSlot
-    g_LanguageFlagQueuedSlot := 0
-    if (slot < 1 || slot > 3)
-        return
-    g_HandyAiPersistedSlot := slot
-    if (slot != g_LanguageFlagSlot)
-        LanguageFlag_Show(slot)
-}
-
-; Model switches often run in whichever script owns the Utility menu.
-; That process saves the INI; only AppLaunchers owns the bottom chips.
-LanguageFlag_SyncFromPersistedSlot(*) {
-    global g_LanguageFlagSlot, g_HandyAiPersistedSlot
-    slot := 0
-    try slot := Handy_ReadPersistedAiModelSlotFromIni()
-    if (slot < 1 || slot > 3)
-        return
-    g_HandyAiPersistedSlot := slot
-    if (slot != g_LanguageFlagSlot)
-        LanguageFlag_Show(slot)
-}
-
-; AppLaunchers may still be settling right after Act. One early timer can miss the flag.
-if (HandyAi_IsOwnerProcess()) {
-    SetTimer(LanguageFlag_InitFromPersistedSlot, -250)
-    SetTimer(LanguageFlag_InitRetry1s, -1000)
-    SetTimer(LanguageFlag_InitRetry3s, -3000)
-    SetTimer(LanguageFlag_SyncFromPersistedSlot, 300)
 }
 
 ; Small banner for Clip Angel (uses standard loading indicator).
@@ -347,16 +180,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
             return false
         }
 
-        ; Flag GUIs belong to AppLaunchers. Other hosts still switch Handy and save the slot,
-        ; then ask AppLaunchers to draw the flag (the menu often lives in another script after Act).
-        if (HandyAi_IsOwnerProcess()) {
-            if (selection >= 1 && selection <= 3)
-                LanguageFlag_QueueShow(selection)
-            else
-                LanguageFlag_Hide()
-        } else if (selection >= 1 && selection <= 3) {
-            Handy_NotifyLanguageFlag(selection)
-        }
+        ; Slot is already in the INI. The language flag appears only while Recording is up.
 
         soundPath := A_ScriptDir . "\assets\sounds\handy-model-chosen.mp3"
         if (FileExist(soundPath))
@@ -401,8 +225,8 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
 }
 
 ; Utility Shortcuts (# !+U) is registered by every script that includes Utils.
-; After reboot the last script to start owns the menu. Model UIA and the language
-; flag only run in AppLaunchers, so other hosts must hand the slot across.
+; After reboot the last script to start owns the menu. Model UIA runs in
+; AppLaunchers when that script is up, so other hosts hand the slot across.
 HANDY_AI_MODEL_REQUEST_MSG_NAME := "EDU_HandyAi_SelectModel"
 
 Handy_FindAppLaunchersHwnd() {
@@ -448,12 +272,11 @@ Handy_AiModelRequestMsgId() {
 Handy_OnAiModelRequest(wParam, lParam, *) {
     raw := Integer(wParam)
     slot := raw & 0xFF
-    ; Flag only: another process already switched Handy. Do not run model UIA again.
+    ; Slot only: another process already switched Handy. Do not run model UIA again.
     if (raw & 0x200) {
         if (slot >= 1 && slot <= 3) {
             global g_HandyAiPersistedSlot
             g_HandyAiPersistedSlot := slot
-            LanguageFlag_QueueShow(slot)
         }
         return
     }
@@ -462,25 +285,9 @@ Handy_OnAiModelRequest(wParam, lParam, *) {
     SetTimer((*) => ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped), -1)
 }
 
-; Ask AppLaunchers to show the language flag for a slot this process just saved.
-Handy_NotifyLanguageFlag(slot) {
-    if (slot < 1 || slot > 3 || HandyAi_IsOwnerProcess())
-        return false
-    msg := Handy_AiModelRequestMsgId()
-    target := Handy_FindAppLaunchersHwnd()
-    if (!msg || !target)
-        return false
-    try {
-        PostMessage(msg, slot | 0x200, 0, , "ahk_id " target)
-        return true
-    } catch {
-        return false
-    }
-}
-
-; Owner runs the switch here. Another host asks AppLaunchers when that script is up
-; (so the language flag updates). After a reboot the menu often belongs to a
-; different script while AppLaunchers is still down — switch Handy locally then.
+; Owner runs the switch here. Another host asks AppLaunchers when that script is up.
+; After a reboot the menu often belongs to a different script while AppLaunchers
+; is still down — switch Handy locally then.
 ; restartDictationIfStopped: Utility Shortcuts K/L only. If a take was running, start again after the switch.
 Handy_RequestAiModelSelection(slot, restoreHwnd := 0, restartDictationIfStopped := false) {
     if (HandyAi_IsOwnerProcess()) {

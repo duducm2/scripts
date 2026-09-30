@@ -482,8 +482,6 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
         }
         ; Volume is applied here, while the other scripts are starting. The success overlay waits until the Tasks server has been restarted.
         ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate()
-        if (HandyAi_IsOwnerProcess())
-            LanguageFlag_InitFromPersistedSlot()
     } catch {
     }
 }
