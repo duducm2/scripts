@@ -816,6 +816,18 @@ GeminiEnterprise_ComposerElementText(el) {
 
 GeminiEnterprise_SubmitComposer(hwnd) {
     uia := 0
+    ; A mapped Send click is the submit. Skip the composer re-read and extra keys.
+    try {
+        root := GeminiEnterprise_ReadRootFromHwnd(hwnd, 0)
+        if (IsObject(root)) {
+            saved := AiCompanionButtons_FindSaved(root, AI_COMPANION_ENTERPRISE, "Send")
+            if (IsObject(saved) && !GeminiEnterprise_FindStopButton(root)) {
+                if (GeminiEnterprise_ClickUiaElement(saved))
+                    return
+            }
+        }
+    } catch {
+    }
     try {
         uia := UIA_Browser("ahk_id " hwnd)
         GeminiEnterprise_TrySubmit(uia)
