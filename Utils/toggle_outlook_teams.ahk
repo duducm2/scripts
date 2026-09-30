@@ -9,7 +9,7 @@
 ; Toggle Outlook and Teams
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If either is open: Kills both so their RAM is released. Closing wins over opening.
-; That close also kills Edge, OneNote, Spotify, and WhatsApp, and stops the
+; That close also kills Edge, OneNote, and WhatsApp, and stops the
 ; Tasks, Finance, and Memory Palace servers. Those servers stay stopped until
 ; you open each app. They are not relaunched with Outlook and Teams.
 ; If neither is open: Launches Outlook and Teams only.
@@ -57,7 +57,7 @@ ToggleOutlookAndTeams() {
             }
 
             ; Extra resident apps. Not part of the open/close decision, and not started again.
-            for procName in ["msedge.exe", "ONENOTE.EXE", "Spotify.exe", "WhatsApp.exe"] {
+            for procName in ["msedge.exe", "ONENOTE.EXE", "WhatsApp.exe"] {
                 try KillAllProcessesByName(procName)
                 catch Error as e {
                     MsgBox "Error closing " procName ": " e.Message
