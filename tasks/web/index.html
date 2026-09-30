@@ -487,9 +487,7 @@
       .plain-row.kb-selected .row-actions,
       details.project.kb-selected > .proj-actions,
       details.project:hover > .proj-actions,
-      .task-section:not(.is-general):hover
-        > .task-section-label
-        .sec-actions,
+      .task-section:not(.is-general):hover > .task-section-label .sec-actions,
       .task-section:not(.is-general).kb-selected
         > .task-section-label
         .sec-actions {
@@ -1496,9 +1494,7 @@
         }
 
         function isOpenTaskRow(t) {
-          return (
-            t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅"
-          );
+          return t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅";
         }
 
         function isHabitColumnTask(t) {
@@ -1963,6 +1959,22 @@
             }
             toast(err.message || String(err));
           }
+        }
+
+        async function openSelectedInfoHyperlink() {
+          const row = (state.data.info_points || []).find(
+            (i) => i.id === state.infoSelId,
+          );
+          if (!row) {
+            toast("Select an info point first");
+            return;
+          }
+          const hit = infoHyperlink(row);
+          if (!hit) {
+            toast("No link on this info");
+            return;
+          }
+          await openHyperlink(hit);
         }
 
         function projectIdForExport(explicit) {
@@ -2809,8 +2821,7 @@
               return;
             }
             const pEl = proj.querySelector(":scope > summary .proj-title");
-            const projectHit =
-              !!q && titleRaw(pEl).toLowerCase().includes(q);
+            const projectHit = !!q && titleRaw(pEl).toLowerCase().includes(q);
             let projectShown = projectHit;
             proj
               .querySelectorAll(
@@ -2825,8 +2836,7 @@
                 const sEl = sec.querySelector(
                   ":scope > .task-section-label .sec-title",
                 );
-                const secHit =
-                  !!q && titleRaw(sEl).toLowerCase().includes(q);
+                const secHit = !!q && titleRaw(sEl).toLowerCase().includes(q);
                 let secShown = projectHit || secHit;
                 sec
                   .querySelectorAll(":scope > .task-list > .task")
@@ -2853,8 +2863,7 @@
               .querySelectorAll(":scope > .task-list > .task")
               .forEach((task) => {
                 const tEl = task.querySelector(".title");
-                const taskHit =
-                  !!q && titleRaw(tEl).toLowerCase().includes(q);
+                const taskHit = !!q && titleRaw(tEl).toLowerCase().includes(q);
                 const show = !q || projectHit || taskHit;
                 task.classList.toggle("search-hidden", !show);
                 if (show) projectShown = true;
@@ -2945,11 +2954,17 @@
           if (has("sec-project-focus")) return false;
           const f = state.sectionFocus || "";
           if (f === "personal")
-            return has("sec-personal") && !has("sec-work") && !has("sec-habits");
+            return (
+              has("sec-personal") && !has("sec-work") && !has("sec-habits")
+            );
           if (f === "work")
-            return has("sec-work") && !has("sec-personal") && !has("sec-habits");
+            return (
+              has("sec-work") && !has("sec-personal") && !has("sec-habits")
+            );
           if (f === "habits")
-            return has("sec-habits") && !has("sec-personal") && !has("sec-work");
+            return (
+              has("sec-habits") && !has("sec-personal") && !has("sec-work")
+            );
           return has("sec-personal") && has("sec-work") && has("sec-habits");
         }
 
@@ -3302,9 +3317,7 @@
         function firstTargetInCategory(filt) {
           const sec = document.getElementById("sec-" + filt);
           if (!sec || sec.classList.contains("section-hidden")) return null;
-          return (
-            navTargets().find((t) => t.el.closest("#sec-" + filt)) || null
-          );
+          return navTargets().find((t) => t.el.closest("#sec-" + filt)) || null;
         }
 
         function toggleFirstPersonalWork() {
@@ -3749,8 +3762,7 @@
           if (!taskId) return null;
           const targets = navTargets();
           const idx = targets.findIndex(
-            (t) =>
-              (t.kind === "task" || t.kind === "habit") && t.id === taskId,
+            (t) => (t.kind === "task" || t.kind === "habit") && t.id === taskId,
           );
           if (idx < 0) return null;
           const parent = taskListParent(targets[idx].el);
@@ -4458,7 +4470,7 @@
         function infoRowHtml(i) {
           const hit = infoHyperlink(i);
           const openAttrs = hit
-            ? ` data-act="open-info-link" data-href="${esc(hit.href)}" data-kind="${esc(hit.kind)}" title="Open"`
+            ? ` data-act="open-info-link" data-href="${esc(hit.href)}" data-kind="${esc(hit.kind)}" title="Open (Shift+Enter or Ctrl+Enter)"`
             : "";
           const sel = i.id === state.infoSelId ? " kb-selected" : "";
           const cat = infoCategoryOf(i);
@@ -4533,6 +4545,7 @@
         <span><kbd>Ctrl+Home</kbd> first</span>
         <span><kbd>Ctrl+F</kbd> last</span>
         <span><kbd>A–Z</kbd> first word</span>
+        <span><kbd>Shift+Enter</kbd> / <kbd>Ctrl+Enter</kbd> open link</span>
       </div>
       <ul class="${listClass}">${
         rows.map(infoRowHtml).join("") ||
@@ -6254,6 +6267,16 @@
               e.stopPropagation();
               return;
             }
+            if (state.infoUi === "list" && !e.altKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await openSelectedInfoHyperlink();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
             if (e.target?.id === "inlineTitle" && state.inlineCreate) {
               e.preventDefault();
               e.stopPropagation();
@@ -6485,7 +6508,7 @@
               return;
             }
             if (
-              e.key === "Enter" &&
+              (e.key === "Enter" || e.code === "NumpadEnter") &&
               e.shiftKey &&
               !e.ctrlKey &&
               !e.metaKey &&
@@ -6493,20 +6516,8 @@
             ) {
               e.preventDefault();
               e.stopPropagation();
-              const row = (state.data.info_points || []).find(
-                (i) => i.id === state.infoSelId,
-              );
-              if (!row) {
-                toast("Select an info point first");
-                return;
-              }
-              const hit = infoHyperlink(row);
-              if (!hit) {
-                toast("No link on this info");
-                return;
-              }
               try {
-                await openHyperlink(hit);
+                await openSelectedInfoHyperlink();
               } catch (err) {
                 toast(err.message || String(err));
               }

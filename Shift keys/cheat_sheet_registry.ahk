@@ -1084,7 +1084,7 @@ cheatSheets["Tasks"] := "
     ⬆️ [Shift+Up] Info list — move highlighted info up
     ⬇️ [Shift+Down] Info list — move highlighted info down
     ⏎ [Enter] Info list — add info
-    🔗 [Shift+Enter] Info list — open highlighted info link
+    🔗 [Shift+Enter / Ctrl+Enter] Info list — open highlighted info link
     ✏️ [Shift+E] Info list — edit highlighted info
     📋 [Ctrl+C] Info list — copy highlighted info text
     📋 [Shift+A] Info list — copy text from every info point
@@ -1103,6 +1103,7 @@ cheatSheets["Tasks"] := "
     
     === Ctrl ===
     💾 [Enter] Save open form (info, task, project, section) or inline create field
+    🔗 [Enter] Info list — open highlighted info link
     📋 [C] Copy selected or hovered task
     ✂️ [X] Cut selected or hovered task (paste moves it)
     📋 [V] Paste copied/cut task into selected project / section
