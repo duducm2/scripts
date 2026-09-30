@@ -476,8 +476,25 @@ AiCompanion_StartNewChat(companion) {
     ok := false
     try {
         if (companion = AI_COMPANION_GEMINI) {
-            Send "^+o"
-            ok := true
+            found := false
+            clicked := false
+            try {
+                uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
+                el := AiCompanionButtons_FindSaved(uia, AI_COMPANION_GEMINI, "NewChat")
+                if (IsObject(el)) {
+                    found := true
+                    clicked := AiCompanionButtons_Click(el)
+                }
+            } catch {
+                found := false
+                clicked := false
+            }
+            if (found)
+                ok := clicked
+            else {
+                Send "^+o"
+                ok := true
+            }
         } else if (companion = AI_COMPANION_ENTERPRISE) {
             ok := GeminiEnterprise_ClickNewChat()
             GeminiEnterprise_ReturnToComposer()

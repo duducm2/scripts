@@ -468,16 +468,25 @@ GeminiEnterprise_FindComposer(uia) {
 }
 
 GeminiEnterprise_FindMenuButton(uia) {
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_ENTERPRISE, "Menu")
+    if (saved)
+        return saved
     return GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Menu", ControlType: "Button" }, { Name: "Menu", Type: 50000 }])
 }
 
 GeminiEnterprise_FindNewChatButton(uia) {
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_ENTERPRISE, "NewChat")
+    if (saved)
+        return saved
     return GeminiEnterprise_FindFirstInUia(uia, [{ Name: "New chat", ControlType: "Button" }, { Name: "New chat",
         ClassName: "chat-button", matchmode: "Substring" }, { Name: "Novo chat", ControlType: "Button" }
     ])
 }
 
 GeminiEnterprise_FindSearchButton(uia) {
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_ENTERPRISE, "Search")
+    if (saved)
+        return saved
     return GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Search", ControlType: "Button", ClassName: "search-button" }, { Name: "Search",
         ControlType: "Button" }, { Name: "Pesquisar", ControlType: "Button" }, { Name: "Buscar", ControlType: "Button" }
     ])
