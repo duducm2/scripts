@@ -105,13 +105,12 @@ ToggleGeminiDrawer() {
 +s:: {
     try {
         uia := UIA_Browser()
-        Sleep 300
-
         savedSearch := AiCompanionButtons_FindSaved(uia, AI_COMPANION_GEMINI, "Search")
         if (IsObject(savedSearch)) {
             AiCompanionButtons_Click(savedSearch)
             return
         }
+        Sleep 300
 
         ; Primary strategy: Find by Name "Search" with Type 50000 (Button)
         searchButton := uia.FindFirst({ Name: "Search", Type: 50000 })

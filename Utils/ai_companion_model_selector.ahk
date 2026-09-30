@@ -12,10 +12,12 @@ global g_AiCompanionModelSelectorActive := false
 global g_AiCompanionModelSelectorCompanion := ""
 global g_AiCompanionModelSelectorTargetHwnd := 0
 global g_AiCompanionModelSelectorLastForegroundMonitorIdx := 0
+global g_AiCompanionModelSelectorRowMeta := Map()
 global g_AiCompanionModelEscPollPrev := false
 global g_AiCompanionButtonCaptureActive := false
 global g_AiCompanionButtonCaptureAction := ""
 global g_AiCompanionButtonCaptureArmed := false
+global g_AiCompanionButtonCaptureEscLatch := false
 
 ShowAiCompanionModelSelector(companion) {
     global g_AiCompanionModelSelectorActive, g_AiCompanionModelSelectorCompanion,
@@ -180,23 +182,24 @@ AiCompanionModelSelector_UnbindRobustEscape() {
 }
 
 AiCompanionModelSelector_EscapeFromHotkey(*) {
-    global g_AiCompanionButtonCaptureActive
+    global g_AiCompanionButtonCaptureActive, g_AiCompanionButtonCaptureEscLatch
     if (g_AiCompanionButtonCaptureActive)
         AiCompanionButtonCapture_Abort()
-    else
+    else if (!g_AiCompanionButtonCaptureEscLatch)
         AiCompanionModelSelector_Cancel()
 }
 
 AiCompanionModelSelector_GlobalEscapeCallback(*) {
-    global g_AiCompanionButtonCaptureActive
+    global g_AiCompanionButtonCaptureActive, g_AiCompanionButtonCaptureEscLatch
     if (g_AiCompanionButtonCaptureActive)
         AiCompanionButtonCapture_Abort()
-    else
+    else if (!g_AiCompanionButtonCaptureEscLatch)
         AiCompanionModelSelector_Cancel()
 }
 
 AiCompanionModelSelector_EscapePoll() {
-    global g_AiCompanionModelSelectorActive, g_AiCompanionModelEscPollPrev, g_AiCompanionButtonCaptureActive
+    global g_AiCompanionModelSelectorActive, g_AiCompanionModelEscPollPrev, g_AiCompanionButtonCaptureActive,
+        g_AiCompanionButtonCaptureEscLatch
     if (!g_AiCompanionModelSelectorActive) {
         SetTimer(AiCompanionModelSelector_EscapePoll, 0)
         return
@@ -209,19 +212,20 @@ AiCompanionModelSelector_EscapePoll() {
             g_AiCompanionModelEscPollPrev := true
             if (g_AiCompanionButtonCaptureActive)
                 AiCompanionButtonCapture_Abort()
-            else
+            else if (!g_AiCompanionButtonCaptureEscLatch)
                 AiCompanionModelSelector_Cancel()
         }
     } else {
         g_AiCompanionModelEscPollPrev := false
+        g_AiCompanionButtonCaptureEscLatch := false
     }
 }
 
 AiCompanionModelSelector_GuiEscape(*) {
-    global g_AiCompanionButtonCaptureActive
+    global g_AiCompanionButtonCaptureActive, g_AiCompanionButtonCaptureEscLatch
     if (g_AiCompanionButtonCaptureActive)
         AiCompanionButtonCapture_Abort()
-    else
+    else if (!g_AiCompanionButtonCaptureEscLatch)
         AiCompanionModelSelector_Cancel()
 }
 
@@ -258,7 +262,7 @@ AiCompanionModelSelector_TrackActiveMonitorTick() {
 AiCompanionModelSelector_Rebuild() {
     global g_AiCompanionModelSelectorGui, g_AiCompanionModelSelectorLv, g_AiCompanionModelSelectorActive,
         g_AiCompanionModelSelectorCompanion, g_AiCompanionModelSelectorLastForegroundMonitorIdx,
-        g_AiCompanionButtonCaptureActive
+        g_AiCompanionButtonCaptureActive, g_AiCompanionModelSelectorRowMeta
 
     if (g_AiCompanionButtonCaptureActive) {
         AiCompanionButtonCapture_Stop()
@@ -287,7 +291,7 @@ AiCompanionModelSelector_Rebuild() {
     g_AiCompanionModelSelectorGui.SetFont("s10", "Segoe UI")
     g_AiCompanionModelSelectorGui.Add("Text", "w700 Wrap", hint)
     g_AiCompanionModelSelectorLv := g_AiCompanionModelSelectorGui.Add("ListView", "w700 h340 -Multi", ["Char",
-        "Model", "Detail", "Kind"])
+        "Model", "Detail"])
     g_AiCompanionModelSelectorLv.OnEvent("DoubleClick", AiCompanionModelSelector_OnListActivate)
     g_AiCompanionModelSelectorGui.Add("Button", "w100 Section", "Add").OnEvent("Click",
         AiCompanionModelSelector_AddEntry)
@@ -298,30 +302,31 @@ AiCompanionModelSelector_Rebuild() {
     g_AiCompanionModelSelectorGui.OnEvent("Close", AiCompanionModelSelector_Cancel)
     g_AiCompanionModelSelectorGui.OnEvent("Escape", AiCompanionModelSelector_GuiEscape)
 
+    g_AiCompanionModelSelectorRowMeta := Map()
     for action in AiCompanionButtons_Actions() {
         spec := AiCompanionButtons_Get(companion, action.id)
-        g_AiCompanionModelSelectorLv.Add("", StrUpper(action.chord), action.label,
-            AiCompanionButtons_Summary(spec), action.id)
+        row := g_AiCompanionModelSelectorLv.Add("", StrUpper(action.chord), action.label,
+        AiCompanionButtons_Summary(spec))
+        g_AiCompanionModelSelectorRowMeta[row] := action.id
     }
-    g_AiCompanionModelSelectorLv.Add("", "f", "Set Fast", fastLabel, "")
-    g_AiCompanionModelSelectorLv.Add("", "d", "Set Deep", deepLabel, "")
+    g_AiCompanionModelSelectorLv.Add("", "f", "Set Fast", fastLabel)
+    g_AiCompanionModelSelectorLv.Add("", "d", "Set Deep", deepLabel)
 
     maxSlots := AiCompanionModels_MaxSlots()
     if (cfg.models.Length = 0) {
-        g_AiCompanionModelSelectorLv.Add("", "", "(no extra models)", "Insert or a to add", "")
+        g_AiCompanionModelSelectorLv.Add("", "", "(no extra models)", "Insert or a to add")
     } else {
         for i, name in cfg.models {
             if (i > maxSlots)
                 break
             label := AiCompanionModels_LabelForIndex(i)
-            g_AiCompanionModelSelectorLv.Add("", label, name, "", "")
+            g_AiCompanionModelSelectorLv.Add("", label, name, "")
         }
     }
 
     try g_AiCompanionModelSelectorLv.ModifyCol(1, 50)
     try g_AiCompanionModelSelectorLv.ModifyCol(2, 280)
     try g_AiCompanionModelSelectorLv.ModifyCol(3, 340)
-    try g_AiCompanionModelSelectorLv.ModifyCol(4, 0)
     ; Button rows occupy 1-3. Fast is row 4; the first extra model is row 6.
     focusRow := (cfg.models.Length > 0) ? 6 : 4
     if (g_AiCompanionModelSelectorLv.GetCount() > 0) {
@@ -345,7 +350,7 @@ AiCompanionModelSelector_Rebuild() {
 
 ; Returns { kind: "fast"|"deep"|"model"|"button"|"", index: 0|n, name: "", actionId: "" }.
 AiCompanionModelSelector_SelectedTarget() {
-    global g_AiCompanionModelSelectorLv, g_AiCompanionModelSelectorCompanion
+    global g_AiCompanionModelSelectorLv, g_AiCompanionModelSelectorCompanion, g_AiCompanionModelSelectorRowMeta
     out := { kind: "", index: 0, name: "", actionId: "" }
     if (!IsObject(g_AiCompanionModelSelectorLv))
         return out
@@ -364,7 +369,6 @@ AiCompanionModelSelector_SelectedTarget() {
         return out
     ch := ""
     name := ""
-    kindField := ""
     try ch := StrLower(Trim(g_AiCompanionModelSelectorLv.GetText(row, 1)))
     catch {
         return out
@@ -372,11 +376,8 @@ AiCompanionModelSelector_SelectedTarget() {
     try name := Trim(g_AiCompanionModelSelectorLv.GetText(row, 2))
     catch {
     }
-    try kindField := Trim(g_AiCompanionModelSelectorLv.GetText(row, 4))
-    catch
-        kindField := ""
-    if (kindField != "" && AiCompanionButtons_ActionById(kindField))
-        return { kind: "button", index: 0, name: name, actionId: kindField }
+    if (IsObject(g_AiCompanionModelSelectorRowMeta) && g_AiCompanionModelSelectorRowMeta.Has(row))
+        return { kind: "button", index: 0, name: name, actionId: g_AiCompanionModelSelectorRowMeta[row] }
     if (ch = "f")
         return { kind: "fast", index: 0, name: name, actionId: "" }
     if (ch = "d")
@@ -648,13 +649,16 @@ AiCompanionModelSelector_Cancel(*) {
 AiCompanionModelSelector_ForceReset() {
     global g_AiCompanionModelSelectorGui, g_AiCompanionModelSelectorLv, g_AiCompanionModelSelectorActive,
         g_AiCompanionModelSelectorCompanion, g_AiCompanionModelSelectorTargetHwnd,
-        g_AiCompanionModelSelectorLastForegroundMonitorIdx, g_AiCompanionButtonCaptureActive
+        g_AiCompanionModelSelectorLastForegroundMonitorIdx, g_AiCompanionButtonCaptureActive,
+        g_AiCompanionButtonCaptureEscLatch, g_AiCompanionModelSelectorRowMeta
 
     wasCapture := g_AiCompanionButtonCaptureActive
+    g_AiCompanionButtonCaptureEscLatch := false
     g_AiCompanionModelSelectorActive := false
     g_AiCompanionModelSelectorCompanion := ""
     g_AiCompanionModelSelectorTargetHwnd := 0
     g_AiCompanionModelSelectorLastForegroundMonitorIdx := 0
+    g_AiCompanionModelSelectorRowMeta := Map()
     AiCompanionButtonCapture_Stop()
     if (wasCapture) {
         try StandardLoadingBar_Hide(0)
@@ -704,6 +708,16 @@ AiCompanionModelSelector_BeginCapture(actionId) {
     companion := g_AiCompanionModelSelectorCompanion
     AiCompanionModelSelector_StopMonitorTracking()
     AiCompanionModelSelector_UnbindKeys()
+    ; UnbindKeys turns Escape off. Keep it so Esc aborts capture.
+    try HotIf()
+    catch {
+    }
+    try Hotkey("$*Escape", AiCompanionModelSelector_EscapeFromHotkey, "On")
+    catch {
+    }
+    try HotIf()
+    catch {
+    }
     AiCompanionModelSelector_SafeDestroyGui(g_AiCompanionModelSelectorGui)
     g_AiCompanionModelSelectorGui := false
     g_AiCompanionModelSelectorLv := false
@@ -721,8 +735,7 @@ AiCompanionModelSelector_BeginCapture(actionId) {
     title := AiCompanionModels_DisplayName(companion)
     try StandardLoadingBar_Show(
         "Click " . action.label . " in " . title . ". Esc cancels.",
-        BANNER_ACCENT_INTERMEDIATE,
-        { passive: true, centerOnHwnd: hwnd, fontSize: 17, textWidth: 640, passiveBgColor: BANNER_ACCENT_INTERMEDIATE }
+        BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: hwnd, fontSize: 17, textWidth: 640, passiveBgColor: BANNER_ACCENT_INTERMEDIATE }
     )
     SetTimer(AiCompanionButtonCapture_Poll, 30)
 }
@@ -778,9 +791,11 @@ AiCompanionButtonCapture_Stop() {
 }
 
 AiCompanionButtonCapture_Abort() {
-    global g_AiCompanionButtonCaptureActive, g_AiCompanionModelSelectorActive, g_AiCompanionModelEscPollPrev
+    global g_AiCompanionButtonCaptureActive, g_AiCompanionButtonCaptureEscLatch,
+        g_AiCompanionModelSelectorActive, g_AiCompanionModelEscPollPrev
     if (!g_AiCompanionButtonCaptureActive)
         return
+    g_AiCompanionButtonCaptureEscLatch := true
     AiCompanionButtonCapture_Stop()
     try StandardLoadingBar_Hide(0)
     if (g_AiCompanionModelSelectorActive)
@@ -865,7 +880,7 @@ AiCompanionButtonCapture_OnClick() {
         return
     }
     try ShowCenteredOverlay_Utils("Saved " . label . ": " . AiCompanionButtons_Summary(spec), 2000,
-        BANNER_ACCENT_SUCCESS)
+    BANNER_ACCENT_SUCCESS)
     if (g_AiCompanionModelSelectorActive)
         AiCompanionModelSelector_Rebuild()
 }
