@@ -1,7 +1,8 @@
 ; =============================================================================
 ; Utils module: dictation_visible_paste.ahk
 ; Post-dictation visible-window picker: select a window and paste clipboard (Ctrl+V).
-; Also: [R] ignore process (exe) for AutoSlot, [I] manage ignore list (autoslot_user_excludes),
+; Also: [Q] close mode (slot key closes that window; [Q] or [ESC] leaves close mode),
+; [R] ignore process (exe) for AutoSlot, [I] manage ignore list (autoslot_user_excludes),
 ; [M] manage main text-field mappings (paste_field_mappings.ini).
 ; =============================================================================
 
@@ -18,11 +19,12 @@ global g_DictationVisiblePasteLastCharActionKey := ""
 global g_DictationVisiblePasteLastCharActionTick := 0
 global g_DictationVisiblePasteTrackTimer := ""
 global g_DictationVisiblePasteLastForegroundMonitorIdx := 0
-; Overflow slot keys — R/I/M reserved (ignore rearrange / manage ignore / manage main fields).
+; Overflow slot keys — Q/R/I/M reserved (close mode / ignore rearrange / manage ignore / manage main fields).
 global g_DictationVisiblePasteCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d",
-    "e", "f", "g", "h", "j", "k", "l", "n", "o", "p", "q", "s", "t", "u", "v", "w", "x", "y", "z"]
+    "e", "f", "g", "h", "j", "k", "l", "n", "o", "p", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
-global g_DictationVisiblePasteMode := "paste"  ; "paste" | "exclude"
+global g_DictationVisiblePasteMode := "paste"  ; "paste" | "close" | "exclude"
+global g_DictationVisiblePasteSuppressEscUntilRelease := false
 global g_DictationVisiblePasteHeaderCtrl := false
 global g_DictationVisiblePasteHintCtrl := false
 global g_DictationVisiblePasteEscHintCtrl := false
@@ -554,6 +556,8 @@ Dictation_VisiblePasteStartKeysPoll(windows) {
         g_DictationVisiblePasteKeysPollCallbacks[slotChar] := Dictation_VisiblePasteHandleChar.Bind(slotChar)
         g_DictationVisiblePasteKeysPollPrev[slotChar] := Dictation_VisiblePasteKeyDown(slotChar)
     }
+    g_DictationVisiblePasteKeysPollCallbacks["q"] := Dictation_VisiblePasteToggleCloseMode
+    g_DictationVisiblePasteKeysPollPrev["q"] := Dictation_VisiblePasteKeyDown("q")
     g_DictationVisiblePasteKeysPollCallbacks["r"] := Dictation_VisiblePasteArmExcludeMode
     g_DictationVisiblePasteKeysPollPrev["r"] := Dictation_VisiblePasteKeyDown("r")
     g_DictationVisiblePasteKeysPollCallbacks["i"] := Dictation_VisiblePasteOpenIgnoreManage
@@ -605,6 +609,7 @@ Dictation_VisiblePasteBindHotkeys(windows) {
         if (Dictation_IsDigitSlotChar(slotChar))
             Dictation_VisiblePasteRegisterHotkey("$*Numpad" . slotChar, Dictation_VisiblePasteHandleChar.Bind(slotChar))
     }
+    Dictation_VisiblePasteRegisterHotkey("$*q", Dictation_VisiblePasteToggleCloseMode)
     Dictation_VisiblePasteRegisterHotkey("$*r", Dictation_VisiblePasteArmExcludeMode)
     Dictation_VisiblePasteRegisterHotkey("$*i", Dictation_VisiblePasteOpenIgnoreManage)
     try HotIf()
@@ -615,8 +620,25 @@ Dictation_VisiblePasteBindHotkeys(windows) {
 
 Dictation_VisiblePasteUpdateModeChrome() {
     global g_DictationVisiblePasteMode, g_DictationVisiblePasteHeaderCtrl, g_DictationVisiblePasteHintCtrl,
-        g_DictationVisiblePasteEscHintCtrl
-    if (g_DictationVisiblePasteMode = "exclude") {
+        g_DictationVisiblePasteEscHintCtrl, DICTATION_VISIBLE_PASTE_HEADER_FONT
+    headerFont := "s" . DICTATION_VISIBLE_PASTE_HEADER_FONT . " Bold"
+    if (g_DictationVisiblePasteMode = "close") {
+        try g_DictationVisiblePasteHeaderCtrl.SetFont(headerFont . " cF38BA8", "Segoe UI")
+        catch {
+        }
+        try g_DictationVisiblePasteHeaderCtrl.Text := "=== CLOSE MODE ==="
+        catch {
+        }
+        try g_DictationVisiblePasteHintCtrl.Text := ">>> slot key = CLOSE <<<"
+        catch {
+        }
+        try g_DictationVisiblePasteEscHintCtrl.Text := "[Q] or [ESC] Exit close mode"
+        catch {
+        }
+    } else if (g_DictationVisiblePasteMode = "exclude") {
+        try g_DictationVisiblePasteHeaderCtrl.SetFont(headerFont . " cCDD6F4", "Segoe UI")
+        catch {
+        }
         try g_DictationVisiblePasteHeaderCtrl.Text := "=== PICK WINDOW TO IGNORE ==="
         catch {
         }
@@ -627,6 +649,9 @@ Dictation_VisiblePasteUpdateModeChrome() {
         catch {
         }
     } else {
+        try g_DictationVisiblePasteHeaderCtrl.SetFont(headerFont . " cCDD6F4", "Segoe UI")
+        catch {
+        }
         try g_DictationVisiblePasteHeaderCtrl.Text := "=== VISIBLE WINDOWS ==="
         catch {
         }
@@ -634,9 +659,23 @@ Dictation_VisiblePasteUpdateModeChrome() {
             ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list   [M] Main fields <<<"
         catch {
         }
-        try g_DictationVisiblePasteEscHintCtrl.Text := "[ESC] Cancel"
+        try g_DictationVisiblePasteEscHintCtrl.Text := "[Q] Close mode   [ESC] Cancel"
         catch {
         }
+    }
+}
+
+Dictation_VisiblePasteToggleCloseMode(*) {
+    global g_DictationVisiblePasteActive, g_DictationVisiblePasteMode
+    if (!g_DictationVisiblePasteActive)
+        return
+    if (!Dictation_VisiblePasteTryConsumeCharAction("q"))
+        return
+    try {
+        g_DictationVisiblePasteMode := (g_DictationVisiblePasteMode = "close") ? "paste" : "close"
+        Dictation_VisiblePasteUpdateModeChrome()
+    } finally {
+        Dictation_VisiblePasteReleaseCharActionLock()
     }
 }
 
@@ -769,7 +808,7 @@ Dictation_VisiblePasteAssignKeys(slots) {
     return windows
 }
 
-Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
+Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0, keepMode := false) {
     global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult,
         g_DictationVisiblePasteMode, g_DictationVisiblePasteHeaderCtrl, g_DictationVisiblePasteHintCtrl,
         g_DictationVisiblePasteEscHintCtrl
@@ -911,11 +950,13 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
         ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list   [M] Main fields <<<")
     g_DictationVisiblePasteEscHintCtrl := g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (footerY + 24) .
     " w" . contentW . " Center",
-    "[ESC] Cancel")
+    "[Q] Close mode   [ESC] Cancel")
     g_DictationVisiblePasteGui.OnEvent("Escape", Dictation_VisiblePasteCancel)
     g_DictationVisiblePasteActive := true
     g_DictationVisiblePasteResult := ""
-    g_DictationVisiblePasteMode := "paste"
+    if (!keepMode)
+        g_DictationVisiblePasteMode := "paste"
+    Dictation_VisiblePasteUpdateModeChrome()
     Dictation_VisiblePasteBindHotkeys(windows)
     try {
         #InputLevel 10
@@ -935,11 +976,12 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
 Dictation_VisiblePasteClose() {
     global g_DictationVisiblePasteActive, g_DictationVisiblePasteGui, g_DictationVisiblePasteHotkeyHandlers,
         g_DictationVisiblePasteMode, g_DictationVisiblePasteHeaderCtrl, g_DictationVisiblePasteHintCtrl,
-        g_DictationVisiblePasteEscHintCtrl
+        g_DictationVisiblePasteEscHintCtrl, g_DictationVisiblePasteSuppressEscUntilRelease
     if (!g_DictationVisiblePasteActive && !Dictation_VisiblePasteGuiHasWindow())
         return
     g_DictationVisiblePasteActive := false
     g_DictationVisiblePasteMode := "paste"
+    g_DictationVisiblePasteSuppressEscUntilRelease := false
     g_DictationVisiblePasteHeaderCtrl := false
     g_DictationVisiblePasteHintCtrl := false
     g_DictationVisiblePasteEscHintCtrl := false
@@ -960,9 +1002,79 @@ Dictation_VisiblePasteClose() {
 }
 
 Dictation_VisiblePasteCancel(*) {
-    global g_DictationVisiblePasteResult
+    global g_DictationVisiblePasteResult, g_DictationVisiblePasteMode, g_DictationVisiblePasteActive,
+        g_DictationVisiblePasteSuppressEscUntilRelease
+    if (!g_DictationVisiblePasteActive)
+        return
+    if (g_DictationVisiblePasteSuppressEscUntilRelease)
+        return
+    if (g_DictationVisiblePasteMode = "close") {
+        g_DictationVisiblePasteSuppressEscUntilRelease := true
+        g_DictationVisiblePasteMode := "paste"
+        Dictation_VisiblePasteUpdateModeChrome()
+        return
+    }
     g_DictationVisiblePasteResult := 0
     Dictation_VisiblePasteClose()
+}
+
+Dictation_VisiblePasteWaitForHwndClosed(hwnd, timeoutMs := 2000) {
+    if (!hwnd)
+        return true
+    deadline := A_TickCount + timeoutMs
+    loop {
+        if !WinExist("ahk_id " hwnd)
+            break
+        if (A_TickCount >= deadline)
+            return false
+        Sleep 50
+    }
+    Sleep 50
+    return !WinExist("ahk_id " hwnd)
+}
+
+; Hide the picker so a save/close dialog can take focus, then close the target.
+Dictation_VisiblePasteCloseTarget(hwnd) {
+    global g_DictationVisiblePasteGui
+    if (!hwnd)
+        return true
+    if (Dictation_VisiblePasteGuiHasWindow()) {
+        try WinSetAlwaysOnTop(false, "ahk_id " g_DictationVisiblePasteGui.Hwnd)
+        try WinHide("ahk_id " g_DictationVisiblePasteGui.Hwnd)
+    }
+    try {
+        WinClose "ahk_id " hwnd
+        if !WinWaitClose("ahk_id " hwnd, , 0.2) {
+            try WinShow "ahk_id " hwnd
+            WinActivate "ahk_id " hwnd
+            WinWaitActive "ahk_id " hwnd, , 1.2
+            WinClose "ahk_id " hwnd
+            if !WinWaitClose("ahk_id " hwnd, , 0.35) {
+                PostMessage 0x0010, 0, 0, , "ahk_id " hwnd
+                WinWaitClose "ahk_id " hwnd, , 1.5
+            }
+        }
+    } catch {
+    }
+    return Dictation_VisiblePasteWaitForHwndClosed(hwnd)
+}
+
+Dictation_VisiblePasteRefreshKeepingMode() {
+    global g_DictationVisiblePasteMode, g_DictationVisiblePasteResult, g_DictationVisiblePasteLastForegroundMonitorIdx
+    mode := g_DictationVisiblePasteMode
+    mon := g_DictationVisiblePasteLastForegroundMonitorIdx
+    gridData := Dictation_BuildMonitorGrid()
+    if (!IsObject(gridData) || gridData.slots.Length = 0) {
+        g_DictationVisiblePasteResult := 0
+        Dictation_VisiblePasteClose()
+        ShowCenteredOverlay_Utils("ℹ️ No visible windows left", 1800, BANNER_ACCENT_INFO)
+        return
+    }
+    Dictation_VisiblePasteClose()
+    g_DictationVisiblePasteMode := mode
+    Dictation_VisiblePasteShowModal(gridData, 0, true)
+    if (mon)
+        Dictation_VisiblePasteRepositionToActiveMonitor(mon)
 }
 
 Dictation_VisiblePasteHandleChar(char, *) {
@@ -978,6 +1090,11 @@ Dictation_VisiblePasteHandleChar(char, *) {
             hwnd := g_DictationVisiblePasteKeyMap.Get(StrLower(char), "")
         if (!hwnd || !WinExist("ahk_id " hwnd))
             return
+        if (g_DictationVisiblePasteMode = "close") {
+            Dictation_VisiblePasteCloseTarget(hwnd)
+            Dictation_VisiblePasteRefreshKeepingMode()
+            return
+        }
         if (g_DictationVisiblePasteMode = "exclude") {
             AutoSlot_AddUserExcludeFromHwnd(hwnd)
             g_DictationVisiblePasteResult := 0
@@ -998,7 +1115,8 @@ Dictation_VisiblePasteHandleChar(char, *) {
 
 ; Returns selected window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
 Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
-    global g_DictationVisiblePasteResult, g_DictationVisiblePasteLastForegroundMonitorIdx
+    global g_DictationVisiblePasteResult, g_DictationVisiblePasteLastForegroundMonitorIdx,
+        g_DictationVisiblePasteMode, g_DictationVisiblePasteSuppressEscUntilRelease
     clipBackup := ClipboardAll()
     Dictation_VisiblePasteClose()
     gridData := ""
@@ -1025,13 +1143,17 @@ Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
     escWasDown := false
     try {
         while (g_DictationVisiblePasteResult = "") {
-            if ((A_TickCount - start) >= timeoutMs)
+            if (g_DictationVisiblePasteMode != "close" && (A_TickCount - start) >= timeoutMs)
                 break
             Sleep 50
             isEscDown := false
             try isEscDown := GetKeyState("Escape", "P")
-            if (isEscDown && !escWasDown && g_DictationVisiblePasteResult = "")
+            if (g_DictationVisiblePasteSuppressEscUntilRelease) {
+                if (!isEscDown)
+                    g_DictationVisiblePasteSuppressEscUntilRelease := false
+            } else if (isEscDown && !escWasDown && g_DictationVisiblePasteResult = "") {
                 Dictation_VisiblePasteCancel()
+            }
             escWasDown := isEscDown
             if (Dictation_VisiblePasteGuiHasWindow()) {
                 curIdx := GetMonitorIndexForForeground_StandardBar()
