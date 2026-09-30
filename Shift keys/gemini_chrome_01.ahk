@@ -50,6 +50,13 @@ ToggleGeminiDrawer() {
             return
         }
 
+        savedMenu := AiCompanionButtons_FindSaved(uia, AI_COMPANION_GEMINI, "Menu")
+        if (IsObject(savedMenu)) {
+            if (AiCompanionButtons_Click(savedMenu))
+                isGeminiDrawerOpen := !isGeminiDrawerOpen
+            return
+        }
+
         ; Small settle time only – keep this snappy
         Sleep 100
 
@@ -87,7 +94,7 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
+; Shift + N : New chat (saved button when mapped, otherwise Ctrl+Shift+O)
 +n:: {
     try AiCompanion_StartNewChat(AI_COMPANION_GEMINI)
     catch {
@@ -99,6 +106,12 @@ ToggleGeminiDrawer() {
     try {
         uia := UIA_Browser()
         Sleep 300
+
+        savedSearch := AiCompanionButtons_FindSaved(uia, AI_COMPANION_GEMINI, "Search")
+        if (IsObject(savedSearch)) {
+            AiCompanionButtons_Click(savedSearch)
+            return
+        }
 
         ; Primary strategy: Find by Name "Search" with Type 50000 (Button)
         searchButton := uia.FindFirst({ Name: "Search", Type: 50000 })

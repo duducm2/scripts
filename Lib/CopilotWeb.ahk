@@ -1558,6 +1558,9 @@ CopilotWeb_ToggleNavDrawer(uia := 0) {
         uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_COPILOT, "Menu")
+    if (saved)
+        return CopilotWeb_ClickUiaElement(saved)
     collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_NAV_COLLAPSE_NAMES)
     if (collapse)
         return CopilotWeb_ClickUiaElement(collapse)
@@ -1582,6 +1585,9 @@ CopilotWeb_ClickNewChat(uia := 0) {
         uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_COPILOT, "NewChat")
+    if (saved)
+        return CopilotWeb_ClickUiaElement(saved)
     ; Live UI: Link Type 50005 — works collapsed or expanded. Do not EnsureNavDrawerOpen.
     criteria := []
     for n in COPILOT_NEW_CHAT_NAMES {
@@ -1596,6 +1602,9 @@ CopilotWeb_ClickNewChat(uia := 0) {
 CopilotWeb_FindNavSearchLink(uia) {
     if (!IsObject(uia))
         return 0
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_COPILOT, "Search")
+    if (saved)
+        return saved
     criteria := []
     for n in COPILOT_NAV_SEARCH_NAMES {
         criteria.Push({ Name: n, Type: 50005 })

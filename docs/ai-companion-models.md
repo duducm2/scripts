@@ -16,20 +16,22 @@ Related: [Global AI companion routing](global-ai-companion-routing.md).
 | ----------- | ------------------------------------------------------------------ |
 | **Shift+M** | Select **Deep** (from INI; no-op if already active when detectble) |
 | **Shift+Q** | Select **Fast** / Quick (from INI)                                 |
-| **Shift+L** | Open the model list manager for the **active** companion window    |
+| **Shift+L** | Open the model list manager for the **active** companion window. Also maps New Chat, Menu, and Search. |
 
 Same chords on all three companions (context `#HotIf`).
 
 ### Shift+L list UI
 
-| Key                  | Action                                                                          |
-| -------------------- | ------------------------------------------------------------------------------- |
-| `1`–`9` then letters | Select / apply a listed model (`a`/`e`/`f`/`d` reserved)                        |
-| Insert / `a`         | Add model — **one** InputBox for the exact UIA-visible name                     |
-| `e` / Edit           | Edit focused row (model rename, or Fast/Deep when those rows are focused)       |
-| Delete               | Remove focused **model** row (confirm); Fast/Deep rows are not deleted this way |
-| `f` / `d`            | Set **Fast** / **Deep** name (InputBox; applied later by Shift+Q / Shift+M)     |
-| Esc                  | Cancel                                                                          |
+| Key                  | Action                                                                                          |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `1`–`9` then letters | Select / apply a listed model (`a`/`e`/`f`/`d` reserved; bare `n`/`s` still select models)     |
+| Shift+N / D / S      | Map **New Chat** / **Menu** / **Search**: menu closes, next click in that companion is saved   |
+| Enter / double-click | Same as the row's key. On a button row, starts that capture                                     |
+| Insert / `a`         | Add model — **one** InputBox for the exact UIA-visible name                                     |
+| `e` / Edit           | Edit focused model (or Fast/Deep). On a button row, recapture                                   |
+| Delete               | Remove focused **model** row (confirm). On a button row, clear the saved target                 |
+| `f` / `d`            | Set **Fast** / **Deep** name (InputBox; applied later by Shift+Q / Shift+M). Bare `d` is Deep   |
+| Esc                  | Cancel. During capture, Esc restores the menu without saving                                    |
 
 The modal uses Utility Shortcuts ListView chrome (`+AlwaysOnTop +ToolWindow`, Char-first ListView, Add/Edit/Delete/Close). Before any InputBox or delete confirm it is torn down (or owned) so prompts are not covered, then rebuilt afterward. Enter / double-click activate the focused row.
 
