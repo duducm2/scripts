@@ -5,7 +5,7 @@
 
 global g_HotstringGeminiAutoSubmit := true
 global g_HotstringGeminiRestoreHwnd := 0
-global g_GeminiDelayedSubmit_PreEnterDelayMs := 1000
+global g_GeminiDelayedSubmit_PreEnterDelayMs := 0
 global g_GeminiDelayedSubmit_WaitContentMaxMs := 5000
 
 ; AHK names are case-insensitive, so a parameter named uia hides the UIA class.
@@ -254,7 +254,7 @@ Gemini_TrySubmitOnce(uia, fallback := "enter") {
     return true
 }
 
-; Bounded content wait: minSettleMs floor for Clip Angel paste settle; 25 ms poll for early exit (canon §13).
+; Bounded content wait: return on the first poll where the composer has text; 25 ms poll (canon §13).
 Gemini_WaitForPromptContent(uia, maxMs, minSettleMs := "") {
     global g_GeminiDelayedSubmit_PreEnterDelayMs
     if (minSettleMs = "")

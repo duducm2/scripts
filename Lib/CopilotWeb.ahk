@@ -624,9 +624,6 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
     } catch {
         return 0
     }
-    WinActivate("ahk_id " copilotHwnd)
-    WinWaitActive("ahk_id " copilotHwnd, , 2)
-    Sleep 150
     if (optionalPromptText != "")
         InsertText(optionalPromptText)
     else

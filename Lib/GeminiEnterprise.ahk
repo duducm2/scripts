@@ -455,9 +455,6 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
     } catch {
         return 0
     }
-    WinActivate("ahk_id " hwnd)
-    WinWaitActive("ahk_id " hwnd, , 2)
-    Sleep 150
     if (optionalPromptText != "")
         InsertText(optionalPromptText)
     else
