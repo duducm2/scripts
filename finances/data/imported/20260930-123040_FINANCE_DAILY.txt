@@ -1,0 +1,10 @@
+﻿===PREVIEW===
+4 row(s) · Processed all transactions from dictation, including one expense for the new house, one income, one health expense, and one inter-account transfer.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+CACAMB - wreckage for new house,"350,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Received from husband,"40,00",income,CAT_PRESENTE,ACC_MERCADOP,,,1
+Therapy,"180,00",expense,CAT_SAUDE,ACC_MERCADOP,,,1
+,"452,28",transfer,,ACC_MERCADOP,,ACC_NUBANKMA,1
+===END_FILE===
