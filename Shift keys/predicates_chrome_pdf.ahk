@@ -33,6 +33,11 @@ IsChromePdfViewerActive_Run() {
     if (!hwnd)
         return false
 
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if (Chrome_IsAiCompanionTitle(title) || !InStr(title, ".pdf", false))
+        return false
+
     now := A_TickCount
     if (hwnd = g_ChromePdf_CacheHwnd
         && g_ChromePdf_CacheTick

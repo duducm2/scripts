@@ -85,6 +85,66 @@ ShiftLetterHotkey_IsBareShift() {
     && !GetKeyState("RWin", "P")
 }
 
+; AI companion tabs must not run page UI Automation from a #HotIf. That walk holds the
+; keyboard hook, so Alt+P in WindowManagement never reaches Clip Angel.
+Chrome_IsAiCompanionTitle(title) {
+    if (!title)
+        return false
+    if (GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(title))
+        return true
+    return IsConsumerGeminiChromeTitle(title)
+}
+
+; Address bar only. Skips the document so a large Gemini or Copilot page cannot block the hook.
+; Does not turn Chrome accessibility on.
+ChromeHotIf_OmniboxUrl(hwnd) {
+    if (!hwnd)
+        return ""
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd, unset, 0)
+    catch
+        return ""
+    if (!IsObject(root))
+        return ""
+    return ChromeHotIf_FindOmnibox(root, 0)
+}
+
+ChromeHotIf_FindOmnibox(el, depth) {
+    if (!IsObject(el) || depth > 8)
+        return ""
+    ct := 0
+    try ct := el.ControlType
+    catch
+        return ""
+    if (ct = 50030)
+        return ""
+    if (ct = 50004) {
+        ak := ""
+        name := ""
+        id := ""
+        try ak := el.AcceleratorKey
+        try name := el.Name
+        try id := el.AutomationId
+        if (ak = "Ctrl+L" || id = "view_1012" || InStr(name, "Address and search bar", false)) {
+            url := ""
+            try url := el.Value
+            return url
+        }
+    }
+    kids := 0
+    try kids := el.FindAll(UIA.TrueCondition, 2)
+    catch
+        return ""
+    if (!IsObject(kids))
+        return ""
+    for child in kids {
+        found := ChromeHotIf_FindOmnibox(child, depth + 1)
+        if (found != "")
+            return found
+    }
+    return ""
+}
+
 ; Pass a normal letter or a non-bare-Shift chord through to the focused field.
 ; The $ hotkey prefix keeps this Send from retriggering the hotkey.
 ShiftLetterHotkey_Relay() {

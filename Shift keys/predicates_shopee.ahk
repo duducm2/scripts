@@ -19,24 +19,19 @@ IsShopeeActive() {
     hwnd := WinExist("A")
     if (!hwnd)
         return false
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    if Chrome_IsAiCompanionTitle(title)
+        return false
     ; Cache hit: same window as last check (avoids UIA on every keystroke / cheat sheet open)
     if (hwnd = g_Shopee_CacheHwnd && WinExist("ahk_id " g_Shopee_CacheHwnd))
         return g_Shopee_CacheResult
-    ; Platform identification by URL only (do not use window title; it changes to product name). See shopping uia3.md.
-    ; URL check via UIA (Chrome address bar: AcceleratorKey "Ctrl+L", not AccessKey)
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-        addressBar := root.FindFirst({ Type: 50004, AcceleratorKey: "Ctrl+L" })
-        if (addressBar) {
-            url := addressBar.Value
-            if InStr(url, "shopee.com", false) {
-                g_Shopee_CacheHwnd := hwnd
-                g_Shopee_CacheResult := true
-                return true
-            }
-        }
-    } catch {
-        ; UIA failed; do not cache so next call retries
+    ; Omnibox only. A descendant search walks the page and blocks the keyboard hook.
+    url := ChromeHotIf_OmniboxUrl(hwnd)
+    if (url != "" && InStr(url, "shopee.com", false)) {
+        g_Shopee_CacheHwnd := hwnd
+        g_Shopee_CacheResult := true
+        return true
     }
     g_Shopee_CacheHwnd := hwnd
     g_Shopee_CacheResult := false

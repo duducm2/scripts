@@ -7,12 +7,7 @@
 
 #HotIf IsCopilotWebChromeActiveForHotkey()
 
-$*d:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++d:: {
     try {
         CopilotWeb_ToggleNavDrawer()
         CopilotWeb_ReturnToComposer()
@@ -20,67 +15,37 @@ $*d:: {
     }
 }
 
-$*n:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++n:: {
     try AiCompanion_StartNewChat(AI_COMPANION_COPILOT)
     catch {
     }
 }
 
-$*s:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++s:: {
     try CopilotWeb_ClickNavSearch()
     catch {
     }
 }
 
-$*m:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++m:: {
     try AiCompanionModels_SelectRole(AI_COMPANION_COPILOT, "deep")
     catch {
     }
 }
 
-$*q:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++q:: {
     try AiCompanionModels_SelectRole(AI_COMPANION_COPILOT, "fast")
     catch {
     }
 }
 
-$*l:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++l:: {
     try ShowAiCompanionModelSelector(AI_COMPANION_COPILOT)
     catch {
     }
 }
 
-$*a:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++a:: {
     try {
         ok := CopilotWeb_RunWithBusyBanner(
             "⏳ Think deeper + Generate image + Bosch prompt… Don't move the mouse", CopilotWeb_ShiftArt)
@@ -90,12 +55,7 @@ $*a:: {
     }
 }
 
-$*t:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++t:: {
     try {
         uia := CopilotWeb_GetActiveUia()
         if CopilotWeb_OpenSourcesMenu(uia) {
@@ -106,12 +66,7 @@ $*t:: {
     }
 }
 
-$*i:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++i:: {
     try {
         ok := CopilotWeb_RunWithBusyBanner("⏳ Generate an image… Don't move the mouse", (*) =>
             CopilotWeb_ClickAddCapability(
@@ -124,12 +79,7 @@ $*i:: {
     }
 }
 
-$*e:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++e:: {
     try {
         ok := CopilotWeb_RunWithBusyBanner("⏳ Research a topic… Don't move the mouse", (*) =>
             CopilotWeb_ClickAddCapability(
@@ -142,12 +92,7 @@ $*e:: {
     }
 }
 
-$*c:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++c:: {
     try {
         CopilotWeb_ShiftCopyLastMessage()
         CopilotWeb_ReturnToComposer()
@@ -155,12 +100,7 @@ $*c:: {
     }
 }
 
-$*r:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++r:: {
     try {
         CopilotWeb_ShiftReadAloud()
         CopilotWeb_ReturnToComposer()
@@ -168,12 +108,7 @@ $*r:: {
     }
 }
 
-$*v:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++v:: {
     try {
         if !CopilotWeb_ToggleVoiceChat()
             ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
@@ -181,12 +116,7 @@ $*v:: {
     }
 }
 
-$*f:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++f:: {
     try {
         if CopilotWeb_ToggleComposerFullscreen()
             CopilotWeb_ReturnToComposer()
@@ -197,12 +127,7 @@ $*f:: {
 }
 
 ; Shift+H: strip human reminders after last --- (keep divider + blank lines for comments)
-$*h:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++h:: {
     try {
         if !CopilotWeb_StripComposerHumanReminders()
             ShowCenteredOverlay_Utils("No --- human-reminder divider found", 2200, BANNER_ACCENT_ERROR)

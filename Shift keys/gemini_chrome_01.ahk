@@ -20,12 +20,7 @@ IsConsumerGeminiChromeActive_Run() {
         title := WinGetTitle("A")
     catch
         title := ""
-    if IsConsumerGeminiChromeTitle(title)
-        return true
-    url := Mobills_GetActiveBrowserUrl()
-    if GeminiEnterprise_UrlMatches(url)
-        return false
-    return InStr(url, "gemini.google.com")
+    return IsConsumerGeminiChromeTitle(title)
 }
 
 #HotIf IsConsumerGeminiChromeActive()

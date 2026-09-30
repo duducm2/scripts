@@ -6,12 +6,7 @@
 
 #HotIf IsGeminiEnterpriseChromeActiveForHotkey()
 
-$*d:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++d:: {
     try {
         GeminiEnterprise_ToggleNavDrawer()
         GeminiEnterprise_ReturnToComposer()
@@ -19,67 +14,37 @@ $*d:: {
     }
 }
 
-$*n:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++n:: {
     try AiCompanion_StartNewChat(AI_COMPANION_ENTERPRISE)
     catch {
     }
 }
 
-$*s:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++s:: {
     try GeminiEnterprise_ClickNavSearch()
     catch {
     }
 }
 
-$*m:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++m:: {
     try AiCompanionModels_SelectRole(AI_COMPANION_ENTERPRISE, "deep")
     catch {
     }
 }
 
-$*q:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++q:: {
     try AiCompanionModels_SelectRole(AI_COMPANION_ENTERPRISE, "fast")
     catch {
     }
 }
 
-$*l:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++l:: {
     try ShowAiCompanionModelSelector(AI_COMPANION_ENTERPRISE)
     catch {
     }
 }
 
-$*a:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++a:: {
     try {
         ok := GeminiEnterprise_RunWithBusyBanner(
             "⏳ 3.1 Pro + Create images + Bosch prompt… Don't move the mouse", GeminiEnterprise_ShiftArt)
@@ -89,12 +54,7 @@ $*a:: {
     }
 }
 
-$*t:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++t:: {
     try {
         uia := GeminiEnterprise_GetActiveUia()
         if GeminiEnterprise_OpenToolsMenu(uia)
@@ -103,12 +63,7 @@ $*t:: {
     }
 }
 
-$*i:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++i:: {
     try {
         ok := GeminiEnterprise_RunWithBusyBanner("⏳ Create images… Don't move the mouse", (*) =>
             GeminiEnterprise_ClickCreateImages())
@@ -120,12 +75,7 @@ $*i:: {
     }
 }
 
-$*e:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++e:: {
     try {
         ok := GeminiEnterprise_RunWithBusyBanner("⏳ Deep Research… Don't move the mouse", (*) =>
             GeminiEnterprise_ClickDeepResearch())
@@ -137,12 +87,7 @@ $*e:: {
     }
 }
 
-$*p:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++p:: {
     try {
         uia := GeminiEnterprise_GetActiveUia()
         if !GeminiEnterprise_FocusComposer(uia, true)
@@ -152,12 +97,7 @@ $*p:: {
 }
 
 ; Shift+H: strip human reminders after last --- (keep divider + blank lines)
-$*h:: {
-    if !ShiftLetterHotkey_IsBareShift() {
-        ShiftLetterHotkey_Relay()
-        return
-    }
-    ShiftLetterHotkey_Consume()
++h:: {
     try {
         reason := ""
         if GeminiEnterprise_StripComposerHumanReminders(&reason)

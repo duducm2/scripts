@@ -56,17 +56,27 @@ Mobills_ShouldHandleAppKeys() {
         title := WinGetTitle("A")
     catch
         title := ""
-    if IsConsumerGeminiChromeTitle(title)
+    if (Chrome_IsAiCompanionTitle(title))
         return false
-    siteKey := PickChromeAppSheetKey(ChromeTitleWithoutBrowser(title))
-    if (siteKey != "" && siteKey != "Mobills")
-        return false
-    if (siteKey = "Mobills")
+    if (InStr(title, "Mobills", false))
         return true
-    url := Mobills_GetActiveBrowserUrl()
-    if InStr(url, "gemini.google.com") || GeminiEnterprise_UrlMatches(url)
+    return false
+}
+
+; Previous/Next month: same site gate as app keys (never Tasks / other Chrome apps).
+; Never while typing in a field (fixes bare k/l stealing keys and +k/+l from long-press).
+Mobills_ShouldHandleMonthNavKeys() {
+    if !(WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe"))
         return false
-    return InStr(url, "web.mobills.com.br")
+    try
+        title := WinGetTitle("A")
+    catch
+        title := ""
+    if (!InStr(title, "Mobills", false))
+        return false
+    if Mobills_IsWebTextInputFocused()
+        return false
+    return true
 }
 
 ; True when Chrome/Edge UIA focus is in a text-editable control (typing must not trigger month nav).
@@ -86,14 +96,6 @@ Mobills_IsWebTextInputFocused() {
     } catch {
     }
     return false
-}
-
-; Previous/Next month: same site gate as app keys (never Tasks / other Chrome apps).
-; Never while typing in a field (fixes bare k/l stealing keys and +k/+l from long-press).
-Mobills_ShouldHandleMonthNavKeys() {
-    if Mobills_IsWebTextInputFocused()
-        return false
-    return Mobills_ShouldHandleAppKeys()
 }
 
 #HotIf Mobills_ShouldHandleMonthNavKeys()
