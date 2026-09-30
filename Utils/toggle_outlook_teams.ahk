@@ -10,8 +10,9 @@
 ; Toggles Outlook and Teams applications to manage RAM usage.
 ; If either is open: Kills both so their RAM is released. Closing wins over opening.
 ; That close also kills Edge, OneNote, and WhatsApp, and stops the
-; Tasks, Finance, and Memory Palace servers. Those servers stay stopped until
+; Finance and Memory Palace servers. Those servers stay stopped until
 ; you open each app. They are not relaunched with Outlook and Teams.
+; The Tasks server and its window stay running.
 ; If neither is open: Launches Outlook and Teams only.
 ; =============================================================================
 ToggleOutlookAndTeams() {
@@ -69,7 +70,7 @@ ToggleOutlookAndTeams() {
             }
             try StopResidentWebServers()
             catch Error as e {
-                MsgBox "Error closing Tasks, Finance, or Memory Palace: " e.Message
+                MsgBox "Error closing Finance or Memory Palace: " e.Message
             }
         } else {
             ; Neither is running: launch both applications
@@ -194,21 +195,15 @@ ToggleOutlookAndTeams() {
     }
 }
 
-; Pause the keep-alive, then stop Tasks, Finance, and Memory Palace.
-; Launchers start a server again when that app is opened. The pause file
-; stops web_servers_warmup.ahk from starting the other two on its own.
+; Pause the keep-alive, then stop Finance and Memory Palace.
+; Tasks stays up. Launchers start a stopped server again when that app is opened.
+; The pause file stops web_servers_warmup.ahk from starting the other two on its own.
 StopResidentWebServers() {
     path := A_Temp "\ahk-web-servers.paused"
     try FileDelete(path)
     catch {
     }
     try FileAppend("1", path)
-    catch {
-    }
-    try Task_CloseWebApp()
-    catch {
-    }
-    try Task_StopServer()
     catch {
     }
     try Finance_StopDashboardServer()
