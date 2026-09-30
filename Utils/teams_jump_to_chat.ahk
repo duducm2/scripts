@@ -71,40 +71,6 @@ TeamsJump_Run() {
     }
 }
 
-; App-bar buttons that exist only after the Teams shell has finished loading.
-; The main window title appears earlier, while Ctrl+G still does nothing.
-TeamsJump_ShellLandmarkConditions() {
-    return [{ Name: "Chat", Type: "Button" }, { Name: "Bate-papo", Type: "Button" }, { Name: "Calendar", Type: "Button" }, { Name: "Calendário",
-        Type: "Button" }, { Name: "Activity", Type: "Button" }, { Name: "Atividade", Type: "Button" }, { Name: "Calls",
-            Type: "Button" }, { Name: "Chamadas", Type: "Button" }, { Name: "Teams", Type: "Button" }, { Name: "Equipes",
-                Type: "Button" }, { Name: "Search", Type: "Button" }, { Name: "Pesquisar", Type: "Button" }, { Name: "Search",
-                    Type: "Edit" }, { Name: "Pesquisar", Type: "Edit" }
-    ]
-}
-
-TeamsJump_ShellIsReady(hwnd) {
-    if (!hwnd || hwnd <= 0 || !WinExist("ahk_id " hwnd))
-        return false
-    root := 0
-    try {
-        root := UIA.ElementFromChromium("ahk_id " hwnd, 300)
-    } catch {
-        try {
-            root := UIA.ElementFromHandle(hwnd)
-        } catch {
-            return false
-        }
-    }
-    if (!IsObject(root))
-        return false
-    try {
-        el := root.FindFirst(TeamsJump_ShellLandmarkConditions())
-        return !!el
-    } catch {
-        return false
-    }
-}
-
 ; CheckAndOpenOutlookTeams shows this modal when ms-teams.exe is not running:
 ; "Teams is closed. Do you want to open it?" (title "Open Applications?").
 TeamsJump_OpenPromptIsOpen() {
@@ -117,10 +83,64 @@ TeamsJump_WaitUntilOpenPromptClosed() {
         Sleep 50
 }
 
-; Cold start: keep waiting until search can accept a name. Returns false on timeout.
-; hwnd is updated if Teams replaces the startup window.
-; The open-Teams prompt must already be answered; this loop also refuses to proceed if it is still open.
-TeamsJump_WaitUntilShellReady(&hwnd, timeoutMs := 45000) {
+; Composer names only. An empty go-to field is not a composer.
+TeamsJump_NameIsComposer(text) {
+    t := Trim(text)
+    if (t = "")
+        return false
+    for name in TeamsJump_ComposerNameCandidates() {
+        if (StrLower(t) = StrLower(name))
+            return true
+    }
+    return false
+}
+
+; One focused element. No tree walk. isGoTo when focus is an Edit/ComboBox and not the composer.
+TeamsJump_ReadFocus() {
+    info := { id: "", isGoTo: false }
+    fe := 0
+    try fe := UIA.GetFocusedElement()
+    catch
+        return info
+    if (!fe)
+        return info
+    try info.id := UIA.RuntimeIdToString(fe.RuntimeId)
+    catch {
+    }
+    type := 0
+    name := ""
+    try type := fe.Type
+    catch
+        return info
+    try name := fe.Name
+    catch
+        name := ""
+    if (type != UIA.Type.Edit && type != UIA.Type.ComboBox)
+        return info
+    if (TeamsJump_NameIsComposer(name))
+        return info
+    info.isGoTo := true
+    return info
+}
+
+; Ctrl+G once. True when focus moved onto the go-to field.
+TeamsJump_ProbeGoToField() {
+    before := TeamsJump_ReadFocus()
+    Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+    Send "^g"
+    Sleep 300
+    after := TeamsJump_ReadFocus()
+    if (!after.isGoTo)
+        return false
+    if (before.id != "" && after.id = before.id)
+        return false
+    return true
+}
+
+; Cold start after the open prompt. gotoAlreadyOpen: Ctrl+G already focused the field, do not send it again.
+; Returns false only when no Teams window appeared. A window that never confirms the field still returns true.
+TeamsJump_WaitUntilGoToReady(&hwnd, &gotoAlreadyOpen, timeoutMs := 20000) {
+    gotoAlreadyOpen := false
     TeamsJump_WaitUntilOpenPromptClosed()
     start := A_TickCount
     deadline := start + timeoutMs
@@ -145,13 +165,16 @@ TeamsJump_WaitUntilShellReady(&hwnd, timeoutMs := 45000) {
             fresh := TeamsJump_ResolveMainHwnd()
             if (fresh > 0)
                 hwnd := fresh
-            if (hwnd > 0 && TeamsJump_ShellIsReady(hwnd)) {
-                Sleep 400
-                return true
+            if (hwnd > 0 && WinExist("ahk_id " hwnd)) {
+                try WinActivate("ahk_id " hwnd)
+                if WinActive("ahk_id " hwnd) && TeamsJump_ProbeGoToField() {
+                    gotoAlreadyOpen := true
+                    return true
+                }
             }
-            Sleep(hwnd > 0 ? 150 : 200)
+            Sleep 400
         }
-        return false
+        return hwnd > 0 && WinExist("ahk_id " hwnd)
     } finally {
         if (shown) {
             try StandardLoadingBar_Hide(0)
@@ -233,9 +256,10 @@ TeamsJumpToChat(contact) {
         if (hwndTeams <= 0)
             TeamsJump_Run()
 
+        gotoAlreadyOpen := false
         if (teamsWasClosed) {
-            if (!TeamsJump_WaitUntilShellReady(&hwndTeams)) {
-                try ShowCenteredOverlay_Utils("❌ Teams did not become ready.", 2500, BANNER_ACCENT_ERROR)
+            if (!TeamsJump_WaitUntilGoToReady(&hwndTeams, &gotoAlreadyOpen)) {
+                try ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
         } else if (hwndTeams <= 0) {
@@ -252,7 +276,7 @@ TeamsJumpToChat(contact) {
             return false
         }
 
-        if !TeamsJump_ActivateWindowWithRetry(hwndTeams, 3, 300) {
+        if (!gotoAlreadyOpen && !TeamsJump_ActivateWindowWithRetry(hwndTeams, 3, 300)) {
             ShowCenteredOverlay_Utils("❌ Could not activate Teams window.", 2500, BANNER_ACCENT_ERROR)
             return false
         }
@@ -260,8 +284,10 @@ TeamsJumpToChat(contact) {
         TeamsJump_WaitUntilOpenPromptClosed()
         Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
 
-        Send "^g"
-        Sleep 100
+        if (!gotoAlreadyOpen) {
+            Send "^g"
+            Sleep 100
+        }
         loop 5 {
             A_Clipboard := ""
             A_Clipboard := contact
