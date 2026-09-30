@@ -1475,7 +1475,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === GENERAL ===
     [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes, [K] Handy English / [L] Handy Multilang = #!+C slots 1/3)
     [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M); [1]/[2]/[3] set video/article/favorite from clipboard; [V]/[A]/[F] open stored video/article/favorite in new Chrome; [Q]/[M] show and select the Shift+L Fast/Deep models for the current AI companion; [U] Release stuck Control
-    [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; [Q] close mode: slot key closes that window, [Q] or Esc leaves close mode; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; then return to previous window; same as D2C [W])
+    [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; [Q] close mode: slot key closes that window, [Q] leaves close mode, Esc closes the picker; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; then return to previous window; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Q] > AI companion Quick / Fast model (global; resolved companion)
     [Win+Alt+M] > AI companion Deep model (global; resolved companion)

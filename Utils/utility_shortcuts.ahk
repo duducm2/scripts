@@ -170,7 +170,7 @@ RegisterMacro(MacroStudyLink_OpenFavorite, "❤️ Open favorite", "f")
 ; After paste (+ optional learn-field prompt), restores focus to the window that was active before the picker.
 ; If a main text field is saved for that exe+title/url (assets/data/paste_field_mappings.ini),
 ; focus it via UIA before paste; if unknown, after paste ask [Y]/[N] to persist the focused field.
-; In the picker: slot key = paste; [Q] close mode (slot key closes that window; [Q] or [ESC] leaves it);
+; In the picker: slot key = paste; [Q] close mode (slot key closes that window; [Q] leaves it; [ESC] closes the picker);
 ; [R] then slot = ignore that process (exe) for AutoSlot;
 ; [I] = manage/remove ignore entries (assets/data/autoslot_user_excludes.ini);
 ; [M] = manage/remove main text-field mappings (assets/data/paste_field_mappings.ini).
