@@ -27,6 +27,7 @@ Gemini_GetSearchRoot(uia) {
     return uia
 }
 
+; Navigate to consumer Gemini, focus the prompt, paste snippet (optional text or current clipboard).
 GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {
     prevTitleMatchMode := A_TitleMatchMode
     SetTitleMatchMode(2)
@@ -90,7 +91,7 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
         if (optionalPromptText != "") {
             InsertText(optionalPromptText)
         } else {
-            ClipAngel_SendTopListItem(geminiHwnd)
+            PasteClipboard()
         }
         Sleep 250
         ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")

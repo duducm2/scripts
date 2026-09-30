@@ -599,7 +599,7 @@ CopilotWeb_StripComposerHumanReminders() {
     return ReplaceFocusedEditWithText(newText)
 }
 
-; Navigate to Copilot, focus composer, paste snippet (optional text or Clip Angel first snippet).
+; Navigate to Copilot, focus composer, paste snippet (optional text or current clipboard).
 CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) {
     SetTitleMatchMode(2)
     copilotHwnd := GetCopilotWebWindowHwnd()
@@ -630,7 +630,7 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
     if (optionalPromptText != "")
         InsertText(optionalPromptText)
     else
-        ClipAngel_SendTopListItem(copilotHwnd)
+        PasteClipboard()
     Sleep 250
     CopilotWeb_PlayFocusedChime()
     if (autoSubmit) {

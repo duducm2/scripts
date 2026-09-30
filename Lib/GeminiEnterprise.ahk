@@ -430,7 +430,7 @@ GeminiEnterprise_FocusPromptOnly() {
     return GeminiEnterprise_OpenOrFocus()
 }
 
-; Navigate to Enterprise, focus composer, paste snippet (optional text or Clip Angel top item).
+; Navigate to Enterprise, focus composer, paste snippet (optional text or current clipboard).
 GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) {
     SetTitleMatchMode(2)
     hwnd := GetGeminiEnterpriseWindowHwnd()
@@ -461,7 +461,7 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
     if (optionalPromptText != "")
         InsertText(optionalPromptText)
     else
-        ClipAngel_SendTopListItem(hwnd)
+        PasteClipboard()
     Sleep 250
     GeminiEnterprise_PlayFocusedChime()
     if (autoSubmit) {

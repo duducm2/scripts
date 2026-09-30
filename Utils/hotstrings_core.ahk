@@ -57,6 +57,13 @@ InsertText(text) {
     }
 }
 
+; Paste the current clipboard into the focused control. Does not open Clip Angel
+; and does not restore a previous clipboard (unlike InsertText).
+PasteClipboard() {
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "^v"
+}
+
 ; Paste file(s) via CF_HDROP (file attachment), not path text. Returns true on success.
 InsertFiles(paths) {
     global g_lastExpansion
