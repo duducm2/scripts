@@ -79,6 +79,9 @@ RegisterMacro(MacroReleaseStuckControl, "🔓 Release stuck Control", "u")
 ; Macros [W] — force-kill heavy apps and their child processes to free RAM.
 ; Stop resident servers first so warmup does not relaunch Finance / Memory Palace.
 MacroWipeHeavyApps(*) {
+    ; Yes is the default button so Enter confirms.
+    if MsgBox("Close heavy apps to free RAM?", "Wipe apps", "Icon? YesNo Default1") != "Yes"
+        return
     ShowCenteredOverlay_Utils("🧹 Closing heavy apps...", 1500, BANNER_ACCENT_INTERMEDIATE)
     try StopResidentWebServers()
     catch {
@@ -88,6 +91,13 @@ MacroWipeHeavyApps(*) {
         "ms-teams.exe", "Teams.exe", "MSTeams.exe",
         "OUTLOOK.EXE", "olk.exe",
         "msedge.exe", "ONENOTE.EXE", "WhatsApp.exe", "Spotify.exe"
+    ]
+        WipeKillProcessTree(name)
+    ; Windows 11 hosts that stay resident. They start again when that feature is opened.
+    for name in [
+        "Widgets.exe", "WidgetService.exe",
+        "GameBar.exe", "GameBarFTServer.exe",
+        "PhoneExperienceHost.exe"
     ]
         WipeKillProcessTree(name)
     try WhatsAppJump_InvalidateHwndCache()
