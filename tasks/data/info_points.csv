@@ -333,3 +333,4 @@ INFO_0240,task,TASK_0339,Celmar Guimarães,,ℹ️,person contacted,180,2026-09-
 INFO_0241,task,TASK_0339,Vanessa Almada,,ℹ️,,190,2026-09-30 12:22:29,,
 INFO_0242,task,TASK_0339,"Júlio César, o professor que participou da sua banca.",,ℹ️,,200,2026-09-30 12:22:38,,
 INFO_0243,task,TASK_0214,Vamos deixar a Fran hardcoded. We can wait our transition to GS to think about it again,,ℹ️,,4040,2026-09-30 13:15:36,,
+INFO_0244,task,TASK_0364,"Location (Ex: CPS, JVL...) Área desenvolvedora Área destino Owner do projeto Desenvolvedor do projeto Título do projeto Descrição do projeto Status do projeto (Planejamento,Desenvolvimento ou produção) Data início do Go-Live Data fim/desprovisionamento Horas/minutos automatizados por mês",,ℹ️,,10,2026-09-30 16:00:04,,
