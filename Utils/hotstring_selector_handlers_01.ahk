@@ -1194,7 +1194,8 @@ PromptPaste_SubmitViaEnterEnabled() {
     return !!(PROMPT_PASTE_SUBMIT_VIA_ENTER && PROMPT_PASTE_GEMINI_SUBMIT_VIA_ENTER)
 }
 
-; Shared submit leaf: Enterprise uses SubmitComposer (click, then Ctrl+Enter). Others use Enter or TrySubmit.
+; Shared submit leaf. A saved Send control is clicked and this pass stops there.
+; With Send= empty: Enterprise uses SubmitComposer; others use Enter or TrySubmit.
 ; Do not restore prior focus here — PromptPaste_SubmitWhenReady confirms Stop on the companion window.
 PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     global g_GeminiDelayedSubmit_WaitContentMaxMs
@@ -1224,12 +1225,10 @@ PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
         return false
     }
     Sleep Max(0, PROMPT_PASTE_SUBMIT_FOCUS_SLEEP_MS)
-    if (companionId = "enterprise") {
-        GeminiEnterprise_SubmitComposer(hwnd)
-        return true
-    }
     sendSection := ""
-    if (companionId = "copilot")
+    if (companionId = "enterprise")
+        sendSection := AI_COMPANION_ENTERPRISE
+    else if (companionId = "copilot")
         sendSection := AI_COMPANION_COPILOT
     else if (companionId = "gemini")
         sendSection := AI_COMPANION_GEMINI
@@ -1243,6 +1242,10 @@ PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
             AiCompanionButtons_Click(savedSend)
             return true
         }
+    }
+    if (companionId = "enterprise") {
+        GeminiEnterprise_SubmitComposer(hwnd)
+        return true
     }
     if (PromptPaste_SubmitViaEnterEnabled()) {
         SendInput "{Enter}"

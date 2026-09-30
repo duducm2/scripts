@@ -14,7 +14,7 @@ flowchart LR
   attach[Attach idle: chips / ProgressBar / upload text]
   paste[Paste prompt body]
   ready[Send ready: light or stable poll]
-  submit[Submit: Enter preferred]
+  submit[Submit: saved Send, else Enter]
   confirm[Confirm: Stop / generating]
   resolve --> attach --> paste --> ready --> submit --> confirm
 ```
@@ -24,7 +24,7 @@ flowchart LR
 | Resolve     | `PromptPaste_SubmitWhenReady`           | `companionId` + Chrome hwnd (Enterprise / Copilot / consumer finders)                                                                       |
 | Attach idle | `PromptContext_WaitForAttachUploadIdle` | File chips stable **or** ProgressBar gone; upload-label Text is secondary (`PROMPT_PASTE_ATTACH_IDLE_FAST_PATH`)                            |
 | Send ready  | `PromptContext_WaitForSendReady`        | After attach: short enablement poll (cap 500ms then force-submit). Without attach: stable Send + text (`PROMPT_PASTE_USE_FAST_READY_PROBE`) |
-| Submit      | `PromptPaste_SubmitCompanion`           | Focus composer → `{Enter}` (`PROMPT_PASTE_SUBMIT_VIA_ENTER`) or adapter `TrySubmit`                                                         |
+| Submit      | `PromptPaste_SubmitCompanion`           | Saved Send is clicked first and that pass does not also press Enter. Enter or `SubmitComposer` remains only when `Send=` is empty           |
 | Confirm     | `AiCompanion_ConfirmAfterEnter`         | Snapshot the composer, then for 3s require the stop control. Enter alone is not success. See below.                                         |
 
 Busy bar: `PromptPaste_BusyEnsure` / `BusyUpdate` / `BusyHide` for the whole wait+submit+confirm window (`PROMPT_PASTE_AUTO_SEND_CAP_MS`).
