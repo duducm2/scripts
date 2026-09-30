@@ -695,32 +695,8 @@ Reminders_SelectItem(actionLabel, &items, remHwnd, maxItems := 35) {
     ), "S1", "pre-fix")
     ; #endregion
 
-    ; Prevent immediate auto-selection / ignored picks caused by modifiers still being held from the trigger hotkey.
-    ; If the trigger uses Win/Ctrl/Alt/Shift, wait for release before listening for selection keys.
-    try {
-        if (A_ThisHotkey != "") {
-            th := A_ThisHotkey
-            if InStr(th, "#") {
-                try KeyWait "LWin"
-                try KeyWait "RWin"
-            }
-            if InStr(th, "^")
-                try KeyWait "Ctrl"
-            if InStr(th, "!")
-                try KeyWait "Alt"
-            if InStr(th, "+")
-                try KeyWait "Shift"
-
-            hk := th
-            hk := StrReplace(hk, "+", "")
-            hk := StrReplace(hk, "^", "")
-            hk := StrReplace(hk, "!", "")
-            hk := StrReplace(hk, "#", "")
-            if (StrLen(hk) = 1)
-                KeyWait hk
-        }
-    } catch {
-    }
+    ; Chord release is StandardLoadingBar_DismissChordHotkey inside ShowWithKeys.
+    ; Do not KeyWait here; that blocked the picker until every modifier was let go.
 
     StandardLoadingBar_CloseKeysOverlay()
     ShowModal() {

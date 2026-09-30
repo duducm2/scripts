@@ -28,68 +28,6 @@
     ShowHotstringSelector("Macros")
 }
 
-; Opener letter still physically down after the menu opens (e.g. W from #!+W).
-; Swallowed until it is released so key-repeat does not run that Macros entry.
-global g_UtilitySelectorSwallowKey := ""
-
-; Drop the opener chord without waiting. A KeyWait per held key (Win, Alt, Shift, letter)
-; blocked the menu for about 0.4s each while the chord was still down.
-; {vkE8} while Win is down keeps the later Win release from opening Start.
-UtilityShortcuts_DismissOpenerChord() {
-    try SendInput "{Blind}{vkE8}"
-    catch {
-    }
-    UtilityShortcuts_ReleaseStuckModifiers()
-    UtilityShortcuts_ArmOpenerKeySwallow()
-}
-
-UtilityShortcuts_ArmOpenerKeySwallow() {
-    global g_UtilitySelectorSwallowKey
-    g_UtilitySelectorSwallowKey := ""
-    SetTimer(UtilityShortcuts_PollOpenerKeyUp, 0)
-    th := ""
-    try th := A_ThisHotkey
-    catch {
-        th := ""
-    }
-    if (th = "")
-        return
-    hk := RegExReplace(th, "^[$*~]+")
-    hk := RegExReplace(hk, "[#^!+<>*]+", "")
-    if (StrLen(hk) != 1)
-        return
-    hk := StrLower(hk)
-    if !GetKeyState(hk, "P")
-        return
-    g_UtilitySelectorSwallowKey := hk
-    SetTimer(UtilityShortcuts_PollOpenerKeyUp, 15)
-}
-
-UtilityShortcuts_PollOpenerKeyUp(*) {
-    global g_UtilitySelectorSwallowKey
-    if (g_UtilitySelectorSwallowKey = "" || !GetKeyState(g_UtilitySelectorSwallowKey, "P")) {
-        g_UtilitySelectorSwallowKey := ""
-        SetTimer(UtilityShortcuts_PollOpenerKeyUp, 0)
-    }
-}
-
-UtilityShortcuts_ClearOpenerKeySwallow() {
-    global g_UtilitySelectorSwallowKey
-    g_UtilitySelectorSwallowKey := ""
-    SetTimer(UtilityShortcuts_PollOpenerKeyUp, 0)
-}
-
-; True while the key that opened the menu is still held (including auto-repeat).
-UtilityShortcuts_ShouldSwallowOpenerKey(char) {
-    global g_UtilitySelectorSwallowKey
-    if (g_UtilitySelectorSwallowKey = "" || StrLower(char) != g_UtilitySelectorSwallowKey)
-        return false
-    if GetKeyState(g_UtilitySelectorSwallowKey, "P")
-        return true
-    UtilityShortcuts_ClearOpenerKeySwallow()
-    return false
-}
-
 ; Force Control/Alt/Shift/Win up. {Blind} so AutoHotkey does not press them again.
 ; keybd_event covers the case where the hook already dropped the physical key-up.
 UtilityShortcuts_ReleaseStuckModifiers() {

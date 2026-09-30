@@ -616,8 +616,7 @@ StandardLoadingBar_EscapeCallbackFromKeyCallbacks(keyCallbacks) {
 
 StandardLoadingBar_KeysSelectionModifiersDown() {
     try {
-        ; Chord modifiers only (not Shift): WaitForTriggerKeyRelease already waits for Shift; including Shift here
-        ; blocked poll edges while Shift was still down after #!+… chords.
+        ; Chord modifiers only (not Shift). Shift stays out so a held Shift after #!+… does not block picks.
         return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt",
             "P")
     } catch {
@@ -701,50 +700,83 @@ StandardLoadingBar_KeysSelectionPoll() {
     }
 }
 
-; After chord release, wait until digit selection keys are up so poll arming does not treat a held key as wasDown.
-StandardLoadingBar_WaitForSelectionKeysRelease(keyCallbacks) {
-    try {
-        for keyName, cb in keyCallbacks {
-            if (!cb)
-                continue
-            knL := StrLower(Trim(keyName))
-            if (knL = "escape" || knL = "*escape")
-                continue
-            if (StandardLoadingBar_IsDigitKey(keyName)) {
-                while StandardLoadingBar_KeysSelectionKeyDown(keyName)
-                    KeyWait keyName
-            }
-        }
-    } catch {
+; Opener letter still physically down after a chord menu opens (e.g. W from #!+W).
+; Swallowed until it is released so key-repeat does not activate that entry.
+; Lives here so Act and Spotify, which load this file and not utility_shortcuts.ahk, can dismiss too.
+global g_UtilitySelectorSwallowKey := ""
+
+; Drop the opener chord without waiting. A KeyWait per held key blocked the menu while the chord was down.
+; {vkE8} while Win is down keeps the later Win release from opening Start.
+; Modifier ups are inlined so this does not depend on CopilotWeb / utility_shortcuts.
+UtilityShortcuts_DismissOpenerChord() {
+    try SendInput "{Blind}{vkE8}"
+    catch {
+    }
+    try SendInput "{Blind}{vk11 up}{vkA2 up}{vkA3 up}{vk12 up}{vkA4 up}{vkA5 up}{vk10 up}{vkA0 up}{vkA1 up}{vk5B up}{vk5C up}"
+    catch {
+    }
+    for vk in [0x11, 0xA2, 0xA3, 0x12, 0xA4, 0xA5, 0x10, 0xA0, 0xA1, 0x5B, 0x5C]
+        DllCall("keybd_event", "UChar", vk, "UChar", 0, "UInt", 2, "UPtr", 0)
+    UtilityShortcuts_ArmOpenerKeySwallow()
+}
+
+UtilityShortcuts_ArmOpenerKeySwallow() {
+    global g_UtilitySelectorSwallowKey
+    g_UtilitySelectorSwallowKey := ""
+    SetTimer(UtilityShortcuts_PollOpenerKeyUp, 0)
+    th := ""
+    try th := A_ThisHotkey
+    catch {
+        th := ""
+    }
+    if (th = "")
+        return
+    hk := RegExReplace(th, "^[$*~]+")
+    hk := RegExReplace(hk, "[#^!+<>*]+", "")
+    if (StrLen(hk) != 1)
+        return
+    hk := StrLower(hk)
+    if !GetKeyState(hk, "P")
+        return
+    g_UtilitySelectorSwallowKey := hk
+    SetTimer(UtilityShortcuts_PollOpenerKeyUp, 15)
+}
+
+UtilityShortcuts_PollOpenerKeyUp(*) {
+    global g_UtilitySelectorSwallowKey
+    if (g_UtilitySelectorSwallowKey = "" || !GetKeyState(g_UtilitySelectorSwallowKey, "P")) {
+        g_UtilitySelectorSwallowKey := ""
+        SetTimer(UtilityShortcuts_PollOpenerKeyUp, 0)
     }
 }
 
-; After a chord hotkey (e.g. #!+w), wait until Win/Ctrl/Alt/Shift and the trigger key are released
-; so *1 / *2 selection hotkeys are not swallowed while modifiers are still held.
-StandardLoadingBar_WaitForTriggerKeyRelease() {
-    try {
-        if (A_ThisHotkey = "")
-            return
-        th := A_ThisHotkey
-        if InStr(th, "#") {
-            try KeyWait "LWin"
-            try KeyWait "RWin"
-        }
-        if InStr(th, "^")
-            try KeyWait "Ctrl"
-        if InStr(th, "!")
-            try KeyWait "Alt"
-        if InStr(th, "+")
-            try KeyWait "Shift"
-        hk := th
-        hk := StrReplace(hk, "+", "")
-        hk := StrReplace(hk, "^", "")
-        hk := StrReplace(hk, "!", "")
-        hk := StrReplace(hk, "#", "")
-        if (StrLen(hk) = 1)
-            KeyWait hk
-    } catch {
+UtilityShortcuts_ClearOpenerKeySwallow() {
+    global g_UtilitySelectorSwallowKey
+    g_UtilitySelectorSwallowKey := ""
+    SetTimer(UtilityShortcuts_PollOpenerKeyUp, 0)
+}
+
+; True while the key that opened the menu is still held (including auto-repeat).
+UtilityShortcuts_ShouldSwallowOpenerKey(char) {
+    global g_UtilitySelectorSwallowKey
+    if (g_UtilitySelectorSwallowKey = "" || StrLower(char) != g_UtilitySelectorSwallowKey)
+        return false
+    if GetKeyState(g_UtilitySelectorSwallowKey, "P")
+        return true
+    UtilityShortcuts_ClearOpenerKeySwallow()
+    return false
+}
+
+; Chord hotkeys only. Plain-key and timer prompts must not release modifiers.
+StandardLoadingBar_DismissChordHotkey() {
+    th := ""
+    try th := A_ThisHotkey
+    catch {
+        th := ""
     }
+    if (th = "" || !RegExMatch(th, "[#^!+]"))
+        return
+    UtilityShortcuts_DismissOpenerChord()
 }
 
 ; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (same idea as ShowAiModelSelector escape poll).
@@ -793,7 +825,7 @@ StandardLoadingBar_KeysEscapeDismiss(*) {
 ; preserveUserFocus: when true, keep the current active window focused (do not activate overlay GUI).
 ; overlayBgColor: optional main banner panel color (default dark 1E1E2E); use for themed banners e.g. blackout countdown.
 ; skipEscapeDismiss: when true, do not register $*Escape / poll (fragile UIs e.g. Command Palette bookmark prompt).
-; Show GUI first (Show calls CloseKeysOverlay — must not run after arming), then register keys before wait-for-release.
+; Chord hotkeys drop modifiers immediately (no KeyWait). Show GUI first (Show calls CloseKeysOverlay — must not run after arming).
 StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwnd := 0, timeoutCallback := "", barColor :=
     BANNER_ACCENT_INTERMEDIATE, textWidth := 500, fontSize := 17, passiveBgColor := "", noBorder := false, promptKeys :=
     "", trackActiveMonitor := false, showProgress := false, preserveUserFocus := false, overlayBgColor := "",
@@ -801,6 +833,9 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys, g_StandardLoadingBarKeysTimeoutTimer
     global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive,
         g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
+
+    ; Drop Win/Ctrl/Alt/Shift before the banner takes focus. Plain-key and timer prompts skip this.
+    StandardLoadingBar_DismissChordHotkey()
 
     ; Snapshot physical down-state at entry (keys already held must not spuriously fire).
     entryDown := Map()
@@ -913,11 +948,6 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
     }
 
-    ; Chord safety: wait for trigger/modifiers and held digits after keys are already armed.
-    ; Poll / KeyWrapper ignore edges while Win/Ctrl/Alt are held.
-    StandardLoadingBar_WaitForTriggerKeyRelease()
-    StandardLoadingBar_WaitForSelectionKeysRelease(keyCallbacks)
-
     ; Default behavior keeps key capture reliable by activating the overlay.
     ; Some flows (e.g. dictation E/V paste target) must preserve the user's current text-field focus.
     if (!preserveUserFocus) {
@@ -968,9 +998,12 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
     global g_StandardLoadingBarIsKeysOverlay
     if (!g_StandardLoadingBarIsKeysOverlay)
         return
-    ; Same gate as KeysSelectionPoll: ignore while Win/Ctrl/Alt held so early-registered $*keys
-    ; cannot fire during chord release (ShowWithKeys arms keys before WaitForTriggerKeyRelease).
+    ; Ignore while Win/Ctrl/Alt are still physically down, and ignore the opener letter until it is released.
     if (StandardLoadingBar_KeysSelectionModifiersDown())
+        return
+    if UtilityShortcuts_ShouldSwallowOpenerKey(key)
+        return
+    if RegExMatch(key, "i)^Numpad([0-9])$", &numpadDigit) && UtilityShortcuts_ShouldSwallowOpenerKey(numpadDigit[1])
         return
     ; Run callback first so it can close the overlay (avoids destroying GUI from hotkey context before callback runs).
     if (cb) {
