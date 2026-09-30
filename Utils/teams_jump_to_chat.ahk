@@ -71,6 +71,94 @@ TeamsJump_Run() {
     }
 }
 
+; App-bar buttons that exist only after the Teams shell has finished loading.
+; The main window title appears earlier, while Ctrl+G still does nothing.
+TeamsJump_ShellLandmarkConditions() {
+    return [{ Name: "Chat", Type: "Button" }, { Name: "Bate-papo", Type: "Button" }, { Name: "Calendar", Type: "Button" }, { Name: "Calendário",
+        Type: "Button" }, { Name: "Activity", Type: "Button" }, { Name: "Atividade", Type: "Button" }, { Name: "Calls",
+            Type: "Button" }, { Name: "Chamadas", Type: "Button" }, { Name: "Teams", Type: "Button" }, { Name: "Equipes",
+                Type: "Button" }, { Name: "Search", Type: "Button" }, { Name: "Pesquisar", Type: "Button" }, { Name: "Search",
+                    Type: "Edit" }, { Name: "Pesquisar", Type: "Edit" }
+    ]
+}
+
+TeamsJump_ShellIsReady(hwnd) {
+    if (!hwnd || hwnd <= 0 || !WinExist("ahk_id " hwnd))
+        return false
+    root := 0
+    try {
+        root := UIA.ElementFromChromium("ahk_id " hwnd, 300)
+    } catch {
+        try {
+            root := UIA.ElementFromHandle(hwnd)
+        } catch {
+            return false
+        }
+    }
+    if (!IsObject(root))
+        return false
+    try {
+        el := root.FindFirst(TeamsJump_ShellLandmarkConditions())
+        return !!el
+    } catch {
+        return false
+    }
+}
+
+; CheckAndOpenOutlookTeams shows this modal when ms-teams.exe is not running:
+; "Teams is closed. Do you want to open it?" (title "Open Applications?").
+TeamsJump_OpenPromptIsOpen() {
+    return WinExist("Open Applications? ahk_class #32770")
+}
+
+; Stay here until that Yes/No box is gone. Do not search for a person while it is up.
+TeamsJump_WaitUntilOpenPromptClosed() {
+    while TeamsJump_OpenPromptIsOpen()
+        Sleep 50
+}
+
+; Cold start: keep waiting until search can accept a name. Returns false on timeout.
+; hwnd is updated if Teams replaces the startup window.
+; The open-Teams prompt must already be answered; this loop also refuses to proceed if it is still open.
+TeamsJump_WaitUntilShellReady(&hwnd, timeoutMs := 45000) {
+    TeamsJump_WaitUntilOpenPromptClosed()
+    start := A_TickCount
+    deadline := start + timeoutMs
+    lastUpdate := 0
+    shown := false
+    try {
+        StandardLoadingBar_Show("⏳ Waiting until Teams is ready...", BANNER_ACCENT_INTERMEDIATE)
+        shown := true
+    } catch {
+    }
+    try {
+        while (A_TickCount < deadline) {
+            if (TeamsJump_OpenPromptIsOpen()) {
+                TeamsJump_WaitUntilOpenPromptClosed()
+                continue
+            }
+            elapsed := Round((A_TickCount - start) / 1000)
+            if ((A_TickCount - lastUpdate) >= 800) {
+                try StandardLoadingBar_Update("⏳ Waiting until Teams is ready... (" elapsed "s)")
+                lastUpdate := A_TickCount
+            }
+            fresh := TeamsJump_ResolveMainHwnd()
+            if (fresh > 0)
+                hwnd := fresh
+            if (hwnd > 0 && TeamsJump_ShellIsReady(hwnd)) {
+                Sleep 400
+                return true
+            }
+            Sleep(hwnd > 0 ? 150 : 200)
+        }
+        return false
+    } finally {
+        if (shown) {
+            try StandardLoadingBar_Hide(0)
+        }
+    }
+}
+
 TeamsJump_ActivateWindowWithRetry(hwnd, attempts := 3, waitMs := 300) {
     if (!hwnd || hwnd <= 0 || !WinExist("ahk_id " hwnd)) {
         try ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
@@ -124,8 +212,13 @@ TeamsJump_ActivateWindowWithRetry(hwnd, attempts := 3, waitMs := 300) {
 }
 
 TeamsJumpToChat(contact) {
+    ; Closed means no ms-teams.exe, which is when CheckAndOpenOutlookTeams asks
+    ; "Teams is closed. Do you want to open it?" Nothing below runs until that returns.
+    teamsWasClosed := !ProcessExist("ms-teams.exe")
+
     if (!CheckAndOpenOutlookTeams(false, true))
         return false
+    TeamsJump_WaitUntilOpenPromptClosed()
 
     oldWinDelay := A_WinDelay
     oldKeyDelay := A_KeyDelay
@@ -137,8 +230,15 @@ TeamsJumpToChat(contact) {
         SetControlDelay 0
 
         hwndTeams := TeamsJump_ResolveMainHwnd()
-        if (hwndTeams <= 0) {
+        if (hwndTeams <= 0)
             TeamsJump_Run()
+
+        if (teamsWasClosed) {
+            if (!TeamsJump_WaitUntilShellReady(&hwndTeams)) {
+                try ShowCenteredOverlay_Utils("❌ Teams did not become ready.", 2500, BANNER_ACCENT_ERROR)
+                return false
+            }
+        } else if (hwndTeams <= 0) {
             waitStart := A_TickCount
             while ((A_TickCount - waitStart) < 15000) {
                 hwndTeams := TeamsJump_ResolveMainHwnd()
@@ -157,6 +257,7 @@ TeamsJumpToChat(contact) {
             return false
         }
 
+        TeamsJump_WaitUntilOpenPromptClosed()
         Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
 
         Send "^g"
