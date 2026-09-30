@@ -2,7 +2,7 @@
 ; Utils module: ai_companion_model_selector.ahk
 ; Shared Shift+L model list manager (Utility Shortcuts ListView aesthetic).
 ; CRUD mirrors Utility Shortcuts: Insert/a add, E edit, Delete remove.
-; Button rows: Shift+N / Shift+D / Shift+S capture New Chat / Menu / Search.
+; Button rows: Shift+N / Shift+D / Shift+S / Shift+G capture New Chat / Menu / Search / Send.
 ; Included from Utils.ahk after Lib\AiCompanionModels.ahk and AiCompanionButtons.ahk.
 ; =============================================================================
 
@@ -284,8 +284,11 @@ AiCompanionModelSelector_Rebuild() {
     fastLabel := (cfg.fast != "") ? cfg.fast : "(not set)"
     deepLabel := (cfg.deep != "") ? cfg.deep : "(not set)"
 
-    hint :=
-        "Char/Enter = select model   Shift+N New Chat   Shift+D Menu   Shift+S Search   Insert/a add   E edit   Delete remove   f Fast   d Deep   Esc cancel"
+    chordHint := ""
+    for action in AiCompanionButtons_Actions()
+        chordHint .= "   Shift+" . StrUpper(action.chord) . " " . action.label
+    hint := "Char/Enter = select model" . chordHint
+        . "   Insert/a add   E edit   Delete remove   f Fast   d Deep   Esc cancel"
 
     g_AiCompanionModelSelectorGui := Gui("+AlwaysOnTop +ToolWindow", title . " models")
     g_AiCompanionModelSelectorGui.SetFont("s10", "Segoe UI")
@@ -327,8 +330,9 @@ AiCompanionModelSelector_Rebuild() {
     try g_AiCompanionModelSelectorLv.ModifyCol(1, 50)
     try g_AiCompanionModelSelectorLv.ModifyCol(2, 280)
     try g_AiCompanionModelSelectorLv.ModifyCol(3, 340)
-    ; Button rows occupy 1-3. Fast is row 4; the first extra model is row 6.
-    focusRow := (cfg.models.Length > 0) ? 6 : 4
+    ; Button rows come first. Fast is the next row. The first extra model is two rows below Fast.
+    buttonCount := AiCompanionButtons_Actions().Length
+    focusRow := buttonCount + ((cfg.models.Length > 0) ? 3 : 1)
     if (g_AiCompanionModelSelectorLv.GetCount() > 0) {
         try g_AiCompanionModelSelectorLv.Modify(focusRow, "Select Focus Vis")
         catch {

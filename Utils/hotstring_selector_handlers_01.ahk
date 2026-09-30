@@ -715,6 +715,11 @@ PromptContext_ProbeReadiness(hwnd, uia, companionId, attachCount := 0, scanUploa
     sendBtn := 0
     chipNeed := Max(0, attachCount)
     needGeminiSend := (companionId != "enterprise" && companionId != "copilot")
+    if (needGeminiSend) {
+        try sendBtn := AiCompanionButtons_FindSaved(uia, AI_COMPANION_GEMINI, "Send")
+        catch
+            sendBtn := 0
+    }
     ; Reuse CountFileChips (ClassName new-file-preview-file + filename heuristics).
     chips := PromptContext_CountFileChips(uia, companionId, chipNeed)
     chipsDone := (chipNeed <= 0) || (chips >= chipNeed)
@@ -1222,6 +1227,22 @@ PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     if (companionId = "enterprise") {
         GeminiEnterprise_SubmitComposer(hwnd)
         return true
+    }
+    sendSection := ""
+    if (companionId = "copilot")
+        sendSection := AI_COMPANION_COPILOT
+    else if (companionId = "gemini")
+        sendSection := AI_COMPANION_GEMINI
+    if (sendSection != "") {
+        sendUia := 0
+        try sendUia := PromptPaste_UiaForCompanion(hwnd, companionId)
+        catch
+            sendUia := 0
+        savedSend := IsObject(sendUia) ? AiCompanionButtons_FindSaved(sendUia, sendSection, "Send") : 0
+        if (IsObject(savedSend)) {
+            AiCompanionButtons_Click(savedSend)
+            return true
+        }
     }
     if (PromptPaste_SubmitViaEnterEnabled()) {
         SendInput "{Enter}"

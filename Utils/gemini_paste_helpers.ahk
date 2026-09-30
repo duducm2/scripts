@@ -130,6 +130,9 @@ Gemini_IsSendButtonCandidate(btn) {
 Gemini_FindSendButton(uia) {
     if (!IsObject(uia))
         return 0
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_GEMINI, "Send")
+    if (saved)
+        return saved
     static cacheRequest := UIA_NameClassCacheRequest()
     root := Gemini_GetSearchRoot(uia)
     if (!root)

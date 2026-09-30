@@ -12,26 +12,26 @@ Related: [Global AI companion routing](global-ai-companion-routing.md).
 
 ## Shortcuts
 
-| Chord       | Role                                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------ |
-| **Shift+M** | Select **Deep** (from INI; no-op if already active when detectble)                                     |
-| **Shift+Q** | Select **Fast** / Quick (from INI)                                                                     |
-| **Shift+L** | Open the model list manager for the **active** companion window. Also maps New Chat, Menu, and Search. |
+| Chord       | Role                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------ |
+| **Shift+M** | Select **Deep** (from INI; no-op if already active when detectble)                                           |
+| **Shift+Q** | Select **Fast** / Quick (from INI)                                                                           |
+| **Shift+L** | Open the model list manager for the **active** companion window. Also maps New Chat, Menu, Search, and Send. |
 
 Same chords on all three companions (context `#HotIf`).
 
 ### Shift+L list UI
 
-| Key                  | Action                                                                                        |
-| -------------------- | --------------------------------------------------------------------------------------------- |
-| `1`–`9` then letters | Select / apply a listed model (`a`/`e`/`f`/`d` reserved; bare `n`/`s` still select models)    |
-| Shift+N / D / S      | Map **New Chat** / **Menu** / **Search**: menu closes, next click in that companion is saved  |
-| Enter / double-click | Same as the row's key. On a button row, starts that capture                                   |
-| Insert / `a`         | Add model — **one** InputBox for the exact UIA-visible name                                   |
-| `e` / Edit           | Edit focused model (or Fast/Deep). On a button row, recapture                                 |
-| Delete               | Remove focused **model** row (confirm). On a button row, clear the saved target               |
-| `f` / `d`            | Set **Fast** / **Deep** name (InputBox; applied later by Shift+Q / Shift+M). Bare `d` is Deep |
-| Esc                  | Cancel. During capture, Esc restores the menu without saving                                  |
+| Key                  | Action                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `1`–`9` then letters | Select / apply a listed model (`a`/`e`/`f`/`d` reserved; bare `n`/`s` still select models)              |
+| Shift+N / D / S / G  | Map **New Chat** / **Menu** / **Search** / **Send**: menu closes, next click in that companion is saved |
+| Enter / double-click | Same as the row's key. On a button row, starts that capture                                             |
+| Insert / `a`         | Add model — **one** InputBox for the exact UIA-visible name                                             |
+| `e` / Edit           | Edit focused model (or Fast/Deep). On a button row, recapture                                           |
+| Delete               | Remove focused **model** row (confirm). On a button row, clear the saved target                         |
+| `f` / `d`            | Set **Fast** / **Deep** name (InputBox; applied later by Shift+Q / Shift+M). Bare `d` is Deep           |
+| Esc                  | Cancel. During capture, Esc restores the menu without saving                                            |
 
 The modal uses Utility Shortcuts ListView chrome (`+AlwaysOnTop +ToolWindow`, Char-first ListView, Add/Edit/Delete/Close). Before any InputBox or delete confirm it is torn down (or owned) so prompts are not covered, then rebuilt afterward. Enter / double-click activate the focused row.
 
@@ -57,13 +57,13 @@ Keys per section:
 
 ### Button targets
 
-[`assets/data/ai_companion_buttons.ini`](../assets/data/ai_companion_buttons.ini) uses the same three sections. Keys: `NewChat`, `Menu`, `Search`.
+[`assets/data/ai_companion_buttons.ini`](../assets/data/ai_companion_buttons.ini) uses the same three sections. Keys: `NewChat`, `Menu`, `Search`, `Send`.
 
 Empty means the built-in finder. A saved value is one pipe record:
 
 `name=New chat|automationId=|className=chat-button|controlType=50000`
 
-Shift+N / Shift+D / Shift+S try that element first (automation id, then name plus control type, then class substring plus control type). A miss falls through to the existing name lists. Consumer Gemini New Chat still sends Ctrl+Shift+O when nothing is saved.
+Shift+N / Shift+D / Shift+S / Shift+G try that element first (automation id, then name plus control type, then class substring plus control type). A miss falls through to the existing name lists. Consumer Gemini New Chat still sends Ctrl+Shift+O when nothing is saved. A saved Send control is the click used to submit a prompt; keyboard Enter remains only when nothing is saved.
 
 Capture stores the nearest Button or Hyperlink under the click. Delete on that Shift+L row clears the key.
 
@@ -87,15 +87,15 @@ flowchart TD
 
 ## File map
 
-| File                                                                                    | Role                                                |
-| --------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| [`Lib/AiCompanionModels.ahk`](../Lib/AiCompanionModels.ahk)                             | INI load/save, Fast/Deep/Models, Apply / SelectRole |
-| [`Lib/AiCompanionButtons.ahk`](../Lib/AiCompanionButtons.ahk)                           | Saved New Chat / Menu / Search targets and find     |
-| [`Utils/ai_companion_model_selector.ahk`](../Utils/ai_companion_model_selector.ahk)     | Shift+L GUI, model keys, button capture             |
-| [`Utils/gemini_mode_picker.ahk`](../Utils/gemini_mode_picker.ahk)                       | Consumer Gemini menu find/click/verify gates        |
-| [`Shift keys/gemini_chrome_01.ahk`](../Shift%20keys/gemini_chrome_01.ahk)               | Consumer Gemini `+m` / `+q` / `+l`                  |
-| [`Shift keys/hotif_gemini_enterprise.ahk`](../Shift%20keys/hotif_gemini_enterprise.ahk) | Enterprise chords                                   |
-| [`Shift keys/hotif_copilot_web.ahk`](../Shift%20keys/hotif_copilot_web.ahk)             | Copilot chords                                      |
+| File                                                                                    | Role                                                   |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| [`Lib/AiCompanionModels.ahk`](../Lib/AiCompanionModels.ahk)                             | INI load/save, Fast/Deep/Models, Apply / SelectRole    |
+| [`Lib/AiCompanionButtons.ahk`](../Lib/AiCompanionButtons.ahk)                           | Saved New Chat / Menu / Search / Send targets and find |
+| [`Utils/ai_companion_model_selector.ahk`](../Utils/ai_companion_model_selector.ahk)     | Shift+L GUI, model keys, button capture                |
+| [`Utils/gemini_mode_picker.ahk`](../Utils/gemini_mode_picker.ahk)                       | Consumer Gemini menu find/click/verify gates           |
+| [`Shift keys/gemini_chrome_01.ahk`](../Shift%20keys/gemini_chrome_01.ahk)               | Consumer Gemini `+m` / `+q` / `+l`                     |
+| [`Shift keys/hotif_gemini_enterprise.ahk`](../Shift%20keys/hotif_gemini_enterprise.ahk) | Enterprise chords                                      |
+| [`Shift keys/hotif_copilot_web.ahk`](../Shift%20keys/hotif_copilot_web.ahk)             | Copilot chords                                         |
 
 Included from `Utils.ahk` after CopilotWeb / GeminiEnterprise (`#include` AiCompanionModels, AiCompanionButtons, then the Shift+L selector).
 

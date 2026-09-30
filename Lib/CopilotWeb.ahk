@@ -362,6 +362,9 @@ CopilotWeb_FindStopGenerating(uia) {
 }
 
 CopilotWeb_FindSendButton(uia) {
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_COPILOT, "Send")
+    if (saved)
+        return saved
     return CopilotWeb_FindFirstInUia(uia, [{ Name: "Send ", matchmode: "Substring", ControlType: "Button" }, { ClassName: "fai-SendButton",
         matchmode: "Substring", ControlType: "Button" }])
 }

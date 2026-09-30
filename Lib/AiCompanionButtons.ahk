@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Lib: AiCompanionButtons.ahk
-; Per-companion saved UIA targets for New Chat, Menu, and Search.
-; Shift+L captures them; Shift+N / Shift+D / Shift+S try the saved element
+; Per-companion saved UIA targets for New Chat, Menu, Search, and Send.
+; Shift+L captures them; Shift+N / Shift+D / Shift+S / Shift+G try the saved element
 ; before the built-in finders. Included from Utils.ahk after AiCompanionModels.
 ; =============================================================================
 
@@ -14,10 +14,8 @@ AiCompanionButtons_GetIniPath() {
 
 ; Fixed catalog. Another action is one entry here, one ini key, and one call site.
 AiCompanionButtons_Actions() {
-    return [
-        { id: "NewChat", label: "New Chat", chord: "n" },
-        { id: "Menu", label: "Menu", chord: "d" },
-        { id: "Search", label: "Search", chord: "s" }
+    return [{ id: "NewChat", label: "New Chat", chord: "n" }, { id: "Menu", label: "Menu", chord: "d" }, { id: "Search",
+        label: "Search", chord: "s" }, { id: "Send", label: "Send", chord: "g" }
     ]
 }
 
@@ -103,9 +101,9 @@ AiCompanionButtons_Serialize(spec) {
     catch
         ct := 0
     return "name=" . AiCompanionButtons_Escape(spec.name)
-        . "|automationId=" . AiCompanionButtons_Escape(spec.automationId)
-        . "|className=" . AiCompanionButtons_Escape(spec.className)
-        . "|controlType=" . ct
+    . "|automationId=" . AiCompanionButtons_Escape(spec.automationId)
+    . "|className=" . AiCompanionButtons_Escape(spec.className)
+    . "|controlType=" . ct
 }
 
 AiCompanionButtons_Parse(raw) {

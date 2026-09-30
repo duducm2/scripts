@@ -542,6 +542,9 @@ GeminiEnterprise_FindChooseModelButton(uia) {
 }
 
 GeminiEnterprise_FindSubmitButton(uia) {
+    saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_ENTERPRISE, "Send")
+    if (saved)
+        return saved
     return GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Submit", ControlType: "Button" }, { ClassName: "send-button",
         matchmode: "Substring" }])
 }
