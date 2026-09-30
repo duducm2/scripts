@@ -76,6 +76,38 @@ MacroReleaseStuckControl(*) {
 
 RegisterMacro(MacroReleaseStuckControl, "🔓 Release stuck Control", "u")
 
+; Macros [W] — force-kill heavy apps and their child processes to free RAM.
+; Stop resident servers first so warmup does not relaunch Finance / Memory Palace.
+MacroWipeHeavyApps(*) {
+    ShowCenteredOverlay_Utils("🧹 Closing heavy apps...", 1500, BANNER_ACCENT_INTERMEDIATE)
+    try StopResidentWebServers()
+    catch {
+    }
+    for name in [
+        "chrome.exe", "Cursor.exe", "Code.exe",
+        "ms-teams.exe", "Teams.exe", "MSTeams.exe",
+        "OUTLOOK.EXE", "olk.exe",
+        "msedge.exe", "ONENOTE.EXE", "WhatsApp.exe", "Spotify.exe"
+    ]
+        WipeKillProcessTree(name)
+    try WhatsAppJump_InvalidateHwndCache()
+    catch {
+    }
+    ShowCenteredOverlay_Utils("✅ Heavy apps closed", 1500, BANNER_ACCENT_SUCCESS)
+}
+
+; taskkill /T so Electron/Chrome children (renderers, language servers) die with the parent.
+; ProcessClose leaves those holding RAM. Skip images that are not running.
+WipeKillProcessTree(imageName) {
+    if !ProcessExist(imageName)
+        return
+    try RunWait(A_ComSpec . " /c taskkill /F /T /IM " . imageName . " >nul 2>&1", , "Hide")
+    catch {
+    }
+}
+
+RegisterMacro(MacroWipeHeavyApps, "🧹 Wipe heavy apps (free RAM)", "w")
+
 ; Extract the first http(s) URL from plain text; normalize bare www. hosts.
 OpenClipboardLinkInChrome_ExtractHttpUrl(text) {
     t := Trim(text)
