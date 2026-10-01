@@ -2,7 +2,6 @@
 ; Requires vendor\UIA-v2\Lib\UIA.ahk loaded before this file.
 
 TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-TEAMS_CONTEXT_CACHE_MS := 400
 TEAMS_DEBUG_CONTEXT := false
 
 TEAMS_MEETING_TOOLBAR_IDS := ["microphone-button", "video-button", "reaction-menu-button", "prejoin-join-button",
@@ -11,24 +10,27 @@ TEAMS_MEETING_TOOLBAR_IDS := ["microphone-button", "video-button", "reaction-men
 class TeamsContextCache {
     static Hwnd := 0
     static Mode := ""
-    static Tick := 0
+    static Title := ""
 
     static Invalidate() {
         TeamsContextCache.Hwnd := 0
         TeamsContextCache.Mode := ""
-        TeamsContextCache.Tick := 0
+        TeamsContextCache.Title := ""
     }
 
+    ; Hold the mode until this window's title changes. A 400ms TTL re-ran the
+    ; meeting-toolbar UIA walk on the keyboard hook while Teams stayed focused.
     static Get(hwnd) {
         if (!hwnd || hwnd <= 0)
             return ""
-        now := A_TickCount
-        if (hwnd = TeamsContextCache.Hwnd && (now - TeamsContextCache.Tick) < TEAMS_CONTEXT_CACHE_MS)
+        title := ""
+        try title := WinGetTitle("ahk_id " hwnd)
+        if (hwnd = TeamsContextCache.Hwnd && title = TeamsContextCache.Title)
             return TeamsContextCache.Mode
         mode := TeamsResolveContextUncached(hwnd)
         TeamsContextCache.Hwnd := hwnd
         TeamsContextCache.Mode := mode
-        TeamsContextCache.Tick := now
+        TeamsContextCache.Title := title
         return mode
     }
 }
@@ -135,9 +137,13 @@ TeamsResolveContextUncached(hwnd) {
     ; when the deep UIA toolbar probe misses/times out.
     if IsTeamsMeetingTitle(title)
         return "meeting"
+    ; A title that is already chat or meeting does not need the toolbar walk.
+    ; Probe only the ambiguous case so a real meeting is not labeled as chat.
+    if (IsTeamsChatTitle(title) || TeamsTitleLooksLikeChat(title))
+        return "chat"
     if TeamsHasMeetingToolbar(hwnd)
         return "meeting"
-    if IsTeamsWebViewHwnd(hwnd) || TeamsTitleLooksLikeChat(title)
+    if IsTeamsWebViewHwnd(hwnd)
         return "chat"
     return ""
 }

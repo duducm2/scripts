@@ -9,6 +9,46 @@
 ; Outlook Shortcuts
 ;-------------------------------------------------------------------
 
+; #HotIf UIA answers, keyed by the foreground window and its title.
+; Selecting another message changes the title and drops the entry.
+global g_OutlookHotIfCache := Map()
+
+OutlookHotIf_Cached(slot, hwnd, title, &out) {
+    global g_OutlookHotIfCache
+    if (!hwnd || !g_OutlookHotIfCache.Has(slot))
+        return false
+    entry := g_OutlookHotIfCache[slot]
+    if (entry["hwnd"] != hwnd || entry["title"] != title)
+        return false
+    out := entry["result"]
+    return true
+}
+
+OutlookHotIf_Store(slot, hwnd, title, result) {
+    global g_OutlookHotIfCache
+    g_OutlookHotIfCache[slot] := Map("hwnd", hwnd, "title", title, "result", !!result)
+}
+
+; Runs probe once per hwnd+title. TargetError means the control is absent.
+; Other failures are not cached, so the next keypress can retry.
+OutlookHotIf_Probe(slot, probe) {
+    hwnd := WinExist("A")
+    title := SafeWinGetTitle()
+    cached := false
+    if OutlookHotIf_Cached(slot, hwnd, title, &cached)
+        return cached
+    try {
+        found := !!probe.Call(hwnd)
+        OutlookHotIf_Store(slot, hwnd, title, found)
+        return found
+    } catch TargetError {
+        OutlookHotIf_Store(slot, hwnd, title, false)
+        return false
+    } catch {
+        return false
+    }
+}
+
 IsOutlookMessageActive() {
     return (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe"))
     && RegExMatch(SafeWinGetTitle(), "i) - Message \(")
@@ -25,19 +65,20 @@ IsOutlookAppointmentActive() {
         return true
 
     ; New Outlook: detect by UIA presence of the title field.
-    if IsNewOutlookActive() {
-        try {
-            root := UIA.ElementFromHandle(WinExist("A"))
-            if root.FindFirst({ Name: "Add title", ControlType: "Edit" })
-                return true
-            if root.FindFirst({ Name: "Add title", Type: 50004 })
-                return true
-            if root.FindFirst({ AutomationId: "4100" })
-                return true
-        } catch {
-        }
-    }
+    if !IsNewOutlookActive()
+        return false
 
+    return OutlookHotIf_Probe("appointment", OutlookAppointment_ProbeTitleField)
+}
+
+OutlookAppointment_ProbeTitleField(hwnd) {
+    root := UIA.ElementFromHandle(hwnd)
+    if root.FindFirst({ Name: "Add title", ControlType: "Edit" })
+        return true
+    if root.FindFirst({ Name: "Add title", Type: 50004 })
+        return true
+    if root.FindFirst({ AutomationId: "4100" })
+        return true
     return false
 }
 

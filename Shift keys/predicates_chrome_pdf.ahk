@@ -8,11 +8,16 @@
 ; Chrome PDF Viewer Shortcuts
 ;-------------------------------------------------------------------
 ; Cache for IsChromePdfViewerActive (efficiency-canon: cheap #HotIf).
-; Same Chrome HWND can switch PDF <-> non-PDF tabs, so cache is hwnd + TTL.
+; Same Chrome HWND can switch PDF <-> non-PDF tabs, so the cache key is hwnd + title.
 global g_ChromePdf_CacheHwnd := 0
-global g_ChromePdf_CacheTick := 0
+global g_ChromePdf_CacheTitle := ""
 global g_ChromePdf_CacheResult := false
-global g_ChromePdf_CacheTtlMs := 400
+
+ChromePdf_InvalidatePredicateCache() {
+    global g_ChromePdf_CacheHwnd, g_ChromePdf_CacheTitle
+    g_ChromePdf_CacheHwnd := 0
+    g_ChromePdf_CacheTitle := ""
+}
 
 IsChromePdfViewerActive() {
     HookTiming_Begin("IsChromePdfViewerActive")
@@ -23,7 +28,7 @@ IsChromePdfViewerActive() {
 }
 
 IsChromePdfViewerActive_Run() {
-    global g_ChromePdf_CacheHwnd, g_ChromePdf_CacheTick, g_ChromePdf_CacheResult, g_ChromePdf_CacheTtlMs
+    global g_ChromePdf_CacheHwnd, g_ChromePdf_CacheTitle, g_ChromePdf_CacheResult
 
     ; Hard gate: avoid conflicts with non-Chrome apps
     if !WinActive("ahk_exe chrome.exe")
@@ -38,10 +43,8 @@ IsChromePdfViewerActive_Run() {
     if (Chrome_IsAiCompanionTitle(title) || !InStr(title, ".pdf", false))
         return false
 
-    now := A_TickCount
     if (hwnd = g_ChromePdf_CacheHwnd
-        && g_ChromePdf_CacheTick
-        && (now - g_ChromePdf_CacheTick) < g_ChromePdf_CacheTtlMs
+        && title = g_ChromePdf_CacheTitle
         && WinExist("ahk_id " g_ChromePdf_CacheHwnd)) {
         if (!g_ChromePdf_CacheResult)
             ChromePdf_InvalidateSession()
@@ -67,7 +70,7 @@ IsChromePdfViewerActive_Run() {
     }
 
     g_ChromePdf_CacheHwnd := hwnd
-    g_ChromePdf_CacheTick := A_TickCount  ; stamp after UIA so TTL is from completion, not start
+    g_ChromePdf_CacheTitle := title
     g_ChromePdf_CacheResult := result
     if (!result)
         ChromePdf_InvalidateSession()

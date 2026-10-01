@@ -460,14 +460,14 @@ OutlookMail_GetReadingPaneElement() {
 IsOutlookMeetingRequestReadingPaneActive() {
     if !IsOutlookMainActive()
         return false
-    try {
-        pane := OutlookMail_GetReadingPaneElement()
-        if !pane
-            return false
-        return pane.FindFirst({ Name: "Accept the meeting", ControlType: "MenuItem" }) ? true : false
-    } catch {
-    }
-    return false
+    return OutlookHotIf_Probe("meetingRequestPane", OutlookMeeting_ProbeAcceptInReadingPane)
+}
+
+OutlookMeeting_ProbeAcceptInReadingPane(hwnd) {
+    pane := OutlookMail_GetReadingPaneElement()
+    if !pane
+        return false
+    return !!pane.FindFirst({ Name: "Accept the meeting", ControlType: "MenuItem" })
 }
 
 ; Popped-out meeting invitation: " - Message (" inspector with Accept/Decline row (same UI as reading pane, different host window).
@@ -476,28 +476,21 @@ IsOutlookMeetingInvitationPopOutActive() {
         return false
     if !RegExMatch(WinGetTitle("A"), "i) - Message \(")
         return false
-    try {
-        root := OutlookMail_RootElementForHwnd(WinExist("A"))
-        if !root
-            return false
-        return root.FindFirst({ Name: "Accept the meeting", ControlType: "MenuItem" }) ? true : false
-    } catch {
-    }
-    return false
+    return OutlookHotIf_Probe("meetingInvitePop", OutlookMeeting_ProbeAcceptInRoot)
+}
+
+OutlookMeeting_ProbeAcceptInRoot(hwnd) {
+    root := OutlookMail_RootElementForHwnd(hwnd)
+    if !root
+        return false
+    return !!root.FindFirst({ Name: "Accept the meeting", ControlType: "MenuItem" })
 }
 
 ; Organizer canceled: primary action is Button "Remove event" (not Accept/Decline).
 IsOutlookRemoveEventReadingPaneActive() {
     if !IsOutlookMainActive()
         return false
-    try {
-        root := OutlookMail_RootElementForHwnd(WinExist("A"))
-        if !root
-            return false
-        return root.FindFirst({ Name: "Remove event", ControlType: "Button" }) ? true : false
-    } catch {
-    }
-    return false
+    return OutlookHotIf_Probe("removeEventPane", OutlookMeeting_ProbeRemoveInRoot)
 }
 
 IsOutlookRemoveEventPopOutActive() {
@@ -505,14 +498,14 @@ IsOutlookRemoveEventPopOutActive() {
         return false
     if !RegExMatch(WinGetTitle("A"), "i) - Message \(")
         return false
-    try {
-        root := OutlookMail_RootElementForHwnd(WinExist("A"))
-        if !root
-            return false
-        return root.FindFirst({ Name: "Remove event", ControlType: "Button" }) ? true : false
-    } catch {
-    }
-    return false
+    return OutlookHotIf_Probe("removeEventPop", OutlookMeeting_ProbeRemoveInRoot)
+}
+
+OutlookMeeting_ProbeRemoveInRoot(hwnd) {
+    root := OutlookMail_RootElementForHwnd(hwnd)
+    if !root
+        return false
+    return !!root.FindFirst({ Name: "Remove event", ControlType: "Button" })
 }
 
 OutlookMeeting_ClickMenuItemInActiveWindow(criteriaList) {

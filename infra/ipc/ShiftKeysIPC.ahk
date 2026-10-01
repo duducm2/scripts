@@ -314,13 +314,16 @@ ShiftKeysIPC_MirrorContext() {
 }
 
 ; Returns true if ChatGPT context is active (daemon cache or legacy). Use in #HotIf.
+; Legacy path is the foreground window only. Listing every Chrome window here
+; runs on the keyboard hook for every Shift+I/O/C/J/L.
 IsChatGPTActiveForHotkey() {
     if (USE_DAEMON_CONTEXT_CHATGPT) {
         global g_ShiftKeys_IsChatGPTActive
         return g_ShiftKeys_IsChatGPTActive
     }
-    hwnd := GetChatGPTWindowHwnd()
-    return hwnd && WinActive("ahk_id " hwnd)
+    if !WinActive("ahk_exe chrome.exe")
+        return false
+    return InStr(SafeWinGetTitle(), "chatgpt", false)
 }
 
 ; --- Phase 3: Non-blocking Gemini monitor (daemon WatchUIState + poll callback) ---

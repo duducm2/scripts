@@ -416,8 +416,6 @@ ChromePdf_WaitForReloadSettled(savedPage, timeoutMs := 10000) {
 
 ChromePdf_RefreshKeepPage() {
     ; F5 reloads the PDF (often resets to page 1); restore the page we were on.
-    global g_ChromePdf_CacheTick
-
     page := ChromePdf_GetCurrentPageNumber()
     if (page = "") {
         ShowCenteredOverlay_Utils("❌ PDF: could not read current page", 2000, BANNER_ACCENT_ERROR)
@@ -429,7 +427,7 @@ ChromePdf_RefreshKeepPage() {
 
     Send "{F5}"
     ChromePdf_InvalidateSession()
-    g_ChromePdf_CacheTick := 0  ; force IsChromePdfViewerActive to re-probe after reload
+    ChromePdf_InvalidatePredicateCache()  ; title is unchanged across reload; force a re-probe
 
     try StandardLoadingBar_Update("⏳ Waiting for PDF viewer…", BANNER_ACCENT_INTERMEDIATE)
     el := ChromePdf_WaitForReloadSettled(page, 10000)
