@@ -968,6 +968,40 @@ Reminders_NormalizeDurationNeedle(d) {
 
 Reminders_MenuFindAndSelectDuration(durationNeedle, maxSteps := 50) {
     durationNeedle := Reminders_NormalizeDurationNeedle(durationNeedle)
+    snoozeId := ""
+    if (durationNeedle = "10 minutes")
+        snoozeId := "Snooze10m"
+    else if (durationNeedle = "1 hour")
+        snoozeId := "Snooze1h"
+    else if (durationNeedle = "4 hours")
+        snoozeId := "Snooze4h"
+    else if (durationNeedle = "1 day")
+        snoozeId := "Snooze1d"
+    else if (durationNeedle = "1 week")
+        snoozeId := "Snooze1w"
+    if (snoozeId != "") {
+        rootDesktop := 0
+        rootWin := 0
+        try rootDesktop := UIA.GetRootElement()
+        try rootWin := UIA.ElementFromHandle(WinExist("A"))
+        for savedRoot in [rootDesktop, rootWin] {
+            if !savedRoot
+                continue
+            saved := 0
+            try saved := UiElements_TrySaved(savedRoot, "OutlookReminder", snoozeId)
+            if !saved
+                continue
+            try {
+                saved.Invoke()
+                return true
+            } catch {
+                try {
+                    saved.Click()
+                    return true
+                }
+            }
+        }
+    }
     ; After snooze submenu is open, scan items by focused text and press Enter on match.
     if !Reminders_MenuFindItemContains(durationNeedle, maxSteps, "dur:" durationNeedle)
         return false

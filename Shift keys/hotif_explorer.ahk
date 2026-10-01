@@ -502,7 +502,8 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
             if OneDriveShare_IsLimitedLinkSettings(shareRoot) {
                 OneDriveShare_ClickBack(shareRoot)
             } else {
-                if !OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000)
+                if (!OneDriveShare_SelectSavedRadio(shareRoot, "BoschGroup") && !
+                OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000))
                     throw Error("Could not find 'People in Bosch Group' in Link settings.")
                 applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 5000, "Apply"
                 )
@@ -692,6 +693,22 @@ OneDriveShare_ClickBack(root) {
     if !OneDriveShare_WaitForAutomationId(root, "copy-button", 10000, "CopyLink")
         throw Error("Timed out returning to main Share view after Back.")
     return true
+}
+
+OneDriveShare_SelectSavedRadio(root, elementId) {
+    radio := 0
+    try radio := UiElements_TrySaved(root, "explorer.exe", elementId)
+    if !radio
+        return false
+    try {
+        if radio.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) {
+            if !radio.SelectionItemPattern.IsSelected
+                radio.SelectionItemPattern.Select()
+            return true
+        }
+    } catch {
+    }
+    return OneDriveShare_Click(radio)
 }
 
 OneDriveShare_SelectRadioByNameContains(root, nameNeedle, timeout := 5000) {

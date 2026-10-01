@@ -543,10 +543,11 @@ FocusGeminiPromptField() {
         Sleep 400 ; Wait for menu to appear
 
         ; Step 3: Find and click the "Text to speech" menu item
-        textToSpeechMenuItem := 0
+        textToSpeechMenuItem := UiElements_TrySaved(uia, "Gemini", "TextToSpeech")
 
         ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
-        textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
+        if !textToSpeechMenuItem
+            textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
 
         ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
         if !textToSpeechMenuItem {

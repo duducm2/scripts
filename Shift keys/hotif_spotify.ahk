@@ -88,7 +88,10 @@
 
             ; Search for Office button (e.g., "Office Google Cast")
             officePattern := "i)Office"
-            if (officeBtn := WaitForButton(spot, officePattern, 3000)) {
+            officeBtn := UiElements_TrySaved(spot, "Spotify.exe", "Office")
+            if !officeBtn
+                officeBtn := WaitForButton(spot, officePattern, 3000)
+            if officeBtn {
                 officeBtn.Invoke()
             }
             ; If Office button not found, continue without error (as requested)

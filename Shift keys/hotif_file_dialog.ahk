@@ -523,7 +523,9 @@ FileDialog_SelectCsvUtf8(root) {
                 FileDialog_InvokeButton(dropBtn)
         }
         Sleep 150
-        item := root.FindFirst({ Type: "ListItem", Name: "CSV UTF-8", matchmode: "Substring" })
+        item := UiElements_TrySaved(root, "FileDialog", "CsvUtf8")
+        if !item
+            item := root.FindFirst({ Type: "ListItem", Name: "CSV UTF-8", matchmode: "Substring" })
         if !item
             item := typeCombo.FindFirst({ Type: "ListItem", Name: "CSV UTF-8", matchmode: "Substring" })
         if item {
