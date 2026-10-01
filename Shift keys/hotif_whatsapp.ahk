@@ -232,8 +232,12 @@ WhatsApp_InvokeOrClick(btn) {
             return
         }
 
-        unreadButton := WhatsApp_FindFilter(uia, "unread-filter", "i)^(Unread|Não lidas|Nao lidas)$")
-        allButton := WhatsApp_FindFilter(uia, "all-filter", "i)^(All|Tudo|Todas)$")
+        unreadButton := UiElements_TrySaved(uia, "WhatsApp", "Unread")
+        if !unreadButton
+            unreadButton := WhatsApp_FindFilter(uia, "unread-filter", "i)^(Unread|Não lidas|Nao lidas)$")
+        allButton := UiElements_TrySaved(uia, "WhatsApp", "All")
+        if !allButton
+            allButton := WhatsApp_FindFilter(uia, "all-filter", "i)^(All|Tudo|Todas)$")
 
         if (unreadButton && allButton) {
             if (WhatsApp_FilterIsOn(unreadButton)) {
@@ -326,7 +330,10 @@ ToggleVoiceMessage() {
 
         if (isRecording) {
             ; Short poll: the send control replaces the mic after recording starts.
-            if (btn := WhatsApp_FindNamedButton(chrome, sendPattern, 400)) {
+            btn := UiElements_TrySaved(chrome, "WhatsApp", "SendVoice")
+            if !btn
+                btn := WhatsApp_FindNamedButton(chrome, sendPattern, 400)
+            if (btn) {
                 if (WhatsApp_InvokeOrClick(btn)) {
                     isRecording := false
                     WhatsApp_Ok("Voice sent")
@@ -335,7 +342,10 @@ ToggleVoiceMessage() {
             } else {
                 ; Assume you clicked Send manually > reset & start new rec
                 isRecording := false
-                if (btn := WhatsApp_FindNamedButton(chrome, voicePattern, 400)) {
+                btn := UiElements_TrySaved(chrome, "WhatsApp", "Voice")
+                if !btn
+                    btn := WhatsApp_FindNamedButton(chrome, voicePattern, 400)
+                if (btn) {
                     if (WhatsApp_InvokeOrClick(btn)) {
                         isRecording := true
                         WhatsApp_Ok("Recording")
@@ -345,7 +355,10 @@ ToggleVoiceMessage() {
                     WhatsApp_Fail("❌ WhatsApp: voice button missing")
             }
         } else {
-            if (btn := WhatsApp_FindNamedButton(chrome, voicePattern, 400)) {
+            btn := UiElements_TrySaved(chrome, "WhatsApp", "Voice")
+            if !btn
+                btn := WhatsApp_FindNamedButton(chrome, voicePattern, 400)
+            if (btn) {
                 if (WhatsApp_InvokeOrClick(btn)) {
                     isRecording := true
                     WhatsApp_Ok("Recording")
@@ -382,7 +395,9 @@ ClickGenerateCommitMessageButton() {
 
         ; Find the "Generate Commit Message (Ctrl+M)" button
         ; Try multiple search strategies
-        btn := uia.FindFirst({ Name: "Generate Commit Message (Ctrl+M)", ControlType: "Button" })
+        btn := UiElements_TrySaved(uia, Editor_UiElementAppKey(), "GenerateCommit")
+        if !btn
+            btn := uia.FindFirst({ Name: "Generate Commit Message (Ctrl+M)", ControlType: "Button" })
 
         ; If not found by exact name, try partial match
         if !btn {

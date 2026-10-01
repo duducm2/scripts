@@ -10,6 +10,9 @@
 SettleUp_GetNewExpenseDialog() {
     try {
         uia := UIA_Browser()
+        saved := UiElements_TrySaved(uia, "Settle Up", "NewExpense")
+        if (saved)
+            return saved
         return uia.FindElement({ Name: "New expense", Type: "Group" })
     } catch
         return 0
@@ -22,7 +25,9 @@ SettleUp_GetNewExpenseDialog() {
     try {
         uia := UIA_Browser()
         Sleep 150
-        btn := uia.FindElement({ Type: "Button", Name: "Add transaction", matchmode: "Substring" })
+        btn := UiElements_TrySaved(uia, "Settle Up", "Add")
+        if (!btn)
+            btn := uia.FindElement({ Type: "Button", Name: "Add transaction", matchmode: "Substring" })
         if (!btn)
             btn := uia.FindElement({ Type: "Button", Name: "Adicionar transa", matchmode: "Substring" })
         if (btn) {
@@ -38,6 +43,12 @@ SettleUp_GetNewExpenseDialog() {
 ; Shift + N : Focus expense name (Purpose) field in New expense dialog
 +n:: {
     try {
+        uia := UIA_Browser()
+        nameEdit := UiElements_TrySaved(uia, "Settle Up", "Name")
+        if (nameEdit) {
+            nameEdit.SetFocus()
+            return
+        }
         dialog := SettleUp_GetNewExpenseDialog()
         if (!dialog)
             return
@@ -51,6 +62,12 @@ SettleUp_GetNewExpenseDialog() {
 ; Shift + V : Focus expense value (amount) field in New expense dialog
 +v:: {
     try {
+        uia := UIA_Browser()
+        valueEdit := UiElements_TrySaved(uia, "Settle Up", "Amount")
+        if (valueEdit) {
+            valueEdit.SetFocus()
+            return
+        }
         dialog := SettleUp_GetNewExpenseDialog()
         if (!dialog)
             return

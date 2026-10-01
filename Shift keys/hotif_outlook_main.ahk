@@ -391,6 +391,8 @@
 ; Shift + P : Pop Out current item - Pop Out
 +P:: {
     try {
+        if OutlookMail_TrySaved("PopOut")
+            return
         if !ClickOutlookByIdThenNameClass("", "Pop Out", "", 50000) {
             MsgBox("Couldn't find 'Pop Out' button.", "Outlook Pop Out", "IconX")
         }

@@ -162,11 +162,15 @@ Outlook_ActivateMainWindow() {
 
 Outlook_FocusMainSearch() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("Search", true)
+        return true
     return OutlookFocusFirst([{ AutomationId: "topSearchInput", ControlType: "ComboBox" }, { AutomationId: "topSearchInput" }])
 }
 
 Outlook_SwitchToMail() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("Mail")
+        return true
     ; Left-rail toggle (see outlook-mail.md): Chromium tree via OutlookMail_* â€” not OutlookClickFirst (ElementFromHandle misses WebView2).
     return OutlookMail_ClickFirst([{ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" }, { Name: "Mail",
         ControlType: "Button" }, { Name: "Mail", Type: 50000 }
@@ -175,6 +179,8 @@ Outlook_SwitchToMail() {
 
 Outlook_SwitchToCalendar() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("Calendar")
+        return true
     return OutlookMail_ClickFirst([{ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" }, { Name: "Calendar",
         ControlType: "Button" }, { Name: "Calendar", Type: 50000 }
     ])
@@ -309,6 +315,10 @@ OutlookCalendar_ClickGoToToday() {
             return false
         Sleep 150
         try StandardLoadingBar_Update("â³ Outlook: Finding Go to todayâ€¦")
+        if OutlookMail_TrySaved("Today") {
+            ok := true
+            return true
+        }
         el := OutlookMail_FindFirst([{ Name: "Go to today", matchmode: "Substring", ControlType: "Button" }, { Name: "Go to today",
             matchmode: "Substring", Type: 50000 }, { Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring",
                 ControlType: "Button" }

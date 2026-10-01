@@ -505,6 +505,29 @@ Appt_ClickInCommandBar(criteriaList) {
     return false
 }
 
+Appt_ClickSaved(elementId) {
+    root := Appt_GetRootActive()
+    if !root
+        return false
+    el := 0
+    try el := UiElements_TrySaved(root, "OutlookAppointment", elementId)
+    if !el
+        return false
+    try el.SetFocus()
+    catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+        try {
+            el.Invoke()
+            return true
+        }
+    }
+    return false
+}
+
 Appt_ClickAny(criteriaList) {
     root := Appt_GetRootActive()
     if !root

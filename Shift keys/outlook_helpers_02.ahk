@@ -770,6 +770,32 @@ OutlookMail_FindFirst(criteriaList) {
     return ""
 }
 
+OutlookMail_TrySaved(elementId, focusOnly := false) {
+    root := OutlookMail_RootElement()
+    if !root
+        return false
+    el := 0
+    try el := UiElements_TrySaved(root, "OUTLOOK.EXE", elementId)
+    if !el
+        return false
+    try el.SetFocus()
+    catch {
+    }
+    if (focusOnly)
+        return true
+    Sleep 50
+    try {
+        el.Click()
+        return true
+    } catch {
+        try {
+            el.Invoke()
+            return true
+        }
+    }
+    return false
+}
+
 OutlookMail_ClickFirst(criteriaList) {
     el := OutlookMail_FindFirst(criteriaList)
     if !el
