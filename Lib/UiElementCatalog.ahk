@@ -230,6 +230,8 @@ UiElementCatalog_All() {
         e.Call("Settle Up", "Name", "Expense name", "Shift keys/hotif_settleup.ahk", "edit"),
         e.Call("Settle Up", "Amount", "Amount", "Shift keys/hotif_settleup.ahk", "edit"),
         e.Call("ChatGPT", "Sidebar", "Sidebar", "Shift keys/hotif_chatgpt.ahk", "button"),
+        e.Call("UIATreeInspector", "Refresh", "Refresh list", "Shift keys/hotif_uia_tree.ahk", "button"),
+        e.Call("UIATreeInspector", "Filter", "Filter", "Shift keys/hotif_uia_tree.ahk", "any"),
     ]
     return rows
 }

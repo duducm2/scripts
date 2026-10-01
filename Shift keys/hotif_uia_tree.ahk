@@ -12,7 +12,9 @@
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
         Sleep 200
-        btn := root.FindFirst({ Name: "Refresh list", Type: "Button" })
+        btn := UiElements_TrySaved(root, "UIATreeInspector", "Refresh")
+        if !btn
+            btn := root.FindFirst({ Name: "Refresh list", Type: "Button" })
         if !btn
             btn := root.FindFirst({ AutomationId: "5", Type: "Button" })
         if btn {
@@ -31,7 +33,9 @@
         root := UIA.ElementFromHandle(WinExist("A"))
         Sleep 200
         ; Find the "Filter:" text element
-        filterText := root.FindFirst({ Name: "Filter:", Type: "Text", AutomationId: "18" })
+        filterText := UiElements_TrySaved(root, "UIATreeInspector", "Filter")
+        if !filterText
+            filterText := root.FindFirst({ Name: "Filter:", Type: "Text", AutomationId: "18" })
         if filterText {
             ; Focus on the text element
             filterText.SetFocus()
