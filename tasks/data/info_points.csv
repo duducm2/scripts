@@ -253,7 +253,7 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ---",,ℹ️,,10,2026-09-29 13:03:58,,
 INFO_0240,task,TASK_0339,Celmar Guimarães,,ℹ️,person contacted,180,2026-09-29 23:12:49,,
-INFO_0241,task,TASK_0339,Vanessa Almada,,ℹ️,,190,2026-09-30 12:22:29,,
+INFO_0241,task,TASK_0339,Vanessa Almada,,ℹ️,person contacted,190,2026-09-30 12:22:29,,
 INFO_0242,task,TASK_0339,"Júlio César, o professor que participou da sua banca.",,ℹ️,,200,2026-09-30 12:22:38,,
 INFO_0243,task,TASK_0214,Vamos deixar a Fran hardcoded. We can wait our transition to GS to think about it again,,ℹ️,,4040,2026-09-30 13:15:36,,
 INFO_0245,task,TASK_0214,The other tool that the BPM system could get connected is called QMAI,,ℹ️,,4050,2026-10-01 09:14:02,,
@@ -265,3 +265,5 @@ INFO_0250,task,TASK_0379,C:\Users\fie7ca\OneDrive - Bosch Group\SO_BDO-DT-LA-Gov
 INFO_0251,task,TASK_0339,Nikollet Kampo,,ℹ️,person contacted,220,2026-10-01 14:45:30,,
 INFO_0252,task,TASK_0381,Check Google anti-gravity,,ℹ️,,10,2026-10-01 14:53:03,,
 INFO_0253,task,TASK_0381,https://antigravity.google/,,ℹ️,,20,2026-10-01 14:53:12,,
+INFO_0254,task,TASK_0339,Anne Lis,,ℹ️,person contacted,230,2026-10-01 15:48:52,,
+INFO_0255,task,TASK_0339,Ana Carolina Castro,,ℹ️,person,240,2026-10-01 15:49:36,,
