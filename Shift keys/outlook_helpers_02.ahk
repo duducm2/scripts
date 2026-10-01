@@ -508,11 +508,40 @@ OutlookMeeting_ProbeRemoveInRoot(hwnd) {
     return !!root.FindFirst({ Name: "Remove event", ControlType: "Button" })
 }
 
-OutlookMeeting_ClickMenuItemInActiveWindow(criteriaList) {
+OutlookMeeting_UiSection() {
+    try {
+        if RegExMatch(WinGetTitle("A"), "i) - Message \(")
+            return "OutlookMessage"
+    }
+    return "OUTLOOK.EXE"
+}
+
+OutlookMeeting_TryClickSaved(root, elementId) {
+    saved := 0
+    try saved := UiElements_TrySaved(root, OutlookMeeting_UiSection(), elementId)
+    if !saved
+        return false
+    try saved.SetFocus()
+    Sleep 50
+    try {
+        saved.Click()
+        return true
+    } catch {
+        try {
+            saved.Invoke()
+            return true
+        }
+    }
+    return false
+}
+
+OutlookMeeting_ClickMenuItemInActiveWindow(criteriaList, elementId := "") {
     hwnd := WinExist("A")
     root := OutlookMail_RootElementForHwnd(hwnd)
     if !root
         return false
+    if (elementId != "" && OutlookMeeting_TryClickSaved(root, elementId))
+        return true
     for criteria in criteriaList {
         try {
             el := root.FindFirst(criteria)
@@ -532,11 +561,13 @@ OutlookMeeting_ClickMenuItemInActiveWindow(criteriaList) {
 }
 
 OutlookMeeting_ClickAccept() {
-    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Accept the meeting", ControlType: "MenuItem" }])
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Accept the meeting", ControlType: "MenuItem" }],
+    "Accept")
 }
 
 OutlookMeeting_ClickFollow() {
-    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Follow;", matchmode: "Substring", ControlType: "MenuItem" }])
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Follow;", matchmode: "Substring", ControlType: "MenuItem" }],
+    "Follow")
 }
 
 OutlookMeeting_ClickDecline() {
@@ -550,7 +581,7 @@ OutlookMeeting_ConfirmDecline() {
 
 ; Canceled meeting: Button "Remove event" (see outlook-remove-evet.md). No confirmation in script.
 OutlookMeeting_ClickRemoveEvent() {
-    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Remove event", ControlType: "Button" }])
+    return OutlookMeeting_ClickMenuItemInActiveWindow([{ Name: "Remove event", ControlType: "Button" }], "RemoveEvent")
 }
 
 ; Opens "More options" (…) then clicks a MenuItem in the overflow menu (see mark-appointment-request.md).
@@ -562,19 +593,21 @@ OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
             return false
         pane := root.FindFirst({ AutomationId: "Skip to message-region" })
         searchRoot := pane ? pane : root
-        moreBtn := ""
-        try moreBtn := searchRoot.FindFirst({ AutomationId: "menur7c4", ControlType: "Button" })
-        if !moreBtn
-            try moreBtn := searchRoot.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
-        if !moreBtn
-            try moreBtn := root.FindFirst({ AutomationId: "menur7c4", ControlType: "Button" })
-        if !moreBtn
-            return false
-        try moreBtn.SetFocus()
-        Sleep 50
-        try moreBtn.Click()
-        catch {
-            try moreBtn.Invoke()
+        if !OutlookMeeting_TryClickSaved(root, "MoreOptions") {
+            moreBtn := ""
+            try moreBtn := searchRoot.FindFirst({ AutomationId: "menur7c4", ControlType: "Button" })
+            if !moreBtn
+                try moreBtn := searchRoot.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
+            if !moreBtn
+                try moreBtn := root.FindFirst({ AutomationId: "menur7c4", ControlType: "Button" })
+            if !moreBtn
+                return false
+            try moreBtn.SetFocus()
+            Sleep 50
+            try moreBtn.Click()
+            catch {
+                try moreBtn.Invoke()
+            }
         }
         Sleep 120
         el := ""
@@ -607,17 +640,19 @@ OutlookMeeting_ClickMoreOptionsSubmenu(parentItemName, childItemName) {
             return false
         pane := root.FindFirst({ AutomationId: "Skip to message-region" })
         searchRoot := pane ? pane : root
-        moreBtn := ""
-        try moreBtn := searchRoot.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
-        if !moreBtn
-            try moreBtn := root.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
-        if !moreBtn
-            return false
-        try moreBtn.SetFocus()
-        Sleep 50
-        try moreBtn.Click()
-        catch {
-            try moreBtn.Invoke()
+        if !OutlookMeeting_TryClickSaved(root, "MoreOptions") {
+            moreBtn := ""
+            try moreBtn := searchRoot.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
+            if !moreBtn
+                try moreBtn := root.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
+            if !moreBtn
+                return false
+            try moreBtn.SetFocus()
+            Sleep 50
+            try moreBtn.Click()
+            catch {
+                try moreBtn.Invoke()
+            }
         }
         Sleep 120
 
@@ -816,6 +851,8 @@ OutlookMail_ClickFirst(criteriaList) {
 ; Call before UIA clicks that target AutomationIds on that panel when View/Help might be active.
 OutlookMail_EnsureHomeTab() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("Home")
+        return true
     homeTab := OutlookMail_FindFirst([{ Name: "Home", ControlType: "TabItem", AutomationId: "1" }, { AutomationId: "1",
         ControlType: "TabItem" }, { Name: "Home", ControlType: "TabItem" }
     ])
@@ -861,6 +898,8 @@ OutlookMail_IsLeftSidePanelHidden() {
 ; Ribbon "high navigation" toggle: show the left folder pane (same control as "Hide navigation pane" when open).
 OutlookMail_ClickHighNavigationShowPane() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("ShowNavigation")
+        return true
     if OutlookMail_ClickFirst(OutlookMail_CriteriaShowNavigationPaneRibbon())
         return true
     return OutlookMail_EnsureNavigationPaneVisible()
@@ -869,6 +908,8 @@ OutlookMail_ClickHighNavigationShowPane() {
 ; Nav pane already visible: open Inbox via folder tree only (no ribbon toggle).
 OutlookMail_GoToInboxShortcut() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("Inbox")
+        return true
     try {
         root := OutlookMail_RootElement()
         if !root
@@ -917,6 +958,8 @@ OutlookMail_ClickInboxFolder() {
 ; Ribbon: Hide navigation pane / Show navigation pane (outlook-mail.md: Ribbon … 8,1).
 OutlookMail_ToggleHighNavigationPane() {
     Outlook_ActivateMainWindow()
+    if OutlookMail_TrySaved("ShowNavigation")
+        return true
     return OutlookMail_ClickFirst(OutlookMail_CriteriaToggleNavigationPaneRibbon())
 }
 

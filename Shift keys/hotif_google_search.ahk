@@ -61,7 +61,9 @@
         uia := UIA_Browser()
         Sleep 200
 
-        imagesBtn := uia.FindFirst({ Name: "Images", Type: "Link" })
+        imagesBtn := UiElements_TrySaved(uia, "Google", "Images")
+        if !imagesBtn
+            imagesBtn := uia.FindFirst({ Name: "Images", Type: "Link" })
         if !imagesBtn
             imagesBtn := uia.FindFirst({ Name: "Imagens", Type: "Link" })
         if !imagesBtn
