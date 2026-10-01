@@ -303,8 +303,10 @@ FileDialog_NavigateToDesktop() {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
-        ; First attempt: Find by AutomationId and Type (most reliable)
-        cancelBtn := root.FindFirst({ Type: "Button", AutomationId: "2" })
+        ; First attempt: saved element, then AutomationId and Type
+        cancelBtn := UiElements_TrySaved(root, "FileDialog", "Cancel")
+        if !cancelBtn
+            cancelBtn := root.FindFirst({ Type: "Button", AutomationId: "2" })
 
         ; Second attempt: Try various possible names
         if !cancelBtn {

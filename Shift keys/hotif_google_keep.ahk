@@ -130,9 +130,14 @@ DismissAllReminders() {
 ; ---------------------------------------------------------------------------
 ; Helper for Mobills buttons â€" language-neutral search
 ; ---------------------------------------------------------------------------
-GetMobillsButton(autoId, btnName) {
+GetMobillsButton(autoId, btnName, elementId := "") {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
+        if (elementId != "") {
+            saved := UiElements_TrySaved(root, "Mobills", elementId)
+            if (saved)
+                return saved
+        }
         btn := root.FindFirst({ AutomationId: autoId, ControlType: "Button" })
         if !btn
             btn := root.FindFirst({ Name: btnName, ControlType: "Button" })

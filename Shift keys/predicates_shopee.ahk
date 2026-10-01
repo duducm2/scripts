@@ -56,6 +56,23 @@ Shopee_Find(root, condition) {
         return 0
 }
 
+Shopee_ClickSaved(elementId) {
+    root := Shopee_GetDocRoot()
+    if (!root)
+        return false
+    el := 0
+    try el := UiElements_TrySaved(root, "Shopee", elementId)
+    if (!el)
+        return false
+    try el.Invoke()
+    catch {
+        try el.Click()
+        catch
+            return false
+    }
+    return true
+}
+
 Shopee_FindAndInvoke(conditionList) {
     root := Shopee_GetDocRoot()
     if (!root)

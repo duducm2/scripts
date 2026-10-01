@@ -121,10 +121,13 @@
         }
 
         cart := 0
+        try cart := UiElements_TrySaved(root, "Mercado Livre", "Cart")
         ; Prefer AutomationId
-        try {
-            cart := root.FindElement({ AutomationId: "nav-cart" })
-        } catch {
+        if (!cart) {
+            try {
+                cart := root.FindElement({ AutomationId: "nav-cart" })
+            } catch {
+            }
         }
         if (!cart) {
             ; Try by class name substring
@@ -168,10 +171,13 @@
         }
 
         purchases := 0
+        try purchases := UiElements_TrySaved(root, "Mercado Livre", "Purchases")
         ; Try by class name first
-        try {
-            purchases := root.FindElement({ ClassName: "option-purchases" })
-        } catch {
+        if (!purchases) {
+            try {
+                purchases := root.FindElement({ ClassName: "option-purchases" })
+            } catch {
+            }
         }
         if (!purchases) {
             ; Try by link name 'Compras'
@@ -198,7 +204,7 @@
 +y::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_time_highlighted_nextday" }])
+    if ML_ClickSaved("Tomorrow") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_time_highlighted_nextday" }])
         return
     MsgBox "Filtro 'Chegará amanhã' não encontrado."
 }
@@ -207,7 +213,7 @@
 +f::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_highlighted_fulfillment" }])
+    if ML_ClickSaved("Full") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_highlighted_fulfillment" }])
         return
     MsgBox "Filtro 'Full' não encontrado."
 }
@@ -216,7 +222,7 @@
 +i::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_HIGHLIGHTED" }])
+    if ML_ClickSaved("International") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_HIGHLIGHTED" }])
         return
     MsgBox "Filtro 'Internacional' não encontrado."
 }
@@ -225,7 +231,7 @@
 +n::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_LOCAL_HIGHLIGHTED" }, { Type: 50000, Name: "Envio local",
+    if ML_ClickSaved("Local") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_LOCAL_HIGHLIGHTED" }, { Type: 50000, Name: "Envio local",
         cs: false, matchmode: "Substring" }])
         return
     MsgBox "Filtro 'Produtos com frete nacional' não encontrado."
@@ -235,7 +241,7 @@
 +g::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_cost_highlighted_free" }])
+    if ML_ClickSaved("FreeShipping") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "shipping_cost_highlighted_free" }])
         return
     MsgBox "Filtro 'Frete grátis' não encontrado."
 }

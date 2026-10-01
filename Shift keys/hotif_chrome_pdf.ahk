@@ -118,6 +118,25 @@ ChromePdf_FocusElement(el) {
     return false
 }
 
+ChromePdf_TrySaved(elementId) {
+    sess := ChromePdf_GetSession()
+    if (!sess)
+        return 0
+    el := 0
+    try el := UiElements_TrySaved(sess["root"], "Chrome PDF Viewer", elementId)
+    return el
+}
+
+ChromePdf_ClickSaved(elementId) {
+    el := ChromePdf_TrySaved(elementId)
+    if (!el)
+        return false
+    if (ChromePdf_InvokeElement(el))
+        return true
+    ChromePdf_InvalidateSession()
+    return false
+}
+
 ; One typed FindFirst. Name list runs only after that miss.
 ; No second FindFirst under a different control type when typeHint is already set.
 ChromePdf_FindByAutomationId(root, automationId, typeHint := 0, fallbackNames := 0) {
@@ -457,6 +476,8 @@ ChromePdf_RefreshKeepPage() {
 ; Shift + F : Fit to page (Zoom to Fit) - Fit
 +f::
 {
+    if ChromePdf_ClickSaved("Fit")
+        return
     ; UIA tree: AutomationId "fit"
     ChromePdf_ClickByAutomationId("fit")
 }
@@ -466,7 +487,9 @@ ChromePdf_RefreshKeepPage() {
 {
     ; UIA tree: Edit AutomationId "pageSelector"
     ; SetFocus is the readiness gate; Ctrl+A selects so typing replaces the number.
-    el := ChromePdf_ResolveElement("pageSelector", 50004)
+    el := ChromePdf_TrySaved("Page")
+    if (!el)
+        el := ChromePdf_ResolveElement("pageSelector", 50004)
     if (!el)
         return
     if !ChromePdf_FocusElement(el) {
@@ -479,6 +502,8 @@ ChromePdf_RefreshKeepPage() {
 ; Shift + T : Toggle thumbnails sidebar - Thumbnails
 +t::
 {
+    if ChromePdf_ClickSaved("Thumbnails")
+        return
     ; UIA tree: AutomationId "sidenavToggle"
     ChromePdf_ClickByAutomationId("sidenavToggle")
 }

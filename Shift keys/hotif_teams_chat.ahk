@@ -238,7 +238,8 @@
             win := WinExist("A")
             root := UIA.ElementFromHandle(win)
 
-            callButton := 0
+            callButton := UiElements_TrySaved(root, "TeamsChat", "Call")
+            if !callButton {
             callButtonNames := ["Audio call", "Video call", "Start audio call", "Start video call"]
 
             for name in callButtonNames {
@@ -267,6 +268,7 @@
                         }
                     }
                 }
+            }
             }
 
             if callButton {

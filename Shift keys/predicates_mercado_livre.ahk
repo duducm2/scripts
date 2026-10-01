@@ -173,6 +173,24 @@ ML_SetEditText(el, text) {
     return ok
 }
 
+; Try a saved catalog element, then invoke or click it.
+ML_ClickSaved(elementId) {
+    root := ML_GetDocRoot()
+    if (!root)
+        return false
+    el := 0
+    try el := UiElements_TrySaved(root, "Mercado Livre", elementId)
+    if (!el)
+        return false
+    try el.Invoke()
+    catch {
+        try el.Click()
+        catch
+            return false
+    }
+    return true
+}
+
 ; Try conditions in order; invoke or click first match. Returns true if invoked/clicked, false otherwise.
 ML_FindAndInvoke(conditionList) {
     root := ML_GetDocRoot()

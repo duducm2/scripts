@@ -13,7 +13,7 @@
 ; Shift + D : Dashboard
 +d:: {
     try {
-        btn := GetMobillsButton("menu-dashboard-item", "Dashboard")
+        btn := GetMobillsButton("menu-dashboard-item", "Dashboard", "Dashboard")
         if (btn) {
             btn.Click()
         } else {
@@ -27,7 +27,7 @@
 ; Shift + A : Contas
 +a:: {
     try {
-        btn := GetMobillsButton("menu-accounts-item", "Accounts")
+        btn := GetMobillsButton("menu-accounts-item", "Accounts", "Accounts")
         if (btn) {
             btn.Click()
         } else {
@@ -41,7 +41,7 @@
 ; Shift + T : TransaÃ§Ãµes
 +t:: {
     try {
-        btn := GetMobillsButton("menu-transactions-item", "Transactions")
+        btn := GetMobillsButton("menu-transactions-item", "Transactions", "Transactions")
         if (btn) {
             btn.Click()
         } else {
@@ -55,7 +55,7 @@
 ; Shift + C : CartÃµes de crÃ©dito
 +c:: {
     try {
-        btn := GetMobillsButton("menu-creditCards-item", "Credit cards")
+        btn := GetMobillsButton("menu-creditCards-item", "Credit cards", "CreditCards")
         if (btn) {
             btn.Click()
         } else {
@@ -70,7 +70,7 @@
 ; Shift + P : Planejamento
 +p:: {
     try {
-        btn := GetMobillsButton("menu-budgets-item", "Budgets")
+        btn := GetMobillsButton("menu-budgets-item", "Budgets", "Budgets")
         if (btn) {
             btn.Click()
         } else {
@@ -84,7 +84,7 @@
 ; Shift + R : RelatÃ³rios
 +r:: {
     try {
-        btn := GetMobillsButton("menu-reports-item", "Reports")
+        btn := GetMobillsButton("menu-reports-item", "Reports", "Reports")
         if (btn) {
             btn.Click()
         } else {
@@ -98,7 +98,7 @@
 ; Shift + M : Mais opÃ§Ãµes
 +m:: {
     try {
-        btn := GetMobillsButton("menu-moreOptions-item", "More options")
+        btn := GetMobillsButton("menu-moreOptions-item", "More options", "MoreOptions")
         if (btn) {
             btn.Click()
         } else {

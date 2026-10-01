@@ -49,7 +49,7 @@
 ; Shift + C: Carrinho de compras (cart)
 +c::
 {
-    if Shopee_FindAndInvoke([{ Type: 50005, AutomationId: "cart_drawer_target_id" }, { Type: 50005, Name: "Carrinho",
+    if Shopee_ClickSaved("Cart") || Shopee_FindAndInvoke([{ Type: 50005, AutomationId: "cart_drawer_target_id" }, { Type: 50005, Name: "Carrinho",
         cs: false, matchmode: "Substring" }, { Type: 50000, Name: "Carrinho", cs: false, matchmode: "Substring" }
     ])
         return
@@ -59,7 +59,7 @@
 ; Shift + P: Minhas compras / pedidos (speculative)
 +p::
 {
-    if Shopee_FindAndInvoke([{ Type: 50005, Name: "Minhas compras", cs: false, matchmode: "Substring" }, { Type: 50005,
+    if Shopee_ClickSaved("Purchases") || Shopee_FindAndInvoke([{ Type: 50005, Name: "Minhas compras", cs: false, matchmode: "Substring" }, { Type: 50005,
         Name: "Meus pedidos", cs: false, matchmode: "Substring" }, { Type: 50005, Name: "Pedidos", cs: false, matchmode: "Substring" }
     ])
         return
@@ -126,12 +126,18 @@
         }
 
         minimo := 0
-        try minimo := root.FindElement({ Type: 50004, Name: "Preço mínimo" })
-        catch {
+        try minimo := UiElements_TrySaved(root, "Shopee", "PriceMin")
+        if (!minimo) {
+            try minimo := root.FindElement({ Type: 50004, Name: "Preço mínimo" })
+            catch {
+            }
         }
         maximo := 0
-        try maximo := root.FindElement({ Type: 50004, Name: "Preço máximo" })
-        catch {
+        try maximo := UiElements_TrySaved(root, "Shopee", "PriceMax")
+        if (!maximo) {
+            try maximo := root.FindElement({ Type: 50004, Name: "Preço máximo" })
+            catch {
+            }
         }
 
         target := minimo ? minimo : maximo
