@@ -12,11 +12,13 @@
 
 - [✅] Visual Information Class PDFs
 
-- [ ] data bricks
-
 - [ ] Fact tables and dimension tables
 
 - [ ] snow flake
+
+- [ ] Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)
+
+- [ ] data bricks project
 
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
