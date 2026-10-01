@@ -139,7 +139,7 @@
         { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
             matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
                 matchmode: "Substring" }
-        ], "⏳ Moving to General...")
+        ], "⏳ Moving to General...", "MoveGeneral")
             return
     }
     Send "!5"
@@ -158,7 +158,7 @@
         { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
             matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
                 matchmode: "Substring", ControlType: "RadioButton" }
-        ], "⏳ Moving to Newsletter...")
+        ], "⏳ Moving to Newsletter...", "MoveNewsletter")
             return
     }
     Send "!5"
@@ -305,11 +305,11 @@
         }
 
         ; Fallback: click the To row only.
-        if OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }])
+        if OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }], "ToRow")
             return
         ; Fallback: any element whose name begins with “To:”.
         if OutlookClickFirst([{ Name: "To:", matchmode: "Substring" }, { Name: "To", matchmode: "Substring",
-            ControlType: "Group" }])
+            ControlType: "Group" }], "ToRow")
             return
     }
     if FocusOutlookField({ AutomationId: "4109" }) ; Required

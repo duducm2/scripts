@@ -47,9 +47,42 @@ AudioBt_SettingsRoot(hwnd) {
         return 0
 }
 
+AudioBt_SettingsElementId(names) {
+    if !(names is Array) || names.Length = 0
+        return ""
+    first := names[1]
+    if (first = "Conectar")
+        return "BtConnect"
+    if (first = "Desconectar")
+        return "BtDisconnect"
+    if (first = "Mais opções")
+        return "BtMore"
+    if (first = "Exibir mais")
+        return "BtShowMore"
+    if (first = "Bluetooth e dispositivos")
+        return "Bluetooth"
+    return ""
+}
+
+AudioBt_SettingsTrySaved(scope, names) {
+    elementId := AudioBt_SettingsElementId(names)
+    if (elementId = "" || !IsObject(scope))
+        return 0
+    try {
+        el := UiElements_TrySaved(scope, "Settings", elementId)
+        if el
+            return el
+    } catch {
+    }
+    return 0
+}
+
 AudioBt_SettingsFindNamed(scope, names, typeName := "Button") {
     if !scope
         return 0
+    saved := AudioBt_SettingsTrySaved(scope, names)
+    if saved
+        return saved
     for n in names {
         el := ClipAngel_UiaFindFirst(scope, { Type: typeName, Name: n })
         if el
@@ -62,6 +95,9 @@ AudioBt_SettingsFindNamed(scope, names, typeName := "Button") {
 AudioBt_SettingsFindNamedSubstring(scope, needles, typeName := "Button") {
     if !scope
         return 0
+    saved := AudioBt_SettingsTrySaved(scope, needles)
+    if saved
+        return saved
     try {
         els := scope.FindAll({ Type: typeName })
     } catch {
@@ -247,6 +283,9 @@ AudioBt_SettingsMaximize(hwnd) {
 AudioBt_SettingsClickNavBt(root) {
     if !root
         return false
+    saved := AudioBt_SettingsTrySaved(root, AudioBt_SettingsNavNames())
+    if (saved && AudioBt_SettingsClickEl(saved))
+        return true
     for n in AudioBt_SettingsNavNames() {
         el := ClipAngel_UiaFindFirst(root, { Type: "ListItem", Name: n })
         if !el

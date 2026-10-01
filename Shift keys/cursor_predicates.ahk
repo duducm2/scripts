@@ -1882,6 +1882,55 @@ Cursor_FindPermissionText50020Contains(scope, substring, requireOnScreen := true
 }
 
 ; Click permission-style Text (50020): prefer parent Invoke/Click, same pattern as !n "Review next file".
+Cursor_ClickSavedPermission(el) {
+    if !IsObject(el)
+        return false
+    t := 0
+    try t := el.Type
+    if (t = 50020)
+        return Cursor_ClickUiaTextOrParentInvoke(el)
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    return false
+}
+
+Cursor_TrySavedPermission(elementId) {
+    hwnd := WinExist("ahk_exe Cursor.exe")
+    if (!hwnd || elementId = "")
+        return false
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        return false
+    saved := 0
+    try saved := UiElements_TrySaved(root, "Cursor.exe", elementId)
+    if !saved
+        return false
+    return Cursor_ClickSavedPermission(saved)
+}
+
+Cursor_PermissionElementId(name) {
+    if (name = "Run")
+        return "Run"
+    if (name = "Mark as fixed")
+        return "MarkFixed"
+    if (name = "Proceed")
+        return "Proceed"
+    if (name = "Fetch")
+        return "Fetch"
+    if (name = "Allowlist")
+        return "Allowlist"
+    return ""
+}
 Cursor_ClickUiaTextOrParentInvoke(textEl) {
     try {
         parentBtn := UIA.TreeWalkerTrue.GetParentElement(textEl)
@@ -1918,6 +1967,8 @@ Cursor_ClickUiaTextOrParentInvoke(textEl) {
 
 ; Try each name variant (e.g. straight vs curly quotes). Scope to workbench.parts.panel first, then full window.
 Cursor_ClickPermissionLabel(variantNames*) {
+    if (variantNames.Length && Cursor_TrySavedPermission(Cursor_PermissionElementId(variantNames[1])))
+        return true
     hwnd := WinExist("ahk_exe Cursor.exe")
     if (!hwnd)
         return false
@@ -1973,6 +2024,8 @@ Cursor_ClickPermissionLabel(variantNames*) {
 
 ; Like Cursor_ClickPermissionLabel but matches any Type 50020 label containing substring (e.g. "Allowlist").
 Cursor_ClickPermissionLabelContains(substring) {
+    if (Cursor_TrySavedPermission(Cursor_PermissionElementId(substring)))
+        return true
     hwnd := WinExist("ahk_exe Cursor.exe")
     if (!hwnd)
         return false

@@ -102,7 +102,10 @@ Appt_OpenPopoverIfNeeded() {
 
     ; Best trigger: click the Start time combo (or its caret button) to open the popover.
     try {
-        trigger := root.FindFirst({ Name: "Start time", ControlType: "ComboBox" })
+        trigger := 0
+        try trigger := UiElements_TrySaved(root, "OutlookAppointment", "StartTime")
+        if !trigger
+            trigger := root.FindFirst({ Name: "Start time", ControlType: "ComboBox" })
         if trigger {
             try trigger.SetFocus()
             Sleep 40
@@ -141,7 +144,10 @@ Appt_OpenPopoverIfNeeded() {
     ; Anchor-based fallback: focus a stable neighbor, Tab to the dynamic "Wed …" button, then Enter.
     ; In the captured tree, "Response options" immediately precedes the date/time range button.
     try {
-        anchor := root.FindFirst({ AutomationId: "menur1qn" }) ; "Response options"
+        anchor := 0
+        try anchor := UiElements_TrySaved(root, "OutlookAppointment", "ResponseOptions")
+        if !anchor
+            anchor := root.FindFirst({ AutomationId: "menur1qn" }) ; "Response options"
         if !anchor
             anchor := root.FindFirst({ Name: "Response options", ControlType: "Button" })
         if anchor {
@@ -156,7 +162,10 @@ Appt_OpenPopoverIfNeeded() {
 
     ; Strategy A (advanced): sibling traversal from stable "Open scheduler" button to locate the dynamic date-range button.
     try {
-        schedulerBtn := root.WaitElement({ Name: "Open scheduler", Type: 50000 }, 600)
+        schedulerBtn := 0
+        try schedulerBtn := UiElements_TrySaved(root, "OutlookAppointment", "Scheduler")
+        if !schedulerBtn
+            schedulerBtn := root.WaitElement({ Name: "Open scheduler", Type: 50000 }, 600)
         if schedulerBtn {
             dateBtn := ""
             try {

@@ -383,13 +383,13 @@ Outlook_FocusMailMessageList(selectFirst := false) {
 }
 
 ; Quick Step move, then the same first-message focus as Shift+J. Loading bar covers the click.
-Outlook_MoveQuickStepThenJumpFirst(criteriaList, loadingText) {
+Outlook_MoveQuickStepThenJumpFirst(criteriaList, loadingText, elementId := "") {
     Outlook_ActivateMainWindow()
     OutlookMail_EnsureHomeTab()
     moved := false
     try {
         StandardLoadingBar_Show(loadingText, BANNER_ACCENT_INTERMEDIATE, { passive: false })
-        moved := OutlookClickFirst(criteriaList)
+        moved := OutlookClickFirst(criteriaList, elementId)
         if moved
             Outlook_FocusMailMessageList(true)
     } finally {
@@ -1009,8 +1009,23 @@ OutlookCompose_FocusToRecipientsField() {
         }
 
         ; Step 1: click the To: row (reactive UI may expand recipients editor)
-        okTo := OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }, { Name: "To:",
-            matchmode: "Substring" }])
+        okTo := false
+        try {
+            composeRoot := UIA.ElementFromHandle(WinExist("A"))
+            toRow := UiElements_TrySaved(composeRoot, "OutlookMessage", "ToRow")
+            if toRow {
+                try toRow.SetFocus()
+                Sleep 50
+                try toRow.Click()
+                catch
+                    toRow.Invoke()
+                okTo := true
+            }
+        } catch {
+        }
+        if !okTo
+            okTo := OutlookClickFirst([{ AutomationId: "134", ControlType: "Group" }, { AutomationId: "134" }, { Name: "To:",
+                matchmode: "Substring" }], "ToRow")
         try OC_ToLog("after_to_click", '{"ok":' (okTo ? 1 : 0) '}', "OC_To_B")
         catch {
         }

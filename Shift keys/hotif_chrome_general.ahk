@@ -185,26 +185,28 @@ RenameChatGPTWindowToChatGPT() {
         ; Step 3: Find the OpenConversationOptions button directly using its known properties
         ; Button: Type 50000, Name "Abrir opções de conversa" (PT) or "Open conversation options" (EN), AutomationId "radix-_r_b6_", ClassName "__menu-item-trailing-btn"
         openConversationButton := 0
+        try openConversationButton := UiElements_TrySaved(siblingElement, "ChatGPT", "ConversationOptions")
         conversationOptionNames := ["Abrir opções de conversa", "Abrir opções da conversa", "Open conversation options",
             "Conversation options", "Open options"]
 
         ; Try 1: Find by Name and Type (most reliable) - try both Portuguese and English
-        for name in conversationOptionNames {
-            try {
-                openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name, cs: false },
-                UIA.TreeScope.Descendants)
-                if (openConversationButton)
-                    break
-            } catch {
+        if !openConversationButton
+            for name in conversationOptionNames {
                 try {
-                    openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name },
+                    openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name, cs: false },
                     UIA.TreeScope.Descendants)
                     if (openConversationButton)
                         break
                 } catch {
+                    try {
+                        openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name },
+                        UIA.TreeScope.Descendants)
+                        if (openConversationButton)
+                            break
+                    } catch {
+                    }
                 }
             }
-        }
 
         ; Try 2: Find by AutomationId (if Name search fails)
         if (!openConversationButton) {
@@ -349,20 +351,22 @@ RenameChatGPTWindowToChatGPT() {
         try {
             ; Try to find and click the close sidebar button (Portuguese or English)
             sidebarCloseButton := 0
-            for name in sidebarCloseNames {
-                try {
-                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
-                    if (sidebarCloseButton)
-                        break
-                } catch {
+            try sidebarCloseButton := UiElements_TrySaved(root, "ChatGPT", "CloseSidebar")
+            if !sidebarCloseButton
+                for name in sidebarCloseNames {
                     try {
-                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
                         if (sidebarCloseButton)
                             break
                     } catch {
+                        try {
+                            sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                            if (sidebarCloseButton)
+                                break
+                        } catch {
+                        }
                     }
                 }
-            }
 
             if (sidebarCloseButton) {
                 try {

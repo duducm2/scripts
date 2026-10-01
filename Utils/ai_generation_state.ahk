@@ -153,6 +153,12 @@ AiCompanion_FindComposerElement(root, companionId) {
             return CopilotWeb_FindComposer(root)
         if (companionId = "chatgpt") {
             try {
+                saved := UiElements_TrySaved(root, "ChatGPT", "Prompt")
+                if (saved)
+                    return saved
+            } catch {
+            }
+            try {
                 el := root.FindFirst({ AutomationId: "prompt-textarea" })
                 if (el)
                     return el
@@ -168,14 +174,7 @@ AiCompanion_FindComposerElement(root, companionId) {
             }
             return 0
         }
-        for name in GEMINI_PROMPT_FIELD_NAMES {
-            try {
-                el := root.FindFirst({ Name: name, Type: 50004 })
-                if (el)
-                    return el
-            } catch {
-            }
-        }
+        return FindGeminiPromptField(root)
     } catch {
     }
     return 0
@@ -223,6 +222,11 @@ AiCompanion_StopOnRoot(root, companionId) {
         if (companionId = "copilot")
             return !!CopilotWeb_FindStopGenerating(root)
         if (companionId = "chatgpt") {
+            try {
+                if (UiElements_TrySaved(root, "ChatGPT", "Stop"))
+                    return true
+            } catch {
+            }
             for n in ["Stop streaming", "Interromper transmissão"] {
                 try {
                     if (root.FindFirst({ Name: n, Type: 50000 }))

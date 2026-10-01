@@ -8,6 +8,12 @@
 ; Find the Gemini prompt field via UIA (returns element or 0). Supports EN and PT labels. Used by Gemini.ahk and Utils.ahk.
 ; Happy path: FindFirst per name only. FindAll({ Type: 50004 }) runs only when those fail (failure path).
 FindGeminiPromptField(uia) {
+    try {
+        saved := UiElements_TrySaved(uia, "Gemini", "Prompt")
+        if (saved)
+            return saved
+    } catch {
+    }
     promptField := 0
     for name in GEMINI_PROMPT_FIELD_NAMES {
         try {
