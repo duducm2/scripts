@@ -265,7 +265,9 @@ ClickHidePanelButton() {
 
             try {
                 dlgRoot := UIA.ElementFromHandle(saveDialogHwnd)
-                exportBtn := dlgRoot.FindFirst({ Type: "Button", Name: "Export", AutomationId: "1" })
+                exportBtn := UiElements_TrySaved(dlgRoot, "FileDialog", "Export")
+                if !exportBtn
+                    exportBtn := dlgRoot.FindFirst({ Type: "Button", Name: "Export", AutomationId: "1" })
                 if !exportBtn
                     exportBtn := dlgRoot.FindFirst({ Type: "Button", Name: "Export" })
                 if exportBtn {
@@ -416,6 +418,22 @@ ClickCopilotGoBackButton() {
         if (!root)
             return false
 
+        savedBack := UiElements_TrySaved(root, Editor_UiElementAppKey(), "GoBack")
+        if (savedBack) {
+            try {
+                if savedBack.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                    savedBack.InvokePattern.Invoke()
+                    return true
+                }
+            } catch {
+            }
+            try {
+                savedBack.Click()
+                return true
+            } catch {
+            }
+        }
+
         ; First and foremost: Find the chat-view-title-container
         ; We MUST scope our search to this container to avoid clicking the main toolbar's Go Back button
         chatViewTitle := 0
@@ -527,6 +545,22 @@ ClickVSCodeCopilotModelButton() {
         root := UIA.ElementFromHandle(hwnd)
         if (!root)
             return false
+
+        savedModel := UiElements_TrySaved(root, Editor_UiElementAppKey(), "PickModel")
+        if (savedModel) {
+            try {
+                savedModel.SetFocus()
+                Sleep 40
+                Send "{Enter}"
+                return true
+            } catch {
+            }
+            try {
+                savedModel.Click()
+                return true
+            } catch {
+            }
+        }
 
         chatToolbars := 0
         try {

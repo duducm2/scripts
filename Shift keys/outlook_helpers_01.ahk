@@ -243,7 +243,9 @@ Outlook_SwitchToCalendarViaNavItem() {
         root := UIA.ElementFromHandle(WinExist("A"))
         if !root
             return false
-        calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
+        calendarItem := UiElements_TrySaved(root, "OUTLOOK.EXE", "Calendar")
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
         if !calendarItem
             calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
         if !calendarItem
