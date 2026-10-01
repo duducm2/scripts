@@ -1,25 +1,6 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at,edit_lock,birth_date
 INFO_0005,project,PROJ_0004,Next steps,,ℹ️,,170,2026-08-29 15:48:39,,
 INFO_0006,project,PROJ_0004,Plan,Plan,ℹ️,,190,2026-08-29 15:48:39,,
-INFO_0016,task,TASK_0011,Contribution Goals,"Contribution Goals
-0 - Não atingido
-1 - Parcialmente atingido
-2 - Totalmente atingido
-Data Insights - meta individual
-0 – Não atingido
-Análise superficial ou ad hoc das transcrições, sem método definido
-Insights genéricos, sem conexão clara com problemas reais da operação
-Ausência de direcionamento consistente de solução
-1 – Parcialmente atingido
-Análise estruturada inicial das transcrições, com identificação de padrões
-Insights relevantes identificados, com priorização ainda limitada ou pouco embasada
-Direcionamento de solução definido, porém sem detalhamento claro ou tangibilização
-2 – Totalmente atingido
-Análise estruturada e consistente, com identificação clara de padrões, dores e oportunidades
-Insights priorizados com base em impacto e recorrência, conectados ao negócio
-Proposta de solução bem definida (QMAI ou nova), com conceito, proposta de valor e próximos passos claros
-Protótipos das telas desenvolvidos, representando a solução proposta
-Sempre que possível, implementação inicial (piloto/MVP) realizada para validação da solução",ℹ️,"Tasks/Checar esta meta, se precisamos revisar",420,2026-08-29 15:48:39,,
 INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29 15:48:39,,
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39,,
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39,,
@@ -149,56 +130,6 @@ Se não for o caso e tiver alguém que você possa indicar para eu conversar, ta
 
 * Segue meu currículo",,ℹ️,mensagem,160,2026-09-28 12:13:17,,
 INFO_0214,task,TASK_0339,O Pedro do CIP,,ℹ️,person,170,2026-09-28 12:19:06,,
-INFO_0215,project,PROJ_0033,Escopo do Projeto,O projeto PT é considerado difícil. É um projeto pago pela cliente e o que puder ser feito servirá como abertura de portas.,ℹ️,,4160,2026-09-28 13:57:02,,
-INFO_0216,project,PROJ_0033,Restrições e Sugestões,Limitar a análise a quatro empresas (sugestão anterior). Eles já sabem quem são os concorrentes.,ℹ️,,4170,2026-09-28 13:57:02,,
-INFO_0217,task,TASK_0353,"Eu gostaria que você organizasse os dados abaixo e alocasse os como atividades dentro do projeto PT.
-
-- Limitar a quatro empresas foi sugestão anterior
-- Pensou em pegar informações públicas o Reclame Aqui
-- Temos informações dos 
-- Dos concorrentes temos acesso 
-- Uma ETAPA desta analise era entender cccomo os concorrentes respondem
-- Tem algum prazo? Seria pago pela cliente? É uma ajuda? Seria pago por ela. A PT é bem difícil. O que você puder fazer como abertura de portas. 
-- Sempre alertamos para falar com o Maciel. Para maner a boa convivência. Maciel é o UX pro Maciel
-- Analise de qualidade dos concccono ramo de Ferramentas elétricas em relação a qualidade de responsa's
-- do Reclame Aqui
-- O Eduardo Borges está apresentando este projeto para hoje dia vinte e oito de setembro.
-- Para fim de outubro
-- Estudo de PROCON
-- Eles tem o quanto são os concorrentes
-- Não tem nem ideia do quanto ela estaria disposta 
-- Qual sua hipótese? Tempo da tratatia (demoram internamento,tanto que o prazo acaba fazendo com que escale para o caso jurídico) . Edu ficou sabendo que dão até uma ferramenta nova  
-- Analise de qualidade dos concccono ramo de Ferramentas elétricas em relação a qualidade de respostas do Reclame Aqui
-- O Eduardo Borges está apresentando este projeto para hoje dia vinte e oito de setembro.",,ℹ️,,10,2026-09-28 13:57:35,,
-INFO_0218,task,TASK_0353,"Cotação para o cliente PT referente a:
- 
- 
- 
-Task: 0062 - Análise de qualidade comparativa com concorrentes
- 
-Descrição:
-Resumo: Foi solicitada análise comparativa de qualidade em relação aos concorrentes, com destaque para a Dewalt, com o objetivo de entender práticas de mercado, abordagens de tratativa e possíveis diferenciais que impactam os indicadores de satisfação e reputação.
-Ação: Avaliar viabilidade de análise comparativa de qualidade com concorrentes (benchmark), incluindo levantamento de práticas, tratativas e possíveis estratégias aplicadas, para identificação de oportunidades de melhoria.
- 
- 
- 
- 
-O que eu havia proposto caso fosse feito por nos mesmos [Opm]:
- 
-1. Benchmark de concorrentes > É possível fazer sim... Comparar até 4 empresas do mesmo segmento no Reclame Aqui usando nota, reputação, volume de reclamações, índice de resposta, solução e voltaria a fazer negócio.
-2. Avaliação das práticas adotadas por outras empresas na tratativa de reclamações > É possível fazer parcialmente. Lendo uma amostra de reclamações públicas e respostas das empresas, observando tom, tempo de resposta, personalização, objetividade, etc...Neste caso o que não é possível: processo interno, SLA real, alçada ou política comercial.
-3. Análise de possíveis estratégias de recuperação da satisfação do cliente > É possível fazer parcialmente. Levantando hipóteses a partir dos padrões observáveis e dados públicos no RA mesmo. Deixando estabelecido que não teremos acesso à estratégia operacional da concorrência, como fluxos internos, critérios de tratativa, políticas de concessão, estrutura dedicada, SLAs reais ou regras comerciais. Portanto, qualquer conclusão deverá ser tratada como hipótese ou oportunidade observada a partir dos dados públicos
- 
---
-https://superopl.app.bosch.com/go/task-8864305
-Task: 0062 - Análise de qualidade comparativa com concorrentes",,ℹ️,,20,2026-09-28 14:54:23,,
-INFO_0219,task,TASK_0354,Proposta,,ℹ️,,10,2026-09-28 15:02:00,,
-INFO_0220,task,TASK_0354,https://bosch.sharepoint.com/:p:/r/sites/msteams_5691328/Shared%20Documents/General/Projects/Internal%20Projects/Other%20Divisons/PT/Estudo%20Reclame%20Aqui%20-%20PT/00_Proposal/PropostaUX-EstudoReclameAqui-PT.pptx?d=weacc84ede5324179ad06f31f1e12c1a6&csf=1&web=1&e=THP0E4,,ℹ️,,20,2026-09-28 15:02:03,,
-INFO_0221,task,TASK_0354,Pasta,,ℹ️,,30,2026-09-28 15:02:21,,
-INFO_0222,task,TASK_0354,https://bosch.sharepoint.com/sites/msteams_5691328/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fmsteams%5F5691328%2FShared%20Documents%2FGeneral%2FProjects%2FInternal%20Projects%2FOther%20Divisons%2FPT%2FEstudo%20Reclame%20Aqui%20%2D%20PT&p=true&ct=1790616148705&or=Teams%2DHL&ga=1&LOF=1,,ℹ️,,40,2026-09-28 15:02:24,,
-INFO_0223,task,TASK_0354,Timeline CSV,,ℹ️,,50,2026-09-28 15:25:16,,
-INFO_0224,task,TASK_0354,C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\work\pt-reclame-aqui\timeline.csv,,ℹ️,,60,2026-09-28 15:25:19,,
-INFO_0225,task,TASK_0360,image.png,,ℹ️,,10,2026-09-29 10:02:35,,
 INFO_0230,task,TASK_0362,"9.29
 
 *Note: the links and images in this document may point to external sources. Please review them before opening.*
@@ -321,16 +252,11 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 * **Consulte o veterinário:** Sempre confirme o princípio ativo e a marca com o veterinário que acompanha o calendário de vacinas dela, para adequar a dosagem exata ao peso atual.
 
 ---",,ℹ️,,10,2026-09-29 13:03:58,,
-INFO_0237,task,TASK_0372,"Dados:
-- Quantidade de tratativas (interações)",,ℹ️,,10,2026-09-29 13:38:47,,
-INFO_0238,task,TASK_0372,"Fluxo atual:
-Solicito para o Rafa Machado as interações
-Ele me manda por email
-Confiro se está dentro das 1000 interações mensais (320 USD), caso ultrapasse adiciono no cálculo (+0,32 USD)
-Adiciono na base de cobrança para faturamento via PO",,ℹ️,,20,2026-09-29 13:40:45,,
-INFO_0239,task,TASK_0374,Lê terá uma reunião com o Rafael do dia 06.10,,ℹ️,,10,2026-09-29 13:54:47,,
 INFO_0240,task,TASK_0339,Celmar Guimarães,,ℹ️,person contacted,180,2026-09-29 23:12:49,,
 INFO_0241,task,TASK_0339,Vanessa Almada,,ℹ️,,190,2026-09-30 12:22:29,,
 INFO_0242,task,TASK_0339,"Júlio César, o professor que participou da sua banca.",,ℹ️,,200,2026-09-30 12:22:38,,
 INFO_0243,task,TASK_0214,Vamos deixar a Fran hardcoded. We can wait our transition to GS to think about it again,,ℹ️,,4040,2026-09-30 13:15:36,,
 INFO_0244,task,TASK_0364,"Location (Ex: CPS, JVL...) Área desenvolvedora Área destino Owner do projeto Desenvolvedor do projeto Título do projeto Descrição do projeto Status do projeto (Planejamento,Desenvolvimento ou produção) Data início do Go-Live Data fim/desprovisionamento Horas/minutos automatizados por mês",,ℹ️,,10,2026-09-30 16:00:04,,
+INFO_0245,task,TASK_0214,The other tool that the BPM system could get connected is called QMAI,,ℹ️,,4050,2026-10-01 09:14:02,,
+INFO_0246,task,TASK_0214,Leticia asked to deprioritize sending many requests to see you are at the same time,,ℹ️,,4060,2026-10-01 09:14:36,,
+INFO_0247,task,TASK_0214,COR people are the same for all CTG partners,,ℹ️,,4070,2026-10-01 09:18:34,,
