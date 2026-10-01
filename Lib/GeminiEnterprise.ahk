@@ -702,11 +702,29 @@ GeminiEnterprise_ClickToolMenuItem(nameNeedles, uia := 0) {
     return GeminiEnterprise_ClickUiaElement(item)
 }
 
+GeminiEnterprise_ClickSavedTool(uia, elementId) {
+    if (!IsObject(uia))
+        return false
+    saved := 0
+    try saved := UiElements_TrySaved(uia, "GeminiEnterprise", elementId)
+    if (!saved)
+        return false
+    return GeminiEnterprise_ClickUiaElement(saved)
+}
+
 GeminiEnterprise_ClickCreateImages(uia := 0) {
+    if (!uia)
+        uia := GeminiEnterprise_GetActiveUia()
+    if (GeminiEnterprise_ClickSavedTool(uia, "CreateImages"))
+        return true
     return GeminiEnterprise_ClickToolMenuItem(["Create images", "Create image", "Criar imagens"], uia)
 }
 
 GeminiEnterprise_ClickDeepResearch(uia := 0) {
+    if (!uia)
+        uia := GeminiEnterprise_GetActiveUia()
+    if (GeminiEnterprise_ClickSavedTool(uia, "DeepResearch"))
+        return true
     return GeminiEnterprise_ClickToolMenuItem(["Deep Research", "Deep research", "Pesquisa aprofundada"], uia)
 }
 

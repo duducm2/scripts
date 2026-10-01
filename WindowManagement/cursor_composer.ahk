@@ -75,7 +75,10 @@ FocusCursorAITextField(targetHwnd := 0) {
                 root := UIA.ElementFromHandle(targetHwnd)
                 if (root) {
                     ; Detect AI pane state: "Toggle AI Pane (Ctrl+Alt+B)" CheckBox has "checked" in ClassName when open
-                    toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
+                    toggleEl := 0
+                    try toggleEl := UiElements_TrySaved(root, "Cursor.exe", "ToggleAiPane")
+                    if !toggleEl
+                        toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
                     paneOpen := toggleEl && InStr(toggleEl.ClassName, "checked")
                     paneWasOpen := paneOpen
 

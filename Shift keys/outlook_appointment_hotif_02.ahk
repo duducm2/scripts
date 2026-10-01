@@ -246,6 +246,8 @@ Appt_IsSchedulerView() {
 }
 
 Appt_ClickSchedulerSuggestionNav(isNext) {
+    if Appt_ClickSaved(isNext ? "NextSuggestion" : "PrevSuggestion")
+        return true
     root := Appt_GetRootActive()
     if !root
         return false
@@ -266,6 +268,8 @@ Appt_ClickSchedulerSuggestionNav(isNext) {
 
 Appt_ClickDayNav(isNext) {
     ; Best-effort: look for previous/next day arrow buttons in the schedule header.
+    if Appt_ClickSaved(isNext ? "NextDay" : "PrevDay")
+        return true
     root := Appt_GetRootActive()
     if !root
         return false
@@ -313,8 +317,9 @@ Appt_SchedulerClickOptions() {
 }
 
 Appt_SchedulerClickAddAttendee(isOptional) {
+    elementId := isOptional ? "AddOptional" : "AddRequired"
     name := isOptional ? "Add optional attendee" : "Add required attendee"
-    return Appt_ClickAny([{ Name: name, ControlType: "Button" }, { Name: name, matchmode: "Substring",
+    return Appt_ClickSaved(elementId) || Appt_ClickAny([{ Name: name, ControlType: "Button" }, { Name: name, matchmode: "Substring",
         ControlType: "Button" }])
 }
 
@@ -334,8 +339,9 @@ Appt_SchedulerFocusDateTimeControl(kind) {
             Type: 50002 }, { Name: "All day",
                 ControlType: "Button" }])
     if (kind = "time_zone")
-        return Appt_ToggleOrClickAny([{ Name: "Show event time zones", matchmode: "Substring", ControlType: "Button" }, { Name: "Time zone",
-            matchmode: "Substring", ControlType: "Button" }])
+        return Appt_ClickSaved("TimeZone") || Appt_ToggleOrClickAny([{ Name: "Show event time zones", matchmode: "Substring",
+            ControlType: "Button" }, { Name: "Time zone",
+                matchmode: "Substring", ControlType: "Button" }])
     return false
 }
 
@@ -393,7 +399,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Today", (*) => (
-        Appt_ClickAny([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring",
+        Appt_ClickSaved("Today")
+        || Appt_ClickAny([{ Name: "Today", ControlType: "Button" }, { Name: "Today", matchmode: "Substring",
             ControlType: "Button" }])
         || (ShowCenteredOverlay_Utils("❌ Appointment: Today not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
@@ -404,7 +411,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Date", (*) => (
-        Appt_ClickAny([{ Name: "Thu", matchmode: "Substring", ControlType: "Button" }, { Name: "Apr", matchmode: "Substring",
+        Appt_ClickSaved("DateHeader")
+        || Appt_ClickAny([{ Name: "Thu", matchmode: "Substring", ControlType: "Button" }, { Name: "Apr", matchmode: "Substring",
             ControlType: "Button" }, { Name: "Week", matchmode: "Substring", ControlType: "Button" }
         ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Date header not found", 1400, BANNER_ACCENT_ERROR),
         false)
@@ -505,12 +513,14 @@ Appt_ToggleOrClickAny(criteriaList) {
 +C:: {
     Appt_RunWithLoading("Recurring", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring",
+            ? (Appt_ClickSaved("Recurring") || Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring",
                 matchmode: "Substring", ControlType: "Button" }]) || (ShowCenteredOverlay_Utils(
                     "❌ Appointment: Recurring not found", 1400, BANNER_ACCENT_ERROR), false))
             : (false)
     ))
     if IsNewOutlookActive()
+        return
+    if Appt_ClickSaved("Recurring")
         return
     try {
         win := WinExist("A")
@@ -533,7 +543,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Teams meeting", (*) => (
-        Appt_ClickInCommandBar([{ Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" }, { Name: "Teams",
+        Appt_ClickSaved("Teams")
+        || Appt_ClickInCommandBar([{ Name: "Teams meeting", matchmode: "Substring", ControlType: "Button" }, { Name: "Teams",
             matchmode: "Substring", ControlType: "Button" }]) || Appt_ClickAny([{ Name: "Teams meeting",
                 matchmode: "Substring",
                 ControlType: "Button" }, { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
@@ -548,7 +559,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Series", (*) => (
-        Appt_ClickInCommandBar([{ Name: "Series", ControlType: "Button" }, { Name: "Series", ControlType: "TabItem" }]) ||
+        Appt_ClickSaved("Series")
+        || Appt_ClickInCommandBar([{ Name: "Series", ControlType: "Button" }, { Name: "Series", ControlType: "TabItem" }]) ||
         Appt_ClickAny([{ Name: "Series", ControlType: "Button" }, { Name: "Series", ControlType: "TabItem" }]) ||
         Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring",
             matchmode: "Substring",
@@ -572,10 +584,16 @@ Appt_ToggleOrClickAny(criteriaList) {
                         : (choice = "3") ? "Tentative"
                             : (choice = "4") ? "Busy"
                                 : "Out of office"),
-                Appt_OpenMenuAndPick([{ Name: "Free", ControlType: "Button" }, { Name: "Busy", ControlType: "Button" }, { Name: "Tentative",
-                    ControlType: "Button" }, { Name: "Working elsewhere", ControlType: "Button" }, { Name: "Out of office",
-                        ControlType: "Button" }, { Name: "Free", matchmode: "Substring", ControlType: "Button" }, { Name: "Busy",
-                            matchmode: "Substring", ControlType: "Button" }
+                (savedId := (choice = "1") ? "StatusFree"
+                    : (choice = "2") ? "StatusElsewhere"
+                        : (choice = "3") ? "StatusTentative"
+                            : (choice = "4") ? "StatusBusy"
+                                : "StatusOoo"),
+                Appt_ClickSaved(savedId) || Appt_OpenMenuAndPick([{ Name: "Free", ControlType: "Button" }, { Name: "Busy",
+                    ControlType: "Button" }, { Name: "Tentative",
+                        ControlType: "Button" }, { Name: "Working elsewhere", ControlType: "Button" }, { Name: "Out of office",
+                            ControlType: "Button" }, { Name: "Free", matchmode: "Substring", ControlType: "Button" }, { Name: "Busy",
+                                matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
             : false
@@ -606,8 +624,16 @@ RemQ_Run() {
                 : (choice = "4") ? "12 hours before"
                     : (choice = "5") ? "1 day before"
                         : "1 week before"
+    savedId := (choice = "1") ? "RemNone"
+        : (choice = "2") ? "Rem15m"
+            : (choice = "3") ? "Rem1h"
+                : (choice = "4") ? "Rem12h"
+                    : (choice = "5") ? "Rem1d"
+                        : "Rem1w"
 
     RemQ_VisualizeSelection("Reminder", target)
+    if Appt_ClickSaved(savedId)
+        return true
     return Appt_OpenMenuAndPick([{ Name: "Don't remind me", ControlType: "Button" }, { Name: "15 minutes before",
         ControlType: "Button" }, { Name: "1 week before", ControlType: "Button" }, { Name: "15 minutes",
             matchmode: "Substring",
@@ -640,7 +666,10 @@ RemQ_VisualizeSelection(label, target) {
                 (target := (choice = "1") ? "Aniversário"
                     : (choice = "2") ? "Importante"
                         : "Pessoal"),
-                Appt_OpenMenuAndPick([{ Name: "Aniversário", ControlType: "Button" }, { Name: "Importante",
+                (savedId := (choice = "1") ? "CatBirthday"
+                    : (choice = "2") ? "CatImportant"
+                        : "CatPersonal"),
+                Appt_ClickSaved(savedId) || Appt_OpenMenuAndPick([{ Name: "Aniversário", ControlType: "Button" }, { Name: "Importante",
                     ControlType: "Button" }, { Name: "Pessoal",
                         ControlType: "Button" }, { Name: "Category", matchmode: "Substring", ControlType: "Button" }, { Name: "Categories",
                             matchmode: "Substring", ControlType: "Button" }
@@ -654,7 +683,7 @@ RemQ_VisualizeSelection(label, target) {
 +1:: {
     Appt_RunWithLoading("Time suggestion 1", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils(
+            ? (Appt_ClickSaved("Suggestion1") || Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils(
                 "❌ Appointment: Suggestion 1 not found", 1400, BANNER_ACCENT_ERROR), false))
             : (false)
     ))
@@ -663,7 +692,7 @@ RemQ_VisualizeSelection(label, target) {
 +2:: {
     Appt_RunWithLoading("Time suggestion 2", (*) => (
         IsNewOutlookActive()
-            ? (Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils(
+            ? (Appt_ClickSaved("Suggestion2") || Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils(
                 "❌ Appointment: Suggestion 2 not found", 1400, BANNER_ACCENT_ERROR), false))
             : (false)
     ))

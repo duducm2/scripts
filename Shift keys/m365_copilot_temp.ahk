@@ -90,6 +90,10 @@ M365Copilot_FindFirstInRoot(root, criteriaList) {
 M365Copilot_FindStopGenerating(root) {
     if (!root)
         return ""
+    saved := 0
+    try saved := UiElements_TrySaved(root, "M365 Copilot", "Stop")
+    if saved
+        return saved
     el := M365Copilot_FindFirstInRoot(root, [{ Name: "Stop generating", ControlType: "Button" }, { Name: "Stop generating",
         Type: 50000 }])
     if (el)
@@ -102,6 +106,10 @@ M365Copilot_FindStopGenerating(root) {
 }
 
 M365Copilot_FindComposer(root) {
+    saved := 0
+    try saved := UiElements_TrySaved(root, "M365 Copilot", "Composer")
+    if saved
+        return saved
     return M365Copilot_FindFirstInRoot(root, [{ AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" }, { AutomationId: "m365-chat-editor-target-element" }, { Name: "Message Copilot",
         ControlType: "Edit" }])
 }
@@ -127,8 +135,11 @@ M365Copilot_TrySubmitChat(root) {
     stopBtn := M365Copilot_FindStopGenerating(root)
     if (stopBtn)
         return false
-    sendBtn := M365Copilot_FindFirstInRoot(root, [{ Name: "Send ", matchmode: "Substring", ControlType: "Button" }, { ClassName: "fai-SendButton",
-        matchmode: "Substring", ControlType: "Button" }])
+    sendBtn := 0
+    try sendBtn := UiElements_TrySaved(root, "M365 Copilot", "Send")
+    if !sendBtn
+        sendBtn := M365Copilot_FindFirstInRoot(root, [{ Name: "Send ", matchmode: "Substring", ControlType: "Button" }, { ClassName: "fai-SendButton",
+            matchmode: "Substring", ControlType: "Button" }])
     if (sendBtn) {
         try {
             if (sendBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {

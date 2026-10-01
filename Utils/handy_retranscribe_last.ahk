@@ -8,10 +8,18 @@ global HANDY_RETRANSCRIBE_MAX_WAIT_MS := 90000
 global HANDY_RETRANSCRIBE_POLL_MS := 250
 
 HandyRetranscribe_FindFirstRetranscribe(el) {
+    saved := 0
+    try saved := UiElements_TrySaved(el, "handy.exe", "Retranscribe")
+    if saved
+        return saved
     return HandyReplay_FindNamed(el, 50000, ["Re-transcribe", "Retranscrever"])
 }
 
 HandyRetranscribe_FindFirstCopy(el) {
+    saved := 0
+    try saved := UiElements_TrySaved(el, "handy.exe", "CopyTranscription")
+    if saved
+        return saved
     return HandyReplay_FindNamed(el, 50000, [
         "Copy transcription to clipboard",
         "Copiar transcrição para a área de transferência"

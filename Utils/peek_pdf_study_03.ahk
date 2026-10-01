@@ -499,9 +499,11 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
         pollIter := 0
         loop 80 {
             pollIter := A_Index
-            try
-                pageViewBtn := el.FindFirst({ Type: 50000, Name: "Page view", AutomationId: "layouts" })
-            catch
+            try {
+                pageViewBtn := UiElements_TrySaved(el, "Peek", "PageView")
+                if !pageViewBtn
+                    pageViewBtn := el.FindFirst({ Type: 50000, Name: "Page view", AutomationId: "layouts" })
+            } catch
                 pageViewBtn := ""
             if (pageViewBtn)
                 break
@@ -558,7 +560,10 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
             ; Search in active window region (menu is visible on screen but may not be exposed as Buttons).
             try {
                 elActive := UIA.ElementFromHandle(fgHwnd ? fgHwnd : hwnd)
-                if (IsObject(menuRect)) {
+                try twoPageEl := UiElements_TrySaved(el, "Peek", "TwoPage")
+                if !twoPageEl
+                    try twoPageEl := UiElements_TrySaved(elActive, "Peek", "TwoPage")
+                if (IsObject(menuRect) && !twoPageEl) {
                     for cand in elActive.FindAll({ IsOffscreen: 0 }) {
                         try {
                             br := cand.BoundingRectangle

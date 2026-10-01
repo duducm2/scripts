@@ -161,6 +161,12 @@ Gemini_FindMoreToolsButton(uia) {
     if !IsObject(uia)
         return 0
     try {
+        saved := UiElements_TrySaved(uia, "Gemini", "MoreTools")
+        if (saved)
+            return saved
+    } catch {
+    }
+    try {
         for name in ["More tools", "Mais ferramentas"] {
             btn := uia.FindFirst({ Name: name, Type: 50000 })
             if btn
@@ -296,11 +302,16 @@ $+i:: {
             return
         Sleep 150
         subs := ["Create image", "Criar imagem"]
-        cb := Gemini_FindToolboxCheckBox(uia, subs)
+        cb := 0
+        try cb := UiElements_TrySaved(uia, "Gemini", "CreateImage")
+        if !cb
+            cb := Gemini_FindToolboxCheckBox(uia, subs)
         if !cb {
             if !Gemini_EnsureToolsMenuOpen(&uia)
                 return
-            cb := Gemini_FindToolboxCheckBox(uia, subs)
+            try cb := UiElements_TrySaved(uia, "Gemini", "CreateImage")
+            if !cb
+                cb := Gemini_FindToolboxCheckBox(uia, subs)
         }
         if (cb)
             Gemini_ActivateToolboxItem(cb)
@@ -316,11 +327,16 @@ $+e:: {
             return
         Sleep 150
         subs := ["Deep research", "Pesquisa aprofundada", "Investigação profunda", "Pesquisa profunda"]
-        cb := Gemini_FindToolboxCheckBox(uia, subs)
+        cb := 0
+        try cb := UiElements_TrySaved(uia, "Gemini", "DeepResearch")
+        if !cb
+            cb := Gemini_FindToolboxCheckBox(uia, subs)
         if !cb {
             if !Gemini_EnsureToolsMenuOpen(&uia)
                 return
-            cb := Gemini_FindToolboxCheckBox(uia, subs)
+            try cb := UiElements_TrySaved(uia, "Gemini", "DeepResearch")
+            if !cb
+                cb := Gemini_FindToolboxCheckBox(uia, subs)
         }
         if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs)
             cb := Gemini_FindToolboxCheckBox(uia, subs)
@@ -409,6 +425,14 @@ FocusGeminiPromptField() {
         uia := UIA_Browser()
         Sleep 300
 
+        savedCopy := UiElements_TrySaved(uia, "Gemini", "Copy")
+        if (savedCopy) {
+            try {
+                savedCopy.Click()
+                return
+            }
+        }
+
         ; Find all Copy buttons
         allCopyButtons := []
 
@@ -478,69 +502,84 @@ FocusGeminiPromptField() {
         uia := UIA_Browser()
         Sleep 300
 
-        ; Step 1: Find all "Show more options" buttons
-        allMoreOptionsButtons := []
-
-        ; Primary strategy: Find all buttons with Name "Show more options"
-        allButtons := uia.FindAll({ Type: 50000 })
-        for button in allButtons {
-            if (button.Name = "Show more options" || InStr(button.Name, "Show more options", false) = 1) {
-                ; Additional check: ensure it has the more-menu-button className pattern
-                if (InStr(button.ClassName, "more-menu-button") || InStr(button.ClassName, "mdc-button")) {
-                    allMoreOptionsButtons.Push(button)
-                }
+        savedMore := 0
+        try savedMore := UiElements_TrySaved(uia, "Gemini", "MoreOptions")
+        clickedMore := false
+        if savedMore {
+            try {
+                savedMore.Click()
+                clickedMore := true
+            } catch {
             }
         }
+        if clickedMore {
+            Sleep 400
+        } else {
 
-        ; Fallback: Try by Type "Button" if the above didn't find enough
-        if (allMoreOptionsButtons.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
+            ; Step 1: Find all "Show more options" buttons
+            allMoreOptionsButtons := []
+
+            ; Primary strategy: Find all buttons with Name "Show more options"
+            allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
                 if (button.Name = "Show more options" || InStr(button.Name, "Show more options", false) = 1) {
-                    if (InStr(button.ClassName, "more-menu-button")) {
+                    ; Additional check: ensure it has the more-menu-button className pattern
+                    if (InStr(button.ClassName, "more-menu-button") || InStr(button.ClassName, "mdc-button")) {
                         allMoreOptionsButtons.Push(button)
                     }
                 }
             }
-        }
 
-        if (allMoreOptionsButtons.Length = 0) {
-            ; No "Show more options" buttons found
-            return
-        }
-
-        ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
-        lastMoreOptionsButton := 0
-        highestY := -1
-
-        for moreOptionsButton in allMoreOptionsButtons {
-            try {
-                btnPos := moreOptionsButton.Location
-                btnBottomY := btnPos.y + btnPos.h
-
-                ; The last button will be the one with the highest bottom Y coordinate
-                if (btnBottomY > highestY) {
-                    highestY := btnBottomY
-                    lastMoreOptionsButton := moreOptionsButton
+            ; Fallback: Try by Type "Button" if the above didn't find enough
+            if (allMoreOptionsButtons.Length = 0) {
+                allButtons := uia.FindAll({ Type: "Button" })
+                for button in allButtons {
+                    if (button.Name = "Show more options" || InStr(button.Name, "Show more options", false) = 1) {
+                        if (InStr(button.ClassName, "more-menu-button")) {
+                            allMoreOptionsButtons.Push(button)
+                        }
+                    }
                 }
-            } catch {
-                ; If getting location fails, skip this button
             }
-        }
 
-        ; If position-based approach didn't work, just use the last one in the array
-        if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0) {
-            lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
-        }
+            if (allMoreOptionsButtons.Length = 0) {
+                ; No "Show more options" buttons found
+                return
+            }
 
-        if (!lastMoreOptionsButton) {
-            ; Could not find last "Show more options" button
-            return
-        }
+            ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
+            lastMoreOptionsButton := 0
+            highestY := -1
 
-        ; Step 2: Click the last "Show more options" button
-        lastMoreOptionsButton.Click()
-        Sleep 400 ; Wait for menu to appear
+            for moreOptionsButton in allMoreOptionsButtons {
+                try {
+                    btnPos := moreOptionsButton.Location
+                    btnBottomY := btnPos.y + btnPos.h
+
+                    ; The last button will be the one with the highest bottom Y coordinate
+                    if (btnBottomY > highestY) {
+                        highestY := btnBottomY
+                        lastMoreOptionsButton := moreOptionsButton
+                    }
+                } catch {
+                    ; If getting location fails, skip this button
+                }
+            }
+
+            ; If position-based approach didn't work, just use the last one in the array
+            if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0) {
+                lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+            }
+
+            if (!lastMoreOptionsButton) {
+                ; Could not find last "Show more options" button
+                return
+            }
+
+            ; Step 2: Click the last "Show more options" button
+            lastMoreOptionsButton.Click()
+            Sleep 400 ; Wait for menu to appear
+        }
 
         ; Step 3: Find and click the "Text to speech" menu item
         textToSpeechMenuItem := UiElements_TrySaved(uia, "Gemini", "TextToSpeech")
@@ -798,6 +837,27 @@ Enter:: {
 ; ---------------------------------------------------------------------------
 ; Monitor "Stop response" button and play chime when it disappears
 ; ---------------------------------------------------------------------------
+Gemini_FindStopButton(uia) {
+    btn := 0
+    try btn := UiElements_TrySaved(uia, "Gemini", "Stop")
+    if btn
+        return btn
+    try btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
+    catch
+        btn := 0
+    if !btn {
+        try btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
+        catch
+            btn := 0
+    }
+    if !btn {
+        try btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
+        catch
+            btn := 0
+    }
+    return btn
+}
+
 WaitForStopResponseButton_Gemini(timeout := 300000) {
     ; Store Gemini window handle
     geminiHwnd := WinExist("A")
@@ -819,32 +879,7 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
     ; Wait for the "Stop response" button to appear
     deadline := (timeout > 0) ? (start + timeout) : 0
     while (timeout <= 0 || (A_TickCount < deadline)) {
-        btn := ""
-
-        ; Try to find the "Stop response" button
-        try {
-            btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
-        } catch {
-            btn := ""
-        }
-
-        if !btn {
-            ; Fallback: Try by Type "Button" and Name "Stop response"
-            try {
-                btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
-            } catch {
-                btn := ""
-            }
-        }
-
-        if !btn {
-            ; Fallback: Try substring match for localization variations
-            try {
-                btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
-            } catch {
-                btn := ""
-            }
-        }
+        btn := Gemini_FindStopButton(uia)
 
         if btn {
             buttonFound := true
@@ -853,30 +888,7 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
                 ; Monitor the button while it exists
                 while btn && (timeout <= 0 || (A_TickCount < deadline)) {
                     Sleep 250
-                    btn := ""
-
-                    ; Check if button still exists
-                    try {
-                        btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
-                    } catch {
-                        btn := ""
-                    }
-
-                    if !btn {
-                        try {
-                            btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
-                        } catch {
-                            btn := ""
-                        }
-                    }
-
-                    if !btn {
-                        try {
-                            btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
-                        } catch {
-                            btn := ""
-                        }
-                    }
+                    btn := Gemini_FindStopButton(uia)
                 }
 
                 ; Button has disappeared - add confirmation layer
@@ -890,28 +902,7 @@ WaitForStopResponseButton_Gemini(timeout := 300000) {
                     deadline)) {
                     Sleep 300
 
-                    ; Check if button reappeared
-                    try {
-                        btn := uia.FindFirst({ Type: "50000", Name: "Stop response" })
-                    } catch {
-                        btn := ""
-                    }
-
-                    if !btn {
-                        try {
-                            btn := uia.FindFirst({ Type: "Button", Name: "Stop response" })
-                        } catch {
-                            btn := ""
-                        }
-                    }
-
-                    if !btn {
-                        try {
-                            btn := uia.FindFirst({ Name: "Stop response", matchmode: "Substring" })
-                        } catch {
-                            btn := ""
-                        }
-                    }
+                    btn := Gemini_FindStopButton(uia)
 
                     if btn {
                         ; Button reappeared - break out of confirmation loop and continue monitoring

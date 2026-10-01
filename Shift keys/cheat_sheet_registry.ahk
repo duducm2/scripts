@@ -952,6 +952,10 @@ cheatSheets["Power BI"] := "
 ; --- UIA Tree Inspector -------------------------------------------------
 cheatSheets["UIATreeInspector"] :=
 "(UIA Tree Inspector (Shift))`r`n🔄 [R][R]efresh List`r`n🔍 [F]ocus [F]ilter field`r`n🔍 [S]elect [S]earch tree item`r`n📋 [C]Copy full UI tree"
+cheatSheets["handy.exe"] :=
+"(Handy)`r`nGeneral`r`nLanguage`r`nModel`r`nAdvanced`r`nAdd a word`r`nHistory`r`nPlay`r`nRe-transcribe`r`nCopy transcription"
+cheatSheets["M365 Copilot"] := "(Microsoft 365 Copilot)`r`nStop generating`r`nMessage Copilot`r`nSend"
+cheatSheets["Peek"] := "(Peek)`r`nPage view`r`nTwo page"
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (

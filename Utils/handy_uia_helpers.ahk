@@ -542,7 +542,10 @@ Handy_EnsureGeneralTab(hwnd) {
     if (Handy_GeneralTabVisible(el))
         return true
     try {
-        gen := el.FindFirst({ Type: 50020, Name: "General" })
+        gen := 0
+        try gen := UiElements_TrySaved(el, "handy.exe", "General")
+        if !gen
+            gen := el.FindFirst({ Type: 50020, Name: "General" })
         if gen {
             try gen.Click()
             catch {
@@ -561,6 +564,10 @@ Handy_EnsureGeneralTab(hwnd) {
 Handy_FindHandyLanguageButton(el) {
     if !el
         return 0
+    saved := 0
+    try saved := UiElements_TrySaved(el, "handy.exe", "Language")
+    if saved
+        return saved
     try {
         buttons := el.FindAll({ Type: 50000 })
         for btn in buttons {
@@ -857,6 +864,10 @@ Handy_ClickAiModel(hwnd, modelName) {
 Handy_FindActiveAiModelButton(el) {
     if !el
         return 0
+    saved := 0
+    try saved := UiElements_TrySaved(el, "handy.exe", "Model")
+    if saved
+        return saved
     try {
         return el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
     } catch {

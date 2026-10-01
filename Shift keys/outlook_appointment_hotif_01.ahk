@@ -338,6 +338,8 @@ Appt_PopoverSelectTimeSuggestion(idx) {
 }
 
 Appt_FocusBodyField_NewOutlook() {
+    if Appt_ClickSaved("Body")
+        return true
     root := Appt_GetRootActive()
     if !root
         return false

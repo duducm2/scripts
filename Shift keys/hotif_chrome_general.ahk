@@ -71,21 +71,23 @@ RenameChatGPTWindowToChatGPT() {
         ; Step 0: Ensure sidebar is open (required for "Seus chats" to be visible)
         ; Check if sidebar is open by looking for close sidebar button (Portuguese or English)
         sidebarCloseButton := 0
+        try sidebarCloseButton := UiElements_TrySaved(root, "ChatGPT", "CloseSidebar")
         sidebarCloseNames := ["Fechar barra lateral", "Close sidebar"]
-        for name in sidebarCloseNames {
-            try {
-                sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
-                if (sidebarCloseButton)
-                    break
-            } catch {
+        if !sidebarCloseButton
+            for name in sidebarCloseNames {
                 try {
-                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                    sidebarCloseButton := root.FindElement({ Type: 50000, Name: name, cs: false })
                     if (sidebarCloseButton)
                         break
                 } catch {
+                    try {
+                        sidebarCloseButton := root.FindElement({ Type: 50000, Name: name })
+                        if (sidebarCloseButton)
+                            break
+                    } catch {
+                    }
                 }
             }
-        }
 
         ; If sidebar is not open (button not found), open it using keyboard shortcut
         if (!sidebarCloseButton) {
@@ -127,21 +129,23 @@ RenameChatGPTWindowToChatGPT() {
 
         ; Step 1: Locate the chat button (Type: 50000, Name: "Seus chats" or "Your chats")
         chatButton := 0
+        try chatButton := UiElements_TrySaved(root, "ChatGPT", "YourChats")
         chatButtonNames := ["Seus chats", "Your chats", "Chats"]
-        for name in chatButtonNames {
-            try {
-                chatButton := root.FindElement({ Type: 50000, Name: name, cs: false })
-                if (chatButton)
-                    break
-            } catch {
+        if !chatButton
+            for name in chatButtonNames {
                 try {
-                    chatButton := root.FindElement({ Type: 50000, Name: name })
+                    chatButton := root.FindElement({ Type: 50000, Name: name, cs: false })
                     if (chatButton)
                         break
                 } catch {
+                    try {
+                        chatButton := root.FindElement({ Type: 50000, Name: name })
+                        if (chatButton)
+                            break
+                    } catch {
+                    }
                 }
             }
-        }
 
         if !chatButton {
             HideSmallLoadingIndicator_ChatGPT()

@@ -74,6 +74,12 @@ CheatSheet_ResolveActiveKey() {
     if (exe = "AutoHotkey64.exe" && InStr(title, "UIATreeInspector"))
         return "UIATreeInspector"
 
+    if (exe = "WebViewHost.exe" && InStr(title, "Microsoft 365 Copilot"))
+        return cheatSheets.Has("M365 Copilot") ? "M365 Copilot" : ""
+
+    if (exe = "PowerToys.Peek.UI.exe" || exe = "QuickLook.exe")
+        return cheatSheets.Has("Peek") ? "Peek" : ""
+
     ; Microsoft Teams — differentiate meeting vs chat via helper predicates
     if IsTeamsMeetingActive()
         return cheatSheets.Has("TeamsMeeting") ? "TeamsMeeting" : ""

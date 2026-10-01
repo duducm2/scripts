@@ -160,30 +160,33 @@ AddWordToHandy() {
         ; Locate and click "Advanced" - find Group element directly by Type and ClassName pattern
         ; The clickable target is the Group (50026) with ClassName containing "cursor-pointer" and "flex gap-2 items-center"
         advancedBtn := ""
-        try {
-            allGroups := el.FindAll({ Type: 50026 })
-            if allGroups {
-                for group in allGroups {
-                    try {
-                        groupClassName := group.ClassName
-                        ; Look for Group with cursor-pointer and flex gap-2 items-center (Advanced button pattern)
-                        if (InStr(groupClassName, "cursor-pointer") && InStr(groupClassName, "flex gap-2 items-center")) {
-                            ; Verify it contains "Advanced" text by checking children
-                            try {
-                                advancedText := group.FindFirst({ Type: 50020, Name: "Advanced" })
-                                if advancedText {
-                                    advancedBtn := group
-                                    break
+        try advancedBtn := UiElements_TrySaved(el, "handy.exe", "Advanced")
+        if !advancedBtn
+            try {
+                allGroups := el.FindAll({ Type: 50026 })
+                if allGroups {
+                    for group in allGroups {
+                        try {
+                            groupClassName := group.ClassName
+                            ; Look for Group with cursor-pointer and flex gap-2 items-center (Advanced button pattern)
+                            if (InStr(groupClassName, "cursor-pointer") && InStr(groupClassName,
+                                "flex gap-2 items-center")) {
+                                ; Verify it contains "Advanced" text by checking children
+                                try {
+                                    advancedText := group.FindFirst({ Type: 50020, Name: "Advanced" })
+                                    if advancedText {
+                                        advancedBtn := group
+                                        break
+                                    }
+                                } catch {
                                 }
-                            } catch {
                             }
+                        } catch {
                         }
-                    } catch {
                     }
                 }
+            } catch {
             }
-        } catch {
-        }
 
         ; Fallback: Find by Name "Advanced" and verify parent has correct ClassName
         if !advancedBtn {
@@ -214,7 +217,10 @@ AddWordToHandy() {
         Sleep 200
 
         ; Locate and focus "Add a word" text field
-        addWordEdit := el.FindFirst({ Type: 50004, Name: "Add a word" })
+        addWordEdit := 0
+        try addWordEdit := UiElements_TrySaved(el, "handy.exe", "AddWord")
+        if !addWordEdit
+            addWordEdit := el.FindFirst({ Type: 50004, Name: "Add a word" })
         if addWordEdit {
             addWordEdit.SetFocus()
         }

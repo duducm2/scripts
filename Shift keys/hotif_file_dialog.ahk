@@ -994,6 +994,10 @@ FileDialog_CloseQueriesPaneViaUia() {
                 menuRoot := desktop
         } catch {
         }
+        closeItem := 0
+        try closeItem := UiElements_TrySaved(menuRoot, "EXCEL.EXE", "QueriesClose")
+        if (closeItem && FileDialog_InvokeButton(closeItem))
+            return true
         for name in ["Close", "Fechar"] {
             closeItem := 0
             try closeItem := menuRoot.FindFirst({ Type: "MenuItem", Name: name })

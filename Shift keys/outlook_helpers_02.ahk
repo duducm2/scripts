@@ -614,6 +614,8 @@ OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
             }
         }
         Sleep 120
+        if (menuItemName = "Tentative" && OutlookMeeting_TryClickSaved(root, "Tentative"))
+            return true
         el := ""
         try el := root.FindFirst({ Name: menuItemName, ControlType: "MenuItem" })
         if !el
@@ -662,7 +664,10 @@ OutlookMeeting_ClickMoreOptionsSubmenu(parentItemName, childItemName) {
 
         ; Parent item (e.g. "Respond without email") carries a submenu (chevron).
         parent := ""
-        try parent := root.FindFirst({ Name: parentItemName, ControlType: "MenuItem" })
+        if (parentItemName = "Respond without email")
+            try parent := UiElements_TrySaved(root, OutlookMeeting_UiSection(), "RespondWithoutEmail")
+        if !parent
+            try parent := root.FindFirst({ Name: parentItemName, ControlType: "MenuItem" })
         if !parent
             try parent := UIA.ElementFromHandle(WinExist("A")).FindFirst({ Name: parentItemName, ControlType: "MenuItem" })
         if !parent
@@ -686,7 +691,10 @@ OutlookMeeting_ClickMoreOptionsSubmenu(parentItemName, childItemName) {
 
         ; Child item (e.g. "Decline silently") in the opened submenu.
         child := ""
-        try child := UIA.ElementFromHandle(WinExist("A")).FindFirst({ Name: childItemName, ControlType: "MenuItem" })
+        if (childItemName = "Decline silently")
+            try child := UiElements_TrySaved(root, OutlookMeeting_UiSection(), "DeclineSilently")
+        if !child
+            try child := UIA.ElementFromHandle(WinExist("A")).FindFirst({ Name: childItemName, ControlType: "MenuItem" })
         if !child
             try child := root.FindFirst({ Name: childItemName, ControlType: "MenuItem" })
         if !child

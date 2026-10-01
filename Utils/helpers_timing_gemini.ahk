@@ -98,6 +98,12 @@ Gemini_PollPromptKeyboardFocus(promptField, timeoutMs := 0, pollMs := 0) {
 Gemini_FindUploadAnchorButton(uia) {
     anchorButton := 0
     try {
+        anchorButton := UiElements_TrySaved(uia, "Gemini", "Upload")
+        if (anchorButton)
+            return anchorButton
+    } catch {
+    }
+    try {
         anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu", ControlType: "Button" })
         if (!anchorButton)
             anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu", cs: false })
@@ -304,4 +310,3 @@ GetChromeActiveTabIndex(uia) {
     }
     return 0
 }
-

@@ -166,6 +166,10 @@ HandyReplay_FindSidebarRow(el, labelNames) {
 }
 
 HandyReplay_FindHistorySidebarRow(el) {
+    saved := 0
+    try saved := UiElements_TrySaved(el, "handy.exe", "History")
+    if saved
+        return saved
     return HandyReplay_FindSidebarRow(el, ["History", "Histórico"])
 }
 
@@ -426,6 +430,10 @@ HandyReplay_FindBestPlay(el, hwnd) {
 }
 
 HandyReplay_FindFirstPlay(el) {
+    saved := 0
+    try saved := UiElements_TrySaved(el, "handy.exe", "Play")
+    if saved
+        return saved
     return HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"])
 }
 

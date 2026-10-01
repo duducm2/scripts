@@ -876,6 +876,12 @@ Editor_GitFindPullControl(root) {
     if !IsObject(root)
         return 0
     try {
+        saved := UiElements_TrySaved(root, Editor_UiElementAppKey(), "Pull")
+        if saved
+            return saved
+    } catch {
+    }
+    try {
         for name in ["Pull", "Pull from...", "Git: Pull"] {
             try {
                 btn := root.FindFirst({ Name: name, Type: UIA.Type.Button })
@@ -898,6 +904,12 @@ Editor_GitFindPullControl(root) {
 Editor_GitFindSyncControl(root) {
     if !IsObject(root)
         return 0
+    try {
+        saved := UiElements_TrySaved(root, Editor_UiElementAppKey(), "SyncChanges")
+        if saved
+            return saved
+    } catch {
+    }
     try {
         ; Prefer SCM action button (title includes Sync Changes + optional ahead/behind).
         try {

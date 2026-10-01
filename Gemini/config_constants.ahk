@@ -289,6 +289,9 @@ GetGeminiMoreOptionsButtonsScoped(uia) {
 ; Find "Text to speech" menu item. Returns element or 0. Uses UIA_ControlType_MenuItem.
 FindGeminiTextToSpeechMenuItem(uia) {
     try {
+        saved := UiElements_TrySaved(uia, "Gemini", "TextToSpeech")
+        if (saved)
+            return saved
         mi := uia.FindFirst({ Name: "Text to speech", Type: UIA_ControlType_MenuItem })
         if (mi)
             return mi
@@ -319,6 +322,12 @@ FindGeminiTextToSpeechMenuItem(uia) {
 ; targeting. Search scoped to GetGeminiSearchRoot first; fallback to full uia if popup is outside pane.
 ; Excludes stale/zero-size bounds. Returns element or 0.
 GetLastGeminiListenMenuItem(uia) {
+    try {
+        saved := UiElements_TrySaved(uia, "Gemini", "Listen")
+        if (saved)
+            return saved
+    } catch {
+    }
     listenItems := []
     root := GetGeminiSearchRoot(uia)
     try

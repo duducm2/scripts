@@ -789,6 +789,13 @@ CopilotWeb_GetLowestButtonByNames(uia, names) {
 }
 
 CopilotWeb_FindPauseResumeButton(uia, which) {
+    elementId := (which = "Resume") ? "Resume" : "Pause"
+    try {
+        saved := UiElements_TrySaved(uia, "CopilotWeb", elementId)
+        if (saved)
+            return saved
+    } catch {
+    }
     names := (which = "Resume") ? COPILOT_TTS_RESUME_NAMES : COPILOT_TTS_PAUSE_NAMES
     return CopilotWeb_GetLowestButtonByNames(uia, names)
 }
@@ -1014,24 +1021,42 @@ class CopilotAsyncReadAloud {
                     this.CopyRetryCount := COPILOT_WEB_COPY_MAX_RETRIES
             }
 
-            readBtn := CopilotWeb_GetLowestButtonByNames(this.Uia, COPILOT_READ_ALOUD_NAMES)
+            readBtn := 0
+            try readBtn := UiElements_TrySaved(this.Uia, "CopilotWeb", "ReadAloud")
+            if (!readBtn)
+                readBtn := CopilotWeb_GetLowestButtonByNames(this.Uia, COPILOT_READ_ALOUD_NAMES)
             if (!readBtn) {
-                moreBtn := CopilotWeb_GetLowestButtonByNames(this.Uia, COPILOT_MORE_OPTIONS_NAMES)
+                moreBtn := 0
+                try moreBtn := UiElements_TrySaved(this.Uia, "CopilotWeb", "MoreOptions")
+                if (!moreBtn)
+                    moreBtn := CopilotWeb_GetLowestButtonByNames(this.Uia, COPILOT_MORE_OPTIONS_NAMES)
                 if (moreBtn) {
                     try moreBtn.Click()
                     Sleep 200
                     try this.Uia := UIA_Browser("ahk_id " this.CopilotHwnd)
-                    for n in COPILOT_READ_ALOUD_NAMES {
+                    item := 0
+                    try item := UiElements_TrySaved(this.Uia, "CopilotWeb", "ReadAloudMenu")
+                    clickedMenu := false
+                    if (item) {
                         try {
-                            item := this.Uia.FindFirst({ Name: n, Type: UIA_Copilot_ControlType_MenuItem })
-                            if (item) {
-                                item.Click()
-                                readBtn := item
-                                break
-                            }
+                            item.Click()
+                            readBtn := item
+                            clickedMenu := true
                         } catch {
                         }
                     }
+                    if (!clickedMenu)
+                        for n in COPILOT_READ_ALOUD_NAMES {
+                            try {
+                                item := this.Uia.FindFirst({ Name: n, Type: UIA_Copilot_ControlType_MenuItem })
+                                if (item) {
+                                    item.Click()
+                                    readBtn := item
+                                    break
+                                }
+                            } catch {
+                            }
+                        }
                 }
             } else {
                 try readBtn.Click()
@@ -2208,6 +2233,25 @@ CopilotWeb_ClickAddCapabilityViaKeyboard(nameNeedles, hwnd := 0) {
     return true
 }
 
+CopilotWeb_TrySavedCapability(root, nameNeedles) {
+    if (!IsObject(root) || !IsObject(nameNeedles) || nameNeedles.Length = 0)
+        return 0
+    elementId := ""
+    if (nameNeedles[1] = "Generate an image")
+        elementId := "GenerateImage"
+    else if (nameNeedles[1] = "Research a topic")
+        elementId := "Research"
+    if (elementId = "")
+        return 0
+    try {
+        saved := UiElements_TrySaved(root, "CopilotWeb", elementId)
+        if (saved)
+            return saved
+    } catch {
+    }
+    return 0
+}
+
 CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd) {
     if (!IsObject(addCap))
         return 0
@@ -2320,19 +2364,29 @@ CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
         if (!CopilotWeb_EnsureSourcesMenuOpen(&root))
             continue
         Sleep 80
-        addCap := CopilotWeb_FindCapabilityByNames(root, COPILOT_ADD_CAPABILITIES_NAMES)
+        addCap := 0
+        try addCap := UiElements_TrySaved(root, "CopilotWeb", "AddCapabilities")
+        if (!addCap)
+            addCap := CopilotWeb_FindCapabilityByNames(root, COPILOT_ADD_CAPABILITIES_NAMES)
         if (!addCap) {
             root := CopilotWeb_ReadRootFromHwnd(hwnd)
-            if (IsObject(root))
-                addCap := CopilotWeb_FindCapabilityByNames(root, COPILOT_ADD_CAPABILITIES_NAMES)
+            if (IsObject(root)) {
+                try addCap := UiElements_TrySaved(root, "CopilotWeb", "AddCapabilities")
+                if (!addCap)
+                    addCap := CopilotWeb_FindCapabilityByNames(root, COPILOT_ADD_CAPABILITIES_NAMES)
+            }
         }
         if (!addCap)
             continue
-        item := CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd)
-        if (!item)
-            continue
-        ; Keep Add capabilities hovered open — move and physical-click Generate an image.
-        if (!(CopilotWeb_ClickUiaElementMouse(item) || CopilotWeb_ClickUiaElement(item)))
+        item := CopilotWeb_TrySavedCapability(root, nameNeedles)
+        clickedItem := item && (CopilotWeb_ClickUiaElementMouse(item) || CopilotWeb_ClickUiaElement(item))
+        if (!clickedItem) {
+            item := CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd)
+            if (!item)
+                continue
+            clickedItem := CopilotWeb_ClickUiaElementMouse(item) || CopilotWeb_ClickUiaElement(item)
+        }
+        if (!clickedItem)
             continue
         if (CopilotWeb_WaitSourcesMenuClosed(hwnd, 1200) || CopilotWeb_CapabilityEngaged(hwnd, engageNames, aids))
             return true

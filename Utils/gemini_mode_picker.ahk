@@ -175,6 +175,10 @@ GeminiDismissModePickerMenu(uia, browserHwnd := 0) {
 FindGeminiModePickerButton(uia) {
     if !IsObject(uia)
         return 0
+    saved := 0
+    try saved := UiElements_TrySaved(uia, "Gemini", "ModePicker")
+    if saved
+        return saved
     for typeSpec in [50000, "Button"] {
         try {
             el := uia.FindFirst({ Type: typeSpec, Name: GEMINI_MODE_PICKER_NAME_SUBSTR, mm: 2, cs: 0 })

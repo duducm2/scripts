@@ -103,6 +103,16 @@ VSCode_EnsureChatInputHasFocus(editEl) {
 VSCode_FindChatSendButton(root) {
     if (!root)
         return ""
+    appKey := "Cursor.exe"
+    try {
+        proc := WinGetProcessName("ahk_pid " root.ProcessId)
+        if (proc = "Code.exe")
+            appKey := "Code.exe"
+    }
+    saved := 0
+    try saved := UiElements_TrySaved(root, appKey, "Send")
+    if saved
+        return saved
     lastMatchingButton := ""
     try {
         buttons := root.FindAll({ Type: UIA.Type.Button })
@@ -386,7 +396,10 @@ Cursor_FocusAITextField(targetHwnd := 0) {
             try {
                 root := UIA.ElementFromHandle(targetHwnd)
                 if (root) {
-                    toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
+                    toggleEl := 0
+                    try toggleEl := UiElements_TrySaved(root, "Cursor.exe", "ToggleAiPane")
+                    if !toggleEl
+                        toggleEl := root.FindFirst({ Type: UIA.Type.CheckBox, Name: "Toggle AI Pane", matchmode: 2 })
                     paneOpen := toggleEl && InStr(toggleEl.ClassName, "checked")
                     paneWasOpen := paneOpen
                     if (paneOpen) {

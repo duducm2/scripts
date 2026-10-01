@@ -50,6 +50,29 @@ ClipAngel_UiaFindFirst(root, conditions) {
         return 0
 }
 
+ClipAngel_TrySavedMenu(root, elementId) {
+    if !IsObject(root) || elementId = ""
+        return 0
+    try {
+        el := UiElements_TrySaved(root, "ClipAngel.exe", elementId)
+        if el
+            return el
+    } catch {
+    }
+    return 0
+}
+
+ClipAngel_TrySavedMenuOnRoots(roots, elementId) {
+    if !(roots is Array)
+        return 0
+    for root in roots {
+        el := ClipAngel_TrySavedMenu(root, elementId)
+        if el
+            return el
+    }
+    return 0
+}
+
 ClipAngel_FindFavoriteCell(row) {
     if !row
         return 0
@@ -273,7 +296,9 @@ ClipAngel_EnsureListView(hwnd, root := 0) {
         if !root
             return false
     }
-    listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
+    listItem := ClipAngel_TrySavedMenu(root, "List")
+    if !listItem
+        listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
     if !listItem
         return false
     try {
@@ -401,7 +426,9 @@ ClipAngel_InvokePasteEnter(hwnd := 0) {
         root := UIA.ElementFromHandle(hwnd)
         if !root
             return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
-        clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
+        if !clipMenu
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if !clipMenu
             return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         if !ClipAngel_UiaInvokeElement(clipMenu)
@@ -411,12 +438,16 @@ ClipAngel_InvokePasteEnter(hwnd := 0) {
         searchRoots := [root]
         if desktop
             searchRoots.Push(desktop)
-        pasteItem := ClipAngel_UiaWaitMenuItem(searchRoots, ["Paste"], 200)
+        pasteItem := ClipAngel_TrySavedMenuOnRoots(searchRoots, "Paste")
+        if !pasteItem
+            pasteItem := ClipAngel_UiaWaitMenuItem(searchRoots, ["Paste"], 200)
         if !pasteItem
             return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         if !ClipAngel_UiaOpenSubmenu(pasteItem)
             return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
-        pasteFile := ClipAngel_UiaWaitMenuItem(searchRoots, ["Paste file"], 200)
+        pasteFile := ClipAngel_TrySavedMenuOnRoots(searchRoots, "PasteFile")
+        if !pasteFile
+            pasteFile := ClipAngel_UiaWaitMenuItem(searchRoots, ["Paste file"], 200)
         if !pasteFile
             pasteFile := ClipAngel_UiaFindFirst(pasteItem, { Type: 50011, Name: "Paste file" })
         if !pasteFile
@@ -450,7 +481,9 @@ ClipAngel_InvokeImportClips(hwnd := 0) {
         root := UIA.ElementFromHandle(hwnd)
         if !root
             return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
-        clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
+        if !clipMenu
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if !clipMenu
             return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         if !ClipAngel_UiaInvokeElement(clipMenu)
@@ -460,7 +493,9 @@ ClipAngel_InvokeImportClips(hwnd := 0) {
         searchRoots := [root]
         if desktop
             searchRoots.Push(desktop)
-        importItem := ClipAngel_UiaWaitMenuItem(searchRoots, ["Import clips"], 200)
+        importItem := ClipAngel_TrySavedMenuOnRoots(searchRoots, "ImportClips")
+        if !importItem
+            importItem := ClipAngel_UiaWaitMenuItem(searchRoots, ["Import clips"], 200)
         if !importItem
             return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         return ClipAngel_UiaInvokeElement(importItem)
@@ -1500,13 +1535,24 @@ ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root := 0) {
             if !root
                 return false
         }
-        listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
+        listItem := ClipAngel_TrySavedMenu(root, "List")
+        if !listItem
+            listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
         if !listItem || !ClipAngel_UiaInvokeElement(listItem)
             return false
         names := wantAll
             ? ["Show all marks", "all marks"]
                 : ["Show only favorite", "Show only favorites", "favorite"]
-        item := 0
+        item := ClipAngel_TrySavedMenu(root, wantAll ? "ShowAllMarks" : "ShowOnlyFavorite")
+        if !item {
+            try desktop := UIA.GetRootElement()
+            catch
+                desktop := 0
+            if desktop
+                item := ClipAngel_TrySavedMenu(desktop, wantAll ? "ShowAllMarks" : "ShowOnlyFavorite")
+        }
+        if item
+            names := []
         deadline := A_TickCount + 180
         while (A_TickCount < deadline) {
             for name in names {
@@ -1860,7 +1906,9 @@ ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
             if !root
                 return false
         }
-        clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
+        if !clipMenu
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if clipMenu {
             if !ClipAngel_UiaInvokeElement(clipMenu)
                 return false
@@ -1868,14 +1916,19 @@ ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
             ClipAngel_OpenClipMenuViaKeyboard(hwnd)
         }
         ; Prefer window-scoped search first; desktop root only if needed (popup menus).
-        item := ClipAngel_UiaWaitMarkFavoriteMenuItem([root], 120)
+        item := ClipAngel_TrySavedMenu(root, "MarkFavorite")
+        if !item
+            item := ClipAngel_UiaWaitMarkFavoriteMenuItem([root], 120)
         if !item {
             desktop := 0
             try desktop := UIA.GetRootElement()
             catch {
             }
-            if desktop
-                item := ClipAngel_UiaWaitMarkFavoriteMenuItem([root, desktop], 120)
+            if desktop {
+                item := ClipAngel_TrySavedMenu(desktop, "MarkFavorite")
+                if !item
+                    item := ClipAngel_UiaWaitMarkFavoriteMenuItem([root, desktop], 120)
+            }
         }
         if !item {
             ClipAngel_ReleaseChordModifiersForSend()

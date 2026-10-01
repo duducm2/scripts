@@ -520,10 +520,14 @@ ChromePdf_RefreshKeepPage() {
 {
     ; UIA: Button Type 50000, Name "More actions", AutomationId "more"
     ; Keep Down/Enter (no stable AutomationId for two-page in tree dump); wait for menu ready.
-    moreBtn := ChromePdf_ResolveElement("more", 50000, ["More actions", "Mais ações"])
+    moreBtn := ChromePdf_TrySaved("MoreActions")
+    if !moreBtn
+        moreBtn := ChromePdf_ResolveElement("more", 50000, ["More actions", "Mais ações"])
     if !ChromePdf_InvokeElement(moreBtn)
         return
     ChromePdf_WaitForMoreMenuReady(400)
+    if ChromePdf_ClickSaved("TwoPage")
+        return
     Send "{Down}"
     Send "{Enter}"
 }

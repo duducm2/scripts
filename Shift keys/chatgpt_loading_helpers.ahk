@@ -60,41 +60,45 @@ WaitForButtonAndShowSmallLoading_ChatGPT(buttonNames, stateText := "Loadingâ€
     deadline := (timeout > 0) ? (start + timeout) : 0
     while (timeout <= 0 || (A_TickCount < deadline)) {
         btn := ""
-        for n in buttonNames {
-            try btn := cUIA.FindElement({ Name: n, Type: "Button" })
-            catch {
-                btn := ""
-            }
-            if !btn {
-                ; Fallback: substring match without strict type (handles UI variations)
-                try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+        try btn := UiElements_TrySaved(cUIA, "ChatGPT", "Stop")
+        if !btn
+            for n in buttonNames {
+                try btn := cUIA.FindElement({ Name: n, Type: "Button" })
                 catch {
                     btn := ""
                 }
+                if !btn {
+                    ; Fallback: substring match without strict type (handles UI variations)
+                    try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                    catch {
+                        btn := ""
+                    }
+                }
+                if btn
+                    break
             }
-            if btn
-                break
-        }
         if btn {
             ShowSmallLoadingIndicator_ChatGPT(stateText)
             while btn && (timeout <= 0 || (A_TickCount < deadline)) {
                 Sleep 250
                 btn := ""
-                for n in buttonNames {
-                    try btn := cUIA.FindElement({ Name: n, Type: "Button" })
-                    catch {
-                        btn := ""
-                    }
-                    if !btn {
-                        ; Fallback: substring match without strict type
-                        try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                try btn := UiElements_TrySaved(cUIA, "ChatGPT", "Stop")
+                if !btn
+                    for n in buttonNames {
+                        try btn := cUIA.FindElement({ Name: n, Type: "Button" })
                         catch {
                             btn := ""
                         }
+                        if !btn {
+                            ; Fallback: substring match without strict type
+                            try btn := cUIA.FindElement({ Name: n, matchmode: "Substring" })
+                            catch {
+                                btn := ""
+                            }
+                        }
+                        if btn
+                            break
                     }
-                    if btn
-                        break
-                }
             }
             break
         }
