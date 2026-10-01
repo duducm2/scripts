@@ -906,6 +906,19 @@ Excel_OpenFromTextCsv() {
         return false
     try {
         root := UIA.ElementFromHandle(excelHwnd)
+        savedCsv := UiElements_TrySaved(root, "EXCEL.EXE", "FromTextCsv")
+        if (savedCsv) {
+            try {
+                savedCsv.Invoke()
+                return true
+            } catch {
+            }
+            try {
+                savedCsv.Click()
+                return true
+            } catch {
+            }
+        }
         for name in ["From Text/CSV", "De Texto/CSV", "Texto/CSV"] {
             btn := 0
             try btn := WaitForButton(root, name, 1500)

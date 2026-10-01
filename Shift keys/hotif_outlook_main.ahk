@@ -341,12 +341,9 @@
     static nextOutlookButton := "Other"
 
     try {
-        btn := OutlookFindFirst([{ Name: nextOutlookButton, ControlType: "TabItem" }, { Name: nextOutlookButton,
+        if OutlookClickFirst([{ Name: nextOutlookButton, ControlType: "TabItem" }, { Name: nextOutlookButton,
             ControlType: "Button" }, { Name: nextOutlookButton, Type: "Button" }
-        ])
-
-        if btn {
-            btn.Click()
+        ], nextOutlookButton) {
             nextOutlookButton := (nextOutlookButton = "Other")
                 ? "Focused" : "Other"
         } else {

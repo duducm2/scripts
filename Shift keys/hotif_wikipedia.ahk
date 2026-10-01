@@ -62,65 +62,67 @@
         }
 
         ; Step 3: If the field is not available, try clicking the "Search" toggle button/link first.
-        searchToggle := 0
+        searchToggle := UiElements_TrySaved(root, "Wikipedia", "SearchToggle")
 
         ; Strategy 1: Try finding the search group first, then the button within it (most reliable)
-        try {
-            searchGroup := root.FindElement({ AutomationId: "p-search", cs: false })
-            if (searchGroup) {
-                try {
-                    searchToggle := searchGroup.FindElement({ Type: 50005, Name: "Search", cs: false })
-                } catch {
-                }
-                if (!searchToggle) {
+        if (!searchToggle) {
+            try {
+                searchGroup := root.FindElement({ AutomationId: "p-search", cs: false })
+                if (searchGroup) {
                     try {
-                        searchToggle := searchGroup.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search",
-                            cs: false })
+                        searchToggle := searchGroup.FindElement({ Type: 50005, Name: "Search", cs: false })
                     } catch {
                     }
+                    if (!searchToggle) {
+                        try {
+                            searchToggle := searchGroup.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search",
+                                cs: false })
+                        } catch {
+                        }
+                    }
+                }
+            } catch {
+            }
+
+            ; Strategy 2: Search by Value (URL) directly from root
+            if (!searchToggle) {
+                try {
+                    searchToggle := root.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search",
+                        cs: false })
+                } catch {
                 }
             }
-        } catch {
-        }
 
-        ; Strategy 2: Search by Value (URL) directly from root
-        if (!searchToggle) {
-            try {
-                searchToggle := root.FindElement({ Type: 50005, Value: "https://en.wikipedia.org/wiki/Special:Search",
-                    cs: false })
-            } catch {
+            ; Strategy 3: Search by Type and Name (original method)
+            if (!searchToggle) {
+                try {
+                    searchToggle := root.FindElement({ Type: 50005, Name: "Search", cs: false })
+                } catch {
+                }
             }
-        }
 
-        ; Strategy 3: Search by Type and Name (original method)
-        if (!searchToggle) {
-            try {
-                searchToggle := root.FindElement({ Type: 50005, Name: "Search", cs: false })
-            } catch {
+            ; Strategy 4: Search by ControlType and Name
+            if (!searchToggle) {
+                try {
+                    searchToggle := root.FindElement({ ControlType: "Hyperlink", Name: "Search", cs: false })
+                } catch {
+                }
             }
-        }
 
-        ; Strategy 4: Search by ControlType and Name
-        if (!searchToggle) {
-            try {
-                searchToggle := root.FindElement({ ControlType: "Hyperlink", Name: "Search", cs: false })
-            } catch {
+            ; Strategy 5: Search for any link with the Special:Search URL
+            if (!searchToggle) {
+                try {
+                    searchToggle := root.FindElement({ Type: 50005, Value: "*Special:Search*", cs: false })
+                } catch {
+                }
             }
-        }
 
-        ; Strategy 5: Search for any link with the Special:Search URL
-        if (!searchToggle) {
-            try {
-                searchToggle := root.FindElement({ Type: 50005, Value: "*Special:Search*", cs: false })
-            } catch {
-            }
-        }
-
-        ; Strategy 6: Try finding by LocalizedType "link" and Name
-        if (!searchToggle) {
-            try {
-                searchToggle := root.FindElement({ LocalizedType: "link", Name: "Search", cs: false })
-            } catch {
+            ; Strategy 6: Try finding by LocalizedType "link" and Name
+            if (!searchToggle) {
+                try {
+                    searchToggle := root.FindElement({ LocalizedType: "link", Name: "Search", cs: false })
+                } catch {
+                }
             }
         }
 

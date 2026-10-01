@@ -132,6 +132,13 @@
         }
 
         root := UIA.ElementFromHandle(hwnd)
+        savedQuick := UiElements_TrySaved(root, "TeamsChat", "QuickViews")
+        if savedQuick {
+            try {
+                savedQuick.SelectionItemPattern.Select()
+                return
+            }
+        }
         ; Path is relative to the window element (child 11 = Chrome_WidgetWin_1, the Chromium host pane)
         quickViews := root.ElementFromPathExist("11,2,1,2,3,2,1,1,1,1,1,1,1,1,9,1,4,1")
         if !quickViews
