@@ -161,7 +161,9 @@
 
         ; First, try to find and click "Open Your Library" button (if available)
         try {
-            openLibBtn := spot.FindElement({ Name: "Open Your Library", Type: "Button" })
+            openLibBtn := UiElements_TrySaved(spot, "Spotify.exe", "OpenLibrary")
+            if !openLibBtn
+                openLibBtn := spot.FindElement({ Name: "Open Your Library", Type: "Button" })
             if (openLibBtn) {
                 openLibBtn.Click()
                 Sleep 500  ; Wait for the library to open and UI to adjust
@@ -172,7 +174,9 @@
 
         ; Then, try to find and click "Expand Your Library" button
         try {
-            expandLibBtn := spot.FindElement({ Name: "Expand Your Library", Type: "Button" })
+            expandLibBtn := UiElements_TrySaved(spot, "Spotify.exe", "ExpandLibrary")
+            if !expandLibBtn
+                expandLibBtn := spot.FindElement({ Name: "Expand Your Library", Type: "Button" })
             if (expandLibBtn) {
                 expandLibBtn.Click()
                 Sleep 300  ; Wait for the expansion to complete
@@ -263,6 +267,9 @@
 ; ---------------------------
 
 FindDownloadAnchor(root) {
+    saved := UiElements_TrySaved(root, "Spotify.exe", "Download")
+    if (saved)
+        return saved
     ; Exact spec: Type 50000 (Button), Name "Download"
     try {
         el := root.FindElement({ Type: 50000, Name: "Download" })

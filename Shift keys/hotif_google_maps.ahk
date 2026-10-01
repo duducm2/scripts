@@ -174,8 +174,10 @@ Maps_GetDocumentRoot(uia) {
 Maps_CollapseSidePanel(root) {
     if !root
         return false
-    btn := 0
-    try btn := root.FindFirst({ Type: 50000, Name: "Collapse side panel", cs: false })
+    btn := UiElements_TrySaved(root, "Google Maps", "CollapseSide")
+    if !btn {
+        try btn := root.FindFirst({ Type: 50000, Name: "Collapse side panel", cs: false })
+    }
     if !btn {
         try btn := root.FindFirst({ Name: "Collapse side panel", cs: false })
     }
@@ -1093,8 +1095,10 @@ Maps_CaptureCopyFromScreen(x, y, w, h, outPath, &errMsg) {
         if !root
             return
 
-        searchBox := 0
-        try searchBox := root.FindFirst({ AutomationId: "ucc-1" })
+        searchBox := UiElements_TrySaved(root, "Google Maps", "Search")
+        if !searchBox {
+            try searchBox := root.FindFirst({ AutomationId: "ucc-1" })
+        }
         if !searchBox {
             try searchBox := root.FindFirst({ Type: 50003, Name: "Search Google Maps", cs: false })
         }

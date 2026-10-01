@@ -73,11 +73,13 @@
         Sleep 300 ; Give UIA time to attach
 
         ; Find the main menu button by its properties
-        mainMenuBtn := uia.FindElement({
-            Name: "Main menu",
-            Type: "Button",
-            ClassName: "gb_Lc"
-        })
+        mainMenuBtn := UiElements_TrySaved(uia, "Google Keep", "MainMenu")
+        if !mainMenuBtn
+            mainMenuBtn := uia.FindElement({
+                Name: "Main menu",
+                Type: "Button",
+                ClassName: "gb_Lc"
+            })
 
         if (mainMenuBtn) {
             mainMenuBtn.Click()
@@ -107,7 +109,9 @@ DismissAllReminders() {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
         ; Try by AutomationId first
-        btn := root.FindFirst({ AutomationId: "8345", ControlType: "Button" })
+        btn := UiElements_TrySaved(root, "Google Keep", "DismissAll")
+        if !btn
+            btn := root.FindFirst({ AutomationId: "8345", ControlType: "Button" })
         ; Fallback: search by name
         if !btn
             btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
@@ -396,9 +400,20 @@ FindMonthGroup(uia) {
             }
             ; Try to find pagination elements
             try {
-                paginationBtns := uia.FindAll({ Name: "Go to next page", Type: 50000 })
-                if !paginationBtns.Length {
-                    paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
+                paginationBtns := 0
+                savedNext := UiElements_TrySaved(uia, "Google Keep", "PagerNext")
+                savedPrev := UiElements_TrySaved(uia, "Google Keep", "PagerPrev")
+                if (savedNext || savedPrev) {
+                    paginationBtns := []
+                    if (savedNext)
+                        paginationBtns.Push(savedNext)
+                    if (savedPrev)
+                        paginationBtns.Push(savedPrev)
+                } else {
+                    paginationBtns := uia.FindAll({ Name: "Go to next page", Type: 50000 })
+                    if !paginationBtns.Length {
+                        paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
+                    }
                 }
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
                 A_TickCount .

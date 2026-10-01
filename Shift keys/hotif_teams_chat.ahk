@@ -196,13 +196,17 @@
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        moreOptionsButton := root.FindFirst({ Name: "More chat options", Type: "50000" })
+        moreOptionsButton := UiElements_TrySaved(root, "TeamsChat", "MoreOptions")
+        if !moreOptionsButton
+            moreOptionsButton := root.FindFirst({ Name: "More chat options", Type: "50000" })
 
         if moreOptionsButton {
             moreOptionsButton.Click()
             Sleep 350
 
-            detachMenuItem := root.FindFirst({ Name: "Open in new window", Type: "50011" })
+            detachMenuItem := UiElements_TrySaved(root, "TeamsChat", "Detach")
+            if !detachMenuItem
+                detachMenuItem := root.FindFirst({ Name: "Open in new window", Type: "50011" })
 
             if !detachMenuItem {
                 detachMenuItem := UIA.GetRootElement().FindFirst({ Name: "Open in new window", Type: "50011" })
@@ -292,7 +296,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; First, find and click the "More chat options" button
-        moreOptionsButton := root.FindFirst({ Name: "More chat options", Type: "50000", matchmode: "Substring" })
+        moreOptionsButton := UiElements_TrySaved(root, "TeamsChat", "MoreOptions")
+        if !moreOptionsButton
+            moreOptionsButton := root.FindFirst({ Name: "More chat options", Type: "50000", matchmode: "Substring" })
 
         if !moreOptionsButton {
             ; Show error banner
@@ -305,7 +311,9 @@
         Sleep 500  ; Wait for menu to open
 
         ; Now find and click the "View and add participants" button
-        participantsButton := root.FindFirst({ Name: "View and add participants", Type: "50000", matchmode: "Substring" })
+        participantsButton := UiElements_TrySaved(root, "TeamsChat", "Participants")
+        if !participantsButton
+            participantsButton := root.FindFirst({ Name: "View and add participants", Type: "50000", matchmode: "Substring" })
 
         if participantsButton {
             participantsButton.Click()

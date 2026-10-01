@@ -1412,7 +1412,9 @@ Reminders_ExecuteItemAction(action) {
         root := UIA.ElementFromHandle(win)
 
         ; Find the "Join Online" button (classic reminder UI)
-        joinButton := root.FindFirst({ Name: "Join Online", Type: "50000", AutomationId: "8346" })
+        joinButton := UiElements_TrySaved(root, "OutlookReminder", "Join")
+        if !joinButton
+            joinButton := root.FindFirst({ Name: "Join Online", Type: "50000", AutomationId: "8346" })
         if !joinButton
             joinButton := root.FindFirst({ Name: "Join Online", ControlType: "Button" })
         if !joinButton

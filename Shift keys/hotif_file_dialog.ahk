@@ -89,27 +89,7 @@
 +a:: {
     if !IsFileDialogActive()
         return
-    try {
-        root := UIA.ElementFromHandle(WinExist("A"))
-        ; Try to find address bar by common names
-        addressBar := root.FindFirst({ Type: "Edit", Name: "Address:" })
-        if !addressBar
-            addressBar := root.FindFirst({ Type: "Edit", Name: "Endereço:" })
-        if !addressBar
-            addressBar := root.FindFirst({ Type: "ComboBox", AutomationId: "1001" })
-        if !addressBar
-            addressBar := root.FindFirst({ Type: "Edit", ClassName: "Edit" })
-
-        if (addressBar) {
-            addressBar.SetFocus()
-            Sleep 50
-            Send "^a"  ; Select all existing text
-            return
-        }
-    } catch Error {
-    }
-    ; Fallback: Use Alt+D (common shortcut for address bar in file dialogs)
-    Send "!d"
+    FileDialog_FocusAddressBar()
 }
 
 ; Shift + D : Navigate to Desktop - Desktop
@@ -122,7 +102,9 @@
 FileDialog_FocusAddressBar() {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
-        addressBar := root.FindFirst({ Type: "Edit", Name: "Address:" })
+        addressBar := UiElements_TrySaved(root, "FileDialog", "Address")
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "Edit", Name: "Address:" })
         if !addressBar
             addressBar := root.FindFirst({ Type: "Edit", Name: "Endereço:" })
         if !addressBar
@@ -864,32 +846,32 @@ FileDialog_SaveAsCsvUtf8() {
 FileDialog_ClickOpenButton(root) {
     actionBtn := UiElements_TrySaved(root, "FileDialog", "Open")
     if !actionBtn {
-    try actionBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "1" })
-    catch {
-        actionBtn := 0
-    }
-    if !actionBtn {
-        try actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
+        try actionBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "1" })
         catch {
             actionBtn := 0
         }
-    }
-    if !actionBtn {
-        for name in ["Open", "Abrir"] {
-            try actionBtn := root.FindFirst({ Type: "SplitButton", Name: name })
+        if !actionBtn {
+            try actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
             catch {
                 actionBtn := 0
             }
-            if !actionBtn {
-                try actionBtn := root.FindFirst({ Type: "Button", Name: name })
+        }
+        if !actionBtn {
+            for name in ["Open", "Abrir"] {
+                try actionBtn := root.FindFirst({ Type: "SplitButton", Name: name })
                 catch {
                     actionBtn := 0
                 }
+                if !actionBtn {
+                    try actionBtn := root.FindFirst({ Type: "Button", Name: name })
+                    catch {
+                        actionBtn := 0
+                    }
+                }
+                if actionBtn
+                    break
             }
-            if actionBtn
-                break
         }
-    }
     }
     if actionBtn && FileDialog_InvokeButton(actionBtn)
         return true

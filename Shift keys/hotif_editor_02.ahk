@@ -1271,6 +1271,19 @@ CancelCommit(ctrl, *) {
         root := UIA.ElementFromHandle(win)
         Sleep 100  ; Allow UI to update
 
+        savedReview := UiElements_TrySaved(root, Editor_UiElementAppKey(), "ReviewNext")
+        if (savedReview) {
+            try {
+                if savedReview.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+                    savedReview.InvokePattern.Invoke()
+                else
+                    savedReview.Click()
+            } catch {
+                try savedReview.Click()
+            }
+            return
+        }
+
         ; Strategy 1: Scope to editor part (workbench.parts.editor), find "Review next file" Text, then click its parent Group (the button)
         editorPart := ""
         try editorPart := root.FindFirst({ AutomationId: "workbench.parts.editor", Type: 50026 })

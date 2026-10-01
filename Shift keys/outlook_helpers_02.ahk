@@ -1066,8 +1066,18 @@ OutlookFocusFirst(criteriaList) {
     return true
 }
 
-OutlookClickFirst(criteriaList) {
-    el := OutlookFindFirst(criteriaList)
+OutlookClickFirst(criteriaList, elementId := "") {
+    el := ""
+    if (elementId != "") {
+        try {
+            root := UIA.ElementFromHandle(WinExist("A"))
+            el := UiElements_TrySaved(root, "OUTLOOK.EXE", elementId)
+        } catch {
+            el := ""
+        }
+    }
+    if !el
+        el := OutlookFindFirst(criteriaList)
     if !el
         return false
     try el.SetFocus()

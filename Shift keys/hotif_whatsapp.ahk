@@ -273,7 +273,9 @@ WhatsApp_InvokeOrClick(btn) {
         }
 
         ; Archived / Arquivadas (trailing space on the English name). Anchor, then Tab into the chat list.
-        archivedButton := WhatsApp_FindNamedButton(uia, "i)(Archived|Arquivad)")
+        archivedButton := UiElements_TrySaved(uia, "WhatsApp", "Archived")
+        if (!archivedButton)
+            archivedButton := WhatsApp_FindNamedButton(uia, "i)(Archived|Arquivad)")
         if (!archivedButton)
             archivedButton := WhatsApp_FindInTree(uia, { Name: "i)(Archived|Arquivad)", matchmode: "RegEx" })
         if (archivedButton) {

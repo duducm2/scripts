@@ -710,7 +710,9 @@ FocusGeminiPromptField() {
         Sleep 300
 
         ; Primary strategy: Find by Name "Expand input to Fullscreen" with Type 50000 (Button)
-        fullscreenButton := uia.FindFirst({ Name: "Expand input to Fullscreen", Type: 50000 })
+        fullscreenButton := UiElements_TrySaved(uia, "Gemini", "Expand")
+        if !fullscreenButton
+            fullscreenButton := uia.FindFirst({ Name: "Expand input to Fullscreen", Type: 50000 })
 
         ; Fallback 1: Try by Type "Button" and Name "Expand input to Fullscreen"
         if !fullscreenButton {

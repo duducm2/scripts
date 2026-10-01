@@ -82,8 +82,9 @@ Gmail_CheckboxToggleState(el) {
 ; Set toolbar master Select checkbox: wantChecked 1=select all, 0=deselect.
 ; Screen Click("left") does not toggle this control; TogglePattern does.
 Gmail_SetMasterSelect(uia, wantChecked) {
-    selectBtn := 0
-    try selectBtn := uia.FindElement({ Name: "Select", Type: "Button" })
+    selectBtn := UiElements_TrySaved(uia, "Gmail", "Select")
+    if !selectBtn
+        try selectBtn := uia.FindElement({ Name: "Select", Type: "Button" })
     if (!selectBtn)
         return false
 
@@ -136,7 +137,9 @@ Gmail_SetMasterSelect(uia, wantChecked) {
         Sleep 300 ; Give UIA time to attach
 
         ; Find the "Updates" tab (Name may start with "Updates" or include message counts)
-        updatesButton := uia.FindElement({ Name: "Updates", Type: "TabItem", matchmode: "Substring" })
+        updatesButton := UiElements_TrySaved(uia, "Gmail", "Updates")
+        if !updatesButton
+            updatesButton := uia.FindElement({ Name: "Updates", Type: "TabItem", matchmode: "Substring" })
 
         if (updatesButton) {
             updatesButton.Click()
@@ -159,7 +162,9 @@ Gmail_SetMasterSelect(uia, wantChecked) {
         Sleep 300
 
         ; Try English and Portuguese names for the Forums tab
-        forumsButton := uia.FindElement({ Name: "Forums", Type: "TabItem", matchmode: "Substring" })
+        forumsButton := UiElements_TrySaved(uia, "Gmail", "Forums")
+        if !forumsButton
+            forumsButton := uia.FindElement({ Name: "Forums", Type: "TabItem", matchmode: "Substring" })
         if (!forumsButton)
             forumsButton := uia.FindElement({ Name: "FÃ³runs", Type: "TabItem", matchmode: "Substring" })
 
@@ -288,7 +293,9 @@ Gmail_SetMasterSelect(uia, wantChecked) {
         Sleep 300 ; Give UIA time to attach
 
         ; Try to find inbox link by name (may include unread count)
-        inboxLink := uia.FindElement({ Name: "Inbox", Type: "50005", matchmode: "Substring" })
+        inboxLink := UiElements_TrySaved(uia, "Gmail", "Inbox")
+        if !inboxLink
+            inboxLink := uia.FindElement({ Name: "Inbox", Type: "50005", matchmode: "Substring" })
 
         ; Fallback: try by ClassName
         if (!inboxLink) {

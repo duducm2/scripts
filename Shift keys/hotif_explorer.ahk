@@ -657,9 +657,11 @@ OneDriveShare_IsLimitedLinkSettings(root) {
 }
 
 OneDriveShare_ClickBack(root) {
-    backBtn := 0
-    try backBtn := root.FindFirst({ Name: "Back", Type: "50000" })
-    catch {
+    backBtn := UiElements_TrySaved(root, "explorer.exe", "Back")
+    if !backBtn {
+        try backBtn := root.FindFirst({ Name: "Back", Type: "50000" })
+        catch {
+        }
     }
     if !backBtn {
         try backBtn := root.FindFirst({ Name: "Back", Type: "50000", matchmode: "Substring" })

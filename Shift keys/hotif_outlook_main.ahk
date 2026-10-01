@@ -42,7 +42,7 @@
         return
     OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ Name: "Reply", ControlType: "Button" }, { Name: "Reply",
-        ControlType: "MenuItem" }])
+        ControlType: "MenuItem" }], "Reply")
         ShowCenteredOverlay_Utils("❌ Outlook: Reply not found", 1200, BANNER_ACCENT_ERROR)
 }
 
@@ -51,7 +51,7 @@
         return
     OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ Name: "Reply all", ControlType: "Button" }, { Name: "Reply all",
-        ControlType: "MenuItem" }])
+        ControlType: "MenuItem" }], "ReplyAll")
         ShowCenteredOverlay_Utils("❌ Outlook: Reply all not found", 1200, BANNER_ACCENT_ERROR)
 }
 
@@ -60,37 +60,42 @@
         return
     OutlookMail_EnsureHomeTab()
     if !OutlookClickFirst([{ Name: "Forward", ControlType: "Button" }, { Name: "Forward",
-        ControlType: "MenuItem" }])
+        ControlType: "MenuItem" }], "Forward")
         ShowCenteredOverlay_Utils("❌ Outlook: Forward not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!d:: {  ; Delete
     OutlookMail_EnsureHomeTab()
-    if !OutlookClickFirst([{ AutomationId: "519", ControlType: "Button" }, { Name: "Delete", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "519", ControlType: "Button" }, { Name: "Delete", ControlType: "Button" }],
+    "Delete")
         ShowCenteredOverlay_Utils("❌ Outlook: Delete not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!e:: {  ; Archive
     OutlookMail_EnsureHomeTab()
-    if !OutlookClickFirst([{ AutomationId: "505", ControlType: "Button" }, { Name: "Archive", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "505", ControlType: "Button" }, { Name: "Archive", ControlType: "Button" }],
+    "Archive")
         ShowCenteredOverlay_Utils("❌ Outlook: Archive not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!u:: {  ; Read/Unread toggle
     OutlookMail_EnsureHomeTab()
-    if !OutlookClickFirst([{ AutomationId: "552", ControlType: "Button" }, { Name: "Read / Unread", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "552", ControlType: "Button" }, { Name: "Read / Unread", ControlType: "Button" }],
+    "ReadUnread")
         ShowCenteredOverlay_Utils("❌ Outlook: Read/Unread not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!c:: {  ; Categorize
     OutlookMail_EnsureHomeTab()
-    if !OutlookClickFirst([{ AutomationId: "509", ControlType: "Button" }, { Name: "Categorize", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "509", ControlType: "Button" }, { Name: "Categorize", ControlType: "Button" }],
+    "Categorize")
         ShowCenteredOverlay_Utils("❌ Outlook: Categorize not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!v:: {  ; Move
     OutlookMail_EnsureHomeTab()
-    if !OutlookClickFirst([{ AutomationId: "540", ControlType: "Button" }, { Name: "Move", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "540", ControlType: "Button" }, { Name: "Move", ControlType: "Button" }],
+    "Move")
         ShowCenteredOverlay_Utils("❌ Outlook: Move not found", 1200, BANNER_ACCENT_ERROR)
     else {
         Sleep 80
@@ -99,13 +104,14 @@
 }
 
 ^!i:: {  ; Mail Filter menu
-    if !OutlookClickFirst([{ AutomationId: "mailListFilterMenu", ControlType: "Button" }, { Name: "Filter", ControlType: "Button" }])
+    if !OutlookClickFirst([{ AutomationId: "mailListFilterMenu", ControlType: "Button" }, { Name: "Filter", ControlType: "Button" }],
+    "Filter")
         ShowCenteredOverlay_Utils("❌ Outlook: Filter not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ^!s:: {  ; Mail Sort menu
     if !OutlookClickFirst([{ AutomationId: "mailListSortMenu", ControlType: "Button" }, { Name: "Sorted", matchmode: "Substring",
-        ControlType: "Button" }])
+        ControlType: "Button" }], "Sort")
         ShowCenteredOverlay_Utils("❌ Outlook: Sort not found", 1200, BANNER_ACCENT_ERROR)
 }
 
@@ -113,7 +119,7 @@
 ^!n:: {  ; New item (Mail: new message, Calendar: new event)
     Outlook_ActivateMainWindow()
     ; Calendar capture exposes "New event".
-    if OutlookClickFirst([{ Name: "New event", matchmode: "Substring", ControlType: "Button" }])
+    if OutlookClickFirst([{ Name: "New event", matchmode: "Substring", ControlType: "Button" }], "NewEvent")
         return
     ; Mail: fall back to built-in new message.
     Send "^n"
@@ -281,7 +287,7 @@
         try {
             bccOk := OutlookClickFirst([{ Name: "Bcc", matchmode: "Substring", ControlType: "Button" }, { Name: "Bcc",
                 matchmode: "Substring" }, { Name: "Show Bcc", matchmode: "Substring", ControlType: "Button" }
-            ])
+            ], "Bcc")
             OC_STLog("bcc_click", '{"ok":' (bccOk ? 1 : 0) '}', "OC_ST_C")
             if bccOk {
                 Send "{Tab}"
@@ -356,7 +362,8 @@
 +W:: {
     try {
         if IsNewOutlookActive() {
-            if OutlookClickFirst([{ AutomationId: "2519", ControlType: "Button" }, { Name: "Week", ControlType: "Button" }])
+            if OutlookClickFirst([{ AutomationId: "2519", ControlType: "Button" }, { Name: "Week", ControlType: "Button" }],
+            "Week")
                 return
         }
         if !ClickOutlookByIdThenNameClass("WeeklyView", "Week", "NetUIRibbonButton", 50000)
@@ -370,7 +377,8 @@
 +O:: {
     try {
         if IsNewOutlookActive() {
-            if OutlookClickFirst([{ AutomationId: "2505", ControlType: "Button" }, { Name: "Month", ControlType: "Button" }])
+            if OutlookClickFirst([{ AutomationId: "2505", ControlType: "Button" }, { Name: "Month", ControlType: "Button" }],
+            "Month")
                 return
         }
         if !ClickOutlookByIdThenNameClass("MonthlyView", "Month", "NetUIRibbonButton", 50000)
