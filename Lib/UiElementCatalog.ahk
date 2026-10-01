@@ -325,6 +325,7 @@ UiElementCatalog_All() {
         e.Call("Cursor.exe", "Send", "Send", "Utils/cursor_composer_focus.ahk", "button"),
         e.Call("Cursor.exe", "ToggleAiPane", "Toggle AI Pane", "Utils/cursor_composer_focus.ahk", "any"),
         e.Call("Code.exe", "HidePanel", "Hide panel", "Shift keys/hotif_editor_02.ahk", "button"),
+        e.Call("Code.exe", "ReviewNext", "Review next file", "Shift keys/hotif_editor_02.ahk", "any"),
         e.Call("Code.exe", "CommitInput", "Commit message", "Shift keys/hotif_editor_02.ahk", "edit"),
         e.Call("Code.exe", "Pull", "Pull", "Shift keys/cursor_predicates.ahk", "button"),
         e.Call("Code.exe", "SyncChanges", "Sync Changes", "Shift keys/cursor_predicates.ahk", "any"),
