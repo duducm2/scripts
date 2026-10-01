@@ -406,4 +406,53 @@ RenameChatGPTWindowToChatGPT() {
     RenameChatGPTWindowToChatGPT()
 }
 
+; Ctrl + Alt + C : Click Cancel on the "Restore pages?" bubble
+; chrome.md: 2,2 Name "Restore pages?" (Chrome_WidgetWin_1)
+;            2,2,2,1,1,3,2,3 Button "Cancel" ClassName "MdTextButton"
+^!c:: Chrome_ClickRestorePagesCancel()
+
+Chrome_ClickRestorePagesCancel() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    root := 0
+    try root := UIA.ElementFromHandle("ahk_id " hwnd)
+    if !root {
+        ShowCenteredOverlay_Utils("Restore pages: could not read Chrome", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    bubble := 0
+    try {
+        if (root.Name = "Restore pages?")
+            bubble := root
+        else
+            bubble := root.FindElement({ Name: "Restore pages?", ClassName: "Chrome_WidgetWin_1" })
+    } catch {
+        bubble := 0
+    }
+
+    btn := 0
+    if bubble
+        try btn := bubble.FindElement({ Type: 50000, Name: "Cancel", ClassName: "MdTextButton" })
+    if !btn {
+        ShowCenteredOverlay_Utils("Restore pages Cancel not found", 1600, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    clicked := false
+    try {
+        btn.Invoke()
+        clicked := true
+    }
+    if !clicked {
+        try {
+            btn.Click()
+            clicked := true
+        }
+    }
+    if !clicked
+        ShowCenteredOverlay_Utils("Restore pages Cancel could not be clicked", 1600, BANNER_ACCENT_ERROR)
+}
+
 #HotIf
