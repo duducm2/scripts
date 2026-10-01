@@ -988,6 +988,33 @@ Reminders_TryInvokeJoinOnlineMenuItem() {
         rootDesktop := UIA.GetRootElement()
         rootWin := UIA.ElementFromHandle(WinExist("A"))
 
+        for savedRoot in [rootWin, rootDesktop] {
+            if !savedRoot
+                continue
+            saved := UiElements_TrySaved(savedRoot, "OutlookReminder", "Join")
+            if !saved
+                continue
+            try {
+                if saved.GetPropertyValue(UIA.Property.IsOffscreen)
+                    continue
+            } catch {
+            }
+            try {
+                if !saved.GetPropertyValue(UIA.Property.IsEnabled)
+                    continue
+            } catch {
+            }
+            try {
+                saved.Click()
+                return true
+            } catch {
+                try {
+                    saved.Invoke()
+                    return true
+                }
+            }
+        }
+
         roots := []
         if rootDesktop
             roots.Push({ root: rootDesktop, label: "desktop" })

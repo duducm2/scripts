@@ -109,7 +109,7 @@ DismissAllReminders() {
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
         ; Try by AutomationId first
-        btn := UiElements_TrySaved(root, "Google Keep", "DismissAll")
+        btn := UiElements_TrySaved(root, "OutlookReminder", "DismissAll")
         if !btn
             btn := root.FindFirst({ AutomationId: "8345", ControlType: "Button" })
         ; Fallback: search by name
@@ -400,20 +400,9 @@ FindMonthGroup(uia) {
             }
             ; Try to find pagination elements
             try {
-                paginationBtns := 0
-                savedNext := UiElements_TrySaved(uia, "Google Keep", "PagerNext")
-                savedPrev := UiElements_TrySaved(uia, "Google Keep", "PagerPrev")
-                if (savedNext || savedPrev) {
-                    paginationBtns := []
-                    if (savedNext)
-                        paginationBtns.Push(savedNext)
-                    if (savedPrev)
-                        paginationBtns.Push(savedPrev)
-                } else {
-                    paginationBtns := uia.FindAll({ Name: "Go to next page", Type: 50000 })
-                    if !paginationBtns.Length {
-                        paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
-                    }
+                paginationBtns := uia.FindAll({ Name: "Go to next page", Type: 50000 })
+                if !paginationBtns.Length {
+                    paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
                 }
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
                 A_TickCount .

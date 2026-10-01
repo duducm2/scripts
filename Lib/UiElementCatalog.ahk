@@ -85,7 +85,7 @@ UiElementCatalog_All() {
         e.Call("Chrome PDF Viewer", "Download", "Download", "Shift keys/hotif_chrome_pdf.ahk", "button"),
         e.Call("Chrome PDF Viewer", "Present", "Present", "Shift keys/hotif_chrome_pdf.ahk", "any"),
         e.Call("explorer.exe", "ItemsView", "Items view", "Shift keys/hotif_explorer.ahk", "any"),
-        e.Call("explorer.exe", "Back", "Back", "Shift keys/hotif_explorer.ahk", "button"),
+        e.Call("explorer.exe", "Back", "Share settings back", "Shift keys/hotif_explorer.ahk", "button"),
         e.Call("TeamsMeeting", "Chat", "Chat", "Shift keys/hotif_teams_meeting.ahk", "button"),
         e.Call("TeamsMeeting", "React", "React", "Shift keys/hotif_teams_meeting.ahk", "button"),
         e.Call("TeamsMeeting", "Join", "Join now", "Shift keys/hotif_teams_meeting.ahk", "button"),
@@ -154,9 +154,6 @@ UiElementCatalog_All() {
         e.Call("Spotify.exe", "ExpandLibrary", "Expand Your Library", "Shift keys/hotif_spotify.ahk", "button"),
         e.Call("Spotify.exe", "Download", "Download", "Shift keys/hotif_spotify.ahk", "button"),
         e.Call("Google Keep", "MainMenu", "Main menu", "Shift keys/hotif_google_keep.ahk", "button"),
-        e.Call("Google Keep", "DismissAll", "Dismiss all", "Shift keys/hotif_google_keep.ahk", "button"),
-        e.Call("Google Keep", "PagerNext", "Next page", "Shift keys/hotif_google_keep.ahk", "button"),
-        e.Call("Google Keep", "PagerPrev", "Previous page", "Shift keys/hotif_google_keep.ahk", "button"),
         e.Call("ChatGPT", "Sidebar", "Sidebar", "Shift keys/hotif_chatgpt.ahk", "button"),
     ]
     return rows
