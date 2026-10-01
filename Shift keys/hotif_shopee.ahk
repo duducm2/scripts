@@ -49,7 +49,8 @@
 ; Shift + C: Carrinho de compras (cart)
 +c::
 {
-    if Shopee_ClickSaved("Cart") || Shopee_FindAndInvoke([{ Type: 50005, AutomationId: "cart_drawer_target_id" }, { Type: 50005, Name: "Carrinho",
+    if Shopee_ClickSaved("Cart") || Shopee_FindAndInvoke([{ Type: 50005, AutomationId: "cart_drawer_target_id" }, { Type: 50005,
+        Name: "Carrinho",
         cs: false, matchmode: "Substring" }, { Type: 50000, Name: "Carrinho", cs: false, matchmode: "Substring" }
     ])
         return
@@ -59,8 +60,10 @@
 ; Shift + P: Minhas compras / pedidos (speculative)
 +p::
 {
-    if Shopee_ClickSaved("Purchases") || Shopee_FindAndInvoke([{ Type: 50005, Name: "Minhas compras", cs: false, matchmode: "Substring" }, { Type: 50005,
-        Name: "Meus pedidos", cs: false, matchmode: "Substring" }, { Type: 50005, Name: "Pedidos", cs: false, matchmode: "Substring" }
+    if Shopee_ClickSaved("Purchases") || Shopee_FindAndInvoke([{ Type: 50005, Name: "Minhas compras", cs: false,
+        matchmode: "Substring" }, { Type: 50005,
+            Name: "Meus pedidos", cs: false, matchmode: "Substring" }, { Type: 50005, Name: "Pedidos", cs: false,
+                matchmode: "Substring" }
     ])
         return
     MsgBox "Link de compras/pedidos da Shopee não encontrado (atalho especulativo)."
@@ -69,7 +72,8 @@
 ; Shift + Y: Entrega Rápida (Chegará amanhã analog)
 +y::
 {
-    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Entrega Rápida", cs: false, matchmode: "Substring" }])
+    if Shopee_ClickSaved("FastDelivery") || Shopee_FindAndInvoke([{ Type: 50002, Name: "Entrega Rápida", cs: false,
+        matchmode: "Substring" }])
         return
     MsgBox "Filtro 'Entrega Rápida' não encontrado (atalho especulativo)."
 }
@@ -77,7 +81,8 @@
 ; Shift + F: Promoções / produtos com desconto (Full analog, speculative)
 +f::
 {
-    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Produtos com Desconto", cs: false, matchmode: "Substring" }])
+    if Shopee_ClickSaved("Discount") || Shopee_FindAndInvoke([{ Type: 50002, Name: "Produtos com Desconto", cs: false,
+        matchmode: "Substring" }])
         return
     MsgBox "Filtro de promoções/produtos com desconto não encontrado (atalho especulativo)."
 }
@@ -85,7 +90,7 @@
 ; Shift + I: Compra internacional
 +i::
 {
-    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Internacional", cs: false }])
+    if Shopee_ClickSaved("International") || Shopee_FindAndInvoke([{ Type: 50002, Name: "Internacional", cs: false }])
         return
     MsgBox "Filtro 'Internacional' da Shopee não encontrado."
 }
@@ -93,7 +98,7 @@
 ; Shift + N: Envio nacional
 +n::
 {
-    if Shopee_FindAndInvoke([{ Type: 50002, Name: "Nacional", cs: false }])
+    if Shopee_ClickSaved("National") || Shopee_FindAndInvoke([{ Type: 50002, Name: "Nacional", cs: false }])
         return
     MsgBox "Filtro 'Nacional' da Shopee não encontrado."
 }
@@ -101,7 +106,8 @@
 ; Shift + G: Frete grátis (speculative)
 +g::
 {
-    if Shopee_FindAndInvoke([{ Type: 50020, Name: "Frete grátis", cs: false, matchmode: "Substring" }])
+    if Shopee_ClickSaved("FreeShipping") || Shopee_FindAndInvoke([{ Type: 50020, Name: "Frete grátis", cs: false,
+        matchmode: "Substring" }])
         return
     MsgBox "Indicador/controle de 'Frete grátis' não encontrado (atalho especulativo)."
 }
@@ -109,8 +115,9 @@
 ; Shift + O: Ordenar por (open sort menu)
 +o::
 {
-    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Classificar por relevância", cs: false, matchmode: "Substring" }, { Type: 50000,
-        Name: "Classificar por", cs: false, matchmode: "Substring" }])
+    if Shopee_ClickSaved("Sort") || Shopee_FindAndInvoke([{ Type: 50000, Name: "Classificar por relevância", cs: false,
+        matchmode: "Substring" }, { Type: 50000,
+            Name: "Classificar por", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Botão 'Classificar por' da Shopee não encontrado."
 }
@@ -176,7 +183,8 @@
 ; Shift + A: Adicionar ao carrinho (página do produto)
 +a::
 {
-    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Adicionar Ao Carrinho", cs: false, matchmode: "Substring" }])
+    if Shopee_ClickSaved("AddToCart") || Shopee_FindAndInvoke([{ Type: 50000, Name: "Adicionar Ao Carrinho", cs: false,
+        matchmode: "Substring" }])
         return
     MsgBox "Botão 'Adicionar Ao Carrinho' não encontrado na página da Shopee."
 }
@@ -184,7 +192,7 @@
 ; Shift + V: Favoritar (coração)
 +v::
 {
-    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Favoritar", cs: false, matchmode: "Substring" }])
+    if Shopee_ClickSaved("Favorite") || Shopee_FindAndInvoke([{ Type: 50000, Name: "Favoritar", cs: false, matchmode: "Substring" }])
         return
     MsgBox "Botão de favoritos da Shopee não encontrado."
 }
@@ -192,7 +200,8 @@
 ; Shift + J: Continuar fluxo (Continuar / Fazer pedido)
 +j::
 {
-    if Shopee_FindAndInvoke([{ Type: 50000, Name: "Continuar", cs: false, matchmode: "Substring" }, { Type: 50000, Name: "Fazer pedido",
+    if Shopee_ClickSaved("Continue") || Shopee_FindAndInvoke([{ Type: 50000, Name: "Continuar", cs: false, matchmode: "Substring" }, { Type: 50000,
+        Name: "Fazer pedido",
         cs: false, matchmode: "Substring" }, { Type: 50000, Name: "OK", cs: false }
     ])
         return

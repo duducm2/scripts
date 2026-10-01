@@ -240,35 +240,35 @@
 
             callButton := UiElements_TrySaved(root, "TeamsChat", "Call")
             if !callButton {
-            callButtonNames := ["Audio call", "Video call", "Start audio call", "Start video call"]
+                callButtonNames := ["Audio call", "Video call", "Start audio call", "Start video call"]
 
-            for name in callButtonNames {
-                candidates := root.FindAll({ Name: name, Type: "50000", matchmode: "Substring", cs: false })
-                if candidates {
-                    for candidate in candidates {
-                        if !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property
-                            .IsEnabled) {
-                            callButton := candidate
-                            break
+                for name in callButtonNames {
+                    candidates := root.FindAll({ Name: name, Type: "50000", matchmode: "Substring", cs: false })
+                    if candidates {
+                        for candidate in candidates {
+                            if !candidate.GetPropertyValue(UIA.Property.IsOffscreen) && candidate.GetPropertyValue(UIA.Property
+                                .IsEnabled) {
+                                callButton := candidate
+                                break
+                            }
+                        }
+                    }
+                    if callButton
+                        break
+                }
+
+                if !callButton {
+                    candidates := root.FindAll({ Type: "50000" })
+                    if candidates {
+                        for candidate in candidates {
+                            if InStr(StrLower(candidate.Name), "call") && !candidate.GetPropertyValue(UIA.Property.IsOffscreen
+                            ) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
+                                callButton := candidate
+                                break
+                            }
                         }
                     }
                 }
-                if callButton
-                    break
-            }
-
-            if !callButton {
-                candidates := root.FindAll({ Type: "50000" })
-                if candidates {
-                    for candidate in candidates {
-                        if InStr(StrLower(candidate.Name), "call") && !candidate.GetPropertyValue(UIA.Property.IsOffscreen
-                        ) && candidate.GetPropertyValue(UIA.Property.IsEnabled) {
-                            callButton := candidate
-                            break
-                        }
-                    }
-                }
-            }
             }
 
             if callButton {

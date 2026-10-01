@@ -231,7 +231,8 @@
 +n::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_ClickSaved("Local") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_LOCAL_HIGHLIGHTED" }, { Type: 50000, Name: "Envio local",
+    if ML_ClickSaved("Local") || ML_FindAndInvoke([{ Type: 50000, AutomationId: "SHIPPING_ORIGIN_LOCAL_HIGHLIGHTED" }, { Type: 50000,
+        Name: "Envio local",
         cs: false, matchmode: "Substring" }])
         return
     MsgBox "Filtro 'Produtos com frete nacional' não encontrado."
@@ -577,7 +578,8 @@ ML_SortApply(idx) {
 +l::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50005, Name: "Seguinte", cs: false }, { Type: 50000, Name: "Seguinte", cs: false }])
+    if ML_ClickSaved("Next") || ML_FindAndInvoke([{ Type: 50005, Name: "Seguinte", cs: false }, { Type: 50000, Name: "Seguinte",
+        cs: false }])
         return
     MsgBox "Botão 'Seguinte' não encontrado."
 }
@@ -586,7 +588,8 @@ ML_SortApply(idx) {
 +k::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50005, Name: "Anterior", cs: false }, { Type: 50000, Name: "Anterior", cs: false }])
+    if ML_ClickSaved("Prev") || ML_FindAndInvoke([{ Type: 50005, Name: "Anterior", cs: false }, { Type: 50000, Name: "Anterior",
+        cs: false }])
         return
     MsgBox "Botão 'Anterior' não encontrado."
 }
@@ -595,7 +598,7 @@ ML_SortApply(idx) {
 +a::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar ao carrinho", cs: false }])
+    if ML_ClickSaved("AddToCart") || ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar ao carrinho", cs: false }])
         return
     MsgBox "Botão 'Adicionar ao carrinho' não encontrado."
 }
@@ -604,7 +607,8 @@ ML_SortApply(idx) {
 +v::
 {
     ML_EnsureHotkeyReceptivity()
-    if ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar aos favoritos", cs: false }, { Type: 50000, ClassName: "ui-pdp-bookmark",
+    if ML_ClickSaved("Favorite") || ML_FindAndInvoke([{ Type: 50000, Name: "Adicionar aos favoritos", cs: false }, { Type: 50000,
+        ClassName: "ui-pdp-bookmark",
         matchmode: "Substring" }])
         return
     MsgBox "Botão 'Adicionar aos favoritos' não encontrado."
@@ -618,7 +622,7 @@ ML_SortApply(idx) {
         Name: "OK", cs: false }, { Type: 50000, AutomationId: "shipping_footer_confirm_button" }, { Type: 50005, Name: "Continuar",
             cs: false }, { Type: 50000, Name: "Seguinte", cs: false }
     ]
-    if ML_FindAndInvoke(conditions)
+    if ML_ClickSaved("Continue") || ML_FindAndInvoke(conditions)
         return
     MsgBox "Botão de continuar não encontrado."
 }
