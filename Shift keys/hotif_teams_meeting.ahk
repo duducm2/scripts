@@ -13,7 +13,9 @@
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        btn := root.FindFirst({ AutomationId: "chat-button" })
+        btn := UiElements_TrySaved(root, "TeamsMeeting", "Chat")
+        if !btn
+            btn := root.FindFirst({ AutomationId: "chat-button" })
         if !btn
             btn := root.FindFirst({ Name: "Chat", ControlType: "Button" })
         if !btn
@@ -99,7 +101,8 @@
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        btn := 0
+        btn := UiElements_TrySaved(root, "TeamsMeeting", "React")
+        if !btn {
         try {
             btn := root.FindFirst({ AutomationId: "reaction-menu-button" })
         } catch {
@@ -115,6 +118,7 @@
                 btn := root.FindFirst({ Name: "React", ControlType: "Button" })
             } catch {
             }
+        }
         }
 
         if btn
@@ -134,7 +138,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the "Join now" button by AutomationId first
-        btn := root.FindFirst({ AutomationId: "prejoin-join-button" })
+        btn := UiElements_TrySaved(root, "TeamsMeeting", "Join")
+        if !btn
+            btn := root.FindFirst({ AutomationId: "prejoin-join-button" })
 
         ; Fallback: try finding by name (Portuguese)
         if !btn {
@@ -173,7 +179,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the audio settings button by AutomationId first
-        btn := root.FindFirst({ AutomationId: "prejoin-audiosettings-button" })
+        btn := UiElements_TrySaved(root, "TeamsMeeting", "Audio")
+        if !btn
+            btn := root.FindFirst({ AutomationId: "prejoin-audiosettings-button" })
 
         ; Fallback: try finding by name (Portuguese)
         if !btn {

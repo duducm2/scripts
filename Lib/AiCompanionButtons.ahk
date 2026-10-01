@@ -9,7 +9,12 @@
 global g_AiCompanionButtonsCache := Map()
 
 AiCompanionButtons_GetIniPath() {
-    return A_ScriptDir "\assets\data\ai_companion_buttons.ini"
+    try {
+        UiElements_EnsureImported()
+        return UiElements_IniPath()
+    } catch {
+        return A_ScriptDir "\assets\data\ai_companion_buttons.ini"
+    }
 }
 
 ; Fixed catalog. Another action is one entry here, one ini key, and one call site.
@@ -298,48 +303,11 @@ AiCompanionButtons_TryFind(uia, criteria) {
 ; Automation id, then name + control type, then class substring + control type.
 ; 0 lets the caller run its built-in finder.
 AiCompanionButtons_FindSaved(uia, companion, actionId) {
-    spec := AiCompanionButtons_Get(companion, actionId)
-    if (!AiCompanionButtons_HasSpec(spec))
+    if (!AiCompanionButtons_ActionById(actionId))
         return 0
-    ct := 0
-    try ct := Integer(spec.controlType)
-    catch
-        ct := 0
-
-    if (Trim(spec.automationId) != "") {
-        criteria := { AutomationId: spec.automationId }
-        if (ct > 0)
-            criteria.Type := ct
-        el := AiCompanionButtons_TryFind(uia, criteria)
-        if (el)
-            return el
-        if (ct > 0) {
-            el := AiCompanionButtons_TryFind(uia, { AutomationId: spec.automationId })
-            if (el)
-                return el
-        }
-    }
-    if (Trim(spec.name) != "") {
-        if (ct > 0) {
-            el := AiCompanionButtons_TryFind(uia, { Name: spec.name, Type: ct })
-            if (el)
-                return el
-        }
-        el := AiCompanionButtons_TryFind(uia, { Name: spec.name })
-        if (el)
-            return el
-    }
-    if (Trim(spec.className) != "") {
-        if (ct > 0) {
-            el := AiCompanionButtons_TryFind(uia, { ClassName: spec.className, matchmode: "Substring", Type: ct })
-            if (el)
-                return el
-        }
-        el := AiCompanionButtons_TryFind(uia, { ClassName: spec.className, matchmode: "Substring" })
-        if (el)
-            return el
-    }
-    return 0
+    if !AiCompanionModels_IsValidCompanion(companion)
+        return 0
+    return UiElements_TrySaved(uia, companion, actionId)
 }
 
 AiCompanionButtons_Click(el) {

@@ -190,6 +190,16 @@ WhatsApp_InvokeOrClick(btn) {
 ; Shift + S : Search chats - Search
 +s::
 {
+    try {
+        uia := UIA_Browser()
+        saved := UiElements_TrySaved(uia, "WhatsApp", "Search")
+        if (IsObject(saved)) {
+            try {
+                saved.SetFocus()
+                return
+            }
+        }
+    }
     WhatsApp_Begin("Search")
     Send("!k")
     WhatsApp_Ok("Search")

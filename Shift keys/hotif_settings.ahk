@@ -16,23 +16,24 @@
         settingsRoot := UIA.ElementFromHandle(settingsHwnd)
 
         ; Try to find the input volume slider by AutomationId first (most reliable)
-        volumeSlider := ""
-        try {
-            volumeSlider := settingsRoot.FindFirst({ AutomationId: "SystemSettings_Audio_Input_VolumeValue_Slider",
-                ControlType: "Slider" })
-        } catch {
-            ; Fallback: Try by name (both English and Portuguese)
-            sliderNames := ["Input volume", "Ajustar o volume de entrada"]
-            for sliderName in sliderNames {
-                try {
-                    volumeSlider := settingsRoot.FindFirst({ Name: sliderName, ControlType: "Slider" })
-                    if volumeSlider
-                        break
-                } catch {
-                    continue
+        volumeSlider := UiElements_TrySaved(settingsRoot, "Settings", "InputVolume")
+        if !volumeSlider
+            try {
+                volumeSlider := settingsRoot.FindFirst({ AutomationId: "SystemSettings_Audio_Input_VolumeValue_Slider",
+                    ControlType: "Slider" })
+            } catch {
+                ; Fallback: Try by name (both English and Portuguese)
+                sliderNames := ["Input volume", "Ajustar o volume de entrada"]
+                for sliderName in sliderNames {
+                    try {
+                        volumeSlider := settingsRoot.FindFirst({ Name: sliderName, ControlType: "Slider" })
+                        if volumeSlider
+                            break
+                    } catch {
+                        continue
+                    }
                 }
             }
-        }
 
         if volumeSlider {
             volumeSlider.SetValue(SCRIPT_MICROPHONE_INPUT_SLIDER_PERCENT)
@@ -52,4 +53,3 @@
         MsgBox("Error setting input volume: " . e.Message, "Error", "IconX")
     }
 }
-

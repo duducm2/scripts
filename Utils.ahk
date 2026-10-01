@@ -164,6 +164,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\lib\AiCompanionModels.ahk
 ; [Lib] Per-companion saved New Chat / Menu / Search UIA targets
 #include %A_ScriptDir%\lib\AiCompanionButtons.ahk
+; [Lib] Saved UIA targets for every cataloged control (ui_elements.ini)
+#include %A_ScriptDir%\lib\UiElementCatalog.ahk
+#include %A_ScriptDir%\lib\UiElements.ahk
 ; [Utils] Shared Shift+L AI companion model list selector
 #include %A_ScriptDir%\Utils\ai_companion_model_selector.ahk
 

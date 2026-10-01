@@ -14,7 +14,9 @@
         Sleep 300
 
         ; Try multiple search strategies
-        searchBox := uia.FindFirst({ Type: "ComboBox", Name: "Search" })
+        searchBox := UiElements_TrySaved(uia, "YouTube", "Search")
+        if !searchBox
+            searchBox := uia.FindFirst({ Type: "ComboBox", Name: "Search" })
         if !searchBox
             searchBox := uia.FindFirst({ Type: "Edit", Name: "Search" })
         if !searchBox
@@ -48,7 +50,9 @@
         Sleep 300
 
         ; Find the "Search filters" button as anchor
-        searchFiltersButton := uia.FindFirst({ Name: "Search filters" })
+        searchFiltersButton := UiElements_TrySaved(uia, "YouTube", "SearchFilters")
+        if !searchFiltersButton
+            searchFiltersButton := uia.FindFirst({ Name: "Search filters" })
         if !searchFiltersButton
             searchFiltersButton := uia.FindFirst({ Type: "Button", Name: "Search filters" })
         if !searchFiltersButton
@@ -90,7 +94,9 @@
         Sleep 300
 
         ; Find the "Explore" button as anchor
-        exploreButton := uia.FindFirst({ Name: "Explore" })
+        exploreButton := UiElements_TrySaved(uia, "YouTube", "Explore")
+        if !exploreButton
+            exploreButton := uia.FindFirst({ Name: "Explore" })
         if !exploreButton
             exploreButton := uia.FindFirst({ Type: "Button", Name: "Explore" })
         if !exploreButton

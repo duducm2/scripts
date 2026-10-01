@@ -474,6 +474,9 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
 ; --- Finders -----------------------------------------------------------------
 
 GeminiEnterprise_FindComposer(uia) {
+    saved := UiElements_TrySaved(uia, "GeminiEnterprise", "Prompt")
+    if (saved)
+        return saved
     return GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "agent-search-prosemirror-editor" }, { Name: "Search",
         AutomationId: "agent-search-prosemirror-editor" }, { ClassName: "ProseMirror", matchmode: "Substring" }
     ])
@@ -505,6 +508,9 @@ GeminiEnterprise_FindSearchButton(uia) {
 }
 
 GeminiEnterprise_FindSelectToolsButton(uia) {
+    saved := UiElements_TrySaved(uia, "GeminiEnterprise", "Tools")
+    if (saved)
+        return saved
     btn := GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Select tools", ControlType: "Button" }, { Name: "Select tools",
         Type: 50000 }])
     if (btn)
@@ -522,6 +528,9 @@ GeminiEnterprise_FindSelectToolsButton(uia) {
 }
 
 GeminiEnterprise_FindChooseModelButton(uia) {
+    saved := UiElements_TrySaved(uia, "GeminiEnterprise", "ChooseModel")
+    if (saved)
+        return saved
     btn := GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Choose model", ControlType: "Button" }, { Name: "Choose model",
         Type: 50000 }])
     if (btn)
@@ -549,6 +558,9 @@ GeminiEnterprise_FindSubmitButton(uia) {
 GeminiEnterprise_FindStopButton(uia) {
     if (!IsObject(uia))
         return 0
+    saved := UiElements_TrySaved(uia, "GeminiEnterprise", "Stop")
+    if (saved)
+        return saved
     el := GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Stop generating", ControlType: "Button" }, { Name: "Stop response",
         ControlType: "Button" }, { Name: "Stop", ControlType: "Button" }
     ])

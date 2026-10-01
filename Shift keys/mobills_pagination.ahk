@@ -86,6 +86,11 @@ Mobills_FindElementByCandidates(uia, candidates) {
 Mobills_FindOpenButton(uia, index := 1) {
     if !uia
         return ""
+    if (index = 1) {
+        saved := UiElements_TrySaved(uia, "Mobills", "Open")
+        if (saved)
+            return saved
+    }
     try {
         openButtons := uia.FindAll({ Name: "Open", Type: 50000 })
         if (openButtons && openButtons.Length >= index)
@@ -139,6 +144,10 @@ Mobills_GetBudgetsPrevNext(uia, &prevBtn, &nextBtn) {
 }
 
 Mobills_FindPagerByName(uia, dir) {
+    savedId := (dir = "Prev") ? "PagerPrev" : "PagerNext"
+    saved := UiElements_TrySaved(uia, "Mobills", savedId)
+    if (saved)
+        return saved
     ; Try common labels (EN/PT). Substring match.
     namesPrev := ["Go to previous page", "previous page", "Previous", "Prev", "Anterior", "Página anterior",
         "Ir para a página anterior"]

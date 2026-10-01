@@ -1520,7 +1520,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Shift+E] > Command Palette (active): edit favorite (Ctrl+K → Editar favorito / Edit bookmark)
     
     === SHORTCUTS ===
-    [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
+    [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press; waits 400 ms)
+    [Win+Alt+Shift+A] > UI elements for the foreground app (double-tap within 400 ms)
     [Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
     [Win+Alt+Shift+/] > Search all cheat sheets (cross-context)
     

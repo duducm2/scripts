@@ -145,6 +145,9 @@ EmailNote_EnsureOutlookActive() {
 EmailNote_FindOutlookToField(root) {
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "OutlookMessage", "To")
+    if (saved)
+        return saved
     try {
         el := root.FindFirst({ Name: "To", Type: 50026 })
         if el
@@ -176,6 +179,9 @@ EmailNote_FindOutlookToField(root) {
 EmailNote_FindOutlookSubjectField(root) {
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "OutlookMessage", "Subject")
+    if (saved)
+        return saved
     try {
         el := root.FindFirst({ Name: "Subject", Type: 50004 })
         if el
@@ -294,6 +300,9 @@ EmailNote_FindGmailComposeContainer(root) {
 EmailNote_FindGmailToField(root) {
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "Gmail", "To")
+    if (saved)
+        return saved
     for nm in ["To recipients", "Destinatários"] {
         try {
             el := root.FindFirst({ Type: 50003, Name: nm })
@@ -314,6 +323,9 @@ EmailNote_FindGmailToField(root) {
 EmailNote_FindGmailSubjectField(root) {
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "Gmail", "Subject")
+    if (saved)
+        return saved
     for nm in ["Subject", "Assunto"] {
         try {
             el := root.FindFirst({ Type: 50004, Name: nm })
@@ -360,6 +372,9 @@ EmailNote_FindGmailComposeButton(hwnd) {
     root := EmailNote_GmailUiaRoot(hwnd)
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "Gmail", "Compose")
+    if (saved)
+        return saved
     for nm in ["Compose", "Compose Mail", "Escrever"] {
         try {
             el := root.FindFirst({ Type: 50000, Name: nm })

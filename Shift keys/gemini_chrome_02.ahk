@@ -11,6 +11,9 @@ GEMINI_TOOLBOX_CHECKBOX_TYPE := 50002
 Gemini_FindToolsButton(uia) {
     if !IsObject(uia)
         return 0
+    saved := UiElements_TrySaved(uia, "Gemini", "Tools")
+    if (saved)
+        return saved
     toolsButton := 0
     try {
         toolsButton := uia.FindFirst({ Name: "Upload & tools", Type: 50000 })
@@ -332,6 +335,8 @@ FocusGeminiPromptField() {
     try {
         uia := UIA_Browser()
         Sleep 150  ; small settle per README (keep this snappy)
+
+        promptField := UiElements_TrySaved(uia, "Gemini", "Prompt")
 
         ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
         try

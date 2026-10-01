@@ -225,6 +225,9 @@ Maps_RestoreChrome(uia) {
 Maps_FindMapPane(root) {
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "Google Maps", "MapPane")
+    if (saved)
+        return saved
     pane := 0
     try pane := root.FindFirst({ Type: 50033, Name: "Street View", cs: false })
     if pane

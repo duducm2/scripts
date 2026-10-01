@@ -55,6 +55,14 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
 +e:: {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
+        saved := UiElements_TrySaved(root, "EXCEL.EXE", "EnableEditing")
+        if (saved) {
+            try {
+                saved.Invoke()
+                return
+            } catch {
+            }
+        }
         if (btn := WaitForButton(root, "Enable Editing", 3000)) {
             btn.Invoke()
         } else {

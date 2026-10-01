@@ -11,6 +11,19 @@ GoogleSearch_ClickFirstResult(hwnd := 0) {
         if !uia
             return false
 
+        savedLink := UiElements_TrySaved(uia, "Google", "FirstResult")
+        if (savedLink) {
+            try {
+                savedLink.Invoke()
+            } catch {
+                try savedLink.Click()
+                catch
+                    savedLink := 0
+            }
+            if (savedLink)
+                return true
+        }
+
         centerCol := uia.FindFirst({ AutomationId: "center_col" })
         targetLink := ""
 

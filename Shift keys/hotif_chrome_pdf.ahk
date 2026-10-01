@@ -176,6 +176,9 @@ ChromePdf_ClickByAutomationId(automationId, fallbackNames := 0) {
 ChromePdf_FindDownloadButton(root) {
     if (!root)
         return 0
+    saved := UiElements_TrySaved(root, "Chrome PDF Viewer", "Download")
+    if (saved)
+        return saved
     downloadNames := ["Baixar", "Download"]
     btn := 0
     for , name in downloadNames {
@@ -226,6 +229,9 @@ ChromePdf_ClickDownload() {
 ChromePdf_FindPresentMenuItem(root) {
     if (!root)
         return 0
+    saved := UiElements_TrySaved(root, "Chrome PDF Viewer", "Present")
+    if (saved)
+        return saved
     presentItem := 0
     selectorNames := [
         "Present",

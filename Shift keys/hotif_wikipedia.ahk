@@ -26,13 +26,14 @@
         }
 
         ; Step 2: Try to locate the "Search Wikipedia" field by name (combo box / edit)
-        searchBox := 0
+        searchBox := UiElements_TrySaved(root, "Wikipedia", "Search")
 
         ; First try: ComboBox with the expected name (Type 50003)
-        try {
-            searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
-        } catch {
-        }
+        if (!searchBox)
+            try {
+                searchBox := root.FindElement({ Type: 50003, Name: "Search Wikipedia", cs: false })
+            } catch {
+            }
 
         ; Second: Edit control with the same name (in case UI changes type)
         if (!searchBox) {

@@ -6,10 +6,11 @@
 ; =============================================================================
 
 ; ========== Helper to decide which sheet applies ===========================
-GetCheatSheetText() {
+; Most specific cheat-sheet key for the foreground window. "" when none applies.
+CheatSheet_ResolveActiveKey() {
     global cheatSheets
 
-    exe := WinGetProcessName("A") ; active process name (e.g. chrome.exe)
+    exe := WinGetProcessName("A")
     title := WinGetTitle("A")
     hwnd := WinExist("A")
 
@@ -17,44 +18,34 @@ GetCheatSheetText() {
     if (StrLower(exe) = "olk.exe")
         exe := "OUTLOOK.EXE"
 
-    ; (removed temporary tooltip debugging)
-
     ; Prefer Outlook Reminders over generic File Dialog detection
     if (exe = "OUTLOOK.EXE") {
         if RegExMatch(title, "i)Reminder")
-            return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : ""
+            return cheatSheets.Has("OutlookReminder") ? "OutlookReminder" : ""
     }
 
     ; Check for file dialog first (works in any app)
     if WinGetClass("ahk_id " hwnd) = "#32770" {
         txt := WinGetText("ahk_id " hwnd)
-        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Ãrvore de Namespace") {
-            return cheatSheets["FileDialog"]
-        }
+        if InStr(txt, "Namespace Tree Control") || InStr(txt, "Controle da Ãrvore de Namespace")
+            return "FileDialog"
     }
 
     ; Check for Settings window (both English and Portuguese)
-    if (title = "Settings" || title = "ConfiguraÃ§Ãµes") {
-        return cheatSheets.Has("Settings") ? cheatSheets["Settings"] : ""
-    }
+    if (title = "Settings" || title = "ConfiguraÃ§Ãµes")
+        return cheatSheets.Has("Settings") ? "Settings" : ""
 
     ; Check for Command Palette window
-    if InStr(title, "Command Palette", false) {
-        return cheatSheets.Has("Command Palette") ? cheatSheets["Command Palette"] : ""
-    }
+    if InStr(title, "Command Palette", false)
+        return cheatSheets.Has("Command Palette") ? "Command Palette" : ""
 
     ; Check for Power BI (by process name or window title)
-    if (exe = "PBIDesktop.exe" || InStr(title, "powerbi", false)) {
-        return cheatSheets.Has("Power BI") ? cheatSheets["Power BI"] : ""
-    }
+    if (exe = "PBIDesktop.exe" || InStr(title, "powerbi", false))
+        return cheatSheets.Has("Power BI") ? "Power BI" : ""
 
     ; Special handling for Chrome-based apps that share chrome.exe
     if (exe = "chrome.exe") {
-        chromeShortcuts := cheatSheets.Has("chrome.exe") ? cheatSheets["chrome.exe"] : ""
-        appShortcuts := ""
-
         chromeTitle := ChromeTitleWithoutBrowser(title)
-
         siteKey := ""
         if (hwnd) {
             try {
@@ -75,9 +66,61 @@ GetCheatSheetText() {
         if (siteKey = "")
             siteKey := PickChromeAppSheetKey(chromeTitle)
         if (siteKey != "" && cheatSheets.Has(siteKey))
-            appShortcuts := cheatSheets[siteKey]
+            return siteKey
+        return cheatSheets.Has("chrome.exe") ? "chrome.exe" : ""
+    }
 
-        ; Combine Chrome general + app-specific shortcuts
+    ; UIA Tree Inspector - check both process and window title
+    if (exe = "AutoHotkey64.exe" && InStr(title, "UIATreeInspector"))
+        return "UIATreeInspector"
+
+    ; Microsoft Teams — differentiate meeting vs chat via helper predicates
+    if IsTeamsMeetingActive()
+        return cheatSheets.Has("TeamsMeeting") ? "TeamsMeeting" : ""
+    if IsTeamsChatActive()
+        return cheatSheets.Has("TeamsChat") ? "TeamsChat" : ""
+    if IsFileDialogActive()
+        return "FileDialog"
+
+    ; Special handling for Outlook-based apps
+    if (exe = "OUTLOOK.EXE") {
+        if RegExMatch(title, "i)Reminder")
+            return cheatSheets.Has("OutlookReminder") ? "OutlookReminder" : "OUTLOOK.EXE"
+        if RegExMatch(title, "i) - Message \(")
+            return cheatSheets.Has("OutlookMessage") ? "OutlookMessage" : "OUTLOOK.EXE"
+        if RegExMatch(title, "i)(Appointment|Meeting|Event)")
+            return cheatSheets.Has("OutlookAppointment") ? "OutlookAppointment" : "OUTLOOK.EXE"
+        if cheatSheets.Has("OUTLOOK.EXE")
+            return "OUTLOOK.EXE"
+    }
+
+    if cheatSheets.Has(exe)
+        return exe
+
+    for key, value in cheatSheets {
+        if (StrLower(key) = StrLower(exe))
+            return key
+    }
+    return ""
+}
+
+GetCheatSheetText() {
+    global cheatSheets
+    key := CheatSheet_ResolveActiveKey()
+    if (key = "")
+        return ""
+
+    exe := ""
+    try exe := WinGetProcessName("A")
+    catch
+        exe := ""
+    if (StrLower(exe) = "olk.exe")
+        exe := "OUTLOOK.EXE"
+
+    ; Chrome general shortcuts stay above the site sheet.
+    if (exe = "chrome.exe" && key != "chrome.exe") {
+        chromeShortcuts := cheatSheets.Has("chrome.exe") ? cheatSheets["chrome.exe"] : ""
+        appShortcuts := cheatSheets.Has(key) ? cheatSheets[key] : ""
         if (appShortcuts != "" && chromeShortcuts != "")
             return chromeShortcuts "`r`n`r`n" appShortcuts
         if (appShortcuts != "")
@@ -87,50 +130,7 @@ GetCheatSheetText() {
         return ""
     }
 
-    ; UIA Tree Inspector - check both process and window title
-    if (exe = "AutoHotkey64.exe" && InStr(title, "UIATreeInspector"))
-        return cheatSheets["UIATreeInspector"]
-
-    ; Microsoft Teams â€" differentiate meeting vs chat via helper predicates
-    if IsTeamsMeetingActive()
-        return cheatSheets.Has("TeamsMeeting") ? cheatSheets["TeamsMeeting"] : ""
-    if IsTeamsChatActive()
-        return cheatSheets.Has("TeamsChat") ? cheatSheets["TeamsChat"] : ""
-    if IsFileDialogActive()
-        return cheatSheets["FileDialog"]
-
-    ; Special handling for Outlook-based apps
-    if (exe = "OUTLOOK.EXE") {
-        ; Detect Reminders window â€" e.g. "3 Reminder(s)" or any title containing "Reminder"
-        if RegExMatch(title, "i)Reminder") {
-            return cheatSheets.Has("OutlookReminder") ? cheatSheets["OutlookReminder"] : cheatSheets["OUTLOOK.EXE"]
-        }
-        ; Detect Message inspector windows â€" e.g., " - Message (HTML)"
-        if RegExMatch(title, "i) - Message \(") {
-            return cheatSheets.Has("OutlookMessage") ? cheatSheets["OutlookMessage"] : cheatSheets["OUTLOOK.EXE"]
-        }
-        ; Detect Appointment, Meeting, or Event inspector windows
-        if RegExMatch(title, "i)(Appointment|Meeting|Event)") {
-            return cheatSheets.Has("OutlookAppointment") ? cheatSheets["OutlookAppointment"] : cheatSheets[
-                "OUTLOOK.EXE"]
-        }
-        ; Fallback to generic Outlook sheet
-        if cheatSheets.Has("OUTLOOK.EXE")
-            return cheatSheets["OUTLOOK.EXE"]
-    }
-
-    ; Direct match by process name (generic fallback)
-    if cheatSheets.Has(exe)
-        return cheatSheets[exe]
-
-    ; Try case-insensitive match for process name
-    for key, value in cheatSheets {
-        if (StrLower(key) = StrLower(exe))
-            return value
-    }
-
-    ; Nothing found > blank > caller will show fallback message
-    return ""
+    return cheatSheets.Has(key) ? cheatSheets[key] : ""
 }
 
 ChromeTitleWithoutBrowser(title) {
@@ -644,51 +644,142 @@ CheatSheet_HideOpeningIndicator() {
     try StandardLoadingBar_Hide(0)
 }
 
+; Win+Alt+Shift+A tap / double-tap / hold (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
+;   1× = app cheat sheet
+;   2× = UI element manager for the foreground app
+;   hold 700ms+ = global cheat sheet
+CHEAT_SHEET_A_HOLD_MS := 700
+global g_CheatSheetA_DoubleTapArmed := false
+global g_CheatSheetA_LastPressTick := 0
+global g_CheatSheetA_DoubleTapTimer := 0
+
+CheatSheetA_EnsureState() {
+    global g_CheatSheetA_DoubleTapArmed, g_CheatSheetA_LastPressTick, g_CheatSheetA_DoubleTapTimer
+    if !IsSet(g_CheatSheetA_DoubleTapArmed)
+        g_CheatSheetA_DoubleTapArmed := false
+    if !IsSet(g_CheatSheetA_LastPressTick)
+        g_CheatSheetA_LastPressTick := 0
+    if !IsSet(g_CheatSheetA_DoubleTapTimer)
+        g_CheatSheetA_DoubleTapTimer := 0
+}
+
+class CheatSheetA_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global g_CheatSheetA_DoubleTapArmed, g_CheatSheetA_DoubleTapTimer
+        CheatSheetA_EnsureState()
+        if (!g_CheatSheetA_DoubleTapArmed)
+            return
+        g_CheatSheetA_DoubleTapArmed := false
+        g_CheatSheetA_DoubleTapTimer := 0
+        try {
+            StandardLoadingBar_Update("⏳ Opening app shortcuts...", BANNER_ACCENT_INTERMEDIATE)
+            ToggleShortcutHelp()
+        } finally {
+            CheatSheet_HideOpeningIndicator()
+        }
+    }
+}
+
+CheatSheetA_DisarmDoubleTap() {
+    global g_CheatSheetA_DoubleTapArmed, g_CheatSheetA_DoubleTapTimer, g_CheatSheetA_LastPressTick
+    CheatSheetA_EnsureState()
+    g_CheatSheetA_DoubleTapArmed := false
+    g_CheatSheetA_LastPressTick := 0
+    if (g_CheatSheetA_DoubleTapTimer) {
+        SetTimer(g_CheatSheetA_DoubleTapTimer, 0)
+        g_CheatSheetA_DoubleTapTimer := 0
+    }
+}
+
+CheatSheetA_CloseOpenSheets() {
+    global g_helpGui, g_helpShown, g_globalGui, g_globalShown, g_searchAllGui
+    closed := false
+    if (IsObject(g_helpGui) && g_helpShown) {
+        g_helpGui.Hide()
+        g_helpShown := false
+        closed := true
+    }
+    if (IsObject(g_globalGui) && g_globalShown) {
+        g_globalGui.Hide()
+        g_globalShown := false
+        closed := true
+    }
+    if (IsObject(g_searchAllGui)) {
+        visible := false
+        try visible := DllCall("IsWindowVisible", "Ptr", g_searchAllGui.Hwnd)
+        if (visible) {
+            g_searchAllGui.Hide()
+            closed := true
+        }
+    }
+    return closed
+}
+
 ; ========== Hotkey with hold detection ====================================
 ; Win + Alt + Shift + A with hold detection
 #!+a::
 {
-    global g_helpGui, g_helpShown, g_globalGui, g_globalShown, g_searchAllGui
+    CheatSheetA_EnsureState()
+    global g_CheatSheetA_DoubleTapArmed, g_CheatSheetA_LastPressTick, g_CheatSheetA_DoubleTapTimer
 
-    ; First check if any cheat sheet is currently open - if so, close it
-    if (IsObject(g_helpGui) && g_helpShown) {
-        g_helpGui.Hide()
-        g_helpShown := false
+    ; Drop queued auto-repeat ghosts that run after a hold released.
+    if !GetKeyState("a", "P")
+        return
+
+    ; An open sheet still closes on the first press. Double-tap applies when none is open.
+    if (CheatSheetA_CloseOpenSheets()) {
+        CheatSheetA_DisarmDoubleTap()
         return
     }
 
-    if (IsObject(g_globalGui) && g_globalShown) {
-        g_globalGui.Hide()
-        g_globalShown := false
-        return
-    }
+    thresholdMs := 400
+    try thresholdMs := AI_QD_DOUBLE_TAP_MS
+    catch
+        thresholdMs := 400
 
-    if (IsObject(g_searchAllGui)) {
-        g_searchAllGui.Hide()
-        return
-    }
+    pressTime := A_TickCount
+    elapsed := (g_CheatSheetA_LastPressTick > 0) ? (pressTime - g_CheatSheetA_LastPressTick) : 9999
+    isSecondTap := g_CheatSheetA_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
 
-    ; Loading Indication while waiting for tap vs hold and while resolving/building the overlay.
-    CheatSheet_ShowOpeningIndicator()
-    try {
-        static pressTime := 0
-        pressTime := A_TickCount
+    if (!isSecondTap)
+        CheatSheet_ShowOpeningIndicator()
+    KeyWait "a", "T" . (CHEAT_SHEET_A_HOLD_MS / 1000)
+    isHold := (A_TickCount - pressTime) >= CHEAT_SHEET_A_HOLD_MS
 
-        ; Wait for key release or timeout (increased to accommodate 1s+ holds)
-        KeyWait "a", "T1"  ; Wait max 1.5s for key release
-
-        holdTime := A_TickCount - pressTime
-
-        if (holdTime >= 700) {
-            try StandardLoadingBar_Update("⏳ Opening global shortcuts...", BANNER_ACCENT_INTERMEDIATE)
+    if (isHold) {
+        CheatSheetA_DisarmDoubleTap()
+        try {
+            StandardLoadingBar_Update("⏳ Opening global shortcuts...", BANNER_ACCENT_INTERMEDIATE)
             ShowGlobalShortcutsHelp()
-        } else {
-            try StandardLoadingBar_Update("⏳ Opening app shortcuts...", BANNER_ACCENT_INTERMEDIATE)
-            ToggleShortcutHelp()
+        } finally {
+            CheatSheet_HideOpeningIndicator()
         }
-    } finally {
-        CheatSheet_HideOpeningIndicator()
+        KeyWait "a"
+        return
     }
+
+    if (isSecondTap) {
+        CheatSheetA_DisarmDoubleTap()
+        targetHwnd := WinExist("A")
+        appKey := ""
+        try appKey := CheatSheet_ResolveActiveKey()
+        catch
+            appKey := ""
+        CheatSheet_HideOpeningIndicator()
+        try UiElements_OpenManager(targetHwnd, appKey)
+        catch
+            try ShowCenteredOverlay_Utils("Could not open the UI element list.", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    if (g_CheatSheetA_DoubleTapTimer) {
+        SetTimer(g_CheatSheetA_DoubleTapTimer, 0)
+        g_CheatSheetA_DoubleTapTimer := 0
+    }
+    g_CheatSheetA_LastPressTick := A_TickCount
+    g_CheatSheetA_DoubleTapArmed := true
+    g_CheatSheetA_DoubleTapTimer := ObjBindMethod(CheatSheetA_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(g_CheatSheetA_DoubleTapTimer, -thresholdMs)
 }
 
 ; Win+Alt+Shift+/ — search all registered cheat sheets (ListView; double-click row copies line)

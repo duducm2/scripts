@@ -14,7 +14,9 @@
         Sleep 300
 
         ; Find the Google search box by Name
-        searchBox := uia.FindFirst({ Name: "Search" })
+        searchBox := UiElements_TrySaved(uia, "Google", "Search")
+        if !searchBox
+            searchBox := uia.FindFirst({ Name: "Search" })
         if !searchBox
             searchBox := uia.FindFirst({ Type: "Edit", Name: "Search" })
         if !searchBox

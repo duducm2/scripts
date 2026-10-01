@@ -150,6 +150,9 @@ FileDialog_FindFileNameEdit(root := 0) {
             return 0
         }
     }
+    saved := UiElements_TrySaved(root, "FileDialog", "FileName")
+    if (saved)
+        return saved
     try {
         fileNameEdit := root.FindFirst({ Type: "Edit", AutomationId: "1148" })
         if !fileNameEdit {
@@ -583,6 +586,9 @@ FileDialog_IsPdfSaveType(val) {
 FileDialog_FindPdfTypeListItem(scope) {
     if !scope
         return 0
+    saved := UiElements_TrySaved(scope, "FileDialog", "PdfType")
+    if (saved)
+        return saved
     try {
         for item in scope.FindAll({ Type: "ListItem" }) {
             name := ""
@@ -669,7 +675,9 @@ FileDialog_SelectPdf(root) {
 }
 
 FileDialog_ClickSaveButton(root) {
-    actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
+    actionBtn := UiElements_TrySaved(root, "FileDialog", "Save")
+    if !actionBtn
+        actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
     if !actionBtn {
         for name in ["Save", "Salvar", "Guardar", "OK"] {
             actionBtn := root.FindFirst({ Type: "Button", Name: name })
@@ -854,7 +862,8 @@ FileDialog_SaveAsCsvUtf8() {
 ; --- File Dialog helpers (Import CSV → Load → close Queries → format → shade) -
 
 FileDialog_ClickOpenButton(root) {
-    actionBtn := 0
+    actionBtn := UiElements_TrySaved(root, "FileDialog", "Open")
+    if !actionBtn {
     try actionBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "1" })
     catch {
         actionBtn := 0
@@ -881,6 +890,7 @@ FileDialog_ClickOpenButton(root) {
                 break
         }
     }
+    }
     if actionBtn && FileDialog_InvokeButton(actionBtn)
         return true
     Send "!o"
@@ -888,6 +898,9 @@ FileDialog_ClickOpenButton(root) {
 }
 
 FileDialog_FindLoadButton(root) {
+    saved := UiElements_TrySaved(root, "FileDialog", "Load")
+    if (saved)
+        return saved
     for name in ["Load", "Carregar"] {
         try {
             btn := root.FindFirst({ Type: "Button", Name: name })

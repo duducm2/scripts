@@ -13,7 +13,15 @@
 ; Shift + U : (reserved for later script)
 
 ; Shift + I: Toggle sidebar
-+i:: Send("^+s")
++i:: {
+    try {
+        uia := UIA_Browser()
+        saved := UiElements_TrySaved(uia, "ChatGPT", "Sidebar")
+        if (IsObject(saved) && AiCompanionButtons_Click(saved))
+            return
+    }
+    Send("^+s")
+}
 
 ; Shift + O : Re-send rules & ask ChatGPT to correct mistake
 +o::
@@ -82,7 +90,7 @@ SubmitChatGPTMessage() {
     Sleep 300
     ShowSmallLoadingIndicator_ChatGPT("AI is responding...")
     WaitForButtonAndShowSmallLoading_ChatGPT(["Stop streaming", "Interromper transmissão", "Stop", "Interromper"],
-        "AI is responding...", 0)
+    "AI is responding...", 0)
 }
 
 #HotIf

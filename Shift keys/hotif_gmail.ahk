@@ -9,6 +9,14 @@
 global GMAIL_USE_FAST_BULK_READ := true
 
 Gmail_ToggleReadStatus(uia) {
+    saved := UiElements_TrySaved(uia, "Gmail", "MarkAsRead")
+    if (saved) {
+        try {
+            saved.Invoke()
+            return true
+        } catch {
+        }
+    }
     readPattern := "i)^(Mark as read|Marcar como lida|Marcar como lido)$"
     unreadPattern := "i)^(Mark as unread|Marcar como n[oÃ³] lida|Marcar como n[oÃ³] lido)$"
     if (btn := WaitForButton(uia, readPattern, 1000)) {
@@ -27,6 +35,14 @@ Gmail_WaitInvokeMarkAsRead(uia, timeoutMs := 1000) {
     static names := ["Mark as read", "Marcar como lida", "Marcar como lido"]
     if !IsObject(uia)
         return false
+    saved := UiElements_TrySaved(uia, "Gmail", "MarkAsRead")
+    if (saved) {
+        try {
+            saved.Invoke()
+            return true
+        } catch {
+        }
+    }
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         for name in names {

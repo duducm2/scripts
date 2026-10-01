@@ -25,11 +25,12 @@ ClickHidePanelButton() {
         if !IsObject(uia)
             return false
 
-        btn := 0
+        btn := UiElements_TrySaved(uia, Editor_UiElementAppKey(), "HidePanel")
         foundAs := ""
 
         ; VS Code commonly exposes it as a Button with shortcut text.
-        try btn := uia.FindFirst({ Name: "Hide Panel (Ctrl+J)", ControlType: "Button" })
+        if !btn
+            try btn := uia.FindFirst({ Name: "Hide Panel (Ctrl+J)", ControlType: "Button" })
         if btn
             foundAs := "Button:Hide Panel (Ctrl+J)"
         if !btn
@@ -598,6 +599,16 @@ ClickVSCodeCopilotModelButton() {
 ; Shift + D : Git section - Git
 +d:: Send "+d"
 
+Editor_UiElementAppKey() {
+    exe := ""
+    try exe := WinGetProcessName("A")
+    catch
+        exe := ""
+    if (StrLower(exe) = "code.exe")
+        return "Code.exe"
+    return "Cursor.exe"
+}
+
 Editor_FocusScmCommitInput() {
     try {
         hwnd := WinExist("A")
@@ -606,38 +617,40 @@ Editor_FocusScmCommitInput() {
         root := UIA.ElementFromHandle(hwnd)
         if (!root)
             return false
-        el := 0
-        try el := root.FindFirst({ AutomationId: "scm.input" })
-        catch {
-        }
+        el := UiElements_TrySaved(root, Editor_UiElementAppKey(), "CommitInput")
         if (!el) {
-            try {
-                ti := root.FindFirst({ Type: UIA.Type.TreeItem, Name: "Source Control Input" })
-                if (ti) {
-                    try el := ti.FindFirst({ Type: UIA.Type.Edit, ClassName: "inputarea monaco-mouse-cursor-text" })
-                    catch {
-                    }
-                    if (!el) {
-                        try el := ti.FindFirst({ Type: UIA.Type.Edit })
+            try el := root.FindFirst({ AutomationId: "scm.input" })
+            catch {
+            }
+            if (!el) {
+                try {
+                    ti := root.FindFirst({ Type: UIA.Type.TreeItem, Name: "Source Control Input" })
+                    if (ti) {
+                        try el := ti.FindFirst({ Type: UIA.Type.Edit, ClassName: "inputarea monaco-mouse-cursor-text" })
                         catch {
                         }
-                    }
-                }
-            } catch {
-            }
-        }
-        if (!el) {
-            try {
-                for edit in root.FindAll({ Type: UIA.Type.Edit }) {
-                    try {
-                        if (InStr(edit.Name, "Message", false) || InStr(edit.AutomationId, "scm", false)) {
-                            el := edit
-                            break
+                        if (!el) {
+                            try el := ti.FindFirst({ Type: UIA.Type.Edit })
+                            catch {
+                            }
                         }
-                    } catch {
                     }
+                } catch {
                 }
-            } catch {
+            }
+            if (!el) {
+                try {
+                    for edit in root.FindAll({ Type: UIA.Type.Edit }) {
+                        try {
+                            if (InStr(edit.Name, "Message", false) || InStr(edit.AutomationId, "scm", false)) {
+                                el := edit
+                                break
+                            }
+                        } catch {
+                        }
+                    }
+                } catch {
+                }
             }
         }
         if (el) {

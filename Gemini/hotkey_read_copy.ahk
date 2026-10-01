@@ -141,9 +141,12 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
-; #!+p orchestrator: show destination banner first; copy starts only after user picks P/Y/F/R/W/O.
-HotkeyCopy_RunIntentFlow(isCode := false) {
-    global g_HotkeyCopy_StartCopyCb
+; #!+p orchestrator: show destination banner first; copy starts only after user picks P/D/Y/F/R/W/O.
+; gen: when non-zero, bail if a newer press superseded this one (double-tap → code).
+HotkeyCopy_RunIntentFlow(isCode := false, gen := 0) {
+    global g_HotkeyCopy_StartCopyCb, g_HotkeyCopy_BannerGen
+    if (gen != 0 && gen != g_HotkeyCopy_BannerGen)
+        return
     ; Register copy starter so Utils FinalizeIntent can schedule workers without Func("name").
     g_HotkeyCopy_StartCopyCb := HotkeyCopy_StartCopyImpl
     originHwnd := 0
@@ -153,6 +156,8 @@ HotkeyCopy_RunIntentFlow(isCode := false) {
     catch {
         companion := ""
     }
+    if (gen != 0 && gen != g_HotkeyCopy_BannerGen)
+        return
     HotkeyCopy_ShowIntentBanner(isCode, originHwnd, companion)
 }
 
@@ -245,12 +250,12 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
 }
 
 ; Win+Alt+Shift+P tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS):
-;   1× = destination banner, then copy last message/response after choice
-;   2× = destination banner, then copy most recent code snippet after choice
-; Copy starts only after P/Y/F/R/W/O; N/Esc/timeout dismisses without copying.
-global g_HotkeyCopy_DoubleTapArmed := false
+;   Banner is shown on the first press (message). The 400 ms window does not delay it.
+;   2× within that window replaces the banner with the code-snippet destination menu.
+; Copy starts only after P/D/Y/F/R/W/O; N/Esc/timeout dismisses without copying.
+; Armed / timer / block live in Utils\clip_angel_export_desktop.ahk (HotkeyCopy_DisarmDoubleTap).
 global g_HotkeyCopy_LastPressTick := 0
-global g_HotkeyCopy_DoubleTapTimer := 0
+global g_HotkeyCopy_BannerGen := 0
 
 class HotkeyCopy_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
@@ -259,12 +264,13 @@ class HotkeyCopy_DoubleTapTimerObj {
             return
         g_HotkeyCopy_DoubleTapArmed := false
         g_HotkeyCopy_DoubleTapTimer := 0
-        SetTimer((*) => HotkeyCopy_RunIntentFlow(false), -1)
+        ; Message banner was already shown on the first press.
     }
 }
 
 #!+p:: {
     global g_HotkeyCopy_DoubleTapArmed, g_HotkeyCopy_LastPressTick, g_HotkeyCopy_DoubleTapTimer
+    global g_HotkeyCopy_BannerGen, g_HotkeyCopy_BlockCodeUpgrade
 
     thresholdMs := 400
     try thresholdMs := AI_QD_DOUBLE_TAP_MS
@@ -275,21 +281,33 @@ class HotkeyCopy_DoubleTapTimerObj {
     now := A_TickCount
     elapsed := (g_HotkeyCopy_LastPressTick > 0) ? (now - g_HotkeyCopy_LastPressTick) : 9999
 
-    if (g_HotkeyCopy_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs) {
+    if (g_HotkeyCopy_DoubleTapArmed && !g_HotkeyCopy_BlockCodeUpgrade && elapsed >= 0 && elapsed < thresholdMs) {
         g_HotkeyCopy_DoubleTapArmed := false
         g_HotkeyCopy_LastPressTick := 0
         if (g_HotkeyCopy_DoubleTapTimer) {
             SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
             g_HotkeyCopy_DoubleTapTimer := 0
         }
-        SetTimer((*) => HotkeyCopy_RunIntentFlow(true), -1)
+        ; Supersede the in-flight message banner (it may still be resolving the companion).
+        g_HotkeyCopy_BannerGen += 1
+        codeGen := g_HotkeyCopy_BannerGen
+        SetTimer((*) => HotkeyCopy_RunIntentFlow(true, codeGen), -1)
         return
     }
 
     g_HotkeyCopy_LastPressTick := now
     g_HotkeyCopy_DoubleTapArmed := true
+    g_HotkeyCopy_BlockCodeUpgrade := false
+    if (g_HotkeyCopy_DoubleTapTimer) {
+        SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
+        g_HotkeyCopy_DoubleTapTimer := 0
+    }
     g_HotkeyCopy_DoubleTapTimer := ObjBindMethod(HotkeyCopy_DoubleTapTimerObj, "OnSingleTapTimeout")
     SetTimer(g_HotkeyCopy_DoubleTapTimer, -thresholdMs)
+    ; Next tick, not this hotkey thread: ShowWithKeys drops the chord, which would swallow the second tap.
+    g_HotkeyCopy_BannerGen += 1
+    msgGen := g_HotkeyCopy_BannerGen
+    SetTimer((*) => HotkeyCopy_RunIntentFlow(false, msgGen), -1)
 }
 
 ; Custom message so WindowManagement.ahk can trigger copy without Send (Send does not trigger hotkeys in another script).

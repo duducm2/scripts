@@ -391,6 +391,11 @@ Editor_EnsureFilesExplorerSidebarFocused(editorHwnd := 0) {
 Editor_FindWorkbenchToggleButton(root, nameSubstring) {
     if !root || !nameSubstring
         return 0
+    if (InStr(nameSubstring, "Primary Side Bar")) {
+        saved := UiElements_TrySaved(root, "Cursor.exe", "Sidebar")
+        if (saved)
+            return saved
+    }
     toggleBtn := 0
     try toggleBtn := root.FindFirst({ Name: nameSubstring, Type: UIA.Type.Button })
     catch

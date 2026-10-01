@@ -24,13 +24,14 @@
             root := uia.BrowserElement
         }
 
-        field := 0
+        field := UiElements_TrySaved(isDocRoot ? root : uia, "Mercado Livre", "Search")
 
         ; 1) Try AutomationId from the current document (or fallback root)
-        try {
-            field := root.FindElement({ AutomationId: "cb1-edit" })
-        } catch {
-        }
+        if (!field)
+            try {
+                field := root.FindElement({ AutomationId: "cb1-edit" })
+            } catch {
+            }
 
         ; 2) From the document root, try the numeric path 1,1,4,2 if available
         if (!field && isDocRoot) {

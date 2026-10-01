@@ -346,13 +346,17 @@ GetOutlookMainModuleState() {
         if !root
             return ""
 
-        mailItem := root.FindFirst({ Name: "Mail", Type: 50000 })
+        mailItem := UiElements_TrySaved(root, "OUTLOOK.EXE", "Mail")
+        if !mailItem
+            mailItem := root.FindFirst({ Name: "Mail", Type: 50000 })
         if !mailItem
             mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
         if !mailItem
             mailItem := root.FindFirst({ Name: "Mail", ClassName: "NetUIListViewItem" })
 
-        calendarItem := root.FindFirst({ Name: "Calendar", Type: 50000 })
+        calendarItem := UiElements_TrySaved(root, "OUTLOOK.EXE", "Calendar")
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", Type: 50000 })
         if !calendarItem
             calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
         if !calendarItem
@@ -386,7 +390,9 @@ ClickOutlookModuleNavItem(targetModule) {
             return false
 
         targetName := (targetModule = "mail") ? "Mail" : "Calendar"
-        targetItem := root.FindFirst({ Name: targetName, Type: 50000 })
+        targetItem := UiElements_TrySaved(root, "OUTLOOK.EXE", targetName)
+        if !targetItem
+            targetItem := root.FindFirst({ Name: targetName, Type: 50000 })
         if !targetItem
             targetItem := root.FindFirst({ Name: targetName, Type: "50007" })
         if !targetItem

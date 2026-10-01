@@ -1374,7 +1374,9 @@ Reminders_ExecuteItemAction(action) {
             ; Global action: click "Dismiss all" button (UIA)
             try {
                 root := UIA.ElementFromHandle(WinExist("A"))
-                btn := root.FindFirst({ Name: "Dismiss all", ControlType: "Button" })
+                btn := UiElements_TrySaved(root, "OutlookReminder", "DismissAll")
+                if !btn
+                    btn := root.FindFirst({ Name: "Dismiss all", ControlType: "Button" })
                 if !btn
                     btn := root.FindFirst({ Name: "Dismiss All", ControlType: "Button" })
                 if btn {

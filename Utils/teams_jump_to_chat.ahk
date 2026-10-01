@@ -392,6 +392,9 @@ TeamsJump_FindComposer(hwnd) {
     root := TeamsJump_AttachUiaRoot(hwnd)
     if (!root)
         return 0
+    saved := UiElements_TrySaved(root, "TeamsChat", "Composer")
+    if (saved)
+        return saved
     names := TeamsJump_ComposerNameCandidates()
     types := ["Edit", "Document"]
     for typeName in types {

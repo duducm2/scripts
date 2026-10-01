@@ -80,6 +80,9 @@
 
         loop maxRetries {
             ; Strategy 1: Find by Name "Close sidebar" with Type Button (50000)
+            closeButton := UiElements_TrySaved(uia, "Miro", "CloseSidebar")
+            if (closeButton)
+                break
             try {
                 closeButton := uia.FindFirst({ Type: "50000", Name: "Close sidebar", cs: false })
                 if (closeButton) {

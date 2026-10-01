@@ -17,12 +17,13 @@
             return
         }
 
-        field := 0
+        field := UiElements_TrySaved(root, "Shopee", "Search")
         ; Prefer the main search combo box
-        try {
-            field := root.FindElement({ Type: 50003, Name: "Buscar na Shopee" })
-        } catch {
-        }
+        if (!field)
+            try {
+                field := root.FindElement({ Type: 50003, Name: "Buscar na Shopee" })
+            } catch {
+            }
         ; Fallback: any control with LocalizedType = "search"
         if (!field) {
             try field := root.FindElement({ LocalizedType: "search" })

@@ -120,6 +120,9 @@ EnsureItemsViewFocus() {
 Explorer_FindItemsView(root) {
     if !root
         return 0
+    saved := UiElements_TrySaved(root, "explorer.exe", "ItemsView")
+    if (saved)
+        return saved
     try {
         itemsView := root.FindFirst({ AutomationId: "ItemsView", Type: "List" })
         if itemsView

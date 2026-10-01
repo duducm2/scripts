@@ -1,0 +1,139 @@
+; =============================================================================
+; Lib: UiElementCatalog.ahk
+; Logical UIA controls the scripts already look up, grouped by cheat-sheet key.
+; One row per control. Fallback chains stay in the finder that calls
+; UiElements_TrySaved. Section defaults to appKey; the three companions use
+; the AiCompanionButtons section names.
+; =============================================================================
+
+UiElementCatalog_Entry(appKey, id, label, source, kind := "button", section := "") {
+    if (section = "")
+        section := appKey
+    return {
+        appKey: appKey,
+        id: id,
+        label: label,
+        source: source,
+        kind: kind,
+        section: section
+    }
+}
+
+UiElementCatalog_All() {
+    static rows := ""
+    if (IsObject(rows))
+        return rows
+    e := UiElementCatalog_Entry
+    rows := [
+        e.Call("Gemini", "NewChat", "New chat", "Lib/AiCompanionModels.ahk", "button", "Gemini"),
+        e.Call("Gemini", "Menu", "Main menu", "Shift keys/gemini_chrome_01.ahk", "button", "Gemini"),
+        e.Call("Gemini", "Search", "Search", "Shift keys/gemini_chrome_01.ahk", "button", "Gemini"),
+        e.Call("Gemini", "Send", "Send", "Utils/gemini_paste_helpers.ahk", "button", "Gemini"),
+        e.Call("Gemini", "Prompt", "Prompt field", "Shift keys/gemini_chrome_02.ahk", "edit", "Gemini"),
+        e.Call("Gemini", "Tools", "Tools", "Shift keys/gemini_chrome_02.ahk", "button", "Gemini"),
+        e.Call("Gemini", "Stop", "Stop response", "Utils/gemini_paste_helpers.ahk", "button", "Gemini"),
+        e.Call("Gemini Enterprise", "NewChat", "New chat", "Lib/GeminiEnterprise.ahk", "button", "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "Menu", "Menu", "Lib/GeminiEnterprise.ahk", "button", "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "Search", "Search", "Lib/GeminiEnterprise.ahk", "button", "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "Send", "Submit", "Lib/GeminiEnterprise.ahk", "button", "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "Prompt", "Prompt field", "Lib/GeminiEnterprise.ahk", "edit", "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "Tools", "Select tools", "Lib/GeminiEnterprise.ahk", "button", "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "ChooseModel", "Choose model", "Lib/GeminiEnterprise.ahk", "button",
+            "GeminiEnterprise"),
+        e.Call("Gemini Enterprise", "Stop", "Stop", "Lib/GeminiEnterprise.ahk", "button", "GeminiEnterprise"),
+        e.Call("Copilot Web", "NewChat", "New chat", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "Menu", "Navigation drawer", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "Search", "Search", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "Send", "Send", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "Prompt", "Composer", "Lib/CopilotWeb.ahk", "edit", "CopilotWeb"),
+        e.Call("Copilot Web", "Stop", "Stop generating", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "Expand", "Expand composer", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "ModelSelector", "Model selector", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Copilot Web", "Sources", "Sources", "Lib/CopilotWeb.ahk", "button", "CopilotWeb"),
+        e.Call("Power BI", "HomeTab", "Home tab", "Shift keys/hotif_powerbi.ahk", "any"),
+        e.Call("Power BI", "GetData", "Get data", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Transform", "Transform data", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "ReportView", "Report view", "Shift keys/hotif_powerbi.ahk", "any"),
+        e.Call("Power BI", "TableView", "Table view", "Shift keys/hotif_powerbi.ahk", "any"),
+        e.Call("Power BI", "ModelView", "Model view", "Shift keys/hotif_powerbi.ahk", "any"),
+        e.Call("Power BI", "BuildVisual", "Build visual", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "FormatVisual", "Format visual", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Search", "Search field", "Shift keys/hotif_powerbi.ahk", "edit"),
+        e.Call("Power BI", "Confirm", "OK / Confirm", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Cancel", "Cancel", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "AllPages", "All pages", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "NewPage", "New page", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "NewMeasure", "New measure", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Refresh", "Refresh", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Publish", "Publish", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "BringForward", "Bring forward", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "SendBackward", "Send backward", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Align", "Align", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "FitToPage", "Fit to page", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "FormatPainter", "Format painter", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("Power BI", "Group", "Group", "Shift keys/hotif_powerbi.ahk", "button"),
+        e.Call("YouTube", "Search", "Search box", "Shift keys/hotif_youtube.ahk", "edit"),
+        e.Call("YouTube", "SearchFilters", "Search filters", "Shift keys/hotif_youtube.ahk", "button"),
+        e.Call("YouTube", "Explore", "Explore", "Shift keys/hotif_youtube.ahk", "button"),
+        e.Call("FileDialog", "FileName", "File name", "Shift keys/hotif_file_dialog.ahk", "edit"),
+        e.Call("FileDialog", "Open", "Open", "Shift keys/hotif_file_dialog.ahk", "button"),
+        e.Call("FileDialog", "Save", "Save", "Shift keys/hotif_file_dialog.ahk", "button"),
+        e.Call("FileDialog", "Load", "Load", "Shift keys/hotif_file_dialog.ahk", "button"),
+        e.Call("FileDialog", "PdfType", "PDF file type", "Shift keys/hotif_file_dialog.ahk", "any"),
+        e.Call("Chrome PDF Viewer", "Download", "Download", "Shift keys/hotif_chrome_pdf.ahk", "button"),
+        e.Call("Chrome PDF Viewer", "Present", "Present", "Shift keys/hotif_chrome_pdf.ahk", "any"),
+        e.Call("explorer.exe", "ItemsView", "Items view", "Shift keys/hotif_explorer.ahk", "any"),
+        e.Call("TeamsMeeting", "Chat", "Chat", "Shift keys/hotif_teams_meeting.ahk", "button"),
+        e.Call("TeamsMeeting", "React", "React", "Shift keys/hotif_teams_meeting.ahk", "button"),
+        e.Call("TeamsMeeting", "Join", "Join now", "Shift keys/hotif_teams_meeting.ahk", "button"),
+        e.Call("TeamsMeeting", "Audio", "Audio settings", "Shift keys/hotif_teams_meeting.ahk", "button"),
+        e.Call("TeamsChat", "Back", "Back", "Shift keys/hotif_teams_chat.ahk", "button"),
+        e.Call("TeamsChat", "Forward", "Forward", "Shift keys/hotif_teams_chat.ahk", "button"),
+        e.Call("TeamsChat", "Composer", "Compose box", "Utils/teams_jump_to_chat.ahk", "edit"),
+        e.Call("OUTLOOK.EXE", "Mail", "Mail module", "Outlook.ahk", "any"),
+        e.Call("OUTLOOK.EXE", "Calendar", "Calendar module", "Outlook.ahk", "any"),
+        e.Call("OutlookMessage", "To", "To field", "Utils/email_note_macro.ahk", "edit"),
+        e.Call("OutlookMessage", "Subject", "Subject field", "Utils/email_note_macro.ahk", "edit"),
+        e.Call("OutlookReminder", "DismissAll", "Dismiss all", "Shift keys/hotif_outlook_reminder.ahk", "button"),
+        e.Call("Gmail", "MarkAsRead", "Mark as read", "Shift keys/hotif_gmail.ahk", "button"),
+        e.Call("Gmail", "Compose", "Compose", "Utils/email_note_macro.ahk", "button"),
+        e.Call("Gmail", "To", "To field", "Utils/email_note_macro.ahk", "edit"),
+        e.Call("Gmail", "Subject", "Subject field", "Utils/email_note_macro.ahk", "edit"),
+        e.Call("Google", "Search", "Search box", "Shift keys/hotif_google_search.ahk", "edit"),
+        e.Call("Google", "FirstResult", "First result", "Utils/google_search_first_result.ahk", "any"),
+        e.Call("Google Maps", "MapPane", "Map pane", "Shift keys/hotif_google_maps.ahk", "any"),
+        e.Call("WhatsApp", "Search", "Search", "Shift keys/hotif_whatsapp.ahk", "edit"),
+        e.Call("Mercado Livre", "Search", "Search", "Shift keys/predicates_mercado_livre.ahk", "edit"),
+        e.Call("Shopee", "Search", "Search", "Shift keys/predicates_shopee.ahk", "edit"),
+        e.Call("Wikipedia", "Search", "Search", "Shift keys/hotif_wikipedia.ahk", "edit"),
+        e.Call("Mobills", "Open", "Open transaction", "Shift keys/mobills_pagination.ahk", "button"),
+        e.Call("Mobills", "PagerNext", "Next month", "Shift keys/mobills_pagination.ahk", "button"),
+        e.Call("Mobills", "PagerPrev", "Previous month", "Shift keys/mobills_pagination.ahk", "button"),
+        e.Call("Cursor.exe", "Composer", "Composer input", "Shift keys/hotif_editor_01.ahk", "edit"),
+        e.Call("Cursor.exe", "Sidebar", "Primary side bar", "Shift keys/cursor_predicates.ahk", "button"),
+        e.Call("Cursor.exe", "HidePanel", "Hide panel", "Shift keys/hotif_editor_02.ahk", "button"),
+        e.Call("Cursor.exe", "CommitInput", "Commit message", "Shift keys/hotif_editor_02.ahk", "edit"),
+        e.Call("Code.exe", "HidePanel", "Hide panel", "Shift keys/hotif_editor_02.ahk", "button"),
+        e.Call("Code.exe", "CommitInput", "Commit message", "Shift keys/hotif_editor_02.ahk", "edit"),
+        e.Call("Command Palette", "EditFavorite", "Edit favorite", "Shift keys/command_palette_helpers.ahk", "any"),
+        e.Call("Settings", "InputVolume", "Input volume", "Shift keys/hotif_settings.ahk", "any"),
+        e.Call("EXCEL.EXE", "EnableEditing", "Enable Editing", "Shift keys/hotif_excel_mspaint.ahk", "button"),
+        e.Call("ClipAngel.exe", "Filter", "Type filter", "Shift keys/hotif_clipangel.ahk", "edit"),
+        e.Call("Miro", "CloseSidebar", "Close sidebar", "Shift keys/hotif_miro.ahk", "button"),
+        e.Call("Spotify.exe", "Connect", "Connect to a device", "Shift keys/hotif_spotify.ahk", "button"),
+        e.Call("ChatGPT", "Sidebar", "Sidebar", "Shift keys/hotif_chatgpt.ahk", "button"),
+    ]
+    return rows
+}
+
+UiElementCatalog_ForApp(appKey) {
+    found := []
+    appKey := Trim(appKey)
+    if (appKey = "")
+        return found
+    for entry in UiElementCatalog_All() {
+        if (entry.appKey = appKey)
+            found.Push(entry)
+    }
+    return found
+}

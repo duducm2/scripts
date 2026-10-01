@@ -1329,6 +1329,23 @@ global g_HotkeyCopy_Flow := {
 global g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
 ; Set by Gemini\hotkey_read_copy.ahk to (isCode, gen) => run copy worker. Empty when Utils hosts alone.
 global g_HotkeyCopy_StartCopyCb := ""
+; Double-tap state lives here so cancel/choice can disarm it. The #!+p hotkey is in Gemini.
+global g_HotkeyCopy_DoubleTapArmed := false
+global g_HotkeyCopy_DoubleTapTimer := 0
+global g_HotkeyCopy_BlockCodeUpgrade := false
+
+; Stop treating a second #!+p as "copy code" after the user picks or dismisses.
+HotkeyCopy_DisarmDoubleTap() {
+    global g_HotkeyCopy_DoubleTapArmed, g_HotkeyCopy_DoubleTapTimer, g_HotkeyCopy_BlockCodeUpgrade
+    g_HotkeyCopy_DoubleTapArmed := false
+    g_HotkeyCopy_BlockCodeUpgrade := true
+    if (g_HotkeyCopy_DoubleTapTimer) {
+        try SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
+        catch {
+        }
+        g_HotkeyCopy_DoubleTapTimer := 0
+    }
+}
 
 HotkeyCopy_FlowReset(isCode := false, originHwnd := 0, companion := "") {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext, g_HotkeyCopy_FlowGen
@@ -1365,6 +1382,7 @@ HotkeyCopy_ClosePostCopyBanner() {
 
 HotkeyCopy_OnIntentCancel(*) {
     global g_HotkeyCopy_Flow
+    HotkeyCopy_DisarmDoubleTap()
     if (g_HotkeyCopy_Flow.active && g_HotkeyCopy_Flow.choice = "")
         g_HotkeyCopy_Flow.choice := "cancel"
     g_HotkeyCopy_Flow.active := false
@@ -1376,6 +1394,7 @@ HotkeyCopy_OnIntentCancel(*) {
 ; [Y]/[W]: interactive UI first (Desktop name / paste window), then copy, then act.
 HotkeyCopy_FinalizeIntent(choice) {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    HotkeyCopy_DisarmDoubleTap()
     if (!g_HotkeyCopy_Flow.active)
         return
     if (g_HotkeyCopy_Flow.choice != "" && g_HotkeyCopy_Flow.choice != choice)

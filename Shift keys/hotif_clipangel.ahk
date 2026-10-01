@@ -209,7 +209,9 @@ NavigateClipAngelComboBox(typeIndex) {
         Sleep 50 ; Brief settle for UIA
 
         ; Find the file type filter ComboBox
-        typeFilterCombo := root.FindFirst({ AutomationId: "TypeFilter", Type: 50003 })
+        typeFilterCombo := UiElements_TrySaved(root, "ClipAngel.exe", "Filter")
+        if !typeFilterCombo
+            typeFilterCombo := root.FindFirst({ AutomationId: "TypeFilter", Type: 50003 })
 
         ; Fallback strategies
         if !typeFilterCombo {

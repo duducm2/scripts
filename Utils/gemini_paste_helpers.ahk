@@ -160,6 +160,9 @@ Gemini_FindSendButton(uia) {
 Gemini_HasGeneratingStopButtonForUia(uia) {
     if (!IsObject(uia))
         return false
+    saved := UiElements_TrySaved(uia, "Gemini", "Stop")
+    if (saved)
+        return true
     static cacheRequest := UIA_NameClassCacheRequest()
     root := Gemini_GetSearchRoot(uia)
     if (!root)

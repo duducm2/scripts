@@ -14,7 +14,9 @@
         root := UIA.ElementFromHandle(WinExist("A"))
         if !root
             return
-        backBtn := root.FindFirst({ Name: "Back", Type: "50000", AutomationId: "menur75" })
+        backBtn := UiElements_TrySaved(root, "TeamsChat", "Back")
+        if !backBtn
+            backBtn := root.FindFirst({ Name: "Back", Type: "50000", AutomationId: "menur75" })
         if !backBtn
             backBtn := root.FindFirst({ Name: "Back", Type: "50000" })
         if (backBtn) {
@@ -33,7 +35,9 @@
         root := UIA.ElementFromHandle(WinExist("A"))
         if !root
             return
-        fwdBtn := root.FindFirst({ Name: "Forward", Type: "50000" })
+        fwdBtn := UiElements_TrySaved(root, "TeamsChat", "Forward")
+        if !fwdBtn
+            fwdBtn := root.FindFirst({ Name: "Forward", Type: "50000" })
         if (fwdBtn) {
             fwdBtn.Click()
             return

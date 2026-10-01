@@ -582,12 +582,16 @@ SelectExplorerSidebarFirstPinned() {
         root := UIA.ElementFromHandle(WinExist("A"))
 
         ; Find Mail and Calendar list items
-        mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
+        mailItem := UiElements_TrySaved(root, "OUTLOOK.EXE", "Mail")
+        if !mailItem
+            mailItem := root.FindFirst({ Name: "Mail", Type: "50007" })
         if !mailItem {
             mailItem := root.FindFirst({ Name: "Mail", ClassName: "NetUIListViewItem" })
         }
 
-        calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
+        calendarItem := UiElements_TrySaved(root, "OUTLOOK.EXE", "Calendar")
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
         if !calendarItem {
             calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
         }

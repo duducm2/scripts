@@ -26,7 +26,10 @@
             "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Shift keys.ahk:7582`",`"message`":`"Before WaitForButton call`",`"data`":{`"pattern`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"B`"}`n",
             A_TickCount, Random(1000, 9999), A_TickCount, connectPattern)
         ; #endregion
-        if (connectBtn := WaitForButton(spot, connectPattern)) {
+        connectBtn := UiElements_TrySaved(spot, "Spotify.exe", "Connect")
+        if !connectBtn
+            connectBtn := WaitForButton(spot, connectPattern)
+        if (connectBtn) {
             ; #region agent log
             btnName := "", btnType := "", btnClassName := "", btnLocalizedType := "", supportsInvoke := false,
                 supportsToggle := false

@@ -13,7 +13,9 @@
         win := WinExist("A")
         root := UIA.ElementFromHandle(win)
 
-        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        homeTab := UiElements_TrySaved(root, "Power BI", "HomeTab")
+        if !homeTab
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
         if !homeTab {
             homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
         }
@@ -30,20 +32,21 @@
         }
 
         possibleNames := ["Get data", "Obter dados"]
-        getDataBtn := ""
+        getDataBtn := UiElements_TrySaved(root, "Power BI", "GetData")
 
-        for , name in possibleNames {
-            getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton", matchmode: "Substring"
-            })
-            if getDataBtn
-                break
-            getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton root-332" })
-            if getDataBtn
-                break
-            getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton root-320" })
-            if getDataBtn
-                break
-        }
+        if !getDataBtn
+            for , name in possibleNames {
+                getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton", matchmode: "Substring"
+                })
+                if getDataBtn
+                    break
+                getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton root-332" })
+                if getDataBtn
+                    break
+                getDataBtn := root.FindFirst({ Name: name, Type: "50000", ClassName: "splitPrimaryButton root-320" })
+                if getDataBtn
+                    break
+            }
 
         if !getDataBtn {
             for , name in possibleNames {
@@ -70,7 +73,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Click the Home tab
-        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        homeTab := UiElements_TrySaved(root, "Power BI", "HomeTab")
+        if !homeTab
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
         if !homeTab {
             homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
         }
@@ -90,14 +95,15 @@
         Sleep 250
 
         possibleNames := ["Transform data", "Transformar dados"]
-        transformBtn := ""
+        transformBtn := UiElements_TrySaved(root, "Power BI", "Transform")
 
         ; Try to find by Name and Type 50000 (Button)
-        for , name in possibleNames {
-            transformBtn := root.FindFirst({ Name: name, Type: "50000" })
-            if transformBtn
-                break
-        }
+        if !transformBtn
+            for , name in possibleNames {
+                transformBtn := root.FindFirst({ Name: name, Type: "50000" })
+                if transformBtn
+                    break
+            }
 
         ; Fallback: try with ClassName
         if !transformBtn {
@@ -147,7 +153,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the Report view tab by name only
-        reportTab := root.FindFirst({ Name: "Report view" })
+        reportTab := UiElements_TrySaved(root, "Power BI", "ReportView")
+        if !reportTab
+            reportTab := root.FindFirst({ Name: "Report view" })
         if !reportTab {
             reportTab := root.FindFirst({ Name: "Report view", matchmode: "Substring" })
         }
@@ -169,7 +177,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the Table view tab by name only
-        tableTab := root.FindFirst({ Name: "Table view" })
+        tableTab := UiElements_TrySaved(root, "Power BI", "TableView")
+        if !tableTab
+            tableTab := root.FindFirst({ Name: "Table view" })
         if !tableTab {
             tableTab := root.FindFirst({ Name: "Table view", matchmode: "Substring" })
         }
@@ -191,7 +201,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the Model view tab by name only
-        modelTab := root.FindFirst({ Name: "Model view" })
+        modelTab := UiElements_TrySaved(root, "Power BI", "ModelView")
+        if !modelTab
+            modelTab := root.FindFirst({ Name: "Model view" })
         if !modelTab {
             modelTab := root.FindFirst({ Name: "Model view", matchmode: "Substring" })
         }
@@ -226,22 +238,23 @@
             "Construir visualização"
         ]
 
-        buildTab := ""
+        buildTab := UiElements_TrySaved(root, "Power BI", "BuildVisual")
 
-        for name in possibleNames {
-            buildTab := root.FindFirst({ Type: "50019", Name: name })
-            if buildTab
-                break
-            buildTab := root.FindFirst({ Type: "TabItem", Name: name })
-            if buildTab
-                break
-            buildTab := root.FindFirst({ Type: "50019", Name: name, matchmode: "Substring" })
-            if buildTab
-                break
-            buildTab := root.FindFirst({ Type: "TabItem", Name: name, matchmode: "Substring" })
-            if buildTab
-                break
-        }
+        if !buildTab
+            for name in possibleNames {
+                buildTab := root.FindFirst({ Type: "50019", Name: name })
+                if buildTab
+                    break
+                buildTab := root.FindFirst({ Type: "TabItem", Name: name })
+                if buildTab
+                    break
+                buildTab := root.FindFirst({ Type: "50019", Name: name, matchmode: "Substring" })
+                if buildTab
+                    break
+                buildTab := root.FindFirst({ Type: "TabItem", Name: name, matchmode: "Substring" })
+                if buildTab
+                    break
+            }
 
         if !buildTab {
             tabCond := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.TabItem)
@@ -282,18 +295,19 @@
             return
         root := UIA.ElementFromHandle(win)
 
-        formatTab := ""
+        formatTab := UiElements_TrySaved(root, "Power BI", "FormatVisual")
 
         ; Try "Format page" first (this is the working solution and is fast)
-        try {
-            formatTab := root.FindFirst({ Type: "50019", Name: "Format page" })
-        } catch {
+        if !formatTab
             try {
-                formatTab := root.FindFirst({ Type: "TabItem", Name: "Format page" })
+                formatTab := root.FindFirst({ Type: "50019", Name: "Format page" })
             } catch {
-                ; Continue to fallback searches
+                try {
+                    formatTab := root.FindFirst({ Type: "TabItem", Name: "Format page" })
+                } catch {
+                    ; Continue to fallback searches
+                }
             }
-        }
 
         ; If "Format page" not found, try original names (simplified - only most common)
         if !formatTab {
@@ -355,6 +369,14 @@
             return
 
         root := UIA.ElementFromHandle(win)
+
+        searchField := UiElements_TrySaved(root, "Power BI", "Search")
+        if (searchField) {
+            try {
+                searchField.SetFocus()
+                return
+            }
+        }
 
         dataBtn := ""
         try {
@@ -443,15 +465,17 @@
         ]
 
         ; First attempt: Try by name with Button type (numeric 50000 or string "Button")
-        for name in possibleNames {
-            confirmBtn := root.FindFirst({ Type: "Button", Name: name })
-            if !confirmBtn {
-                ; Try with numeric type code
-                confirmBtn := root.FindFirst({ Type: 50000, Name: name })
+        confirmBtn := UiElements_TrySaved(root, "Power BI", "Confirm")
+        if !confirmBtn
+            for name in possibleNames {
+                confirmBtn := root.FindFirst({ Type: "Button", Name: name })
+                if !confirmBtn {
+                    ; Try with numeric type code
+                    confirmBtn := root.FindFirst({ Type: 50000, Name: name })
+                }
+                if confirmBtn
+                    break
             }
-            if confirmBtn
-                break
-        }
 
         ; Second attempt: Find by AutomationId and Type
         if !confirmBtn {
@@ -505,7 +529,9 @@
         root := UIA.ElementFromHandle(WinExist("A"))
 
         ; First attempt: Find by AutomationId and Type (most reliable)
-        cancelBtn := root.FindFirst({ Type: "Button", AutomationId: "2" })
+        cancelBtn := UiElements_TrySaved(root, "Power BI", "Cancel")
+        if !cancelBtn
+            cancelBtn := root.FindFirst({ Type: "Button", AutomationId: "2" })
 
         ; Second attempt: Try various possible names for Cancel/Exit
         if !cancelBtn {
@@ -580,7 +606,9 @@
         root := UIA.ElementFromHandle(WinExist("A"))
 
         ; First attempt: Find by Name and Type
-        prevPageBtn := root.FindFirst({ Type: "Button", Name: "Previous pages" })
+        prevPageBtn := UiElements_TrySaved(root, "Power BI", "AllPages")
+        if !prevPageBtn
+            prevPageBtn := root.FindFirst({ Type: "Button", Name: "Previous pages" })
         if !prevPageBtn {
             prevPageBtn := root.FindFirst({ Type: 50000, Name: "Previous pages" })
         }
@@ -631,7 +659,9 @@
         root := UIA.ElementFromHandle(WinExist("A"))
 
         ; Find by Name
-        newPageBtn := root.FindFirst({ Type: "Button", Name: "New page" })
+        newPageBtn := UiElements_TrySaved(root, "Power BI", "NewPage")
+        if !newPageBtn
+            newPageBtn := root.FindFirst({ Type: "Button", Name: "New page" })
         if !newPageBtn {
             newPageBtn := root.FindFirst({ Type: 50000, Name: "New page" })
         }
@@ -670,7 +700,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Click the Home tab
-        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        homeTab := UiElements_TrySaved(root, "Power BI", "HomeTab")
+        if !homeTab
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
         if !homeTab {
             homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
         }
@@ -687,7 +719,9 @@
         }
 
         ; Click the New measure button
-        newMeasureBtn := root.FindFirst({ Type: "50000", Name: "New measure", AutomationId: "newMeasure" })
+        newMeasureBtn := UiElements_TrySaved(root, "Power BI", "NewMeasure")
+        if !newMeasureBtn
+            newMeasureBtn := root.FindFirst({ Type: "50000", Name: "New measure", AutomationId: "newMeasure" })
         if !newMeasureBtn {
             newMeasureBtn := root.FindFirst({ Type: "50000", Name: "New measure" })
         }
@@ -715,7 +749,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Click the Home tab
-        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        homeTab := UiElements_TrySaved(root, "Power BI", "HomeTab")
+        if !homeTab
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
         if !homeTab {
             homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
         }
@@ -732,7 +768,9 @@
         }
 
         ; Find the Refresh button
-        refreshBtn := root.FindFirst({ Type: "50000", Name: "Refresh" })
+        refreshBtn := UiElements_TrySaved(root, "Power BI", "Refresh")
+        if !refreshBtn
+            refreshBtn := root.FindFirst({ Type: "50000", Name: "Refresh" })
         if !refreshBtn {
             refreshBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332" })
         }
@@ -757,7 +795,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Click the Home tab
-        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        homeTab := UiElements_TrySaved(root, "Power BI", "HomeTab")
+        if !homeTab
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
         if !homeTab {
             homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
         }
@@ -774,7 +814,9 @@
         }
 
         ; Click the Publish button
-        publishBtn := root.FindFirst({ Type: "50000", Name: "Publish", AutomationId: "publish" })
+        publishBtn := UiElements_TrySaved(root, "Power BI", "Publish")
+        if !publishBtn
+            publishBtn := root.FindFirst({ Type: "50000", Name: "Publish", AutomationId: "publish" })
         if !publishBtn {
             publishBtn := root.FindFirst({ Type: "50000", AutomationId: "publish" })
         }
@@ -816,7 +858,9 @@
         }
 
         ; Find the Bring forward button
-        bringForwardBtn := root.FindFirst({ Type: "50000", Name: "Bring forward" })
+        bringForwardBtn := UiElements_TrySaved(root, "Power BI", "BringForward")
+        if !bringForwardBtn
+            bringForwardBtn := root.FindFirst({ Type: "50000", Name: "Bring forward" })
         if !bringForwardBtn {
             bringForwardBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332", Name: "Bring forward" })
         }
@@ -878,7 +922,9 @@
         }
 
         ; Find the Send backward button
-        sendBackwardBtn := root.FindFirst({ Type: "50000", Name: "Send backward" })
+        sendBackwardBtn := UiElements_TrySaved(root, "Power BI", "SendBackward")
+        if !sendBackwardBtn
+            sendBackwardBtn := root.FindFirst({ Type: "50000", Name: "Send backward" })
         if !sendBackwardBtn {
             sendBackwardBtn := root.FindFirst({ Type: "50000", ClassName: "splitPrimaryButton root-332", Name: "Send backward" })
         }
@@ -940,7 +986,9 @@
         }
 
         ; Find the Align button
-        alignBtn := root.FindFirst({ Type: "50000", Name: "Align", AutomationId: "alignFlyout" })
+        alignBtn := UiElements_TrySaved(root, "Power BI", "Align")
+        if !alignBtn
+            alignBtn := root.FindFirst({ Type: "50000", Name: "Align", AutomationId: "alignFlyout" })
         if !alignBtn {
             alignBtn := root.FindFirst({ Type: "50000", Name: "Align" })
         }
@@ -980,7 +1028,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the Fit to page button
-        fitToPageBtn := root.FindFirst({ Type: "50000", Name: "Fit to page", AutomationId: "fitToPageButton" })
+        fitToPageBtn := UiElements_TrySaved(root, "Power BI", "FitToPage")
+        if !fitToPageBtn
+            fitToPageBtn := root.FindFirst({ Type: "50000", Name: "Fit to page", AutomationId: "fitToPageButton" })
         if !fitToPageBtn {
             fitToPageBtn := root.FindFirst({ Type: "50000", Name: "Fit to page" })
         }
@@ -1020,7 +1070,9 @@
         root := UIA.ElementFromHandle(win)
 
         ; Find the Format painter button by AutomationId (primary method)
-        formatPainterBtn := root.FindFirst({ Type: "50000", AutomationId: "formatPainter" })
+        formatPainterBtn := UiElements_TrySaved(root, "Power BI", "FormatPainter")
+        if !formatPainterBtn
+            formatPainterBtn := root.FindFirst({ Type: "50000", AutomationId: "formatPainter" })
         if !formatPainterBtn {
             formatPainterBtn := root.FindFirst({ Type: 50000, AutomationId: "formatPainter" })
         }
@@ -1106,7 +1158,9 @@
         }
 
         ; Find the Group button by AutomationId (primary method)
-        groupBtn := root.FindFirst({ Type: "50000", AutomationId: "groupVisualsFlyout" })
+        groupBtn := UiElements_TrySaved(root, "Power BI", "Group")
+        if !groupBtn
+            groupBtn := root.FindFirst({ Type: "50000", AutomationId: "groupVisualsFlyout" })
         if !groupBtn {
             groupBtn := root.FindFirst({ Type: 50000, AutomationId: "groupVisualsFlyout" })
         }

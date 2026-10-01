@@ -309,6 +309,9 @@ CopilotWeb_FindFirstInUia(uia, criteriaList) {
 }
 
 CopilotWeb_FindComposer(uia) {
+    saved := UiElements_TrySaved(uia, "CopilotWeb", "Prompt")
+    if (saved)
+        return saved
     return CopilotWeb_FindFirstInUia(uia, [{ AutomationId: "m365-chat-editor-target-element", ControlType: "Edit" }, { AutomationId: "m365-chat-editor-target-element" }, { Name: "Message Copilot",
         ControlType: "Edit" }])
 }
@@ -350,6 +353,9 @@ CopilotWeb_FindLastFeedMessage(uia) {
 CopilotWeb_FindStopGenerating(uia) {
     if (!IsObject(uia))
         return 0
+    saved := UiElements_TrySaved(uia, "CopilotWeb", "Stop")
+    if (saved)
+        return saved
     el := CopilotWeb_FindFirstInUia(uia, [{ Name: "Stop generating", ControlType: "Button" }, { Name: "Stop generating",
         Type: UIA_Copilot_ControlType_Button }])
     if (el)
@@ -1542,6 +1548,9 @@ CopilotWeb_FindButtonByNames(uia, names) {
 CopilotWeb_FindComposerExpandToggleButton(uia) {
     if (!IsObject(uia))
         return 0
+    saved := UiElements_TrySaved(uia, "CopilotWeb", "Expand")
+    if (saved)
+        return saved
     collapse := CopilotWeb_FindButtonByNames(uia, COPILOT_COMPOSER_COLLAPSE_NAMES)
     if (collapse)
         return collapse
@@ -1707,6 +1716,9 @@ CopilotWeb_DeepReasoningMenuReady(uia) {
 }
 
 CopilotWeb_FindModelSelectorButton(uia) {
+    saved := UiElements_TrySaved(uia, "CopilotWeb", "ModelSelector")
+    if (saved)
+        return saved
     return CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
 }
 
@@ -1990,6 +2002,9 @@ CopilotWeb_OpenModelSelector(uia := 0) {
 }
 
 CopilotWeb_FindSourcesButton(uia) {
+    saved := UiElements_TrySaved(uia, "CopilotWeb", "Sources")
+    if (saved)
+        return saved
     return CopilotWeb_FindFirstInUia(uia, COPILOT_SOURCES_BUTTON_CRITERIA)
 }
 

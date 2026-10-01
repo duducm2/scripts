@@ -139,6 +139,9 @@ CommandPalette_FindEditFavoriteElement() {
         return 0
     try {
         root := UIA.ElementFromHandle(hwnd)
+        saved := UiElements_TrySaved(root, "Command Palette", "EditFavorite")
+        if (saved)
+            return saved
         for name in ["Editar favorito", "Edit bookmark", "Edit favorite"] {
             try {
                 el := root.FindFirst({ Name: name, matchmode: "Substring", cs: false })

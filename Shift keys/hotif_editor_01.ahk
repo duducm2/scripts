@@ -307,6 +307,9 @@ Cursor_GetFocusedExplorerItemName() {
 }
 
 Cursor_FindVisibleComposerInput(root) {
+    saved := UiElements_TrySaved(root, "Cursor.exe", "Composer")
+    if (saved)
+        return saved
     try edits := root.FindAll({ Type: UIA.Type.Edit })
     catch
         return 0
