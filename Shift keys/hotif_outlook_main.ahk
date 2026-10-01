@@ -478,7 +478,9 @@ SelectExplorerSidebarFirstPinned() {
             try {
                 global IS_WORK_ENVIRONMENT
                 if (IS_WORK_ENVIRONMENT) {
-                    homeItem := navPane.FindFirst({ Type: "TreeItem", Name: "Home" })
+                    homeItem := UiElements_TrySaved(explorerEl, "FileDialog", "Home")
+                    if !homeItem
+                        homeItem := navPane.FindFirst({ Type: "TreeItem", Name: "Home" })
                     if (homeItem) {
                         homeItem.ScrollIntoView()
                         homeItem.Select()    ; select only, no click
@@ -492,6 +494,14 @@ SelectExplorerSidebarFirstPinned() {
             }
             ; Define the keywords to search for pinned items
             pinnedKeywords := ["fixo", "pinned", "pin", "fixado", "fixada", "fixar", "preso"]
+            savedPinned := UiElements_TrySaved(explorerEl, "FileDialog", "Pinned")
+            if (savedPinned) {
+                savedPinned.ScrollIntoView()
+                savedPinned.Select()
+                savedPinned.SetFocus()
+                EnsureFocus()
+                return true
+            }
 
             ; Search for the first TreeItem that contains any of the pinned keywords
             firstPinnedItem := unset

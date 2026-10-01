@@ -17,7 +17,9 @@ SelectExplorerSidebarFirstPinned_EX() {
             try {
                 global IS_WORK_ENVIRONMENT
                 if (IS_WORK_ENVIRONMENT) {
-                    homeItem := navPane.FindFirst({ Type: "TreeItem", Name: "Home" })
+                    homeItem := UiElements_TrySaved(explorerEl, "explorer.exe", "Home")
+                    if !homeItem
+                        homeItem := navPane.FindFirst({ Type: "TreeItem", Name: "Home" })
                     if (homeItem) {
                         homeItem.ScrollIntoView()
                         homeItem.Select()    ; select only, no click
@@ -30,6 +32,14 @@ SelectExplorerSidebarFirstPinned_EX() {
                 ; ignore and fallback to previous logic
             }
             pinnedKeywords := ["fixo", "pinned", "pin", "fixado", "fixada", "fixar", "preso"]
+            savedPinned := UiElements_TrySaved(explorerEl, "explorer.exe", "Pinned")
+            if (savedPinned) {
+                savedPinned.ScrollIntoView()
+                savedPinned.Select()
+                savedPinned.SetFocus()
+                EnsureFocus()
+                return true
+            }
             firstPinnedItem := unset
             for keyword in pinnedKeywords {
                 firstPinnedItem := navPane.FindFirst({ Type: "TreeItem", Name: keyword, matchmode: "Substring" })
@@ -477,15 +487,16 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
         shareRoot := UIA.ElementFromHandle(shareHwnd)
 
         ; Wait until main footer controls exist (indicates main share view is loaded).
-        OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 20000)
-        OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
+        OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 20000, "ShareSettings")
+        OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000, "CopyLink")
 
         ; 3) Configure link scope when permitted; limited sharing copies the existing-access link as-is.
         limited := OneDriveShare_IsLimitedSharingMainView(shareRoot)
         if !limited {
-            settingsBtn := OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 5000)
+            settingsBtn := OneDriveShare_WaitForAutomationId(shareRoot, "Footer-button-settings", 5000, "ShareSettings"
+            )
             OneDriveShare_Click(settingsBtn)
-            OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 20000)
+            OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 20000, "Apply")
             OneDriveShare_WaitForLinkSettingsReady(shareRoot, 10000)
 
             if OneDriveShare_IsLimitedLinkSettings(shareRoot) {
@@ -493,14 +504,15 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
             } else {
                 if !OneDriveShare_SelectRadioByNameContains(shareRoot, "People in Bosch Group", 5000)
                     throw Error("Could not find 'People in Bosch Group' in Link settings.")
-                applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 5000)
+                applyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "od-ModifyPermissions-apply-id", 5000, "Apply"
+                )
                 OneDriveShare_Click(applyBtn)
-                OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000)
+                OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 20000, "CopyLink")
             }
         }
 
         ; 4) Copy link and verify clipboard changed.
-        copyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 5000)
+        copyBtn := OneDriveShare_WaitForAutomationId(shareRoot, "copy-button", 5000, "CopyLink")
         oldClip := A_Clipboard
         A_Clipboard := ""
         OneDriveShare_Click(copyBtn)
@@ -537,9 +549,15 @@ OneDriveShare_WaitForShareDialogHwnd(timeout := 20000) {
     return 0
 }
 
-OneDriveShare_WaitForAutomationId(root, automationId, timeout := 5000) {
+OneDriveShare_WaitForAutomationId(root, automationId, timeout := 5000, elementId := "") {
     if !IsObject(root)
         return 0
+    if (elementId != "") {
+        saved := 0
+        try saved := UiElements_TrySaved(root, "explorer.exe", elementId)
+        if saved
+            return saved
+    }
 
     deadline := A_TickCount + timeout
     while (A_TickCount < deadline) {
@@ -671,7 +689,7 @@ OneDriveShare_ClickBack(root) {
     if !backBtn
         throw Error("Could not find Back button in Link settings.")
     OneDriveShare_Click(backBtn)
-    if !OneDriveShare_WaitForAutomationId(root, "copy-button", 10000)
+    if !OneDriveShare_WaitForAutomationId(root, "copy-button", 10000, "CopyLink")
         throw Error("Timed out returning to main Share view after Back.")
     return true
 }
