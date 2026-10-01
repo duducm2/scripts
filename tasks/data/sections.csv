@@ -14,7 +14,6 @@ SEC_0019,PROJ_0019,General,0
 SEC_0021,PROJ_0021,General,0
 SEC_0022,PROJ_0022,General,0
 SEC_0023,PROJ_0023,General,0
-SEC_0063,PROJ_0005,"Tasks/Checar esta meta, se precisamos revisar",20
 SEC_0067,PROJ_0012,Projects/Inputs coming from Nadia.,20
 SEC_0068,PROJ_0012,Projects/Business Model,30
 SEC_0081,PROJ_0019,Daily,10
@@ -47,7 +46,7 @@ SEC_0141,PROJ_0031,General,0
 SEC_0142,PROJ_0030,Feeding Schedule,10
 SEC_0143,PROJ_0030,Info,20
 SEC_0144,PROJ_0032,General,0
-SEC_0146,PROJ_0011,Ajustes necessários,20
-SEC_0147,PROJ_0033,General,0
 SEC_0148,PROJ_0013,Links,10
 SEC_0149,PROJ_0034,General,0
+SEC_0150,PROJ_0011,Daily,30
+SEC_0151,PROJ_0011,New user stories,40
