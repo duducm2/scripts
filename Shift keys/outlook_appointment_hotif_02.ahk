@@ -84,25 +84,26 @@ Outlook_ClickEndTime_1200PM() {
 +P:: {
     ; New Outlook: repurpose Shift+P to Private toggle modal (date picker concept removed).
     if IsNewOutlookActive() {
-        Appt_RunWithLoading("Private", (*) => (
-            (choice := Appt_SelectFromModal("Appointment privacy", [{ k: "1", label: "Private" }, { k: "2", label: "Not private" }],
-            "[1-2] Select  [Esc] Cancel"))
-                ? (
-                    (choice = "1")
-                        ? (Appt_ClickSaved("Private") || Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
-                            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
-                                matchmode: "Substring", ControlType: "Button" }
-                        ], "Private"))
-                        : Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
-                            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
-                                matchmode: "Substring", ControlType: "Button" }
-                        ], "Not private")
-                )
-                : false
-        ))
+        Appt_RunWithLoading("Private", Appt_RunPrivate)
         return
     }
     Outlook_ClickStartDatePicker()
+}
+
+Appt_RunPrivate() {
+    choice := Appt_SelectFromModal("Appointment privacy", [{ k: "1", label: "Private" }, { k: "2", label: "Not private" }],
+    "[1-2] Select  [Esc] Cancel")
+    if !choice
+        return false
+    if (choice = "1")
+        return Appt_ClickSaved("Private") || Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
+            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
+                matchmode: "Substring", ControlType: "Button" }
+        ], "Private")
+    return Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
+        ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
+            matchmode: "Substring", ControlType: "Button" }
+    ], "Not private")
 }
 
 ; Shift + T : Start time (combo) - Time
