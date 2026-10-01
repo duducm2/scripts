@@ -1,0 +1,8 @@
+﻿===PREVIEW===
+2 row(s) · 2 transfers from dictation.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Transfer, "78,88",transfer,,ACC_99PAY,,ACC_MERCADOP,1
+Transfer, "62,45",transfer,,ACC_NUBANKMA,,ACC_MERCADOP,1
+===END_FILE===
