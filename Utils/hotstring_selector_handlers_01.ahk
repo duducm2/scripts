@@ -1203,6 +1203,7 @@ PromptPaste_SubmitViaEnterEnabled() {
 ; Do not restore prior focus here — PromptPaste_SubmitWhenReady confirms Stop on the companion window.
 PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     global g_GeminiDelayedSubmit_WaitContentMaxMs
+    AiCompanion_TakeCatalogSendClick()
     companionId := StrLower(Trim(companionId))
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
@@ -1243,7 +1244,8 @@ PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
             sendUia := 0
         savedSend := IsObject(sendUia) ? AiCompanionButtons_FindSaved(sendUia, sendSection, "Send") : 0
         if (IsObject(savedSend)) {
-            AiCompanionButtons_Click(savedSend)
+            if (AiCompanionButtons_Click(savedSend))
+                AiCompanion_MarkCatalogSendClick()
             return true
         }
     }
@@ -1340,9 +1342,13 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             } else {
                 PromptPaste_BusyUpdate("⏳ Sending…")
                 PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
+                ; Take the flag before the confirm wait so a later Enter cannot steal it.
+                catalogSendClicked := AiCompanion_TakeCatalogSendClick()
                 PromptPaste_BusyUpdate("⏳ Confirming…")
                 confirmState := AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, 3000, snapStatus = "ok")
                 ok := (confirmState = "working")
+                if (ok && catalogSendClicked)
+                    AiCompanion_ArmResponseWatch(hwnd, companionId)
             }
         } else {
             PromptPaste_BusyUpdate("⏳ Sending…")

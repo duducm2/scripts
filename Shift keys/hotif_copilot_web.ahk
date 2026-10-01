@@ -141,14 +141,26 @@ $Enter:: {
         return
     }
     hwnd := WinExist("A")
-    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => Send("{Enter}")))
-        SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => CopilotWeb_SubmitFromHotkey(hwnd))) {
+        if (AiCompanion_TakeCatalogSendClick())
+            AiCompanion_ArmResponseWatch(hwnd, "copilot")
+        else
+            SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+    } else {
+        AiCompanion_TakeCatalogSendClick()
+    }
 }
 
 $^Enter:: {
     hwnd := WinExist("A")
-    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => Send("{Enter}")))
-        SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => CopilotWeb_SubmitFromHotkey(hwnd))) {
+        if (AiCompanion_TakeCatalogSendClick())
+            AiCompanion_ArmResponseWatch(hwnd, "copilot")
+        else
+            SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
+    } else {
+        AiCompanion_TakeCatalogSendClick()
+    }
 }
 
 #HotIf

@@ -463,8 +463,12 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
     GeminiEnterprise_PlayFocusedChime()
     if (autoSubmit) {
         Sleep 1000
-        if (!AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd)))
+        confirmed := AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd))
+        clicked := AiCompanion_TakeCatalogSendClick()
+        if (!confirmed)
             return 0
+        if (clicked)
+            AiCompanion_ArmResponseWatch(hwnd, "enterprise")
     }
     if (hwnd)
         GeminiEnterprise_CacheHwnd(hwnd)
@@ -843,14 +847,17 @@ GeminiEnterprise_ComposerElementText(el) {
 
 GeminiEnterprise_SubmitComposer(hwnd) {
     uia := 0
+    AiCompanion_TakeCatalogSendClick()
     ; A mapped Send click is the submit. Skip the composer re-read and extra keys.
     try {
         root := GeminiEnterprise_ReadRootFromHwnd(hwnd, 0)
         if (IsObject(root)) {
             saved := AiCompanionButtons_FindSaved(root, AI_COMPANION_ENTERPRISE, "Send")
             if (IsObject(saved) && !GeminiEnterprise_FindStopButton(root)) {
-                if (GeminiEnterprise_ClickUiaElement(saved))
+                if (GeminiEnterprise_ClickUiaElement(saved)) {
+                    AiCompanion_MarkCatalogSendClick()
                     return
+                }
             }
         }
     } catch {

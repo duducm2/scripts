@@ -230,11 +230,13 @@ class D2C_FlowManager {
     }
 
     Reset() {
+        global g_AiCompanionResponseWatchArmedBySend
         try {
             if (this.MonitorTimer)
                 SetTimer(this.MonitorTimer, 0)
         } catch {
         }
+        g_AiCompanionResponseWatchArmedBySend := false
         this.CurrentPhase := "Idle"
         this.OriginHwnd := 0
         this.GeminiHwnd := 0
@@ -1026,6 +1028,8 @@ class D2C_FlowManager {
             }
             if (presetMode = "finance_daily" || presetMode = "task_pack") {
                 ; Pack pipeline owns completion → extract → Desktop → import confirm.
+                ; Drop the catalog-Send watch so only the pack Stop poll runs.
+                AiCompanion_DisarmResponseWatch()
                 try PackPipeline_ArmFromPreset(presetMode, this.CompanionId, this.GeminiHwnd, this.OriginHwnd)
                 catch {
                 }
@@ -1055,6 +1059,9 @@ class D2C_FlowManager {
     ; --- Phase 3: Monitor ---
 
     StartGeminiMonitor() {
+        ; A catalog Send click may already be watching this hwnd. Do not reset that timer.
+        if (this.CurrentPhase = "Monitoring" && this.GeminiHwnd && this.MonitorTimer != "")
+            return
         this.CurrentPhase := "Monitoring"
         this.MonitorRetryCount := 0
         this.MonitorButtonEverFound := false

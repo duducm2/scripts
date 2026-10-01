@@ -392,6 +392,65 @@ AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapOk := true) {
     return state = "working"
 }
 
+; Set only when a catalog Send click returns true. Readers take it once.
+global g_AiCompanionCatalogSendClicked := false
+; True when ArmResponseWatch started the D2C monitor for this click.
+global g_AiCompanionResponseWatchArmedBySend := false
+
+AiCompanion_MarkCatalogSendClick() {
+    global g_AiCompanionCatalogSendClicked
+    g_AiCompanionCatalogSendClicked := true
+}
+
+AiCompanion_TakeCatalogSendClick() {
+    global g_AiCompanionCatalogSendClicked
+    clicked := !!g_AiCompanionCatalogSendClicked
+    g_AiCompanionCatalogSendClicked := false
+    return clicked
+}
+
+; One existing completion watch after a catalog Send click. No UIA and no Send search.
+; Pack pipeline and an in-progress D2C watch keep their own timer.
+AiCompanion_ArmResponseWatch(hwnd, companionId, originHwnd := 0) {
+    global g_AiCompanionResponseWatchArmedBySend
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        if (PackPipeline_IsActive())
+            return false
+    } catch {
+        return false
+    }
+    flow := D2C_FlowManager.GetInstance()
+    phase := flow.CurrentPhase
+    if (phase = "Monitoring" || phase = "PromptingAction")
+        return false
+    flow.GeminiHwnd := hwnd
+    flow.CompanionId := StrLower(Trim(companionId))
+    if (originHwnd && originHwnd != hwnd && WinExist("ahk_id " originHwnd))
+        flow.OriginHwnd := originHwnd
+    flow.StartGeminiMonitor()
+    g_AiCompanionResponseWatchArmedBySend := true
+    return true
+}
+
+; Stop the watch this click started so pack pipeline is the only Stop poll.
+AiCompanion_DisarmResponseWatch() {
+    global g_AiCompanionResponseWatchArmedBySend
+    if (!g_AiCompanionResponseWatchArmedBySend)
+        return false
+    g_AiCompanionResponseWatchArmedBySend := false
+    flow := D2C_FlowManager.GetInstance()
+    if (flow.CurrentPhase != "Monitoring")
+        return false
+    if (flow.MonitorTimer != "") {
+        try SetTimer(flow.MonitorTimer, 0)
+    }
+    flow.MonitorTimer := ""
+    flow.CurrentPhase := "Submitting"
+    return true
+}
+
 ; Snapshot, skip a blank composer, call sendFn, then track. True only when working.
 AiCompanion_SendAndConfirm(hwnd, companionId, sendFn) {
     snapStatus := ""

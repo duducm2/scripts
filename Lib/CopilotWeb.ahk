@@ -375,19 +375,35 @@ CopilotWeb_FindSendButton(uia) {
         matchmode: "Substring", ControlType: "Button" }])
 }
 
-CopilotWeb_SubmitComposer(hwnd) {
-    ; A mapped Send click is the submit. Skip the browser attach and Enter.
+CopilotWeb_ClickSavedSend(hwnd) {
     try {
         root := CopilotWeb_ReadRootFromHwnd(hwnd, 0)
         if (IsObject(root)) {
             saved := AiCompanionButtons_FindSaved(root, AI_COMPANION_COPILOT, "Send")
             if (IsObject(saved) && !CopilotWeb_FindStopGenerating(root)) {
-                if (AiCompanionButtons_Click(saved))
-                    return
+                if (AiCompanionButtons_Click(saved)) {
+                    AiCompanion_MarkCatalogSendClick()
+                    return true
+                }
             }
         }
     } catch {
     }
+    return false
+}
+
+CopilotWeb_SubmitFromHotkey(hwnd) {
+    AiCompanion_TakeCatalogSendClick()
+    if (CopilotWeb_ClickSavedSend(hwnd))
+        return
+    Send "{Enter}"
+}
+
+CopilotWeb_SubmitComposer(hwnd) {
+    AiCompanion_TakeCatalogSendClick()
+    ; A mapped Send click is the submit. Skip the browser attach and Enter.
+    if (CopilotWeb_ClickSavedSend(hwnd))
+        return
     try {
         uia := UIA_Browser("ahk_id " hwnd)
         CopilotWeb_TrySubmit(uia)
@@ -638,8 +654,12 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
     CopilotWeb_PlayFocusedChime()
     if (autoSubmit) {
         Sleep 1000
-        if (!AiCompanion_SendAndConfirm(copilotHwnd, "copilot", (*) => CopilotWeb_SubmitComposer(copilotHwnd)))
+        confirmed := AiCompanion_SendAndConfirm(copilotHwnd, "copilot", (*) => CopilotWeb_SubmitComposer(copilotHwnd))
+        clicked := AiCompanion_TakeCatalogSendClick()
+        if (!confirmed)
             return 0
+        if (clicked)
+            AiCompanion_ArmResponseWatch(copilotHwnd, "copilot")
     }
     if (copilotHwnd)
         CopilotWeb_CacheHwnd(copilotHwnd)
