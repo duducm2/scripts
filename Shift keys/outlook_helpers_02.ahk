@@ -38,10 +38,14 @@ Outlook_ToggleMailCalendarRail() {
     }
     mailBtn := ""
     calBtn := ""
-    try mailBtn := searchRoot.FindFirst({ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" })
+    try mailBtn := UiElements_TrySaved(root, "OUTLOOK.EXE", "Mail")
+    try calBtn := UiElements_TrySaved(root, "OUTLOOK.EXE", "Calendar")
+    if !mailBtn
+        try mailBtn := searchRoot.FindFirst({ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b", ControlType: "Button" })
     if !mailBtn
         try mailBtn := searchRoot.FindFirst({ Name: "Mail", ControlType: "Button" })
-    try calBtn := searchRoot.FindFirst({ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" })
+    if !calBtn
+        try calBtn := searchRoot.FindFirst({ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b", ControlType: "Button" })
     if !calBtn
         try calBtn := searchRoot.FindFirst({ Name: "Calendar", ControlType: "Button" })
     ; If rail group scope missed (build differences), search full Chromium root
