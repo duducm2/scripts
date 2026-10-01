@@ -253,10 +253,18 @@ Finance_ReadUtf8(path) {
 ; --- decimals (Brazilian comma) ---
 
 Finance_NormalizeDot(str) {
-    s := Trim(String(str))
+    s := String(str)
+    s := StrReplace(s, "`r", "")
+    s := StrReplace(s, "`n", "")
+    s := StrReplace(s, Chr(160), "")
+    s := StrReplace(s, Chr(0x201C), "")
+    s := StrReplace(s, Chr(0x201D), "")
+    s := StrReplace(s, Chr(0x201E), "")
+    s := Trim(s)
     s := StrReplace(s, "R$", "")
     s := StrReplace(s, " ", "")
     s := StrReplace(s, "`t", "")
+    s := StrReplace(s, '"', "")
     if (s = "")
         return "0,00"
     neg := false
@@ -296,7 +304,7 @@ Finance_NormalizeDot(str) {
 
 Finance_ParseDecimal(str) {
     n := Finance_NormalizeDot(str)
-    if (n = "" || n = "-")
+    if (n = "" || n = "-" || !IsNumber(n))
         return 0.0
     return Number(n)
 }
@@ -340,7 +348,21 @@ Finance_SplitCsvLine(line) {
         line := SubStr(line, 1, len - 1)
         len := StrLen(line)
     }
+    ; AI and spreadsheet exports often use curly quotes around "78,10".
+    line := StrReplace(line, Chr(0x201C), '"')
+    line := StrReplace(line, Chr(0x201D), '"')
+    line := StrReplace(line, Chr(0x201E), '"')
     while (i <= len) {
+        ; " 78,10" and ` "78,10"` must stay one field; the comma is the decimal separator.
+        j := i
+        while (j <= len) {
+            c0 := SubStr(line, j, 1)
+            if (c0 != " " && c0 != "`t")
+                break
+            j += 1
+        }
+        if (j <= len && SubStr(line, j, 1) = '"')
+            i := j
         if (SubStr(line, i, 1) = '"') {
             i += 1
             val := ""
@@ -359,8 +381,11 @@ Finance_SplitCsvLine(line) {
                 i += 1
             }
             fields.Push(val)
-            if (i <= len && SubStr(line, i, 1) = ",")
-                i += 1
+            k := i
+            while (k <= len && (SubStr(line, k, 1) = " " || SubStr(line, k, 1) = "`t"))
+                k += 1
+            if (k <= len && SubStr(line, k, 1) = ",")
+                i := k + 1
         } else {
             next := InStr(line, ",", false, i)
             if (!next) {
@@ -444,7 +469,8 @@ Finance_Headers(kind) {
         case "categories":
             return ["id", "name", "type", "parent_id", "color", "icon"]
         case "credit_cards":
-            return ["id", "name", "limit", "initial_spent", "current_spent", "linked_account_id", "closing_day", "due_day"]
+            return ["id", "name", "limit", "initial_spent", "current_spent", "linked_account_id", "closing_day",
+                "due_day"]
         case "goals":
             return ["id", "name", "current_amount", "target_amount", "target_date"]
         case "budgets":
@@ -1740,7 +1766,8 @@ Finance_SeedCreditCards() {
     }
     rows := []
     rows.Push(Map("id", "CARD_MP", "name", "Mercado Pago", "limit", "12000,00",
-        "initial_spent", "0,00", "current_spent", "2010,22", "linked_account_id", linked, "closing_day", "9", "due_day", "16"))
+        "initial_spent", "0,00", "current_spent", "2010,22", "linked_account_id", linked, "closing_day", "9", "due_day",
+        "16"))
     Finance_Save("credit_cards", rows)
 }
 
