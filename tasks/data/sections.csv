@@ -1,52 +1,50 @@
-id,project_id,title,sort_order
-SEC_0002,PROJ_0002,General,0
-SEC_0003,PROJ_0003,General,0
-SEC_0004,PROJ_0004,General,0
-SEC_0005,PROJ_0005,General,0
-SEC_0006,PROJ_0006,General,0
-SEC_0011,PROJ_0011,General,0
-SEC_0012,PROJ_0012,General,0
-SEC_0013,PROJ_0013,General,0
-SEC_0014,PROJ_0014,General,0
-SEC_0015,PROJ_0015,General,0
-SEC_0016,PROJ_0016,General,0
-SEC_0019,PROJ_0019,General,0
-SEC_0021,PROJ_0021,General,0
-SEC_0022,PROJ_0022,General,0
-SEC_0023,PROJ_0023,General,0
-SEC_0067,PROJ_0012,Projects/Inputs coming from Nadia.,20
-SEC_0068,PROJ_0012,Projects/Business Model,30
-SEC_0081,PROJ_0019,Daily,10
-SEC_0082,PROJ_0019,Weekly,20
-SEC_0083,PROJ_0019,Monthly,30
-SEC_0084,PROJ_0019,Quarterly,40
-SEC_0085,PROJ_0019,Bi-yearly (Every 6 months),50
-SEC_0086,PROJ_0019,Yearly,60
-SEC_0087,PROJ_0019,Every 10 Years (Documents),70
-SEC_0088,PROJ_0019,Every 2 Years,80
-SEC_0089,PROJ_0019,Every 3 Years,90
-SEC_0090,PROJ_0019,Every 5 Years,100
-SEC_0091,PROJ_0021,Medication Monitoring (Fluvoxamina),10
-SEC_0092,PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",10
-SEC_0093,PROJ_0023,Notes from Your Records (Prior Vaccines),10
-SEC_0126,PROJ_0059,General,0
-SEC_0127,PROJ_0024,General,0
-SEC_0128,PROJ_0025,General,0
-SEC_0129,PROJ_0026,General,0
-SEC_0131,PROJ_0027,General,0
-SEC_0132,PROJ_0027,Alumni Unicamp,10
-SEC_0133,PROJ_0028,General,0
-SEC_0134,PROJ_0027,Bosch,20
-SEC_0136,PROJ_0027,Levva,40
-SEC_0137,PROJ_0029,General,0
-SEC_0138,PROJ_0029,Vaccination Timetable,10
-SEC_0139,PROJ_0029,Essential Shopping List,20
-SEC_0140,PROJ_0030,General,0
-SEC_0141,PROJ_0031,General,0
-SEC_0142,PROJ_0030,Feeding Schedule,10
-SEC_0143,PROJ_0030,Info,20
-SEC_0144,PROJ_0032,General,0
-SEC_0148,PROJ_0013,Links,10
-SEC_0149,PROJ_0034,General,0
-SEC_0150,PROJ_0011,Daily,30
-SEC_0151,PROJ_0011,New user stories,40
+id,project_id,title,sort_order,status
+SEC_0002,PROJ_0002,General,0,
+SEC_0003,PROJ_0003,General,0,
+SEC_0004,PROJ_0004,General,0,
+SEC_0005,PROJ_0005,General,0,
+SEC_0006,PROJ_0006,General,0,
+SEC_0011,PROJ_0011,General,0,
+SEC_0012,PROJ_0012,General,0,
+SEC_0013,PROJ_0013,General,0,
+SEC_0015,PROJ_0015,General,0,
+SEC_0016,PROJ_0016,General,0,
+SEC_0019,PROJ_0019,General,0,
+SEC_0021,PROJ_0021,General,0,
+SEC_0022,PROJ_0022,General,0,
+SEC_0023,PROJ_0023,General,0,
+SEC_0067,PROJ_0012,Projects/Inputs coming from Nadia.,20,
+SEC_0068,PROJ_0012,Projects/Business Model,30,
+SEC_0081,PROJ_0019,Daily,10,
+SEC_0082,PROJ_0019,Weekly,20,
+SEC_0083,PROJ_0019,Monthly,30,
+SEC_0084,PROJ_0019,Quarterly,40,
+SEC_0085,PROJ_0019,Bi-yearly (Every 6 months),50,
+SEC_0086,PROJ_0019,Yearly,60,
+SEC_0087,PROJ_0019,Every 10 Years (Documents),70,
+SEC_0088,PROJ_0019,Every 2 Years,80,
+SEC_0089,PROJ_0019,Every 3 Years,90,
+SEC_0090,PROJ_0019,Every 5 Years,100,
+SEC_0091,PROJ_0021,Medication Monitoring (Fluvoxamina),10,
+SEC_0092,PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",10,
+SEC_0093,PROJ_0023,Notes from Your Records (Prior Vaccines),10,
+SEC_0126,PROJ_0059,General,0,
+SEC_0127,PROJ_0024,General,0,
+SEC_0128,PROJ_0025,General,0,
+SEC_0129,PROJ_0026,General,0,
+SEC_0131,PROJ_0027,General,0,
+SEC_0132,PROJ_0027,Alumni Unicamp,10,
+SEC_0133,PROJ_0028,General,0,
+SEC_0134,PROJ_0027,Bosch,20,
+SEC_0136,PROJ_0027,Levva,40,
+SEC_0137,PROJ_0029,General,0,
+SEC_0138,PROJ_0029,Vaccination Timetable,10,
+SEC_0139,PROJ_0029,Essential Shopping List,20,
+SEC_0140,PROJ_0030,General,0,
+SEC_0141,PROJ_0031,General,0,
+SEC_0142,PROJ_0030,Feeding Schedule,10,
+SEC_0143,PROJ_0030,Info,20,
+SEC_0144,PROJ_0032,General,0,
+SEC_0148,PROJ_0013,Links,10,waiting
+SEC_0149,PROJ_0034,General,0,
+SEC_0150,PROJ_0011,Daily,30,
