@@ -324,3 +324,143 @@
 
 - 🔗 [GitHub Docs: About READMEs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
 - 🔗 [Creating a GitHub Pages site (GitHub Docs)](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
+
+## Phase 6: Azure Databricks (Principal Platform)
+
+### 1. Must
+
+- [ ] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
+- [ ] Query lakehouse tables with Spark SQL
+- [ ] Transform data with PySpark DataFrames
+- [ ] Create Delta tables and use time travel to inspect earlier versions
+- [ ] Build a medallion pipeline through bronze, silver, and gold
+- [ ] Map how a Databricks workspace, storage, and Unity Catalog sit on Azure
+
+**🔗 Resources:**
+
+- 🔗 [Get Started with Databricks for Data Engineering](https://customer-academy.databricks.com/learn/course/external/view/classroom/1511/get-started-with-databricks-for-data-engineering)
+
+### 2. Good to know
+
+- [ ] Schedule pipelines with Lakeflow Jobs
+- [ ] Ingest data with Lakeflow Connect
+- [ ] Enforce schema and data-quality checks on Delta tables
+- [ ] Version notebooks with Git on the workspace
+- [ ] Connect Power BI to Databricks SQL
+
+**🔗 Resources:**
+
+- 🔗 [Data Engineering with Databricks](https://www.databricks.com/training/catalog/data-engineering-with-databricks-911)
+
+### 3. Learn after
+
+- [ ] Track experiments with MLflow
+- [ ] Serve features from a feature store
+- [ ] Ingest streaming data into Delta
+- [ ] Apply Unity Catalog row filters and data sharing
+
+**🔗 Resources:**
+
+- 🔗 [Databricks training catalog](https://www.databricks.com/learn/training/home)
+
+## Phase 7: Microsoft Fabric (Integration Layer)
+
+### 1. Must
+
+- [ ] Create a Fabric workspace and place data in OneLake
+- [ ] Build a lakehouse on Delta tables
+- [ ] Ingest and transform with Dataflows Gen2 using Power Query
+- [ ] Query the SQL analytics endpoint and build a semantic model
+- [ ] Connect a Power BI report with Direct Lake on that lakehouse
+
+**🔗 Resources:**
+
+- 🔗 [Implement a Lakehouse with Microsoft Fabric](https://learn.microsoft.com/en-us/training/paths/implement-lakehouse-microsoft-fabric/)
+
+### 2. Good to know
+
+- [ ] Orchestrate movement with Data Factory pipelines
+- [ ] Transform data in Fabric Spark notebooks
+- [ ] Reference existing data with OneLake shortcuts
+- [ ] Maintain Delta tables with OPTIMIZE and VACUUM
+
+**🔗 Resources:**
+
+- 🔗 [Lakehouse end-to-end scenario](https://learn.microsoft.com/en-us/fabric/data-engineering/tutorial-lakehouse-introduction)
+
+### 3. Learn after
+
+- [ ] Discover streaming sources in Real-Time hub
+- [ ] Combine Direct Lake tables with Import tables in a composite model
+- [ ] Choose a warehouse versus a lakehouse for a given workload
+
+**🔗 Resources:**
+
+- 🔗 [Direct Lake overview](https://learn.microsoft.com/en-us/fabric/fundamentals/direct-lake-overview)
+
+## Phase 8: SAP Data for Bosch Roles
+
+### 1. Must
+
+- [ ] Explain SAP Datasphere spaces, the Data Builder, and an analytic model
+- [ ] Describe how SAP Analytics Cloud consumes a Datasphere model
+- [ ] Explain SAP Business Data Cloud and that Datasphere sits inside it
+- [ ] Map the ERP handoff among SD (sales), MM (procurement), and PP (production)
+
+**🔗 Resources:**
+
+- 🔗 [Exploring SAP Datasphere](https://learning.sap.com/courses/exploring-sap-datasphere)
+
+### 2. Good to know
+
+- [ ] Distinguish replication flows from transformation flows
+- [ ] Describe how spaces and authorization separate data
+- [ ] Explain Delta Share as zero-copy sharing out of Business Data Cloud
+- [ ] Map APO planning on those modules: DP/GATP, SNP, and PPDS
+
+**🔗 Resources:**
+
+- 🔗 [SAP Business Data Cloud design principles](https://learning.sap.com/courses/introducing-sap-business-data-cloud/describing-sap-business-data-cloud-and-its-design-principles_d92361e3-c958-4010-9d0a-2cbcc7263d4e)
+
+### 3. Learn after
+
+- [ ] Explore the Business Builder and the data marketplace
+- [ ] Build an SAP Analytics Cloud story on a Datasphere model
+- [ ] Study module configuration and Transportation Management only when a role requires it
+
+**🔗 Resources:**
+
+- 🔗 [SAP Business Data Cloud learning](https://learning.sap.com/products/business-data-cloud)
+
+## Phase 9: Snowflake (Secondary)
+
+### 1. Must
+
+- [ ] Explain Snowflake storage separated from compute
+- [ ] Size a virtual warehouse and relate it to credit consumption
+- [ ] Contrast Snowflake SQL analytics with Databricks engineering and AI
+
+**🔗 Resources:**
+
+- 🔗 [Snowflake Level Up: First Concepts](https://learn.snowflake.com/en/pages/level-up-track)
+
+### 2. Good to know
+
+- [ ] Share data securely without copying it
+- [ ] Set a resource monitor and read credit cost
+- [ ] Recover data with time travel and zero-copy clone
+
+**🔗 Resources:**
+
+- 🔗 [Snowflake virtual warehouses](https://docs.snowflake.com/en/user-guide/warehouses)
+
+### 3. Learn after
+
+- [ ] Defer Snowpark, dynamic tables, and Cortex unless a Bosch project asks for Snowflake
+- [ ] Use Snowpark DataFrames
+- [ ] Build a pipeline with dynamic tables
+- [ ] Call Cortex functions on warehouse data
+
+**🔗 Resources:**
+
+- 🔗 [Zero to Snowflake](https://www.snowflake.com/en/developers/guides/zero-to-snowflake/)

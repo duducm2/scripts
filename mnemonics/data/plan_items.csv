@@ -923,3 +923,51 @@ PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,0,6
 PITEM_0923,PLAN_0007,Backlog,snow flake,0,7
 PITEM_0924,PLAN_0007,Backlog,"Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)",0,8
 PITEM_0921,PLAN_0007,Backlog,data bricks project,0,9
+PITEM_0925,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",0,89
+PITEM_0926,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,0,90
+PITEM_0927,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,0,91
+PITEM_0928,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,0,92
+PITEM_0929,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,"Build a medallion pipeline through bronze, silver, and gold",0,93
+PITEM_0930,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,"Map how a Databricks workspace, storage, and Unity Catalog sit on Azure",0,94
+PITEM_0931,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Schedule pipelines with Lakeflow Jobs,0,95
+PITEM_0932,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Ingest data with Lakeflow Connect,0,96
+PITEM_0933,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Enforce schema and data-quality checks on Delta tables,0,97
+PITEM_0934,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Version notebooks with Git on the workspace,0,98
+PITEM_0935,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Connect Power BI to Databricks SQL,0,99
+PITEM_0936,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Track experiments with MLflow,0,100
+PITEM_0937,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Serve features from a feature store,0,101
+PITEM_0938,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Ingest streaming data into Delta,0,102
+PITEM_0939,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Apply Unity Catalog row filters and data sharing,0,103
+PITEM_0940,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Create a Fabric workspace and place data in OneLake,0,104
+PITEM_0941,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Build a lakehouse on Delta tables,0,105
+PITEM_0942,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Ingest and transform with Dataflows Gen2 using Power Query,0,106
+PITEM_0943,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Query the SQL analytics endpoint and build a semantic model,0,107
+PITEM_0944,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Connect a Power BI report with Direct Lake on that lakehouse,0,108
+PITEM_0945,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Orchestrate movement with Data Factory pipelines,0,109
+PITEM_0946,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Transform data in Fabric Spark notebooks,0,110
+PITEM_0947,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Reference existing data with OneLake shortcuts,0,111
+PITEM_0948,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Maintain Delta tables with OPTIMIZE and VACUUM,0,112
+PITEM_0949,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Discover streaming sources in Real-Time hub,0,113
+PITEM_0950,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Combine Direct Lake tables with Import tables in a composite model,0,114
+PITEM_0951,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Choose a warehouse versus a lakehouse for a given workload,0,115
+PITEM_0952,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,"Explain SAP Datasphere spaces, the Data Builder, and an analytic model",0,116
+PITEM_0953,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,Describe how SAP Analytics Cloud consumes a Datasphere model,0,117
+PITEM_0954,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,Explain SAP Business Data Cloud and that Datasphere sits inside it,0,118
+PITEM_0955,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,"Map the ERP handoff among SD (sales), MM (procurement), and PP (production)",0,119
+PITEM_0956,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Distinguish replication flows from transformation flows,0,120
+PITEM_0957,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Describe how spaces and authorization separate data,0,121
+PITEM_0958,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Explain Delta Share as zero-copy sharing out of Business Data Cloud,0,122
+PITEM_0959,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,"Map APO planning on those modules: DP/GATP, SNP, and PPDS",0,123
+PITEM_0960,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Explore the Business Builder and the data marketplace,0,124
+PITEM_0961,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Build an SAP Analytics Cloud story on a Datasphere model,0,125
+PITEM_0962,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Study module configuration and Transportation Management only when a role requires it,0,126
+PITEM_0963,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Explain Snowflake storage separated from compute,0,127
+PITEM_0964,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Size a virtual warehouse and relate it to credit consumption,0,128
+PITEM_0965,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Contrast Snowflake SQL analytics with Databricks engineering and AI,0,129
+PITEM_0966,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Share data securely without copying it,0,130
+PITEM_0967,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Set a resource monitor and read credit cost,0,131
+PITEM_0968,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Recover data with time travel and zero-copy clone,0,132
+PITEM_0969,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,"Defer Snowpark, dynamic tables, and Cortex unless a Bosch project asks for Snowflake",0,133
+PITEM_0970,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Use Snowpark DataFrames,0,134
+PITEM_0971,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Build a pipeline with dynamic tables,0,135
+PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex functions on warehouse data,0,136
