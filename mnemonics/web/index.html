@@ -251,6 +251,11 @@
         color: var(--muted);
         font-size: 0.82rem;
       }
+      .ent-expand-all {
+        flex: 0 0 auto;
+        align-self: center;
+        margin-left: 0.45rem;
+      }
       .ent-source {
         color: var(--gold);
         font-size: 0.82rem;
@@ -4692,7 +4697,9 @@
       }
 
       function entHidden(node) {
-        const title = String(node.title || "").trim().toLowerCase();
+        const title = String(node.title || "")
+          .trim()
+          .toLowerCase();
         if (title !== "backlog") return false;
         const kids = entNodes().some((r) => (r.parent_id || "") === node.id);
         return !node.url && !node.notes && !kids;
@@ -4870,6 +4877,26 @@
         </form>`;
       }
 
+      function entExpandAll(id, open) {
+        const walk = (nodeId) => {
+          if (!entHasChildren(nodeId)) return;
+          if (open) state.entertainment.collapsed.delete(nodeId);
+          else state.entertainment.collapsed.add(nodeId);
+          for (const child of entChildren(nodeId)) walk(child.id);
+        };
+        walk(id);
+        state.entertainment.selectedId = id;
+        renderEntertainment();
+      }
+
+      function entBranchOpen(id) {
+        if (!entHasChildren(id) || state.entertainment.collapsed.has(id))
+          return false;
+        return entChildren(id).every(
+          (child) => !entHasChildren(child.id) || entBranchOpen(child.id),
+        );
+      }
+
       function entActions(n) {
         if (n.id !== state.entertainment.selectedId) return "";
         return `<div class="ent-actions">
@@ -4961,6 +4988,11 @@
               ${entLinks(node.url)}
             </div>
             ${kids.length ? `<span class="ent-count">${kids.length}</span>` : ""}
+            ${
+              !(node.parent_id || "") && kids.length
+                ? `<button type="button" class="spa-btn ent-expand-all" data-expand="${escAttr(node.id)}">${entBranchOpen(node.id) ? "Collapse all" : "Expand all"}</button>`
+                : ""
+            }
           </div>
           ${body}
           ${entActions(node)}
@@ -5037,12 +5069,21 @@
             renderEntertainment();
           };
 
-        root.querySelectorAll(".ent-tile[data-id], .ent-item[data-id]").forEach((el) => {
-          el.onclick = (e) => {
-            if (e.target.closest("a, button, input, textarea, label")) return;
-            if (e.target.closest("[data-id]") !== el) return;
-            state.entertainment.selectedId = el.dataset.id;
-            renderEntertainment();
+        root
+          .querySelectorAll(".ent-tile[data-id], .ent-item[data-id]")
+          .forEach((el) => {
+            el.onclick = (e) => {
+              if (e.target.closest("a, button, input, textarea, label")) return;
+              if (e.target.closest("[data-id]") !== el) return;
+              state.entertainment.selectedId = el.dataset.id;
+              renderEntertainment();
+            };
+          });
+        root.querySelectorAll("[data-expand]").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.expand;
+            entExpandAll(id, !entBranchOpen(id));
           };
         });
         root.querySelectorAll("[data-twist]").forEach((btn) => {
