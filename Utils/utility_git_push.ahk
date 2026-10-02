@@ -155,7 +155,7 @@ Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot) {
     return "ok"
 }
 
-Utility_GitExportEntertainmentMd(scriptsRoot, notesRoot) {
+Utility_GitExportEntertainmentMd(scriptsRoot) {
     py := scriptsRoot . "\mnemonics\python\export_entertainment_md.py"
     if (!FileExist(py))
         return "error:export_entertainment_md.py not found"
@@ -167,7 +167,7 @@ Utility_GitExportEntertainmentMd(scriptsRoot, notesRoot) {
     if (pyCmd = "")
         return "error:Python not found for entertainment MD export"
     csvPath := scriptsRoot . "\mnemonics\data\entertainment.csv"
-    outPath := notesRoot . "\main\entertainment.md"
+    outPath := scriptsRoot . "\mnemonics\output\entertainment.md"
     cmd := pyCmd . ' "' . py . '" --csv "' . csvPath . '" --output "' . outPath . '"'
     bat := A_Temp . "\utility-git-export-ent-" . A_TickCount . ".cmd"
     try FileDelete(bat)
@@ -223,7 +223,7 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     if (SubStr(export, 1, 6) = "error:")
         return export
 
-    export := Utility_GitExportEntertainmentMd(scriptsRoot, notesRoot)
+    export := Utility_GitExportEntertainmentMd(scriptsRoot)
     if (SubStr(export, 1, 6) = "error:")
         return export
 
