@@ -6,12 +6,12 @@ ENT_0004,ENT_0003,"Jeanne Dielman, 23 Quai du Commerce, 1080 Bruxelles (1975)",,
 ENT_0005,ENT_0003,Vertigo (1958),,,0,2,https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Vertigomovie_restoration.jpg/500px-Vertigomovie_restoration.jpg
 ENT_0006,ENT_0003,In the Mood for Love (2000),,,0,5,https://upload.wikimedia.org/wikipedia/en/4/45/In_the_Mood_for_Love_movie.jpg
 ENT_0007,ENT_0003,Mulholland Dr. (2001),,,0,8,https://upload.wikimedia.org/wikipedia/en/0/0f/Mulholland.png
-ENT_0008,ENT_0001,BBC,https://www.bbc.com/culture/article/20160819-the-21st-centurys-100-greatest-films,,0,3,
+ENT_0008,ENT_0001,BBC,https://www.bbc.com/culture/article/20160819-the-21st-centurys-100-greatest-films,,0,4,
 ENT_0009,ENT_0008,Mulholland Drive,,,0,1,https://upload.wikimedia.org/wikipedia/en/0/0f/Mulholland.png
 ENT_0010,ENT_0008,There Will Be Blood,,,0,3,https://upload.wikimedia.org/wikipedia/en/d/da/There_Will_Be_Blood_Poster.jpg
 ENT_0011,ENT_0008,In the Mood for Love,,,0,2,https://upload.wikimedia.org/wikipedia/en/4/45/In_the_Mood_for_Love_movie.jpg
 ENT_0012,ENT_0001,Documentaries,"https://www.filmdetail.com/2014/08/01/sight-and-sound-bfi-greatest-documentaries-list-poll/
-https://youtu.be/3_fOM3Fy37w?is=hVXwDAu-qBZkACLB",,0,4,
+https://youtu.be/3_fOM3Fy37w?is=hVXwDAu-qBZkACLB",,0,5,
 ENT_0013,ENT_0012,"Man with a Movie Camera, dir. Dziga Vertov (USSR 1929)",,,0,1,https://upload.wikimedia.org/wikipedia/commons/f/f6/Man_with_a_movie_camera_1929_2.png
 ENT_0014,ENT_0012,"Shoah, dir. Claude Lanzmann (France 1985)",,,0,2,https://upload.wikimedia.org/wikipedia/en/8/84/Shoah_poster_1985_US.jpg
 ENT_0015,ENT_0012,"Sans soleil, dir. Chris Marker (France 1982)",,,0,3,https://upload.wikimedia.org/wikipedia/en/c/ca/Sans_Soleil.jpg
@@ -34,9 +34,9 @@ ENT_0031,ENT_0022,Smarter Every Day,,"Aerospace engineer Destin Sandlin uses hig
 ENT_0032,ENT_0022,Mark Rober,,"A former NASA engineer who builds incredibly complex mechanical engineering projects, teaching the scientific method, iterative design, and coding along the way.",0,10,
 ENT_0033,,Books,https://www.bbc.co.uk/arts/bigread/top100.shtml,,0,4,
 ENT_0034,,Music,,,0,5,
-ENT_0035,ENT_0034,Top movie soundtracks,https://www.rollingstone.com/music/music-lists/best-movie-soundtracks-1235083518/,,0,2,
-ENT_0036,ENT_0034,Top film scores,https://win.classicfm.com/movie-music-2025/,,0,3,
-ENT_0037,ENT_0034,Top game OSTs,https://en.wikipedia.org/wiki/List_of_video_game_soundtracks_listed_among_the_best,,0,4,
+ENT_0035,ENT_0034,Top movie soundtracks,https://www.rollingstone.com/music/music-lists/best-movie-soundtracks-1235083518/,,0,3,
+ENT_0036,ENT_0034,Top film scores,https://win.classicfm.com/movie-music-2025/,,0,4,
+ENT_0037,ENT_0034,Top game OSTs,https://en.wikipedia.org/wiki/List_of_video_game_soundtracks_listed_among_the_best,,0,5,
 ENT_0038,ENT_0003,Citizen Kane (1941),,,0,3,https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/500px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg
 ENT_0039,ENT_0003,Tokyo Story (1953),,,0,4,https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Tokyo_monogatari_poster.jpg/500px-Tokyo_monogatari_poster.jpg
 ENT_0040,ENT_0003,2001: A Space Odyssey (1968),,,0,6,https://upload.wikimedia.org/wikipedia/en/1/11/2001_A_Space_Odyssey_%281968%29.png
@@ -625,3 +625,507 @@ ENT_0622,ENT_0525,Rage Against the Machine — Rage Against the Machine (1992),,
 ENT_0623,ENT_0525,Astroworld — Travis Scott (2018),,,0,98,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/e7/49/8f/e7498f65-df8f-bead-d6e3-2a8d4d642a79/886447235317.jpg/600x600bb.jpg
 ENT_0624,ENT_0525,Hotel California — Eagles (1976),,,0,99,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/88/16/2c/88162c3d-46db-8321-61f3-3a47404cfe76/075596050920.jpg/600x600bb.jpg
 ENT_0625,ENT_0525,Body Talk — Robyn (2010),,,0,100,https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/75/1b/36/751b36a3-4af7-0a32-09ba-2bbfdf791d08/00602527588995.rgb.jpg/600x600bb.jpg
+ENT_0626,ENT_0017,Small Axe (2020),,,0,51,https://static.tvmaze.com/uploads/images/original_untouched/282/705726.jpg
+ENT_0627,ENT_0017,"This Is England '86, '88 and '90 (2010-2015)",,,0,52,
+ENT_0628,ENT_0017,Call My Agent! (2015-2020),,,0,53,https://static.tvmaze.com/uploads/images/original_untouched/426/1065697.jpg
+ENT_0629,ENT_0017,Happy Valley (2014-),,,0,54,https://static.tvmaze.com/uploads/images/original_untouched/1/4886.jpg
+ENT_0630,ENT_0017,The Shield (2002-2008),,,0,55,https://static.tvmaze.com/uploads/images/original_untouched/55/138892.jpg
+ENT_0631,ENT_0017,The Big Bang Theory (2007-2019),,,0,56,https://static.tvmaze.com/uploads/images/original_untouched/173/433868.jpg
+ENT_0632,ENT_0017,The Young Pope (2016),,,0,57,https://static.tvmaze.com/uploads/images/original_untouched/235/589616.jpg
+ENT_0633,ENT_0017,Dark (2017-2020),,,0,58,https://static.tvmaze.com/uploads/images/original_untouched/504/1262352.jpg
+ENT_0634,ENT_0017,The Underground Railroad (2021),,,0,59,https://static.tvmaze.com/uploads/images/original_untouched/309/774476.jpg
+ENT_0635,ENT_0017,House of Cards (2013-2018),,,0,60,https://static.tvmaze.com/uploads/images/original_untouched/169/424482.jpg
+ENT_0636,ENT_0017,Avatar: The Last Airbender (2005-2008),,,0,61,https://static.tvmaze.com/uploads/images/original_untouched/633/1582667.jpg
+ENT_0637,ENT_0017,The Good Place (2016-2020),,,0,62,https://static.tvmaze.com/uploads/images/original_untouched/395/989291.jpg
+ENT_0638,ENT_0017,Pose (2018-2021),,,0,63,https://static.tvmaze.com/uploads/images/original_untouched/304/762252.jpg
+ENT_0639,ENT_0017,Detectorists (2014-2017),,,0,64,https://static.tvmaze.com/uploads/images/original_untouched/18/45415.jpg
+ENT_0640,ENT_0017,Orange Is the New Black (2013-2019),,,0,65,https://static.tvmaze.com/uploads/images/original_untouched/203/508250.jpg
+ENT_0641,ENT_0017,Mare of Easttown (2021),,,0,66,https://static.tvmaze.com/uploads/images/original_untouched/301/753981.jpg
+ENT_0642,ENT_0017,RuPaul's Drag Race (2009-),,,0,67,https://static.tvmaze.com/uploads/images/original_untouched/607/1517980.jpg
+ENT_0643,ENT_0017,Stranger Things (2016-),,,0,68,https://static.tvmaze.com/uploads/images/original_untouched/595/1489169.jpg
+ENT_0644,ENT_0017,24 (2001-2010),,,0,69,https://static.tvmaze.com/uploads/images/original_untouched/0/2330.jpg
+ENT_0645,ENT_0017,Battlestar Galactica (2004-2009),,,0,70,https://static.tvmaze.com/uploads/images/original_untouched/0/2313.jpg
+ENT_0646,ENT_0017,Enlightened (2011-2013),,,0,71,https://static.tvmaze.com/uploads/images/original_untouched/7/18314.jpg
+ENT_0647,ENT_0017,Gilmore Girls (2000-2007),,,0,72,https://static.tvmaze.com/uploads/images/original_untouched/4/11308.jpg
+ENT_0648,ENT_0017,Planet Earth (2006),,,0,73,https://static.tvmaze.com/uploads/images/original_untouched/6/15320.jpg
+ENT_0649,ENT_0017,Utopia (2013-2014),,,0,74,https://static.tvmaze.com/uploads/images/original_untouched/275/688620.jpg
+ENT_0650,ENT_0017,Babylon Berlin (2017-),,,0,75,https://static.tvmaze.com/uploads/images/original_untouched/579/1448426.jpg
+ENT_0651,ENT_0017,Rick and Morty (2013-),,,0,76,https://static.tvmaze.com/uploads/images/original_untouched/626/1566363.jpg
+ENT_0652,ENT_0017,American Crime Story (2016-),,,0,77,https://static.tvmaze.com/uploads/images/original_untouched/401/1004505.jpg
+ENT_0653,ENT_0017,The Killing (2007-2012),,,0,78,https://static.tvmaze.com/uploads/images/original_untouched/216/540157.jpg
+ENT_0654,ENT_0017,Mindhunter (2017-2019),,,0,79,https://static.tvmaze.com/uploads/images/original_untouched/501/1253490.jpg
+ENT_0655,ENT_0017,House (2004-2012),,,0,80,https://static.tvmaze.com/uploads/images/original_untouched/357/894990.jpg
+ENT_0656,ENT_0017,O.J.: Made in America (2016),,,0,81,https://static.tvmaze.com/uploads/images/original_untouched/493/1233408.jpg
+ENT_0657,ENT_0017,Big Little Lies (2017-2019),,,0,82,https://static.tvmaze.com/uploads/images/original_untouched/196/490640.jpg
+ENT_0658,ENT_0017,Insecure (2016-2021),,,0,83,https://static.tvmaze.com/uploads/images/original_untouched/485/1213250.jpg
+ENT_0659,ENT_0017,Normal People (2020),,,0,84,https://static.tvmaze.com/uploads/images/original_untouched/249/623354.jpg
+ENT_0660,ENT_0017,Narcos (2015-2017),,,0,85,https://static.tvmaze.com/uploads/images/original_untouched/498/1246087.jpg
+ENT_0661,ENT_0017,How I Met Your Mother (2005-2014),,,0,86,https://static.tvmaze.com/uploads/images/original_untouched/0/2451.jpg
+ENT_0662,ENT_0017,The Comeback (2005-2014),,,0,87,https://static.tvmaze.com/uploads/images/original_untouched/618/1547120.jpg
+ENT_0663,ENT_0017,The OA (2016-2019),,,0,88,https://static.tvmaze.com/uploads/images/original_untouched/185/464692.jpg
+ENT_0664,ENT_0017,Dexter (2006-2013),,,0,89,https://static.tvmaze.com/uploads/images/original_untouched/498/1246067.jpg
+ENT_0665,ENT_0017,It's Always Sunny in Philadelphia (2005-),,,0,90,https://static.tvmaze.com/uploads/images/original_untouched/636/1592247.jpg
+ENT_0666,ENT_0017,Westworld (2016-),,,0,91,https://static.tvmaze.com/uploads/images/original_untouched/445/1113927.jpg
+ENT_0667,ENT_0017,Show Me a Hero (2015),,,0,92,https://static.tvmaze.com/uploads/images/original_untouched/331/828765.jpg
+ENT_0668,ENT_0017,Treme (2010-2013),,,0,93,https://static.tvmaze.com/uploads/images/original_untouched/173/433306.jpg
+ENT_0669,ENT_0017,Louie (2010-2015),,,0,94,https://static.tvmaze.com/uploads/images/original_untouched/2/5334.jpg
+ENT_0670,ENT_0017,Luther (2010-2019),,,0,95,https://static.tvmaze.com/uploads/images/original_untouched/179/448007.jpg
+ENT_0671,ENT_0017,Catastrophe (2015-2019),,,0,96,https://static.tvmaze.com/uploads/images/original_untouched/189/473908.jpg
+ENT_0672,ENT_0017,Hannibal (2013-2015),,,0,97,https://static.tvmaze.com/uploads/images/original_untouched/498/1246088.jpg
+ENT_0673,ENT_0017,Crazy Ex-Girlfriend (2015-2019),,,0,98,https://static.tvmaze.com/uploads/images/original_untouched/228/570611.jpg
+ENT_0674,ENT_0017,Steven Universe (2013-2020),,,0,99,https://static.tvmaze.com/uploads/images/original_untouched/8/22200.jpg
+ENT_0675,ENT_0017,The Queen's Gambit (2020),,,0,100,https://static.tvmaze.com/uploads/images/original_untouched/510/1275203.jpg
+ENT_0676,ENT_0033,The Secret Garden — Frances Hodgson Burnett,,,0,51,https://covers.openlibrary.org/b/id/12622062-L.jpg
+ENT_0677,ENT_0033,Of Mice and Men — John Steinbeck,,,0,52,https://covers.openlibrary.org/b/id/14319003-L.jpg
+ENT_0678,ENT_0033,The Stand — Stephen King,,,0,53,https://covers.openlibrary.org/b/id/9255992-L.jpg
+ENT_0679,ENT_0033,Anna Karenina — Leo Tolstoy,,,0,54,https://upload.wikimedia.org/wikipedia/en/0/02/Anna_Karenina.jpg
+ENT_0680,ENT_0033,A Suitable Boy — Vikram Seth,,,0,55,https://covers.openlibrary.org/b/id/911254-L.jpg
+ENT_0681,ENT_0033,The BFG — Roald Dahl,,,0,56,https://covers.openlibrary.org/b/id/9176033-L.jpg
+ENT_0682,ENT_0033,Swallows and Amazons — Arthur Ransome,,,0,57,https://covers.openlibrary.org/b/id/7145171-L.jpg
+ENT_0683,ENT_0033,Black Beauty — Anna Sewell,,,0,58,https://covers.openlibrary.org/b/id/5007492-L.jpg
+ENT_0684,ENT_0033,Artemis Fowl — Eoin Colfer,,,0,59,https://covers.openlibrary.org/b/id/10212689-L.jpg
+ENT_0685,ENT_0033,Crime and Punishment — Fyodor Dostoevsky,,,0,60,https://covers.openlibrary.org/b/id/13116014-L.jpg
+ENT_0686,ENT_0033,Noughts and Crosses — Malorie Blackman,,,0,61,https://covers.openlibrary.org/b/id/8758020-L.jpg
+ENT_0687,ENT_0033,Memoirs of a Geisha — Arthur Golden,,,0,62,https://covers.openlibrary.org/b/id/8231782-L.jpg
+ENT_0688,ENT_0033,A Tale of Two Cities — Charles Dickens,,,0,63,https://covers.openlibrary.org/b/id/13301713-L.jpg
+ENT_0689,ENT_0033,The Thorn Birds — Colleen McCullough,,,0,64,https://covers.openlibrary.org/b/id/8293225-L.jpg
+ENT_0690,ENT_0033,Mort — Terry Pratchett,,,0,65,https://covers.openlibrary.org/b/id/14648805-L.jpg
+ENT_0691,ENT_0033,The Magic Faraway Tree — Enid Blyton,,,0,66,https://covers.openlibrary.org/b/id/14605635-L.jpg
+ENT_0692,ENT_0033,The Magus — John Fowles,,,0,67,https://covers.openlibrary.org/b/id/5424278-L.jpg
+ENT_0693,ENT_0033,Good Omens — Terry Pratchett and Neil Gaiman,,,0,68,https://upload.wikimedia.org/wikipedia/en/0/0a/Goodomenscover.jpg
+ENT_0694,ENT_0033,Guards! Guards! — Terry Pratchett,,,0,69,https://covers.openlibrary.org/b/id/13095550-L.jpg
+ENT_0695,ENT_0033,Lord of the Flies — William Golding,,,0,70,https://covers.openlibrary.org/b/id/8684447-L.jpg
+ENT_0696,ENT_0033,Perfume — Patrick Süskind,,,0,71,https://covers.openlibrary.org/b/id/11796284-L.jpg
+ENT_0697,ENT_0033,The Ragged Trousered Philanthropists — Robert Tressell,,,0,72,https://covers.openlibrary.org/b/id/8997724-L.jpg
+ENT_0698,ENT_0033,Night Watch — Terry Pratchett,,,0,73,https://covers.openlibrary.org/b/id/14649312-L.jpg
+ENT_0699,ENT_0033,Matilda — Roald Dahl,,,0,74,https://covers.openlibrary.org/b/id/12889769-L.jpg
+ENT_0700,ENT_0033,Bridget Jones's Diary — Helen Fielding,,,0,75,https://covers.openlibrary.org/b/id/8578467-L.jpg
+ENT_0701,ENT_0033,The Secret History — Donna Tartt,,,0,76,https://covers.openlibrary.org/b/id/744854-L.jpg
+ENT_0702,ENT_0033,The Woman in White — Wilkie Collins,,,0,77,https://covers.openlibrary.org/b/id/4684227-L.jpg
+ENT_0703,ENT_0033,Ulysses — James Joyce,,,0,78,https://covers.openlibrary.org/b/id/13136548-L.jpg
+ENT_0704,ENT_0033,Bleak House — Charles Dickens,,,0,79,https://covers.openlibrary.org/b/id/9279273-L.jpg
+ENT_0705,ENT_0033,Double Act — Jacqueline Wilson,,,0,80,https://covers.openlibrary.org/b/id/7035770-L.jpg
+ENT_0706,ENT_0033,The Twits — Roald Dahl,,,0,81,https://covers.openlibrary.org/b/id/14838233-L.jpg
+ENT_0707,ENT_0033,I Capture the Castle — Dodie Smith,,,0,82,https://covers.openlibrary.org/b/id/5080686-L.jpg
+ENT_0708,ENT_0033,Holes — Louis Sachar,,,0,83,https://covers.openlibrary.org/b/id/19797-L.jpg
+ENT_0709,ENT_0033,Gormenghast — Mervyn Peake,,,0,84,https://covers.openlibrary.org/b/id/4212630-L.jpg
+ENT_0710,ENT_0033,The God of Small Things — Arundhati Roy,,,0,85,https://covers.openlibrary.org/b/id/10513792-L.jpg
+ENT_0711,ENT_0033,Vicky Angel — Jacqueline Wilson,,,0,86,https://covers.openlibrary.org/b/id/2053341-L.jpg
+ENT_0712,ENT_0033,Brave New World — Aldous Huxley,,,0,87,https://covers.openlibrary.org/b/id/8231823-L.jpg
+ENT_0713,ENT_0033,Cold Comfort Farm — Stella Gibbons,,,0,88,https://covers.openlibrary.org/b/id/2519569-L.jpg
+ENT_0714,ENT_0033,Magician — Raymond E. Feist,,,0,89,https://covers.openlibrary.org/b/id/1005965-L.jpg
+ENT_0715,ENT_0033,On the Road — Jack Kerouac,,,0,90,https://covers.openlibrary.org/b/id/34655-L.jpg
+ENT_0716,ENT_0033,The Godfather — Mario Puzo,,,0,91,https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+ENT_0717,ENT_0033,The Clan of the Cave Bear — Jean M. Auel,,,0,92,https://covers.openlibrary.org/b/id/12529015-L.jpg
+ENT_0718,ENT_0033,The Colour of Magic — Terry Pratchett,,,0,93,https://covers.openlibrary.org/b/id/14647238-L.jpg
+ENT_0719,ENT_0033,The Alchemist — Paulo Coelho,,,0,94,https://covers.openlibrary.org/b/id/11556106-L.jpg
+ENT_0720,ENT_0033,Katherine — Anya Seton,,,0,95,https://covers.openlibrary.org/b/id/777890-L.jpg
+ENT_0721,ENT_0033,Kane and Abel — Jeffrey Archer,,,0,96,https://upload.wikimedia.org/wikipedia/en/f/f3/KaneAndAbel.jpg
+ENT_0722,ENT_0033,Love in the Time of Cholera — Gabriel García Márquez,,,0,97,https://covers.openlibrary.org/b/id/10518348-L.jpg
+ENT_0723,ENT_0033,Girls in Love — Jacqueline Wilson,,,0,98,https://covers.openlibrary.org/b/id/3260030-L.jpg
+ENT_0724,ENT_0033,The Princess Diaries — Meg Cabot,,,0,99,https://covers.openlibrary.org/b/id/6874781-L.jpg
+ENT_0725,ENT_0033,Midnight's Children — Salman Rushdie,,,0,100,https://covers.openlibrary.org/b/id/8346713-L.jpg
+ENT_0726,ENT_0001,Sight and Sound directors,https://www.bfi.org.uk/sight-and-sound/directors-100-greatest-films-all-time,,0,3,
+ENT_0727,ENT_0726,2001: A Space Odyssey (1968),,,0,1,https://upload.wikimedia.org/wikipedia/en/1/11/2001_A_Space_Odyssey_%281968%29.png
+ENT_0728,ENT_0726,Citizen Kane (1941),,,0,2,https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/500px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg
+ENT_0729,ENT_0726,The Godfather (1972),,,0,3,https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+ENT_0730,ENT_0726,"Jeanne Dielman, 23 Quai du Commerce, 1080 Bruxelles (1975)",,,0,4,https://upload.wikimedia.org/wikipedia/en/0/05/JeanneDielman.png
+ENT_0731,ENT_0726,Tokyo Story (1953),,,0,5,https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Tokyo_monogatari_poster.jpg/500px-Tokyo_monogatari_poster.jpg
+ENT_0732,ENT_0726,Vertigo (1958),,,0,6,https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Vertigomovie_restoration.jpg/500px-Vertigomovie_restoration.jpg
+ENT_0733,ENT_0726,8½ (1963),,,0,7,
+ENT_0734,ENT_0726,Mirror (1975),,,0,8,https://upload.wikimedia.org/wikipedia/en/6/64/Mirror_%281975_film%29_original_poster.jpg
+ENT_0735,ENT_0726,In the Mood for Love (2000),,,0,9,https://upload.wikimedia.org/wikipedia/en/4/45/In_the_Mood_for_Love_movie.jpg
+ENT_0736,ENT_0726,Close-up (1989),,,0,10,https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/%DA%A9%D9%84%D9%88%D8%B2_%D8%A2%D9%BE_%D8%A7%D9%86%DA%AF%D9%84%DB%8C%D8%B3%DB%8C_%28%D9%BE%D9%88%D8%B3%D8%AA%D8%B1%29.jpg/500px-%DA%A9%D9%84%D9%88%D8%B2_%D8%A2%D9%BE_%D8%A7%D9%86%DA%AF%D9%84%DB%8C%D8%B3%DB%8C_%28%D9%BE%D9%88%D8%B3%D8%AA%D8%B1%29.jpg
+ENT_0737,ENT_0726,Persona (1966),,,0,11,https://upload.wikimedia.org/wikipedia/en/0/08/Persona_Poster.jpg
+ENT_0738,ENT_0726,Taxi Driver (1976),,,0,12,https://upload.wikimedia.org/wikipedia/en/3/33/Taxi_Driver_%281976_film_poster%29.jpg
+ENT_0739,ENT_0726,Barry Lyndon (1975),,,0,13,https://upload.wikimedia.org/wikipedia/en/e/ee/Barry_Lyndon_A.jpg
+ENT_0740,ENT_0726,Beau travail (1998),,,0,14,https://upload.wikimedia.org/wikipedia/en/7/73/Beau_Travail_poster.jpg
+ENT_0741,ENT_0726,Seven Samurai (1954),,,0,15,https://upload.wikimedia.org/wikipedia/en/c/c8/Seven_Samurai_Poster.png
+ENT_0742,ENT_0726,Breathless (1960),,,0,16,https://upload.wikimedia.org/wikipedia/en/2/28/Breathless_%281983%29.jpg
+ENT_0743,ENT_0726,Stalker (1979),,,0,17,https://upload.wikimedia.org/wikipedia/en/d/d4/Stalker_poster.jpg
+ENT_0744,ENT_0726,Apocalypse Now (1979),,,0,18,https://upload.wikimedia.org/wikipedia/en/c/c2/Apocalypse_Now_poster.jpg
+ENT_0745,ENT_0726,A Woman under the Influence (1974),,,0,19,https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/A_Woman_Under_the_Influence_%281974_poster_-_retouched%29.jpg/500px-A_Woman_Under_the_Influence_%281974_poster_-_retouched%29.jpg
+ENT_0746,ENT_0726,Bicycle Thieves (1948),,,0,20,https://upload.wikimedia.org/wikipedia/en/2/20/Ladri3.jpg
+ENT_0747,ENT_0726,Rashomon (1950),,,0,21,https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Rashomon_poster.jpg/500px-Rashomon_poster.jpg
+ENT_0748,ENT_0726,Mulholland Dr. (2001),,,0,22,https://upload.wikimedia.org/wikipedia/en/0/0f/Mulholland.png
+ENT_0749,ENT_0726,Pather Panchali (1955),,,0,23,https://upload.wikimedia.org/wikipedia/en/7/77/Pather_panchali_poster_in_color_1.jpg
+ENT_0750,ENT_0726,The Battle of Algiers (1966),,,0,24,https://upload.wikimedia.org/wikipedia/en/a/aa/The_Battle_of_Algiers_poster.jpg
+ENT_0751,ENT_0726,Raging Bull (1980),,,0,25,https://upload.wikimedia.org/wikipedia/en/5/5f/Raging_Bull_poster.jpg
+ENT_0752,ENT_0726,Andrei Rublev (1966),,,0,26,https://upload.wikimedia.org/wikipedia/en/a/ae/Andrei_Rublev_Russian_poster.jpg
+ENT_0753,ENT_0726,The Godfather Part II (1974),,,0,27,https://upload.wikimedia.org/wikipedia/en/0/03/Godfather_part_ii.jpg
+ENT_0754,ENT_0726,GoodFellas (1990),,,0,28,https://upload.wikimedia.org/wikipedia/en/1/15/Goodfellas2.jpg
+ENT_0755,ENT_0726,Do the Right Thing (1989),,,0,29,https://upload.wikimedia.org/wikipedia/en/0/03/Do_the_Right_Thing_poster.png
+ENT_0756,ENT_0726,Man with a Movie Camera (1929),,,0,30,https://upload.wikimedia.org/wikipedia/commons/f/f6/Man_with_a_movie_camera_1929_2.png
+ENT_0757,ENT_0726,The Passion of Joan of Arc (1927),,,0,31,https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/The_Passion_of_Joan_of_Arc_%281928%29_English_Poster.png/500px-The_Passion_of_Joan_of_Arc_%281928%29_English_Poster.png
+ENT_0758,ENT_0726,Ordet (1955),,,0,32,https://upload.wikimedia.org/wikipedia/en/1/15/Ordetposter.jpg
+ENT_0759,ENT_0726,Sunrise: A Song of Two Humans (1927),,,0,33,https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Sunrise_-_A_Song_of_Two_Humans.jpg/500px-Sunrise_-_A_Song_of_Two_Humans.jpg
+ENT_0760,ENT_0726,The 400 Blows (1959),,,0,34,https://upload.wikimedia.org/wikipedia/en/f/f9/Quatre_coups2.jpg
+ENT_0761,ENT_0726,La dolce vita (1960),,,0,35,https://upload.wikimedia.org/wikipedia/en/c/c1/La_Dolce_Vita_%281960_film%29_coverart.jpg
+ENT_0762,ENT_0726,La Jetée (1962),,,0,36,https://upload.wikimedia.org/wikipedia/en/f/f7/La_Jetee_Poster.jpg
+ENT_0763,ENT_0726,Au hasard Balthazar (1966),,,0,37,https://upload.wikimedia.org/wikipedia/en/1/1b/AuhasardBalthazar1966Poster.jpg
+ENT_0764,ENT_0726,The Rules of the Game (1939),,,0,38,https://upload.wikimedia.org/wikipedia/en/c/c3/La_regle_du_jeu.jpg
+ENT_0765,ENT_0726,L'avventura (1960),,,0,39,https://upload.wikimedia.org/wikipedia/en/c/c0/L%27avventuraSmall.jpg
+ENT_0766,ENT_0726,La strada (1954),,,0,40,https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/La_strada_ddr_poster.webp/500px-La_strada_ddr_poster.webp
+ENT_0767,ENT_0726,Playtime (1967),,,0,41,https://upload.wikimedia.org/wikipedia/en/c/c8/Playtimeoriginalposter.jpg
+ENT_0768,ENT_0726,The Night of the Hunter (1955),,,0,42,https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/The_Night_of_the_Hunter_%281955_poster%29.jpg/500px-The_Night_of_the_Hunter_%281955_poster%29.jpg
+ENT_0769,ENT_0726,A Man Escaped (1956),,,0,43,https://upload.wikimedia.org/wikipedia/en/c/c0/A-man-escaped.jpg
+ENT_0770,ENT_0726,Vagabond (1985),,,0,44,https://upload.wikimedia.org/wikipedia/en/9/93/Vagabondposter.jpg
+ENT_0771,ENT_0726,Come and See (1985),,,0,45,https://upload.wikimedia.org/wikipedia/en/0/08/Come_and_See_%28poster%29.jpg
+ENT_0772,ENT_0726,Psycho (1960),,,0,46,https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg/500px-Psycho_%281960%29_theatrical_poster_%28retouched%29.jpg
+ENT_0773,ENT_0726,L'Atalante (1934),,,0,47,https://upload.wikimedia.org/wikipedia/en/d/df/L%27Atalante_poster.jpg
+ENT_0774,ENT_0726,Le Mépris (1963),,,0,48,https://upload.wikimedia.org/wikipedia/en/1/15/1963_Le_mepris_1.jpg
+ENT_0775,ENT_0726,Once upon a Time in the West (1968),,,0,49,https://upload.wikimedia.org/wikipedia/en/a/a2/Once_upon_a_Time_in_the_West.jpg
+ENT_0776,ENT_0726,Don't Look Now (1973),,,0,50,https://upload.wikimedia.org/wikipedia/en/b/b8/Dont_look_movieposter.jpg
+ENT_0777,ENT_0726,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1963),,,0,51,https://upload.wikimedia.org/wikipedia/en/e/e6/Dr._Strangelove_poster.jpg
+ENT_0778,ENT_0726,Singin' in the Rain (1951),,,0,52,https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Singin%27_in_the_Rain_%281952_poster%29.jpg/500px-Singin%27_in_the_Rain_%281952_poster%29.jpg
+ENT_0779,ENT_0726,Cléo from 5 to 7 (1962),,,0,53,https://upload.wikimedia.org/wikipedia/en/7/7c/Original_Poster_to_the_1962_Left_Bank_film_Cl%C3%A9o_from_5_to_7.jpg
+ENT_0780,ENT_0726,City Lights (1931),,,0,54,https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/City_Lights_%281931_theatrical_poster_-_retouched%29.jpg/500px-City_Lights_%281931_theatrical_poster_-_retouched%29.jpg
+ENT_0781,ENT_0726,The Piano (1992),,,0,55,https://upload.wikimedia.org/wikipedia/en/9/90/The-piano-poster.jpg
+ENT_0782,ENT_0726,Fear Eats the Soul (1974),,,0,56,https://upload.wikimedia.org/wikipedia/en/e/e5/Alifeareats.jpg
+ENT_0783,ENT_0726,La Maman et la Putain (1973),,,0,57,
+ENT_0784,ENT_0726,Fanny and Alexander (1982),,,0,58,https://upload.wikimedia.org/wikipedia/en/5/56/Fanny%26Alexander.jpg
+ENT_0785,ENT_0726,La notte (1961),,,0,59,https://upload.wikimedia.org/wikipedia/en/6/68/Lanotteposter.jpg
+ENT_0786,ENT_0726,Eraserhead (1976),,,0,60,https://upload.wikimedia.org/wikipedia/en/9/95/David_Lynch_and_Alan_Splet_-_Eraserhead.png
+ENT_0787,ENT_0726,Viridiana (1961),,,0,61,https://upload.wikimedia.org/wikipedia/en/9/9f/Viridiana_cover.jpg
+ENT_0788,ENT_0726,Meshes of the Afternoon (1943),,,0,62,https://upload.wikimedia.org/wikipedia/commons/9/98/Meshes_of_the_Afternoon_1.png
+ENT_0789,ENT_0726,Late Spring (1949),,,0,63,https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Chish%C5%AB_Ry%C5%AB%2C_Setsuko_Hara_and_Yumeji_Tsukioka_in_Late_Spring%2C_1949.jpg/500px-Chish%C5%AB_Ry%C5%AB%2C_Setsuko_Hara_and_Yumeji_Tsukioka_in_Late_Spring%2C_1949.jpg
+ENT_0790,ENT_0726,Some Like It Hot (1959),,,0,64,https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Some_Like_It_Hot_%281959_poster%29.png/500px-Some_Like_It_Hot_%281959_poster%29.png
+ENT_0791,ENT_0726,Blade Runner (1982),,,0,65,https://upload.wikimedia.org/wikipedia/en/1/1c/Bladerunnervangeliscover.jpg
+ENT_0792,ENT_0726,Sunset Blvd. (1950),,,0,66,https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Sunset_Boulevard_%281950_poster%29.jpg/500px-Sunset_Boulevard_%281950_poster%29.jpg
+ENT_0793,ENT_0726,Sátántangó (1994),,,0,67,https://upload.wikimedia.org/wikipedia/en/6/69/S%C3%A1t%C3%A1ntang%C3%B3_%282019_Rerelease_Poster%29.jpeg
+ENT_0794,ENT_0726,Tropical Malady (2004),,,0,68,https://upload.wikimedia.org/wikipedia/en/2/2f/Tropicalmalady01.jpg
+ENT_0795,ENT_0726,Jaws (1975),,,0,69,https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Jaws_movie_poster.jpg/500px-Jaws_movie_poster.jpg
+ENT_0796,ENT_0726,Lawrence of Arabia (1962),,,0,70,https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Lawrence_of_arabia_ver3_xxlg.jpg/500px-Lawrence_of_arabia_ver3_xxlg.jpg
+ENT_0797,ENT_0726,La ciénaga (2001),,,0,71,https://upload.wikimedia.org/wikipedia/en/0/02/Lacienagaposter.jpg
+ENT_0798,ENT_0726,The Searchers (1956),,,0,72,https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/SearchersPoster-BillGold.jpg/500px-SearchersPoster-BillGold.jpg
+ENT_0799,ENT_0726,Shoah (1985),,,0,73,https://upload.wikimedia.org/wikipedia/en/8/84/Shoah_poster_1985_US.jpg
+ENT_0800,ENT_0726,News from Home (1976),,,0,74,https://upload.wikimedia.org/wikipedia/en/b/b6/News_from_Home_%281976%29_poster.jpg
+ENT_0801,ENT_0726,Sans soleil (1982),,,0,75,https://upload.wikimedia.org/wikipedia/en/c/ca/Sans_Soleil.jpg
+ENT_0802,ENT_0726,Touki Bouki (1973),,,0,76,https://upload.wikimedia.org/wikipedia/en/8/87/Touki_Bouki_cover.jpg
+ENT_0803,ENT_0726,The Red Shoes (1948),,,0,77,https://upload.wikimedia.org/wikipedia/en/b/b4/The_Red_Shoes_%281948_movie_poster%29.jpg
+ENT_0804,ENT_0726,Modern Times (1936),,,0,78,https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Modern_Times_poster.jpg/500px-Modern_Times_poster.jpg
+ENT_0805,ENT_0726,A Brighter Summer Day (1991),,,0,79,https://upload.wikimedia.org/wikipedia/en/1/1b/A_Brighter_Summer_Day_%28movie_poster%29.jpg
+ENT_0806,ENT_0726,The Spirit of the Beehive (1973),,,0,80,https://upload.wikimedia.org/wikipedia/en/3/32/Spiritofthebeehiveposter.jpg
+ENT_0807,ENT_0726,Blue Velvet (1986),,,0,81,https://upload.wikimedia.org/wikipedia/en/f/fd/Blue_Velvet_%281986%29.png
+ENT_0808,ENT_0726,Wild Strawberries (1957),,,0,82,https://upload.wikimedia.org/wikipedia/en/4/48/Wildstrawberriesposter.jpg
+ENT_0809,ENT_0726,The Ascent (1976),,,0,83,https://upload.wikimedia.org/wikipedia/en/a/a4/Ascent_poster.jpg
+ENT_0810,ENT_0726,The Seventh Seal (1957),,,0,84,https://upload.wikimedia.org/wikipedia/en/6/69/Seventhsealposter.jpg
+ENT_0811,ENT_0726,Chinatown (1974),,,0,85,
+ENT_0812,ENT_0726,Ikiru (1952),,,0,86,https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Ikiru_poster.jpg/500px-Ikiru_poster.jpg
+ENT_0813,ENT_0726,Where Is the Friend's House? (1987),,,0,87,https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/%D8%AE%D8%A7%D9%86%D9%87_%D8%AF%D9%88%D8%B3%D8%AA_%DA%A9%D8%AC%D8%A7%D8%B3%D8%AA_%28%D9%BE%D9%88%D8%B3%D8%AA%D8%B1%29.jpg/500px-%D8%AE%D8%A7%D9%86%D9%87_%D8%AF%D9%88%D8%B3%D8%AA_%DA%A9%D8%AC%D8%A7%D8%B3%D8%AA_%28%D9%BE%D9%88%D8%B3%D8%AA%D8%B1%29.jpg
+ENT_0814,ENT_0726,L'Argent (1983),,,0,88,https://upload.wikimedia.org/wikipedia/en/7/76/L%27Argent_%281983_movie_poster%29.jpg
+ENT_0815,ENT_0726,The Conversation (1974),,,0,89,https://upload.wikimedia.org/wikipedia/en/e/e0/Theconversation.jpg
+ENT_0816,ENT_0726,"Salò, or the 120 Days of Sodom (1975)",,,0,90,https://upload.wikimedia.org/wikipedia/en/f/f3/Saloposter.jpg
+ENT_0817,ENT_0726,A Separation (2011),,,0,91,https://upload.wikimedia.org/wikipedia/en/4/41/A_Separation_%282011_film_poster%29.png
+ENT_0818,ENT_0726,Kes (1969),,,0,92,https://upload.wikimedia.org/wikipedia/en/8/89/Kes_1969_film_poster.jpg
+ENT_0819,ENT_0726,Wanda (1970),,,0,93,https://upload.wikimedia.org/wikipedia/en/4/48/Happy-birthday-wanda-june.jpg
+ENT_0820,ENT_0726,Battleship Potemkin (1925),,,0,94,https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/Vintage_Potemkin.jpg/500px-Vintage_Potemkin.jpg
+ENT_0821,ENT_0726,Moonlight (2016),,,0,95,https://upload.wikimedia.org/wikipedia/en/8/84/Moonlight_%282016_film%29.png
+ENT_0822,ENT_0726,Yi Yi (1999),,,0,96,
+ENT_0823,ENT_0726,Parasite (2019),,,0,97,https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.png
+ENT_0824,ENT_0726,The Conformist (1970),,,0,98,https://upload.wikimedia.org/wikipedia/en/7/78/The_Conformist_poster.jpg
+ENT_0825,ENT_0726,The Colour of Pomegranates (1968),,,0,99,https://upload.wikimedia.org/wikipedia/en/c/c7/The_Color_of_Pomegranates_cover_art.jpg
+ENT_0826,ENT_0726,Pickpocket (1959),,,0,100,
+ENT_0827,ENT_0034,Rolling Stone albums,https://www.rollingstone.com/music/music-lists/best-albums-of-all-time-1062063/,,0,2,
+ENT_0828,ENT_0827,What's Going On — Marvin Gaye (1971),,,0,1,https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/76/36/2d/76362d74-cb7a-8ef9-104e-cde1d858e9a9/20UMGIM95279.rgb.jpg/600x600bb.jpg
+ENT_0829,ENT_0827,Pet Sounds — The Beach Boys (1966),,,0,2,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/35/bb/c4/35bbc4eb-9387-97b0-b138-64b7a949ea43/13UABIM03512.rgb.jpg/600x600bb.jpg
+ENT_0830,ENT_0827,Blue — Joni Mitchell (1971),,,0,3,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/00/a2/43/00a24363-cf69-bfd2-a26a-a042d57ab141/075992719926.jpg/600x600bb.jpg
+ENT_0831,ENT_0827,Songs in the Key of Life — Stevie Wonder (1976),,,0,4,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/07/7d/a9/077da942-121e-a649-2f28-59b7eadd7b31/26UM1IM23631.rgb.jpg/600x600bb.jpg
+ENT_0832,ENT_0827,Abbey Road — The Beatles (1969),,,0,5,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/48/53/43/485343e3-dd6a-0034-faec-f4b6403f8108/13UMGIM63890.rgb.jpg/600x600bb.jpg
+ENT_0833,ENT_0827,Nevermind — Nirvana (1991),,,0,6,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/45/b2/24/45b224b7-baa4-c320-9e3b-fd37dcfcdcb1/mzi.nkvwvqxf.jpg/600x600bb.jpg
+ENT_0834,ENT_0827,Rumours — Fleetwood Mac (1977),,,0,7,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/4d/13/ba/4d13bac3-d3d5-7581-2c74-034219eadf2b/081227970949.jpg/600x600bb.jpg
+ENT_0835,ENT_0827,Purple Rain — Prince and the Revolution (1984),,,0,8,https://upload.wikimedia.org/wikipedia/en/9/9c/Princepurplerain.jpg
+ENT_0836,ENT_0827,Blood on the Tracks — Bob Dylan (1975),,,0,9,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/34/6e/4d/346e4d1c-c9ef-cf7f-96d9-aad97286febb/074643323529.jpg/600x600bb.jpg
+ENT_0837,ENT_0827,The Miseducation of Lauryn Hill — Lauryn Hill (1998),,,0,10,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/6b/55/096b55c4-ee8f-23bd-df8f-0ca0821f3028/886446727189.jpg/600x600bb.jpg
+ENT_0838,ENT_0827,Revolver — The Beatles (1966),,,0,11,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/97/f4/3a/97f43ab4-9fdf-7a41-e430-7c6c313f3883/13UMGIM63887.rgb.jpg/600x600bb.jpg
+ENT_0839,ENT_0827,Thriller — Michael Jackson (1982),,,0,12,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg
+ENT_0840,ENT_0827,I Never Loved a Man the Way I Love You — Aretha Franklin (1967),,,0,13,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/d1/31/ee/d131eec4-614c-d661-b580-3dc32b8547e8/603497896622.jpg/600x600bb.jpg
+ENT_0841,ENT_0827,Exile on Main St. — The Rolling Stones (1972),,,0,14,https://upload.wikimedia.org/wikipedia/en/c/ca/ExileMainSt.jpg
+ENT_0842,ENT_0827,It Takes a Nation of Millions to Hold Us Back — Public Enemy (1988),,,0,15,https://upload.wikimedia.org/wikipedia/en/7/73/PublicEnemyItTakesaNationofMillionstoHoldUsBack.jpg
+ENT_0843,ENT_0827,London Calling — The Clash (1979),,,0,16,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/93/cb/20/93cb201b-154b-7b74-a10b-48fbef9b3281/888880348937.jpg/600x600bb.jpg
+ENT_0844,ENT_0827,My Beautiful Dark Twisted Fantasy — Kanye West (2010),,,0,17,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/37/da/7c/37da7cc5-2b6f-9bb8-30ba-8a8c3be3e16a/00602527584973.rgb.jpg/600x600bb.jpg
+ENT_0845,ENT_0827,Highway 61 Revisited — Bob Dylan (1965),,,0,18,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/f8/ff/c0/f8ffc056-55b4-2033-657d-32492d1eea25/827969239926.jpg/600x600bb.jpg
+ENT_0846,ENT_0827,To Pimp a Butterfly — Kendrick Lamar (2015),,,0,19,https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/b5/a6/91/b5a69171-5232-3d5b-9c15-8963802f83dd/15UMGIM15814.rgb.jpg/600x600bb.jpg
+ENT_0847,ENT_0827,Kid A — Radiohead (2000),,,0,20,https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/bd/8e/13/bd8e1358-b367-a689-cb84-cebd0b067dc4/634904078263.png/600x600bb.jpg
+ENT_0848,ENT_0827,Born to Run — Bruce Springsteen (1975),,,0,21,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/0a/02/f7/0a02f7a1-ca2a-c0d7-7192-50314971721f/884977157031.jpg/600x600bb.jpg
+ENT_0849,ENT_0827,Ready to Die — The Notorious B.I.G. (1994),,,0,22,https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f8/6a/3d/f86a3db0-d518-cd49-c0c9-25e767ae0a6d/075679456861.jpg/600x600bb.jpg
+ENT_0850,ENT_0827,The Velvet Underground & Nico — The Velvet Underground (1967),,,0,23,https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/92/93/39/9293397f-a707-237e-ec7e-0ca613a67e3c/06UMGIM04143.rgb.jpg/600x600bb.jpg
+ENT_0851,ENT_0827,Sgt. Pepper's Lonely Hearts Club Band — The Beatles (1967),,,0,24,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/64/85/d2/6485d219-91ac-5481-2668-7eab1320436d/21UMGIM57007.rgb.jpg/600x600bb.jpg
+ENT_0852,ENT_0827,Tapestry — Carole King (1971),,,0,25,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/68/b6/0e/68b60e89-9d41-e8a1-bba2-05c750f0832b/dj.hwpyamqm.jpg/600x600bb.jpg
+ENT_0853,ENT_0827,Horses — Patti Smith (1975),,,0,26,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/0b/cd/a8/0bcda80a-0046-aa13-1416-71d844dfb711/886445500394.jpg/600x600bb.jpg
+ENT_0854,ENT_0827,Enter the Wu-Tang (36 Chambers) — Wu-Tang Clan (1993),,,0,27,https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/8c/20/1f/8c201f03-7617-2d8b-3d8d-e0ba2d55041b/196872123784.jpg/600x600bb.jpg
+ENT_0855,ENT_0827,Voodoo — D'Angelo (2000),,,0,28,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/e9/b9/9e/e9b99e73-58a5-1e31-f57c-b11e78419dcf/16UMGIM86249.rgb.jpg/600x600bb.jpg
+ENT_0856,ENT_0827,The White Album — The Beatles (1968),,,0,29,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/fa/5b/89/fa5b898d-bad6-e053-4195-260e5c74f2bb/00602567725466.rgb.jpg/600x600bb.jpg
+ENT_0857,ENT_0827,Are You Experienced — The Jimi Hendrix Experience (1967),,,0,30,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/00/67/45/006745f5-95d5-5a06-35ed-d515e9cfd7d8/dj.tbwlxwoh.jpg/600x600bb.jpg
+ENT_0858,ENT_0827,Kind of Blue — Miles Davis (1959),,,0,31,https://is1-ssl.mzstatic.com/image/thumb/Music/7f/9f/d6/mzi.vtnaewef.jpg/600x600bb.jpg
+ENT_0859,ENT_0827,Lemonade — Beyoncé (2016),,,0,32,https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3b/3c/65/3b3c6590-55e0-9a55-2e1d-96af51343117/886447691168.jpg/600x600bb.jpg
+ENT_0860,ENT_0827,Back to Black — Amy Winehouse (2006),,,0,33,https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/cf/3f/09/cf3f0994-980d-d8ed-088d-ae89af256b73/15UMGIM24224.rgb.jpg/600x600bb.jpg
+ENT_0861,ENT_0827,Innervisions — Stevie Wonder (1973),,,0,34,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ff/c2/5f/ffc25f04-cb3b-b56e-dd28-8b77ae63e613/00602537070824.rgb.jpg/600x600bb.jpg
+ENT_0862,ENT_0827,Rubber Soul — The Beatles (1965),,,0,35,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/af/20/aa/af20aa89-4002-11fb-25d8-ff544af67eb4/00602567725404.rgb.jpg/600x600bb.jpg
+ENT_0863,ENT_0827,Off the Wall — Michael Jackson (1979),,,0,36,https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/0c/fe/a3/0cfea324-57c1-d530-5248-9bb591bbd7bf/074643574525.jpg/600x600bb.jpg
+ENT_0864,ENT_0827,The Chronic — Dr. Dre (1992),,,0,37,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/72/be/77/72be770c-b66f-6efc-88a4-edcfccb34b98/5054960495845_cover.jpg/600x600bb.jpg
+ENT_0865,ENT_0827,Blonde on Blonde — Bob Dylan (1966),,,0,38,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/20/9d/bf/209dbf58-f698-7181-33de-0c29480beba0/074640084126.jpg/600x600bb.jpg
+ENT_0866,ENT_0827,Remain in Light — Talking Heads (1980),,,0,39,https://is1-ssl.mzstatic.com/image/thumb/Music/87/5f/5b/mzi.zzquknhm.jpg/600x600bb.jpg
+ENT_0867,ENT_0827,The Rise and Fall of Ziggy Stardust and the Spiders from Mars — David Bowie (1972),,,0,40,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/5f/fa/56/5ffa56c2-ea1f-7a17-6bad-192ff9b6476d/825646124206.jpg/600x600bb.jpg
+ENT_0868,ENT_0827,Let It Bleed — The Rolling Stones (1969),,,0,41,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/69/64/67/696467fe-9ed1-b65e-1016-a10d07e6464d/20UMGIM14087.rgb.jpg/600x600bb.jpg
+ENT_0869,ENT_0827,OK Computer — Radiohead (1997),,,0,42,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/600x600bb.jpg
+ENT_0870,ENT_0827,The Low End Theory — A Tribe Called Quest (1991),,,0,43,https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/c6/04/ea/c604ea4c-5337-14ec-6b47-cfc962e1c7be/762186920922_Cover.jpg/600x600bb.jpg
+ENT_0871,ENT_0827,Illmatic — Nas (1994),,,0,44,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b9/eb/cc/b9ebccbc-5ba4-2cdb-5332-b065739abd9a/886444567619.jpg/600x600bb.jpg
+ENT_0872,ENT_0827,Sign o' the Times — Prince (1987),,,0,45,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/a9/52/38/a95238ab-10f9-e407-4bc8-755148d32d65/886448874546.jpg/600x600bb.jpg
+ENT_0873,ENT_0827,Graceland — Paul Simon (1986),,,0,46,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a7/73/c1/a773c1f0-281c-324c-204f-540444080ea8/886443445697.jpg/600x600bb.jpg
+ENT_0874,ENT_0827,Ramones — Ramones (1976),,,0,47,https://is1-ssl.mzstatic.com/image/thumb/Music/v4/eb/c0/ab/ebc0ab80-e4df-08fd-64fd-e3c464e6c607/603497909629.jpg/600x600bb.jpg
+ENT_0875,ENT_0827,Legend — Bob Marley and the Wailers (1984),,,0,48,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/15/0b/db/150bdba3-8dbb-8e66-79b3-c8e1dead908b/20UMGIM03868.rgb.jpg/600x600bb.jpg
+ENT_0876,ENT_0827,Aquemini — Outkast (1998),,,0,49,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/0e/48/dd/0e48dd9a-07c9-46de-a838-b4ddb4e508a7/886448814191.jpg/600x600bb.jpg
+ENT_0877,ENT_0827,The Blueprint — Jay-Z (2001),,,0,50,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/19/c0/e3/19c0e3b6-4c2f-17ee-2a4a-6e2208de8aa6/00857366006951.rgb.jpg/600x600bb.jpg
+ENT_0878,ENT_0827,The Great Twenty-Eight — Chuck Berry (1982),,,0,51,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/20/0c/da/200cdaef-faf4-aaca-96d6-b3d394751321/24UMGIM34828.rgb.jpg/600x600bb.jpg
+ENT_0879,ENT_0827,Station to Station — David Bowie (1976),,,0,52,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/91/d8/47/91d847ac-8e39-85b0-36a6-ab3b8db46803/190295990268.jpg/600x600bb.jpg
+ENT_0880,ENT_0827,Electric Ladyland — The Jimi Hendrix Experience (1968),,,0,53,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a6/b8/45/a6b84589-6ff7-a462-9ff9-170b724980d5/dj.wjkdwlks.jpg/600x600bb.jpg
+ENT_0881,ENT_0827,Star Time — James Brown (1991),,,0,54,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/14/5b/1c/145b1cc1-3c63-7385-500e-c6ed8b190c3b/06UMGIM18886.rgb.jpg/600x600bb.jpg
+ENT_0882,ENT_0827,The Dark Side of the Moon — Pink Floyd (1973),,,0,55,https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/0e/f9/50/0ef9502c-d639-9914-dcd5-eb70ce27894a/859725157427_cover.jpg/600x600bb.jpg
+ENT_0883,ENT_0827,Exile in Guyville — Liz Phair (1993),,,0,56,https://upload.wikimedia.org/wikipedia/en/0/00/Liz_Phair_-_Exile_in_Guyville.jpg
+ENT_0884,ENT_0827,The Band — The Band (1969),,,0,57,https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/ca/b2/06/cab20688-46b7-e7be-c64a-dbbeeb2fc864/15UMGIM06558.rgb.jpg/600x600bb.jpg
+ENT_0885,ENT_0827,Led Zeppelin IV — Led Zeppelin (1971),,,0,58,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/5c/15/9b/5c159b27-95ca-b9a7-84e3-28e795fffd39/dj.kvkrpptq.jpg/600x600bb.jpg
+ENT_0886,ENT_0827,Talking Book — Stevie Wonder (1972),,,0,59,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/62/61/61/626161c0-f4d7-e6ff-8586-768340ef278f/00602537002382.rgb.jpg/600x600bb.jpg
+ENT_0887,ENT_0827,Astral Weeks — Van Morrison (1968),,,0,60,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/88/91/1b/88911b7b-a63f-4624-3fb1-2976b628c59a/603497886340.jpg/600x600bb.jpg
+ENT_0888,ENT_0827,Paid in Full — Eric B. & Rakim (1987),,,0,61,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/13/11/10/13111001-0c28-9fd7-9d50-194e72e23f53/00602547742254.rgb.jpg/600x600bb.jpg
+ENT_0889,ENT_0827,Appetite for Destruction — Guns N' Roses (1987),,,0,62,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/26/81/f6/2681f6ad-8eb7-9c90-75b3-4d4d44553d02/859745625265_cover.jpg/600x600bb.jpg
+ENT_0890,ENT_0827,Aja — Steely Dan (1977),,,0,63,https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/c2/3c/54/c23c5414-20d1-7aea-f0f5-187974c58d65/23UMGIM79990.rgb.jpg/600x600bb.jpg
+ENT_0891,ENT_0827,Stankonia — Outkast (2000),,,0,64,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/d6/21/fb/d621fbde-c099-6794-7102-2692f10c4dbb/886448814283.jpg/600x600bb.jpg
+ENT_0892,ENT_0827,Live at the Apollo — James Brown (1963),,,0,65,https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/e7/41/db/e741dbd4-3795-8eef-969c-546ff7c5b1a8/00602537429806.rgb.jpg/600x600bb.jpg
+ENT_0893,ENT_0827,A Love Supreme — John Coltrane (1965),,,0,66,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/e5/24/aa/e524aacd-467b-66f3-8931-0fcd6750a4b9/08UMGIM07914.rgb.jpg/600x600bb.jpg
+ENT_0894,ENT_0827,Reasonable Doubt — Jay-Z (1996),,,0,67,https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/14/17/1b/14171b5f-219b-2d92-b3d5-8aae9bb7c0b2/22UM1IM20540.rgb.jpg/600x600bb.jpg
+ENT_0895,ENT_0827,Hounds of Love — Kate Bush (1985),,,0,68,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/62/97/32/62973286-5bb3-0de7-c051-8b2de8d95472/cover.jpg/600x600bb.jpg
+ENT_0896,ENT_0827,Jagged Little Pill — Alanis Morissette (1995),,,0,69,https://is1-ssl.mzstatic.com/image/thumb/Music123/v4/e0/b7/d1/e0b7d17a-50ea-8ae0-780a-8b0208901147/075679834683.jpg/600x600bb.jpg
+ENT_0897,ENT_0827,Straight Outta Compton — N.W.A (1988),,,0,70,https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/4c/b1/32/4cb13290-7d01-1949-57e9-a8a1874e60a2/19UMGIM79184.rgb.jpg/600x600bb.jpg
+ENT_0898,ENT_0827,Exodus — Bob Marley and the Wailers (1977),,,0,71,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/23/fa/f8/23faf820-c4fa-2bf1-d672-846971f5cf5c/06UMGIM31355.rgb.jpg/600x600bb.jpg
+ENT_0899,ENT_0827,Harvest — Neil Young (1972),,,0,72,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e0/4b/c4/e04bc4e6-9d3a-0bab-c953-f139c72fd337/093624924722.jpg/600x600bb.jpg
+ENT_0900,ENT_0827,Loveless — My Bloody Valentine (1991),,,0,73,https://upload.wikimedia.org/wikipedia/en/4/4b/My_Bloody_Valentine_-_Loveless.png
+ENT_0901,ENT_0827,The College Dropout — Kanye West (2004),,,0,74,https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/15/05/09/15050911-a2f1-9ebc-0d16-6e8faad1cf80/00602567924326.rgb.jpg/600x600bb.jpg
+ENT_0902,ENT_0827,Lady Soul — Aretha Franklin (1968),,,0,75,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e3/a7/ac/e3a7aca0-48e1-0882-8e25-3d68f7ba3a72/603497896646.jpg/600x600bb.jpg
+ENT_0903,ENT_0827,Super Fly — Curtis Mayfield (1972),,,0,76,https://upload.wikimedia.org/wikipedia/en/2/26/CurtisMayfieldSuperfly.jpg
+ENT_0904,ENT_0827,Who's Next — The Who (1971),,,0,77,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/4e/d5/19/4ed519ca-3f8b-65ee-eb21-89d5c6a0b44e/00602547140265.rgb.jpg/600x600bb.jpg
+ENT_0905,ENT_0827,The Sun Sessions — Elvis Presley (1976),,,0,78,https://upload.wikimedia.org/wikipedia/en/c/cd/Elvis_Presley_The_Sun_Sessions_LP_Cover.jpg
+ENT_0906,ENT_0827,Blonde — Frank Ocean (2016),,,0,79,https://upload.wikimedia.org/wikipedia/en/a/a0/Blonde_-_Frank_Ocean.jpeg
+ENT_0907,ENT_0827,"Never Mind the Bollocks, Here's the Sex Pistols — Sex Pistols (1977)",,,0,80,https://thumb.wikimedia.org/wikipedia/en/thumb/4/4c/Never_Mind_the_Bollocks%2C_Here%27s_the_Sex_Pistols.png/500px-Never_Mind_the_Bollocks%2C_Here%27s_the_Sex_Pistols.png
+ENT_0908,ENT_0827,Beyoncé — Beyoncé (2013),,,0,81,https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Beyonc%C3%A9_-_Beyonc%C3%A9.svg/500px-Beyonc%C3%A9_-_Beyonc%C3%A9.svg.png
+ENT_0909,ENT_0827,There's a Riot Goin' On — Sly and the Family Stone (1971),,,0,82,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/91/01/9f/91019f68-fbc9-5620-d49a-88043d75371e/828767591124.jpg/600x600bb.jpg
+ENT_0910,ENT_0827,Dusty in Memphis — Dusty Springfield (1969),,,0,83,https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/82/5f/41/825f4119-3ecd-a3a2-7491-d0c6b805b3ca/603497898978.jpg/600x600bb.jpg
+ENT_0911,ENT_0827,Back in Black — AC/DC (1980),,,0,84,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/1e/14/58/1e145814-281a-58e0-3ab1-145f5d1af421/886443673441.jpg/600x600bb.jpg
+ENT_0912,ENT_0827,Plastic Ono Band — John Lennon (1970),,,0,85,https://upload.wikimedia.org/wikipedia/en/a/a4/JLPOBCover.jpg
+ENT_0913,ENT_0827,The Doors — The Doors (1967),,,0,86,https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/97/e2/ce/97e2ce16-02e1-54f6-3896-dcc55249ff7d/603497838738.jpg/600x600bb.jpg
+ENT_0914,ENT_0827,Bitches Brew — Miles Davis (1970),,,0,87,https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/9b/e1/63/9be1630c-486d-760c-76cf-04282174700a/074646577424.jpg/600x600bb.jpg
+ENT_0915,ENT_0827,Hunky Dory — David Bowie (1971),,,0,88,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/f0/b9/68/f0b9680e-b028-b3d6-f793-7c268256499a/825646286034.jpg/600x600bb.jpg
+ENT_0916,ENT_0827,Baduizm — Erykah Badu (1997),,,0,89,https://upload.wikimedia.org/wikipedia/en/4/48/Baduizm.png
+ENT_0917,ENT_0827,After the Gold Rush — Neil Young (1970),,,0,90,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/88/9f/0a/889f0afc-ca89-5968-ef83-ab07f7184eb6/093624924753.jpg/600x600bb.jpg
+ENT_0918,ENT_0827,Darkness on the Edge of Town — Bruce Springsteen (1978),,,0,91,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/b3/13/4e/b3134ed3-a05d-d3b2-8f96-8cddd067aa32/884977798753.jpg/600x600bb.jpg
+ENT_0919,ENT_0827,Axis: Bold as Love — The Jimi Hendrix Experience (1967),,,0,92,https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/93/5d/c5/935dc5d5-a985-333d-0825-879ddb36e461/884977526585.jpg/600x600bb.jpg
+ENT_0920,ENT_0827,Supa Dupa Fly — Missy Elliott (1997),,,0,93,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/2e/7e/ca/2e7ecae3-80ad-8900-8cdd-deaa36b5cf36/mzi.trpdmrfr.jpg/600x600bb.jpg
+ENT_0921,ENT_0827,Fun House — The Stooges (1970),,,0,94,https://is1-ssl.mzstatic.com/image/thumb/Music6/v4/ea/84/3c/ea843cdb-04ca-63c1-dd30-ddf3a0b94ca9/075596066921.jpg/600x600bb.jpg
+ENT_0922,ENT_0827,Take Care — Drake (2011),,,0,95,https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/d2/53/62/d2536245-b94c-b3fd-7168-9512f655f6d4/00602527899091.rgb.jpg/600x600bb.jpg
+ENT_0923,ENT_0827,Automatic for the People — R.E.M. (1992),,,0,96,
+ENT_0924,ENT_0827,Master of Puppets — Metallica (1986),,,0,97,https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/ed/ee/7f/edee7f18-85b6-ebb4-0620-89cbe56fe205/858978005554.png/600x600bb.jpg
+ENT_0925,ENT_0827,Car Wheels on a Gravel Road — Lucinda Williams (1998),,,0,98,
+ENT_0926,ENT_0827,Red — Taylor Swift (2012),,,0,99,https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/25/0d/7e/250d7e42-3a2f-19ac-f865-f1e04a4a1f97/12UMDIM01007.rgb.jpg/600x600bb.jpg
+ENT_0927,ENT_0827,Music from Big Pink — The Band (1968),,,0,100,https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/44/eb/9f/44eb9ffc-8e77-9a3d-8be7-8ca579de93cc/13UACIM30926.rgb.jpg/600x600bb.jpg
+ENT_0928,ENT_0017,Rolling Stone,https://www.rollingstone.com/tv-movies/tv-movie-lists/best-tv-shows-of-all-time-1234598313/,,0,0,
+ENT_0929,ENT_0928,The Sopranos (1999-2007),,,0,1,https://static.tvmaze.com/uploads/images/original_untouched/4/11341.jpg
+ENT_0930,ENT_0928,The Simpsons (1989-),,,0,2,https://static.tvmaze.com/uploads/images/original_untouched/637/1594614.jpg
+ENT_0931,ENT_0928,Breaking Bad (2008-2013),,,0,3,https://static.tvmaze.com/uploads/images/original_untouched/501/1253519.jpg
+ENT_0932,ENT_0928,The Wire (2002-2008),,,0,4,https://static.tvmaze.com/uploads/images/original_untouched/504/1260189.jpg
+ENT_0933,ENT_0928,Fleabag (2016-2019),,,0,5,https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Fleabag_titlecard.png/500px-Fleabag_titlecard.png
+ENT_0934,ENT_0928,Seinfeld (1989-1998),,,0,6,https://static.tvmaze.com/uploads/images/original_untouched/83/207960.jpg
+ENT_0935,ENT_0928,Mad Men (2007-2015),,,0,7,https://upload.wikimedia.org/wikipedia/en/3/33/Mad-men-title-card.jpg
+ENT_0936,ENT_0928,Cheers (1982-1993),,,0,8,https://static.tvmaze.com/uploads/images/original_untouched/495/1238129.jpg
+ENT_0937,ENT_0928,Atlanta (2016-),,,0,9,https://upload.wikimedia.org/wikipedia/commons/0/04/Atlanta_Title_Card.png
+ENT_0938,ENT_0928,The Mary Tyler Moore Show (1970-1977),,,0,10,https://static.tvmaze.com/uploads/images/original_untouched/19/49640.jpg
+ENT_0939,ENT_0928,Succession (2018-),,,0,11,https://static.tvmaze.com/uploads/images/original_untouched/453/1134275.jpg
+ENT_0940,ENT_0928,The Twilight Zone (1959-1964),,,0,12,https://static.tvmaze.com/uploads/images/original_untouched/398/996733.jpg
+ENT_0941,ENT_0928,Veep (2012-2019),,,0,13,https://static.tvmaze.com/uploads/images/original_untouched/189/472887.jpg
+ENT_0942,ENT_0928,The Americans (2013-2018),,,0,14,https://static.tvmaze.com/uploads/images/original_untouched/146/366911.jpg
+ENT_0943,ENT_0928,The Larry Sanders Show (1992-1998),,,0,15,https://static.tvmaze.com/uploads/images/original_untouched/270/675623.jpg
+ENT_0944,ENT_0928,Twin Peaks (1990-1991),,,0,16,https://static.tvmaze.com/uploads/images/original_untouched/397/992910.jpg
+ENT_0945,ENT_0928,The Leftovers (2014-2017),,,0,17,https://upload.wikimedia.org/wikipedia/en/3/39/LeftoversS2Logo.jpg
+ENT_0946,ENT_0928,Saturday Night Live (1975-),,,0,18,https://static.tvmaze.com/uploads/images/original_untouched/589/1474771.jpg
+ENT_0947,ENT_0928,I May Destroy You (2020),,,0,19,https://upload.wikimedia.org/wikipedia/commons/b/b0/I_May_Destroy_You_intertitle.png
+ENT_0948,ENT_0928,30 Rock (2006-2013),,,0,20,https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Rockefeller_Center1021.jpg/500px-Rockefeller_Center1021.jpg
+ENT_0949,ENT_0928,All in the Family (1971-1979),,,0,21,https://static.tvmaze.com/uploads/images/original_untouched/605/1513713.jpg
+ENT_0950,ENT_0928,Star Trek (1966-1969),,,0,22,https://static.tvmaze.com/uploads/images/original_untouched/496/1242166.jpg
+ENT_0951,ENT_0928,Watchmen (2019),,,0,23,https://upload.wikimedia.org/wikipedia/en/a/a2/Watchmen%2C_issue_1.jpg
+ENT_0952,ENT_0928,Freaks and Geeks (1999-2000),,,0,24,https://static.tvmaze.com/uploads/images/original_untouched/495/1239324.jpg
+ENT_0953,ENT_0928,M*A*S*H (1972-1983),,,0,25,https://static.tvmaze.com/uploads/images/original_untouched/5/14728.jpg
+ENT_0954,ENT_0928,Sesame Street (1969-),,,0,26,https://static.tvmaze.com/uploads/images/original_untouched/597/1494633.jpg
+ENT_0955,ENT_0928,Deadwood (2004-2006),,,0,27,https://upload.wikimedia.org/wikipedia/en/1/18/Deadwood_titleimage.jpg
+ENT_0956,ENT_0928,Friday Night Lights (2006-2011),,,0,28,https://upload.wikimedia.org/wikipedia/en/b/bf/Friday_Night_Lights_title_card.png
+ENT_0957,ENT_0928,Roots (1977),,,0,29,https://static.tvmaze.com/uploads/images/original_untouched/59/149729.jpg
+ENT_0958,ENT_0928,Parks and Recreation (2009-2015),,,0,30,https://static.tvmaze.com/uploads/images/original_untouched/481/1204341.jpg
+ENT_0959,ENT_0928,Game of Thrones (2011-2019),,,0,31,https://upload.wikimedia.org/wikipedia/en/d/d8/Game_of_Thrones_title_card.jpg
+ENT_0960,ENT_0928,Better Call Saul (2015-2022),,,0,32,https://upload.wikimedia.org/wikipedia/en/d/de/Breaking_Bad_Season_2_Episode_08_%22Better_Call_Saul%22.jpg
+ENT_0961,ENT_0928,Monty Python's Flying Circus (1969-1974),,,0,33,https://static.tvmaze.com/uploads/images/original_untouched/5/14980.jpg
+ENT_0962,ENT_0928,The Office (US) (2005-2013),,,0,34,https://upload.wikimedia.org/wikipedia/en/5/58/Office_S5_DVD.JPG
+ENT_0963,ENT_0928,Lost (2004-2010),,,0,35,https://static.tvmaze.com/uploads/images/original_untouched/0/1389.jpg
+ENT_0964,ENT_0928,I Love Lucy (1951-1957),,,0,36,https://static.tvmaze.com/uploads/images/original_untouched/19/48076.jpg
+ENT_0965,ENT_0928,Arrested Development (2003-2019),,,0,37,https://upload.wikimedia.org/wikipedia/en/e/e4/Righteous_Brothers_%28Arrested_Development%29.png
+ENT_0966,ENT_0928,Hill Street Blues (1981-1987),,,0,38,https://static.tvmaze.com/uploads/images/original_untouched/19/47756.jpg
+ENT_0967,ENT_0928,Curb Your Enthusiasm (2000-),,,0,39,https://static.tvmaze.com/uploads/images/original_untouched/500/1250735.jpg
+ENT_0968,ENT_0928,The Good Place (2016-2020),,,0,40,
+ENT_0969,ENT_0928,BoJack Horseman (2014-2020),,,0,41,https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Will_Arnett_%2828575894456%29_%28cropped%29.jpg/500px-Will_Arnett_%2828575894456%29_%28cropped%29.jpg
+ENT_0970,ENT_0928,Battlestar Galactica (2004-2009),,,0,42,
+ENT_0971,ENT_0928,Insecure (2016-2021),,,0,43,
+ENT_0972,ENT_0928,Late Night with David Letterman (1982-1993),,,0,44,
+ENT_0973,ENT_0928,Columbo (1971-1978),,,0,45,
+ENT_0974,ENT_0928,The West Wing (1999-2006),,,0,46,
+ENT_0975,ENT_0928,My So-Called Life (1994-1995),,,0,47,
+ENT_0976,ENT_0928,The Shield (2002-2008),,,0,48,
+ENT_0977,ENT_0928,Friends (1994-2004),,,0,49,
+ENT_0978,ENT_0928,Jeopardy! (1984-),,,0,50,
+ENT_0979,ENT_0928,The X-Files (1993-2018),,,0,51,
+ENT_0980,ENT_0928,Barry (2018-2023),,,0,52,
+ENT_0981,ENT_0928,The Office (UK) (2001-2003),,,0,53,https://upload.wikimedia.org/wikipedia/en/7/7e/Theoffice.jpg
+ENT_0982,ENT_0928,ER (1994-2009),,,0,54,
+ENT_0983,ENT_0928,Halt and Catch Fire (2014-2017),,,0,55,https://upload.wikimedia.org/wikipedia/en/9/92/Halt_and_Catch_Fire_Intertitle.jpg
+ENT_0984,ENT_0928,Community (2009-2015),,,0,56,https://static.tvmaze.com/uploads/images/original_untouched/2/5134.jpg
+ENT_0985,ENT_0928,Russian Doll (2019-),,,0,57,
+ENT_0986,ENT_0928,Six Feet Under (2001-2005),,,0,58,https://upload.wikimedia.org/wikipedia/en/2/23/Sixfeetunderlogo.jpg
+ENT_0987,ENT_0928,Key & Peele (2012-2015),,,0,59,
+ENT_0988,ENT_0928,Taxi (1978-1983),,,0,60,
+ENT_0989,ENT_0928,The Underground Railroad (2021),,,0,61,
+ENT_0990,ENT_0928,The Dick Van Dyke Show (1961-1966),,,0,62,
+ENT_0991,ENT_0928,South Park (1997-),,,0,63,
+ENT_0992,ENT_0928,The Golden Girls (1985-1992),,,0,64,
+ENT_0993,ENT_0928,Girls (2012-2017),,,0,65,
+ENT_0994,ENT_0928,The Daily Show with Jon Stewart (1999-2015),,,0,66,
+ENT_0995,ENT_0928,NYPD Blue (1993-2005),,,0,67,
+ENT_0996,ENT_0928,Fawlty Towers (1975-1979),,,0,68,
+ENT_0997,ENT_0928,Chappelle's Show (2003-2006),,,0,69,
+ENT_0998,ENT_0928,SCTV (1976-1984),,,0,70,
+ENT_0999,ENT_0928,Better Things (2016-2022),,,0,71,
+ENT_1000,ENT_0928,Good Times (1974-1979),,,0,72,
+ENT_1001,ENT_0928,Buffy the Vampire Slayer (1997-2003),,,0,73,
+ENT_1002,ENT_0928,The Honeymooners (1955-1956),,,0,74,
+ENT_1003,ENT_0928,Frasier (1993-2004),,,0,75,
+ENT_1004,ENT_0928,Justified (2010-2015),,,0,76,
+ENT_1005,ENT_0928,The Jeffersons (1975-1985),,,0,77,
+ENT_1006,ENT_0928,Sex and the City (1998-2004),,,0,78,
+ENT_1007,ENT_0928,Mr. Show with Bob and David (1995-1998),,,0,79,
+ENT_1008,ENT_0928,Band of Brothers (2001),,,0,80,https://upload.wikimedia.org/wikipedia/en/f/f0/BandofBrothersIntertitle.jpg
+ENT_1009,ENT_0928,It's Always Sunny in Philadelphia (2005-),,,0,81,
+ENT_1010,ENT_0928,Party Down (2009-),,,0,82,
+ENT_1011,ENT_0928,I'm Alan Partridge (1997-2002),,,0,83,
+ENT_1012,ENT_0928,Fargo (2014-),,,0,84,
+ENT_1013,ENT_0928,Orange Is the New Black (2013-2019),,,0,85,
+ENT_1014,ENT_0928,The Bob Newhart Show (1972-1978),,,0,86,
+ENT_1015,ENT_0928,The Kids in the Hall (1988-1995),,,0,87,
+ENT_1016,ENT_0928,The Crown (2016-),,,0,88,https://upload.wikimedia.org/wikipedia/en/1/18/The_Crown_Title_Card.jpg
+ENT_1017,ENT_0928,The Carol Burnett Show (1967-1978),,,0,89,
+ENT_1018,ENT_0928,The Wonder Years (1988-1993),,,0,90,
+ENT_1019,ENT_0928,The Tonight Show Starring Johnny Carson (1962-1992),,,0,91,
+ENT_1020,ENT_0928,The Muppet Show (1976-1981),,,0,92,
+ENT_1021,ENT_0928,The Rockford Files (1974-1980),,,0,93,
+ENT_1022,ENT_0928,NewsRadio (1995-1999),,,0,94,
+ENT_1023,ENT_0928,Squid Game (2021-),,,0,95,
+ENT_1024,ENT_0928,Rick and Morty (2013-),,,0,96,
+ENT_1025,ENT_0928,The Odd Couple (1970-1975),,,0,97,
+ENT_1026,ENT_0928,The Good Fight (2017-2022),,,0,98,https://static.tvmaze.com/uploads/images/original_untouched/602/1506905.jpg
+ENT_1027,ENT_0928,Oz (1997-2003),,,0,99,
+ENT_1028,ENT_0928,What We Do in the Shadows (2019-),,,0,100,
+ENT_1029,ENT_0033,World Library,https://en.wikipedia.org/wiki/Bokklubben_World_Library,,0,0,
+ENT_1030,ENT_1029,Don Quixote — Miguel de Cervantes,,,0,1,
+ENT_1031,ENT_1029,Things Fall Apart — Chinua Achebe,,,0,2,
+ENT_1032,ENT_1029,Fairy Tales — Hans Christian Andersen,,,0,3,
+ENT_1033,ENT_1029,The Divine Comedy — Dante Alighieri,,,0,4,
+ENT_1034,ENT_1029,The Epic of Gilgamesh — Unknown,,,0,5,
+ENT_1035,ENT_1029,The Book of Job — Unknown,,,0,6,
+ENT_1036,ENT_1029,One Thousand and One Nights — Various,,,0,7,
+ENT_1037,ENT_1029,Njál's Saga — Unknown,,,0,8,
+ENT_1038,ENT_1029,Pride and Prejudice — Jane Austen,,,0,9,https://upload.wikimedia.org/wikipedia/en/0/07/Pride_and_Prejudice_and_Zombies_poster.jpg
+ENT_1039,ENT_1029,Père Goriot — Honoré de Balzac,,,0,10,
+ENT_1040,ENT_1029,"Molloy, Malone Dies, The Unnamable — Samuel Beckett",,,0,11,
+ENT_1041,ENT_1029,The Decameron — Giovanni Boccaccio,,,0,12,
+ENT_1042,ENT_1029,Ficciones — Jorge Luis Borges,,,0,13,
+ENT_1043,ENT_1029,Wuthering Heights — Emily Brontë,,,0,14,https://covers.openlibrary.org/b/id/12818862-L.jpg
+ENT_1044,ENT_1029,The Stranger — Albert Camus,,,0,15,
+ENT_1045,ENT_1029,Poems — Paul Celan,,,0,16,
+ENT_1046,ENT_1029,Journey to the End of the Night — Louis-Ferdinand Céline,,,0,17,
+ENT_1047,ENT_1029,The Canterbury Tales — Geoffrey Chaucer,,,0,18,
+ENT_1048,ENT_1029,Selected Stories — Anton Chekhov,,,0,19,
+ENT_1049,ENT_1029,Nostromo — Joseph Conrad,,,0,20,
+ENT_1050,ENT_1029,Great Expectations — Charles Dickens,,,0,21,https://covers.openlibrary.org/b/id/13322313-L.jpg
+ENT_1051,ENT_1029,Jacques the Fatalist — Denis Diderot,,,0,22,
+ENT_1052,ENT_1029,Berlin Alexanderplatz — Alfred Döblin,,,0,23,
+ENT_1053,ENT_1029,Crime and Punishment — Fyodor Dostoevsky,,,0,24,
+ENT_1054,ENT_1029,The Idiot — Fyodor Dostoevsky,,,0,25,
+ENT_1055,ENT_1029,Demons — Fyodor Dostoevsky,,,0,26,
+ENT_1056,ENT_1029,The Brothers Karamazov — Fyodor Dostoevsky,,,0,27,
+ENT_1057,ENT_1029,Middlemarch — George Eliot,,,0,28,https://covers.openlibrary.org/b/id/252882-L.jpg
+ENT_1058,ENT_1029,Invisible Man — Ralph Ellison,,,0,29,
+ENT_1059,ENT_1029,Medea — Euripides,,,0,30,
+ENT_1060,ENT_1029,"Absalom, Absalom! — William Faulkner",,,0,31,
+ENT_1061,ENT_1029,The Sound and the Fury — William Faulkner,,,0,32,
+ENT_1062,ENT_1029,Madame Bovary — Gustave Flaubert,,,0,33,
+ENT_1063,ENT_1029,Sentimental Education — Gustave Flaubert,,,0,34,
+ENT_1064,ENT_1029,Gypsy Ballads — Federico García Lorca,,,0,35,
+ENT_1065,ENT_1029,One Hundred Years of Solitude — Gabriel García Márquez,,,0,36,https://covers.openlibrary.org/b/id/10864222-L.jpg
+ENT_1066,ENT_1029,Love in the Time of Cholera — Gabriel García Márquez,,,0,37,
+ENT_1067,ENT_1029,Faust — Johann Wolfgang von Goethe,,,0,38,
+ENT_1068,ENT_1029,Dead Souls — Nikolai Gogol,,,0,39,
+ENT_1069,ENT_1029,The Tin Drum — Günter Grass,,,0,40,
+ENT_1070,ENT_1029,The Devil to Pay in the Backlands — João Guimarães Rosa,,,0,41,
+ENT_1071,ENT_1029,Hunger — Knut Hamsun,,,0,42,
+ENT_1072,ENT_1029,The Old Man and the Sea — Ernest Hemingway,,,0,43,
+ENT_1073,ENT_1029,The Iliad — Homer,,,0,44,
+ENT_1074,ENT_1029,The Odyssey — Homer,,,0,45,
+ENT_1075,ENT_1029,A Doll's House — Henrik Ibsen,,,0,46,
+ENT_1076,ENT_1029,Ulysses — James Joyce,,,0,47,
+ENT_1077,ENT_1029,Selected Stories — Franz Kafka,,,0,48,
+ENT_1078,ENT_1029,The Trial — Franz Kafka,,,0,49,
+ENT_1079,ENT_1029,The Castle — Franz Kafka,,,0,50,
+ENT_1080,ENT_1029,Shakuntala — Kālidāsa,,,0,51,
+ENT_1081,ENT_1029,The Sound of the Mountain — Yasunari Kawabata,,,0,52,
+ENT_1082,ENT_1029,Zorba the Greek — Nikos Kazantzakis,,,0,53,
+ENT_1083,ENT_1029,Sons and Lovers — D. H. Lawrence,,,0,54,
+ENT_1084,ENT_1029,Independent People — Halldór Laxness,,,0,55,
+ENT_1085,ENT_1029,Complete Poems — Giacomo Leopardi,,,0,56,
+ENT_1086,ENT_1029,The Golden Notebook — Doris Lessing,,,0,57,
+ENT_1087,ENT_1029,Pippi Longstocking — Astrid Lindgren,,,0,58,
+ENT_1088,ENT_1029,Diary of a Madman and Other Stories — Lu Xun,,,0,59,
+ENT_1089,ENT_1029,Children of Gebelawi — Naguib Mahfouz,,,0,60,
+ENT_1090,ENT_1029,Buddenbrooks — Thomas Mann,,,0,61,
+ENT_1091,ENT_1029,The Magic Mountain — Thomas Mann,,,0,62,
+ENT_1092,ENT_1029,Moby-Dick — Herman Melville,,,0,63,
+ENT_1093,ENT_1029,Essays — Michel de Montaigne,,,0,64,
+ENT_1094,ENT_1029,History — Elsa Morante,,,0,65,
+ENT_1095,ENT_1029,Beloved — Toni Morrison,,,0,66,
+ENT_1096,ENT_1029,The Tale of Genji — Murasaki Shikibu,,,0,67,
+ENT_1097,ENT_1029,The Man Without Qualities — Robert Musil,,,0,68,
+ENT_1098,ENT_1029,Lolita — Vladimir Nabokov,,,0,69,
+ENT_1099,ENT_1029,Nineteen Eighty-Four — George Orwell,,,0,70,https://covers.openlibrary.org/b/id/9267242-L.jpg
+ENT_1100,ENT_1029,Metamorphoses — Ovid,,,0,71,
+ENT_1101,ENT_1029,The Book of Disquiet — Fernando Pessoa,,,0,72,
+ENT_1102,ENT_1029,Tales — Edgar Allan Poe,,,0,73,
+ENT_1103,ENT_1029,In Search of Lost Time — Marcel Proust,,,0,74,
+ENT_1104,ENT_1029,Gargantua and Pantagruel — François Rabelais,,,0,75,
+ENT_1105,ENT_1029,Pedro Páramo — Juan Rulfo,,,0,76,
+ENT_1106,ENT_1029,Masnavi — Rumi,,,0,77,
+ENT_1107,ENT_1029,Midnight's Children — Salman Rushdie,,,0,78,
+ENT_1108,ENT_1029,Bostan — Saadi,,,0,79,
+ENT_1109,ENT_1029,Season of Migration to the North — Tayeb Salih,,,0,80,
+ENT_1110,ENT_1029,Blindness — José Saramago,,,0,81,
+ENT_1111,ENT_1029,Hamlet — William Shakespeare,,,0,82,
+ENT_1112,ENT_1029,King Lear — William Shakespeare,,,0,83,
+ENT_1113,ENT_1029,Othello — William Shakespeare,,,0,84,
+ENT_1114,ENT_1029,Oedipus the King — Sophocles,,,0,85,
+ENT_1115,ENT_1029,The Red and the Black — Stendhal,,,0,86,
+ENT_1116,ENT_1029,Tristram Shandy — Laurence Sterne,,,0,87,
+ENT_1117,ENT_1029,Confessions of Zeno — Italo Svevo,,,0,88,
+ENT_1118,ENT_1029,Gulliver's Travels — Jonathan Swift,,,0,89,
+ENT_1119,ENT_1029,War and Peace — Leo Tolstoy,,,0,90,https://covers.openlibrary.org/b/id/12621906-L.jpg
+ENT_1120,ENT_1029,Anna Karenina — Leo Tolstoy,,,0,91,
+ENT_1121,ENT_1029,The Death of Ivan Ilyich — Leo Tolstoy,,,0,92,
+ENT_1122,ENT_1029,Adventures of Huckleberry Finn — Mark Twain,,,0,93,
+ENT_1123,ENT_1029,The Ramayana — Valmiki,,,0,94,
+ENT_1124,ENT_1029,The Aeneid — Virgil,,,0,95,
+ENT_1125,ENT_1029,The Mahabharata — Vyasa,,,0,96,
+ENT_1126,ENT_1029,Leaves of Grass — Walt Whitman,,,0,97,
+ENT_1127,ENT_1029,Mrs Dalloway — Virginia Woolf,,,0,98,
+ENT_1128,ENT_1029,To the Lighthouse — Virginia Woolf,,,0,99,
+ENT_1129,ENT_1029,Memoirs of Hadrian — Marguerite Yourcenar,,,0,100,

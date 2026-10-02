@@ -21,7 +21,33 @@
 
 #### Notes
 
-_No notes._
+No, that quote describes **dimensional modeling** (specifically designing a **star schema** for data warehousing / analytical reporting), not traditional database normalization.
+
+While both techniques separate data across multiple tables to avoid redundancy, their rules, goals, and results are fundamentally different.
+
+---
+
+### Key Distinctions
+
+| Feature | Star Schema / Dimensional Design | Database Normalization (3NF / BCNF) |
+| --- | --- | --- |
+| **Primary Goal** | Fast, intuitive analytical queries (OLAP) and aggregations. | Eliminating update/insert/delete anomalies and write redundancy (OLTP). |
+| **Fact Table Role** | Stores numeric metrics/measures and foreign keys to dimensions. | Not a concept in relational modeling (everything is an entity/relation). |
+| **Dimension Structure** | **Intentionally denormalized.** A single `dim_product` table typically bundles category, subcategory, brand, and name into flat columns. | Decomposed into separate linked tables (e.g., `products`, `subcategories`, `categories`) to remove transitive dependencies. |
+| **Join Complexity** | Low. Fact tables join directly to wide dimension tables in 1-hop joins. | High. Queries require multiple deep joins across normalized entities. |
+
+---
+
+### Why It Is Often Confused with Normalization
+
+1. **Splitting attributes:** Moving descriptive text (e.g., `product_name`) out of a transaction table resembles decomposing a flat sheet into relational entities.
+2. **Surrogate keys:** Both approaches use keys (`product_key`) to link transactional rows to descriptive attributes.
+
+### Where Normalization Would Go Further (Snowflaking)
+
+If you strictly normalized the dimension tables themselves (e.g., splitting `dim_product` into separate tables for `product`, `subcategory`, and `category` so no non-key attribute depends on another non-key attribute), that is known in data warehousing as a **snowflake schema**.
+
+In modern data warehousing (e.g., Power BI, Snowflake, BigQuery), the standard best practice remains the **star schema**: keeping the fact table strictly lean (keys + numeric values) while keeping the dimension tables wide and deliberately denormalized.
 
 #### Gallery
 

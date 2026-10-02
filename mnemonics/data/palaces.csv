@@ -1,4 +1,4 @@
-﻿id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt,palace_notes
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt,palace_notes
 PALACE_AI_01,STUDY_AI,1,Foundations & Semantic Interoperability,(unassigned palace 1),practice/images/AI/1.png,3,,
 PALACE_AI_02,STUDY_AI,2,The Semantic Layer & RAG Structure,Ada Lovelace,practice/images/AI/2.png,5,,
 PALACE_AI_03,STUDY_AI,3,AI Pricing & Elo Mechanics,Michael Jackson,practice/images/AI/3.jpg,1,,file:///C:/Users/eduev/AppData/Local/Temp/palace_dashboard.html?t=318971546
@@ -98,4 +98,30 @@ PALACE_DOGS_02,STUDY_DOGS,2,German Shepherd Scoring and Activities (Snoopy),Snoo
 PALACE_DOGS_03,STUDY_DOGS,3,Chew Substitution and Safe Exchanges,Brian Griffin,practice/images/dogs/3.jpg,2,"a street photograph of an urban corner. In ForegroundLeft, a mountain goat wearing a checkered scarf rubs a rubber bone between its hooves beside a stone lamppost. In MidgroundRight, a scaled three-headed serpent monster rests near an iron gate, offering a roasted poultry leg from its jaws toward the street. In ForegroundRight, an original fictional sophisticated bipedal white hound wearing a red collar (upright posture, dry calm expression, holding a warm mug) — not any real, living, historical, or named public figure and not any copyrighted character — watches the scene.",
 PALACE_DATAANALYST_16,STUDY_DATAANALYST,16,API to Power BI,Albert Einstein,practice/images/data-analyst/16.jpg,4,"an original fictional brilliant physicist (wild white hair, bushy mustache, loose grey sweater over a collared shirt, holding chalk) — not any real, living, historical, or named public figure and not any copyrighted character. ForegroundLeft: gate (colossal bloodhound with a glowing wand building a bridge to a battery). MidgroundRight: bench (skeleton marmoset spinning a sticky web cable around a battery with brass dials). BackgroundCenter: facade (towering skeleton Neanderthal smashing a facade with a dump truck and forklift stacking scrolls). Aerial: lamp post (giant bower-bird on a lamp post pressing a red button and holding a fire hose aiming at a battery).",
 PALACE_DATAANALYST_17,STUDY_DATAANALYST,17,Star Schema Core Architecture,Isaac Newton,practice/images/data-analyst/17.png,5,"In the foreground of the street scene, an original fictional 17th-century natural philosopher (older man, shoulder-length grey curls, velvet coat with lace cravat, holding a glass prism) — not any real, living, historical, or named public figure — stands observing five distinct depth slots. Depth slot ForegroundLeft: a skeletal Bone panther crouches beside the left stone gate and tears open a giant binder with its claws. Depth slot MidgroundRight: a colossal Bone Quetzalcoatl coils around the right brick pillar and crushes a wooden chest in its jaws. Depth slot BackgroundCenter: a massive brontosaurus stands across the far street junction and stamps a huge paper label onto the roadway. Depth slot Aerial: a floating Bone skull hovers directly over the central streetlamp and drips thick glue onto the lamp. Depth slot ForegroundRight: a skeletal Bone toucan perches on the right iron railing and pecks a giant barcode until the bars shatter.",
-PALACE_DATAANALYST_18,STUDY_DATAANALYST,18,Star Schema Best Practices,Galileo Galilei,practice/images/data-analyst/18.png,1,"In the foreground of the street scene, an original fictional Renaissance astronomer (elderly man, white beard, dark scholar doublet with white collar, holding a brass telescope) — not any real, living, historical, or named public figure — observes depth slot ForegroundLeft: a giant surreal butterfly perches upon the left stone mailbox and snaps a colossal ruler between its wings.",
+PALACE_DATAANALYST_18,STUDY_DATAANALYST,18,Star Schema Best Practices,Galileo Galilei,practice/images/data-analyst/18.png,1,"In the foreground of the street scene, an original fictional Renaissance astronomer (elderly man, white beard, dark scholar doublet with white collar, holding a brass telescope) — not any real, living, historical, or named public figure — observes depth slot ForegroundLeft: a giant surreal butterfly perches upon the left stone mailbox and snaps a colossal ruler between its wings.","No, that quote describes **dimensional modeling** (specifically designing a **star schema** for data warehousing / analytical reporting), not traditional database normalization.
+
+While both techniques separate data across multiple tables to avoid redundancy, their rules, goals, and results are fundamentally different.
+
+---
+
+### Key Distinctions
+
+| Feature | Star Schema / Dimensional Design | Database Normalization (3NF / BCNF) |
+| --- | --- | --- |
+| **Primary Goal** | Fast, intuitive analytical queries (OLAP) and aggregations. | Eliminating update/insert/delete anomalies and write redundancy (OLTP). |
+| **Fact Table Role** | Stores numeric metrics/measures and foreign keys to dimensions. | Not a concept in relational modeling (everything is an entity/relation). |
+| **Dimension Structure** | **Intentionally denormalized.** A single `dim_product` table typically bundles category, subcategory, brand, and name into flat columns. | Decomposed into separate linked tables (e.g., `products`, `subcategories`, `categories`) to remove transitive dependencies. |
+| **Join Complexity** | Low. Fact tables join directly to wide dimension tables in 1-hop joins. | High. Queries require multiple deep joins across normalized entities. |
+
+---
+
+### Why It Is Often Confused with Normalization
+
+1. **Splitting attributes:** Moving descriptive text (e.g., `product_name`) out of a transaction table resembles decomposing a flat sheet into relational entities.
+2. **Surrogate keys:** Both approaches use keys (`product_key`) to link transactional rows to descriptive attributes.
+
+### Where Normalization Would Go Further (Snowflaking)
+
+If you strictly normalized the dimension tables themselves (e.g., splitting `dim_product` into separate tables for `product`, `subcategory`, and `category` so no non-key attribute depends on another non-key attribute), that is known in data warehousing as a **snowflake schema**.
+
+In modern data warehousing (e.g., Power BI, Snowflake, BigQuery), the standard best practice remains the **star schema**: keeping the fact table strictly lean (keys + numeric values) while keeping the dimension tables wide and deliberately denormalized."
