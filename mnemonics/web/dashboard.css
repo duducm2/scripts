@@ -1318,7 +1318,8 @@ a.btn-gallery {
   color: #e0a060;
 }
 #btnPlans,
-#btnImages {
+#btnImages,
+#btnEntertainment {
   background: transparent;
   color: var(--gold);
   border: 1px solid var(--gold);
@@ -1332,19 +1333,23 @@ a.btn-gallery {
 #btnPlans:hover,
 #btnPlans.active,
 #btnImages:hover,
-#btnImages.active {
+#btnImages.active,
+#btnEntertainment:hover,
+#btnEntertainment.active {
   background: var(--gold);
   color: #1a1408;
 }
 #btnPlans:focus,
-#btnImages:focus {
+#btnImages:focus,
+#btnEntertainment:focus {
   outline: 2px solid #fff4d0;
   outline-offset: 2px;
 }
 #practicePanel.hidden,
 #methodPanel.hidden,
 #plansPanel.hidden,
-#imagesPanel.hidden {
+#imagesPanel.hidden,
+#entertainmentPanel.hidden {
   display: none !important;
 }
 #plansPanel {

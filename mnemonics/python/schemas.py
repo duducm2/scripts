@@ -403,6 +403,16 @@ PLAN_ITEMS_HEADERS = [
     "sort_order",
 ]
 PLAN_RESOURCES_HEADERS = ["id", "plan_id", "section_path", "line", "sort_order"]
+ENTERTAINMENT_HEADERS = [
+    "id",
+    "parent_id",
+    "title",
+    "url",
+    "notes",
+    "done",
+    "sort_order",
+    "image",
+]
 
 HEADERS = {
     "studies": STUDIES_HEADERS,
@@ -414,6 +424,7 @@ HEADERS = {
     "plans": PLANS_HEADERS,
     "plan_items": PLAN_ITEMS_HEADERS,
     "plan_resources": PLAN_RESOURCES_HEADERS,
+    "entertainment": ENTERTAINMENT_HEADERS,
 }
 
 

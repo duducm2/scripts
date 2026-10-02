@@ -146,7 +146,7 @@ Palace_EnsureData() {
     Palace_DataDir()
     Palace_EnsureSettings()
     for kind in ["studies", "palaces", "palace_images", "study_images", "beasts", "atoms", "plans", "plan_items",
-        "plan_resources"] {
+        "plan_resources", "entertainment"] {
         path := Palace_DataDir() . "\" . kind . ".csv"
         if (!FileExist(path))
             Palace_Save(kind, [])
@@ -607,6 +607,8 @@ Palace_Headers(kind) {
             return ["id", "plan_id", "section_path", "text", "checked", "sort_order"]
         case "plan_resources":
             return ["id", "plan_id", "section_path", "line", "sort_order"]
+        case "entertainment":
+            return ["id", "parent_id", "title", "url", "notes", "done", "sort_order", "image"]
         default:
             return []
     }

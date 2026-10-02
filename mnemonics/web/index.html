@@ -188,6 +188,205 @@
         border-color: #e07070;
         color: #e07070;
       }
+      #entertainmentPanel {
+        padding: 1rem 1.5rem 2.5rem;
+        max-width: none;
+      }
+      .ent-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 1rem;
+        margin-bottom: 0.85rem;
+      }
+      .ent-toolbar h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 650;
+      }
+      .ent-hint {
+        color: var(--muted);
+        margin: 0.3rem 0 0;
+        font-size: 0.9rem;
+      }
+      .ent-empty {
+        color: var(--muted);
+        margin: 0.5rem 0 0;
+      }
+      .ent-bento {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 14px;
+        align-items: stretch;
+      }
+      .ent-tile {
+        border: 1px solid var(--line);
+        border-top: 3px solid var(--gold);
+        border-radius: 12px;
+        background: var(--panel);
+        padding: 0.75rem 0.85rem 0.85rem;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .ent-tile.open {
+        grid-column: 1 / -1;
+      }
+      .ent-tile.selected,
+      .ent-item.selected {
+        border-color: var(--gold);
+        box-shadow: inset 0 0 0 1px var(--gold);
+      }
+      .ent-tile-head,
+      .ent-item {
+        display: flex;
+        gap: 0.45rem;
+        align-items: flex-start;
+      }
+      .ent-tile-head {
+        cursor: pointer;
+      }
+      .ent-count {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+      .ent-source {
+        color: var(--gold);
+        font-size: 0.82rem;
+      }
+      .ent-tile-body {
+        margin-top: 0.75rem;
+      }
+      .ent-list {
+        list-style: none;
+        margin: 0.35rem 0 0;
+        padding: 0;
+      }
+      .ent-list.catalog {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+        gap: 12px;
+      }
+      .ent-item {
+        padding: 0.32rem 0.15rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .ent-list.catalog .ent-item {
+        flex-direction: column;
+        border: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.4rem;
+        background: rgba(12, 14, 18, 0.45);
+      }
+      .ent-cover {
+        width: 100%;
+        aspect-ratio: 2 / 3;
+        object-fit: contain;
+        border-radius: 6px;
+        background: #111318;
+      }
+      .ent-list.catalog .ent-title {
+        font-size: 0.86rem;
+        font-weight: 600;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .ent-list.catalog .ent-rank {
+        width: auto;
+        flex: 0 0 auto;
+      }
+      .ent-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.35rem;
+      }
+      .ent-rank {
+        width: 1.7rem;
+        flex: 0 0 1.7rem;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+        padding-top: 0.12rem;
+      }
+      .ent-row {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        padding: 0.75rem 0.85rem;
+        margin: 0.35rem 0;
+      }
+      .ent-row.selected {
+        border-color: var(--gold);
+      }
+      .ent-item.done .ent-title,
+      .ent-row.done .ent-title {
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+      .ent-twist {
+        width: 1.4rem;
+        flex: 0 0 1.4rem;
+        background: transparent;
+        color: var(--gold);
+        border: none;
+        font: inherit;
+        cursor: pointer;
+        padding: 0.1rem 0 0;
+      }
+      .ent-twist-spacer {
+        display: inline-block;
+      }
+      .ent-body {
+        min-width: 0;
+        flex: 1;
+      }
+      .ent-title {
+        font-weight: 650;
+      }
+      .ent-urls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        margin-top: 0.25rem;
+      }
+      .ent-urls a {
+        color: var(--gold);
+        font-size: 0.88rem;
+        word-break: break-all;
+      }
+      .ent-notes {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin: 0.3rem 0 0;
+        white-space: pre-wrap;
+      }
+      .ent-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.45rem;
+      }
+      .ent-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+      }
+      .ent-form input,
+      .ent-form textarea {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font: inherit;
+      }
       .crumb {
         color: var(--muted);
         font-size: 0.9rem;
@@ -511,6 +710,13 @@
         <button type="button" id="btnMethod" title="Method docs (M)">
           Method
         </button>
+        <button
+          type="button"
+          id="btnEntertainment"
+          title="Entertainment topics (E)"
+        >
+          Entertainment
+        </button>
         <div>
           <label for="atomSearch">Search Knowledge Atoms</label>
           <input
@@ -650,6 +856,8 @@
     <div id="methodPanel" class="hidden" aria-hidden="true">
       <div id="methodMount"><p class="muted">Loading method…</p></div>
     </div>
+
+    <div id="entertainmentPanel" class="hidden" aria-hidden="true"></div>
 
     <div id="appExtra" class="hidden" aria-hidden="true"></div>
 
@@ -832,6 +1040,12 @@
         view: "practice",
         studyId: "",
         browse: { studyId: "", palaceId: "", beastId: "" },
+        entertainment: {
+          selectedId: "",
+          collapsed: new Set(),
+          collapseSeeded: false,
+          draft: null,
+        },
         overlayPalaceId: "",
         pendingHeroPalaceId: "",
         selectedPalaceIds: new Set(),
@@ -1956,6 +2170,17 @@
         });
       }
 
+      function toggleEntertainment() {
+        withFullData(() => {
+          const ovOpen = document
+            .getElementById("overlay")
+            .classList.contains("open");
+          if (ovOpen) closeOverlay();
+          if (state.view === "entertainment") setView("practice");
+          else setView("entertainment");
+        });
+      }
+
       function studyModalColumnCount(buttons) {
         if (!buttons || buttons.length < 2) return 1;
         const top0 = buttons[0].getBoundingClientRect().top;
@@ -2104,6 +2329,9 @@
         document
           .getElementById("btnMethod")
           .classList.toggle("active", state.view === "method");
+        document
+          .getElementById("btnEntertainment")
+          .classList.toggle("active", state.view === "entertainment");
         document.querySelectorAll("#appMore [data-view]").forEach((b) => {
           b.classList.toggle("active", b.dataset.view === state.view);
         });
@@ -2115,6 +2343,7 @@
           plans: document.getElementById("plansPanel"),
           images: document.getElementById("imagesPanel"),
           method: document.getElementById("methodPanel"),
+          entertainment: document.getElementById("entertainmentPanel"),
           extra: document.getElementById("appExtra"),
         };
         Object.entries(panels).forEach(([k, el]) => {
@@ -2123,6 +2352,7 @@
             (name === "plans" && k === "plans") ||
             (name === "images" && k === "images") ||
             (name === "method" && k === "method") ||
+            (name === "entertainment" && k === "entertainment") ||
             (["browse", "links", "help"].includes(name) && k === "extra");
           el.classList.toggle("hidden", !on);
           el.setAttribute("aria-hidden", on ? "false" : "true");
@@ -2168,6 +2398,7 @@
         else if (state.view === "plans") renderPlans();
         else if (state.view === "images") renderImages();
         else if (state.view === "method") renderMethod();
+        else if (state.view === "entertainment") renderEntertainment();
         else if (state.view === "browse")
           renderBrowse(document.getElementById("appExtra"));
         else if (state.view === "links")
@@ -4245,6 +4476,8 @@
         withFullData(() => setView("images"));
       document.getElementById("btnMethod").onclick = () =>
         withFullData(() => setView("method"));
+      document.getElementById("btnEntertainment").onclick = () =>
+        toggleEntertainment();
       document.getElementById("btnStudyImagesAdd").onclick = () =>
         document.getElementById("studyImagesFileInput").click();
       document.getElementById("btnImagesFsClose").onclick = () =>
@@ -4454,6 +4687,410 @@
         el.select();
       }
 
+      function entNodes() {
+        return state.data?.entertainment || [];
+      }
+
+      function entHidden(node) {
+        const title = String(node.title || "").trim().toLowerCase();
+        if (title !== "backlog") return false;
+        const kids = entNodes().some((r) => (r.parent_id || "") === node.id);
+        return !node.url && !node.notes && !kids;
+      }
+
+      function entChildren(parentId) {
+        const pid = parentId || "";
+        return entNodes()
+          .filter((r) => (r.parent_id || "") === pid && !entHidden(r))
+          .sort(
+            (a, b) =>
+              Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+              String(a.title || "").localeCompare(String(b.title || "")),
+          );
+      }
+
+      function entHasChildren(id) {
+        return entChildren(id).length > 0;
+      }
+
+      function entIsTile(node) {
+        return !(node.parent_id || "") || entHasChildren(node.id);
+      }
+
+      function entVisible() {
+        const out = [];
+        const walk = (parentId, depth) => {
+          for (const node of entChildren(parentId)) {
+            const hasChildren = entHasChildren(node.id);
+            out.push({ node, depth, hasChildren });
+            if (hasChildren && !state.entertainment.collapsed.has(node.id))
+              walk(node.id, depth + 1);
+          }
+        };
+        walk("", 0);
+        return out;
+      }
+
+      function entUrls(raw) {
+        return String(raw || "")
+          .split(/\s+/)
+          .map((s) => s.trim())
+          .filter((s) => /^https?:\/\//i.test(s));
+      }
+
+      function entSelect(id) {
+        state.entertainment.selectedId = id;
+        renderEntertainment();
+        const el = document.querySelector(
+          `#entertainmentPanel [data-id="${CSS.escape(id)}"]`,
+        );
+        if (el) el.scrollIntoView({ block: "nearest" });
+      }
+
+      function entMove(dir) {
+        const vis = entVisible();
+        if (!vis.length) return;
+        let idx = vis.findIndex(
+          (v) => v.node.id === state.entertainment.selectedId,
+        );
+        if (idx < 0) idx = 0;
+        else idx = Math.max(0, Math.min(vis.length - 1, idx + dir));
+        entSelect(vis[idx].node.id);
+      }
+
+      function entDrill(dir) {
+        const vis = entVisible();
+        if (!vis.length) return;
+        let idx = vis.findIndex(
+          (v) => v.node.id === state.entertainment.selectedId,
+        );
+        if (idx < 0) idx = 0;
+        const hit = vis[idx];
+        if (dir > 0) {
+          if (!hit.hasChildren) return;
+          if (state.entertainment.collapsed.has(hit.node.id)) {
+            state.entertainment.collapsed.delete(hit.node.id);
+            renderEntertainment();
+            return;
+          }
+          const kids = entChildren(hit.node.id);
+          if (kids.length) entSelect(kids[0].id);
+          return;
+        }
+        if (
+          hit.hasChildren &&
+          !state.entertainment.collapsed.has(hit.node.id)
+        ) {
+          state.entertainment.collapsed.add(hit.node.id);
+          renderEntertainment();
+          return;
+        }
+        const parent = hit.node.parent_id || "";
+        if (parent) entSelect(parent);
+      }
+
+      function entStartDraft(parentId, existing) {
+        if (parentId) state.entertainment.collapsed.delete(parentId);
+        state.entertainment.draft = {
+          id: existing?.id || "",
+          parent_id: existing ? existing.parent_id || "" : parentId || "",
+          title: existing?.title || "",
+          url: existing?.url || "",
+          notes: existing?.notes || "",
+          done: existing?.done === "1" ? "1" : "0",
+        };
+        if (existing?.id) state.entertainment.selectedId = existing.id;
+        renderEntertainment();
+        const input = document.querySelector(
+          "#entertainmentPanel .ent-title-input",
+        );
+        if (input) input.focus();
+      }
+
+      async function entSaveDraft() {
+        const d = state.entertainment.draft;
+        if (!d) return;
+        const title = String(d.title || "").trim();
+        if (!title) {
+          toast("Title required");
+          return;
+        }
+        const body = {
+          parent_id: d.parent_id || "",
+          title,
+          url: String(d.url || "").trim(),
+          notes: d.notes || "",
+          done: d.done === "1" ? "1" : "0",
+        };
+        if (d.id) body.id = d.id;
+        const r = await api("/api/entertainment", {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        state.entertainment.draft = null;
+        if (!Array.isArray(state.data.entertainment))
+          state.data.entertainment = [];
+        if (r?.row) mergeApiRow("entertainment", r.row);
+        state.entertainment.selectedId = r?.id || r?.row?.id || "";
+        renderEntertainment();
+      }
+
+      async function entSetDone(node, done) {
+        const r = await api("/api/entertainment", {
+          method: "POST",
+          body: JSON.stringify({ id: node.id, done: done ? "1" : "0" }),
+        });
+        if (r?.row) mergeApiRow("entertainment", r.row);
+        renderEntertainment();
+      }
+
+      async function entDelete(node) {
+        const kids = entHasChildren(node.id);
+        const msg = kids
+          ? "Delete this topic and everything inside it?"
+          : "Delete this record?";
+        if (!confirm(msg)) return;
+        await api(`/api/entertainment/${encodeURIComponent(node.id)}`, {
+          method: "DELETE",
+        });
+        state.entertainment.draft = null;
+        state.entertainment.selectedId = node.parent_id || "";
+        await refresh();
+      }
+
+      function entFormHtml(d) {
+        return `<form class="ent-row ent-form selected">
+          <label>Title <input class="ent-title-input" name="title" value="${escAttr(d.title)}" required></label>
+          <label>Link <input name="url" value="${escAttr(d.url)}" placeholder="https://"></label>
+          <label>Notes <textarea name="notes" rows="4">${esc(d.notes)}</textarea></label>
+          <div class="ent-actions">
+            <button type="submit" class="spa-btn">Save</button>
+            <button type="button" class="spa-btn" id="entCancel">Cancel</button>
+          </div>
+        </form>`;
+      }
+
+      function entActions(n) {
+        if (n.id !== state.entertainment.selectedId) return "";
+        return `<div class="ent-actions">
+          <button type="button" class="spa-btn" data-add="${escAttr(n.id)}">Add inside</button>
+          <button type="button" class="spa-btn" data-edit="${escAttr(n.id)}">Edit</button>
+          <button type="button" class="spa-btn danger" data-del="${escAttr(n.id)}">Delete</button>
+        </div>`;
+      }
+
+      function entLinks(raw) {
+        return entUrls(raw)
+          .map((u) => {
+            let label = "Source";
+            try {
+              label = new URL(u).hostname.replace(/^www\./, "");
+            } catch (err) {
+              label = "Source";
+            }
+            return `<a class="ent-source" href="${escAttr(u)}" target="_blank" rel="noopener">${esc(label)}</a>`;
+          })
+          .join(" ");
+      }
+
+      function entListHtml(nodes) {
+        if (!nodes.length) return "";
+        const catalog = nodes.some((n) => String(n.image || "").trim());
+        const rows = nodes
+          .map((n, i) => {
+            if (
+              state.entertainment.draft &&
+              state.entertainment.draft.id === n.id
+            )
+              return `<li>${entFormHtml(state.entertainment.draft)}</li>`;
+            const rank = Number(n.sort_order || 0) || i + 1;
+            const notes = n.notes
+              ? `<p class="ent-notes">${esc(n.notes)}</p>`
+              : "";
+            const selected = n.id === state.entertainment.selectedId;
+            const image = String(n.image || "").trim();
+            const cover = image
+              ? `<img class="ent-cover" src="${escAttr(image)}" alt="" loading="lazy">`
+              : "";
+            const head = catalog
+              ? `${cover}<div class="ent-meta"><span class="ent-rank">${rank}</span><input type="checkbox" data-done="${escAttr(n.id)}" ${n.done === "1" ? "checked" : ""} aria-label="Done"></div>`
+              : `<span class="ent-rank">${rank}</span><input type="checkbox" data-done="${escAttr(n.id)}" ${n.done === "1" ? "checked" : ""} aria-label="Done">`;
+            return `<li class="ent-item${selected ? " selected" : ""}${n.done === "1" ? " done" : ""}" data-id="${escAttr(n.id)}">
+              ${head}
+              <div class="ent-body">
+                <div class="ent-title">${esc(n.title)}</div>
+                ${notes}
+                ${entActions(n)}
+              </div>
+            </li>`;
+          })
+          .join("");
+        return `<ol class="ent-list${catalog ? " catalog" : ""}">${rows}</ol>`;
+      }
+
+      function entTileHtml(node) {
+        if (
+          state.entertainment.draft &&
+          state.entertainment.draft.id === node.id
+        )
+          return entFormHtml(state.entertainment.draft);
+        const open =
+          entHasChildren(node.id) &&
+          !state.entertainment.collapsed.has(node.id);
+        const selected = node.id === state.entertainment.selectedId;
+        const kids = entChildren(node.id);
+        const twist = entHasChildren(node.id)
+          ? `<button type="button" class="ent-twist" data-twist="${escAttr(node.id)}" aria-label="${open ? "Collapse" : "Expand"}">${open ? "▾" : "▸"}</button>`
+          : `<span class="ent-twist ent-twist-spacer" aria-hidden="true"></span>`;
+        const notes = node.notes
+          ? `<p class="ent-notes">${esc(node.notes)}</p>`
+          : "";
+        const draft = state.entertainment.draft;
+        const childForm =
+          draft && !draft.id && draft.parent_id === node.id
+            ? entFormHtml(draft)
+            : "";
+        const body = open
+          ? `<div class="ent-tile-body">${notes}${entLevelHtml(node.id)}${childForm}</div>`
+          : "";
+        return `<article class="ent-tile${open ? " open" : ""}${selected ? " selected" : ""}" data-id="${escAttr(node.id)}">
+          <div class="ent-tile-head">
+            ${twist}
+            <div class="ent-body">
+              <div class="ent-title">${esc(node.title)}</div>
+              ${entLinks(node.url)}
+            </div>
+            ${kids.length ? `<span class="ent-count">${kids.length}</span>` : ""}
+          </div>
+          ${body}
+          ${entActions(node)}
+        </article>`;
+      }
+
+      function entLevelHtml(parentId) {
+        const kids = entChildren(parentId);
+        const tiles = kids.filter((n) => entIsTile(n));
+        const leaves = kids.filter((n) => !entIsTile(n));
+        const draft = state.entertainment.draft;
+        const rootForm =
+          !parentId && draft && !draft.id && !draft.parent_id
+            ? entFormHtml(draft)
+            : "";
+        if (!tiles.length && !leaves.length && !rootForm) return "";
+        return `${tiles.length || rootForm ? `<div class="ent-bento">${tiles.map(entTileHtml).join("")}${rootForm}</div>` : ""}${entListHtml(leaves)}`;
+      }
+
+      function renderEntertainment() {
+        const root = document.getElementById("entertainmentPanel");
+        if (!root) return;
+        if (!state.entertainment.collapseSeeded && entNodes().length) {
+          for (const n of entNodes()) {
+            if (entHasChildren(n.id)) state.entertainment.collapsed.add(n.id);
+          }
+          state.entertainment.collapseSeeded = true;
+        }
+        const vis = entVisible();
+        const known = new Set(entNodes().map((n) => n.id));
+        if (
+          state.entertainment.selectedId &&
+          !known.has(state.entertainment.selectedId)
+        )
+          state.entertainment.selectedId = "";
+        if (
+          !state.entertainment.selectedId &&
+          vis.length &&
+          !state.entertainment.draft
+        )
+          state.entertainment.selectedId = vis[0].node.id;
+
+        const draft = state.entertainment.draft;
+        let html = `<div class="ent-toolbar">
+          <div>
+            <h2>Entertainment</h2>
+            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. E returns to Practice.</p>
+          </div>
+          <button type="button" class="spa-btn" id="entAddTopic">Add topic</button>
+        </div>`;
+        if (!vis.length && !(draft && !draft.id && !draft.parent_id))
+          html += `<p class="ent-empty">No entertainment topics yet.</p>`;
+        else html += entLevelHtml("");
+        root.innerHTML = html;
+
+        const addTopic = document.getElementById("entAddTopic");
+        if (addTopic) addTopic.onclick = () => entStartDraft("", null);
+
+        const form = root.querySelector(".ent-form");
+        if (form) {
+          form.onsubmit = (e) => {
+            e.preventDefault();
+            const fd = new FormData(form);
+            state.entertainment.draft.title = String(fd.get("title") || "");
+            state.entertainment.draft.url = String(fd.get("url") || "");
+            state.entertainment.draft.notes = String(fd.get("notes") || "");
+            entSaveDraft().catch((err) => toast(String(err.message || err)));
+          };
+        }
+        const cancel = document.getElementById("entCancel");
+        if (cancel)
+          cancel.onclick = () => {
+            state.entertainment.draft = null;
+            renderEntertainment();
+          };
+
+        root.querySelectorAll(".ent-tile[data-id], .ent-item[data-id]").forEach((el) => {
+          el.onclick = (e) => {
+            if (e.target.closest("a, button, input, textarea, label")) return;
+            if (e.target.closest("[data-id]") !== el) return;
+            state.entertainment.selectedId = el.dataset.id;
+            renderEntertainment();
+          };
+        });
+        root.querySelectorAll("[data-twist]").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.twist;
+            if (state.entertainment.collapsed.has(id))
+              state.entertainment.collapsed.delete(id);
+            else state.entertainment.collapsed.add(id);
+            state.entertainment.selectedId = id;
+            renderEntertainment();
+          };
+        });
+        root.querySelectorAll("[data-done]").forEach((cb) => {
+          cb.onclick = (e) => e.stopPropagation();
+          cb.onchange = () => {
+            const node = entNodes().find((n) => n.id === cb.dataset.done);
+            if (!node) return;
+            state.entertainment.selectedId = node.id;
+            entSetDone(node, cb.checked).catch((err) => {
+              toast(String(err.message || err));
+              renderEntertainment();
+            });
+          };
+        });
+        root.querySelectorAll("[data-add]").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            entStartDraft(btn.dataset.add, null);
+          };
+        });
+        root.querySelectorAll("[data-edit]").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const node = entNodes().find((n) => n.id === btn.dataset.edit);
+            if (node) entStartDraft(node.parent_id || "", node);
+          };
+        });
+        root.querySelectorAll("[data-del]").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const node = entNodes().find((n) => n.id === btn.dataset.del);
+            if (!node) return;
+            entDelete(node).catch((err) => toast(String(err.message || err)));
+          };
+        });
+      }
+
       document.addEventListener("keydown", (e) => {
         if (
           e.altKey &&
@@ -4463,6 +5100,16 @@
         ) {
           e.preventDefault();
           focusAtomSearch();
+          return;
+        }
+        if (
+          state.view === "entertainment" &&
+          state.entertainment.draft &&
+          e.key === "Escape"
+        ) {
+          e.preventDefault();
+          state.entertainment.draft = null;
+          renderEntertainment();
           return;
         }
         if (e.target.matches("input, textarea, select")) return;
@@ -4488,6 +5135,28 @@
         const ovOpen = document
           .getElementById("overlay")
           .classList.contains("open");
+        if (state.view === "entertainment" && !ovOpen) {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            entMove(1);
+            return;
+          }
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            entMove(-1);
+            return;
+          }
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            entDrill(1);
+            return;
+          }
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            entDrill(-1);
+            return;
+          }
+        }
         if (
           e.shiftKey &&
           !e.ctrlKey &&
@@ -4612,6 +5281,17 @@
         ) {
           e.preventDefault();
           togglePlansPractice();
+          return;
+        }
+        if (
+          (e.key === "e" || e.key === "E") &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          !e.shiftKey
+        ) {
+          e.preventDefault();
+          toggleEntertainment();
           return;
         }
         if (

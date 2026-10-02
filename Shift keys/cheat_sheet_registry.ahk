@@ -1152,6 +1152,7 @@ cheatSheets["Memory Palace"] := "
     === Navigation ===
     🏠 [Esc] Close study picker / palace overlay / leave Browse / return to Practice
     🔁 [P] Toggle Practice ↔ Plans
+    🎬 [E] Entertainment topics
     🖼 [I] Image backlog (ordered study snapshots)
     🆕 [L] Open latest palace for the selected study
     📖 [M] Method
@@ -1184,6 +1185,15 @@ cheatSheets["Memory Palace"] := "
     🎬 [Alt+V] Set video from clipboard
     📄 [Alt+A] Set article from clipboard
     ⭐ [Alt+F] Set favorite from clipboard
+    
+    === Entertainment (E) ===
+    ➡️ [→] Expand a topic, or step into the first item inside it
+    ⬅️ [←] Collapse a topic, or step back to its parent
+    ⬆️⬇️ [↑] [↓] Move through visible rows
+    ☑ Checkbox marks a title done
+    ➕ Add topic / Add inside / Edit / Delete on the selected row
+    🏠 [Esc] Cancel an edit, or return to Practice
+    🎬 [E] Return to Practice
     
     === Palace overlay ===
     🖼 [F] Toggle snapshot full-screen

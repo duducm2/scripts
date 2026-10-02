@@ -18,6 +18,7 @@ from schemas import (
     ATOMS_HEADERS,
     normalize_atom_keywords,
     BEASTS_HEADERS,
+    ENTERTAINMENT_HEADERS,
     PALACE_IMAGES_HEADERS,
     PALACES_HEADERS,
     PLAN_ITEMS_HEADERS,
@@ -50,6 +51,7 @@ CACHE_KINDS = (
     "plans",
     "plan_items",
     "plan_resources",
+    "entertainment",
 )
 PLAN_KINDS = ("plans", "plan_items", "plan_resources")
 
@@ -63,6 +65,7 @@ ENTITY_PREFIX = {
     "plans": "PLAN_",
     "plan_items": "PITEM_",
     "plan_resources": "PRES_",
+    "entertainment": "ENT_",
 }
 
 ENTITY_HEADERS = {
@@ -75,7 +78,40 @@ ENTITY_HEADERS = {
     "plans": PLANS_HEADERS,
     "plan_items": PLAN_ITEMS_HEADERS,
     "plan_resources": PLAN_RESOURCES_HEADERS,
+    "entertainment": ENTERTAINMENT_HEADERS,
 }
+
+
+def _read_entertainment(data_dir: Path) -> list[dict[str, str]]:
+    path = data_dir / "entertainment.csv"
+    if not path.is_file():
+        return []
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = _csv.DictReader(f)
+        rows: list[dict[str, str]] = []
+        for row in reader:
+            rows.append(
+                {
+                    h: (row.get(h) if row.get(h) is not None else "")
+                    for h in ENTERTAINMENT_HEADERS
+                }
+            )
+        return rows
+
+
+def entertainment_drop_ids(rows: list[dict[str, str]], root_id: str) -> set[str]:
+    """Root plus every descendant, so deleting a topic removes what is inside it."""
+    drop = {root_id}
+    changed = True
+    while changed:
+        changed = False
+        for row in rows:
+            rid = row.get("id") or ""
+            parent = row.get("parent_id") or ""
+            if rid and parent in drop and rid not in drop:
+                drop.add(rid)
+                changed = True
+    return drop
 
 
 def _next_sort(rows: list[dict[str, str]], key: str = "sort_order") -> str:
@@ -143,6 +179,7 @@ class PalaceStore:
         data["plans"] = plans["plans"]
         data["plan_items"] = plans["plan_items"]
         data["plan_resources"] = plans["plan_resources"]
+        data["entertainment"] = _read_entertainment(self.data_dir)
         self._cache_tree = deepcopy(data)
         self._cache_stamp = stamp
         return data
@@ -194,6 +231,12 @@ class PalaceStore:
             self._write_kind("beasts", BEASTS_HEADERS, data.get("beasts", []))
         if write_all or "atoms" in kinds_set:
             self._write_kind("atoms", ATOMS_HEADERS, data.get("atoms", []))
+        if write_all or "entertainment" in kinds_set:
+            self._write_kind(
+                "entertainment",
+                ENTERTAINMENT_HEADERS,
+                data.get("entertainment", []),
+            )
         if write_all or kinds_set.intersection(PLAN_KINDS):
             save_plan_tables(
                 self.data_dir,
@@ -376,6 +419,7 @@ class PalaceStore:
             "plans": data["plans"],
             "plan_items": data["plan_items"],
             "plan_resources": data["plan_resources"],
+            "entertainment": data.get("entertainment", []),
             "quick_recall": {"included_palace_ids": included},
             "meta": {
                 "practice_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice",
@@ -405,6 +449,16 @@ class PalaceStore:
             return self._upsert_plan(data, rows, payload, existing)
         if entity == "plan_items":
             return self._upsert_plan_item(data, rows, payload, existing)
+
+        if entity == "entertainment":
+            if "title" in payload:
+                title = str(payload.get("title") or "").strip()
+            else:
+                title = str((existing or {}).get("title") or "").strip()
+            if not title:
+                return {"ok": False, "error": "title required"}
+            payload = dict(payload)
+            payload["title"] = title
 
         # generic
         row = {
@@ -933,10 +987,20 @@ class PalaceStore:
             data["plan_items"] = [
                 r for r in data["plan_items"] if r.get("id") != entity_id
             ]
+        elif entity == "entertainment":
+            drop = entertainment_drop_ids(data.get("entertainment", []), entity_id)
+            data["entertainment"] = [
+                r
+                for r in data.get("entertainment", [])
+                if (r.get("id") or "") not in drop
+            ]
         else:
             data[entity] = [r for r in data.get(entity, []) if r.get("id") != entity_id]
 
-        self._save_tree(data)
+        if entity == "entertainment":
+            self._save_tree(data, ["entertainment"])
+        else:
+            self._save_tree(data)
         if entity in ("studies", "palaces", "beasts", "atoms"):
             self._sync_practice(study_id)
         if entity in ("studies", "plans", "plan_items"):
