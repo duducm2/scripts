@@ -80,21 +80,21 @@ def _peg_fold(row: dict[str, str]) -> str:
     return (row.get("peg_code") or "").strip().casefold()
 
 
+def _desc_text(text: str) -> str:
+    """Invert code points so an ascending sort reads Z to A."""
+    return "".join(chr(0x10FFFF - ord(ch)) for ch in text)
+
+
 def _beast_peg_key(beast: dict[str, str]) -> tuple[int, str, int]:
     peg = _peg_fold(beast)
-    return (0 if peg else 1, peg, _sort_int(beast))
+    return (0 if peg else 1, _desc_text(peg), _sort_int(beast))
 
 
-def _earliest_palace_peg(
+def _palace_recency_key(
     palace_id: str,
-    beasts_by_palace: dict[str, list[dict[str, str]]],
     palaces: dict[str, dict[str, str]],
-) -> tuple[int, str, int]:
-    pegs = [_peg_fold(b) for b in beasts_by_palace.get(palace_id, []) if _peg_fold(b)]
-    number = _palace_num(palaces.get(palace_id) or {})
-    if not pegs:
-        return (1, "", number)
-    return (0, min(pegs), number)
+) -> int:
+    return -_palace_num(palaces.get(palace_id) or {})
 
 
 def collapse_concept(raw: str | None) -> str:
@@ -271,11 +271,8 @@ def render_markdown(
 
     for sid in study_order:
         pids = by_study[sid]
-        # Within study: earliest peg first (Bt before Bu), palace number as tiebreak
-        pids = sorted(
-            pids,
-            key=lambda x: _earliest_palace_peg(x, beasts_by_palace, palaces),
-        )
+        # Within study: newest palace first; beasts inside run latest peg backward
+        pids = sorted(pids, key=lambda x: _palace_recency_key(x, palaces))
         study = studies.get(sid) or {}
         title = (study.get("title") or sid).strip() or sid
         n_palaces = len(pids)

@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import load_all, resolve_image, save_all, snapshot  # noqa: E402
 from palace_practice_render import (  # noqa: E402
-    earliest_palace_peg,
+    palace_recency_key,
     md_escape,
     render_palace_section_md,
 )
@@ -137,7 +137,7 @@ def build_study_markdown(
         lines.append("")
         return "\n".join(lines)
 
-    palaces.sort(key=earliest_palace_peg)
+    palaces.sort(key=palace_recency_key)
     for palace in palaces:
         pid = palace.get("id", "")
         lines.extend(

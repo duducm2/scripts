@@ -37,20 +37,21 @@ def _atom_sort_order(atom: dict[str, Any]) -> int:
         return 0
 
 
-def earliest_palace_peg(palace: dict[str, Any]) -> tuple[int, str]:
-    """Palaces with no peg sort after those that have one."""
-    pegs = [
-        _peg_fold(a.get("peg_code"))
-        for a in (palace.get("atoms") or [])
-        if _peg_fold(a.get("peg_code"))
-    ]
-    if not pegs:
-        return (1, "")
-    return (0, min(pegs))
+def _desc_text(text: str) -> str:
+    """Invert code points so an ascending sort reads Z to A."""
+    return "".join(chr(0x10FFFF - ord(ch)) for ch in text)
+
+
+def palace_recency_key(palace: dict[str, Any]) -> int:
+    """Newest palace first (the one normally recalled)."""
+    try:
+        return -int(palace.get("number") or 0)
+    except (TypeError, ValueError):
+        return 0
 
 
 def group_atoms_by_beast(atoms: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
-    """Group atoms by beast, then order groups by peg (case-insensitive).
+    """Group atoms by beast, then order groups from the latest peg backward.
 
     Atoms inside one beast stay in sort_order.
     """
@@ -69,7 +70,7 @@ def group_atoms_by_beast(atoms: list[dict[str, Any]] | None) -> list[dict[str, A
     def _group_key(group: dict[str, Any]) -> tuple[int, str, int]:
         first = (group.get("atoms") or [{}])[0]
         peg = _peg_fold(first.get("peg_code"))
-        return (0 if peg else 1, peg, _atom_sort_order(first))
+        return (0 if peg else 1, _desc_text(peg), _atom_sort_order(first))
 
     groups.sort(key=_group_key)
     return groups
