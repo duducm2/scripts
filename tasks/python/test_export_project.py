@@ -223,6 +223,31 @@ class ExportProjectTest(unittest.TestCase):
         self.assertEqual([p["id"] for p in index["projects"]], [beta["id"]])
         self.assertNotIn(alpha["id"], beta_path.read_text(encoding="utf-8"))
 
+    def test_waiting_status_exports_on_project_and_section(self) -> None:
+        proj = self.store.upsert_project({"title": "Paused work", "filter": "work"})[
+            "project"
+        ]
+        sec = self.store.upsert_section({"project_id": proj["id"], "title": "Later"})[
+            "section"
+        ]
+        rejected = self.store.set_project_status(proj["id"], "nope")
+        self.assertEqual(rejected["error"], "invalid status")
+        marked = self.store.set_project_status(proj["id"], "waiting")
+        self.assertTrue(marked["ok"])
+        self.assertEqual(marked["project"]["status"], "waiting")
+        sec_marked = self.store.set_section_status(sec["id"], "waiting")
+        self.assertTrue(sec_marked["ok"])
+        cleared = self.store.set_section_status(sec["id"], "")
+        self.assertEqual(cleared["section"]["status"], "")
+        self.store.set_section_status(sec["id"], "waiting")
+
+        doc = self.store.export_project(proj["id"])["document"]["project"]
+        self.assertEqual(doc["status"], "waiting")
+        later = next(s for s in doc["sections"] if s["title"] == "Later")
+        self.assertEqual(later["status"], "waiting")
+        general = next(s for s in doc["sections"] if s["title"] == "General")
+        self.assertNotIn("status", general)
+
 
 if __name__ == "__main__":
     unittest.main()

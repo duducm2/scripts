@@ -22,8 +22,9 @@ HEADERS = {
         "icon_ref",
         "icon_color",
         "icon_tint",
+        "status",
     ],
-    "sections": ["id", "project_id", "title", "sort_order"],
+    "sections": ["id", "project_id", "title", "sort_order", "status"],
     "tasks": [
         "id",
         "project_id",
@@ -96,6 +97,14 @@ STATUS_EMOJI_ALIASES = {
     "completed": "done",
     "none": "none",
 }
+
+
+def normalize_waiting_status(raw: str) -> str | None:
+    """Project and section status is empty or waiting."""
+    key = (raw or "").strip().lower()
+    if key in {"", "waiting"}:
+        return key
+    return None
 
 
 def resolve_status_emoji(raw: str) -> str:
@@ -886,6 +895,27 @@ class TaskStore:
         self.save("projects", out)
         return {"ok": True, "project": next(x for x in out if x["id"] == pid)}
 
+    def set_project_status(self, project_id: str, status: str) -> dict:
+        pid = (project_id or "").strip()
+        if not pid:
+            return {"ok": False, "error": "project id required"}
+        normalized = normalize_waiting_status(status)
+        if normalized is None:
+            return {"ok": False, "error": "invalid status"}
+        rows = self.load("projects")
+        out = []
+        found = None
+        for r in rows:
+            if r.get("id") == pid:
+                r = {**r, "status": normalized}
+                found = r
+            out.append(r)
+        if not found:
+            return {"ok": False, "error": "project not found"}
+        self.save("projects", out)
+        self.write_project_json(pid)
+        return {"ok": True, "project": found}
+
     def delete_project(self, project_id: str) -> dict:
         tasks = self.load("tasks")
         task_ids = {t["id"] for t in tasks if t.get("project_id") == project_id}
@@ -1001,6 +1031,26 @@ class TaskStore:
             self.save("tasks", tasks)
         self.save("sections", [s for s in rows if s.get("id") != section_id])
         return {"ok": True}
+
+    def set_section_status(self, section_id: str, status: str) -> dict:
+        sid = (section_id or "").strip()
+        if not sid:
+            return {"ok": False, "error": "section id required"}
+        normalized = normalize_waiting_status(status)
+        if normalized is None:
+            return {"ok": False, "error": "invalid status"}
+        rows = self.load("sections")
+        out = []
+        found = None
+        for r in rows:
+            if r.get("id") == sid:
+                r = {**r, "status": normalized}
+                found = r
+            out.append(r)
+        if not found:
+            return {"ok": False, "error": "section not found"}
+        self.save("sections", out)
+        return {"ok": True, "section": found}
 
     # --- tasks ---
     def upsert_task(self, payload: dict) -> dict:
@@ -1551,16 +1601,17 @@ class TaskStore:
         for s in sorted(sections, key=_export_sort_key):
             sid = s.get("id") or ""
             owned = [t for t in tasks if (t.get("section_id") or "") == sid]
-            section_docs.append(
-                {
-                    "id": sid,
-                    "title": (s.get("title") or "").strip() or GENERAL_SECTION,
-                    "tasks": [
-                        _export_task(t, infos_by_parent, atts_by_parent, today)
-                        for t in sorted(owned, key=_export_sort_key)
-                    ],
-                }
-            )
+            sec_doc: dict[str, Any] = {
+                "id": sid,
+                "title": (s.get("title") or "").strip() or GENERAL_SECTION,
+                "tasks": [
+                    _export_task(t, infos_by_parent, atts_by_parent, today)
+                    for t in sorted(owned, key=_export_sort_key)
+                ],
+            }
+            if (s.get("status") or "").strip() == "waiting":
+                sec_doc["status"] = "waiting"
+            section_docs.append(sec_doc)
         orphans = [t for t in tasks if (t.get("section_id") or "") not in section_ids]
         if orphans:
             section_docs.append(
@@ -1579,6 +1630,8 @@ class TaskStore:
             "title": (project.get("title") or "").strip(),
             "filter": (project.get("filter") or "").strip(),
         }
+        if (project.get("status") or "").strip() == "waiting":
+            proj_doc["status"] = "waiting"
         path = (project.get("section_path") or "").strip()
         if path:
             proj_doc["section_path"] = path

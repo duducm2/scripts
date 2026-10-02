@@ -1011,6 +1011,50 @@
         background: transparent;
         padding: 8px 12px;
       }
+      /* Waiting (Shift+Q): slightly darker. The hourglass glyph is omitted in markup. */
+      .task.is-waiting:not(.kb-selected) {
+        background: rgba(0, 0, 0, 0.28);
+      }
+      .task.is-waiting .title,
+      .task.is-waiting .due {
+        color: #8d8d8d;
+      }
+      details.project.is-waiting {
+        background: #1a1a1d;
+      }
+      details.project.is-waiting:not(.kb-selected) > summary,
+      details.project.is-waiting:not(.kb-selected) > summary .proj-title,
+      details.project.is-waiting .task .title,
+      details.project.is-waiting .task .due,
+      details.project.is-waiting .task-section-label,
+      details.project.is-waiting .sec-title {
+        color: #8d8d8d;
+      }
+      .task-section.is-waiting {
+        background: rgba(0, 0, 0, 0.28);
+        border-radius: 6px;
+      }
+      .task-section.is-waiting:not(.kb-selected) > .task-section-label,
+      .task-section.is-waiting .sec-title,
+      .task-section.is-waiting .task .title,
+      .task-section.is-waiting .task .due {
+        color: #8d8d8d;
+      }
+      .section-bento
+        > .task-section.is-waiting:not(.kb-selected)
+        > .task-section-label,
+      .section-bento > .task-section.is-waiting .sec-title,
+      .section-bento > .task-section.is-waiting .task .title,
+      .section-bento > .task-section.is-waiting .task .due {
+        color: #7f8b96;
+      }
+      .column.project-focus > details.project.is-waiting {
+        background: rgba(0, 0, 0, 0.22);
+      }
+      .project-focus-head.is-waiting .project-focus-title,
+      .project-focus-head.is-waiting .proj-title {
+        color: #8aa0b4;
+      }
       body.project-focus-mode .task,
       body.project-focus-mode .plain-row {
         border-top-color: var(--pf-line);
@@ -2318,6 +2362,14 @@
           };
         }
 
+        function isWaitingRow(row) {
+          return (
+            String(row?.status || "")
+              .trim()
+              .toLowerCase() === "waiting"
+          );
+        }
+
         function taskEmoji(t) {
           const em = t?.emoji;
           if (em === undefined || em === null) return "🔲";
@@ -2350,6 +2402,8 @@
             ? `<span class="new-tag" data-act="clear-new" title="Newly imported — click to clear">NEW</span>`
             : "";
           const em = taskEmoji(t);
+          const waiting = em === "⏳";
+          const shownEm = waiting ? "" : em;
           const doubtTag = isDoubtEmoji(em)
             ? `<span class="doubt-tag" data-act="clear-doubt" title="In doubt — click to clear">DOUBT</span>`
             : "";
@@ -2373,8 +2427,9 @@
         <button class="btn danger" data-act="del-task">Del</button>`;
           const cutClass =
             state.taskClipboard?.cutFromId === t.id ? " is-cut" : "";
-          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}${isNew ? ' data-new="1"' : ""}>
-      <span class="em">${esc(em)}</span>
+          const waitClass = waiting ? " is-waiting" : "";
+          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}${waitClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}${isNew ? ' data-new="1"' : ""}>
+      <span class="em">${esc(shownEm)}</span>
       ${newTag}
       ${doubtTag}
       ${infoTag}
@@ -2443,7 +2498,8 @@
           <button type="button" class="btn" data-act="edit-section">Edit</button>
           <button type="button" class="btn danger" data-act="del-section">Del</button>
         </span>`;
-            return `<div class="task-section${collapsed}${genClass}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
+            const secWait = isWaitingRow(s) ? " is-waiting" : "";
+            return `<div class="task-section${collapsed}${genClass}${secWait}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
         <div class="task-section-label"><span class="sec-title">${highlightTitle(s.title)}</span>${secActs}</div>
         ${items ? `<ul class="task-list">${items}</ul>` : ""}
       </div>`;
@@ -2511,7 +2567,8 @@
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
             const iconHtml = projectIconHtml(p);
-            blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+            const waitClass = isWaitingRow(p) ? " is-waiting" : "";
+            blocks.push(`<details class="project${waitClass}"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
@@ -2566,7 +2623,8 @@
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
             const iconHtml = projectIconHtml(p);
-            blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+            const waitClass = isWaitingRow(p) ? " is-waiting" : "";
+            blocks.push(`<details class="project${waitClass}"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="habits">+ Task</button>
@@ -2609,12 +2667,13 @@
           const pThumbs = thumbsHtml("project", p.id);
           const ageBadge = projectAgeBadgeHtml(p.id);
           const iconHtml = projectIconHtml(p);
+          const waitClass = isWaitingRow(p) ? " is-waiting" : "";
           return `<section class="column panel project-focus" id="sec-project-focus">
-      <div class="project-focus-head">
+      <div class="project-focus-head${waitClass}">
         <h2 class="project-focus-title">${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</h2>
         <span class="project-focus-hint"><kbd>Shift+Z</kbd> exit</span>
       </div>
-      <details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+      <details class="project${waitClass}" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
@@ -3535,6 +3594,33 @@
           return setTaskEmojiById(statusTargetTaskId(), keyOrEmoji);
         }
 
+        async function setContainerWaiting(kind, id) {
+          const row =
+            kind === "project"
+              ? (state.data.projects || []).find((p) => p.id === id)
+              : findSection(id);
+          if (!row) {
+            toast(
+              kind === "project"
+                ? "Select a project first"
+                : "Select a section first",
+            );
+            return;
+          }
+          const next = isWaitingRow(row) ? "" : "waiting";
+          const r = await api(
+            "/api/" + kind + "s/" + encodeURIComponent(id) + "/status",
+            {
+              method: "POST",
+              body: JSON.stringify({ status: next }),
+            },
+          );
+          toast(next ? "Marked waiting" : "Cleared waiting");
+          await afterEntitySave(kind, r, () => {
+            setSelection(kind, id, false);
+          });
+        }
+
         async function sendHabitToPersonal(habitId) {
           const r = await api(
             "/api/tasks/" + encodeURIComponent(habitId) + "/to-personal",
@@ -3627,6 +3713,13 @@
           }
           if (k === "j") {
             toggleFirstPersonalWork();
+            return;
+          }
+          if (
+            k === "q" &&
+            (state.sel?.kind === "project" || state.sel?.kind === "section")
+          ) {
+            await setContainerWaiting(state.sel.kind, state.sel.id);
             return;
           }
           if (Object.prototype.hasOwnProperty.call(EMOJI_KEYS, k)) {

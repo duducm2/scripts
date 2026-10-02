@@ -368,6 +368,13 @@ class TaskHandler(BaseHTTPRequestHandler):
                     direction = payload.get("direction")
                 self._json(200, store.move_project(pid, direction))
                 return
+            if path.startswith("/api/projects/") and path.endswith("/status"):
+                pid = path[len("/api/projects/") : -len("/status")]
+                self._json(
+                    200,
+                    store.set_project_status(pid, payload.get("status") or ""),
+                )
+                return
             if path == "/api/sections":
                 self._json(200, store.upsert_section(payload))
                 return
@@ -377,6 +384,13 @@ class TaskHandler(BaseHTTPRequestHandler):
                 if direction is None:
                     direction = payload.get("direction")
                 self._json(200, store.move_section(sid, direction))
+                return
+            if path.startswith("/api/sections/") and path.endswith("/status"):
+                sid = path[len("/api/sections/") : -len("/status")]
+                self._json(
+                    200,
+                    store.set_section_status(sid, payload.get("status") or ""),
+                )
                 return
             if path == "/api/tasks":
                 self._json(200, store.upsert_task(payload))
