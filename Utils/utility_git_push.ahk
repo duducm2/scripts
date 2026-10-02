@@ -155,6 +155,47 @@ Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot) {
     return "ok"
 }
 
+Utility_GitExportEntertainmentMd(scriptsRoot, notesRoot) {
+    py := scriptsRoot . "\mnemonics\python\export_entertainment_md.py"
+    if (!FileExist(py))
+        return "error:export_entertainment_md.py not found"
+    pyCmd := ""
+    try pyCmd := Task_FindPythonCmd()
+    catch {
+        pyCmd := ""
+    }
+    if (pyCmd = "")
+        return "error:Python not found for entertainment MD export"
+    csvPath := scriptsRoot . "\mnemonics\data\entertainment.csv"
+    outPath := notesRoot . "\main\entertainment.md"
+    cmd := pyCmd . ' "' . py . '" --csv "' . csvPath . '" --output "' . outPath . '"'
+    bat := A_Temp . "\utility-git-export-ent-" . A_TickCount . ".cmd"
+    try FileDelete(bat)
+    catch {
+    }
+    try FileAppend("@echo off`r`n" . cmd . "`r`n", bat, "CP0")
+    catch as e {
+        return "error:Entertainment MD export failed: " . e.Message
+    }
+    exitCode := 0
+    try {
+        exitCode := RunWaitWithTimeout('"' . bat . '"', scriptsRoot, "Hide", 60000)
+    } catch as e {
+        try FileDelete(bat)
+        catch {
+        }
+        return "error:Entertainment MD export failed: " . e.Message
+    }
+    try FileDelete(bat)
+    catch {
+    }
+    if (exitCode = 124)
+        return "error:Entertainment MD export timed out"
+    if (exitCode != 0)
+        return "error:Entertainment MD export failed (exit " . exitCode . ")"
+    return "ok"
+}
+
 ; Backward-compatible alias (#!+9 / Utility [G] path).
 Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
     return Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
@@ -179,6 +220,10 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
 
     export := Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
+    if (SubStr(export, 1, 6) = "error:")
+        return export
+
+    export := Utility_GitExportEntertainmentMd(scriptsRoot, notesRoot)
     if (SubStr(export, 1, 6) = "error:")
         return export
 

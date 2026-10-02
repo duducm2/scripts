@@ -1661,7 +1661,7 @@ AudioBt_Show() {
 }
 
 ; Win+Alt+Shift+9 tap / double-tap / hold (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
-;   1× = Utility_GitSyncPush scripts + notes + personal (Utility Shortcuts [G])
+;   1× = Utility_GitSyncPush scripts + notes + personal (Utility Shortcuts [G]), and refresh notes\main\entertainment.md
 ;   2× = Audio / Bluetooth quick selector (toggle)
 ;   hold 700ms+ = AI Companion Quick Download (#!+P name list first → click sequences → Desktop wait → rename → cut)
 AUDIO_BT_HOLD_MS := 700
