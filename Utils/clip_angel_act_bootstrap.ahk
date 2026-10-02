@@ -99,5 +99,12 @@ GetAhkMonitorIndexFromHwnd(hwnd) {
 
 ; favorite.ahk references ClipAngelDb_* at load (#Warn); include before it (same as Utils.ahk).
 #include %A_ScriptDir%\Utils\clip_angel_db.ahk
+
+; favorite.ahk calls UiElements_TrySaved. Act does not load Lib/UiElements.ahk.
+; Returning 0 keeps the built-in finder. Utils.ahk supplies the real function.
+UiElements_TrySaved(root, section, elementId) {
+    return 0
+}
+
 #include %A_ScriptDir%\Utils\clip_angel_favorite.ahk
 #include %A_ScriptDir%\Utils\clip_angel_activate.ahk
