@@ -276,6 +276,7 @@
       .ent-item {
         padding: 0.32rem 0.15rem;
         border-bottom: 1px solid var(--line);
+        cursor: pointer;
       }
       .ent-list.catalog .ent-item {
         flex-direction: column;
@@ -327,10 +328,12 @@
       .ent-row.selected {
         border-color: var(--gold);
       }
+      .ent-item.done .ent-cover {
+        opacity: 0.35;
+      }
       .ent-item.done .ent-title,
       .ent-row.done .ent-title {
         color: var(--muted);
-        text-decoration: line-through;
       }
       .ent-twist {
         width: 1.4rem;
@@ -4940,8 +4943,8 @@
               ? `<img class="ent-cover" src="${escAttr(image)}" alt="" loading="lazy">`
               : "";
             const head = catalog
-              ? `${cover}<div class="ent-meta"><span class="ent-rank">${rank}</span><input type="checkbox" data-done="${escAttr(n.id)}" ${n.done === "1" ? "checked" : ""} aria-label="Done"></div>`
-              : `<span class="ent-rank">${rank}</span><input type="checkbox" data-done="${escAttr(n.id)}" ${n.done === "1" ? "checked" : ""} aria-label="Done">`;
+              ? `${cover}<div class="ent-meta"><span class="ent-rank">${rank}</span></div>`
+              : `<span class="ent-rank">${rank}</span>`;
             return `<li class="ent-item${selected ? " selected" : ""}${n.done === "1" ? " done" : ""}" data-id="${escAttr(n.id)}">
               ${head}
               <div class="ent-body">
@@ -5039,7 +5042,7 @@
         let html = `<div class="ent-toolbar">
           <div>
             <h2>Entertainment</h2>
-            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. E returns to Practice.</p>
+            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. Click a title to mark it watched. E returns to Practice.</p>
           </div>
           <button type="button" class="spa-btn" id="entAddTopic">Add topic</button>
         </div>`;
@@ -5075,6 +5078,16 @@
             el.onclick = (e) => {
               if (e.target.closest("a, button, input, textarea, label")) return;
               if (e.target.closest("[data-id]") !== el) return;
+              if (el.classList.contains("ent-item")) {
+                const node = entNodes().find((n) => n.id === el.dataset.id);
+                if (!node) return;
+                state.entertainment.selectedId = node.id;
+                entSetDone(node, node.done !== "1").catch((err) => {
+                  toast(String(err.message || err));
+                  renderEntertainment();
+                });
+                return;
+              }
               state.entertainment.selectedId = el.dataset.id;
               renderEntertainment();
             };
@@ -5095,18 +5108,6 @@
             else state.entertainment.collapsed.add(id);
             state.entertainment.selectedId = id;
             renderEntertainment();
-          };
-        });
-        root.querySelectorAll("[data-done]").forEach((cb) => {
-          cb.onclick = (e) => e.stopPropagation();
-          cb.onchange = () => {
-            const node = entNodes().find((n) => n.id === cb.dataset.done);
-            if (!node) return;
-            state.entertainment.selectedId = node.id;
-            entSetDone(node, cb.checked).catch((err) => {
-              toast(String(err.message || err));
-              renderEntertainment();
-            });
           };
         });
         root.querySelectorAll("[data-add]").forEach((btn) => {

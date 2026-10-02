@@ -1190,7 +1190,7 @@ cheatSheets["Memory Palace"] := "
     ➡️ [→] Expand a topic, or step into the first item inside it
     ⬅️ [←] Collapse a topic, or step back to its parent
     ⬆️⬇️ [↑] [↓] Move through visible rows
-    ☑ Checkbox marks a title done
+    🖱 Click a title to mark it watched, click again to clear it
     ➕ Add topic / Add inside / Edit / Delete on the selected row
     🏠 [Esc] Cancel an edit, or return to Practice
     🎬 [E] Return to Practice
