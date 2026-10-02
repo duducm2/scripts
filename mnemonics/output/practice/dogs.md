@@ -1,74 +1,6 @@
 # Dogs
 
 <details open>
-<summary><strong>Memory Palace 3: Chew Substitution and Safe Exchanges</strong> · Character: Brian Griffin · 2 beasts · 2 atoms</summary>
-
-![Memory Palace 3](images/dogs/3.jpg)
-
-<p><em>2 beasts · 2 Knowledge Atoms</em></p>
-
-#### Knowledge Atoms
-
-### [G] goat
-
-<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 <img alt="[Toy Scenting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BToy%20Scenting%5D&color=9fd4ff" />(perfume) [I rub authorized <img alt="[chew items]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bchew%20items%5D&color=ffd966" />(bone)] [between my <img alt="[hands]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhands%5D&color=ffd966" />(palms)] [to transfer <img alt="[personal scent]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpersonal%20scent%5D&color=ffd966" />(shirt)] — Note: Overnight contact with the handler also works to fulfill scent drives.
-
-**Quote**
-“Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent.”
-
-### [H] Hydra
-
-<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 <img alt="[The Trade Game]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BThe%20Trade%20Game%5D&color=9fd4ff" />(scale) [I offer <img alt="[superior trades]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsuperior%20trades%5D&color=ffd966" />(turkey)] [to <img alt="[prevent chase]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bprevent%20chase%5D&color=ffd966" />(hurdle) games] [when <img alt="[forbidden items]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bforbidden%20items%5D&color=ffd966" />(shoe) are taken] — Note: Chasing turns theft into a self-reinforcing game.
-
-**Quote**
-“If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game.”
-
-#### Notes
-
-_No notes._
-
-#### Gallery
-
-_No gallery images._
-
-</details>
-
-<details>
-<summary><strong>Memory Palace 2: German Shepherd Scoring and Activities (Snoopy)</strong> · Character: Snoopy · 1 beast · 1 atom</summary>
-
-![Memory Palace 2](images/dogs/2.jpg)
-
-<p><em>1 beast · 1 Knowledge Atom</em></p>
-
-#### Knowledge Atoms
-
-### [F] frog
-
-<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 [<img alt="[Proprioception]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BProprioception%5D&color=9fd4ff" />(tightrope) Training] [I <img alt="[guide]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bguide%5D&color=ffd966" />(leash) the dog] [over raised Cavaletti <img alt="[poles]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpoles%5D&color=ffd966" />(hurdles)] [to build <img alt="[hind-end]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhind-end%5D&color=ffd966" />(bumper) awareness] — Note: This scientifically supports joint health and combats dysplasia risks.
-
-**Quote**
-“Proprioception exercises like Cavaletti poles build rear-end body awareness, which is scientifically proven to strengthen stabilizing muscles and mitigate joint dysplasia risks.”
-
-#### Notes
-
-_No notes._
-
-#### Gallery
-
-_No gallery images._
-
-</details>
-
-<details>
 <summary><strong>Memory Palace 1: German Shepherd Traits (Scooby-Doo)</strong> · Character: Scooby-Doo · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/dogs/1.jpg)
@@ -126,6 +58,74 @@ _No gallery images._
 
 **Quote**
 “Engaging in a structured game of tug-of-war paired with a reliable drop it command to safely channel their instinctual drives and tire them out.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>Memory Palace 2: German Shepherd Scoring and Activities (Snoopy)</strong> · Character: Snoopy · 1 beast · 1 atom</summary>
+
+![Memory Palace 2](images/dogs/2.jpg)
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### [F] frog
+
+<img src="../../web/assets/beast-thumbs/frog.png" alt="frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [<img alt="[Proprioception]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BProprioception%5D&color=9fd4ff" />(tightrope) Training] [I <img alt="[guide]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bguide%5D&color=ffd966" />(leash) the dog] [over raised Cavaletti <img alt="[poles]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpoles%5D&color=ffd966" />(hurdles)] [to build <img alt="[hind-end]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhind-end%5D&color=ffd966" />(bumper) awareness] — Note: This scientifically supports joint health and combats dysplasia risks.
+
+**Quote**
+“Proprioception exercises like Cavaletti poles build rear-end body awareness, which is scientifically proven to strengthen stabilizing muscles and mitigate joint dysplasia risks.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>Memory Palace 3: Chew Substitution and Safe Exchanges</strong> · Character: Brian Griffin · 2 beasts · 2 atoms</summary>
+
+![Memory Palace 3](images/dogs/3.jpg)
+
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [G] goat
+
+<img src="../../web/assets/beast-thumbs/goat.png" alt="goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[Toy Scenting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BToy%20Scenting%5D&color=9fd4ff" />(perfume) [I rub authorized <img alt="[chew items]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bchew%20items%5D&color=ffd966" />(bone)] [between my <img alt="[hands]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhands%5D&color=ffd966" />(palms)] [to transfer <img alt="[personal scent]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpersonal%20scent%5D&color=ffd966" />(shirt)] — Note: Overnight contact with the handler also works to fulfill scent drives.
+
+**Quote**
+“Rub a new chew toy between your hands or sleep with it for a night so it smells strongly of you, satisfying her desire for your scent.”
+
+### [H] Hydra
+
+<img src="../../web/assets/beast-thumbs/hydra.png" alt="Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 <img alt="[The Trade Game]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BThe%20Trade%20Game%5D&color=9fd4ff" />(scale) [I offer <img alt="[superior trades]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsuperior%20trades%5D&color=ffd966" />(turkey)] [to <img alt="[prevent chase]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bprevent%20chase%5D&color=ffd966" />(hurdle) games] [when <img alt="[forbidden items]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bforbidden%20items%5D&color=ffd966" />(shoe) are taken] — Note: Chasing turns theft into a self-reinforcing game.
+
+**Quote**
+“If she grabs a flip flop, never chase her - chasing turns the theft into a rewarding game.”
 
 #### Notes
 

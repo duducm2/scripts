@@ -26,8 +26,34 @@ def dash(value: str | None) -> str:
     return t if t else "—"
 
 
+def _peg_fold(value: str | None) -> str:
+    return (value or "").strip().casefold()
+
+
+def _atom_sort_order(atom: dict[str, Any]) -> int:
+    try:
+        return int(atom.get("sort_order") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def earliest_palace_peg(palace: dict[str, Any]) -> tuple[int, str]:
+    """Palaces with no peg sort after those that have one."""
+    pegs = [
+        _peg_fold(a.get("peg_code"))
+        for a in (palace.get("atoms") or [])
+        if _peg_fold(a.get("peg_code"))
+    ]
+    if not pegs:
+        return (1, "")
+    return (0, min(pegs))
+
+
 def group_atoms_by_beast(atoms: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
-    """Stable beast order (first-seen), same key as dashboard JS groupAtomsByBeast."""
+    """Group atoms by beast, then order groups by peg (case-insensitive).
+
+    Atoms inside one beast stay in sort_order.
+    """
     groups: list[dict[str, Any]] = []
     seen: dict[str, dict[str, Any]] = {}
     for a in atoms or []:
@@ -37,6 +63,15 @@ def group_atoms_by_beast(atoms: list[dict[str, Any]] | None) -> list[dict[str, A
             seen[key] = g
             groups.append(g)
         seen[key]["atoms"].append(a)
+    for g in groups:
+        g["atoms"].sort(key=_atom_sort_order)
+
+    def _group_key(group: dict[str, Any]) -> tuple[int, str, int]:
+        first = (group.get("atoms") or [{}])[0]
+        peg = _peg_fold(first.get("peg_code"))
+        return (0 if peg else 1, peg, _atom_sort_order(first))
+
+    groups.sort(key=_group_key)
     return groups
 
 

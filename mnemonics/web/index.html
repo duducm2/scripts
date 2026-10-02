@@ -1889,6 +1889,40 @@
         return embedKeywordMnemonics(formatConceptThoughtGroups(t), keywords);
       }
 
+      function pegFold(code) {
+        return String(code || "")
+          .trim()
+          .toLowerCase();
+      }
+
+      function comparePegThenSort(a, b) {
+        const pa = pegFold(a.peg_code);
+        const pb = pegFold(b.peg_code);
+        if (!pa && pb) return 1;
+        if (pa && !pb) return -1;
+        if (pa !== pb) return pa < pb ? -1 : 1;
+        return Number(a.sort_order || 0) - Number(b.sort_order || 0);
+      }
+
+      function earliestPalacePeg(palaceId) {
+        let best = "";
+        for (const b of beasts(palaceId)) {
+          const peg = pegFold(b.peg_code);
+          if (!peg) continue;
+          if (!best || peg < best) best = peg;
+        }
+        return best;
+      }
+
+      function comparePalacesByEarliestPeg(a, b) {
+        const pa = earliestPalacePeg(a.id);
+        const pb = earliestPalacePeg(b.id);
+        if (!pa && pb) return 1;
+        if (pa && !pb) return -1;
+        if (pa !== pb) return pa < pb ? -1 : 1;
+        return Number(a.palace_number || 0) - Number(b.palace_number || 0);
+      }
+
       function buildQuickRecallGroups() {
         let included = state.data?.quick_recall?.included_palace_ids || [];
         if (!included.length) {
@@ -1919,10 +1953,7 @@
           const pals = byStudy
             .get(sid)
             .slice()
-            .sort(
-              (a, b) =>
-                Number(b.palace_number || 0) - Number(a.palace_number || 0),
-            );
+            .sort((a, b) => comparePalacesByEarliestPeg(a, b));
           return {
             studyId: sid,
             title: (study && study.title) || sid,
@@ -2045,7 +2076,7 @@
               gap.setAttribute("aria-hidden", "true");
               bento.appendChild(gap);
             }
-            for (const b of beasts(p.id)) {
+            for (const b of beasts(p.id).slice().sort(comparePegThenSort)) {
               for (const a of atoms(b.id)) {
                 atomCount += 1;
                 const btn = document.createElement("button");

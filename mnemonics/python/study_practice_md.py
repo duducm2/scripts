@@ -11,7 +11,11 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import load_all, resolve_image, save_all, snapshot  # noqa: E402
-from palace_practice_render import md_escape, render_palace_section_md  # noqa: E402
+from palace_practice_render import (  # noqa: E402
+    earliest_palace_peg,
+    md_escape,
+    render_palace_section_md,
+)
 
 PRACTICE_PREFIX = "practice/images/"
 
@@ -127,19 +131,20 @@ def build_study_markdown(
         f"# {title}",
         "",
     ]
-    palaces = study_card.get("palaces") or []
+    palaces = list(study_card.get("palaces") or [])
     if not palaces:
         lines.append("_No Memory Palaces yet._")
         lines.append("")
         return "\n".join(lines)
 
-    for i, palace in enumerate(palaces):
+    palaces.sort(key=earliest_palace_peg)
+    for palace in palaces:
         pid = palace.get("id", "")
         lines.extend(
             render_palace_section_md(
                 palace,
                 image_md_paths.get(pid, ""),
-                open_default=(i == 0),
+                open_default=True,
                 gallery_md_paths=(gallery_md_paths or {}).get(pid, []),
             )
         )

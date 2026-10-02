@@ -76,6 +76,27 @@ def _sort_int(row: dict[str, str], key: str = "sort_order") -> int:
         return 0
 
 
+def _peg_fold(row: dict[str, str]) -> str:
+    return (row.get("peg_code") or "").strip().casefold()
+
+
+def _beast_peg_key(beast: dict[str, str]) -> tuple[int, str, int]:
+    peg = _peg_fold(beast)
+    return (0 if peg else 1, peg, _sort_int(beast))
+
+
+def _earliest_palace_peg(
+    palace_id: str,
+    beasts_by_palace: dict[str, list[dict[str, str]]],
+    palaces: dict[str, dict[str, str]],
+) -> tuple[int, str, int]:
+    pegs = [_peg_fold(b) for b in beasts_by_palace.get(palace_id, []) if _peg_fold(b)]
+    number = _palace_num(palaces.get(palace_id) or {})
+    if not pegs:
+        return (1, "", number)
+    return (0, min(pegs), number)
+
+
 def collapse_concept(raw: str | None) -> str:
     return _WS_RE.sub(
         " ", (raw or "").replace("\r\n", "\n").replace("\r", "\n")
@@ -110,7 +131,7 @@ def build_indexes(
             continue
         beasts_by_palace.setdefault(pid, []).append(b)
     for pid in beasts_by_palace:
-        beasts_by_palace[pid].sort(key=_sort_int)
+        beasts_by_palace[pid].sort(key=_beast_peg_key)
 
     atoms_by_beast: dict[str, list[dict[str, str]]] = {}
     for a in data["atoms"]:
@@ -250,8 +271,11 @@ def render_markdown(
 
     for sid in study_order:
         pids = by_study[sid]
-        # Within study: newest palace_number first
-        pids = sorted(pids, key=lambda x: _palace_num(palaces[x]), reverse=True)
+        # Within study: earliest peg first (Bt before Bu), palace number as tiebreak
+        pids = sorted(
+            pids,
+            key=lambda x: _earliest_palace_peg(x, beasts_by_palace, palaces),
+        )
         study = studies.get(sid) or {}
         title = (study.get("title") or sid).strip() or sid
         n_palaces = len(pids)
