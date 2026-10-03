@@ -332,9 +332,9 @@ ENT_0329,ENT_0037,Super Mario Bros. — Koji Kondo,,,0,1,https://upload.wikimedi
 ENT_0330,ENT_0037,Mega Man 2 — Takashi Tateishi,,,0,2,https://upload.wikimedia.org/wikipedia/en/b/be/Megaman2_box.jpg,
 ENT_0331,ENT_0037,Tetris — Hirokazu Tanaka,,,0,3,https://upload.wikimedia.org/wikipedia/en/d/d2/Tetris_%28Atari%29_cover.jpg,
 ENT_0332,ENT_0037,Street Fighter II — Yoko Shimomura / Isao Abe,,,0,4,https://upload.wikimedia.org/wikipedia/en/1/1d/SF2_JPN_flyer.jpg,
-ENT_0333,ENT_0037,Streets of Rage 2 — Yuzo Koshiro / Motohiro Kawashima,,,0,5,https://upload.wikimedia.org/wikipedia/en/2/26/Streets_of_Rage_2.jpg,
-ENT_0334,ENT_0037,Doom — Bobby Prince,,,0,6,https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg,
-ENT_0335,ENT_0037,EarthBound — Keiichi Suzuki / Hirokazu Tanaka,,,0,7,https://upload.wikimedia.org/wikipedia/en/1/1f/EarthBound_Box.jpg,
+ENT_0333,ENT_0037,Streets of Rage 2 — Yuzo Koshiro / Motohiro Kawashima,,,1,5,https://upload.wikimedia.org/wikipedia/en/2/26/Streets_of_Rage_2.jpg,10
+ENT_0334,ENT_0037,Doom — Bobby Prince,,,1,6,https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg,9
+ENT_0335,ENT_0037,EarthBound — Keiichi Suzuki / Hirokazu Tanaka,,,0,7,https://upload.wikimedia.org/wikipedia/en/1/1f/EarthBound_Box.jpg,10
 ENT_0336,ENT_0037,Final Fantasy VI — Nobuo Uematsu,,,0,8,https://upload.wikimedia.org/wikipedia/en/0/05/Final_Fantasy_VI.jpg,
 ENT_0337,ENT_0037,Sonic the Hedgehog 3 — Brad Buxer / Sega Sound Team,,,0,9,https://upload.wikimedia.org/wikipedia/en/0/07/Sonic3-box-us-225.jpg,
 ENT_0338,ENT_0037,Super Metroid — Kenji Yamamoto / Minako Hamano,,,0,10,https://upload.wikimedia.org/wikipedia/en/e/e4/Smetroidbox.jpg,
@@ -369,7 +369,7 @@ ENT_0366,ENT_0037,The Witcher 3: Wild Hunt — Marcin Przybyłowicz / Mikolai St
 ENT_0367,ENT_0037,Doom (2016) — Mick Gordon,,,0,39,https://upload.wikimedia.org/wikipedia/en/2/28/Doom_Cover.jpg,
 ENT_0368,ENT_0037,Persona 5 — Shoji Meguro,,,0,40,https://upload.wikimedia.org/wikipedia/en/b/b0/Persona_5_cover_art.jpg,
 ENT_0369,ENT_0037,Cuphead — Kristofer Maddigan,,,0,41,https://upload.wikimedia.org/wikipedia/commons/7/7a/The_Cuphead_Show%21_-_Logotype.png,
-ENT_0370,ENT_0037,Hollow Knight — Christopher Larkin,,,0,42,https://upload.wikimedia.org/wikipedia/en/d/de/Hollow_Knight_2026_cover_art.jpg,
+ENT_0370,ENT_0037,Hollow Knight — Christopher Larkin,,,1,42,https://upload.wikimedia.org/wikipedia/en/d/de/Hollow_Knight_2026_cover_art.jpg,10
 ENT_0371,ENT_0037,Nier: Automata — Keiichi Okabe / Keigo Hoashi,,,0,43,https://upload.wikimedia.org/wikipedia/en/2/21/Nier_Automata_cover_art.jpg,
 ENT_0372,ENT_0037,Celeste — Lena Raine,,,0,44,https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Celeste_box_art_full.png/500px-Celeste_box_art_full.png,
 ENT_0373,ENT_0037,God of War — Bear McCreary,,,0,45,https://upload.wikimedia.org/wikipedia/en/2/25/God_of_War_II_cover.jpg,

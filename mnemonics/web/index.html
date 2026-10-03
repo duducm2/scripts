@@ -729,7 +729,7 @@
           <label for="study">Study</label>
           <select id="study"></select>
         </div>
-        <button type="button" id="btnLatest" title="Latest palace (L)">
+        <button type="button" id="btnLatest" title="Latest palace (Shift+L)">
           Latest palace
         </button>
         <button
@@ -747,19 +747,19 @@
         >
           Practice
         </button>
-        <button type="button" id="btnPlans" title="Toggle plans (P)">
+        <button type="button" id="btnPlans" title="Toggle plans (Shift+P)">
           Plans
         </button>
-        <button type="button" id="btnImages" title="Images backlog (I)">
+        <button type="button" id="btnImages" title="Images backlog (Shift+I)">
           Images
         </button>
-        <button type="button" id="btnMethod" title="Method docs (M)">
+        <button type="button" id="btnMethod" title="Method docs (Shift+M)">
           Method
         </button>
         <button
           type="button"
           id="btnEntertainment"
-          title="Entertainment topics (E)"
+          title="Entertainment topics (Shift+E)"
         >
           Entertainment
         </button>
@@ -776,9 +776,13 @@
     </header>
     <div id="searchResults" aria-live="polite"></div>
     <div class="app-more" id="appMore">
-      <button type="button" data-view="browse">Browse</button>
+      <button type="button" data-view="browse" title="Browse (Shift+B)">
+        Browse
+      </button>
       <button type="button" data-view="links">Links</button>
-      <button type="button" data-view="help">Help</button>
+      <button type="button" data-view="help" title="Help (Shift+H)">
+        Help
+      </button>
     </div>
 
     <main id="practicePanel"></main>
@@ -931,9 +935,9 @@
           <button
             type="button"
             id="btnToggleAtomDetails"
-            title="Show or hide Quote (D)"
+            title="Show or hide Quote (Shift+D)"
           >
-            Details (D)
+            Details (Shift+D)
           </button>
           <button
             type="button"
@@ -1091,6 +1095,8 @@
           collapsed: new Set(),
           collapseSeeded: false,
           draft: null,
+          jumpPrefix: "",
+          jumpAt: 0,
         },
         overlayPalaceId: "",
         pendingHeroPalaceId: "",
@@ -4493,7 +4499,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -4811,6 +4817,47 @@
         if (el) el.scrollIntoView({ block: "nearest" });
       }
 
+      function entJumpTitle(title) {
+        return String(title || "")
+          .trim()
+          .toLowerCase()
+          .replace(/^(the|a|an)\s+/, "");
+      }
+
+      function entJumpLetter(key) {
+        const vis = entVisible();
+        if (!vis.length) return;
+        const letter = String(key || "").toLowerCase();
+        const now = Date.now();
+        const ent = state.entertainment;
+        let prefix = letter;
+        if (ent.jumpPrefix && now - ent.jumpAt < 700) {
+          const grown = ent.jumpPrefix + letter;
+          const grownHit = vis.some((v) =>
+            entJumpTitle(v.node.title).startsWith(grown),
+          );
+          prefix = grownHit ? grown : letter;
+        }
+        ent.jumpPrefix = prefix;
+        ent.jumpAt = now;
+        const matches = [];
+        vis.forEach((v, i) => {
+          if (entJumpTitle(v.node.title).startsWith(prefix)) matches.push(i);
+        });
+        if (!matches.length) return;
+        const idx = vis.findIndex((v) => v.node.id === ent.selectedId);
+        const currentMatches =
+          prefix.length > 1 &&
+          idx >= 0 &&
+          entJumpTitle(vis[idx].node.title).startsWith(prefix);
+        if (currentMatches) {
+          entSelect(vis[idx].node.id);
+          return;
+        }
+        const next = matches.find((i) => i > idx);
+        entSelect(vis[next == null ? matches[0] : next].node.id);
+      }
+
       function entMove(dir) {
         const vis = entVisible();
         if (!vis.length) return;
@@ -5119,7 +5166,7 @@
         let html = `<div class="ent-toolbar">
           <div>
             <h2>Entertainment</h2>
-            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. Click a title to mark it watched. Click a number to score it from 1 to 10. Ctrl+C copies the title. E returns to Practice.</p>
+            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. A letter jumps to a visible title. Click a title to mark it watched. Click a number to score it from 1 to 10. Ctrl+C copies the title. Shift+E returns to Practice.</p>
           </div>
           <button type="button" class="spa-btn" id="entAddTopic">Add topic</button>
         </div>`;
@@ -5309,6 +5356,18 @@
               .catch(() => toast("Copy failed"));
             return;
           }
+          if (
+            e.key.length === 1 &&
+            /^[a-z]$/i.test(e.key) &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+          ) {
+            e.preventDefault();
+            entJumpLetter(e.key);
+            return;
+          }
         }
         if (
           e.shiftKey &&
@@ -5355,6 +5414,7 @@
           }
           if (
             (e.key === "d" || e.key === "D") &&
+            e.shiftKey &&
             !e.ctrlKey &&
             !e.metaKey &&
             !e.altKey
@@ -5422,12 +5482,20 @@
           }
           return;
         }
-        if (e.key === "b" || e.key === "B") {
+        if (
+          (e.key === "b" || e.key === "B") &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
           withFullData(() => setView("browse"));
           return;
         }
         if (
           (e.key === "p" || e.key === "P") &&
+          e.shiftKey &&
           !e.ctrlKey &&
           !e.metaKey &&
           !e.altKey
@@ -5438,10 +5506,10 @@
         }
         if (
           (e.key === "e" || e.key === "E") &&
+          e.shiftKey &&
           !e.ctrlKey &&
           !e.metaKey &&
-          !e.altKey &&
-          !e.shiftKey
+          !e.altKey
         ) {
           e.preventDefault();
           toggleEntertainment();
@@ -5449,6 +5517,7 @@
         }
         if (
           (e.key === "i" || e.key === "I") &&
+          e.shiftKey &&
           !e.ctrlKey &&
           !e.metaKey &&
           !e.altKey
@@ -5459,6 +5528,7 @@
         }
         if (
           (e.key === "l" || e.key === "L") &&
+          e.shiftKey &&
           !e.ctrlKey &&
           !e.metaKey &&
           !e.altKey
@@ -5467,11 +5537,25 @@
           goLatestPalaceShortcut();
           return;
         }
-        if (e.key === "m" || e.key === "M") {
+        if (
+          (e.key === "m" || e.key === "M") &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
           withFullData(() => setView("method"));
           return;
         }
-        if (e.key === "h" || e.key === "H") {
+        if (
+          (e.key === "h" || e.key === "H") &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
           withFullData(() => setView("help"));
           return;
         }
