@@ -451,8 +451,12 @@ Chrome_ClickRestorePagesCancel() {
             clicked := true
         }
     }
-    if !clicked
+    if !clicked {
         ShowCenteredOverlay_Utils("Restore pages Cancel could not be clicked", 1600, BANNER_ACCENT_ERROR)
+        return
+    }
+    Sleep 1000
+    Send "^w"
 }
 
 #HotIf
