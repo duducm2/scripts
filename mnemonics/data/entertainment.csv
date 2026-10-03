@@ -334,7 +334,7 @@ ENT_0331,ENT_0037,Tetris — Hirokazu Tanaka,,,0,3,https://upload.wikimedia.org/
 ENT_0332,ENT_0037,Street Fighter II — Yoko Shimomura / Isao Abe,,,0,4,https://upload.wikimedia.org/wikipedia/en/1/1d/SF2_JPN_flyer.jpg,
 ENT_0333,ENT_0037,Streets of Rage 2 — Yuzo Koshiro / Motohiro Kawashima,,,1,5,https://upload.wikimedia.org/wikipedia/en/2/26/Streets_of_Rage_2.jpg,10
 ENT_0334,ENT_0037,Doom — Bobby Prince,,,1,6,https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg,9
-ENT_0335,ENT_0037,EarthBound — Keiichi Suzuki / Hirokazu Tanaka,,,0,7,https://upload.wikimedia.org/wikipedia/en/1/1f/EarthBound_Box.jpg,10
+ENT_0335,ENT_0037,EarthBound — Keiichi Suzuki / Hirokazu Tanaka,,,1,7,https://upload.wikimedia.org/wikipedia/en/1/1f/EarthBound_Box.jpg,10
 ENT_0336,ENT_0037,Final Fantasy VI — Nobuo Uematsu,,,0,8,https://upload.wikimedia.org/wikipedia/en/0/05/Final_Fantasy_VI.jpg,
 ENT_0337,ENT_0037,Sonic the Hedgehog 3 — Brad Buxer / Sega Sound Team,,,0,9,https://upload.wikimedia.org/wikipedia/en/0/07/Sonic3-box-us-225.jpg,
 ENT_0338,ENT_0037,Super Metroid — Kenji Yamamoto / Minako Hamano,,,0,10,https://upload.wikimedia.org/wikipedia/en/e/e4/Smetroidbox.jpg,
@@ -525,8 +525,8 @@ ENT_0522,ENT_0008,Ten (2002),,,0,98,https://upload.wikimedia.org/wikipedia/en/1/
 ENT_0523,ENT_0008,The Gleaners and I (2000),,,0,99,https://upload.wikimedia.org/wikipedia/en/7/74/Les_glaneurs_et_la_glaneuse_%28film%29.jpg,
 ENT_0524,ENT_0008,Toni Erdmann (2016),,,0,100,https://upload.wikimedia.org/wikipedia/en/7/78/Toni_Erdmann.png,
 ENT_0525,ENT_0034,100 Best Albums,https://100best.music.apple.com/us,,0,1,,
-ENT_0526,ENT_0525,The Miseducation of Lauryn Hill — Lauryn Hill (1998),,,0,1,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/6b/55/096b55c4-ee8f-23bd-df8f-0ca0821f3028/886446727189.jpg/600x600bb.jpg,
-ENT_0527,ENT_0525,Thriller — Michael Jackson (1982),,,0,2,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg,
+ENT_0526,ENT_0525,The Miseducation of Lauryn Hill — Lauryn Hill (1998),,,1,1,https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/6b/55/096b55c4-ee8f-23bd-df8f-0ca0821f3028/886446727189.jpg/600x600bb.jpg,8
+ENT_0527,ENT_0525,Thriller — Michael Jackson (1982),,,1,2,https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg,10
 ENT_0528,ENT_0525,Abbey Road — The Beatles (1969),,,0,3,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/48/53/43/485343e3-dd6a-0034-faec-f4b6403f8108/13UMGIM63890.rgb.jpg/600x600bb.jpg,
 ENT_0529,ENT_0525,Purple Rain — Prince and the Revolution (1984),,,0,4,https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/00/17/f2/0017f24f-e580-b77a-71a8-1bc7b75881bf/603497822065.jpg/600x600bb.jpg,
 ENT_0530,ENT_0525,Blonde — Frank Ocean (2016),,,0,5,https://upload.wikimedia.org/wikipedia/en/a/a0/Blonde_-_Frank_Ocean.jpeg,

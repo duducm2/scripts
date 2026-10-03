@@ -799,7 +799,9 @@
       <button type="button" data-view="browse" title="Browse (Shift+B)">
         Browse
       </button>
-      <button type="button" data-view="links">Links</button>
+      <button type="button" data-view="links" title="Links (Shift+1)">
+        Links
+      </button>
       <button type="button" data-view="help" title="Help (Shift+H)">
         Help
       </button>
@@ -4483,7 +4485,7 @@
 
       function renderLinks(root) {
         root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0;color:var(--gold)">Study links</h2>
-          <p class="sub" style="color:var(--muted);margin:0 0 12px;font-size:13px">Shift+V/A/F open · Alt+V/A/F save from clipboard (AHK; including Quick Recall). Set buttons use clipboard too. Links [1].</p>
+          <p class="sub" style="color:var(--muted);margin:0 0 12px;font-size:13px">Shift+V/A/F open · Alt+V/A/F save from clipboard (AHK; including Quick Recall). Set buttons use clipboard too. Links [Shift+1].</p>
           <div class="spa-row">
             <button class="spa-btn" data-k="video" data-a="open">Open video</button>
             <button class="spa-btn" data-k="video" data-a="set">Set video (clipboard)</button>
@@ -4519,7 +4521,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -4976,9 +4978,11 @@
       }
 
       async function entSetScore(node, score) {
+        const body = { id: node.id, score: score || "" };
+        if (score) body.done = "1";
         const r = await api("/api/entertainment", {
           method: "POST",
-          body: JSON.stringify({ id: node.id, score: score || "" }),
+          body: JSON.stringify(body),
         });
         if (r?.row) mergeApiRow("entertainment", r.row);
         renderEntertainment();
@@ -5186,7 +5190,7 @@
         let html = `<div class="ent-toolbar">
           <div>
             <h2>Entertainment</h2>
-            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. A letter jumps to a visible title. Click a title to mark it watched. Click a number to score it from 1 to 10. Ctrl+C copies the title. Shift+E returns to Practice.</p>
+            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. A letter jumps to a visible title. Click a title to mark it watched. Click a number to score it from 1 to 10 and mark it watched. Ctrl+C copies the title. Shift+E returns to Practice.</p>
           </div>
           <button type="button" class="spa-btn" id="entAddTopic">Add topic</button>
         </div>`;
@@ -5220,12 +5224,23 @@
           .querySelectorAll(".ent-tile[data-id], .ent-item[data-id]")
           .forEach((el) => {
             el.onclick = (e) => {
-              if (e.target.closest("a, button, input, textarea, label")) return;
+              if (
+                e.target.closest(
+                  "a, button, input, textarea, label, .ent-score",
+                )
+              )
+                return;
               if (e.target.closest("[data-id]") !== el) return;
               if (el.classList.contains("ent-item")) {
                 const node = entNodes().find((n) => n.id === el.dataset.id);
                 if (!node) return;
                 state.entertainment.selectedId = node.id;
+                if (
+                  !e.target.closest(".ent-title, .ent-cover, .ent-cover-wrap")
+                ) {
+                  renderEntertainment();
+                  return;
+                }
                 entSetDone(node, node.done !== "1").catch((err) => {
                   toast(String(err.message || err));
                   renderEntertainment();
@@ -5236,6 +5251,9 @@
               renderEntertainment();
             };
           });
+        root.querySelectorAll(".ent-score").forEach((box) => {
+          box.onclick = (e) => e.stopPropagation();
+        });
         root.querySelectorAll("[data-score]").forEach((btn) => {
           btn.onclick = (e) => {
             e.stopPropagation();
@@ -5579,7 +5597,14 @@
           withFullData(() => setView("help"));
           return;
         }
-        if (e.key === "1") {
+        if (
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          (e.code === "Digit1" || e.code === "Numpad1")
+        ) {
+          e.preventDefault();
           withFullData(() => setView("links"));
           return;
         }

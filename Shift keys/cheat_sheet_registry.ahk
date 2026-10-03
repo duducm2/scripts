@@ -1157,7 +1157,7 @@ cheatSheets["Memory Palace"] := "
     🆕 [Shift+L] Open latest palace for the selected study
     📖 [Shift+M] Method
     🗂 [Shift+B] Browse
-    🔗 [1] Links (study video / article / favorite)
+    🔗 [Shift+1] Links (study video / article / favorite)
     ❓ [Shift+H] Help (glossary · Practice / Plans GitHub)
     
     === Study picker (first open) ===
@@ -1192,7 +1192,7 @@ cheatSheets["Memory Palace"] := "
     ⬆️⬇️ [↑] [↓] Move through visible rows
     🔤 Type a letter to jump to the next visible title (The / A / An are skipped; keep typing to narrow)
     🖱 Click a title to mark it watched, click again to clear it
-    🔢 Click 1–10 to score a title; click the same number to clear it
+    🔢 Click 1–10 to score a title and mark it watched; click the same number to clear the score
     📋 [Ctrl+C] Copy the selected title
     ➕ Add topic / Add inside / Edit / Delete on the selected row
     🏠 [Esc] Cancel an edit, or return to Practice
@@ -1521,9 +1521,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Shift+L] > Latest palace (selected study)
     [Shift+M] > Method
     [Shift+B] > Browse
-    [1] > Links
+    [Shift+1] > Links
     [Shift+H] > Help (glossary · Practice / Plans GitHub)
-    Entertainment: type a letter to jump to the next visible title (The / A / An skipped; keep typing to narrow) · Ctrl+C copies the title · click 1–10 to score
+    Entertainment: type a letter to jump to the next visible title (The / A / An skipped; keep typing to narrow) · Ctrl+C copies the title · click 1–10 to score and mark watched
     Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
     Practice grid: [Ctrl+Click] toggle selection (does not open) · [Delete] delete selected palace(s)
     Story Reduction: [Shift+R] toggle (Practice overview or palace overlay) · drag beasts to Delete/Merge (max 4/group) · Generate Prompt (context + filled prompt)
