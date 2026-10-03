@@ -20,7 +20,7 @@
 
 - [ ] data bricks project
 
-## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
+## Phase 1: Advanced Tabular Modeling and Automation
 
 ### 1. Interface and Navigation
 
@@ -38,7 +38,6 @@
 - [✅] Master XLOOKUP with correct lookup-array vs return-array order
 - [✅] Build INDEX/MATCH lookups for flexible retrieval
 - [✅] Write nested IF / logical operators for conditional modeling
-- [✅] Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array
 
 **🔗 Resources:**
 
@@ -51,7 +50,7 @@
 - [✅] Build Pivot Tables from transactional rows into high-level metrics
 - [✅] Compute percentage distributions and relative shares in pivots
 - [✅] Apply dynamic number formatting for stakeholder-ready summaries
-- [✅] Practice dragging fields into Rows, Columns, and Values as physical pivot rotation
+- [✅] Place fields in Rows, Columns, and Values and check how each area changes the pivot
 
 **🔗 Resources:**
 
@@ -74,21 +73,20 @@
 ### 5. Capstone Synthesis
 
 - [✅] Complete an end-to-end tabular analysis on a real-world dataset in Excel
-- [✅] Produce a cleaned report ready for review (Atrium Display Board equivalent)
-- [✅] Pin final cleaned Excel output as a stakeholder-facing summary board
+- [✅] Produce a cleaned report ready for review
+- [✅] Save the final cleaned Excel workbook as a stakeholder-facing summary
 
 **🔗 Resources:**
 
 - 🔗 [Luke Barousse: Excel for Data Analytics (Course Page)](https://www.lukebarousse.com/courses)
 
-## Phase 2: Relational Database Extraction and Querying (Subterranean Archive)
+## Phase 2: Relational Database Extraction and Querying
 
 ### 1. Database Architecture
 
 - [✅] Install and configure PostgreSQL (or practice MySQL) locally
 - [✅] Understand schemas, tables, and primary/foreign key relationships
 - [✅] Write SELECT, FROM, and WHERE queries to extract and filter rows
-- [✅] Map SELECT/FROM/WHERE to flashlight, aisle, and iron gate loci before coding
 
 **🔗 Resources:**
 
@@ -101,7 +99,6 @@
 
 - [✅] Aggregate with GROUP BY and filter groups with HAVING
 - [✅] Apply SUM, AVG, COUNT, MIN, and MAX correctly
-- [✅] Visualize GROUP BY as a binding machine that stamps totals on bundled books
 
 **🔗 Resources:**
 
@@ -112,7 +109,7 @@
 - [✅] Write INNER JOIN queries across related tables
 - [✅] Write LEFT JOIN queries and interpret NULL placeholders for non-matches
 - [✅] Use OUTER JOIN patterns and table aliases for readable multi-table SQL
-- [✅] Contrast INNER (narrow bridge) vs LEFT JOIN (ghost NULL placeholders) on practice tables
+- [✅] Contrast INNER JOIN and LEFT JOIN, including unmatched rows returned as NULL
 
 **🔗 Resources:**
 
@@ -122,8 +119,8 @@
 ### 4. Query Modularity
 
 - [✅] Refactor nested subqueries into readable Common Table Expressions (CTEs)
-- [✅] Format long queries to avoid monolithic bad-smell structures
-- [✅] Treat hundred-line nested queries as architectural bad smells; extract CTE desks
+- [✅] Format long queries so each clause stays readable
+- [✅] Replace a long nested query with named Common Table Expressions
 
 **🔗 Resources:**
 
@@ -151,7 +148,7 @@
 
 - ▶ [Data Analyst Portfolio Project | SQL Data Exploration | Project 1/4](https://www.youtube.com/watch?v=qfyynHBFOsM)
 
-## Phase 3: Business Intelligence and Dimensional Visualization (Grand Exhibition Hall)
+## Phase 3: Business Intelligence and Dimensional Visualization
 
 ### 1. Interface and Data Ingestion
 
@@ -168,7 +165,7 @@
 
 - [✅] Transform datasets in Power BI Power Query (types, splits, merges)
 - [✅] Handle API or external source integrations when needed
-- [✅] Reuse Phase 1 Power Query skills at the gallery loading dock (same ETL engine)
+- [✅] Reuse Phase 1 Power Query skills in Power BI, which uses the same engine
 
 **🔗 Resources:**
 
@@ -176,9 +173,9 @@
 
 ### 3. Dimensional Modeling
 
-- [ ] Construct a Star Schema with a central Fact table and Dimension tables
-- [ ] Manage 1-to-Many cardinality and active vs inactive relationships
-- [ ] Model Fact as central sculpture and Dimensions as filter spotlights on the walls
+- [✅] Construct a Star Schema with a central Fact table and Dimension tables
+- [✅] Manage 1-to-Many cardinality and active vs inactive relationships
+- [✅] Relate each dimension to the fact table so filters flow through one active relationship
 
 **🔗 Resources:**
 
@@ -187,10 +184,10 @@
 
 ### 4. DAX and Evaluation Context
 
-- [ ] Distinguish Row Context (magnifying glass) vs Filter Context (tarp)
+- [ ] Distinguish row context from filter context in DAX
 - [ ] Master CALCULATE, FILTER, and iterator functions like SUMX
 - [ ] Build Time Intelligence measures with DATEADD and related functions
-- [ ] Use CALCULATE as a remote control that reshapes the Filter Context tarp
+- [ ] Use CALCULATE to change the filter context of a measure
 
 **🔗 Resources:**
 
@@ -211,13 +208,13 @@
 - ▶ [Power BI Full Course Tutorial (8+ Hours)](https://www.youtube.com/watch?v=e6QD8lP-m6E)
 - 🔗 [Visualization types in Power BI (Microsoft Learn)](https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-types-for-reports-and-q-and-a)
 
-## Phase 4: Programmatic Manipulation and Advanced Transformation (Chemical Engineering Laboratory)
+## Phase 4: Programmatic Manipulation and Advanced Transformation
 
 ### 1. Environment Setup
 
 - [ ] Install Anaconda and open Jupyter Notebooks
 - [ ] Import pandas and numpy in a clean analysis environment
-- [ ] Calibrate a sterile notebook workflow: one environment, reproducible imports
+- [ ] Use one notebook environment and declare imports at the top
 
 **🔗 Resources:**
 
@@ -226,7 +223,7 @@
 
 ### 2. Data Structures
 
-- [ ] Understand DataFrames as collections of Series (vats vs test tubes)
+- [ ] Understand a DataFrame as a collection of Series
 - [ ] Index, select, filter, and sort DataFrame columns and rows
 - [ ] Practice slicing and boolean filtering without mutating source frames carelessly
 
@@ -240,7 +237,7 @@
 
 - [ ] Profile datasets with .info(), .describe(), and .isnull().sum()
 - [ ] Interpret mean, std, and percentiles from statistical summaries
-- [ ] Run litmus diagnostics immediately on every new dataset before deep wrangling
+- [ ] Check dtypes, missing values, and row counts before transforming a new dataset
 
 **🔗 Resources:**
 
@@ -250,7 +247,7 @@
 ### 4. Vectorization and Aggregation
 
 - [ ] Replace iterative for-loops with vectorized column operations
-- [ ] Aggregate with groupby() (centrifuge) and combine tables with merge()
+- [ ] Aggregate with groupby() and combine tables with merge()
 - [ ] Refuse row-wise Python loops for column transforms; prefer vectorized arrays
 
 **🔗 Resources:**
@@ -269,13 +266,13 @@
 - ▶ [Data Analyst Portfolio Project | Correlation in Python](https://www.youtube.com/watch?v=iPYVYBtUTyE)
 - 📄 [seaborn tutorial (official)](https://seaborn.pydata.org/tutorial.html)
 
-## Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium)
+## Phase 5: Synthesis, Storytelling, and Portfolio Development
 
 ### 1. Audience Empathy and Context
 
 - [ ] Map stakeholder personas: Executive, Operations Manager, Marketing Lead
 - [ ] Build a narrative arc that ends on actionable insight, not exploration process
-- [ ] Tailor pitch length and grain to Executive vs Operations vs Marketing seats
+- [ ] Tailor pitch length and detail to Executive, Operations, and Marketing audiences
 
 **🔗 Resources:**
 

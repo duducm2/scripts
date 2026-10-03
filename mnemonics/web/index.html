@@ -1130,6 +1130,11 @@
         },
         notesTimer: null,
         planCheckSnapshot: null,
+        plansScroll: null,
+        plansScrollRestorePending: false,
+        plansRenderGen: 0,
+        plansViewSig: "",
+        plansViewStudyId: "",
         studyPickerPending: true,
         methodLoaded: false,
         methodCanon: null,
@@ -1914,6 +1919,8 @@
         setTimeout(() => ensureStudyModalKeyboardFocus(true), 600);
       }
 
+      let qrHoldScroll = false;
+
       function ensureStudyModalKeyboardFocus(force = false) {
         if (!studyModalIsOpen()) return;
         const modal = document.getElementById("studyModal");
@@ -1927,6 +1934,21 @@
         );
         // Early focus while translucent can leave a stale DOM focus without keyboard.
         if (!force && aeInModal && pageHasFocus) return;
+        const focusedQr =
+          ae && ae.classList && ae.classList.contains("qr-line") ? ae : null;
+        const selected = document.querySelector(
+          "#quickRecallList .qr-line.selected",
+        );
+        const keep = focusedQr || selected;
+        // Returning to the window must not jump Quick Recall back to the first line.
+        if (keep) {
+          if (!(aeInModal && pageHasFocus)) {
+            qrHoldScroll = true;
+            keep.focus({ preventScroll: true });
+            qrHoldScroll = false;
+          }
+          return;
+        }
         const firstQr = document.querySelector("#quickRecallList .qr-line");
         const firstStudy = document.querySelector("#studyModalList button");
         if (firstQr) selectQuickRecallLine(firstQr);
@@ -2099,6 +2121,10 @@
       function renderQuickRecall() {
         const host = document.getElementById("quickRecallList");
         if (!host) return;
+        const prevTop = host.scrollTop;
+        const prevBtn = host.querySelector(".qr-line.selected");
+        const prevPalace = prevBtn?.dataset.palaceId || "";
+        const prevAtom = prevBtn?.dataset.atomId || "";
         host.innerHTML = "";
         const groups = buildQuickRecallGroups();
         let atomCount = 0;
@@ -2163,7 +2189,9 @@
                 btn.addEventListener("click", () =>
                   pickQuickRecallPalace(p.id),
                 );
-                btn.addEventListener("focus", () => selectQuickRecallLine(btn));
+                btn.addEventListener("focus", () =>
+                  selectQuickRecallLine(btn, { scroll: !qrHoldScroll }),
+                );
                 bento.appendChild(btn);
               }
             }
@@ -2176,19 +2204,40 @@
           const nPal = groups.reduce((n, g) => n + g.palaces.length, 0);
           hint.textContent = `${atomCount} atom${atomCount === 1 ? "" : "s"} · ${nPal} palace${nPal === 1 ? "" : "s"} · arrows move · Enter opens palace`;
         }
+        host.scrollTop = prevTop;
+        if (!prevPalace && !prevAtom) return;
+        const again = [...host.querySelectorAll(".qr-line")].find(
+          (el) =>
+            (el.dataset.palaceId || "") === prevPalace &&
+            (el.dataset.atomId || "") === prevAtom,
+        );
+        if (!again) {
+          requestAnimationFrame(() => {
+            host.scrollTop = prevTop;
+          });
+          return;
+        }
+        qrHoldScroll = true;
+        selectQuickRecallLine(again, { scroll: false });
+        host.scrollTop = prevTop;
+        qrHoldScroll = false;
+        requestAnimationFrame(() => {
+          host.scrollTop = prevTop;
+        });
       }
 
       function quickRecallButtons() {
         return [...document.querySelectorAll("#quickRecallList .qr-line")];
       }
 
-      function selectQuickRecallLine(btn) {
+      function selectQuickRecallLine(btn, { scroll = true } = {}) {
         if (!btn) return;
         quickRecallButtons().forEach((el) => {
           el.classList.toggle("selected", el === btn);
         });
         if (document.activeElement !== btn) btn.focus({ preventScroll: true });
-        btn.scrollIntoView({ block: "nearest", inline: "nearest" });
+        if (scroll && !qrHoldScroll)
+          btn.scrollIntoView({ block: "nearest", inline: "nearest" });
       }
 
       async function pickQuickRecallPalace(palaceId) {
@@ -2452,6 +2501,9 @@
       function setView(v) {
         if (v !== "images") closeImagesFs();
         if (v !== "practice") clearPalaceSelection();
+        if (state.view === "plans" && v !== "plans") snapshotPlansScroll();
+        if (v === "plans" && state.view !== "plans")
+          state.plansScrollRestorePending = true;
         state.view = v;
         setChromeActive();
         showPanel(v);
@@ -3576,11 +3628,88 @@
         return html;
       }
 
+      const PLANS_STORAGE_KEY = "mnemonics_plans_v1";
+      let plansScrollApplyGen = 0;
+      let planCheckMemory = null;
+
+      function loadPlanCheckStore() {
+        if (planCheckMemory) return planCheckMemory;
+        try {
+          const raw = localStorage.getItem(PLANS_STORAGE_KEY);
+          const data = raw ? JSON.parse(raw) : {};
+          planCheckMemory =
+            data && typeof data === "object" && !Array.isArray(data) ? data : {};
+        } catch {
+          planCheckMemory = {};
+        }
+        return planCheckMemory;
+      }
+
+      function savePlanCheckStore(data) {
+        try {
+          localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(data));
+        } catch {
+          /* ignore quota */
+        }
+      }
+
+      function planTodoChecked(todo) {
+        const store = loadPlanCheckStore();
+        if (todo && Object.prototype.hasOwnProperty.call(store, todo.id))
+          return !!store[todo.id];
+        return !!todo?.checked;
+      }
+
+      function setPlanTodoChecked(todoId, checked) {
+        if (!todoId) return;
+        const store = loadPlanCheckStore();
+        store[todoId] = !!checked;
+        savePlanCheckStore(store);
+      }
+
+      function clearPlanCheckOverrides(ids) {
+        const store = loadPlanCheckStore();
+        let changed = false;
+        (ids || []).forEach((id) => {
+          if (id && Object.prototype.hasOwnProperty.call(store, id)) {
+            delete store[id];
+            changed = true;
+          }
+        });
+        if (changed) savePlanCheckStore(store);
+      }
+
+      function snapshotPlansScroll() {
+        if (state.view !== "plans") return;
+        const toc = document.getElementById("plansTocList");
+        state.plansScroll = {
+          studyId: state.studyId,
+          y: window.scrollY || document.documentElement.scrollTop || 0,
+          toc: toc ? toc.scrollTop : 0,
+        };
+      }
+
+      function restorePlansScroll() {
+        const snap = state.plansScroll;
+        if (!snap || snap.studyId !== state.studyId) return;
+        const gen = ++plansScrollApplyGen;
+        const y = snap.y || 0;
+        const tocY = snap.toc || 0;
+        const apply = () => {
+          if (gen !== plansScrollApplyGen || state.view !== "plans") return;
+          window.scrollTo(0, y);
+          const toc = document.getElementById("plansTocList");
+          if (toc) toc.scrollTop = tocY;
+        };
+        apply();
+        requestAnimationFrame(apply);
+      }
+
       function renderPlanTodos(todos, { backlog = false } = {}) {
         if (!todos || !todos.length) return backlog ? "" : "";
         const rows = todos
           .map((t) => {
-            const checked = !!t.checked;
+            const checked = planTodoChecked(t);
             const doneCls = checked ? " done" : "";
             let row =
               `<li class="plan-todo${doneCls}">` +
@@ -3665,30 +3794,43 @@
       }
 
       async function renderPlans() {
+        const gen = ++state.plansRenderGen;
         const sid = state.studyId;
         const st = studyById(sid);
         const empty = document.getElementById("plansEmpty");
         const content = document.getElementById("plansContent");
         document.getElementById("plansTitle").textContent = "Study Plan";
         document.getElementById("plansSub").textContent = st ? st.title : sid;
-        setPlansSaveStatus("", "");
         if (!sid) {
           empty.classList.remove("hidden");
           content.innerHTML = "";
           renderPlansToc(null);
           updatePlansProgressFromPlan(null);
+          state.plansViewSig = "";
+          state.plansViewStudyId = "";
+          setPlansSaveStatus("", "");
           return;
         }
-        content.innerHTML = '<p class="muted">Loading plan…</p>';
+        if (state.plansScrollRestorePending) {
+          restorePlansScroll();
+          state.plansScrollRestorePending = false;
+        }
+        const hadPlan = !!content.querySelector(".plans-backlog, .plan-section");
+        const sameStudy = state.plansViewStudyId === sid;
+        if (!hadPlan || !sameStudy) setPlansSaveStatus("", "");
+        if (!hadPlan)
+          content.innerHTML = '<p class="muted">Loading plan…</p>';
         let view;
         try {
           view = await api(
             "/api/plans/view?study_id=" + encodeURIComponent(sid),
           );
         } catch (e) {
+          if (gen !== state.plansRenderGen || state.studyId !== sid) return;
           content.innerHTML = `<p class="plans-save-status err">${esc(String(e.message || e))}</p>`;
           return;
         }
+        if (gen !== state.plansRenderGen || state.studyId !== sid) return;
         if (view.github_url)
           document.getElementById("plansGithub").href = view.github_url;
         const plan = view.plan;
@@ -3698,8 +3840,12 @@
           content.innerHTML = "";
           renderPlansToc(null);
           updatePlansProgressFromPlan(null);
+          state.plansViewSig = "";
+          state.plansViewStudyId = "";
           return;
         }
+        const sig = JSON.stringify(plan);
+        if (hadPlan && sameStudy && state.plansViewSig === sig) return;
         empty.classList.add("hidden");
         document.getElementById("plansTitle").textContent =
           plan.title || "Study Plan";
@@ -3709,6 +3855,10 @@
           id: t.id,
           checked: !!t.checked,
         }));
+        if (sameStudy) snapshotPlansScroll();
+        else state.plansScroll = { studyId: sid, y: 0, toc: 0 };
+        state.plansViewSig = sig;
+        state.plansViewStudyId = sid;
 
         const backlog = plan.backlog || [];
         let html =
@@ -3725,12 +3875,15 @@
         });
         content.innerHTML = html;
         renderPlansToc(plan);
+        restorePlansScroll();
         updatePlansProgressFromPlan(plan);
 
         content
           .querySelectorAll('input[type="checkbox"][data-todo-id]')
           .forEach((box) => {
             box.addEventListener("change", () => {
+              const id = box.dataset.todoId || box.dataset.iid;
+              setPlanTodoChecked(id, box.checked);
               box.closest(".plan-todo")?.classList.toggle("done", box.checked);
               updatePlansProgressFromPlan(plan);
             });
@@ -3924,6 +4077,7 @@
 
       function resetPlanCheckboxes() {
         if (!state.planCheckSnapshot) return;
+        clearPlanCheckOverrides(state.planCheckSnapshot.map((x) => x.id));
         const map = Object.fromEntries(
           state.planCheckSnapshot.map((x) => [x.id, x.checked]),
         );
