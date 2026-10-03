@@ -54,6 +54,9 @@
     }
     A_Clipboard := oldClip
 
+    if (AiCompanion_FinishConfirmedSubmit(hwnd, "chatgpt", hwnd))
+        return
+
     Send "!{Tab}"
     WaitForButtonAndShowSmallLoading_ChatGPT(["Stop streaming", "Interromper transmissão"], "Waiting for response...")
 }
@@ -85,6 +88,8 @@ SubmitChatGPTMessage() {
     SendEscape()
     Sleep 100
     if (!AiCompanion_SendAndConfirm(hwnd, "chatgpt", (*) => Send("{Enter}")))
+        return
+    if (AiCompanion_FinishConfirmedSubmit(hwnd, "chatgpt", hwnd))
         return
     Send "!{Tab}"
     Sleep 300

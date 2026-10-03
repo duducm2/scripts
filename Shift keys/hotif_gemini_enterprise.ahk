@@ -117,9 +117,7 @@ $Enter:: {
     }
     hwnd := WinExist("A")
     if (AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd))) {
-        if (AiCompanion_TakeCatalogSendClick())
-            AiCompanion_ArmResponseWatch(hwnd, "enterprise")
-        else
+        if (!AiCompanion_FinishConfirmedSubmit(hwnd, "enterprise", hwnd))
             SetTimer(() => GeminiEnterprise_WaitForGenerationComplete(300000), -1)
     } else {
         AiCompanion_TakeCatalogSendClick()
@@ -129,9 +127,7 @@ $Enter:: {
 $^Enter:: {
     hwnd := WinExist("A")
     if (AiCompanion_SendAndConfirm(hwnd, "enterprise", (*) => GeminiEnterprise_SubmitComposer(hwnd))) {
-        if (AiCompanion_TakeCatalogSendClick())
-            AiCompanion_ArmResponseWatch(hwnd, "enterprise")
-        else
+        if (!AiCompanion_FinishConfirmedSubmit(hwnd, "enterprise", hwnd))
             SetTimer(() => GeminiEnterprise_WaitForGenerationComplete(300000), -1)
     } else {
         AiCompanion_TakeCatalogSendClick()

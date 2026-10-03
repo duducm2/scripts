@@ -212,6 +212,43 @@ PasteWindow_CompletionForPasteOutcome(autoSend, needsLearnPrompt) {
     return { state: "✅ Pasted — you can continue", holdMs: 900 }
 }
 
+; True when this companion window is still generating. One targeted stop lookup per call.
+D2C_CompanionHasStop(hwnd, companion) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    companion := StrLower(Trim(companion))
+    try {
+        if (companion = "copilot") {
+            root := CopilotWeb_ReadRootFromHwnd(hwnd)
+            return IsObject(root) && !!CopilotWeb_FindStopGenerating(root)
+        }
+        if (companion = "enterprise") {
+            root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+            return IsObject(root) && !!GeminiEnterprise_FindStopButton(root)
+        }
+        if (companion = "gemini") {
+            root := UIA.ElementFromHandle(hwnd)
+            return Gemini_HasGeneratingStopButtonForUia(root)
+        }
+        if (companion = "chatgpt") {
+            root := UIA.ElementFromHandle(hwnd)
+            return !!ChatGPT_FindStopButton(root)
+        }
+        root := UIA.ElementFromHandle(hwnd)
+        if (!IsObject(root))
+            return false
+        for n in ["Stop streaming", "Interromper transmissão", "Stop response"] {
+            try {
+                if (root.FindElement({ Name: n, Type: "Button" }))
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
 ; Replaces legacy fragmented functions with a central authority to prevent race conditions.
@@ -1084,36 +1121,8 @@ class D2C_FlowManager {
             return
         }
 
-        btn := ""
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
-        root := 0
-        try {
-            if (companion = "copilot") {
-                root := CopilotWeb_ReadRootFromHwnd(this.GeminiHwnd)
-                if (root)
-                    btn := CopilotWeb_FindStopGenerating(root)
-            } else if (companion = "enterprise") {
-                root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
-                if (root)
-                    btn := GeminiEnterprise_FindStopButton(root)
-            } else {
-                root := UIA.ElementFromHandle(this.GeminiHwnd)
-                for n in buttonNames {
-                    try {
-                        btn := root.FindElement({ Name: n, Type: "Button" })
-                    } catch {
-                        btn := ""
-                    }
-                    if (btn)
-                        break
-                }
-            }
-        } catch {
-            return
-        }
-
-        if (btn) {
+        if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
             this.MonitorButtonEverFound := true
             return
         }
@@ -1125,28 +1134,10 @@ class D2C_FlowManager {
             isTrulyGone := true
             loop 4 {
                 Sleep 200
-                try {
-                    if (companion = "copilot") {
-                        copRoot := CopilotWeb_ReadRootFromHwnd(this.GeminiHwnd)
-                        if (copRoot && CopilotWeb_FindStopGenerating(copRoot))
-                            isTrulyGone := false
-                    } else if (companion = "enterprise") {
-                        geRoot := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
-                        if (geRoot && GeminiEnterprise_FindStopButton(geRoot))
-                            isTrulyGone := false
-                    } else {
-                        for n in buttonNames {
-                            if root.ElementExist({ Name: n, Type: "Button" }) {
-                                isTrulyGone := false
-                                break
-                            }
-                        }
-                    }
-                } catch {
-                    isTrulyGone := true
-                }
-                if (!isTrulyGone)
+                if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
+                    isTrulyGone := false
                     break
+                }
             }
 
             if (isTrulyGone) {
@@ -1455,6 +1446,33 @@ class D2C_FlowManager {
                     WinActivate("ahk_id " this.OriginHwnd)
                 return false
             }
+        }
+
+        ; ChatGPT copy/read live in Shift keys. Other hosts skip this branch.
+        if (companion = "chatgpt") {
+            clipOk := false
+            try clipOk := ChatGPT_CopyLastMessageToClipboard(this.GeminiHwnd)
+            catch
+                clipOk := false
+            if (clipOk) {
+                this.HasCopiedForThisResponse := true
+                if (readAloud) {
+                    try ChatGPT_TriggerReadAloud(this.GeminiHwnd)
+                    catch
+                        ShowCenteredOverlay_Utils("❌ Read aloud failed", 3000, BANNER_ACCENT_ERROR)
+                } else {
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+                }
+            } else {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
+            }
+            if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
+                .OriginHwnd)) {
+                WinActivate("ahk_id " this.OriginHwnd)
+                if (!WinActive("ahk_id " this.OriginHwnd))
+                    WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+            }
+            return clipOk
         }
 
         ; Enterprise: same in-process copy as #!+p (no Gemini.ahk IPC / result file).

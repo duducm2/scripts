@@ -257,6 +257,44 @@ Gemini_TrySubmitOnce(uia, fallback := "enter") {
     return true
 }
 
+; Hotkey Enter submit: saved Send when mapped, otherwise the same UIA/Enter leaf as paste.
+; A prompt that is still in the composer gets Ctrl+Enter, then Enter.
+Gemini_SubmitComposer(hwnd) {
+    AiCompanion_TakeCatalogSendClick()
+    uia := 0
+    try uia := UIA_Browser("ahk_id " hwnd)
+    catch
+        uia := 0
+    ; A reply already in progress: deliver Enter, same as the old hotkey pass-through.
+    if (IsObject(uia) && Gemini_HasGeneratingStopButtonForUia(uia)) {
+        Send "{Enter}"
+        return
+    }
+    try {
+        root := IsObject(uia) ? uia : UIA.ElementFromHandle(hwnd)
+        if (IsObject(root)) {
+            saved := AiCompanionButtons_FindSaved(root, AI_COMPANION_GEMINI, "Send")
+            if (IsObject(saved) && AiCompanionButtons_Click(saved)) {
+                AiCompanion_MarkCatalogSendClick()
+                return
+            }
+        }
+    } catch {
+    }
+    if (IsObject(uia))
+        Gemini_TrySubmitOnce(uia)
+    else
+        Send "{Enter}"
+    text := IsObject(uia) ? GeminiPromptFieldGetTextFromUia(uia) : ""
+    if (text = "")
+        return
+    SendInput "^{Enter}"
+    Sleep 200
+    text := IsObject(uia) ? GeminiPromptFieldGetTextFromUia(uia) : ""
+    if (text != "")
+        SendInput "{Enter}"
+}
+
 ; Bounded content wait: return on the first poll where the composer has text; 25 ms poll (canon §13).
 Gemini_WaitForPromptContent(uia, maxMs, minSettleMs := "") {
     global g_GeminiDelayedSubmit_PreEnterDelayMs
