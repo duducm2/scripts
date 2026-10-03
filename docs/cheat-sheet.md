@@ -100,7 +100,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 | `Spotify.exe`        | Foreground process `Spotify.exe`.                                                                                                                  |
 | `ONENOTE.EXE`        | Foreground process OneNote.                                                                                                                        |
 | `chrome.exe`         | Chrome: general browser shortcuts; often combined with a site-specific sheet.                                                                      |
-| `Chrome PDF Viewer`  | Chrome and `IsChromePdfViewerActive()`.                                                                                                            |
+| `Chrome PDF Viewer`  | Chrome and `IsChromePdfViewerActive()`: address-bar path ends in `.pdf` (the window title is the document title and often has no `.pdf`).          |
 | `Cursor.exe`         | Foreground Cursor. **Reference layout** for [modifier clusters](#modifier-clusters-standard-layout).                                               |
 | `Code.exe`           | Foreground VS Code. Separate sheet, initially derived from Cursor layout; diverges as migration proceeds to official VS Code and Copilot defaults. |
 | `explorer.exe`       | File Explorer.                                                                                                                                     |

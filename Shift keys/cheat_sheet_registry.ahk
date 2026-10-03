@@ -346,7 +346,7 @@ cheatSheets["Google Maps"] := "
     📍 [L][L]at/long (copy coordinates to clipboard)
     📉 [C][C]ollapse side panel
     🖼️ [P][P]NG capture (clean map / Street View → Desktop)
-y)"  ; end Google Maps
+)"  ; end Google Maps
 
 ; --- Chrome PDF Viewer ------------------------------------------------------
 cheatSheets["Chrome PDF Viewer"] := "
