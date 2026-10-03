@@ -402,6 +402,9 @@ AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapOk := true) {
     return state = "working"
 }
 
+; Physical Enter/Ctrl+Enter is delivered immediately. Stop-button confirm runs on a short timer.
+; Set false to restore snapshot-then-submit on those hotkeys.
+global AI_COMPANION_ENTER_SEND_FIRST := true
 ; When true, a confirmed Enter/Send arms the shared response banner instead of a chime-only watch.
 global AI_COMPANION_D2C_BANNER_FOR_ALL := true
 ; ChatGPT keeps its loading-bar wait when this is false.
@@ -499,6 +502,53 @@ AiCompanion_SendAndConfirm(hwnd, companionId, sendFn) {
     catch {
     }
     return AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapStatus = "ok")
+}
+
+; One in-flight Enter confirm. A newer Enter replaces it. Not a background poll.
+global g_AiCompanionEnterWatchCb := ""
+
+; Hotkey path: the chord goes out before any composer or Send-button lookup.
+AiCompanion_SendEnterFirst(hwnd, companionId, ctrlEnter := false) {
+    global g_AiCompanionEnterWatchCb
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    companionId := StrLower(Trim(companionId))
+    if (g_AiCompanionEnterWatchCb != "") {
+        try SetTimer(g_AiCompanionEnterWatchCb, 0)
+        g_AiCompanionEnterWatchCb := ""
+    }
+    SendInput(ctrlEnter ? "^{Enter}" : "{Enter}")
+    state := { hwnd: hwnd, companionId: companionId, deadline: A_TickCount + 1000, cb: "" }
+    cb := AiCompanion_EnterWatchTick.Bind(state)
+    state.cb := cb
+    g_AiCompanionEnterWatchCb := cb
+    SetTimer(cb, -1)
+    return true
+}
+
+; One stop lookup, then return, so the script thread is not held for the whole second.
+AiCompanion_EnterWatchTick(state) {
+    global g_AiCompanionEnterWatchCb
+    if (g_AiCompanionEnterWatchCb != state.cb)
+        return
+    stopWatch := false
+    if (!WinExist("ahk_id " state.hwnd))
+        stopWatch := true
+    else if (AiCompanion_IsGenerating(state.hwnd, state.companionId)) {
+        stopWatch := true
+        AiCompanion_AnnounceConfirm("working")
+        AiCompanion_FinishConfirmedSubmit(state.hwnd, state.companionId, state.hwnd)
+    } else if (A_TickCount >= state.deadline)
+        stopWatch := true
+    if (stopWatch) {
+        try SetTimer(state.cb, 0)
+        if (g_AiCompanionEnterWatchCb = state.cb)
+            g_AiCompanionEnterWatchCb := ""
+        return
+    }
+    if (g_AiCompanionEnterWatchCb != state.cb)
+        return
+    SetTimer(state.cb, -200)
 }
 
 PlayAiWorkingStateSound(isWorking) {

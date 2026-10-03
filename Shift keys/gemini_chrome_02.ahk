@@ -809,6 +809,11 @@ Enter:: {
     }
 
     hwnd := WinExist("A")
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "gemini", false)
+        return
+    }
     if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Gemini_SubmitComposer(hwnd)))
         return
 
@@ -826,6 +831,11 @@ Enter:: {
 ; Control + Enter : Send Enter and monitor for response completion
 ^Enter:: {
     hwnd := WinExist("A")
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "gemini", true)
+        return
+    }
     if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Gemini_SubmitComposer(hwnd)))
         return
 

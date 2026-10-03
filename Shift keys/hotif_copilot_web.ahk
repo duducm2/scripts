@@ -141,6 +141,11 @@ $Enter:: {
         return
     }
     hwnd := WinExist("A")
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "copilot", false)
+        return
+    }
     if (AiCompanion_SendAndConfirm(hwnd, "copilot", CopilotWeb_HotkeySendFn(hwnd))) {
         if (!AiCompanion_FinishConfirmedSubmit(hwnd, "copilot", hwnd))
             SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
@@ -151,6 +156,11 @@ $Enter:: {
 
 $^Enter:: {
     hwnd := WinExist("A")
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "copilot", true)
+        return
+    }
     if (AiCompanion_SendAndConfirm(hwnd, "copilot", CopilotWeb_HotkeySendFn(hwnd))) {
         if (!AiCompanion_FinishConfirmedSubmit(hwnd, "copilot", hwnd))
             SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
