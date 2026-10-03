@@ -459,6 +459,19 @@ class PalaceStore:
                 return {"ok": False, "error": "title required"}
             payload = dict(payload)
             payload["title"] = title
+            if "score" in payload:
+                raw = str(payload.get("score") or "").strip()
+                if raw == "":
+                    payload["score"] = ""
+                else:
+                    try:
+                        n = int(raw)
+                    except ValueError:
+                        n = 0
+                    if 1 <= n <= 10:
+                        payload["score"] = str(n)
+                    else:
+                        payload["score"] = str((existing or {}).get("score") or "")
 
         # generic
         row = {

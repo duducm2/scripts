@@ -318,6 +318,44 @@
         font-variant-numeric: tabular-nums;
         padding-top: 0.12rem;
       }
+      .ent-score {
+        display: grid;
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        gap: 2px;
+        margin-top: 0.35rem;
+        max-width: 15rem;
+      }
+      .ent-list.catalog .ent-score {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        max-width: none;
+      }
+      .ent-score-n {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 4px;
+        font: inherit;
+        font-size: 0.72rem;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.35;
+        padding: 0.08rem 0;
+        cursor: pointer;
+      }
+      .ent-score-n:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .ent-score-n.on {
+        color: var(--gold);
+        border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
+        background: color-mix(in srgb, var(--gold) 14%, transparent);
+      }
+      .ent-score-n.picked {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #1a1408;
+        font-weight: 700;
+      }
       .ent-row {
         border: 1px solid var(--line);
         border-radius: 12px;
@@ -4870,6 +4908,15 @@
         renderEntertainment();
       }
 
+      async function entSetScore(node, score) {
+        const r = await api("/api/entertainment", {
+          method: "POST",
+          body: JSON.stringify({ id: node.id, score: score || "" }),
+        });
+        if (r?.row) mergeApiRow("entertainment", r.row);
+        renderEntertainment();
+      }
+
       async function entDelete(node) {
         const kids = entHasChildren(node.id);
         const msg = kids
@@ -4925,6 +4972,19 @@
         </div>`;
       }
 
+      function entScoreHtml(node) {
+        const current = Number(String(node.score || "").trim());
+        const buttons = [];
+        for (let i = 1; i <= 10; i++) {
+          const on = current >= i;
+          const picked = current === i;
+          buttons.push(
+            `<button type="button" class="ent-score-n${on ? " on" : ""}${picked ? " picked" : ""}" data-score="${i}" aria-label="Score ${i}" aria-pressed="${picked ? "true" : "false"}">${i}</button>`,
+          );
+        }
+        return `<div class="ent-score" role="group" aria-label="Your score">${buttons.join("")}</div>`;
+      }
+
       function entLinks(raw) {
         return entUrls(raw)
           .map((u) => {
@@ -4965,6 +5025,7 @@
               ${head}
               <div class="ent-body">
                 <div class="ent-title">${esc(n.title)}</div>
+                ${entScoreHtml(n)}
                 ${notes}
                 ${entActions(n)}
               </div>
@@ -5058,7 +5119,7 @@
         let html = `<div class="ent-toolbar">
           <div>
             <h2>Entertainment</h2>
-            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. Click a title to mark it watched. E returns to Practice.</p>
+            <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. Click a title to mark it watched. Click a number to score it from 1 to 10. Ctrl+C copies the title. E returns to Practice.</p>
           </div>
           <button type="button" class="spa-btn" id="entAddTopic">Add topic</button>
         </div>`;
@@ -5108,6 +5169,21 @@
               renderEntertainment();
             };
           });
+        root.querySelectorAll("[data-score]").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const host = btn.closest("[data-id]");
+            const node = entNodes().find((n) => n.id === host?.dataset.id);
+            if (!node) return;
+            const next = btn.dataset.score;
+            const score = String(node.score || "") === next ? "" : next;
+            state.entertainment.selectedId = node.id;
+            entSetScore(node, score).catch((err) => {
+              toast(String(err.message || err));
+              renderEntertainment();
+            });
+          };
+        });
         root.querySelectorAll("[data-expand]").forEach((btn) => {
           btn.onclick = (e) => {
             e.stopPropagation();
@@ -5212,6 +5288,25 @@
           if (e.key === "ArrowLeft") {
             e.preventDefault();
             entDrill(-1);
+            return;
+          }
+          if (
+            (e.key === "c" || e.key === "C") &&
+            e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+          ) {
+            const node = entNodes().find(
+              (n) => n.id === state.entertainment.selectedId,
+            );
+            const title = node ? String(node.title || "").trim() : "";
+            if (!title) return;
+            e.preventDefault();
+            navigator.clipboard
+              .writeText(title)
+              .then(() => toast("Title copied"))
+              .catch(() => toast("Copy failed"));
             return;
           }
         }

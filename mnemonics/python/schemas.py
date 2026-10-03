@@ -412,6 +412,7 @@ ENTERTAINMENT_HEADERS = [
     "done",
     "sort_order",
     "image",
+    "score",
 ]
 
 HEADERS = {
