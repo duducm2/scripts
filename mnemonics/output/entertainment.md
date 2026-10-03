@@ -832,8 +832,8 @@
 <details>
 <summary>100 Best Albums</summary>
 
-<p><img src="https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/6b/55/096b55c4-ee8f-23bd-df8f-0ca0821f3028/886446727189.jpg/600x600bb.jpg" alt="" width="64"> The Miseducation of Lauryn Hill — Lauryn Hill (1998)</p>
-<p><img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg" alt="" width="64"> Thriller — Michael Jackson (1982)</p>
+<p><img src="https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/6b/55/096b55c4-ee8f-23bd-df8f-0ca0821f3028/886446727189.jpg/600x600bb.jpg" alt="" width="64"> ✓ The Miseducation of Lauryn Hill — Lauryn Hill (1998) · 8/10</p>
+<p><img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/32/4f/fd/324ffda2-9e51-8f6a-0c2d-c6fd2b41ac55/074643811224.jpg/600x600bb.jpg" alt="" width="64"> ✓ Thriller — Michael Jackson (1982) · 10/10</p>
 <p><img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/48/53/43/485343e3-dd6a-0034-faec-f4b6403f8108/13UMGIM63890.rgb.jpg/600x600bb.jpg" alt="" width="64"> Abbey Road — The Beatles (1969)</p>
 <p><img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/00/17/f2/0017f24f-e580-b77a-71a8-1bc7b75881bf/603497822065.jpg/600x600bb.jpg" alt="" width="64"> Purple Rain — Prince and the Revolution (1984)</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/a/a0/Blonde_-_Frank_Ocean.jpeg" alt="" width="64"> Blonde — Frank Ocean (2016)</p>
@@ -1156,9 +1156,9 @@
 <p><img src="https://upload.wikimedia.org/wikipedia/en/b/be/Megaman2_box.jpg" alt="" width="64"> Mega Man 2 — Takashi Tateishi</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/d/d2/Tetris_%28Atari%29_cover.jpg" alt="" width="64"> Tetris — Hirokazu Tanaka</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/1/1d/SF2_JPN_flyer.jpg" alt="" width="64"> Street Fighter II — Yoko Shimomura / Isao Abe</p>
-<p><img src="https://upload.wikimedia.org/wikipedia/en/2/26/Streets_of_Rage_2.jpg" alt="" width="64"> Streets of Rage 2 — Yuzo Koshiro / Motohiro Kawashima</p>
-<p><img src="https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg" alt="" width="64"> Doom — Bobby Prince</p>
-<p><img src="https://upload.wikimedia.org/wikipedia/en/1/1f/EarthBound_Box.jpg" alt="" width="64"> EarthBound — Keiichi Suzuki / Hirokazu Tanaka</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/2/26/Streets_of_Rage_2.jpg" alt="" width="64"> ✓ Streets of Rage 2 — Yuzo Koshiro / Motohiro Kawashima · 10/10</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg" alt="" width="64"> ✓ Doom — Bobby Prince · 9/10</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/1/1f/EarthBound_Box.jpg" alt="" width="64"> ✓ EarthBound — Keiichi Suzuki / Hirokazu Tanaka · 10/10</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/0/05/Final_Fantasy_VI.jpg" alt="" width="64"> Final Fantasy VI — Nobuo Uematsu</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/0/07/Sonic3-box-us-225.jpg" alt="" width="64"> Sonic the Hedgehog 3 — Brad Buxer / Sega Sound Team</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/e/e4/Smetroidbox.jpg" alt="" width="64"> Super Metroid — Kenji Yamamoto / Minako Hamano</p>
@@ -1193,7 +1193,7 @@
 <p><img src="https://upload.wikimedia.org/wikipedia/en/2/28/Doom_Cover.jpg" alt="" width="64"> Doom (2016) — Mick Gordon</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/b/b0/Persona_5_cover_art.jpg" alt="" width="64"> Persona 5 — Shoji Meguro</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/The_Cuphead_Show%21_-_Logotype.png" alt="" width="64"> Cuphead — Kristofer Maddigan</p>
-<p><img src="https://upload.wikimedia.org/wikipedia/en/d/de/Hollow_Knight_2026_cover_art.jpg" alt="" width="64"> Hollow Knight — Christopher Larkin</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/d/de/Hollow_Knight_2026_cover_art.jpg" alt="" width="64"> ✓ Hollow Knight — Christopher Larkin · 10/10</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/2/21/Nier_Automata_cover_art.jpg" alt="" width="64"> Nier: Automata — Keiichi Okabe / Keigo Hoashi</p>
 <p><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Celeste_box_art_full.png/500px-Celeste_box_art_full.png" alt="" width="64"> Celeste — Lena Raine</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/2/25/God_of_War_II_cover.jpg" alt="" width="64"> God of War — Bear McCreary</p>
