@@ -292,6 +292,33 @@
         object-fit: contain;
         border-radius: 6px;
         background: #111318;
+        display: block;
+      }
+      .ent-cover-wrap {
+        position: relative;
+      }
+      .ent-seen {
+        display: none;
+      }
+      .ent-item.done .ent-seen {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        top: 0.4rem;
+        right: 0.4rem;
+        width: 1.4rem;
+        height: 1.4rem;
+        border-radius: 999px;
+        background: var(--gold);
+        color: #1a1408;
+        font-size: 0.8rem;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+      }
+      .ent-item.done:not(:has(.ent-cover)) .ent-title::before {
+        content: "✓ ";
+        color: var(--gold);
       }
       .ent-list.catalog .ent-title {
         font-size: 0.86rem;
@@ -365,13 +392,6 @@
       }
       .ent-row.selected {
         border-color: var(--gold);
-      }
-      .ent-item.done .ent-cover {
-        opacity: 0.35;
-      }
-      .ent-item.done .ent-title,
-      .ent-row.done .ent-title {
-        color: var(--muted);
       }
       .ent-twist {
         width: 1.4rem;
@@ -5063,7 +5083,7 @@
             const selected = n.id === state.entertainment.selectedId;
             const image = String(n.image || "").trim();
             const cover = image
-              ? `<img class="ent-cover" src="${escAttr(image)}" alt="" loading="lazy">`
+              ? `<div class="ent-cover-wrap"><img class="ent-cover" src="${escAttr(image)}" alt="" loading="lazy"><span class="ent-seen" aria-hidden="true">✓</span></div>`
               : "";
             const head = catalog
               ? `${cover}<div class="ent-meta"><span class="ent-rank">${rank}</span></div>`
