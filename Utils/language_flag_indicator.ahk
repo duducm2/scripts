@@ -110,11 +110,20 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
     modelDisplayName := modelInfo.name
     modelClickName := modelInfo.HasProp("modelClickName") ? modelInfo.modelClickName : modelInfo.name
 
-    ; Accidental English <-> multi-lang while recording: stop before the model UI runs.
-    stoppedDictation := Handy_StopDictationIfEnglishMultilangSwitch(selection)
+    ; Picker / direct hotkeys: accidental English <-> multi-lang stop only. K/L stops inside the try.
+    stoppedDictation := false
+    if (!restartDictationIfStopped)
+        stoppedDictation := Handy_StopDictationIfEnglishMultilangSwitch(selection)
 
     handyHwnd := 0
     try {
+        if (restartDictationIfStopped) {
+            swapResult := Handy_StopDictationForLanguageSwap()
+            if (swapResult = "failed")
+                return false
+            stoppedDictation := (swapResult = "stopped")
+        }
+
         verified := false
 
         loop HANDY_AI_MODEL_MAX_ATTEMPTS {
@@ -208,8 +217,14 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
         AiModelBanner_Hide()
         Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
         ; Utility Shortcuts K/L during a take: model is switched; start dictation again.
-        if (restartDictationIfStopped && stoppedDictation)
-            Handy_RestartDictationAfterLanguageSwitch()
+        if (restartDictationIfStopped && stoppedDictation) {
+            if (!Handy_RestartDictationAfterLanguageSwitch()) {
+                AiModelBanner_Show("❌ Could not restart dictation", "E74C3C")
+                Sleep 2000
+                AiModelBanner_Hide()
+                return false
+            }
+        }
         return true
 
     } catch Error as e {
@@ -221,6 +236,9 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
         return false
     } finally {
         g_HandyModelSwitchBusy := false
+        ; A thrown error or a failed switch must not leave the capture endpoint muted.
+        if (restartDictationIfStopped)
+            Dictation_UnmuteCaptureAfterSwap()
     }
 }
 
@@ -289,6 +307,7 @@ Handy_OnAiModelRequest(wParam, lParam, *) {
 ; After a reboot the menu often belongs to a different script while AppLaunchers
 ; is still down — switch Handy locally then.
 ; restartDictationIfStopped: Utility Shortcuts K/L only. If a take was running, start again after the switch.
+; A K/L restart needs the dictation owner. Do not switch locally when that owner is down.
 Handy_RequestAiModelSelection(slot, restoreHwnd := 0, restartDictationIfStopped := false) {
     if (HandyAi_IsOwnerProcess()) {
         ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped)
@@ -303,6 +322,10 @@ Handy_RequestAiModelSelection(slot, restoreHwnd := 0, restartDictationIfStopped 
             return true
         } catch {
         }
+    }
+    if (restartDictationIfStopped) {
+        ShowCenteredOverlay_Utils("⚠ Dictation owner unavailable", 2000, BANNER_ACCENT_ERROR)
+        return false
     }
     ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped)
     return true

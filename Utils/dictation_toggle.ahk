@@ -41,6 +41,12 @@ global g_DictationFlagFollowCache := ""  ; Skip redundant flag Move when geometr
 global g_DictationSuppressCompletion := false
 ; After a language-switch restart, ignore "overlay gone" until the new Recording window has been seen.
 global g_DictationAwaitRecordingWindow := false
+; A Recording overlay counts as the restarted take only after the previous one has been absent.
+global g_DictationRestartSawOverlayAbsent := false
+; One-shot: the language-swap start chime ignores the shared 7s start-cue cooldown.
+global g_DictationBypassStartSoundCooldown := false
+; True while a K/L swap has muted the capture endpoint and not yet restored it.
+global g_DictationSwapMicMuted := false
 
 ; AppLaunchers.ahk is the single long-lived owner for ~#!+0, Recording flag, and
 ; Send dictation? banner — same script-name pin as HandyAi_IsOwnerProcess().
@@ -383,11 +389,16 @@ Dictation_StartSoundForCurrentModel() {
 SafePlayDictationSound(filePath) {
     Critical  ; Prevents thread interruption - ensures atomic check-and-update sequence
     global g_LastDictationSoundTick, g_DictationStartSound, g_DictationStartSoundMultilang
+    global g_DictationBypassStartSoundCooldown
     static lastStartSoundTick := 0
 
     ; Start cues: 7 second cooldown to prevent duplicates (English and multi-lang).
+    ; A language-swap restart sets the bypass so the new language chime still plays.
     if (filePath = g_DictationStartSound || filePath = g_DictationStartSoundMultilang) {
-        if (A_TickCount - lastStartSoundTick < 7000) {
+        bypass := g_DictationBypassStartSoundCooldown
+        if (bypass)
+            g_DictationBypassStartSoundCooldown := false
+        if (!bypass && A_TickCount - lastStartSoundTick < 7000) {
             return
         }
         lastStartSoundTick := A_TickCount
@@ -551,28 +562,182 @@ Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
     return true
 }
 
-; After a mid-dictation English <-> multi-lang switch: start a normal take again.
-; The chord still reaches Handy. The hotkey treats it as a start, not a stop.
+; Release stuck modifiers, then send #!+0. forStop arms the stop flag; otherwise the start flag.
+; The flag stays set until ~#!+0 consumes it.
+Dictation_SendProgrammaticChord(forStop) {
+    global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart
+    try SetTimer(Dictation_ExpireProgrammaticStart, 0)
+    catch {
+    }
+    try UtilityShortcuts_ReleaseStuckModifiers()
+    catch {
+    }
+    if (forStop) {
+        g_ProgrammaticDictationStart := false
+        g_ProgrammaticDictationStop := true
+    } else {
+        g_ProgrammaticDictationStop := false
+        g_ProgrammaticDictationStart := true
+    }
+    Send "#!+0"
+}
+
+; True once ~#!+0 has cleared the programmatic stop or start flag.
+Dictation_WaitProgrammaticChordConsumed(forStop, timeoutMs) {
+    global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        if (forStop) {
+            if (!g_ProgrammaticDictationStop)
+                return true
+        } else if (!g_ProgrammaticDictationStart) {
+            return true
+        }
+        Sleep 50
+    }
+    return forStop ? !g_ProgrammaticDictationStop : !g_ProgrammaticDictationStart
+}
+
+; Hide the recording flag for an aborted take. Does not chime or open Send dictation?.
+Dictation_FinishAbortedTake() {
+    global g_DictationActive, g_DictationSoundPlayed, g_LastStateTransitionTick
+    g_DictationActive := false
+    g_DictationSoundPlayed := false
+    g_LastStateTransitionTick := A_TickCount
+    try StopDictationPulseTimer()
+    catch {
+    }
+    try HideDictationIndicator()
+    catch {
+    }
+}
+
+; K/L language swap while a take is up. Stops whatever is recording, including a same-slot
+; or Portuguese take. Returns "none" (nothing to stop), "stopped", or "failed".
+; On failure the capture endpoint is unmuted and no further chord is sent.
+Handy_StopDictationForLanguageSwap() {
+    global g_DictationSuppressCompletion, g_ProgrammaticDictationStop, g_DictationRestartSawOverlayAbsent
+    if (!Dictation_IsOwnerProcess())
+        return "failed"
+    if (!Dictation_RecordingWindowExists())
+        return "none"
+
+    Dictation_MuteCaptureForSwap()
+    g_DictationSuppressCompletion := true
+    g_DictationRestartSawOverlayAbsent := false
+    Dictation_DisarmCompletionHooks()
+
+    loop 3 {
+        Dictation_SendProgrammaticChord(true)
+        start := A_TickCount
+        while (A_TickCount - start < 2000) {
+            overlayGone := !Dictation_RecordingWindowExists()
+            if (overlayGone && !g_ProgrammaticDictationStop) {
+                g_DictationRestartSawOverlayAbsent := true
+                Dictation_FinishAbortedTake()
+                return "stopped"
+            }
+            Sleep 50
+        }
+        ; Overlay already gone, but the hotkey has not consumed the flag yet.
+        if (!Dictation_RecordingWindowExists()) {
+            g_ProgrammaticDictationStop := false
+            g_DictationRestartSawOverlayAbsent := true
+            Dictation_FinishAbortedTake()
+            return "stopped"
+        }
+    }
+
+    g_ProgrammaticDictationStop := false
+    Dictation_UnmuteCaptureAfterSwap()
+    AiModelBanner_Show("❌ Could not stop dictation", "E74C3C")
+    Sleep 2000
+    AiModelBanner_Hide()
+    return "failed"
+}
+
+; After a mid-dictation language swap: start a normal take again.
+; The start flag stays set until ~#!+0 consumes it. Returns true once the new overlay is up.
 Handy_RestartDictationAfterLanguageSwitch() {
     global g_ProgrammaticDictationStart, g_ProgrammaticDictationStop, g_DictationActive, g_DictationSoundPlayed
     global g_PendingGeminiPromptAfterDictation
-    global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow
+    global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow, g_DictationRestartSawOverlayAbsent
+    global g_DictationBypassStartSoundCooldown
     if (!Dictation_IsOwnerProcess())
         return false
     ; A leftover stop flag would swallow this chord and the user's later stop.
     g_ProgrammaticDictationStop := false
     g_ProgrammaticDictationStart := false
+    try SetTimer(Dictation_ExpireProgrammaticStart, 0)
+    catch {
+    }
     g_DictationActive := false
     g_DictationSoundPlayed := false
     g_PendingGeminiPromptAfterDictation := false
     g_DictationSuppressCompletion := true
     g_DictationAwaitRecordingWindow := true
+    g_DictationRestartSawOverlayAbsent := !Dictation_RecordingWindowExists()
+    g_DictationBypassStartSoundCooldown := true
     Dictation_DisarmCompletionHooks()
-    g_ProgrammaticDictationStart := true
-    ; The synthetic chord must consume this. It must not still be set when the user stops.
-    SetTimer(Dictation_ExpireProgrammaticStart, -400)
-    Send "#!+0"
-    return true
+
+    loop 3 {
+        ; A previous chord may have opened the overlay just after the last poll.
+        if (A_Index > 1 && g_DictationRestartSawOverlayAbsent && Dictation_RecordingWindowExists()) {
+            if (Dictation_WaitRestartedOverlay(200))
+                return true
+        }
+        Dictation_SendProgrammaticChord(false)
+        Dictation_WaitProgrammaticChordConsumed(false, 1500)
+        if (Dictation_WaitRestartedOverlay(2000))
+            return true
+        ; This attempt did not land. Drop a stuck start flag before the next chord.
+        g_ProgrammaticDictationStart := false
+    }
+
+    g_ProgrammaticDictationStart := false
+    g_DictationAwaitRecordingWindow := false
+    g_DictationRestartSawOverlayAbsent := false
+    g_DictationBypassStartSoundCooldown := false
+    g_DictationSuppressCompletion := false
+    Dictation_UnmuteCaptureAfterSwap()
+    return false
+}
+
+; Poll until a Recording overlay appears after the previous one was absent.
+Dictation_WaitRestartedOverlay(timeoutMs) {
+    global g_DictationRestartSawOverlayAbsent, g_DictationSoundPlayed, g_DictationBypassStartSoundCooldown
+    global g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion, g_DictationActive
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        exists := Dictation_RecordingWindowExists()
+        if (!exists) {
+            g_DictationRestartSawOverlayAbsent := true
+            Sleep 50
+            continue
+        }
+        ; Monitor already accepted this overlay, or it appeared only after the previous one was gone.
+        if (g_DictationRestartSawOverlayAbsent || !g_DictationAwaitRecordingWindow) {
+            CheckDictationRecordingWindow()
+            Dictation_UnmuteCaptureAfterSwap()
+            if (!g_DictationSoundPlayed) {
+                g_DictationSoundPlayed := true
+                g_DictationActive := true
+                g_DictationBypassStartSoundCooldown := true
+                g_DictationAwaitRecordingWindow := false
+                g_DictationSuppressCompletion := false
+                SafePlayDictationSound(Dictation_StartSoundForCurrentModel())
+                try ShowDictationIndicator()
+                catch {
+                }
+                try StartDictationPulseTimer()
+                catch {
+                }
+            }
+            return true
+        }
+        Sleep 50
+    }
+    return false
 }
 
 Dictation_ExpireProgrammaticStart(*) {
@@ -580,12 +745,15 @@ Dictation_ExpireProgrammaticStart(*) {
     g_ProgrammaticDictationStart := false
 }
 
-; First sight of the Recording overlay after a language-switch restart.
+; First sight of the Recording overlay after the previous overlay has been absent.
 Dictation_AcceptRestartedRecordingWindow() {
     global g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion, g_DictationStartClipboardText
+    global g_DictationRestartSawOverlayAbsent
     g_DictationAwaitRecordingWindow := false
+    g_DictationRestartSawOverlayAbsent := false
     g_DictationSuppressCompletion := false
     Dictation_DisarmCompletionHooks()
+    Dictation_UnmuteCaptureAfterSwap()
     try g_DictationStartClipboardText := A_Clipboard
     catch {
         g_DictationStartClipboardText := ""
@@ -596,14 +764,27 @@ CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
     global g_DictationHotkeyIsOwner, g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion
+    global g_DictationRestartSawOverlayAbsent
     ; Non-owners must never drive Recording flag / chime / banner (Act used to steal this).
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
 
     windowExists := Dictation_RecordingWindowExists()
 
+    ; The pre-stop overlay must disappear before any window counts as the restarted take.
+    if (g_DictationAwaitRecordingWindow && !windowExists) {
+        g_DictationRestartSawOverlayAbsent := true
+        if (g_DictationSuppressCompletion) {
+            Dictation_FinishAbortedTake()
+            return
+        }
+        return
+    }
+    if (g_DictationAwaitRecordingWindow && windowExists && !g_DictationRestartSawOverlayAbsent)
+        return
+
     ; New take's overlay: drop the aborted take's completion so it cannot swallow this stop.
-    if (windowExists && g_DictationAwaitRecordingWindow)
+    if (windowExists && g_DictationAwaitRecordingWindow && g_DictationRestartSawOverlayAbsent)
         Dictation_AcceptRestartedRecordingWindow()
 
     ; Handle Start: window exists

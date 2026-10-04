@@ -1,4 +1,13 @@
-param([int]$Level = 100)
+param(
+  [int]$Level = 100,
+  [switch]$Mute,
+  [switch]$Unmute
+)
+
+if ($Mute -and $Unmute) {
+  Write-Error "-Mute and -Unmute cannot be used together."
+  exit 1
+}
 
 $scalar = [float]([Math]::Max(0, [Math]::Min(100, $Level)) / 100)
 
@@ -68,10 +77,36 @@ public static class MicVolNative {
     Marshal.ThrowExceptionForHR(vol.GetMasterVolumeLevelScalar(out cur));
     return cur;
   }
+
+  public static void SetDefaultCaptureMute(bool mute, float scalar, bool setVolume) {
+    var enumerator = (IMMDeviceEnumerator)Activator.CreateInstance(typeof(MMDeviceEnumerator));
+    IMMDevice dev;
+    int hr = enumerator.GetDefaultAudioEndpoint(1, 2, out dev);
+    if (hr != 0) hr = enumerator.GetDefaultAudioEndpoint(1, 1, out dev);
+    if (hr != 0) hr = enumerator.GetDefaultAudioEndpoint(1, 0, out dev);
+    if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+
+    Guid iid = typeof(IAudioEndpointVolume).GUID;
+    IAudioEndpointVolume vol;
+    Marshal.ThrowExceptionForHR(dev.Activate(ref iid, 23, IntPtr.Zero, out vol));
+
+    Guid g = Guid.Empty;
+    Marshal.ThrowExceptionForHR(vol.SetMute(mute, g));
+    if (setVolume)
+      Marshal.ThrowExceptionForHR(vol.SetMasterVolumeLevelScalar(scalar, g));
+  }
 }
 "@
 
 Add-Type -TypeDefinition $code
 
-$result = [MicVolNative]::SetDefaultCaptureVolumeScalar($scalar)
-Write-Output ("Mic volume scalar: {0:P0}" -f $result)
+if ($Mute) {
+  [MicVolNative]::SetDefaultCaptureMute($true, $scalar, $false)
+  Write-Output "Mic muted"
+} elseif ($Unmute) {
+  [MicVolNative]::SetDefaultCaptureMute($false, $scalar, $true)
+  Write-Output ("Mic unmuted, volume scalar: {0:P0}" -f $scalar)
+} else {
+  $result = [MicVolNative]::SetDefaultCaptureVolumeScalar($scalar)
+  Write-Output ("Mic volume scalar: {0:P0}" -f $result)
+}

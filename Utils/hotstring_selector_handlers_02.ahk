@@ -57,6 +57,8 @@ UtilitySelector_SwitchToCategory(category) {
         restoreHwnd := g_UtilitySelectorRestoreHwnd
         slot := (category = "Handy English") ? HANDY_AI_SLOT_ENGLISH : HANDY_AI_SLOT_MULTILANG
         CleanupHotstringSelector()
+        ; #!+U often leaves Win/Alt/Shift down. Drop them before the dictation chord.
+        UtilityShortcuts_ReleaseStuckModifiers()
         ; If a take was running, stop it, switch, then start dictation again.
         Handy_RequestAiModelSelection(slot, restoreHwnd, true)
         return
