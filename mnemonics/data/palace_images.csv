@@ -1,2 +1,6 @@
 id,palace_id,image_rel_path,caption,sort_order
 PALIMG_0001,PALACE_COMMUNICATIO_04,practice/images/communication/4-gallery-0001.jpg,,1
+PALIMG_0002,PALACE_DATAANALYST_19,practice/images/data-analyst/19-gallery-0002.png,Clip_1340.png,1
+PALIMG_0003,PALACE_DATAANALYST_19,practice/images/data-analyst/19-gallery-0003.png,Clip_1341.png,2
+PALIMG_0004,PALACE_DATAANALYST_19,practice/images/data-analyst/19-gallery-0004.png,Clip_1342.png,3
+PALIMG_0005,PALACE_DATAANALYST_19,practice/images/data-analyst/19-gallery-0005.png,Clip_1343.png,4
