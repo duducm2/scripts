@@ -8,15 +8,20 @@ HARD PACKING MANDATE (in-scope only — read before any re-peg) — Desktop impo
 - The **only** under-filled in-scope palace (1–4 beasts) allowed is the **last in-scope** palace (highest `palace_number` in this pack) — and only when remaining in-scope beasts < 5.
 - **Illegal (common failure):** one beast (or any 1–4) on an earlier in-scope palace while later in-scope palaces have more — e.g. `1+5+5`, `2+5`, sparse palace N then fuller N+1. Failed delivery — rewrite before send.
 - **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single in-scope palace with 1–4.
-- Collapse empty in-scope palaces. Do **not** pull beasts from out-of-scope earlier palaces to fill slots.
-- Out-of-scope under-filled palaces stay untouched forever — never top them up to 5 and never re-emit them “to complete” packing.
+- Collapse empty in-scope palaces. Do **not** pull beasts from **earlier** out-of-scope palaces (lower `palace_number`) to fill slots.
+- **Forward pull (later streets only):** if the last in-scope palace would have 1–4 beasts and any later street (higher `palace_number`) still has beasts, pull those later beasts forward in peg order. Repack the combined set 5 per palace; remainder only on the new last palace. Expand `Scope:` to every palace that still has beasts after the pull.
+- A later palace left with zero beasts is excluded. PREVIEW must include `Exclude: <palace_number> <palace_id>` (one palace per line). Do not emit FILE rows for excluded palaces.
+- Re-peg pulled atoms with the normal bestiary shift (no peg gaps). A `Ca` camel pulled onto a palace that ends at `By` becomes `Bz` and takes the `Bz` beast name. Do not keep the old beast name.
+- Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
+- Earlier under-filled palaces stay untouched forever — never top them up to 5 and never re-emit them “to complete” packing.
 - Before send: count beasts under each PREVIEW in-scope palace heading. If any non-last in-scope palace shows fewer than 5 while a later in-scope palace exists → rewrite.
 
 EXISTING / OUT-OF-SCOPE HARD MANDATE (read before any SMASH/REMOVE)
 - Attached practice `.md` / CSV = **read-only inventory** for locking scope and resolving ids / quotes of **in-scope** rows only.
 - The pack MUST contain **only in-scope** palace / beast / atom rows after reduction. NEVER dump earlier palaces or pegs already outside the locked scope “because they were in the attached file.”
 - Do **not** invent NEW Knowledge Atoms that were not already in the in-scope set before this reduction. Do **not** rewrite out-of-scope atoms.
-- Do **not** pull beasts from out-of-scope inventory to fill in-scope slots, and do **not** add beasts to out-of-scope under-filled palaces.
+- Do **not** pull beasts from **earlier** out-of-scope inventory to fill in-scope slots, and do **not** add beasts to earlier under-filled palaces.
+- **Do** pull beasts from **later** streets when the forward-pull rule applies. Those pulled rows become in-scope and must be re-emitted. Emptied later palaces go on `Exclude:` and are omitted from FILE sections.
 - In-scope survivors that remain after SMASH/REMOVE are re-emitted (required for upsert) with re-peg / compression rules — that is not a license to rewrite the whole study.
 - Failed delivery if PREVIEW or FILE sections include any palace / peg / atom from outside `Scope:`.
 
@@ -61,6 +66,7 @@ PALACE N+1 — <title> (<character>) [<palace_id>]   ← last in-scope may have 
   [Z] <beast> — Concept: … | Quote: "…"
   [Aa] <beast> Z1 — Concept: … | Quote: "…"
 
+Exclude: 20 PALACE_…
 Discard candidates: none | list pegs / palace ids with one-line why
 ===END_PREVIEW===
 
@@ -83,6 +89,7 @@ PREVIEW rules (mandatory — inside the pack only, for the **resulting in-scope*
 - One line per Knowledge Atom in the atoms FILE section (zoned: show `Z1`–`Z4` after the peg).
 - Failed delivery if PREVIEW is missing from the pack, only counts/titles, omits any surviving **in-scope** atom, or lists out-of-scope palaces from earlier in the study (e.g. dumping from peg A / palace 1 when the job was only the latest segment).
 - Failed delivery if PREVIEW shows a sparse in-scope palace (1–4 beasts) that is **not** the last in-scope palace.
+- Failed delivery if a later street still has beasts while the last kept palace has 1–4, or if an emptied later palace is missing from `Exclude:`.
 - Keep FILE sections machine-only CSV.
 - Single artifact only: pack in chip/fence/file — never a parallel chat PREVIEW or street paste.
 
@@ -151,7 +158,7 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 - **Packing rule (HARD — same as HARD PACKING MANDATE; minimize palace count) — apply inside the reduction scope only:** fill every **in-scope** palace to **exactly 5 beasts** before the next. The **only** under-filled palace (1–4 beasts) allowed is the **last in-scope** palace (highest `palace_number` in the pack).
   - Right: 16 in-scope beasts → `5+5+5+1` with the `1` on the last in-scope palace.
   - Wrong (importer rejects): `1+5+5+5`, `1+5`, `2+5+5`, or any sparse earlier in-scope palace while a later in-scope palace exists.
-  - Collapse empty **in-scope** palaces. Do **not** pull beasts from earlier out-of-scope palaces to fill slots, and do **not** top up out-of-scope under-filled palaces. After smash/remove, **re-pack** in-scope survivors — do not leave a one-beast in-scope palace sitting before fuller later in-scope palaces.
+  - Collapse empty **in-scope** palaces. Do **not** pull beasts from earlier out-of-scope palaces to fill slots, and do **not** top up earlier under-filled palaces. After smash/remove, **re-pack** in-scope survivors — do not leave a one-beast palace sitting before a fuller later palace. If later streets still have beasts, **forward-pull** them (see HARD PACKING MANDATE) and `Exclude:` every palace that ends empty.
 
 ### `PALACE_ATOMS.csv`
 
@@ -199,7 +206,9 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 - NEVER leave peg gaps **inside the scope**, or >5 beasts per palace.
 - NEVER under-fill an in-scope palace (1–4 beasts) when ≥5 **in-scope** beasts remain after reduction.
 - NEVER leave a sparse in-scope palace (1–4) unless it is the **last in-scope** palace by `palace_number` — especially never ship one beast on palace N while N+1… have more.
-- NEVER “keep palace boundaries” that violate packing after smash/remove — always re-pack to `5+5+…+remainder on last in-scope`.
+- NEVER “keep palace boundaries” that violate packing after smash/remove — always re-pack to `5+5+…+remainder on last in-scope`, pulling later streets forward when they still hold beasts.
+- NEVER leave a later street standing after its beasts were pulled. List it on `Exclude:` and omit its FILE rows.
+- NEVER pull beasts from earlier palaces, and NEVER keep an old beast name when the peg letter changes.
 - NEVER restart peg letters at `A` for a scoped reduction when earlier out-of-scope pegs already occupy `A…`.
 - NEVER assign two characters to one palace or zero characters after collapse.
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
@@ -216,7 +225,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 2. Each merge group → one smashed beast after re-sequencing **in scope**. Pegs not listed stay single-atom.
 3. Max 4 pegs per merge group; split larger groups and note splits in the chat note.
 4. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own maximally compressed concept (first-person core when it fits; square-bracket thought groups on the compressed core per Concept chunking rule; optional impersonal ` — Note:` on that `concept`) + verbatim quote + keywords. Do **not** write a zone narrative. Leave `story` empty.
-5. Re-peg **in scope only** (continue after last out-of-scope peg; never restart at `A` unless scope truly starts at `A`); pack beasts **5 per in-scope palace** (remainder < 5 on the last in-scope palace only); collapse empty in-scope palaces; one character per palace.
+5. Re-peg **in scope only** (continue after last out-of-scope peg; never restart at `A` unless scope truly starts at `A`); pack beasts **5 per in-scope palace** (remainder < 5 on the last in-scope palace only); **forward-pull** later streets when the last palace would stay at 1–4; `Exclude:` emptied later palaces; collapse empty in-scope palaces; one character per palace. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
 
 ## Procedure — REMOVE mode
 
@@ -224,7 +233,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 2. Remove atoms whose **current** peg is listed (must be in scope).
 3. Bestiary shifting for remaining **in-scope** beasts only; update beast names/pegs without touching earlier study pegs.
 4. Rewrite **in-scope** palace/beast/atom rows; preserve verbatim quote excerpts; keep or tighten compressed concepts (first-person core when it fits; optional impersonal ` — Note:` on `concept` only) in plain English; keep smashed structure when survivors stay zoned. Leave `story` empty. Do not rewrite narratives.
-5. Re-pack **in-scope** survivors **5 beasts per palace** (remainder < 5 only on the last in-scope palace); collapse empty in-scope palaces; one character per palace.
+5. Re-pack **in-scope** survivors **5 beasts per palace** (remainder < 5 only on the last in-scope palace); **forward-pull** later streets when the last palace would stay at 1–4; `Exclude:` emptied later palaces; collapse empty in-scope palaces; one character per palace. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
 
 ## Image prompts (both modes)
 
@@ -242,7 +251,7 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | Three FILE sections with exact markers | Yes |
 | Mode SMASH or REMOVE applied | Yes |
 | Scope locked; PREVIEW starts with Scope:; pack has only in-scope rows (no whole-study dump from A; no out-of-scope atoms from inventory) | Yes |
-| Unbroken peg sequence **in scope**; pack 5/palace with remainder < 5 only on highest **in-scope** palace_number; no sparse-then-full; ≤4 zones/beast | Yes |
+| Unbroken peg sequence **in scope**; pack 5/palace with remainder < 5 only on highest **in-scope** palace_number; later streets pulled forward when needed; emptied later palaces on `Exclude:` and absent from FILE; no sparse-then-full; ≤4 zones/beast | Yes |
 | No knowledge drops for in-scope survivors; verbatim quote excerpts intact | Yes |
 | Plain everyday English on concept (+ Note) / image_prompt / PREVIEW Concept; no archaic/old-fashioned/literary diction; no diction upgrades; quotes untouched; `story` left empty | Yes |
 | Each surviving `concept` maximal compression with first-person core when it fits; ` — Note:` on `concept` only when nuance stripped (Note impersonal); `quote` verbatim only | Yes |
@@ -284,6 +293,6 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 Reminders for humans (stripped before paste to some companions):
 - Say the scope explicitly when possible (`palaces 5–8` / `pegs U–Aj`) so the AI does not dump the whole study from A.
 - Open the pack (or Memory Palace [I] confirm list) to read PREVIEW and decide discards before re-import.
-- Prefer: download `PALACE_PACK.txt` to Desktop → Memory Palace [I] re-import (upserts in-scope rows only).
+- Prefer: download `PALACE_PACK.txt` to Desktop → Memory Palace [I] re-import (upserts in-scope rows; `Exclude:` lines delete emptied later palaces).
 - If only a code fence appeared: copy the pack body, save as `PALACE_PACK.txt` on Desktop, then [I].
 - Optional: regenerate image → Desktop PNG/JPG → Memory Palace [Q].

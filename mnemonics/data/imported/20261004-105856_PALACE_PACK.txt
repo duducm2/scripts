@@ -1,0 +1,38 @@
+﻿```text
+===PREVIEW===
+Mode REMOVE · STUDY_DATAANALYST · 1 palaces · 4 beasts · 4 atoms
+Scope: palaces 19–19 · pegs Bv–Bz
+Packing: 4 (remainder only on last in-scope palace)
+Changes: Removed peg Bw; shifted subsequent atoms left (Bx -> Bw, By -> Bx, Bz -> By)
+
+PALACE 19 — Databricks Foundations (Charles Darwin) [PALACE_DATAANALYST_19]
+  [Bv] Bone vulture — Concept: [Databricks Core] [I process data with Spark] [store it in Delta Lake] [and manage models with MLflow] | Quote: "databricks is not just one open source solution but in fact it's multiple at its core in particular it's spark delta lake and ml flow"
+  [Bw] Bone wombat — Concept: [Compute Clusters] [I configure Spark machines] [to terminate automatically] [after a period of inactivity] — Note: This prevents wasted cloud spend when the resources are not being used. | Quote: "you can also set it to terminate after inactivity which is great again trying to reduce cost if you're not using your machine"
+  [Bx] Bone Xena, warrior woman — Concept: [Databricks Tables] [I interact with data] [through an abstraction layer] [that sits over raw files] | Quote: "you are going to be dealing with tables at the abstraction of almost pretty much a file which essentially is in a data lake or a data lake house"
+  [By] Byron — Concept: [Interactive Notebooks] [I write my logic] [using multiple programming languages] [within the same unified interface] | Quote: "the great thing about databricks is it gives you a few options in terms of what type of coding language you're going to use in your notebook you can use python scala sql or r"
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_19,STUDY_DATAANALYST,19,Databricks Foundations,Charles Darwin,,4,"Depth slot: ForegroundLeft gate, a skeletal bone vulture aggressively eating a crackling lightning bolt that scorches its ribs. Depth slot: MidgroundRight parked car, a bone wombat phases through the metal door while chewing on a glowing toy robot. Depth slot: BackgroundCenter facade, a skeletal warrior woman with a sword gives a dramatic handshake to a disembodied giant floating hand. Depth slot: Aerial lamp post, a Victorian poet hangs upside down, stabbing the metal with a colossal fountain pen that squirts glowing blue ink. Wandering the scene is an original fictional 19th-century naturalist who resembles an older adult with a long white beard, bald on top, wearing a heavy tweed overcoat and holding a magnifying glass — not any real, living, historical, or named public figure and not any copyrighted character."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATAANALYST_19_Bv,PALACE_DATAANALYST_19,Bv,Bone vulture,Custom,,0,1
+BEAST_DATAANALYST_19_Bw,PALACE_DATAANALYST_19,Bw,Bone wombat,Custom,,0,2
+BEAST_DATAANALYST_19_Bx,PALACE_DATAANALYST_19,Bx,"Bone Xena, warrior woman",Custom,,0,3
+BEAST_DATAANALYST_19_By,PALACE_DATAANALYST_19,By,Byron,Lynne Kelly,,0,4
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+ATOM_0445,BEAST_DATAANALYST_19_Bv,single,,,"[Databricks Core] [I process data with Spark] [store it in Delta Lake] [and manage models with MLflow]","apple | Core || lightning | Spark || triangle | Delta || beaker | models","databricks is not just one open source solution but in fact it's multiple at its core in particular it's spark delta lake and ml flow",,1
+ATOM_0447,BEAST_DATAANALYST_19_Bw,single,,,"[Compute Clusters] [I configure Spark machines] [to terminate automatically] [after a period of inactivity] — Note: This prevents wasted cloud spend when the resources are not being used.","gears | Clusters || robot | machines || guillotine | terminate || hammock | inactivity","you can also set it to terminate after inactivity which is great again trying to reduce cost if you're not using your machine",,1
+ATOM_0448,BEAST_DATAANALYST_19_Bx,single,,,"[Databricks Tables] [I interact with data] [through an abstraction layer] [that sits over raw files]","desk | Tables || handshake | interact || blanket | abstraction || sushi | raw","you are going to be dealing with tables at the abstraction of almost pretty much a file which essentially is in a data lake or a data lake house",,1
+ATOM_0449,BEAST_DATAANALYST_19_By,single,,,"[Interactive Notebooks] [I write my logic] [using multiple programming languages] [within the same unified interface]","spiral pad | Notebooks || pen | write || dictionary | languages || puzzle | unified","the great thing about databricks is it gives you a few options in terms of what type of coding language you're going to use in your notebook you can use python scala sql or r",,1
+===END_FILE===
+
+```

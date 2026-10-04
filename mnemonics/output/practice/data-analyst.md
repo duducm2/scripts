@@ -1,6 +1,94 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 20: Databricks Production</strong> · Character: Nikola Tesla · 1 beast · 1 atom</summary>
+
+_No image_
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### [Ca] camel
+
+<img src="../../web/assets/beast-thumbs/camel.png" alt="camel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [Databricks <img alt="[Jobs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BJobs%5D&color=9fd4ff" />(hardhat)] [I <img alt="[convert]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconvert%5D&color=ffd966" />(magic wand) my interactive notebooks] [into scheduled <img alt="[production]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bproduction%5D&color=ffd966" />(factory) pipelines] [with strict task <img alt="[dependencies]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdependencies%5D&color=ffd966" />(handcuffs)]
+
+**Quote**
+“that's really what's great about jobs it allows you to basically take a notebook and essentially truly productionize it”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>Memory Palace 19: Databricks Foundations</strong> · Character: Charles Darwin · 4 beasts · 4 atoms</summary>
+
+_No image_
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [By] Byron
+
+<img src="../../web/assets/beast-thumbs/byron.png" alt="Byron" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [Interactive <img alt="[Notebooks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNotebooks%5D&color=9fd4ff" />(spiral pad)] [I <img alt="[write]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwrite%5D&color=ffd966" />(pen) my logic] [using multiple programming <img alt="[languages]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blanguages%5D&color=ffd966" />(dictionary)] [within the same <img alt="[unified]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunified%5D&color=ffd966" />(puzzle) interface]
+
+**Quote**
+“the great thing about databricks is it gives you a few options in terms of what type of coding language you're going to use in your notebook you can use python scala sql or r”
+
+### [Bx] Bone Xena, warrior woman
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Bone Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [Databricks <img alt="[Tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTables%5D&color=9fd4ff" />(desk)] [I <img alt="[interact]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binteract%5D&color=ffd966" />(handshake) with data] [through an <img alt="[abstraction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Babstraction%5D&color=ffd966" />(blanket) layer] [that sits over <img alt="[raw]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Braw%5D&color=ffd966" />(sushi) files]
+
+**Quote**
+“you are going to be dealing with tables at the abstraction of almost pretty much a file which essentially is in a data lake or a data lake house”
+
+### [Bw] Bone wombat
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/wombat.png" alt="Bone wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [Compute <img alt="[Clusters]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BClusters%5D&color=9fd4ff" />(gears)] [I configure Spark <img alt="[machines]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmachines%5D&color=ffd966" />(robot)] [to <img alt="[terminate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bterminate%5D&color=ffd966" />(guillotine) automatically] [after a period of <img alt="[inactivity]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binactivity%5D&color=ffd966" />(hammock)] — Note: This prevents wasted cloud spend when the resources are not being used.
+
+**Quote**
+“you can also set it to terminate after inactivity which is great again trying to reduce cost if you're not using your machine”
+
+### [Bv] Bone vulture
+
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/vulture.png" alt="Bone vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [Databricks <img alt="[Core]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCore%5D&color=9fd4ff" />(apple)] [I process data with <img alt="[Spark]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%5D&color=ffd966" />(lightning)] [store it in <img alt="[Delta]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDelta%5D&color=ffd966" />(triangle) Lake] [and manage <img alt="[models]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmodels%5D&color=ffd966" />(beaker) with MLflow]
+
+**Quote**
+“databricks is not just one open source solution but in fact it's multiple at its core in particular it's spark delta lake and ml flow”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 18: Star Schema Best Practices</strong> · Character: Galileo Galilei · 1 beast · 1 atom</summary>
 
 ![Memory Palace 18](images/data-analyst/18.png)
@@ -22,32 +110,6 @@
 #### Notes
 
 No, that quote describes **dimensional modeling** (specifically designing a **star schema** for data warehousing / analytical reporting), not traditional database normalization.
-
-While both techniques separate data across multiple tables to avoid redundancy, their rules, goals, and results are fundamentally different.
-
----
-
-### Key Distinctions
-
-| Feature | Star Schema / Dimensional Design | Database Normalization (3NF / BCNF) |
-| --- | --- | --- |
-| **Primary Goal** | Fast, intuitive analytical queries (OLAP) and aggregations. | Eliminating update/insert/delete anomalies and write redundancy (OLTP). |
-| **Fact Table Role** | Stores numeric metrics/measures and foreign keys to dimensions. | Not a concept in relational modeling (everything is an entity/relation). |
-| **Dimension Structure** | **Intentionally denormalized.** A single `dim_product` table typically bundles category, subcategory, brand, and name into flat columns. | Decomposed into separate linked tables (e.g., `products`, `subcategories`, `categories`) to remove transitive dependencies. |
-| **Join Complexity** | Low. Fact tables join directly to wide dimension tables in 1-hop joins. | High. Queries require multiple deep joins across normalized entities. |
-
----
-
-### Why It Is Often Confused with Normalization
-
-1. **Splitting attributes:** Moving descriptive text (e.g., `product_name`) out of a transaction table resembles decomposing a flat sheet into relational entities.
-2. **Surrogate keys:** Both approaches use keys (`product_key`) to link transactional rows to descriptive attributes.
-
-### Where Normalization Would Go Further (Snowflaking)
-
-If you strictly normalized the dimension tables themselves (e.g., splitting `dim_product` into separate tables for `product`, `subcategory`, and `category` so no non-key attribute depends on another non-key attribute), that is known in data warehousing as a **snowflake schema**.
-
-In modern data warehousing (e.g., Power BI, Snowflake, BigQuery), the standard best practice remains the **star schema**: keeping the fact table strictly lean (keys + numeric values) while keeping the dimension tables wide and deliberately denormalized.
 
 #### Gallery
 

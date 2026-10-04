@@ -1,0 +1,42 @@
+﻿===PREVIEW===
+STUDY_DATA_ANALYST · 2 palaces · 6 beasts · 6 atoms
+Packing: 5+1 (remainder only on last **new** palace in this pack)
+
+PALACE 19 — Databricks Foundations (Charles Darwin) [PALACE_DATA_ANALYST_19]
+  [Bv] Bone vulture — Concept: [Databricks Core] [I process data with Spark] [store it in Delta Lake] [and manage models with MLflow] | Quote: "databricks is not just one open source solution but in fact it's multiple at its core in particular it's spark delta lake and ml flow"
+  [Bw] Bone wombat — Concept: [Data Lakehouse] [I merge the security] [of a traditional warehouse] [with the low cost of a data lake] | Quote: "what they are viewing in terms of the future of development and data management isn't a data warehouse but instead a data lake"
+  [Bx] Bone Xena, warrior woman — Concept: [Compute Clusters] [I configure Spark machines] [to terminate automatically] [after a period of inactivity] — Note: This prevents wasted cloud spend when the resources are not being used. | Quote: "you can also set it to terminate after inactivity which is great again trying to reduce cost if you're not using your machine"
+  [By] Byron — Concept: [Databricks Tables] [I interact with data] [through an abstraction layer] [that sits over raw files] | Quote: "you are going to be dealing with tables at the abstraction of almost pretty much a file which essentially is in a data lake or a data lake house"
+  [Bz] Bone Zeus — Concept: [Interactive Notebooks] [I write my logic] [using multiple programming languages] [within the same unified interface] | Quote: "the great thing about databricks is it gives you a few options in terms of what type of coding language you're going to use in your notebook you can use python scala sql or r"
+
+PALACE 20 — Databricks Production (Nikola Tesla) [PALACE_DATA_ANALYST_20]
+  [Ca] camel — Concept: [Databricks Jobs] [I convert my interactive notebooks] [into scheduled production pipelines] [with strict task dependencies] | Quote: "that's really what's great about jobs it allows you to basically take a notebook and essentially truly productionize it"
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATA_ANALYST_19,STUDY_DATA_ANALYST,19,Databricks Foundations,Charles Darwin,,5,"Depth slot: ForegroundLeft gate, a skeletal bone vulture aggressively eating a crackling lightning bolt that scorches its ribs. Depth slot: MidgroundRight parked car, a bone wombat phases through the metal door while chewing on a glowing energy shield. Depth slot: BackgroundCenter facade, a skeletal warrior woman with a sword wrestles a giant metallic robot that leaks neon grammar dust. Depth slot: Aerial lamp post, a Victorian poet named Byron hangs upside down, giving a dramatic handshake to a disembodied giant floating hand. Depth slot: ForegroundRight bench, a skeletal Zeus made of bones stabs the wood with a colossal fountain pen that squirts glowing blue ink. Wandering the scene is an original fictional 19th-century naturalist (older adult, long white beard, bald on top, wearing a heavy tweed overcoat and holding a magnifying glass) — not any real or named historical person and not any copyrighted character."
+PALACE_DATA_ANALYST_20,STUDY_DATA_ANALYST,20,Databricks Production,Nikola Tesla,,1,"Depth slot: ForegroundLeft wall, a giant camel with disproportionately tiny legs is tapping the bricks with a glowing magic wand, turning the solid stone into rippling water. Standing nearby is an original fictional early 20th-century inventor (slim build, dark parted hair, intense gaze, wearing a sharp vintage suit and holding a glowing glass bulb) — not any real or named historical person and not any copyrighted character."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATA_ANALYST_19_Bv,PALACE_DATA_ANALYST_19,Bv,Bone vulture,Custom,,0,1
+BEAST_DATA_ANALYST_19_Bw,PALACE_DATA_ANALYST_19,Bw,Bone wombat,Custom,,0,2
+BEAST_DATA_ANALYST_19_Bx,PALACE_DATA_ANALYST_19,Bx,"Bone Xena, warrior woman",Custom,,0,3
+BEAST_DATA_ANALYST_19_By,PALACE_DATA_ANALYST_19,By,Byron,Lynne Kelly,,0,4
+BEAST_DATA_ANALYST_19_Bz,PALACE_DATA_ANALYST_19,Bz,Bone Zeus,Custom,,0,5
+BEAST_DATA_ANALYST_20_Ca,PALACE_DATA_ANALYST_20,Ca,camel,Lynne Kelly,,0,1
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+,BEAST_DATA_ANALYST_19_Bv,single,,,"[Databricks Core] [I process data with Spark] [store it in Delta Lake] [and manage models with MLflow]","engine | Databricks || lightning | Spark || triangle | Delta || beaker | models","databricks is not just one open source solution but in fact it's multiple at its core in particular it's spark delta lake and ml flow",,1
+,BEAST_DATA_ANALYST_19_Bw,single,,,"[Data Lakehouse] [I merge the security] [of a traditional warehouse] [with the low cost of a data lake]","cabin | Lakehouse || shield | security || vault | warehouse || piggy bank | low cost","what they are viewing in terms of the future of development and data management isn't a data warehouse but instead a data lake",,1
+,BEAST_DATA_ANALYST_19_Bx,single,,,"[Compute Clusters] [I configure Spark machines] [to terminate automatically] [after a period of inactivity] — Note: This prevents wasted cloud spend when the resources are not being used.","gears | Clusters || robot | machines || guillotine | terminate || hammock | inactivity","you can also set it to terminate after inactivity which is great again trying to reduce cost if you're not using your machine",,1
+,BEAST_DATA_ANALYST_19_By,single,,,"[Databricks Tables] [I interact with data] [through an abstraction layer] [that sits over raw files]","desk | Tables || handshake | interact || blanket | abstraction || sushi | raw","you are going to be dealing with tables at the abstraction of almost pretty much a file which essentially is in a data lake or a data lake house",,1
+,BEAST_DATA_ANALYST_19_Bz,single,,,"[Interactive Notebooks] [I write my logic] [using multiple programming languages] [within the same unified interface]","spiral pad | Notebooks || pen | write || dictionary | languages || puzzle | unified","the great thing about databricks is it gives you a few options in terms of what type of coding language you're going to use in your notebook you can use python scala sql or r",,1
+,BEAST_DATA_ANALYST_20_Ca,single,,,"[Databricks Jobs] [I convert my interactive notebooks] [into scheduled production pipelines] [with strict task dependencies]","hardhat | Jobs || magic wand | convert || factory | production || handcuffs | dependencies","that's really what's great about jobs it allows you to basically take a notebook and essentially truly productionize it",,1
+===END_FILE===

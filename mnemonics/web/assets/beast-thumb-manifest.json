@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-09-29",
+    "generated_at": "2026-10-04",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "384 beasts / 61 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 43 beasts with adj"
+    "catalog_scope": "389 beasts / 62 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 46 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -3853,6 +3853,56 @@
       "filename": "butterfly.png",
       "url": "/assets/beast-thumbs/butterfly.png",
       "source_slug": "butterfly",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_20_Ca": {
+      "label": "camel",
+      "peg_code": "Ca",
+      "filename": "camel.png",
+      "url": "/assets/beast-thumbs/camel.png",
+      "source_slug": "camel",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_19_Bv": {
+      "label": "Bone vulture",
+      "peg_code": "Bv",
+      "filename": "vulture.png",
+      "url": "/assets/beast-thumbs/vulture.png",
+      "source_slug": "vulture",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_19_Bw": {
+      "label": "Bone wombat",
+      "peg_code": "Bw",
+      "filename": "wombat.png",
+      "url": "/assets/beast-thumbs/wombat.png",
+      "source_slug": "wombat",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_19_Bx": {
+      "label": "Bone Xena, warrior woman",
+      "peg_code": "Bx",
+      "filename": "xena_warrior_woman.png",
+      "url": "/assets/beast-thumbs/xena_warrior_woman.png",
+      "source_slug": "xena_warrior_woman",
+      "adjective": "bone",
+      "adj_filename": "adj_bone.png",
+      "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "BEAST_DATAANALYST_19_By": {
+      "label": "Byron",
+      "peg_code": "By",
+      "filename": "byron.png",
+      "url": "/assets/beast-thumbs/byron.png",
+      "source_slug": "byron",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
