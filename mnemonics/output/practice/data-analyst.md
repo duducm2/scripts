@@ -1,42 +1,23 @@
 # Data Analyst
 
 <details open>
-<summary><strong>Memory Palace 20: Databricks Production</strong> · Character: Nikola Tesla · 1 beast · 1 atom</summary>
+<summary><strong>Memory Palace 19: Databricks Foundations</strong> · Character: Charles Darwin · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 19](images/data-analyst/19.jpg)
 
-<p><em>1 beast · 1 Knowledge Atom</em></p>
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
-### [Ca] camel
+### [Bz] Bone Zeus
 
-<img src="../../web/assets/beast-thumbs/camel.png" alt="camel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/zeus.png" alt="Bone Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [Databricks <img alt="[Jobs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BJobs%5D&color=9fd4ff" />(hardhat)] [I <img alt="[convert]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconvert%5D&color=ffd966" />(magic wand) my interactive notebooks] [into scheduled <img alt="[production]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bproduction%5D&color=ffd966" />(factory) pipelines] [with strict task <img alt="[dependencies]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdependencies%5D&color=ffd966" />(handcuffs)]
 
 **Quote**
 “that's really what's great about jobs it allows you to basically take a notebook and essentially truly productionize it”
-
-#### Notes
-
-_No notes._
-
-#### Gallery
-
-_No gallery images._
-
-</details>
-
-<details open>
-<summary><strong>Memory Palace 19: Databricks Foundations</strong> · Character: Charles Darwin · 4 beasts · 4 atoms</summary>
-
-_No image_
-
-<p><em>4 beasts · 4 Knowledge Atoms</em></p>
-
-#### Knowledge Atoms
 
 ### [By] Byron
 

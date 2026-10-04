@@ -510,9 +510,11 @@ Palace_AiCompanionFixGuidance(errorMsg) {
         return "- Your beast packing is invalid for palaces in this pack.`r`n"
         . "- Rewrite so every pack palace except the highest palace_number in the pack has exactly 5 beasts.`r`n"
         . "- Put any remainder (1–4) only on the last palace in this pack. Never ship patterns like 1+5+5 or 4+5.`r`n"
-        . "- If that last palace would stay at 1–4 and a later street still has beasts, pull those later beasts forward in peg order and re-peg them (no peg gaps; the new letter takes that letter's beast name).`r`n"
+        .
+        "- If that last palace would stay at 1–4 and a later street still has beasts, pull those later beasts forward in peg order and re-peg them (no peg gaps; the new letter takes that letter's beast name).`r`n"
         . "- Do not pull beasts from earlier streets, and do not top up earlier palaces.`r`n"
-        . "- For each later palace left with zero beasts, add Exclude: <palace_number> <palace_id> to PREVIEW and omit its FILE rows.`r`n"
+        .
+        "- For each later palace left with zero beasts, add Exclude: <palace_number> <palace_id> to PREVIEW and omit its FILE rows.`r`n"
         . "- Then re-emit the full pack (PREVIEW + all three FILE sections)."
     }
     if (InStr(e, "truncated") || InStr(e, "missing section") || InStr(e, "incomplete")
@@ -1690,12 +1692,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 keepBeastIds[canonId] := true
             if (survivorIds.Has(packId))
                 keepBeastIds[packId] := true
-        }
-        for b in beasts {
-            bid := b.Has("id") ? b["id"] : ""
-            pid := b.Has("palace_id") ? b["palace_id"] : ""
-            if (bid != "" && survivorIds.Has(bid) && beastIdRemap.Has(bid))
-                keepBeastIds[bid] := true
         }
         for p in palaces {
             pid := p.Has("id") ? p["id"] : ""

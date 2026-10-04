@@ -19,7 +19,7 @@ HARD PACKING MANDATE (in-scope only — read before any re-peg) — Desktop impo
 EXISTING / OUT-OF-SCOPE HARD MANDATE (read before any SMASH/REMOVE)
 - Attached practice `.md` / CSV = **read-only inventory** for locking scope and resolving ids / quotes of **in-scope** rows only.
 - The pack MUST contain **only in-scope** palace / beast / atom rows after reduction. NEVER dump earlier palaces or pegs already outside the locked scope “because they were in the attached file.”
-- Do **not** invent NEW Knowledge Atoms that were not already in the in-scope set before this reduction. Do **not** rewrite out-of-scope atoms.
+- Do **not** invent NEW Knowledge Atoms. A forward-pulled later-street atom is an existing atom, not a new one. Do **not** rewrite earlier out-of-scope atoms.
 - Do **not** pull beasts from **earlier** out-of-scope inventory to fill in-scope slots, and do **not** add beasts to earlier under-filled palaces.
 - **Do** pull beasts from **later** streets when the forward-pull rule applies. Those pulled rows become in-scope and must be re-emitted. Emptied later palaces go on `Exclude:` and are omitted from FILE sections.
 - In-scope survivors that remain after SMASH/REMOVE are re-emitted (required for upsert) with re-peg / compression rules — that is not a license to rewrite the whole study.
