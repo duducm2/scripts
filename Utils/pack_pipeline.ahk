@@ -848,6 +848,9 @@ PackPipeline_SendFixAndSubmit(fixText) {
     ; Restore user focus before re-entering background wait.
     restored := PackPipeline_RestoreUserHwnd()
     PackPipeline_NotifyUserFree(restored)
+    try ImportWatcher_CompanionMarkAiFixSubmittedText(fixText)
+    catch {
+    }
     return true
 }
 

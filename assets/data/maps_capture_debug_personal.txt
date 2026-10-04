@@ -1,1 +1,26 @@
-{"step":"waiting","data":{"note":"Shift+P on Google Maps replaces this file"}}
+﻿{"session":"20261004104409","seq":1,"t":134631906,"step":"machine","data":{"computer":"EDUARDO","log":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\assets\\data\\maps_capture_debug_personal.txt","scriptDir":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts","user":"eduev","work":"no"}}
+{"session":"20261004104409","seq":2,"t":134631906,"step":"enter","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","title":"14 Rod. Jorn. Francisco Aguirre Proença - Google Maps - Google Chrome"}}
+{"session":"20261004104409","seq":3,"t":134631968,"step":"attach","data":{"hwnd":"1050202","ok":"1"}}
+{"session":"20261004104409","seq":4,"t":134632593,"step":"maximize","data":{"hwnd":"1050202","ok":"1"}}
+{"session":"20261004104409","seq":5,"t":134632609,"step":"document","data":{"ok":"1"}}
+{"session":"20261004104409","seq":6,"t":134632625,"step":"collapse_panel","data":{"ok":"0"}}
+{"session":"20261004104409","seq":7,"t":134633328,"step":"hide_chrome","data":{"ok":"1"}}
+{"session":"20261004104409","seq":8,"t":134634531,"step":"session_start","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","isWork":"0","methods":"print,screen,canvas","outPath":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png"}}
+{"session":"20261004104409","seq":9,"t":134634656,"step":"pane","data":{"attempt":"1","b":"2159","h":"2028","l":"0","name":"Street View","ok":"1","r":"3840","t":"131","w":"3840"}}
+{"session":"20261004104409","seq":10,"t":134634656,"step":"rect_fit","data":{"attempt":"1","clientB":"2158","clientL":"0","clientR":"3840","clientT":"0","h":"2027","l":"0","ok":"1","paneH":"2028","paneL":"0","paneT":"131","paneW":"3840","rule":"intersect","t":"131","w":"3840"}}
+{"session":"20261004104409","seq":11,"t":134634671,"step":"method_start","data":{"attempt":"1","method":"print"}}
+{"session":"20261004104409","seq":12,"t":134634843,"step":"print_window","data":{"err":"","exists":"1","h":"2027","hwnd":"1050202","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"131"}}
+{"session":"20261004104409","seq":13,"t":134634843,"step":"method_file","data":{"attempt":"1","bytes":"33887","h":"2027","headerErr":"","method":"print","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261004104409","seq":14,"t":134634859,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png","minH":"1621","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261004104409","seq":15,"t":134635109,"step":"commit_header","data":{"bytes":"33887","err":"","h":"2027","ok":"1","w":"3840"}}
+{"session":"20261004104409","seq":16,"t":134635125,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261004104409","seq":17,"t":134635125,"step":"keep_png","data":{"bytes":"33887","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261004-104412-print-a1.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261004104409","seq":18,"t":134635140,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
+{"session":"20261004104409","seq":19,"t":134635156,"step":"method_start","data":{"attempt":"1","method":"screen"}}
+{"session":"20261004104409","seq":20,"t":134636015,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"2027","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"131"}}
+{"session":"20261004104409","seq":21,"t":134636015,"step":"method_file","data":{"attempt":"1","bytes":"9886036","h":"2027","headerErr":"","method":"screen","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261004104409","seq":22,"t":134636031,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png","minH":"1621","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261004104409","seq":23,"t":134636296,"step":"commit_header","data":{"bytes":"9886036","err":"","h":"2027","ok":"1","w":"3840"}}
+{"session":"20261004104409","seq":24,"t":134636421,"step":"pixel_gate","data":{"code":"0","err":"","reason":"ok"}}
+{"session":"20261004104409","seq":25,"t":134636671,"step":"commit_ok","data":{"bytes":"9886036","dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png","h":"2027","w":"3840"}}
+{"session":"20261004104409","seq":26,"t":134636859,"step":"saved","data":{"name":"PALACE_QUICK_IMAGE_02.png","path":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png"}}

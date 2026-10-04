@@ -23,7 +23,7 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 3. **Pack auto-pipeline** (AppLaunchers — [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk)): after a catalog pack prompt is **sent**, wait for generation to finish, extract last **code block** (fallback: last message), write the canonical Desktop filename, then open the domain **import confirm** GUI. No manual naming/save.
 4. **Importer** (`*_import.ahk`) reads the Desktop pack, extracts CSV, upserts local data (confirm still required).
 5. On **structure** failure before write **or import validation** failure (`*_AI_FIX.txt` written): pipeline **pastes + submits** the fix to the companion and re-watches generation (max 2 attempts). Confirm **Cancel** ends the session (no AI-fix loop, no app launch).
-6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs dropped manually; the pack pipeline marks its write as seen / sets busy so the watcher does not double-fire. After watcher-driven imports, fresh AI-fix files are **paste-only** into the companion. Hub / manual `ImportMgmt_OnAiFixReady` **paste+submits** when the pack pipeline is inactive.
+6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs dropped manually; the pack pipeline marks its write as seen / sets busy so the watcher does not double-fire. After watcher-driven imports, a fresh AI-fix file is **sent once**. The watcher does not paste it into the composer again. Hub / manual `ImportMgmt_OnAiFixReady` **paste+submits** when the pack pipeline is inactive.
 
 ### Pack auto-pipeline (arm → extract → Desktop → import)
 
@@ -65,7 +65,7 @@ Finance and Memory Palace add a **confirm UI** before save. Memory Palace upsert
 
 Fix files: `FINANCE_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `TASK_AI_FIX.txt`.
 
-Finance/Palace/Tasks AI-fix path: clipboard copy + orientation toast via `ImportMgmt_OnAiFixReady`. When PackPipeline is **active**, the pipeline owns paste+submit + re-watch (OnAiFixReady skips companion send to avoid double-submit). When inactive, OnAiFixReady **paste+submits** once. Watcher after-import remains paste-only. Fix paths: `FINANCE_AI_FIX.txt`, `TASK_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `PACK_AI_FIX.txt`. Tasks pack import is AHK confirm + Python CLI (`task_pack_import.py preview|commit`).
+Finance/Palace/Tasks AI-fix path: clipboard copy + orientation toast via `ImportMgmt_OnAiFixReady`. When PackPipeline is **active**, the pipeline owns paste+submit + re-watch (OnAiFixReady skips companion send to avoid double-submit). When inactive, OnAiFixReady **paste+submits** once. Watcher after-import sends only if that submit did not already happen, and never pastes the same fix a second time. Fix paths: `FINANCE_AI_FIX.txt`, `TASK_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `PACK_AI_FIX.txt`. Tasks pack import is AHK confirm + Python CLI (`task_pack_import.py preview|commit`).
 
 Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors when applicable) → **WHAT YOU MUST DO** (tailored via `*_AiCompanionFixGuidance`) → **DELIVERY RULES**.
 
