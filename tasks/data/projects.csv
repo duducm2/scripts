@@ -1,12 +1,12 @@
 id,title,filter,section_path,sort_order,active,created_at,icon_ref,icon_color,icon_tint,status
 PROJ_0002,Doctoral degree,work,Tasks,1230,1,2026-08-29 15:48:39,attachments\icons\PROJ_0002.png,#ffffff,0,waiting
 PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,attachments\icons\PROJ_0003.png,#ffffff,0,
-PROJ_0004,TAR,work,Tasks,430,1,2026-08-29 15:48:39,,#ffffff,0,
+PROJ_0004,TAR,work,Tasks,340,1,2026-08-29 15:48:39,,#ffffff,0,waiting
 PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,attachments\icons\PROJ_0005.png,#ffffff,0,
 PROJ_0006,Trainings,work,Tasks,720,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0,waiting
-PROJ_0011,BPM,work,Projects,160,1,2026-08-29 15:48:39,attachments\icons\PROJ_0011.png,#ffffff,0,
+PROJ_0011,BPM,work,Projects,430,1,2026-08-29 15:48:39,attachments\icons\PROJ_0011.png,#ffffff,0,waiting
 PROJ_0012,Piloto PT B2B - Data insights,work,Projects,2580,1,2026-08-29 15:48:39,attachments\icons\PROJ_0012.png,#ffffff,0,waiting
-PROJ_0013,RISE,work,Projects,340,1,2026-08-29 15:48:39,attachments\icons\PROJ_0013.png,#ffffff,0,
+PROJ_0013,RISE,work,Projects,160,1,2026-08-29 15:48:39,attachments\icons\PROJ_0013.png,#ffffff,0,
 PROJ_0015,General,personal,,1340,1,2026-08-29 15:48:39,attachments\icons\PROJ_0015.png,#ffffff,0,
 PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2490,1,2026-08-29 15:48:39,attachments\icons\PROJ_0016.png,#ffffff,0,
 PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0019.svg,#ffffff,0,
