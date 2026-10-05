@@ -967,11 +967,12 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         } catch {
         }
     } else {
-        try Dictation_RestorePasteTarget()
-        catch {
-        }
-        try SetTimer(Dictation_RestorePasteTarget, -150)
-        catch {
+        ; Func() keeps this a function lookup. A bare name here is an unset local and hides the real function.
+        try {
+            fn := Func("Dictation_RestorePasteTarget")
+            fn()
+            SetTimer(fn, -150)
+        } catch {
         }
     }
 
