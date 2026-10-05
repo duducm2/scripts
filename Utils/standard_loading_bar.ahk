@@ -959,19 +959,12 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     }
 
     ; Default behavior keeps key capture reliable by activating the overlay.
-    ; Dictation V must keep the email body (or other field) that was focused when the take started.
+    ; preserveUserFocus (Send dictation) must not pull the user back to the window where the take started.
+    ; V restores that field itself.
     if (!preserveUserFocus) {
         try {
             if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
                 WinActivate(g_StandardLoadingBarGui.Hwnd)
-        } catch {
-        }
-    } else {
-        ; Func() keeps this a function lookup. A bare name here is an unset local and hides the real function.
-        try {
-            fn := Func("Dictation_RestorePasteTarget")
-            fn()
-            SetTimer(fn, -150)
         } catch {
         }
     }

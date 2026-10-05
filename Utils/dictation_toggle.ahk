@@ -176,7 +176,8 @@ DictationFlag_SlotLabel(slot) {
 DictationFlag_CreateGui(slot, imagePath) {
     global DICTATION_SQUARE_SIZE
 
-    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    ; WS_EX_NOACTIVATE: the flag stays visible without becoming the foreground window.
+    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale +E0x08000000")
     flagGui.BackColor := "313244"
     flagGui.MarginX := 0
     flagGui.MarginY := 0
@@ -215,14 +216,13 @@ DictationFlag_Hide() {
 
 DictationFlag_MoveGui(flagGui, guiX, guiY) {
     try {
-        flagGui.Move(guiX, guiY)
         hwnd := flagGui.Hwnd
         if (hwnd) {
-            ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE = 0x0001 | 0x0004 | 0x0010 = 0x0015
+            ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW
+            ; Show without taking focus while the user keeps working in another window.
             DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0,
-                "UInt", 0x0015)
+                "UInt", 0x0055)
         }
-        flagGui.Show("NA")
     } catch {
     }
 }
