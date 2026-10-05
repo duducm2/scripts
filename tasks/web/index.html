@@ -1742,9 +1742,18 @@
           );
 
         function trimLinkJunk(s) {
-          return String(s || "")
+          let t = String(s || "")
             .trim()
             .replace(/[),.;]+$/g, "");
+          // Pasted paths often keep the surrounding quotes from Explorer / chat.
+          while (
+            t.length >= 2 &&
+            ((t.startsWith('"') && t.endsWith('"')) ||
+              (t.startsWith("'") && t.endsWith("'")))
+          ) {
+            t = t.slice(1, -1).trim();
+          }
+          return t;
         }
 
         function classifyHyperlink(raw) {
@@ -1778,6 +1787,11 @@
           if (url) return classifyHyperlink(url[0]);
           const fileUri = s.match(/file:\/\/\/[^\s<>"']+/i);
           if (fileUri) return classifyHyperlink(fileUri[0]);
+          // Quoted Windows paths may contain spaces; capture through the closing quote.
+          const quotedWin = s.match(
+            /"((?:[A-Za-z]:\\|\\\\)[^"]*)"|'((?:[A-Za-z]:\\|\\\\)[^']*)'/,
+          );
+          if (quotedWin) return classifyHyperlink(quotedWin[1] || quotedWin[2]);
           const win = s.match(/(?:[A-Za-z]:\\|\\\\)[^\s<>"']+/);
           if (win) return classifyHyperlink(win[0]);
           return null;
