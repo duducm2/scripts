@@ -87,3 +87,32 @@ GitCli_BehindUpstreamCount(repoDir, timeoutMs := 15000) {
         return -1
     return Integer(out)
 }
+
+; my-personal-repo clone for the current machine. Built-in paths so a work PC
+; picks up the Bosch clone after a scripts pull (env.ahk is gitignored).
+; PERSONAL_REPO_PATH_WORK / PERSONAL_REPO_PATH_PERSONAL in env.ahk override when set.
+; Returns the path when the folder exists; else "" (Act aborts, Utility [G] soft-skips).
+; Do not define this in env.ahk.
+GetPersonalRepoPath() {
+    global IS_WORK_ENVIRONMENT, PERSONAL_REPO_PATH_WORK, PERSONAL_REPO_PATH_PERSONAL
+    work := "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo"
+    personal := "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo"
+    if (IsSet(PERSONAL_REPO_PATH_WORK)) {
+        override := RTrim(Trim(PERSONAL_REPO_PATH_WORK), "\")
+        if (override != "")
+            work := override
+    }
+    if (IsSet(PERSONAL_REPO_PATH_PERSONAL)) {
+        override := RTrim(Trim(PERSONAL_REPO_PATH_PERSONAL), "\")
+        if (override != "")
+            personal := override
+    }
+    isWork := IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
+    path := isWork ? work : personal
+    if (path != "" && DirExist(path))
+        return path
+    other := isWork ? personal : work
+    if (other != "" && DirExist(other))
+        return other
+    return ""
+}
