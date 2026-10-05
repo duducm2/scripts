@@ -809,10 +809,18 @@ Enter:: {
     }
 
     hwnd := WinExist("A")
-    if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Send("{Enter}")))
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "gemini", false)
+        return
+    }
+    if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Gemini_SubmitComposer(hwnd)))
         return
 
-    ; Phase 3: non-blocking daemon watch or legacy blocking monitor
+    if (AiCompanion_FinishConfirmedSubmit(hwnd, "gemini", hwnd))
+        return
+
+    ; Flag off: non-blocking daemon watch or legacy blocking monitor
     if (USE_DAEMON_MONITOR_GEMINI) {
         ShiftKeysIPC_StartGeminiWatch(300000, PlayCompletionChime_Gemini)
         return
@@ -823,10 +831,18 @@ Enter:: {
 ; Control + Enter : Send Enter and monitor for response completion
 ^Enter:: {
     hwnd := WinExist("A")
-    if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Send("{Enter}")))
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "gemini", true)
+        return
+    }
+    if (!AiCompanion_SendAndConfirm(hwnd, "gemini", (*) => Gemini_SubmitComposer(hwnd)))
         return
 
-    ; Phase 3: non-blocking daemon watch or legacy blocking monitor
+    if (AiCompanion_FinishConfirmedSubmit(hwnd, "gemini", hwnd))
+        return
+
+    ; Flag off: non-blocking daemon watch or legacy blocking monitor
     if (USE_DAEMON_MONITOR_GEMINI) {
         ShiftKeysIPC_StartGeminiWatch(300000, PlayCompletionChime_Gemini)
         return

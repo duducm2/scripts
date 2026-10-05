@@ -126,14 +126,39 @@ ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate() {
 }
 
 RunSetMicVolumeScript() {
+    RunMicVolumeScript("")
+}
+
+; muteAction: "" sets capture level, "mute" cuts the endpoint off, "unmute" clears mute and restores the level.
+RunMicVolumeScript(muteAction := "") {
+    global SCRIPT_MIC_CAPTURE_VOLUME_PERCENT
     micVolumeScript := A_ScriptDir "\infra\tools\Set-MicVolume.ps1"
     if (!FileExist(micVolumeScript))
         return
+    args := "-Level " SCRIPT_MIC_CAPTURE_VOLUME_PERCENT
+    if (muteAction = "mute")
+        args := "-Mute"
+    else if (muteAction = "unmute")
+        args := "-Unmute -Level " SCRIPT_MIC_CAPTURE_VOLUME_PERCENT
     try {
-        Run("powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`" -Level " SCRIPT_MIC_CAPTURE_VOLUME_PERCENT, ,
-            "Hide")
+        Run("powershell.exe -ExecutionPolicy Bypass -File `"" micVolumeScript "`" " args, , "Hide")
     } catch {
     }
+}
+
+Dictation_MuteCaptureForSwap() {
+    global g_DictationSwapMicMuted
+    g_DictationSwapMicMuted := true
+    RunMicVolumeScript("mute")
+}
+
+; No-op unless this swap muted the endpoint. Safe to call from finally after a successful unmute.
+Dictation_UnmuteCaptureAfterSwap() {
+    global g_DictationSwapMicMuted
+    if (!g_DictationSwapMicMuted)
+        return
+    g_DictationSwapMicMuted := false
+    RunMicVolumeScript("unmute")
 }
 
 ; =============================================================================

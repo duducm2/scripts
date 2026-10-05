@@ -335,7 +335,7 @@ cheatSheets["chrome.exe"] := "
     🪟 [W]Pop current tab to new [W]indow
     📑 [Ctrl+Alt+D] [D]uplicate URL to new tab (keep current / history)
     🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
-    ❌ [Ctrl+Alt+C] [C]ancel "Restore pages?" banner
+    ❌ [Ctrl+Alt+C] [C]ancel "Restore pages?" (bubble X if no Cancel); Ctrl+W only if a new tab opened
 )"  ; end Chrome
 
 ; --- Google Maps (Chrome) ---------------------------------------------------
@@ -346,7 +346,7 @@ cheatSheets["Google Maps"] := "
     📍 [L][L]at/long (copy coordinates to clipboard)
     📉 [C][C]ollapse side panel
     🖼️ [P][P]NG capture (clean map / Street View → Desktop)
-y)"  ; end Google Maps
+)"  ; end Google Maps
 
 ; --- Chrome PDF Viewer ------------------------------------------------------
 cheatSheets["Chrome PDF Viewer"] := "
@@ -1151,14 +1151,14 @@ cheatSheets["Memory Palace"] := "
     
     === Navigation ===
     🏠 [Esc] Close study picker / palace overlay / leave Browse / return to Practice
-    🔁 [P] Toggle Practice ↔ Plans
-    🎬 [E] Entertainment topics
-    🖼 [I] Image backlog (ordered study snapshots)
-    🆕 [L] Open latest palace for the selected study
-    📖 [M] Method
-    🗂 [B] Browse
-    🔗 [1] Links (study video / article / favorite)
-    ❓ [H] Help (glossary · Practice / Plans GitHub)
+    🔁 [Shift+P] Toggle Practice ↔ Plans
+    🎬 [Shift+E] Entertainment topics
+    🖼 [Shift+I] Image backlog (ordered study snapshots)
+    🆕 [Shift+L] Open latest palace for the selected study
+    📖 [Shift+M] Method
+    🗂 [Shift+B] Browse
+    🔗 [Shift+1] Links (study video / article / favorite)
+    ❓ [Shift+H] Help (glossary · Practice / Plans GitHub)
     
     === Study picker (first open) ===
     🔤 [a-z 1-9] Pick study by letter
@@ -1186,18 +1186,21 @@ cheatSheets["Memory Palace"] := "
     📄 [Alt+A] Set article from clipboard
     ⭐ [Alt+F] Set favorite from clipboard
     
-    === Entertainment (E) ===
+    === Entertainment (Shift+E) ===
     ➡️ [→] Expand a topic, or step into the first item inside it
     ⬅️ [←] Collapse a topic, or step back to its parent
     ⬆️⬇️ [↑] [↓] Move through visible rows
+    🔤 Type a letter to jump to the next visible title (The / A / An are skipped; keep typing to narrow)
     🖱 Click a title to mark it watched, click again to clear it
+    🔢 Click 1–10 to score a title and mark it watched; click the same number to clear the score
+    📋 [Ctrl+C] Copy the selected title
     ➕ Add topic / Add inside / Edit / Delete on the selected row
     🏠 [Esc] Cancel an edit, or return to Practice
-    🎬 [E] Return to Practice
+    🎬 [Shift+E] Return to Practice
     
     === Palace overlay ===
     🖼 [F] Toggle snapshot full-screen
-    📝 [D] Toggle Quote & Story (default = Concept only)
+    📝 [Shift+D] Toggle Quote & Story (default = Concept only)
     📋 [Shift+C] Copy compose prompt (README + preserve-background + street)
     ⬅️ [←] Older palace
     ➡️ [→] Newer palace
@@ -1512,17 +1515,19 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Alt+V] > Set study video from clipboard
     [Alt+A] > Set study article from clipboard
     [Alt+F] > Set favorite link from clipboard
-    [P] > Toggle Practice ↔ Plans
-    [I] > Image backlog (ordered study snapshots)
-    [L] > Latest palace (selected study)
-    [M] > Method
-    [B] > Browse
-    [1] > Links
-    [H] > Help (glossary · Practice / Plans GitHub)
+    [Shift+P] > Toggle Practice ↔ Plans
+    [Shift+E] > Entertainment topics
+    [Shift+I] > Image backlog (ordered study snapshots)
+    [Shift+L] > Latest palace (selected study)
+    [Shift+M] > Method
+    [Shift+B] > Browse
+    [Shift+1] > Links
+    [Shift+H] > Help (glossary · Practice / Plans GitHub)
+    Entertainment: type a letter to jump to the next visible title (The / A / An skipped; keep typing to narrow) · Ctrl+C copies the title · click 1–10 to score and mark watched
     Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
     Practice grid: [Ctrl+Click] toggle selection (does not open) · [Delete] delete selected palace(s)
     Story Reduction: [Shift+R] toggle (Practice overview or palace overlay) · drag beasts to Delete/Merge (max 4/group) · Generate Prompt (context + filled prompt)
-    Overlay: [F] full-screen snapshot · [D] toggle Quote/Story (default Concept-only) · [Shift+C] copy compose prompt (README + preserve-background + street) · ← older · → newer
+    Overlay: [F] full-screen snapshot · [Shift+D] toggle Quote/Story (default Concept-only) · [Shift+C] copy compose prompt (README + preserve-background + street) · ← older · → newer
     Overlay Esc: exit full-screen first, then close overlay; Esc elsewhere returns toward Practice
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)

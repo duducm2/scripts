@@ -2,8 +2,8 @@
 ; Utils module: import_watcher.ahk
 ; Always-on Desktop poller for canonical AI import packs.
 ; Detects stable FINANCE_*/PALACE_*/PLAN_*/TASK_PACK files, runs existing domain
-; importers (preview → confirm → commit), then routes fresh AI-fix files to the
-; active companion via import_watcher_companion.ahk.
+; importers (preview → confirm → commit), then sends a fresh AI-fix once
+; (no second composer paste) via import_watcher_companion.ahk.
 ; Owner process: AppLaunchers.ahk only (same pin as dictation / Handy AI).
 ; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
@@ -130,8 +130,8 @@ ImportWatcher_ScanCandidates() {
                 mtime := parts.Length >= 1 ? parts[1] : ""
                 size := parts.Length >= 2 ? parts[2] : "0"
                 if (!g_ImportWatcherPending.Has(key)
-                    || g_ImportWatcherPending[key].mtime != mtime
-                    || g_ImportWatcherPending[key].size != size) {
+                || g_ImportWatcherPending[key].mtime != mtime
+                || g_ImportWatcherPending[key].size != size) {
                     g_ImportWatcherPending[key] := { mtime: mtime, size: size, stable: 1, path: path, item: item }
                     continue
                 }
@@ -220,12 +220,13 @@ ImportWatcher_ProcessCandidate(cand) {
     if (g_ImportWatcherBusy)
         return
     g_ImportWatcherBusy := true
+    ImportWatcher_CompanionClearAiFixSubmitted()
     importStartStamp := FormatTime(, "yyyyMMddHHmmss")
     try {
         ImportWatcher_ShowDetected(cand.item["label"])
         Sleep 400
         ImportWatcher_RunItem(cand.path, cand.item)
-        ; After import: route a freshly written AI-fix file to the companion.
+        ; After import: send a fresh AI-fix once if this run has not already submitted it.
         try ImportWatcher_CompanionHandleAiFixAfterImport(importStartStamp)
         catch {
         }

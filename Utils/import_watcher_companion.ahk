@@ -1,10 +1,52 @@
 ; =============================================================================
 ; Utils module: import_watcher_companion.ahk
 ; Route Desktop AI-fix text into the active (or resolved) AI companion prompt.
-; Watcher after-import path: paste only. Hub / manual path: paste+submit when
-; PackPipeline is inactive (pipeline-active fixes are submitted by PackPipeline).
+; Watcher after-import: submit once if this run has not already sent that file.
+; Never paste the same fix into the composer again after a successful send.
+; Hub / manual path: paste+submit when PackPipeline is inactive
+; (pipeline-active fixes are submitted by PackPipeline).
 ; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
+
+; Desktop path of the AI-fix file submitted during the current watcher import.
+global g_ImportWatcherAiFixSubmittedPath := ""
+
+ImportWatcher_CompanionClearAiFixSubmitted() {
+    global g_ImportWatcherAiFixSubmittedPath
+    g_ImportWatcherAiFixSubmittedPath := ""
+}
+
+ImportWatcher_CompanionMarkAiFixSubmitted(path) {
+    global g_ImportWatcherAiFixSubmittedPath
+    if (path != "")
+        g_ImportWatcherAiFixSubmittedPath := path
+}
+
+; Remember the newest Desktop fix file whose body matches the text just sent.
+ImportWatcher_CompanionMarkAiFixSubmittedText(fixText) {
+    fixText := Trim(fixText)
+    if (fixText = "")
+        return
+    bestPath := ""
+    bestStamp := ""
+    for path in ImportWatcher_CompanionAiFixPaths() {
+        if (path = "" || !FileExist(path))
+            continue
+        body := Trim(ImportWatcher_CompanionReadUtf8(path))
+        if (body = "" || body != fixText)
+            continue
+        stamp := ""
+        try stamp := FileGetTime(path, "M")
+        catch {
+            continue
+        }
+        if (bestStamp = "" || stamp > bestStamp) {
+            bestStamp := stamp
+            bestPath := path
+        }
+    }
+    ImportWatcher_CompanionMarkAiFixSubmitted(bestPath)
+}
 
 ImportWatcher_CompanionAiFixPaths() {
     return [
@@ -155,9 +197,11 @@ ImportWatcher_CompanionPasteFixText(fixText) {
 ; pathOrText: Desktop fix path or raw fix body.
 ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
     fixText := ""
-    if (pathOrText != "" && FileExist(pathOrText))
+    submittedPath := ""
+    if (pathOrText != "" && FileExist(pathOrText)) {
+        submittedPath := pathOrText
         fixText := ImportWatcher_CompanionReadUtf8(pathOrText)
-    else
+    } else
         fixText := pathOrText
     fixText := Trim(fixText)
     if (fixText = "")
@@ -199,6 +243,10 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
     }
     if (!submitted)
         return false
+    if (submittedPath != "")
+        ImportWatcher_CompanionMarkAiFixSubmitted(submittedPath)
+    else
+        ImportWatcher_CompanionMarkAiFixSubmittedText(fixText)
     msg := "AI fix sent to " . label
     try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
     catch {
@@ -207,13 +255,13 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
     return !!hwnd
 }
 
-; After an import run: if a fresh AI-fix file appeared, paste it into the companion.
+; After an import run: send a fresh AI-fix once. Skip when this run already submitted it.
 ImportWatcher_CompanionHandleAiFixAfterImport(importStartStamp) {
+    global g_ImportWatcherAiFixSubmittedPath
     path := ImportWatcher_CompanionNewestAiFixSince(importStartStamp)
     if (path = "")
         return false
-    body := ImportWatcher_CompanionReadUtf8(path)
-    if (body = "")
+    if (path = g_ImportWatcherAiFixSubmittedPath)
         return false
-    return ImportWatcher_CompanionPasteFixText(body)
+    return ImportWatcher_CompanionPasteAndSubmitFix(path)
 }

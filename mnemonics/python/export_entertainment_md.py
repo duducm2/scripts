@@ -47,6 +47,9 @@ def item_html(row: dict[str, str]) -> str:
     title = html.escape((row.get("title") or "").strip())
     if (row.get("done") or "").strip() == "1":
         title = "✓ " + title
+    score = (row.get("score") or "").strip()
+    if score.isdigit() and 1 <= int(score) <= 10:
+        title = f"{title} · {score}/10"
     image = (row.get("image") or "").strip()
     cover = ""
     if image:

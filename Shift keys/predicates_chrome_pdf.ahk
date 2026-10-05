@@ -9,6 +9,8 @@
 ;-------------------------------------------------------------------
 ; Cache for IsChromePdfViewerActive (efficiency-canon: cheap #HotIf).
 ; Same Chrome HWND can switch PDF <-> non-PDF tabs, so the cache key is hwnd + title.
+; The window title is the PDF document title and often has no ".pdf" (see
+; Utils/chrome-pdf-viwer.md). The address-bar path is the filename.
 global g_ChromePdf_CacheHwnd := 0
 global g_ChromePdf_CacheTitle := ""
 global g_ChromePdf_CacheResult := false
@@ -40,7 +42,7 @@ IsChromePdfViewerActive_Run() {
 
     title := ""
     try title := WinGetTitle("ahk_id " hwnd)
-    if (Chrome_IsAiCompanionTitle(title) || !InStr(title, ".pdf", false))
+    if Chrome_IsAiCompanionTitle(title)
         return false
 
     if (hwnd = g_ChromePdf_CacheHwnd
@@ -51,23 +53,13 @@ IsChromePdfViewerActive_Run() {
         return g_ChromePdf_CacheResult
     }
 
-    result := false
-    try {
-        uia := UIA_Browser("ahk_id " hwnd)
-
-        ; Strong fingerprint: Chrome's built-in PDF viewer extension web area
-        ; From UIA tree: chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html
-        if (uia.FindElement({ Type: 50030, Value: "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai", matchmode: "Substring" })) {
-            result := true
-        } else if (uia.FindElement({ AutomationId: "pageSelector" }) && uia.FindElement({ AutomationId: "save" })) {
-            ; Fallback: stable, non-localized PDF toolbar controls
-            result := true
-        }
-    } catch {
-        ; UIA failed; do not cache so next call retries. Drop any toolbar session too.
+    ; Omnibox only. A document search walks every PDF page and blocks the hook.
+    url := ChromeHotIf_OmniboxUrl(hwnd)
+    if (url = "") {
         ChromePdf_InvalidateSession()
         return false
     }
+    result := ChromePdf_OmniboxIsViewer(url)
 
     g_ChromePdf_CacheHwnd := hwnd
     g_ChromePdf_CacheTitle := title
@@ -75,4 +67,16 @@ IsChromePdfViewerActive_Run() {
     if (!result)
         ChromePdf_InvalidateSession()
     return result
+}
+
+; Address-bar path ends in .pdf, or the bar is Chrome's built-in viewer extension.
+; Query and fragment are ignored, so a search for "file.pdf" is not the viewer.
+ChromePdf_OmniboxIsViewer(url) {
+    if (url = "")
+        return false
+    u := StrLower(url)
+    if InStr(u, "mhjfbmdgcfjbbpaeojofohoefgiehjai")
+        return true
+    path := RegExReplace(u, "[#?].*$", "")
+    return RegExMatch(path, "\.pdf/?$") > 0
 }

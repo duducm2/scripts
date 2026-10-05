@@ -257,11 +257,9 @@ AiCompanion_ReadComposer(hwnd, companionId, &text) {
             pf := AiCompanion_FindComposerElement(root, companionId)
         if (pf)
             AiCompanion_ReadElementText(pf, &text)
-        if (Trim(text) = "" && companionId = "enterprise") {
-            ; Value/TextPattern stay blank on the ProseMirror composer. Clipboard is the read that sees the text.
-            try text := GeminiEnterprise_ComposerGetText(hwnd)
-            catch
-                text := ""
+        if (Trim(text) = "") {
+            ; Value/TextPattern stay blank on several composers. Clipboard is the read that sees the text.
+            text := AiCompanion_ComposerClipboardFallback(hwnd, companionId)
         }
         if (Trim(text) = "")
             return "missing"
@@ -271,6 +269,21 @@ AiCompanion_ReadComposer(hwnd, companionId, &text) {
     } catch {
     }
     return "missing"
+}
+
+; Clipboard read when UIA Value/TextPattern cannot see the composer. Empty string if unavailable.
+AiCompanion_ComposerClipboardFallback(hwnd, companionId) {
+    companionId := StrLower(Trim(companionId))
+    try {
+        if (companionId = "enterprise")
+            return GeminiEnterprise_ComposerGetText(hwnd)
+        if (companionId = "copilot")
+            return CopilotWeb_ComposerGetTextViaClipboard(hwnd)
+        if (companionId = "chatgpt")
+            return ChatGPT_ComposerGetTextViaClipboard(hwnd)
+    } catch {
+    }
+    return ""
 }
 
 AiCompanion_SnapshotComposer(hwnd, companionId, &status) {
@@ -318,24 +331,21 @@ AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, timeoutMs := 1000, sn
     cur := ""
     if (snapOk) {
         if (!AiCompanion_ReadElementValue(composer, &cur) || Trim(cur) = "") {
-            if (companionId = "enterprise") {
-                try cur := GeminiEnterprise_ComposerGetText(hwnd)
-                catch
-                    cur := ""
-            } else if (!AiCompanion_ReadElementText(composer, &cur)) {
+            cur := AiCompanion_ComposerClipboardFallback(hwnd, companionId)
+            if (Trim(cur) = "" && !AiCompanion_ReadElementText(composer, &cur))
                 cur := ""
-            }
         }
     }
     if (snapOk && AiCompanion_ComposerHolds(cur, sentText)) {
         Sleep 200
-        cur := ""
-        if (companionId = "enterprise") {
-            try cur := GeminiEnterprise_ComposerGetText(hwnd)
-            catch
-                cur := sentText
-        } else if (!AiCompanion_ReadElementValue(composer, &cur)) {
+        ; A blank clipboard read means the composer let go. Only a failed read keeps the snapshot.
+        cur := sentText
+        try cur := AiCompanion_ComposerClipboardFallback(hwnd, companionId)
+        catch
             cur := sentText
+        if (Trim(cur) = "" && companionId != "enterprise" && companionId != "copilot" && companionId != "chatgpt") {
+            if (!AiCompanion_ReadElementValue(composer, &cur))
+                cur := sentText
         }
         if (AiCompanion_ComposerHolds(cur, sentText))
             return "held"
@@ -392,6 +402,16 @@ AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapOk := true) {
     return state = "working"
 }
 
+; Physical Enter/Ctrl+Enter is delivered immediately. Stop-button confirm runs on a short timer.
+; Set false to restore snapshot-then-submit on those hotkeys.
+global AI_COMPANION_ENTER_SEND_FIRST := true
+; When true, a confirmed Enter/Send arms the shared response banner instead of a chime-only watch.
+global AI_COMPANION_D2C_BANNER_FOR_ALL := true
+; ChatGPT keeps its loading-bar wait when this is false.
+global AI_COMPANION_CHATGPT_ENABLE_D2C := true
+; Copilot hotkey Enter uses CopilotWeb_SubmitComposer when true, else the thinner Enter-only submit.
+global AI_COMPANION_USE_SUBMIT_COMPOSER_FOR_COPILOT := true
+
 ; Set only when a catalog Send click returns true. Readers take it once.
 global g_AiCompanionCatalogSendClicked := false
 ; True when ArmResponseWatch started the D2C monitor for this click.
@@ -407,6 +427,25 @@ AiCompanion_TakeCatalogSendClick() {
     clicked := !!g_AiCompanionCatalogSendClicked
     g_AiCompanionCatalogSendClicked := false
     return clicked
+}
+
+AiCompanion_UseD2CBanner(companionId) {
+    global AI_COMPANION_D2C_BANNER_FOR_ALL, AI_COMPANION_CHATGPT_ENABLE_D2C
+    if (!AI_COMPANION_D2C_BANNER_FOR_ALL)
+        return false
+    if (StrLower(Trim(companionId)) = "chatgpt" && !AI_COMPANION_CHATGPT_ENABLE_D2C)
+        return false
+    return true
+}
+
+; Clears the one-shot Send flag and arms the shared response banner.
+; True means this submit owns the D2C path (do not also start a chime-only watch).
+AiCompanion_FinishConfirmedSubmit(hwnd, companionId, originHwnd := 0) {
+    AiCompanion_TakeCatalogSendClick()
+    if (!AiCompanion_UseD2CBanner(companionId))
+        return false
+    AiCompanion_ArmResponseWatch(hwnd, companionId, originHwnd)
+    return true
 }
 
 ; One existing completion watch after a catalog Send click. No UIA and no Send search.
@@ -463,6 +502,53 @@ AiCompanion_SendAndConfirm(hwnd, companionId, sendFn) {
     catch {
     }
     return AiCompanion_TrackAfterEnter(hwnd, companionId, sentText, snapStatus = "ok")
+}
+
+; One in-flight Enter confirm. A newer Enter replaces it. Not a background poll.
+global g_AiCompanionEnterWatchCb := ""
+
+; Hotkey path: the chord goes out before any composer or Send-button lookup.
+AiCompanion_SendEnterFirst(hwnd, companionId, ctrlEnter := false) {
+    global g_AiCompanionEnterWatchCb
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    companionId := StrLower(Trim(companionId))
+    if (g_AiCompanionEnterWatchCb != "") {
+        try SetTimer(g_AiCompanionEnterWatchCb, 0)
+        g_AiCompanionEnterWatchCb := ""
+    }
+    SendInput(ctrlEnter ? "^{Enter}" : "{Enter}")
+    state := { hwnd: hwnd, companionId: companionId, deadline: A_TickCount + 1000, cb: "" }
+    cb := AiCompanion_EnterWatchTick.Bind(state)
+    state.cb := cb
+    g_AiCompanionEnterWatchCb := cb
+    SetTimer(cb, -1)
+    return true
+}
+
+; One stop lookup, then return, so the script thread is not held for the whole second.
+AiCompanion_EnterWatchTick(state) {
+    global g_AiCompanionEnterWatchCb
+    if (g_AiCompanionEnterWatchCb != state.cb)
+        return
+    stopWatch := false
+    if (!WinExist("ahk_id " state.hwnd))
+        stopWatch := true
+    else if (AiCompanion_IsGenerating(state.hwnd, state.companionId)) {
+        stopWatch := true
+        AiCompanion_AnnounceConfirm("working")
+        AiCompanion_FinishConfirmedSubmit(state.hwnd, state.companionId, state.hwnd)
+    } else if (A_TickCount >= state.deadline)
+        stopWatch := true
+    if (stopWatch) {
+        try SetTimer(state.cb, 0)
+        if (g_AiCompanionEnterWatchCb = state.cb)
+            g_AiCompanionEnterWatchCb := ""
+        return
+    }
+    if (g_AiCompanionEnterWatchCb != state.cb)
+        return
+    SetTimer(state.cb, -200)
 }
 
 PlayAiWorkingStateSound(isWorking) {

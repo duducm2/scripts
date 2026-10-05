@@ -1,7 +1,13 @@
 # Quick Recall
 
 <details open>
-<summary><strong>Data Analyst</strong> · 13 palaces · 51 atoms</summary>
+<summary><strong>Data Analyst</strong> · 14 palaces · 56 atoms</summary>
+
+<img src="../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/zeus.png" alt="Bone Zeus" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bz] Bone Zeus [Databricks <img alt="[Jobs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BJobs%5D&color=9fd4ff" />(hardhat)] [I <img alt="[convert]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconvert%5D&color=ffd966" />(magic wand) my interactive notebooks] [into scheduled <img alt="[production]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bproduction%5D&color=ffd966" />(factory) pipelines] [with strict task <img alt="[dependencies]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdependencies%5D&color=ffd966" />(handcuffs)]
+<img src="../web/assets/beast-thumbs/byron.png" alt="Byron" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [By] Byron [Interactive <img alt="[Notebooks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BNotebooks%5D&color=9fd4ff" />(spiral pad)] [I <img alt="[write]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwrite%5D&color=ffd966" />(pen) my logic] [using multiple programming <img alt="[languages]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blanguages%5D&color=ffd966" />(dictionary)] [within the same <img alt="[unified]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunified%5D&color=ffd966" />(puzzle) interface]
+<img src="../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Bone Xena, warrior woman" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bx] Bone Xena, warrior woman [Databricks <img alt="[Tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTables%5D&color=9fd4ff" />(desk)] [I <img alt="[interact]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binteract%5D&color=ffd966" />(handshake) with data] [through an <img alt="[abstraction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Babstraction%5D&color=ffd966" />(blanket) layer] [that sits over <img alt="[raw]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Braw%5D&color=ffd966" />(sushi) files]
+<img src="../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/wombat.png" alt="Bone wombat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bw] Bone wombat [Compute <img alt="[Clusters]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BClusters%5D&color=9fd4ff" />(gears)] [I configure Spark <img alt="[machines]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmachines%5D&color=ffd966" />(robot)] [to <img alt="[terminate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bterminate%5D&color=ffd966" />(guillotine) automatically] [after a period of <img alt="[inactivity]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binactivity%5D&color=ffd966" />(hammock)] — Note: This prevents wasted cloud spend when the resources are not being used.
+<img src="../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/vulture.png" alt="Bone vulture" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bv] Bone vulture [Databricks <img alt="[Core]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCore%5D&color=9fd4ff" />(apple)] [I process data with <img alt="[Spark]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%5D&color=ffd966" />(lightning)] [store it in <img alt="[Delta]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDelta%5D&color=ffd966" />(triangle) Lake] [and manage <img alt="[models]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmodels%5D&color=ffd966" />(beaker) with MLflow]
 
 <img src="../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Bu] butterfly <img alt="[Lean Fact Table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLean%20Fact%20Table%5D&color=9fd4ff" />(razor) [I keep my fact table <img alt="[lean]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blean%5D&color=ffd966" />(ruler)] [by storing only keys and <img alt="[measures]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmeasures%5D&color=ffd966" />(safe)] [while placing descriptive fields in <img alt="[dimensions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdimensions%5D&color=ffd966" />(drawer)]
 
@@ -66,6 +72,42 @@
 <img src="../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ab] Abyssinian cat [I <img alt="[reuse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breuse%5D&color=9fd4ff" />(stamp) my query steps] [across different <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(binder)] [sharing the exact same table <img alt="[structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructure%5D&color=ffd966" />(twin)] — Note: Identical column headers and data formats are required so the query steps run without error.
 <img src="../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ab] Abyssinian cat [I <img alt="[copy]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcopy%5D&color=9fd4ff" />(scissors) all transformation steps] [below the initial <img alt="[source]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsource%5D&color=ffd966" />(anchor) line] [from the Advanced <img alt="[Editor]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BEditor%5D&color=ffd966" />(scroll)] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
 <img src="../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Aa] aardvark [I replace nulls with a temporary <img alt="[placeholder]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplaceholder%5D&color=9fd4ff" />(scarecrow)] [before <img alt="[unpivoting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunpivoting%5D&color=ffd966" />(jack)] [to <img alt="[swap]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bswap%5D&color=ffd966" />(boomerang) them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
+
+</details>
+
+<details open>
+<summary><strong>intuitive analytical queries (OLAP) and aggregations. | Eliminating update/insert/delete anomalies and write redundancy (OLTP). |</strong> · 1 palace · 0 atoms</summary>
+
+
+</details>
+
+<details open>
+<summary><strong>subcategory</strong> · 1 palace · 0 atoms</summary>
+
+
+</details>
+
+<details open>
+<summary><strong>their rules</strong> · 1 palace · 0 atoms</summary>
+
+
+</details>
+
+<details open>
+<summary><strong>Power BI</strong> · 1 palace · 0 atoms</summary>
+
+
+</details>
+
+<details open>
+<summary><strong>splitting `dim_product` into separate tables for `product`</strong> · 1 palace · 0 atoms</summary>
+
+
+</details>
+
+<details open>
+<summary><strong>`product_name`) out of a transaction table resembles decomposing a flat sheet into relational entities.</strong> · 1 palace · 0 atoms</summary>
+
 
 </details>
 

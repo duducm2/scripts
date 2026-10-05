@@ -43,34 +43,59 @@ MacroReleaseStuckControl(*) {
 
 RegisterMacro(MacroReleaseStuckControl, "🔓 Release stuck Control", "u")
 
-; Macros [W] — force-kill heavy apps and their child processes to free RAM.
+; Macros [W] — confirm, then force-kill heavy apps and their child processes to free RAM.
+; Interactive Input: [Y] or 3s timeout proceeds; [N] or Escape cancels.
 ; Stop resident servers first so warmup does not relaunch Finance / Memory Palace.
+global g_MacroWipeHeavyAppsBusy := false
+
 MacroWipeHeavyApps(*) {
-    ; Yes is the default button so Enter confirms.
-    if MsgBox("Close heavy apps to free RAM?", "Wipe apps", "Icon? YesNo Default1") != "Yes"
+    keyCallbacks := Map("Y", MacroWipeHeavyApps_Confirm, "N", MacroWipeHeavyApps_Cancel)
+    StandardLoadingBar_ShowWithKeys("❓ Close heavy apps to free RAM? Yes in 3s", keyCallbacks, 3000, 0,
+        MacroWipeHeavyApps_Confirm, BANNER_ACCENT_INTERMEDIATE, 560, 17, "", true,
+        "[Y] Yes  [N] Cancel  [Esc] Cancel", false, true)
+}
+
+; N dismisses. Escape is the default ShowWithKeys cancel and needs no extra callback.
+MacroWipeHeavyApps_Cancel(*) {
+}
+
+MacroWipeHeavyApps_Confirm(*) {
+    global g_MacroWipeHeavyAppsBusy
+    if (g_MacroWipeHeavyAppsBusy)
         return
-    ShowCenteredOverlay_Utils("🧹 Closing heavy apps...", 1500, BANNER_ACCENT_INTERMEDIATE)
-    try StopResidentWebServers()
-    catch {
+    g_MacroWipeHeavyAppsBusy := true
+    ; Next tick: ShowWithKeys still closes the prompt after this callback returns.
+    SetTimer(MacroWipeHeavyApps_Run, -1)
+}
+
+MacroWipeHeavyApps_Run(*) {
+    global g_MacroWipeHeavyAppsBusy
+    try {
+        ShowCenteredOverlay_Utils("🧹 Closing heavy apps...", 1500, BANNER_ACCENT_INTERMEDIATE)
+        try StopResidentWebServers()
+        catch {
+        }
+        for name in [
+            "chrome.exe", "Cursor.exe", "Code.exe",
+            "ms-teams.exe", "Teams.exe", "MSTeams.exe",
+            "OUTLOOK.EXE", "olk.exe",
+            "msedge.exe", "ONENOTE.EXE", "WhatsApp.exe", "Spotify.exe"
+        ]
+            WipeKillProcessTree(name)
+        ; Windows 11 hosts that stay resident. They start again when that feature is opened.
+        for name in [
+            "Widgets.exe", "WidgetService.exe",
+            "GameBar.exe", "GameBarFTServer.exe",
+            "PhoneExperienceHost.exe"
+        ]
+            WipeKillProcessTree(name)
+        try WhatsAppJump_InvalidateHwndCache()
+        catch {
+        }
+        ShowCenteredOverlay_Utils("✅ Heavy apps closed", 1500, BANNER_ACCENT_SUCCESS)
+    } finally {
+        g_MacroWipeHeavyAppsBusy := false
     }
-    for name in [
-        "chrome.exe", "Cursor.exe", "Code.exe",
-        "ms-teams.exe", "Teams.exe", "MSTeams.exe",
-        "OUTLOOK.EXE", "olk.exe",
-        "msedge.exe", "ONENOTE.EXE", "WhatsApp.exe", "Spotify.exe"
-    ]
-        WipeKillProcessTree(name)
-    ; Windows 11 hosts that stay resident. They start again when that feature is opened.
-    for name in [
-        "Widgets.exe", "WidgetService.exe",
-        "GameBar.exe", "GameBarFTServer.exe",
-        "PhoneExperienceHost.exe"
-    ]
-        WipeKillProcessTree(name)
-    try WhatsAppJump_InvalidateHwndCache()
-    catch {
-    }
-    ShowCenteredOverlay_Utils("✅ Heavy apps closed", 1500, BANNER_ACCENT_SUCCESS)
 }
 
 ; taskkill /T so Electron/Chrome children (renderers, language servers) die with the parent.

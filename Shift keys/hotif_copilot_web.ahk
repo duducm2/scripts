@@ -141,10 +141,13 @@ $Enter:: {
         return
     }
     hwnd := WinExist("A")
-    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => CopilotWeb_SubmitFromHotkey(hwnd))) {
-        if (AiCompanion_TakeCatalogSendClick())
-            AiCompanion_ArmResponseWatch(hwnd, "copilot")
-        else
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "copilot", false)
+        return
+    }
+    if (AiCompanion_SendAndConfirm(hwnd, "copilot", CopilotWeb_HotkeySendFn(hwnd))) {
+        if (!AiCompanion_FinishConfirmedSubmit(hwnd, "copilot", hwnd))
             SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
     } else {
         AiCompanion_TakeCatalogSendClick()
@@ -153,10 +156,13 @@ $Enter:: {
 
 $^Enter:: {
     hwnd := WinExist("A")
-    if (AiCompanion_SendAndConfirm(hwnd, "copilot", (*) => CopilotWeb_SubmitFromHotkey(hwnd))) {
-        if (AiCompanion_TakeCatalogSendClick())
-            AiCompanion_ArmResponseWatch(hwnd, "copilot")
-        else
+    global AI_COMPANION_ENTER_SEND_FIRST
+    if (AI_COMPANION_ENTER_SEND_FIRST) {
+        AiCompanion_SendEnterFirst(hwnd, "copilot", true)
+        return
+    }
+    if (AiCompanion_SendAndConfirm(hwnd, "copilot", CopilotWeb_HotkeySendFn(hwnd))) {
+        if (!AiCompanion_FinishConfirmedSubmit(hwnd, "copilot", hwnd))
             SetTimer(() => CopilotWeb_WaitForGenerationComplete(300000), -1)
     } else {
         AiCompanion_TakeCatalogSendClick()

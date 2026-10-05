@@ -392,6 +392,29 @@ CopilotWeb_ClickSavedSend(hwnd) {
     return false
 }
 
+CopilotWeb_HotkeySendFn(hwnd) {
+    global AI_COMPANION_USE_SUBMIT_COMPOSER_FOR_COPILOT
+    if (AI_COMPANION_USE_SUBMIT_COMPOSER_FOR_COPILOT)
+        return (*) => CopilotWeb_SubmitFromEnterHotkey(hwnd)
+    return (*) => CopilotWeb_SubmitFromHotkey(hwnd)
+}
+
+; Enter hotkey: saved Send or UIA submit. If a reply is already running, pass Enter through.
+CopilotWeb_SubmitFromEnterHotkey(hwnd) {
+    AiCompanion_TakeCatalogSendClick()
+    if (CopilotWeb_ClickSavedSend(hwnd))
+        return
+    sent := false
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        sent := CopilotWeb_TrySubmit(uia)
+    } catch {
+        sent := false
+    }
+    if (!sent)
+        Send "{Enter}"
+}
+
 CopilotWeb_SubmitFromHotkey(hwnd) {
     AiCompanion_TakeCatalogSendClick()
     if (CopilotWeb_ClickSavedSend(hwnd))
@@ -604,6 +627,39 @@ CopilotWeb_ComposerGetText(copilotHwnd := 0) {
     } catch {
     }
     return ""
+}
+
+; Content-editable composers often report a blank Value. Select-all copy sees the text, then the clipboard is restored.
+CopilotWeb_ComposerGetTextViaClipboard(hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return ""
+    root := CopilotWeb_ReadRootFromHwnd(hwnd)
+    if (!IsObject(root) || !CopilotWeb_FocusComposer(root, false))
+        return ""
+    Sleep 60
+    saved := ClipboardAll()
+    try {
+        A_Clipboard := ""
+        Send "^a"
+        Sleep 40
+        Send "^c"
+        if !ClipWait(1, 1)
+            return ""
+        text := A_Clipboard
+        if (Type(text) != "String")
+            text := ""
+        text := Trim(text)
+        if (text = "" || AiCompanion_IsComposerPlaceholder(text))
+            return ""
+        return text
+    } finally {
+        Sleep 40
+        try A_Clipboard := saved
+        catch {
+        }
+    }
 }
 
 ; Strip human-reminder block after the last --- in the composer (keep --- + blank lines).
