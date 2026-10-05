@@ -95,6 +95,18 @@ SetWorkingDir(notesFolder)
 GitInRepoOrFail(notesFolder, "fetch --prune", 900000)
 GitInRepoOrFail(notesFolder, "pull", 900000)
 ; MyNotes technique prompts are read from disk when you use them in Utility Shortcuts (Utils.ahk), not by Act.
+
+personalFolder := GetPersonalRepoPath()
+if (!personalFolder) {
+    StandardLoadingBar_Hide(0)
+    MsgBox("Personal repo folder not found. Check PERSONAL_REPO_PATH_WORK and PERSONAL_REPO_PATH_PERSONAL in env.ahk.",
+        "Act automation", "Icon!")
+    ExitApp
+}
+
+StandardLoadingBar_Update("⏳ Updating personal repo...")
+SetWorkingDir(personalFolder)
+Act_PersonalRepoStashAndPull(personalFolder)
 StandardLoadingBar_Update("🚀 Launching apps...")
 ; Persistent keep-alive: Tasks (:8766), Memory Palace (:8767), Finance dashboard (:8765).
 ; Heartbeats every 30s; Utils reload no longer kills these Python servers.
@@ -159,3 +171,94 @@ StandardLoadingBar_Hide(clipAngelOk ? 500 : 0)
 Sleep 1000
 ; Exit so Act never remains as a lingering Utils/hotkey host after bootstrap.
 ExitApp
+
+; Stash, fetch, pull --ff-only, stash pop. Same gates as editor Alt+S, hidden.
+; Each git step inside the script is capped at 900s. Outer cap covers stash, fetch,
+; pull, one fetch/pull retry, and stash pop.
+Act_PersonalRepoStashAndPull(personalFolder) {
+    flowPs1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
+    if !FileExist(flowPs1) {
+        StandardLoadingBar_Hide(0)
+        MsgBox("Editor-GitStashFetchPull.ps1 not found:`n`n" flowPs1, "Act automation", "Icon!")
+        ExitApp
+    }
+    resultPath := A_Temp "\act-personal-repo-" A_TickCount ".json"
+    try FileDelete(resultPath)
+    catch {
+    }
+    cmd := 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' flowPs1
+        . '" -RepoDir "' personalFolder '" -ResultPath "' resultPath '" -TimeoutSec 900'
+    exitCode := RunWaitWithTimeout(cmd, personalFolder, "Hide", 5500000)
+    detail := Act_PersonalRepoPullError(resultPath)
+    try FileDelete(resultPath)
+    catch {
+    }
+    if (exitCode = 0)
+        return
+    StandardLoadingBar_Hide(0)
+    if (exitCode = 124) {
+        MsgBox(
+            "Timed out while stashing and pulling the personal repo.`n`nIn:`n" personalFolder "`n`n"
+            . "This usually means git is waiting for input (credentials/2FA) or is blocked by network/proxy.",
+            "Act automation", "Icon!")
+        ExitApp
+    }
+    MsgBox(
+        "Personal repo stash/pull failed (exit code " exitCode ").`n`n"
+        . (detail != "" ? detail "`n`n" : "")
+        . "In:`n" personalFolder "`n`n"
+        . "Run git status in that folder to see the error.",
+        "Act automation", "Icon!")
+    ExitApp
+}
+
+Act_PersonalRepoPullError(resultPath) {
+    if !FileExist(resultPath)
+        return ""
+    raw := ""
+    try raw := FileRead(resultPath, "UTF-8")
+    catch {
+        return ""
+    }
+    failed := Act_JsonStringField(raw, "failedStep")
+    err := Act_JsonStringField(raw, "error")
+    if (failed != "" && err != "")
+        return failed ": " err
+    if (err != "")
+        return err
+    return failed
+}
+
+Act_JsonStringField(raw, key) {
+    needle := '"' key '":"'
+    pos := InStr(raw, needle)
+    if !pos {
+        needle := '"' key '": "'
+        pos := InStr(raw, needle)
+    }
+    if !pos
+        return ""
+    i := pos + StrLen(needle)
+    out := ""
+    while (i <= StrLen(raw)) {
+        ch := SubStr(raw, i, 1)
+        if (ch = "\") {
+            n := SubStr(raw, i + 1, 1)
+            if (n = "n")
+                out .= "`n"
+            else if (n = "r")
+                out .= "`r"
+            else if (n = "t")
+                out .= "`t"
+            else
+                out .= n
+            i += 2
+            continue
+        }
+        if (ch = '"')
+            break
+        out .= ch
+        i += 1
+    }
+    return out
+}
