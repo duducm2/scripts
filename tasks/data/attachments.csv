@@ -2,14 +2,8 @@ id,parent_type,parent_id,kind,ref,description,sort_order
 ATT_0003,info,INFO_0099,image,attachments\20260829-PROJ_0004-20260828-142108.png,20260828-142108.png,180
 ATT_0004,info,INFO_0100,image,attachments\20260829-PROJ_0004-20260828-101254.png,20260828-101254.png,200
 ATT_0005,info,INFO_0101,image,attachments\20260829-PROJ_0004-20260828-101317.png,20260828-101317.png,210
-ATT_0006,info,INFO_0102,image,attachments\20260829-TASK_0007-20260820-105844.png,20260820-105844.png,230
-ATT_0007,task,TASK_0007,url,https://bosch.sharepoint.com/sites/msteams_659a2057/SitePages/crisisCommunicationHome.aspx,https://bosch.sharepoint.com/sites/msteams_659a2057/SitePages/crisisCommunicationHome.aspx,250
 ATT_0011,task,TASK_0017,file,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,700
 ATT_0013,info,INFO_0105,image,attachments\20260829-TASK_0029-20260817-165019.png,20260817-165019.png,990
-ATT_0015,project,PROJ_0014,file,C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\work\ai-roleplay\meeting-1.txt,C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\work\ai-roleplay\meeting-1.txt,1240
-ATT_0016,info,INFO_0107,image,attachments\20260829-PROJ_0014-20260825-112514.png,20260825-112514.png,1290
-ATT_0017,info,INFO_0108,image,attachments\20260829-PROJ_0014-20260825-112750.png,20260825-112750.png,1320
-ATT_0018,info,INFO_0109,image,attachments\20260829-PROJ_0014-20260825-112558.png,20260825-112558.png,1330
 ATT_0023,info,INFO_0112,image,attachments\20260829-TASK_0042-20260301-203740.png,20260301-203740.png,1560
 ATT_0027,info,INFO_0138,image,attachments\20260914-181246-INFO_0138-image.png,image.png,1730
 ATT_0028,info,INFO_0192,image,attachments\20260927-155547-INFO_0192-image.png,image.png,1740
