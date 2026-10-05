@@ -1175,7 +1175,7 @@ Palace_ValidateImportAtoms(atomRows, beastRows := "") {
     }
     ; New or changed rows must satisfy the two-part contract. An unchanged
     ; stored atom (same id, concept, and keywords) keeps its legacy text.
-    storedById := Palace_IndexById(Palace_Load("atoms"))
+    storedById := Palace_BuildIdMap(Palace_Load("atoms"))
     for r in atomRows {
         if (!IsObject(r))
             continue
