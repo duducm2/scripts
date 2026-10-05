@@ -7,7 +7,7 @@
 <summary>Sight and Sound</summary>
 
 <p><img src="https://upload.wikimedia.org/wikipedia/en/0/05/JeanneDielman.png" alt="" width="64"> Jeanne Dielman, 23 Quai du Commerce, 1080 Bruxelles (1975)</p>
-<p><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Vertigomovie_restoration.jpg/500px-Vertigomovie_restoration.jpg" alt="" width="64"> Vertigo (1958)</p>
+<p><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Vertigomovie_restoration.jpg/500px-Vertigomovie_restoration.jpg" alt="" width="64"> ✓ Vertigo (1958) · 10/10</p>
 <p><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/500px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg" alt="" width="64"> Citizen Kane (1941)</p>
 <p><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Tokyo_monogatari_poster.jpg/500px-Tokyo_monogatari_poster.jpg" alt="" width="64"> Tokyo Story (1953)</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/en/4/45/In_the_Mood_for_Love_movie.jpg" alt="" width="64"> In the Mood for Love (2000)</p>
