@@ -47,6 +47,10 @@ global g_DictationRestartSawOverlayAbsent := false
 global g_DictationBypassStartSoundCooldown := false
 ; True while a K/L swap has muted the capture endpoint and not yet restored it.
 global g_DictationSwapMicMuted := false
+; True only during Utility Shortcuts K/L. Await and suppress must not affect a later take.
+global g_DictationLanguageSwapActive := false
+; Text Handy copied when the last user stop finished. V pastes this, not an older clip.
+global g_DictationCompletedText := ""
 
 ; AppLaunchers.ahk is the single long-lived owner for ~#!+0, Recording flag, and
 ; Send dictation? banner — same script-name pin as HandyAi_IsOwnerProcess().
@@ -420,6 +424,31 @@ SafePlayDictationSound(filePath) {
     }
 }
 
+; Remember Handy’s new clipboard text so V can paste it after the stop.
+Dictation_NoteCompletedClipboard() {
+    global g_DictationCompletedText, g_DictationStartClipboardText
+    clip := ""
+    try clip := A_Clipboard
+    catch
+        clip := ""
+    if (clip != "" && clip != g_DictationStartClipboardText)
+        g_DictationCompletedText := clip
+    return g_DictationCompletedText
+}
+
+; Wait until Handy’s stop has copied new text. Do not return the pre-take clipboard.
+Dictation_WaitForCompletedText(timeoutMs := 1500) {
+    global g_DictationCompletedText
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        noted := Dictation_NoteCompletedClipboard()
+        if (noted != "")
+            return noted
+        Sleep 50
+    }
+    return g_DictationCompletedText
+}
+
 ; Handler for clipboard changes during dictation completion
 DictationClipboardHandler(DataType) {
     global g_DictationSuppressCompletion, g_PendingGeminiPromptAfterDictation
@@ -430,6 +459,7 @@ DictationClipboardHandler(DataType) {
     if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation)
         return
 
+    Dictation_NoteCompletedClipboard()
     ; Trigger completion logic immediately
     PlayDictationCompletionChime()
 }
@@ -508,6 +538,7 @@ DictationCompletionChimeOrWaitForClipboard() {
         currentClip := A_Clipboard
     }
     if (currentClip != g_DictationStartClipboardText) {
+        Dictation_NoteCompletedClipboard()
         PlayDictationCompletionChime()
     } else {
         OnClipboardChange(DictationClipboardHandler)
@@ -596,6 +627,16 @@ Dictation_WaitProgrammaticChordConsumed(forStop, timeoutMs) {
         Sleep 50
     }
     return forStop ? !g_ProgrammaticDictationStop : !g_ProgrammaticDictationStart
+}
+
+; K/L finished or failed. Drop swap-only state so the next user stop can open Send dictation.
+Dictation_EndLanguageSwap() {
+    global g_DictationLanguageSwapActive, g_DictationSuppressCompletion
+    global g_DictationAwaitRecordingWindow, g_DictationRestartSawOverlayAbsent
+    g_DictationLanguageSwapActive := false
+    g_DictationSuppressCompletion := false
+    g_DictationAwaitRecordingWindow := false
+    g_DictationRestartSawOverlayAbsent := false
 }
 
 ; Hide the recording flag for an aborted take. Does not chime or open Send dictation?.
@@ -748,10 +789,11 @@ Dictation_ExpireProgrammaticStart(*) {
 ; First sight of the Recording overlay after the previous overlay has been absent.
 Dictation_AcceptRestartedRecordingWindow() {
     global g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion, g_DictationStartClipboardText
-    global g_DictationRestartSawOverlayAbsent
+    global g_DictationRestartSawOverlayAbsent, g_DictationCompletedText
     g_DictationAwaitRecordingWindow := false
     g_DictationRestartSawOverlayAbsent := false
     g_DictationSuppressCompletion := false
+    g_DictationCompletedText := ""
     Dictation_DisarmCompletionHooks()
     Dictation_UnmuteCaptureAfterSwap()
     try g_DictationStartClipboardText := A_Clipboard
@@ -764,15 +806,17 @@ CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
     global g_DictationHotkeyIsOwner, g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion
-    global g_DictationRestartSawOverlayAbsent
+    global g_DictationRestartSawOverlayAbsent, g_DictationLanguageSwapActive
     ; Non-owners must never drive Recording flag / chime / banner (Act used to steal this).
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
 
     windowExists := Dictation_RecordingWindowExists()
+    ; Await and suppress apply only while a K/L swap is running.
+    swapActive := g_DictationLanguageSwapActive
 
     ; The pre-stop overlay must disappear before any window counts as the restarted take.
-    if (g_DictationAwaitRecordingWindow && !windowExists) {
+    if (swapActive && g_DictationAwaitRecordingWindow && !windowExists) {
         g_DictationRestartSawOverlayAbsent := true
         if (g_DictationSuppressCompletion) {
             Dictation_FinishAbortedTake()
@@ -780,11 +824,11 @@ CheckDictationRecordingWindow() {
         }
         return
     }
-    if (g_DictationAwaitRecordingWindow && windowExists && !g_DictationRestartSawOverlayAbsent)
+    if (swapActive && g_DictationAwaitRecordingWindow && windowExists && !g_DictationRestartSawOverlayAbsent)
         return
 
     ; New take's overlay: drop the aborted take's completion so it cannot swallow this stop.
-    if (windowExists && g_DictationAwaitRecordingWindow && g_DictationRestartSawOverlayAbsent)
+    if (swapActive && windowExists && g_DictationAwaitRecordingWindow && g_DictationRestartSawOverlayAbsent)
         Dictation_AcceptRestartedRecordingWindow()
 
     ; Handle Start: window exists
@@ -823,11 +867,11 @@ CheckDictationRecordingWindow() {
     ; Handle Stop: window gone and was active
     else if (!windowExists && g_DictationActive) {
         ; Gap before the restarted overlay appears. Not a user stop.
-        if (g_DictationAwaitRecordingWindow)
+        if (swapActive && g_DictationAwaitRecordingWindow)
             return
 
         ; Aborted wrong-language take closed. Hide the flag; do not chime or banner.
-        if (g_DictationSuppressCompletion) {
+        if (swapActive && g_DictationSuppressCompletion) {
             g_DictationActive := false
             g_DictationSoundPlayed := false
             g_LastStateTransitionTick := A_TickCount
@@ -946,7 +990,8 @@ OnExit(CleanupDictationIndicator)
     global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart, g_PendingGeminiPromptAfterDictation,
         g_D2C_DictationSubmitMenuCycleFinished
     global g_DictationHotkeyIsOwner, g_DictationCompletionChimeScheduled
-    global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow
+    global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow, g_DictationRestartSawOverlayAbsent
+    global g_DictationCompletedText
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -984,6 +1029,17 @@ OnExit(CleanupDictationIndicator)
     lastHotkeyTick := currentTick
     isProcessing := true
     try {
+        ; A leftover swap must not swallow this user chord or the Send dictation banner.
+        if (!forcedStart) {
+            g_DictationSuppressCompletion := false
+            g_DictationAwaitRecordingWindow := false
+            g_DictationRestartSawOverlayAbsent := false
+        }
+        ; Overlay can close during KeyWait. Remember it now so a cleared recording flag still counts as a stop.
+        overlayWasUp := false
+        if (!forcedStart)
+            overlayWasUp := Dictation_RecordingWindowExists()
+
         ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
         ; so by the time we reach if/else it can be false even when user intended to stop.
         dictationWasActiveOnKeyPress := g_DictationActive
@@ -992,7 +1048,7 @@ OnExit(CleanupDictationIndicator)
         if (!forcedStart)
             KeyWait("0", "L")
 
-        if (dictationWasActiveOnKeyPress) {
+        if (dictationWasActiveOnKeyPress || overlayWasUp) {
             ; Explicit STOP. Never fall into the start branch if Recording closed during KeyWait
             ; (that re-showed the recording flag and skipped/queued the command banner wrongly).
             ; A language-switch restart must not keep this stop suppressed.
@@ -1019,6 +1075,7 @@ OnExit(CleanupDictationIndicator)
         } else if (!g_DictationActive) {
             ; START
             g_DictationActive := true
+            g_DictationCompletedText := ""
             g_LastStateTransitionTick := A_TickCount
             ShowDictationIndicator()
             StartDictationPulseTimer()

@@ -319,6 +319,10 @@ class D2C_FlowManager {
 
     PromptForGeminiSubmit() {
         this.CurrentPhase := "PromptingSubmit"
+        ; Drop a stuck Win/Ctrl/Alt from the stop chord so V is not Clip Angel's Ctrl+Alt+V.
+        try UtilityShortcuts_ReleaseStuckModifiers()
+        catch {
+        }
         cancelCb := this.OnSubmitN.Bind(this)
         keyCallbacks := Map(
             "G", this.OnSubmitG.Bind(this),
@@ -538,6 +542,7 @@ class D2C_FlowManager {
 
     ; Paste dictated text into the active window and end the D2C flow (menu [V]).
     PasteDictationToActiveWindow() {
+        global g_D2C_DictationSubmitMenuCycleFinished
         targetHwnd := 0
         try targetHwnd := WinGetID("A")
 
@@ -551,10 +556,25 @@ class D2C_FlowManager {
             if (!WinActive("ahk_id " targetHwnd))
                 WinWaitActive("ahk_id " targetHwnd, , 0.2)
         }
-        Sleep 60
+        ; Release modifiers before Ctrl+V so a stuck Alt cannot become Clip Angel's Ctrl+Alt+V.
+        try UtilityShortcuts_ReleaseStuckModifiers()
+        catch {
+        }
+        text := Dictation_WaitForCompletedText(1500)
+        if (text = "") {
+            ShowCenteredOverlay_Utils("❌ Dictation text was not copied", 2000, BANNER_ACCENT_ERROR)
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+            return
+        }
+        try {
+            A_Clipboard := text
+            if !ClipWait(1)
+                Sleep 50
+        } catch {
+        }
         Send("^v")
 
-        global g_D2C_DictationSubmitMenuCycleFinished
         g_D2C_DictationSubmitMenuCycleFinished := true
         this.Reset()
     }

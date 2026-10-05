@@ -708,15 +708,20 @@ global g_UtilitySelectorSwallowKey := ""
 ; Drop the opener chord without waiting. A KeyWait per held key blocked the menu while the chord was down.
 ; {vkE8} while Win is down keeps the later Win release from opening Start.
 ; Modifier ups are inlined so this does not depend on CopilotWeb / utility_shortcuts.
-UtilityShortcuts_DismissOpenerChord() {
-    try SendInput "{Blind}{vkE8}"
-    catch {
-    }
+; Defined here: Act and Spotify load this file and not utility_shortcuts.ahk.
+StandardLoadingBar_ReleaseStuckModifiers() {
     try SendInput "{Blind}{vk11 up}{vkA2 up}{vkA3 up}{vk12 up}{vkA4 up}{vkA5 up}{vk10 up}{vkA0 up}{vkA1 up}{vk5B up}{vk5C up}"
     catch {
     }
     for vk in [0x11, 0xA2, 0xA3, 0x12, 0xA4, 0xA5, 0x10, 0xA0, 0xA1, 0x5B, 0x5C]
         DllCall("keybd_event", "UChar", vk, "UChar", 0, "UInt", 2, "UPtr", 0)
+}
+
+UtilityShortcuts_DismissOpenerChord() {
+    try SendInput "{Blind}{vkE8}"
+    catch {
+    }
+    StandardLoadingBar_ReleaseStuckModifiers()
     UtilityShortcuts_ArmOpenerKeySwallow()
 }
 
@@ -999,8 +1004,12 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
     if (!g_StandardLoadingBarIsKeysOverlay)
         return
     ; Ignore while Win/Ctrl/Alt are still physically down, and ignore the opener letter until it is released.
-    if (StandardLoadingBar_KeysSelectionModifiersDown())
-        return
+    ; A stuck modifier (not still held) is released so V is not delivered as Clip Angel's Ctrl+Alt+V.
+    if (StandardLoadingBar_KeysSelectionModifiersDown()) {
+        StandardLoadingBar_ReleaseStuckModifiers()
+        if (StandardLoadingBar_KeysSelectionModifiersDown())
+            return
+    }
     if UtilityShortcuts_ShouldSwallowOpenerKey(key)
         return
     if RegExMatch(key, "i)^Numpad([0-9])$", &numpadDigit) && UtilityShortcuts_ShouldSwallowOpenerKey(numpadDigit[1])

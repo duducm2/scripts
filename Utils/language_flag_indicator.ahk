@@ -90,7 +90,7 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, restartDictationIfStopped := false) {
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
-    global g_HandyModelSwitchBusy, g_HandySuppressActive
+    global g_HandyModelSwitchBusy, g_HandySuppressActive, g_DictationLanguageSwapActive
 
     if !g_HandyAiModels.Has(selection)
         return false
@@ -117,6 +117,8 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
 
     handyHwnd := 0
     try {
+        if (restartDictationIfStopped)
+            g_DictationLanguageSwapActive := true
         if (restartDictationIfStopped) {
             swapResult := Handy_StopDictationForLanguageSwap()
             if (swapResult = "failed")
@@ -236,9 +238,12 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
         return false
     } finally {
         g_HandyModelSwitchBusy := false
-        ; A thrown error or a failed switch must not leave the capture endpoint muted.
-        if (restartDictationIfStopped)
+        ; A thrown error or a failed switch must not leave the capture endpoint muted,
+        ; and must not leave swap flags that swallow the next Send dictation banner.
+        if (restartDictationIfStopped) {
+            Dictation_EndLanguageSwap()
             Dictation_UnmuteCaptureAfterSwap()
+        }
     }
 }
 
