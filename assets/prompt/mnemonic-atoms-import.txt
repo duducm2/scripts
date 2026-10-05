@@ -23,14 +23,14 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 10. Leave `id` empty if unknown (the importer will assign `ATOM_####`).
 11. Pegs stay on beasts (not in this file). Never invent numeric pegs.
 12. Do **not** invent `beast_id` values — only use IDs from the attached context.
-13. `concept` — the formal concept name MUST be its own first square-bracket group, followed by bracketed definition groups: `[Name] [definition group] […optional groups…]`. Keep **3–6** groups; optional ` — Note:` text stays unbracketed.
-14. `keywords` — required for new rows. Format: ordered `Keyword | RecognizableWord` pairs joined by ` || `. Generate **exactly one** pair from every concept bracket group and **3–6 pairs total** matching the group count. A RecognizableWord must come from its group. Preserve left-to-right group order. Never merge or deduplicate the dedicated name-group pair with the first definition-group pair, even when wording repeats. Never put two keys in one group. Never key Note text.
+13. `concept` — new rows only (`README §Knowledge Atom Structure`). Exactly two square-bracket groups that read as one sentence: `[I use {formal name} to {bare verb}] [{continuation}]`. Group 1 has no closing period. Group 2 continues that sentence and does not start a new “I …”. The name sits inside group 1, not in its own brackets. Optional ` — Note:` text stays unbracketed after the two groups. Do not rewrite attached legacy atoms into this shape.
+14. `keywords` — required for new rows. Exactly two `Keyword | RecognizableWord` pairs joined by ` || `, one per bracket group, in left-to-right order. Pair 1’s RecognizableWord is the formal concept name. Pair 2’s RecognizableWord comes from group 2. Never put two keys in one group. Never key Note text.
 15. Do **not** write a mnemonic narrative. If a `story` column is present in an attached file, leave it empty. The user writes stories later from the keywords.
 
 ## Knowledge Atom fields
 
-- **Concept** — rehearsal definition (`[Name] [thought group]` chunks on the compressed core + optional unbracketed Note; 3–6 groups)
-- **Keywords** — exactly one tangible Keyword/RecognizableWord pair per bracket group, 3–6 ordered pairs total (`Keyword | Word || …`). The user writes any mnemonic story later from these keywords.
+- **Concept** — rehearsal definition for a new row (`[I use {Name} to {verb}] [{continuation}]` plus optional unbracketed Note). The two groups are one sentence.
+- **Keywords** — exactly two tangible Keyword/RecognizableWord pairs (`Keyword | Word || Keyword | Word`). Pair 1’s word is the formal name; pair 2’s word comes from the continuation. The user writes any mnemonic story later from these keywords.
 - **Quote** — verbatim source quote
 - **Beast** — comes from the parent beast row (`beast_id`), not a column in this CSV
 

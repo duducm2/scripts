@@ -419,8 +419,13 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         out["error"] := "concept core must contain complete square-bracket groups"
         return out
     }
-    if (groups.Length < 3 || groups.Length > 6) {
-        out["error"] := "concept must contain 3–6 bracket groups (dedicated [Name] plus definition groups)"
+    if (groups.Length != 2) {
+        out["error"] := "concept must contain exactly 2 bracket groups ([I use {Name} to {verb}] [continuation])"
+        return out
+    }
+    opening := groups[1]
+    if (SubStr(opening, -1) = "." || !RegExMatch(opening, "^I use .+ to \S")) {
+        out["error"] := "concept opening must be ``I use … to …`` without a closing period"
         return out
     }
 
@@ -450,8 +455,8 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         out["error"] := "exactly one keyword pair is required per concept bracket group"
         return out
     }
-    if (pairs.Length < 3 || pairs.Length > 6) {
-        out["error"] := "keywords must contain 3–6 pairs"
+    if (pairs.Length != 2) {
+        out["error"] := "keywords must contain exactly 2 pairs"
         return out
     }
     if (!Palace_KeywordGroupsMatch(groups, pairs)) {

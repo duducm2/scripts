@@ -1173,15 +1173,25 @@ Palace_ValidateImportAtoms(atomRows, beastRows := "") {
             return out
         }
     }
-    ; New imports must satisfy the bracket/key contract; fail instead of dropping pairs.
+    ; New or changed rows must satisfy the two-part contract. An unchanged
+    ; stored atom (same id, concept, and keywords) keeps its legacy text.
+    storedById := Palace_IndexById(Palace_Load("atoms"))
     for r in atomRows {
         if (!IsObject(r))
             continue
         concept := r.Has("concept") ? r["concept"] : (r.Has("context") ? r["context"] : "")
         kw := r.Has("keywords") ? r["keywords"] : ""
+        atomId := r.Has("id") ? Trim(r["id"]) : ""
+        if (atomId != "" && storedById.Has(atomId)) {
+            stored := storedById[atomId]
+            storedConcept := stored.Has("concept") ? stored["concept"] : ""
+            storedKw := stored.Has("keywords") ? stored["keywords"] : ""
+            if (Trim(concept) = Trim(storedConcept) && Trim(kw) = Trim(storedKw))
+                continue
+        }
         mnemonicCheck := Palace_ValidateAtomMnemonics(concept, kw)
         if (!mnemonicCheck["ok"]) {
-            atomLabel := r.Has("id") && Trim(r["id"]) != "" ? " " . Trim(r["id"]) : ""
+            atomLabel := atomId != "" ? " " . atomId : ""
             out["ok"] := false
             out["error"] := "Atom" . atomLabel . ": " . mnemonicCheck["error"]
             return out

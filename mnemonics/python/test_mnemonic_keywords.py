@@ -11,11 +11,11 @@ from schemas import (
 )
 
 
-PARALLEL_CONCEPT = (
-    "[Parallel Coordinates] [I draw each variable as a parallel axis] "
-    "[and turn each tuple into a polyline]"
+JOBS_CONCEPT = (
+    "[I use Databricks Jobs to convert] "
+    "[my interactive notebooks into scheduled production pipelines.]"
 )
-PARALLEL_KEYWORDS = "fence | Parallel Coordinates || easel | draw || bead | tuple"
+JOBS_KEYWORDS = "calendar | Databricks Jobs || notebook | notebooks"
 
 
 def _chip(phrase: str, mnemonic: str, *, lead: bool = False) -> str:
@@ -30,12 +30,19 @@ def _chip(phrase: str, mnemonic: str, *, lead: bool = False) -> str:
     return f'<img alt="[{phrase}]" src="{src}" />({mnemonic})'
 
 
-def test_parallel_coordinates_contract_and_render_order() -> None:
-    assert validate_atom_mnemonics(PARALLEL_CONCEPT, PARALLEL_KEYWORDS) is None
-    assert embed_keyword_mnemonics(PARALLEL_CONCEPT, PARALLEL_KEYWORDS) == (
-        f"{_chip('Parallel Coordinates', 'fence', lead=True)} "
-        f"[I {_chip('draw', 'easel')} each variable as a parallel axis] "
-        f"[and turn each {_chip('tuple', 'bead')} into a polyline]"
+def test_two_part_contract_and_render_order() -> None:
+    assert validate_atom_mnemonics(JOBS_CONCEPT, JOBS_KEYWORDS) is None
+    assert (
+        validate_atom_mnemonics(
+            JOBS_CONCEPT + " — Note: supplemental nuance", JOBS_KEYWORDS
+        )
+        is None
+    )
+    assert embed_keyword_mnemonics(JOBS_CONCEPT, JOBS_KEYWORDS) == (
+        f"[I use {_chip('Databricks Jobs', 'calendar', lead=True)} to convert] "
+        "[my interactive "
+        f"{_chip('notebooks', 'notebook')} "
+        "into scheduled production pipelines.]"
     )
 
 
@@ -64,8 +71,8 @@ def test_atom_block_omits_keywords_section() -> None:
     text = "\n".join(
         render_atom_block_md(
             {
-                "concept": PARALLEL_CONCEPT,
-                "keywords": PARALLEL_KEYWORDS,
+                "concept": JOBS_CONCEPT,
+                "keywords": JOBS_KEYWORDS,
                 "quote": "q",
                 "story": "s",
             }
@@ -73,41 +80,43 @@ def test_atom_block_omits_keywords_section() -> None:
     )
     assert "Keywords" not in text
     assert "No keywords yet" not in text
-    assert _chip("Parallel Coordinates", "fence", lead=True) in text
+    assert _chip("Databricks Jobs", "calendar", lead=True) in text
 
 
 def test_repeated_term_stays_separate_across_groups() -> None:
-    concept = "[Parallel] [I draw a parallel axis] [as one line]"
-    keywords = "fence | Parallel || rails | parallel || pen | line"
+    concept = "[I use Parallel Coordinates to draw] [a parallel axis]"
+    keywords = "fence | Parallel Coordinates || rails | parallel"
     assert validate_atom_mnemonics(concept, keywords) is None
-    assert len(iter_keyword_pairs(keywords)) == 3
+    assert len(iter_keyword_pairs(keywords)) == 2
 
 
 def test_second_pair_on_one_group_fails() -> None:
-    two_on_second = (
-        "fence | Parallel Coordinates || easel | draw || "
-        "axis | parallel axis || bead | tuple"
+    extra_pair = (
+        "calendar | Databricks Jobs || notebook | notebooks || bead | pipelines"
     )
     assert "exactly one keyword pair" in (
-        validate_atom_mnemonics(PARALLEL_CONCEPT, two_on_second) or ""
+        validate_atom_mnemonics(JOBS_CONCEPT, extra_pair) or ""
     )
 
 
 def test_pair_count_must_equal_group_count() -> None:
-    missing_group = "fence | Parallel Coordinates || easel | draw"
+    missing_group = "calendar | Databricks Jobs"
     assert "exactly one keyword pair" in (
-        validate_atom_mnemonics(PARALLEL_CONCEPT, missing_group) or ""
+        validate_atom_mnemonics(JOBS_CONCEPT, missing_group) or ""
     )
 
-    wrong_order = "easel | draw || fence | Parallel Coordinates || bead | tuple"
+    wrong_order = "notebook | notebooks || calendar | Databricks Jobs"
     assert "matching bracket group" in (
-        validate_atom_mnemonics(PARALLEL_CONCEPT, wrong_order) or ""
+        validate_atom_mnemonics(JOBS_CONCEPT, wrong_order) or ""
     )
 
 
 def test_pair_and_group_limits_are_enforced() -> None:
-    assert "3–6 bracket groups" in (
-        validate_atom_mnemonics("[Name] [I define it]", "tag | Name || die | define")
+    bare_name = "[Name] [I define it] [clearly]"
+    assert "exactly 2 bracket groups" in (
+        validate_atom_mnemonics(
+            bare_name, "tag | Name || die | define || net | clearly"
+        )
         or ""
     )
     seven_groups = "[Name] [one] [two] [three] [four] [five] [six]"
@@ -115,14 +124,32 @@ def test_pair_and_group_limits_are_enforced() -> None:
         "tag | Name || 1 | one || 2 | two || 3 | three || "
         "4 | four || 5 | five || 6 | six"
     )
-    assert "3–6 bracket groups" in (
+    assert "exactly 2 bracket groups" in (
         validate_atom_mnemonics(seven_groups, seven_pairs) or ""
+    )
+    assert "I use" in (
+        validate_atom_mnemonics(
+            "[Databricks Jobs] [I convert notebooks]",
+            "calendar | Databricks Jobs || pen | convert",
+        )
+        or ""
+    )
+    assert "closing period" in (
+        validate_atom_mnemonics(
+            "[I use Databricks Jobs to convert.] [my notebooks]",
+            "calendar | Databricks Jobs || notebook | notebooks",
+        )
+        or ""
     )
 
 
 def test_note_is_not_a_keyword_source() -> None:
-    concept = "[Name] [I define it] [clearly] — Note: supplemental nuance"
-    keywords = "tag | Name || die | define || net | nuance"
+    concept = (
+        "[I use Databricks Jobs to convert] "
+        "[my interactive notebooks into scheduled production pipelines.] "
+        "— Note: supplemental nuance"
+    )
+    keywords = "calendar | Databricks Jobs || net | nuance"
     assert "matching bracket group" in (
         validate_atom_mnemonics(concept, keywords) or ""
     )
@@ -172,3 +199,4 @@ def test_unrelated_edit_preserves_legacy_keywords_byte_for_byte(tmp_path) -> Non
 
     assert result["ok"] is True
     assert result["row"]["keywords"] == legacy_keywords
+    assert validate_atom_mnemonics(existing["concept"], legacy_keywords) is not None

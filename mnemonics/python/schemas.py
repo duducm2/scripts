@@ -58,11 +58,9 @@ ATOMS_HEADERS = [
     "sort_order",
 ]
 
-# Legacy read cap. New or rewritten atoms use the stricter 3–6 contract below.
+# Legacy read cap. New or rewritten atoms use exactly two bracket groups.
 ATOM_KEYWORDS_MAX_PAIRS = 10
-ATOM_KEYWORDS_MIN_PAIRS = 3
-ATOM_KEYWORDS_NEW_MAX_PAIRS = 6
-ATOM_CONCEPT_MAX_GROUPS = 6
+ATOM_KEYWORDS_NEW_PAIRS = 2
 
 
 _CONCEPT_NOTE_SEPS = (" — Note:", " – Note:", " - Note:")
@@ -186,31 +184,37 @@ def _pairs_match_groups_one_to_one(
     )
 
 
+def _opening_clause_ok(group: str) -> bool:
+    """Group 1 is `I use {name} to {verb}` and does not end the sentence."""
+    text = group.strip()
+    if not text or text.endswith("."):
+        return False
+    return re.fullmatch(r"I use .+ to \S.*", text) is not None
+
+
 def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | None:
-    """Validate the bracket/key contract for a new or rewritten atom."""
+    """Validate the two-part sentence contract for a new or rewritten atom."""
     groups = concept_bracket_groups(concept)
     if groups is None:
         return (
             "concept core must contain only square-bracket groups followed by an "
             "optional unbracketed ` — Note:`"
         )
-    if not ATOM_KEYWORDS_MIN_PAIRS <= len(groups) <= ATOM_CONCEPT_MAX_GROUPS:
+    if len(groups) != ATOM_KEYWORDS_NEW_PAIRS:
         return (
-            f"concept must contain {ATOM_KEYWORDS_MIN_PAIRS}–"
-            f"{ATOM_CONCEPT_MAX_GROUPS} bracket groups "
-            "(dedicated [Name] plus definition groups)"
+            f"concept must contain exactly {ATOM_KEYWORDS_NEW_PAIRS} bracket groups "
+            "([I use {Name} to {verb}] [continuation])"
         )
+    if not _opening_clause_ok(groups[0]):
+        return "concept opening must be `I use … to …` without a closing period"
 
     pairs, error = _strict_keyword_pairs(keywords)
     if error:
         return error
     if len(pairs) != len(groups):
         return "exactly one keyword pair is required per concept bracket group"
-    if not ATOM_KEYWORDS_MIN_PAIRS <= len(pairs) <= ATOM_KEYWORDS_NEW_MAX_PAIRS:
-        return (
-            f"keywords must contain {ATOM_KEYWORDS_MIN_PAIRS}–"
-            f"{ATOM_KEYWORDS_NEW_MAX_PAIRS} pairs"
-        )
+    if len(pairs) != ATOM_KEYWORDS_NEW_PAIRS:
+        return f"keywords must contain exactly {ATOM_KEYWORDS_NEW_PAIRS} pairs"
     if not _pairs_match_groups_one_to_one(groups, pairs):
         return (
             "each keyword RecognizableWord must appear in its matching bracket group "
