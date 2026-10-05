@@ -406,9 +406,10 @@ RenameChatGPTWindowToChatGPT() {
     RenameChatGPTWindowToChatGPT()
 }
 
-; Ctrl + Alt + C : Click Cancel on the "Restore pages?" bubble
-; chrome.md: 2,2 Name "Restore pages?" (Chrome_WidgetWin_1)
-;            2,2,2,1,1,3,2,3 Button "Cancel" ClassName "MdTextButton"
+; Ctrl + Alt + C : Dismiss the "Restore pages?" bubble
+; chrome.md:       Cancel sits next to Restore (MdTextButton)
+; chrome-close.md: only "Restaurar"; bubble X is "Fechar" ImageButton (not the window caption)
+; Ctrl+W only when a New Tab page is open (chrome://new-tab-page/, "Nova guia" / "New Tab").
 ^!c:: Chrome_ClickRestorePagesCancel()
 
 Chrome_ClickRestorePagesCancel() {
@@ -422,19 +423,42 @@ Chrome_ClickRestorePagesCancel() {
         return
     }
 
+    bubbleNames := ["Restore pages?", "Restaurar páginas?"]
     bubble := 0
     try {
-        if (root.Name = "Restore pages?")
-            bubble := root
-        else
-            bubble := root.FindElement({ Name: "Restore pages?", ClassName: "Chrome_WidgetWin_1" })
+        for name in bubbleNames {
+            if (root.Name = name) {
+                bubble := root
+                break
+            }
+        }
+        if !bubble
+            for name in bubbleNames {
+                bubble := root.FindElement({ Name: name, ClassName: "Chrome_WidgetWin_1" })
+                if bubble
+                    break
+            }
     } catch {
         bubble := 0
     }
 
+    newTabOpened := Chrome_HasNewTabPage(root)
+
     btn := 0
-    if bubble
-        try btn := bubble.FindElement({ Type: 50000, Name: "Cancel", ClassName: "MdTextButton" })
+    if bubble {
+        for name in ["Cancel", "Cancelar"] {
+            try btn := bubble.FindElement({ Type: 50000, Name: name, ClassName: "MdTextButton" })
+            if btn
+                break
+        }
+        ; Bubble X only. The caption "Fechar" closes the whole window.
+        if !btn
+            for name in ["Close", "Fechar"] {
+                try btn := bubble.FindElement({ Type: 50000, Name: name, ClassName: "ImageButton" })
+                if btn
+                    break
+            }
+    }
     if !btn {
         ShowCenteredOverlay_Utils("Restore pages Cancel not found", 1600, BANNER_ACCENT_ERROR)
         return
@@ -455,8 +479,24 @@ Chrome_ClickRestorePagesCancel() {
         ShowCenteredOverlay_Utils("Restore pages Cancel could not be clicked", 1600, BANNER_ACCENT_ERROR)
         return
     }
-    Sleep 1000
-    Send "^w"
+
+    if (newTabOpened) {
+        Sleep 1000
+        Send "^w"
+    }
+}
+
+Chrome_HasNewTabPage(root) {
+    doc := 0
+    try doc := root.FindElement({ Type: 50030, Value: "chrome://new-tab-page/", matchmode: "Substring" })
+    if doc
+        return true
+    for name in ["Nova guia", "New Tab"] {
+        try doc := root.FindElement({ Type: 50030, Name: name })
+        if doc
+            return true
+    }
+    return false
 }
 
 #HotIf
