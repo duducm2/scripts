@@ -317,11 +317,18 @@ Handy_RequestAiModelSelection(slot, restoreHwnd := 0, restartDictationIfStopped 
     target := Handy_FindAppLaunchersHwnd()
     packed := restartDictationIfStopped ? (slot | 0x100) : slot
     if (msg && target) {
+        ; AppLaunchers' main window is hidden. PostMessage cannot see it unless this is on.
+        prevDetect := A_DetectHiddenWindows
+        DetectHiddenWindows true
+        posted := false
         try {
             PostMessage(msg, packed, restoreHwnd, , "ahk_id " target)
-            return true
+            posted := true
         } catch {
         }
+        DetectHiddenWindows prevDetect
+        if (posted)
+            return true
     }
     if (restartDictationIfStopped) {
         ShowCenteredOverlay_Utils("⚠ Dictation owner unavailable", 2000, BANNER_ACCENT_ERROR)
