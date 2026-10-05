@@ -835,6 +835,23 @@ Dictation_AcceptRestartedRecordingWindow() {
     }
 }
 
+; No take, swap, or Recording overlay: drop the poll so other hotkeys are not waiting on it.
+Dictation_StopRecordingPollIfIdle() {
+    global g_DictationActive, g_DictationLanguageSwapActive, g_DictationAwaitRecordingWindow
+    global g_DictationCheckTimer
+    if (g_DictationActive || g_DictationLanguageSwapActive || g_DictationAwaitRecordingWindow)
+        return
+    if (Dictation_RecordingWindowExists())
+        return
+    try SetTimer(CheckDictationRecordingWindow, 0)
+    catch {
+    }
+    try SetTimer(RevertDictationPolling, 0)
+    catch {
+    }
+    g_DictationCheckTimer := false
+}
+
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
@@ -844,107 +861,111 @@ CheckDictationRecordingWindow() {
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
 
-    windowExists := Dictation_RecordingWindowExists()
-    ; Await and suppress apply only while a K/L swap is running.
-    swapActive := g_DictationLanguageSwapActive
+    try {
+        windowExists := Dictation_RecordingWindowExists()
+        ; Await and suppress apply only while a K/L swap is running.
+        swapActive := g_DictationLanguageSwapActive
 
-    ; The pre-stop overlay must disappear before any window counts as the restarted take.
-    if (swapActive && g_DictationAwaitRecordingWindow && !windowExists) {
-        g_DictationRestartSawOverlayAbsent := true
-        if (g_DictationSuppressCompletion) {
-            Dictation_FinishAbortedTake()
+        ; The pre-stop overlay must disappear before any window counts as the restarted take.
+        if (swapActive && g_DictationAwaitRecordingWindow && !windowExists) {
+            g_DictationRestartSawOverlayAbsent := true
+            if (g_DictationSuppressCompletion) {
+                Dictation_FinishAbortedTake()
+                return
+            }
             return
         }
-        return
-    }
-    if (swapActive && g_DictationAwaitRecordingWindow && windowExists && !g_DictationRestartSawOverlayAbsent)
-        return
+        if (swapActive && g_DictationAwaitRecordingWindow && windowExists && !g_DictationRestartSawOverlayAbsent)
+            return
 
-    ; New take's overlay: drop the aborted take's completion so it cannot swallow this stop.
-    if (swapActive && windowExists && g_DictationAwaitRecordingWindow && g_DictationRestartSawOverlayAbsent)
-        Dictation_AcceptRestartedRecordingWindow()
+        ; New take's overlay: drop the aborted take's completion so it cannot swallow this stop.
+        if (swapActive && windowExists && g_DictationAwaitRecordingWindow && g_DictationRestartSawOverlayAbsent)
+            Dictation_AcceptRestartedRecordingWindow()
 
-    ; Handle Start: window exists
-    if (windowExists) {
-        if (!g_DictationActive) {
-            g_DictationActive := true
+        ; Handle Start: window exists
+        if (windowExists) {
+            if (!g_DictationActive) {
+                g_DictationActive := true
+                g_LastStateTransitionTick := A_TickCount
+
+                ; Capture current clipboard content to detect changes later
+                try {
+                    g_DictationStartClipboardText := A_Clipboard
+                } catch {
+                    g_DictationStartClipboardText := ""
+                }
+
+                try {
+                    RunSetMicVolumeScript()
+                } catch Error as e {
+                    ; Silently handle errors - don't interrupt dictation if script fails
+                }
+
+                if (!g_DictationLanguageSwapActive)
+                    Dictation_RememberPasteTarget()
+                ShowDictationIndicator()
+                StartDictationPulseTimer()
+            }
+
+            ; Atomic test-and-set: one sound per session when window first detected
+            Critical "On"
+            if (!g_DictationSoundPlayed) {
+                g_DictationSoundPlayed := true
+                Critical "Off"
+                SafePlayDictationSound(Dictation_StartSoundForCurrentModel())
+            } else {
+                Critical "Off"
+            }
+            ; Overlay is up and the start chime has run. Drop the 25ms scan; the 3s cap still covers a late window.
+            if (g_DictationSoundPlayed)
+                RevertDictationPolling()
+        }
+        ; Handle Stop: window gone and was active
+        else if (!windowExists && g_DictationActive) {
+            ; Gap before the restarted overlay appears. Not a user stop.
+            if (swapActive && g_DictationAwaitRecordingWindow)
+                return
+
+            ; Aborted wrong-language take closed. Hide the flag; do not chime or banner.
+            if (swapActive && g_DictationSuppressCompletion) {
+                g_DictationActive := false
+                g_DictationSoundPlayed := false
+                g_LastStateTransitionTick := A_TickCount
+                StopDictationPulseTimer()
+                try HideDictationIndicator()
+                catch {
+                }
+                return
+            }
+
+            Critical "On"
+            if (!g_DictationActive || g_DictationCompletionChimeScheduled) {
+                Critical "Off"
+                return
+            }
+
+            if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 500)) {
+                Critical "Off"
+                return
+            }
+
+            g_DictationCompletionChimeScheduled := true
             g_LastStateTransitionTick := A_TickCount
-
-            ; Capture current clipboard content to detect changes later
-            try {
-                g_DictationStartClipboardText := A_Clipboard
-            } catch {
-                g_DictationStartClipboardText := ""
-            }
-
-            try {
-                RunSetMicVolumeScript()
-            } catch Error as e {
-                ; Silently handle errors - don't interrupt dictation if script fails
-            }
-
-            if (!g_DictationLanguageSwapActive)
-                Dictation_RememberPasteTarget()
-            ShowDictationIndicator()
-            StartDictationPulseTimer()
-        }
-
-        ; Atomic test-and-set: one sound per session when window first detected
-        Critical "On"
-        if (!g_DictationSoundPlayed) {
-            g_DictationSoundPlayed := true
-            Critical "Off"
-            SafePlayDictationSound(Dictation_StartSoundForCurrentModel())
-        } else {
-            Critical "Off"
-        }
-        ; Overlay is up and the start chime has run. Drop the 25ms scan; the 3s cap still covers a late window.
-        if (g_DictationSoundPlayed)
-            RevertDictationPolling()
-    }
-    ; Handle Stop: window gone and was active
-    else if (!windowExists && g_DictationActive) {
-        ; Gap before the restarted overlay appears. Not a user stop.
-        if (swapActive && g_DictationAwaitRecordingWindow)
-            return
-
-        ; Aborted wrong-language take closed. Hide the flag; do not chime or banner.
-        if (swapActive && g_DictationSuppressCompletion) {
             g_DictationActive := false
+            Critical "Off"
             g_DictationSoundPlayed := false
-            g_LastStateTransitionTick := A_TickCount
+
             StopDictationPulseTimer()
-            try HideDictationIndicator()
-            catch {
+            HideDictationIndicator()
+            DictationCompletionChimeOrWaitForClipboard()
+        } else if (g_DictationActive && windowExists) {
+            ShowDictationIndicator()
+            if (!g_DictationPulseTimer) {
+                StartDictationPulseTimer()
             }
-            return
         }
-
-        Critical "On"
-        if (!g_DictationActive || g_DictationCompletionChimeScheduled) {
-            Critical "Off"
-            return
-        }
-
-        if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 500)) {
-            Critical "Off"
-            return
-        }
-
-        g_DictationCompletionChimeScheduled := true
-        g_LastStateTransitionTick := A_TickCount
-        g_DictationActive := false
-        Critical "Off"
-        g_DictationSoundPlayed := false
-
-        StopDictationPulseTimer()
-        HideDictationIndicator()
-        DictationCompletionChimeOrWaitForClipboard()
-    } else if (g_DictationActive && windowExists) {
-        ShowDictationIndicator()
-        if (!g_DictationPulseTimer) {
-            StartDictationPulseTimer()
-        }
+    } finally {
+        Dictation_StopRecordingPollIfIdle()
     }
 }
 
