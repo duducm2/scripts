@@ -594,7 +594,7 @@ Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
 }
 
 ; Release stuck modifiers, then send #!+0. forStop arms the stop flag; otherwise the start flag.
-; The flag stays set until ~#!+0 consumes it.
+; Send does not run the hook hotkey, so callers clear the flag when the overlay matches.
 Dictation_SendProgrammaticChord(forStop) {
     global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart
     try SetTimer(Dictation_ExpireProgrammaticStart, 0)
@@ -613,30 +613,18 @@ Dictation_SendProgrammaticChord(forStop) {
     Send "#!+0"
 }
 
-; True once ~#!+0 has cleared the programmatic stop or start flag.
-Dictation_WaitProgrammaticChordConsumed(forStop, timeoutMs) {
-    global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart
-    start := A_TickCount
-    while (A_TickCount - start < timeoutMs) {
-        if (forStop) {
-            if (!g_ProgrammaticDictationStop)
-                return true
-        } else if (!g_ProgrammaticDictationStart) {
-            return true
-        }
-        Sleep 50
-    }
-    return forStop ? !g_ProgrammaticDictationStop : !g_ProgrammaticDictationStart
-}
-
 ; K/L finished or failed. Drop swap-only state so the next user stop can open Send dictation.
 Dictation_EndLanguageSwap() {
     global g_DictationLanguageSwapActive, g_DictationSuppressCompletion
     global g_DictationAwaitRecordingWindow, g_DictationRestartSawOverlayAbsent
+    global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart
     g_DictationLanguageSwapActive := false
     g_DictationSuppressCompletion := false
     g_DictationAwaitRecordingWindow := false
     g_DictationRestartSawOverlayAbsent := false
+    ; Send does not run ~#!+0, so a leftover flag would swallow the next physical stop.
+    g_ProgrammaticDictationStop := false
+    g_ProgrammaticDictationStart := false
 }
 
 ; Hide the recording flag for an aborted take. Does not chime or open Send dictation?.
@@ -672,20 +660,14 @@ Handy_StopDictationForLanguageSwap() {
         Dictation_SendProgrammaticChord(true)
         start := A_TickCount
         while (A_TickCount - start < 2000) {
-            overlayGone := !Dictation_RecordingWindowExists()
-            if (overlayGone && !g_ProgrammaticDictationStop) {
+            ; The hook hotkey does not see this Send, so do not wait for it to clear the flag.
+            if (!Dictation_RecordingWindowExists()) {
+                g_ProgrammaticDictationStop := false
                 g_DictationRestartSawOverlayAbsent := true
                 Dictation_FinishAbortedTake()
                 return "stopped"
             }
             Sleep 50
-        }
-        ; Overlay already gone, but the hotkey has not consumed the flag yet.
-        if (!Dictation_RecordingWindowExists()) {
-            g_ProgrammaticDictationStop := false
-            g_DictationRestartSawOverlayAbsent := true
-            Dictation_FinishAbortedTake()
-            return "stopped"
         }
     }
 
@@ -698,7 +680,7 @@ Handy_StopDictationForLanguageSwap() {
 }
 
 ; After a mid-dictation language swap: start a normal take again.
-; The start flag stays set until ~#!+0 consumes it. Returns true once the new overlay is up.
+; Returns true once the new overlay is up. The start flag is cleared then, not by ~#!+0.
 Handy_RestartDictationAfterLanguageSwitch() {
     global g_ProgrammaticDictationStart, g_ProgrammaticDictationStop, g_DictationActive, g_DictationSoundPlayed
     global g_PendingGeminiPromptAfterDictation
@@ -724,13 +706,16 @@ Handy_RestartDictationAfterLanguageSwitch() {
     loop 3 {
         ; A previous chord may have opened the overlay just after the last poll.
         if (A_Index > 1 && g_DictationRestartSawOverlayAbsent && Dictation_RecordingWindowExists()) {
-            if (Dictation_WaitRestartedOverlay(200))
+            if (Dictation_WaitRestartedOverlay(200)) {
+                g_ProgrammaticDictationStart := false
                 return true
+            }
         }
         Dictation_SendProgrammaticChord(false)
-        Dictation_WaitProgrammaticChordConsumed(false, 1500)
-        if (Dictation_WaitRestartedOverlay(2000))
+        if (Dictation_WaitRestartedOverlay(2000)) {
+            g_ProgrammaticDictationStart := false
             return true
+        }
         ; This attempt did not land. Drop a stuck start flag before the next chord.
         g_ProgrammaticDictationStart := false
     }
@@ -991,7 +976,7 @@ OnExit(CleanupDictationIndicator)
         g_D2C_DictationSubmitMenuCycleFinished
     global g_DictationHotkeyIsOwner, g_DictationCompletionChimeScheduled
     global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow, g_DictationRestartSawOverlayAbsent
-    global g_DictationCompletedText
+    global g_DictationCompletedText, g_DictationLanguageSwapActive
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -1004,20 +989,25 @@ OnExit(CleanupDictationIndicator)
         return
     }
 
-    ; Skip when script sends #!+0 programmatically
+    ; Overlay up: this press finishes the take, even if a swap left a programmatic flag set.
+    ; A synthetic restart is forcedStart only while that overlay is absent and a swap is in progress.
+    overlayAlreadyUp := Dictation_RecordingWindowExists()
+
     if (g_ProgrammaticDictationStop) {
         g_ProgrammaticDictationStop := false
-        return
+        if (!overlayAlreadyUp)
+            return
     }
 
-    ; Language switch while a take was running: this chord is a new start.
     forcedStart := false
     if (g_ProgrammaticDictationStart) {
         g_ProgrammaticDictationStart := false
         SetTimer(Dictation_ExpireProgrammaticStart, 0)
-        g_DictationActive := false
-        g_PendingGeminiPromptAfterDictation := false
-        forcedStart := true
+        if (!overlayAlreadyUp && g_DictationLanguageSwapActive) {
+            g_DictationActive := false
+            g_PendingGeminiPromptAfterDictation := false
+            forcedStart := true
+        }
     }
 
     if (!forcedStart && isProcessing)
@@ -1038,7 +1028,7 @@ OnExit(CleanupDictationIndicator)
         ; Overlay can close during KeyWait. Remember it now so a cleared recording flag still counts as a stop.
         overlayWasUp := false
         if (!forcedStart)
-            overlayWasUp := Dictation_RecordingWindowExists()
+            overlayWasUp := overlayAlreadyUp
 
         ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
         ; so by the time we reach if/else it can be false even when user intended to stop.
