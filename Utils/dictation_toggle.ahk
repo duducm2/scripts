@@ -51,6 +51,9 @@ global g_DictationSwapMicMuted := false
 global g_DictationLanguageSwapActive := false
 ; Text Handy copied when the last user stop finished. V pastes this, not an older clip.
 global g_DictationCompletedText := ""
+; Tick until which a stop keeps listening for Handy's copy. 0 means not listening.
+global g_DictationClipboardListenUntil := 0
+global g_DictationClipboardHookOn := false
 ; Window and control focused when this take started. V returns there after the banner.
 global g_DictationPasteHwnd := 0
 global g_DictationPasteCtrl := ""
@@ -497,19 +500,85 @@ Dictation_WaitForCompletedText(timeoutMs := 1500) {
     return g_DictationCompletedText
 }
 
-; Handler for clipboard changes during dictation completion
+; Handler for clipboard changes during dictation completion.
+; An empty or unchanged clipboard is not the transcription yet, so the hook stays.
 DictationClipboardHandler(DataType) {
     global g_DictationSuppressCompletion, g_PendingGeminiPromptAfterDictation
-    ; Remove handler immediately to prevent multiple triggers
-    OnClipboardChange(DictationClipboardHandler, 0)
+    global g_DictationCompletionChimeScheduled, g_DictationClipboardListenUntil, g_DictationStartClipboardText
 
     ; Aborted wrong-language take: its transcription must not complete the next session.
-    if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation)
+    if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation) {
+        Dictation_RemoveClipboardHook()
         return
+    }
 
     Dictation_NoteCompletedClipboard()
-    ; Trigger completion logic immediately
-    PlayDictationCompletionChime()
+    ; Stale text from the previous take is not this stop's transcription.
+    clipNow := ""
+    try clipNow := A_Clipboard
+    catch
+        clipNow := ""
+    if (clipNow = "" || clipNow = g_DictationStartClipboardText)
+        return
+
+    Dictation_RemoveClipboardHook()
+    g_DictationClipboardListenUntil := 0
+    try SetTimer(Dictation_StopClipboardListen, 0)
+    catch {
+    }
+
+    ; Tail after the chime only stores text. Do not open a second banner.
+    if (g_DictationCompletionChimeScheduled)
+        PlayDictationCompletionChime()
+}
+
+Dictation_EnsureClipboardHook() {
+    global g_DictationClipboardHookOn
+    if (g_DictationClipboardHookOn)
+        return
+    OnClipboardChange(DictationClipboardHandler)
+    g_DictationClipboardHookOn := true
+}
+
+Dictation_RemoveClipboardHook() {
+    global g_DictationClipboardHookOn
+    g_DictationClipboardHookOn := false
+    try OnClipboardChange(DictationClipboardHandler, 0)
+    catch {
+    }
+}
+
+; Listen from the stop for up to 4s. A second call does not extend the deadline.
+Dictation_BeginClipboardListen() {
+    global g_DictationClipboardListenUntil
+    if (g_DictationClipboardListenUntil > A_TickCount)
+        return
+    g_DictationClipboardListenUntil := A_TickCount + 4000
+    SetTimer(Dictation_StopClipboardListen, -4000)
+}
+
+; Drop the tail hook. Does not cancel the completion chime.
+Dictation_StopClipboardListen(*) {
+    global g_DictationClipboardListenUntil
+    g_DictationClipboardListenUntil := 0
+    try SetTimer(Dictation_StopClipboardListen, 0)
+    catch {
+    }
+    Dictation_RemoveClipboardHook()
+}
+
+; After the chime, keep the hook only until the new text arrives or the 4s deadline.
+Dictation_ContinueClipboardListenIfNeeded() {
+    global g_DictationCompletedText, g_DictationClipboardListenUntil
+    if (g_DictationCompletedText != "") {
+        Dictation_StopClipboardListen()
+        return
+    }
+    if (g_DictationClipboardListenUntil > A_TickCount) {
+        Dictation_EnsureClipboardHook()
+        return
+    }
+    Dictation_RemoveClipboardHook()
 }
 
 ; Drop a queued stop chime and clipboard hook (aborted take, or the moment the new overlay appears).
@@ -517,9 +586,7 @@ Dictation_DisarmCompletionHooks() {
     global g_DictationCompletionChimeScheduled
     g_DictationCompletionChimeScheduled := false
     SetTimer(PlayDictationCompletionChime, 0)
-    try OnClipboardChange(DictationClipboardHandler, 0)
-    catch {
-    }
+    Dictation_StopClipboardListen()
 }
 
 ; Play completion chime after transcription finishes
@@ -528,13 +595,10 @@ PlayDictationCompletionChime(*) {
         g_KeepIndicatorVisible, g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
     global g_DictationSuppressCompletion
 
-    ; Ensure clipboard handler is removed (safe to call even if already removed)
-    try {
-        OnClipboardChange(DictationClipboardHandler, 0)
-    }
-
     ; Cancel fallback timer to prevent redundant calls
     SetTimer(PlayDictationCompletionChime, 0)
+
+    Dictation_NoteCompletedClipboard()
 
     ; CRITICAL: Test-and-set pattern - clear flag IMMEDIATELY to prevent duplicates
     ; Use Critical to ensure atomicity
@@ -544,43 +608,51 @@ PlayDictationCompletionChime(*) {
     Critical "Off"
 
     ; Only play if flag was set (prevent duplicate execution)
-    if (chimeShouldPlay) {
-        ; Aborted take: consume the flag so it cannot steal the next stop's chime, and do not banner.
-        if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation)
-            return
-        g_D2C_DictationSubmitMenuCycleFinished := false
-        SafePlayDictationSound(g_DictationStopSound)
+    if (!chimeShouldPlay)
+        return
 
-        ; Execute pending action if one was set (reserved for future use).
-        pendingAction := g_PendingDictationAction
-        g_PendingDictationAction := ""  ; Clear immediately after reading
-
-        if (pendingAction = "Paste") {
-            ; Update indicator text to show status
-            UpdateDictationIndicatorText("Pasting...")
-            ; Execute paste command
-            Send "^v"
-            ; Wait for paste to complete before hiding indicator
-            Sleep 100  ; Small delay to ensure paste completes
-            ; Hide indicator only after paste completes
-            HideDictationIndicator()
-            g_KeepIndicatorVisible := false
-        }
-
-        ; If user stopped dictation with Win+Alt+Shift+0 (no pending action), show Gemini confirm banner (once only).
-        Critical "On"
-        pendingGemini := g_PendingGeminiPromptAfterDictation
-        g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
-        Critical "Off"
-        if (pendingGemini && pendingAction = "") {
-            D2C_FlowManager.GetInstance().StartFromDictation()
-        }
+    ; Aborted take: consume the flag so it cannot steal the next stop's chime, and do not banner.
+    if (g_DictationSuppressCompletion && !g_PendingGeminiPromptAfterDictation) {
+        Dictation_RemoveClipboardHook()
+        return
     }
+    g_D2C_DictationSubmitMenuCycleFinished := false
+    SafePlayDictationSound(g_DictationStopSound)
+
+    ; Execute pending action if one was set (reserved for future use).
+    pendingAction := g_PendingDictationAction
+    g_PendingDictationAction := ""  ; Clear immediately after reading
+
+    if (pendingAction = "Paste") {
+        ; Update indicator text to show status
+        UpdateDictationIndicatorText("Pasting...")
+        ; Execute paste command
+        Send "^v"
+        ; Wait for paste to complete before hiding indicator
+        Sleep 100  ; Small delay to ensure paste completes
+        ; Hide indicator only after paste completes
+        HideDictationIndicator()
+        g_KeepIndicatorVisible := false
+    }
+
+    ; If user stopped dictation with Win+Alt+Shift+0 (no pending action), show Gemini confirm banner (once only).
+    Critical "On"
+    pendingGemini := g_PendingGeminiPromptAfterDictation
+    g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
+    Critical "Off"
+    if (pendingGemini && pendingAction = "") {
+        D2C_FlowManager.GetInstance().StartFromDictation()
+    }
+
+    ; A copy that lands during the chime, or after an empty clipboard event, still has until 4s.
+    Dictation_NoteCompletedClipboard()
+    Dictation_ContinueClipboardListenIfNeeded()
 }
 
 ; Called when dictation stop detected: play chime now if clipboard already changed, else wait for change
 DictationCompletionChimeOrWaitForClipboard() {
     global g_DictationStartClipboardText
+    Dictation_BeginClipboardListen()
     currentClip := ""
     try {
         currentClip := A_Clipboard
@@ -589,7 +661,7 @@ DictationCompletionChimeOrWaitForClipboard() {
         Dictation_NoteCompletedClipboard()
         PlayDictationCompletionChime()
     } else {
-        OnClipboardChange(DictationClipboardHandler)
+        Dictation_EnsureClipboardHook()
         SetTimer(PlayDictationCompletionChime, -1500)
     }
 }
@@ -638,6 +710,8 @@ Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
             break
         Sleep 50
     }
+    ; Send does not run ~#!+0, so a leftover flag would swallow the next physical chord.
+    g_ProgrammaticDictationStop := false
     return true
 }
 
@@ -856,7 +930,7 @@ CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
     global g_DictationHotkeyIsOwner, g_DictationAwaitRecordingWindow, g_DictationSuppressCompletion
-    global g_DictationRestartSawOverlayAbsent, g_DictationLanguageSwapActive
+    global g_DictationRestartSawOverlayAbsent, g_DictationLanguageSwapActive, g_PendingGeminiPromptAfterDictation
     ; Non-owners must never drive Recording flag / chime / banner (Act used to steal this).
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
@@ -944,7 +1018,9 @@ CheckDictationRecordingWindow() {
                 return
             }
 
-            if (g_LastStateTransitionTick && (A_TickCount - g_LastStateTransitionTick < 500)) {
+            ; An explicit user stop is not an overlay flicker.
+            if (!g_PendingGeminiPromptAfterDictation && g_LastStateTransitionTick && (A_TickCount -
+                g_LastStateTransitionTick < 500)) {
                 Critical "Off"
                 return
             }
@@ -1039,15 +1115,48 @@ CleanupDictationIndicator(*) {
 ; Register cleanup on script exit
 OnExit(CleanupDictationIndicator)
 
+; The poll may already have opened Send dictation during KeyWait. Arm only when it did not.
+Dictation_ArmUserStopCompletion() {
+    global g_PendingGeminiPromptAfterDictation, g_DictationCompletionChimeScheduled
+    global g_DictationActive, g_DictationSoundPlayed, g_LastStateTransitionTick
+
+    ; Chime already ran and claimed pending. Do not open a second banner.
+    if (!g_PendingGeminiPromptAfterDictation)
+        return
+    if (g_DictationCompletionChimeScheduled)
+        return
+
+    if (g_DictationActive)
+        ToggleDictationMode()
+
+    if (!g_PendingGeminiPromptAfterDictation || g_DictationCompletionChimeScheduled)
+        return
+    ; Overlay still up: pending skips the flicker guard, and the poll arms the chime when it closes.
+    if (Dictation_RecordingWindowExists())
+        return
+
+    g_DictationCompletionChimeScheduled := true
+    g_LastStateTransitionTick := A_TickCount
+    g_DictationActive := false
+    g_DictationSoundPlayed := false
+    try StopDictationPulseTimer()
+    catch {
+    }
+    try HideDictationIndicator()
+    catch {
+    }
+    DictationCompletionChimeOrWaitForClipboard()
+}
+
 ; Toggle dictation mode with Win+Alt+Shift+0
 ; ~ prefix: key passes through to handy.exe. First press starts dictation, second stops and copies.
 ; Uses KeyWait + state machine + recursion guard to prevent duplicate triggers (typematic repeats).
 ; Only AppLaunchers owns this path (Dictation_IsOwnerProcess / g_DictationHotkeyIsOwner).
 ~#!+0::
 {
-    global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
+    global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound, g_DictationStartClipboardText
     global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart, g_PendingGeminiPromptAfterDictation,
-        g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished, g_DictationGeminiConfirmBannerVisible
     global g_DictationHotkeyIsOwner, g_DictationCompletionChimeScheduled
     global g_DictationSuppressCompletion, g_DictationAwaitRecordingWindow, g_DictationRestartSawOverlayAbsent
     global g_DictationCompletedText, g_DictationLanguageSwapActive
@@ -1084,11 +1193,15 @@ OnExit(CleanupDictationIndicator)
         }
     }
 
-    if (!forcedStart && isProcessing)
+    ; Decide before KeyWait. The ~ chord already reached Handy, and the poll can clear
+    ; g_DictationActive while KeyWait yields. A short second tap must not be dropped.
+    userStop := !forcedStart && (overlayAlreadyUp || g_DictationActive)
+
+    if (!forcedStart && !userStop && isProcessing)
         return
 
     currentTick := A_TickCount
-    if (!forcedStart && currentTick - lastHotkeyTick < 200)
+    if (!forcedStart && !userStop && currentTick - lastHotkeyTick < 200)
         return
     lastHotkeyTick := currentTick
     isProcessing := true
@@ -1099,48 +1212,29 @@ OnExit(CleanupDictationIndicator)
             g_DictationAwaitRecordingWindow := false
             g_DictationRestartSawOverlayAbsent := false
         }
-        ; Overlay can close during KeyWait. Remember it now so a cleared recording flag still counts as a stop.
-        overlayWasUp := false
-        if (!forcedStart)
-            overlayWasUp := overlayAlreadyUp
-
-        ; Capture before KeyWait: check timer may clear g_DictationActive when Recording window closes,
-        ; so by the time we reach if/else it can be false even when user intended to stop.
-        dictationWasActiveOnKeyPress := g_DictationActive
+        if (userStop) {
+            g_PendingGeminiPromptAfterDictation := true
+            g_D2C_DictationSubmitMenuCycleFinished := false
+            g_DictationGeminiConfirmBannerVisible := false
+            g_DictationCompletedText := ""
+        }
 
         ; Synthetic restart: Send has not released 0 yet, so KeyWait would never return.
         if (!forcedStart)
             KeyWait("0", "L")
 
-        if (dictationWasActiveOnKeyPress || overlayWasUp) {
-            ; Explicit STOP. Never fall into the start branch if Recording closed during KeyWait
-            ; (that re-showed the recording flag and skipped/queued the command banner wrongly).
-            ; A language-switch restart must not keep this stop suppressed.
-            g_DictationSuppressCompletion := false
-            g_DictationAwaitRecordingWindow := false
-            g_PendingGeminiPromptAfterDictation := true
-            g_D2C_DictationSubmitMenuCycleFinished := false
-            g_DictationGeminiConfirmBannerVisible := false
-
-            if (!g_DictationActive) {
-                ; Monitor already ended the session during KeyWait — chime may have run before
-                ; pendingGemini was set. Force banner path once.
-                try HideDictationIndicator()
-                catch {
-                }
-                try StopDictationPulseTimer()
-                catch {
-                }
-                if (!g_DictationCompletionChimeScheduled)
-                    SetTimer(Dictation_ForceSubmitMenuAfterStop, -50)
-            } else {
-                ToggleDictationMode()
-            }
+        if (userStop) {
+            ; Never fall into the start branch if Recording closed during KeyWait.
+            Dictation_ArmUserStopCompletion()
         } else if (!g_DictationActive) {
-            ; START
+            ; START. Snapshot before the poll; the poll skips this once active is already true.
             g_DictationActive := true
             g_DictationCompletedText := ""
             if (!forcedStart) {
+                Dictation_StopClipboardListen()
+                try g_DictationStartClipboardText := A_Clipboard
+                catch
+                    g_DictationStartClipboardText := ""
                 Dictation_ClearPasteTarget()
                 Dictation_RememberPasteTarget()
             }
