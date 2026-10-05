@@ -252,7 +252,10 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     monitorWidth := mr - ml
     monitorHeight := mb - mt
     barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
-    overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    guiOpt := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
+    if (options && options.HasProp("noActivate") && options.noActivate)
+        guiOpt .= " +E0x08000000"
+    overlayGui := Gui(guiOpt)
     overlayGui.BackColor := overlayBgColor
     overlayGui.MarginX := 16
     overlayGui.MarginY := 10
@@ -870,6 +873,8 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         opts.promptKeys := promptKeys
     if (trackActiveMonitor)
         opts.trackActiveMonitor := true
+    if (preserveUserFocus)
+        opts.noActivate := true
     StandardLoadingBar_Show(state, barColor, opts)
     if (showProgress)
         StandardLoadingBar_StartTimedProgress(timeoutMs)
@@ -954,12 +959,19 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     }
 
     ; Default behavior keeps key capture reliable by activating the overlay.
-    ; Some flows (e.g. dictation E/V paste target) must preserve the user's current text-field focus.
+    ; Dictation V must keep the email body (or other field) that was focused when the take started.
     if (!preserveUserFocus) {
         try {
             if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
                 WinActivate(g_StandardLoadingBarGui.Hwnd)
         } catch {
+        }
+    } else {
+        try Dictation_RestorePasteTarget()
+        catch {
+        }
+        try SetTimer(Dictation_RestorePasteTarget, -150)
+        catch {
         }
     }
 

@@ -51,6 +51,9 @@ global g_DictationSwapMicMuted := false
 global g_DictationLanguageSwapActive := false
 ; Text Handy copied when the last user stop finished. V pastes this, not an older clip.
 global g_DictationCompletedText := ""
+; Window and control focused when this take started. V returns there after the banner.
+global g_DictationPasteHwnd := 0
+global g_DictationPasteCtrl := ""
 
 ; AppLaunchers.ahk is the single long-lived owner for ~#!+0, Recording flag, and
 ; Send dictation? banner — same script-name pin as HandyAi_IsOwnerProcess().
@@ -283,14 +286,13 @@ DictationFlag_RepositionAll() {
 ; Show or refresh recording flags on every monitor from the persisted Handy slot.
 ; This is the only language flag. It is destroyed when the take ends.
 DictationFlag_ShowForRecording() {
-    global g_DictationFlagGuis, g_DictationFlagSlot, g_HandyAiPersistedSlot
+    global g_DictationFlagGuis, g_DictationFlagSlot
 
+    ; In-memory slot. The INI is read only on a cache miss, not on every recording poll.
     slot := 0
-    try slot := Handy_ReadPersistedAiModelSlotFromIni()
+    try slot := Handy_GetPersistedAiModelSlot()
     if (slot < 1 || slot > 3)
         slot := 0
-    else
-        g_HandyAiPersistedSlot := slot
 
     monitorCount := MonitorGetCount()
     if (monitorCount < 1) {
@@ -422,6 +424,52 @@ SafePlayDictationSound(filePath) {
             ; Silently ignore playback failures (missing file, sync placeholder, format, etc.)
         }
     }
+}
+
+Dictation_ClearPasteTarget() {
+    global g_DictationPasteHwnd, g_DictationPasteCtrl
+    g_DictationPasteHwnd := 0
+    g_DictationPasteCtrl := ""
+}
+
+; Remember the focused field before the recording flag or Send dictation banner can move it.
+Dictation_RememberPasteTarget() {
+    global g_DictationPasteHwnd, g_DictationPasteCtrl, g_StandardLoadingBarGui
+    if (g_DictationPasteHwnd)
+        return
+    hwnd := 0
+    try hwnd := WinGetID("A")
+    if (!hwnd)
+        return
+    try {
+        if (IsSet(g_StandardLoadingBarGui) && IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd = hwnd)
+            return
+    } catch {
+    }
+    g_DictationPasteHwnd := hwnd
+    g_DictationPasteCtrl := ""
+    try g_DictationPasteCtrl := ControlGetFocus("ahk_id " hwnd)
+    catch
+        g_DictationPasteCtrl := ""
+}
+
+; Put the caret back in the field that was focused when the take started.
+Dictation_RestorePasteTarget(*) {
+    global g_DictationPasteHwnd, g_DictationPasteCtrl
+    hwnd := g_DictationPasteHwnd
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        if !WinActive("ahk_id " hwnd)
+            WinActivate("ahk_id " hwnd)
+    } catch {
+    }
+    if (g_DictationPasteCtrl != "") {
+        try ControlFocus(g_DictationPasteCtrl, "ahk_id " hwnd)
+        catch {
+        }
+    }
+    return true
 }
 
 ; Remember Handy’s new clipboard text so V can paste it after the stop.
@@ -835,6 +883,8 @@ CheckDictationRecordingWindow() {
                 ; Silently handle errors - don't interrupt dictation if script fails
             }
 
+            if (!g_DictationLanguageSwapActive)
+                Dictation_RememberPasteTarget()
             ShowDictationIndicator()
             StartDictationPulseTimer()
         }
@@ -848,6 +898,9 @@ CheckDictationRecordingWindow() {
         } else {
             Critical "Off"
         }
+        ; Overlay is up and the start chime has run. Drop the 25ms scan; the 3s cap still covers a late window.
+        if (g_DictationSoundPlayed)
+            RevertDictationPolling()
     }
     ; Handle Stop: window gone and was active
     else if (!windowExists && g_DictationActive) {
@@ -924,19 +977,19 @@ StopDictationCheckTimer() {
 ; Toggle dictation mode on/off
 ; The check timer handles everything automatically, this just triggers an immediate check
 ToggleDictationMode() {
-    global g_DictationHotkeyIsOwner
+    global g_DictationHotkeyIsOwner, g_DictationSoundPlayed
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
     ; Trigger immediate check (the timer will handle showing/hiding)
     ; This provides instant detection if window already exists
     CheckDictationRecordingWindow()
 
-    ; OPTIMIZED: Ultra-fast polling for instant window detection and audio feedback
-    ; Start with 25ms polling (4x faster than normal) for ultra-responsive detection
-    ; This ensures zero-delay audio feedback when handy.exe launches
-    SetTimer(CheckDictationRecordingWindow, 25)
-    ; Revert to normal 500ms polling after 3 seconds (window should be detected by then)
-    SetTimer(RevertDictationPolling, -3000)
+    ; Fast poll only until the overlay and start chime are confirmed. That check reverts to 500ms.
+    ; The 3s cap still applies when the Recording window has not appeared yet.
+    if (!g_DictationSoundPlayed) {
+        SetTimer(CheckDictationRecordingWindow, 25)
+        SetTimer(RevertDictationPolling, -3000)
+    }
 }
 
 RevertDictationPolling() {
@@ -1066,6 +1119,10 @@ OnExit(CleanupDictationIndicator)
             ; START
             g_DictationActive := true
             g_DictationCompletedText := ""
+            if (!forcedStart) {
+                Dictation_ClearPasteTarget()
+                Dictation_RememberPasteTarget()
+            }
             g_LastStateTransitionTick := A_TickCount
             ShowDictationIndicator()
             StartDictationPulseTimer()

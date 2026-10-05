@@ -116,7 +116,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
     return false
 }
 
-; Chime for "clean now" confirmations (desktop recycle Y, clean clipboard Y). Not used on auto-timeout.
+; Chime for desktop recycle Y confirmation, and after clipboard cleanup succeeds.
 ; Quiet: WASAPI attenuation + synchronous SoundPlay - no WMPlayer.OCX (its volume pins same-PID mixer ~10% despite later WASAPI). try/finally restores SCRIPT_MASTER_VOLUME_PERCENT deterministically.
 ; One-shot timer re-applies target: a new session can appear right after SoundPlay returns; first enumeration may miss it (mixer stuck ~10%).
 PlayCleaningDesktopSound() {
@@ -270,6 +270,7 @@ CleanClipboardInternal(sessionId := 0) {
     SendLevel priorSendLevel
     Sleep 300
     CleanClipboard_UnwindClipAngel()
+    PlayCleaningDesktopSound()
     StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
     StandardLoadingBar_Hide(500)
 }

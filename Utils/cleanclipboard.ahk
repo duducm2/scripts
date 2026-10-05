@@ -136,11 +136,10 @@ CleanClipboard_OnYConfirm(*) {
     if (g_CleanClipboardProceedClaimed)
         return
     g_CleanClipboardProceedClaimed := true
-    PlayCleaningDesktopSound()
     CleanClipboard_Proceed(g_CleanClipboardSessionId)
 }
 
-; Auto-continue when countdown ends (no chime; only Y plays the sound)
+; Auto-continue when countdown ends. Success chime plays inside CleanClipboardInternal.
 CleanClipboard_OnTimeout(sessionId, *) {
     global g_CleanClipboardCanceled, g_CleanClipboardProceedClaimed
     if (g_CleanClipboardCanceled)
