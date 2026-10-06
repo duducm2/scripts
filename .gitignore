@@ -18,6 +18,8 @@ infra/aux/
 tasks/data/task_server.pid
 # Machine-local Tasks UI. Missing keys are filled on startup from Task_SettingsDefaults(); saved values stay.
 tasks/data/settings.ini
+# Append-only prompt usage log (PromptUsage_Log). Local to each PC; created on first write.
+assets/data/prompt_usage.log
 # Written at launch from work vs personal (IS_WORK_ENVIRONMENT). Not shared via git.
 tasks/data/environment.txt
 # Generated companion JSON; rewritten when projects are added or removed

@@ -209,5 +209,9 @@ TX214,2026-10-02,Transfer from long-term to checking,"2650,00",transfer,,ACC_MER
 TX215,2026-10-04,Leo transfer,"550,00",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
 TX216,2026-10-04,Dinner,"229,65",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX217,2026-10-05,Google Services,"96,99",card_expense,CAT_EDUCACAO,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX218,2026-10-04,ração da cachorra,"100,00",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX219,2026-10-04,água,"5,00",expense,CAT_MERCADO,ACC_MERCADOP,,,1,1,,0
+TX218,2026-10-05,Serviceman constructing new house,"1500,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX219,2026-10-05,Food,"7,90",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX220,2026-10-05,Haircut,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
+TX221,2026-10-05,Haircut,"110,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
+TX222,2026-10-05,Groceries,"37,54",expense,CAT_MERCADO,ACC_MERCADOP,,,1,1,,0
+TX223,2026-10-05,Transfer to short-term account,"1500,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
