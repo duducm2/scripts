@@ -186,9 +186,23 @@ Act_PersonalRepoStashAndPull(personalFolder) {
     try FileDelete(resultPath)
     catch {
     }
-    cmd := 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' flowPs1
-        . '" -RepoDir "' personalFolder '" -ResultPath "' resultPath '" -TimeoutSec 900'
-    exitCode := RunWaitWithTimeout(cmd, personalFolder, "Hide", 5500000)
+    ; RunWaitWithTimeout wraps the command in powershell -Command "...".
+    ; Double quotes in that string are eaten, so a -File path with spaces never starts
+    ; and PowerShell does exit $null, which AutoHotkey reports as -196608.
+    ; -EncodedCommand carries the script without quotes on the command line.
+    ps := Act_PersonalRepoPullScript(flowPs1, personalFolder, resultPath, 900, 5500000)
+    encoded := Act_PowerShellEncodedCommand(ps)
+    if (encoded = "") {
+        StandardLoadingBar_Hide(0)
+        MsgBox("Could not encode the personal repo stash/pull command.", "Act automation", "Icon!")
+        ExitApp
+    }
+    exitCode := 1
+    try exitCode := RunWait("powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand " encoded,
+        personalFolder, "Hide")
+    catch {
+        exitCode := 1
+    }
     detail := Act_PersonalRepoPullError(resultPath)
     try FileDelete(resultPath)
     catch {
@@ -210,6 +224,49 @@ Act_PersonalRepoStashAndPull(personalFolder) {
         . "Run git status in that folder to see the error.",
         "Act automation", "Icon!")
     ExitApp
+}
+
+; Single-quoted PowerShell string. Paths here have no apostrophes; still escape any.
+Act_PsQuote(s) {
+    return "'" StrReplace(s, "'", "''") "'"
+}
+
+; Hidden powershell -File of the stash/pull script.
+; ArgumentList must be one string. The array form splits paths on spaces, the child
+; powershell exits -196608, and no result file is written.
+; Second WaitForExit fills ExitCode (the timed overload can leave it null, and exit $null is -196608).
+Act_PersonalRepoPullScript(flowPs1, personalFolder, resultPath, timeoutSec, outerTimeoutMs) {
+    arg := "-NoProfile -ExecutionPolicy Bypass -File `"" flowPs1 "`" -RepoDir `"" personalFolder
+        . "`" -ResultPath `"" resultPath "`" -TimeoutSec " timeoutSec
+    return "$ErrorActionPreference='Stop';"
+    . "$arg=" Act_PsQuote(arg) ";"
+    . "$p=Start-Process -FilePath 'powershell.exe' -ArgumentList `$arg -WorkingDirectory " Act_PsQuote(personalFolder)
+    . " -PassThru -WindowStyle Hidden;"
+    . "if(-not $p.WaitForExit([int]" outerTimeoutMs ")){try{$p.Kill()}catch{}; exit 124};"
+    . "$p.WaitForExit()|Out-Null;"
+    . "if($null -eq $p.ExitCode){exit 1};"
+    . "exit $p.ExitCode"
+}
+
+; UTF-16LE base64 for powershell -EncodedCommand. AHK "UTF-16" is little-endian.
+; Drops the trailing null.
+Act_PowerShellEncodedCommand(script) {
+    bytes := StrPut(script, "UTF-16")
+    if (bytes <= 2)
+        return ""
+    buf := Buffer(bytes)
+    StrPut(script, buf, "UTF-16")
+    payload := bytes - 2
+    flags := 0x40000001  ; CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF
+    chars := 0
+    if !DllCall("crypt32\CryptBinaryToStringW", "Ptr", buf.Ptr, "UInt", payload, "UInt", flags, "Ptr", 0, "UInt*", &
+        chars)
+        return ""
+    out := Buffer(chars * 2)
+    if !DllCall("crypt32\CryptBinaryToStringW", "Ptr", buf.Ptr, "UInt", payload, "UInt", flags, "Ptr", out.Ptr, "UInt*", &
+        chars)
+        return ""
+    return Trim(StrGet(out, "UTF-16"), "`r`n `t")
 }
 
 Act_PersonalRepoPullError(resultPath) {
