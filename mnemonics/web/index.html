@@ -1125,6 +1125,19 @@
       </footer>
     </aside>
 
+    <div id="kwPicker" hidden>
+      <div
+        class="kw-picker-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kwPickerTitle"
+      >
+        <h2 id="kwPickerTitle">Keyword</h2>
+        <p class="kw-picker-status" id="kwPickerStatus"></p>
+        <div class="kw-picker-grid" id="kwPickerGrid"></div>
+        <button type="button" id="kwPickerClose">Close</button>
+      </div>
+    </div>
     <div id="toast"></div>
 
     <div
@@ -1247,6 +1260,7 @@
 
       function applyFullState(full) {
         state.data = full;
+        state.keywordImages = full.keyword_images || {};
         state.fullDataLoaded = true;
         invalidateDataIndex();
         updateStatsHeader();
@@ -1284,6 +1298,7 @@
       async function boot() {
         const bootData = await api("/api/bootstrap");
         state.data = bootData;
+        state.keywordImages = bootData.keyword_images || {};
         state.fullDataLoaded = false;
         invalidateDataIndex();
         updateStatsHeader();
@@ -2996,6 +3011,111 @@
         }
         return core + note;
       }
+      function keywordImageKey(text) {
+        return String(text || "")
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, " ");
+      }
+      function keywordImageRow(keywords) {
+        const pairs = parseKeywordPairs(keywords);
+        if (!pairs.length) return "";
+        const map = state.keywordImages || {};
+        const cells = pairs
+          .map(([mnemonic], index) => {
+            const key = keywordImageKey(mnemonic);
+            const hit = map[key];
+            const lead = index === 0 ? " kw-image-lead" : "";
+            const label = escAttr(mnemonic);
+            const keyAttr = escAttr(key);
+            if (hit && hit.url) {
+              const src = `${hit.url}?v=${hit.version || 1}`;
+              return `<button type="button" class="kw-image${lead}" data-kw="${keyAttr}" data-kw-label="${label}" title="${label}"><img src="${escAttr(src)}" alt="${label}"></button>`;
+            }
+            return `<button type="button" class="kw-image kw-image-empty${lead}" data-kw="${keyAttr}" data-kw-label="${label}" title="${label}"><span>${esc(mnemonic)}</span></button>`;
+          })
+          .join("");
+        return `<div class="kw-image-row">${cells}</div>`;
+      }
+      function keywordPickerIsOpen() {
+        const picker = document.getElementById("kwPicker");
+        return !!(picker && !picker.hidden);
+      }
+      function closeKeywordPicker() {
+        const picker = document.getElementById("kwPicker");
+        if (picker) picker.hidden = true;
+      }
+      function paintKeywordImage(key, image) {
+        if (!state.keywordImages) state.keywordImages = {};
+        state.keywordImages[key] = image;
+        document.querySelectorAll(".kw-image").forEach((btn) => {
+          if (btn.dataset.kw !== key) return;
+          btn.classList.remove("kw-image-empty", "kw-image-loading");
+          btn.removeAttribute("aria-busy");
+          const label = btn.dataset.kwLabel || key;
+          btn.innerHTML = `<img src="${escAttr(image.url)}?v=${image.version || 1}" alt="${escAttr(label)}">`;
+        });
+      }
+      async function openKeywordPicker(label) {
+        const key = keywordImageKey(label);
+        const picker = document.getElementById("kwPicker");
+        const title = document.getElementById("kwPickerTitle");
+        const status = document.getElementById("kwPickerStatus");
+        const grid = document.getElementById("kwPickerGrid");
+        if (!picker || !grid) return;
+        picker.hidden = false;
+        picker.dataset.kw = key;
+        if (title) title.textContent = label;
+        if (status) status.textContent = "Loading pictures…";
+        grid.innerHTML = "";
+        document.querySelectorAll(".kw-image").forEach((btn) => {
+          if (btn.dataset.kw !== key) return;
+          btn.classList.add("kw-image-loading");
+          btn.setAttribute("aria-busy", "true");
+        });
+        try {
+          const data = await api(
+            "/api/keyword-images/search?q=" + encodeURIComponent(label),
+          );
+          const results = data.results || [];
+          if (status) {
+            status.textContent = results.length
+              ? "Choose a picture. It replaces this keyword everywhere."
+              : "No pictures found. The word stays in parentheses.";
+          }
+          grid.innerHTML = results
+            .map(
+              (hit) =>
+                `<button type="button" class="kw-pick" data-ov-id="${escAttr(hit.id)}"><img src="${escAttr(hit.thumbnail)}" alt="${escAttr(hit.title || label)}"></button>`,
+            )
+            .join("");
+        } catch (err) {
+          if (status) status.textContent = String(err.message || err);
+        } finally {
+          document.querySelectorAll(".kw-image").forEach((btn) => {
+            if (btn.dataset.kw !== key) return;
+            btn.classList.remove("kw-image-loading");
+            btn.removeAttribute("aria-busy");
+          });
+        }
+      }
+      async function chooseKeywordImage(openverseId) {
+        const picker = document.getElementById("kwPicker");
+        const key = picker && picker.dataset.kw;
+        const status = document.getElementById("kwPickerStatus");
+        if (!key || !openverseId) return;
+        if (status) status.textContent = "Saving this picture…";
+        try {
+          const data = await api("/api/keyword-images/choose", {
+            method: "POST",
+            body: JSON.stringify({ keyword: key, openverse_id: openverseId }),
+          });
+          if (data.image) paintKeywordImage(data.key || key, data.image);
+          closeKeywordPicker();
+        } catch (err) {
+          if (status) status.textContent = String(err.message || err);
+        }
+      }
       function formatConcept(c, keywords) {
         const t = formatConceptThoughtGroups(c);
         if (!t) return "—";
@@ -3014,6 +3134,7 @@
         const head = zone ? `<div class="atom-card-head">${zone}</div>` : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
           <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept, a.keywords)}</p>
+          ${keywordImageRow(a.keywords)}
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
         </article>`;
       }
@@ -4756,6 +4877,20 @@
       };
       document.getElementById("btnLatest").onclick = () =>
         goLatestPalaceShortcut();
+      document.getElementById("overlay").addEventListener("click", (e) => {
+        const btn = e.target.closest(".kw-image");
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openKeywordPicker(btn.dataset.kwLabel || btn.dataset.kw || "");
+      });
+      document.getElementById("kwPickerClose").onclick = () =>
+        closeKeywordPicker();
+      document.getElementById("kwPicker").addEventListener("click", (e) => {
+        if (e.target.id === "kwPicker") closeKeywordPicker();
+        const pick = e.target.closest(".kw-pick");
+        if (pick) chooseKeywordImage(pick.dataset.ovId || "");
+      });
       document.getElementById("btnStoryReduction").onclick = () =>
         toggleStoryReduction();
       document.getElementById("btnSrClear").onclick = () =>
@@ -5638,6 +5773,11 @@
         }
         if (ovOpen) {
           if (e.key === "Escape") {
+            if (keywordPickerIsOpen()) {
+              e.preventDefault();
+              closeKeywordPicker();
+              return;
+            }
             const ov = document.getElementById("overlay");
             if (ov.classList.contains("image-expanded")) {
               toggleOverlayImageExpand();

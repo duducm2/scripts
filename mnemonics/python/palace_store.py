@@ -17,6 +17,7 @@ from plan_csv import load_plan_tables, next_id, save_plan_tables
 from schemas import (
     ATOMS_HEADERS,
     normalize_atom_keywords,
+    iter_keyword_pairs,
     BEASTS_HEADERS,
     ENTERTAINMENT_HEADERS,
     PALACE_IMAGES_HEADERS,
@@ -40,6 +41,16 @@ PALACE_DEFER_MD_SYNC = os.environ.get("PALACE_DEFER_MD_SYNC", "").strip().lower(
     "true",
     "yes",
 )
+
+
+def _keyword_image_map() -> dict:
+    try:
+        from keyword_images import public_map
+
+        return public_map()
+    except Exception:
+        return {}
+
 
 CACHE_KINDS = (
     "studies",
@@ -397,6 +408,7 @@ class PalaceStore:
             "plan_items": [],
             "plan_resources": [],
             "quick_recall": {"included_palace_ids": included},
+            "keyword_images": _keyword_image_map(),
             "meta": {
                 "practice_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice",
                 "plans_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans",
@@ -421,6 +433,7 @@ class PalaceStore:
             "plan_resources": data["plan_resources"],
             "entertainment": data.get("entertainment", []),
             "quick_recall": {"included_palace_ids": included},
+            "keyword_images": _keyword_image_map(),
             "meta": {
                 "practice_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice",
                 "plans_github": "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans",
@@ -781,7 +794,19 @@ class PalaceStore:
         self._save_tree(data, ["beasts", "atoms"])
         if palace:
             self._sync_practice(palace.get("study_id") or "")
-        return {"ok": True, "id": rid, "row": row}
+        try:
+            from keyword_images import ensure_keywords
+
+            ensure_keywords([left for left, _right in iter_keyword_pairs(keywords)])
+        except Exception:
+            # The atom is already stored. A later save or the backfill retries.
+            pass
+        return {
+            "ok": True,
+            "id": rid,
+            "row": row,
+            "keyword_images": _keyword_image_map(),
+        }
 
     def _upsert_plan(
         self,

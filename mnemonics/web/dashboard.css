@@ -1117,6 +1117,117 @@ a.btn-gallery {
   border: 1px solid var(--rpg-edge);
   border-radius: 2px;
 }
+.kw-image-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.45rem 0 0.15rem;
+}
+.kw-image {
+  width: 72px;
+  height: 72px;
+  padding: 4px;
+  display: grid;
+  place-items: center;
+  background: var(--rpg-fill);
+  color: var(--rpg-ink);
+  border: 1px solid var(--rpg-edge);
+  border-radius: 2px;
+  box-shadow: var(--rpg-inset);
+  cursor: pointer;
+  overflow: hidden;
+}
+.kw-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.kw-image-empty span {
+  font-size: 0.62rem;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+}
+.kw-image-lead {
+  border: 2px solid #d4b36a;
+  box-shadow:
+    var(--rpg-inset),
+    0 0 0 1px #d4b36a;
+}
+.kw-image-loading {
+  opacity: 0.55;
+}
+#kwPicker {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(22, 19, 15, 0.72);
+}
+#kwPicker[hidden] {
+  display: none;
+}
+.kw-picker-panel {
+  width: min(640px, 96vw);
+  max-height: min(80vh, 720px);
+  overflow: auto;
+  background: #1a1612;
+  border: 1px solid var(--rpg-edge);
+  border-radius: 2px;
+  box-shadow: var(--rpg-inset);
+  padding: 0.9rem 1rem 1rem;
+}
+.kw-picker-panel h2 {
+  margin: 0 0 0.35rem;
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  color: var(--rpg-ink);
+}
+.kw-picker-status {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.kw-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem;
+}
+.kw-pick {
+  aspect-ratio: 1;
+  padding: 3px;
+  background: var(--rpg-fill);
+  border: 1px solid var(--rpg-edge);
+  border-radius: 2px;
+  box-shadow: var(--rpg-inset);
+  cursor: pointer;
+}
+.kw-pick img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.kw-pick:hover,
+.kw-image:hover {
+  border-color: #d4b36a;
+}
+#kwPickerClose {
+  margin-top: 0.85rem;
+  background: var(--rpg-brass);
+  color: #1c1408;
+  border: 1px solid #e6cc8a;
+  border-radius: 2px;
+  box-shadow: var(--rpg-inset);
+  padding: 0.4rem 0.85rem;
+  font-family: Georgia, "Palatino Linotype", serif;
+  cursor: pointer;
+}
 .atom-card > .field-concept:first-child {
   margin-top: 0;
 }
