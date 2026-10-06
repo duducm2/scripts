@@ -3085,7 +3085,7 @@
           grid.innerHTML = results
             .map(
               (hit) =>
-                `<button type="button" class="kw-pick" data-ov-id="${escAttr(hit.id)}"><img src="${escAttr(hit.thumbnail)}" alt="${escAttr(hit.title || label)}"></button>`,
+                `<button type="button" class="kw-pick" data-ov-id="${escAttr(hit.id)}"><img src="${escAttr(hit.thumbnail)}" alt="" onerror="this.closest('button').remove()"></button>`,
             )
             .join("");
         } catch (err) {

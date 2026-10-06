@@ -70,6 +70,192 @@ def test_note_suffix_is_not_wrapped() -> None:
     assert "nuance" not in core
 
 
+def _openverse_row(image_id: str) -> dict:
+    return {
+        "id": image_id,
+        "url": f"https://cdn.example/{image_id}.jpg",
+        "thumbnail": f"https://cdn.example/{image_id}-thumb.jpg",
+        "title": image_id,
+        "foreign_landing_url": f"https://example.com/{image_id}",
+    }
+
+
+def test_search_uses_a_drawing_when_one_exists(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_get(url: str) -> dict:
+        calls.append(url)
+        return {"results": [_openverse_row("drawn")]}
+
+    monkeypatch.setattr(keyword_images, "_get_json", fake_get)
+    hits = keyword_images.search_images("pen", 1)
+    assert hits[0]["id"] == "drawn"
+    assert len(calls) == 1
+    assert "category=illustration" in calls[0]
+
+
+def test_search_falls_back_to_any_picture_of_the_keyword(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_get(url: str) -> dict:
+        calls.append(url)
+        if "category=illustration" in url:
+            return {"results": []}
+        return {"results": [_openverse_row("photo")]}
+
+    monkeypatch.setattr(keyword_images, "_get_json", fake_get)
+    hits = keyword_images.search_images("nail clipper", 1)
+    assert [hit["id"] for hit in hits] == ["photo"]
+    assert len(calls) == 2
+    assert "category=" not in calls[1]
+
+
+def test_search_fills_a_short_drawing_page_with_other_pictures(monkeypatch) -> None:
+    def fake_get(url: str) -> dict:
+        if "category=illustration" in url:
+            return {"results": [_openverse_row("drawn")]}
+        return {"results": [_openverse_row("drawn"), _openverse_row("photo")]}
+
+    monkeypatch.setattr(keyword_images, "_get_json", fake_get)
+    hits = keyword_images.search_images("pen", 2)
+    assert [hit["id"] for hit in hits] == ["drawn", "photo"]
+
+
+def test_search_offers_a_real_picture_instead_of_a_broken_title(monkeypatch) -> None:
+    def fake_get(url: str) -> dict:
+        return {
+            "results": [
+                {
+                    "id": "svg",
+                    "url": "https://upload.wikimedia.org/wikipedia/commons/8/84/Map.svg",
+                    "thumbnail": "https://api.openverse.org/v1/images/svg/thumb/",
+                    "title": "Miami-Dade County Florida Incorporated and Unincorporated areas",
+                },
+                {
+                    "id": "gone",
+                    "url": "https://example.com/notes.svg",
+                    "thumbnail": "https://api.openverse.org/v1/images/gone/thumb/",
+                    "title": "not a picture",
+                },
+                _openverse_row("photo"),
+            ]
+        }
+
+    monkeypatch.setattr(keyword_images, "_get_json", fake_get)
+    hits = keyword_images.search_images("hammock", 15)
+    assert [hit["id"] for hit in hits] == ["svg", "photo"]
+    assert hits[0]["thumbnail"].endswith("330px-Map.svg.png")
+    assert "api.openverse.org" not in hits[0]["thumbnail"]
+    assert (
+        keyword_images._extension_for(
+            b"<svg xmlns='http://www.w3.org/2000/svg'>", "image/svg+xml"
+        )
+        is None
+    )
+    assert (
+        keyword_images._extension_for(b"\x89PNG\r\n\x1a\nrest", "image/png") == ".png"
+    )
+
+
+def test_wikimedia_original_uses_a_small_thumbnail() -> None:
+    original = "https://upload.wikimedia.org/wikipedia/commons/9/9d/Niger_river_map.svg"
+    urls = keyword_images._image_urls(
+        {"image": original, "thumbnail": "https://api.openverse.org/v1/images/x/thumb/"}
+    )
+    assert urls[0].endswith("330px-Niger_river_map.svg.png")
+    assert urls[-1] == original
+
+
+def test_refresh_legacy_replaces_only_unstyled_pictures(monkeypatch, tmp_path) -> None:
+    image_dir = tmp_path / "keyword-images"
+    image_dir.mkdir()
+    manifest = {
+        "version": 1,
+        "keywords": {
+            "pen": {
+                "key": "pen",
+                "slug": "pen",
+                "file": "pen.jpg",
+                "version": 1,
+                "empty": False,
+            },
+            "wand": {"key": "wand", "empty": True, "file": ""},
+            "apple": {
+                "key": "apple",
+                "slug": "apple",
+                "file": "apple.jpg",
+                "version": 2,
+                "empty": False,
+                "style": "illustration",
+            },
+        },
+    }
+    (image_dir / "manifest.json").write_text(__import__("json").dumps(manifest))
+    monkeypatch.setattr(keyword_images, "IMAGE_DIR", image_dir)
+    monkeypatch.setattr(keyword_images, "MANIFEST_PATH", image_dir / "manifest.json")
+    stored: list[str] = []
+
+    monkeypatch.setattr(
+        keyword_images,
+        "search_images",
+        lambda query, page_size=1: [
+            {
+                "id": "drawn",
+                "style": "illustration",
+                "image": "http://x",
+                "thumbnail": "http://x",
+            }
+        ],
+    )
+
+    def fake_store(key, hit, *, bump):
+        stored.append(key)
+        data = keyword_images.load_manifest()
+        data["keywords"][key]["style"] = hit["style"]
+        data["keywords"][key]["version"] = (
+            int(data["keywords"][key].get("version") or 1) + 1
+        )
+        keyword_images.save_manifest(data)
+        return data["keywords"][key]
+
+    monkeypatch.setattr(keyword_images, "_store_hit", fake_store)
+    result = keyword_images.refresh_legacy()
+    assert stored == ["pen"]
+    assert result["updated"] == 1
+    assert result["remaining"] == 0
+    again = keyword_images.refresh_legacy()
+    assert again["pending"] == 0
+
+
+def test_refresh_legacy_keeps_the_file_when_search_is_empty(
+    monkeypatch, tmp_path
+) -> None:
+    image_dir = tmp_path / "keyword-images"
+    image_dir.mkdir()
+    manifest = {
+        "version": 1,
+        "keywords": {
+            "pen": {
+                "key": "pen",
+                "slug": "pen",
+                "file": "pen.jpg",
+                "version": 1,
+                "empty": False,
+            },
+        },
+    }
+    (image_dir / "manifest.json").write_text(__import__("json").dumps(manifest))
+    monkeypatch.setattr(keyword_images, "IMAGE_DIR", image_dir)
+    monkeypatch.setattr(keyword_images, "MANIFEST_PATH", image_dir / "manifest.json")
+    monkeypatch.setattr(keyword_images, "search_images", lambda query, page_size=1: [])
+    monkeypatch.setattr(keyword_images, "_fallback_hits", lambda key: [])
+    result = keyword_images.refresh_legacy()
+    saved = keyword_images.load_manifest()["keywords"]["pen"]
+    assert saved["file"] == "pen.jpg"
+    assert saved["style"] == "any"
+    assert result["kept"] == 1
+
+
 def test_practice_markdown_row_uses_cached_files_in_order(
     monkeypatch, tmp_path
 ) -> None:

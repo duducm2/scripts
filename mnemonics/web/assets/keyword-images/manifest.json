@@ -4,38 +4,42 @@
     "pen": {
       "key": "pen",
       "slug": "pen",
-      "file": "pen.jpg",
-      "openverse_id": "0518df9c-a87b-4eb9-999d-cf667c07cbdf",
-      "source_page": "https://www.flickr.com/photos/95795770@N00/3686088228",
-      "version": 1,
-      "empty": false
+      "file": "pen.png",
+      "openverse_id": "40f62b9b-af52-4724-a755-3d824a1bf37c",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=8855877",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "spiderweb": {
       "key": "spiderweb",
       "slug": "spiderweb",
-      "file": "spiderweb.jpg",
-      "openverse_id": "93d5ed00-6312-4f8c-ad8a-d4bfd2d8528e",
-      "source_page": "https://www.flickr.com/photos/139265809@N02/27746874371",
-      "version": 1,
-      "empty": false
+      "file": "spiderweb.png",
+      "openverse_id": "a43be51a-f163-4442-b64d-e9e8b0dd00a3",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2198943",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "river": {
       "key": "river",
       "slug": "river",
-      "file": "river.jpg",
-      "openverse_id": "11678034-0d95-4ed7-8952-eb5298bf11b5",
-      "source_page": "https://www.flickr.com/photos/47340307@N05/5803043660",
-      "version": 1,
-      "empty": false
+      "file": "river.png",
+      "openverse_id": "43f72bbb-042b-47b9-aaea-123ea735476d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=9035707",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "road": {
       "key": "road",
       "slug": "road",
-      "file": "road.jpg",
-      "openverse_id": "2284b2d5-49dc-41b7-8f95-5cbc8afedf0f",
-      "source_page": "https://www.flickr.com/photos/13422016@N07/3551859675",
-      "version": 1,
-      "empty": false
+      "file": "road.webp",
+      "openverse_id": "ffe0c492-6506-4352-9a6c-f1a2b2a7eb59",
+      "source_page": "https://www.rawpixel.com/image/6525094/vector-sticker-public-domain-illustrations",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "glowing brick": {
       "key": "glowing brick",
@@ -43,17 +47,19 @@
       "file": "glowing_brick.jpg",
       "openverse_id": "dbcdc6a9-3a02-4e40-a659-394d4b41a407",
       "source_page": "https://www.flickr.com/photos/57768536@N05/23828306418",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "compass": {
       "key": "compass",
       "slug": "compass",
-      "file": "compass.jpg",
-      "openverse_id": "5571aade-bc9e-4db1-b47a-64484b3e0ba6",
-      "source_page": "https://www.flickr.com/photos/51035707449@N01/3087388964",
-      "version": 1,
-      "empty": false
+      "file": "compass.png",
+      "openverse_id": "6b8bd966-0aa5-401f-88df-781c7d390143",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=151398125",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "sleeping cat": {
       "key": "sleeping cat",
@@ -70,17 +76,19 @@
       "file": "flood.jpg",
       "openverse_id": "dba40e8a-1f46-4943-afc3-a294379f94c0",
       "source_page": "https://www.flickr.com/photos/10816734@N03/1544000430",
-      "version": 1,
-      "empty": false
+      "version": 3,
+      "empty": false,
+      "style": "any"
     },
     "crowbar": {
       "key": "crowbar",
       "slug": "crowbar",
-      "file": "crowbar.jpg",
-      "openverse_id": "9a60a1ac-6a22-483d-ba77-d56a62f8642f",
-      "source_page": "https://www.flickr.com/photos/23713973@N06/30596022228",
-      "version": 1,
-      "empty": false
+      "file": "crowbar.png",
+      "openverse_id": "c5a651fa-0edf-4f27-9563-cdb403072d68",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=127997682",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "uncut log": {
       "key": "uncut log",
@@ -88,44 +96,49 @@
       "file": "uncut_log.jpg",
       "openverse_id": "751617e2-c3ee-4dce-9c0b-e86415012879",
       "source_page": "https://www.flickr.com/photos/32800629@N07/3674890125",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "wild branch": {
       "key": "wild branch",
       "slug": "wild_branch",
-      "file": "wild_branch.jpg",
-      "openverse_id": "0d282fd3-9aaf-43e7-9ff3-070e620414e0",
-      "source_page": "https://www.flickr.com/photos/76375007@N04/24901012396",
-      "version": 1,
-      "empty": false
+      "file": "wild_branch.png",
+      "openverse_id": "c7a686f5-7436-4cb3-ad92-982df41f50a2",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/2022576.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "garden shears": {
       "key": "garden shears",
       "slug": "garden_shears",
-      "file": "garden_shears.jpg",
-      "openverse_id": "8d64d8ca-d5c0-4794-b889-f6b799220af0",
-      "source_page": "https://www.flickr.com/photos/12173213@N00/242255259",
-      "version": 1,
-      "empty": false
+      "file": "garden_shears.png",
+      "openverse_id": "ff922a0a-cddf-47ed-a9b5-2b4f1c5f6922",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=144150121",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "hug": {
       "key": "hug",
       "slug": "hug",
-      "file": "hug.jpg",
-      "openverse_id": "72a3f920-d5a8-428c-95d6-345e20067770",
-      "source_page": "https://www.flickr.com/photos/58571789@N00/9069119622",
-      "version": 1,
-      "empty": false
+      "file": "hug.png",
+      "openverse_id": "9ffe45ea-350e-4bee-85e5-9cf5bcd10a04",
+      "source_page": "https://svgsilh.com/image/3196164.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "rice bowl": {
       "key": "rice bowl",
       "slug": "rice_bowl",
       "file": "rice_bowl.jpg",
-      "openverse_id": "ba18347c-f3e5-4ff7-9450-447909aab837",
-      "source_page": "https://www.flickr.com/photos/78428166@N00/7206713736",
-      "version": 1,
-      "empty": false
+      "openverse_id": "a70b8619-054a-468a-a458-965329cf166f",
+      "source_page": "https://www.rawpixel.com/image/7256827/png-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "empty chest": {
       "key": "empty chest",
@@ -133,8 +146,9 @@
       "file": "empty_chest.jpg",
       "openverse_id": "68611e50-72aa-46aa-8aec-c8eab388c08a",
       "source_page": "https://www.flickr.com/photos/21025851@N00/2169217946",
-      "version": 1,
-      "empty": false
+      "version": 3,
+      "empty": false,
+      "style": "any"
     },
     "flickering sage": {
       "key": "flickering sage",
@@ -142,8 +156,9 @@
       "file": "flickering_sage.jpg",
       "openverse_id": "c2059ac2-9665-4d66-9378-ed81e69b9d9d",
       "source_page": "https://www.flickr.com/photos/95314425@N07/50713113392",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "debate glasses": {
       "key": "debate glasses",
@@ -151,17 +166,19 @@
       "file": "debate_glasses.jpg",
       "openverse_id": "4a9417ba-65ed-414b-b53e-9bb7367f5ef2",
       "source_page": "https://www.flickr.com/photos/7156765@N05/4708917595",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "ghost": {
       "key": "ghost",
       "slug": "ghost",
-      "file": "ghost.jpg",
-      "openverse_id": "cf24b24b-b03e-4479-b123-b04bba1d3a3c",
-      "source_page": "https://www.flickr.com/photos/29468339@N02/3260203862",
-      "version": 1,
-      "empty": false
+      "file": "ghost.png",
+      "openverse_id": "fa2b6511-5760-4428-b81f-0e0af04ea092",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=47523755",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "talking scroll": {
       "key": "talking scroll",
@@ -169,53 +186,59 @@
       "file": "talking_scroll.png",
       "openverse_id": "2fabb675-162d-4eec-bc37-aab893bfe682",
       "source_page": "https://commons.wikimedia.org/w/index.php?curid=19875454",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "poem": {
       "key": "poem",
       "slug": "poem",
-      "file": "poem.jpg",
-      "openverse_id": "5bad1723-0666-4aaf-b6ef-6a3ad69fab1e",
-      "source_page": "https://www.flickr.com/photos/49603031@N02/5391884842",
-      "version": 1,
-      "empty": false
+      "file": "poem.png",
+      "openverse_id": "e5c95fe3-95a9-456d-878a-b4a5a146fe26",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=136576901",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "chain": {
       "key": "chain",
       "slug": "chain",
-      "file": "chain.jpg",
-      "openverse_id": "5d6db290-c92a-4ad0-9065-1e9354ad3ae8",
-      "source_page": "https://www.flickr.com/photos/55608722@N06/12472399134",
-      "version": 1,
-      "empty": false
+      "file": "chain.png",
+      "openverse_id": "c022e9b2-3a6d-4167-8806-2b0a733088c8",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=51630947",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "cave": {
       "key": "cave",
       "slug": "cave",
-      "file": "cave.jpg",
-      "openverse_id": "41894be0-b720-46bd-b8b0-3b22255c6c4e",
-      "source_page": "https://www.flickr.com/photos/39908901@N06/7531261890",
-      "version": 1,
-      "empty": false
+      "file": "cave.png",
+      "openverse_id": "fe43a7ce-9011-4aa0-9f70-64954bd7a9be",
+      "source_page": "https://svgsilh.com/ms/e91e63/image/978052.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "rattles": {
       "key": "rattles",
       "slug": "rattles",
-      "file": "rattles.jpg",
-      "openverse_id": "f47ee80b-2e10-44e5-b54b-66c3c954483a",
-      "source_page": "https://www.flickr.com/photos/94075184@N00/34055687235",
-      "version": 1,
-      "empty": false
+      "file": "rattles.png",
+      "openverse_id": "7e41691c-f9f2-4d5c-ae23-fa36e3e04575",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=112506765",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "south wind": {
       "key": "south wind",
       "slug": "south_wind",
-      "file": "south_wind.jpg",
-      "openverse_id": "e612b90a-191e-43d3-8839-2dfa7a8564ff",
-      "source_page": "https://www.flickr.com/photos/85465967@N00/25330330911",
-      "version": 1,
-      "empty": false
+      "file": "south_wind.png",
+      "openverse_id": "0350f74a-fe1d-4b0a-a9c0-fa55ea7e1c48",
+      "source_page": "https://svgsilh.com/ms/9e9e9e/image/160863.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "story balls": {
       "key": "story balls",
@@ -223,26 +246,29 @@
       "file": "story_balls.jpg",
       "openverse_id": "04e53347-d7c6-4d93-babc-ee8bedf6e1d1",
       "source_page": "https://www.flickr.com/photos/96217802@N00/3282436244",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "wild grass": {
       "key": "wild grass",
       "slug": "wild_grass",
-      "file": "wild_grass.jpg",
-      "openverse_id": "e7b9aa1e-c497-46d2-963c-d51985340d2e",
-      "source_page": "https://www.flickr.com/photos/12836528@N00/3258088498",
-      "version": 1,
-      "empty": false
+      "file": "wild_grass.png",
+      "openverse_id": "1a1dad7e-0381-4b66-9db9-229deb705f1d",
+      "source_page": "https://svgsilh.com/image/1012595.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stone suit": {
       "key": "stone suit",
       "slug": "stone_suit",
-      "file": "stone_suit.jpg",
-      "openverse_id": "6b6179e9-5317-40ec-80f8-1782ad2af43e",
-      "source_page": "https://www.flickr.com/photos/43405950@N07/36228221125",
-      "version": 1,
-      "empty": false
+      "file": "stone_suit.png",
+      "openverse_id": "1286b607-9f41-4c80-bb8a-0a080e32027d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=98617373",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "yellow robes": {
       "key": "yellow robes",
@@ -250,53 +276,59 @@
       "file": "yellow_robes.jpg",
       "openverse_id": "b44602ba-e9c6-4ec1-8c9a-ec981e0f0414",
       "source_page": "https://www.flickr.com/photos/72211182@N00/33962406140",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "peach": {
       "key": "peach",
       "slug": "peach",
-      "file": "peach.jpg",
-      "openverse_id": "bbe2e0fa-3ac4-4edd-860d-87a1cc2ebbac",
-      "source_page": "https://www.flickr.com/photos/67264698@N00/191205607",
-      "version": 1,
-      "empty": false
+      "file": "peach.png",
+      "openverse_id": "2c95c485-38ba-4c0f-94c2-e2ad9b77b293",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2780479",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "law tablet": {
       "key": "law tablet",
       "slug": "law_tablet",
-      "file": "law_tablet.jpg",
-      "openverse_id": "2517735c-b253-421d-970e-49ec8467d976",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=133106328",
-      "version": 1,
-      "empty": false
+      "file": "law_tablet.png",
+      "openverse_id": "fbdad56f-fd7c-45af-ae2f-05d2b61215bf",
+      "source_page": "https://svgsilh.com/ms/ffc107/image/49012.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "yarn ball": {
       "key": "yarn ball",
       "slug": "yarn_ball",
-      "file": "yarn_ball.jpg",
-      "openverse_id": "45bbcea4-3298-4775-b184-1b7ef8510a44",
-      "source_page": "https://www.flickr.com/photos/28510393@N07/4928082712",
-      "version": 1,
-      "empty": false
+      "file": "yarn_ball.webp",
+      "openverse_id": "5da70589-d352-4c79-9447-6a800428bce9",
+      "source_page": "https://www.rawpixel.com/image/7619799/image-heart-art-pattern",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "spinning circle": {
       "key": "spinning circle",
       "slug": "spinning_circle",
-      "file": "spinning_circle.jpg",
-      "openverse_id": "9afa5b70-bf99-4410-9277-01390ed82ca5",
-      "source_page": "https://www.flickr.com/photos/24928115@N07/5594090915",
-      "version": 1,
-      "empty": false
+      "file": "spinning_circle.png",
+      "openverse_id": "c6d620f6-52b9-4b23-8032-f62cf3f54819",
+      "source_page": "https://svgsilh.com/ms/image/2121197.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "globe": {
       "key": "globe",
       "slug": "globe",
-      "file": "globe.jpg",
-      "openverse_id": "95ae6d34-5ea7-46ac-9ae3-bd585872c763",
-      "source_page": "https://www.flickr.com/photos/18090920@N07/5303903135",
-      "version": 1,
-      "empty": false
+      "file": "globe.png",
+      "openverse_id": "65a6afbb-606c-4536-9a19-753fdcf6865f",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=15127312",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "crackling mane": {
       "key": "crackling mane",
@@ -304,17 +336,19 @@
       "file": "crackling_mane.jpg",
       "openverse_id": "c8e0416e-a30b-42d0-af6f-bd8e1badfe3d",
       "source_page": "https://www.flickr.com/photos/44124348109@N01/4320390456",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "brick-gas": {
       "key": "brick-gas",
       "slug": "brick_gas",
-      "file": "brick_gas.jpg",
-      "openverse_id": "0189d1a4-2424-4e9a-9a26-3ed908b96782",
-      "source_page": "https://www.flickr.com/photos/24431382@N03/3072877453",
-      "version": 1,
-      "empty": false
+      "file": "brick_gas.webp",
+      "openverse_id": "8795c466-1ac4-45f0-84dc-7531636c75ab",
+      "source_page": "https://www.rawpixel.com/image/6446701/image-background-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "skin hum": {
       "key": "skin hum",
@@ -322,8 +356,9 @@
       "file": "skin_hum.jpg",
       "openverse_id": "c2d4b428-677f-462f-a5f1-45545b0bc4b7",
       "source_page": "https://www.flickr.com/photos/39515719@N03/15057593484",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "five orbs": {
       "key": "five orbs",
@@ -331,17 +366,19 @@
       "file": "five_orbs.jpg",
       "openverse_id": "5969a792-1348-488a-ae2f-f5a7370532b2",
       "source_page": "https://www.flickr.com/photos/30265340@N00/169382127",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "juggle": {
       "key": "juggle",
       "slug": "juggle",
-      "file": "juggle.jpg",
-      "openverse_id": "9cc1540d-31c9-4eff-a2fb-bc900e06c24f",
-      "source_page": "https://www.flickr.com/photos/7310714@N06/3449313709",
-      "version": 1,
-      "empty": false
+      "file": "juggle.png",
+      "openverse_id": "f2fb9f8f-cf85-44d7-a7f4-88654b25ea70",
+      "source_page": "https://svgsilh.com/ms/4caf50/image/296437.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "clash": {
       "key": "clash",
@@ -349,8 +386,9 @@
       "file": "clash.jpg",
       "openverse_id": "8e6c824e-4cfb-4e95-ae1d-9b10f74a2203",
       "source_page": "https://www.flickr.com/photos/35483578@N03/5571579314",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "chest cauldron": {
       "key": "chest cauldron",
@@ -358,8 +396,9 @@
       "file": "chest_cauldron.jpg",
       "openverse_id": "af0a968d-c561-4baa-9ffc-bcbcac0c7f46",
       "source_page": "https://www.flickr.com/photos/36390568@N07/4995468309",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "earthy root": {
       "key": "earthy root",
@@ -367,8 +406,9 @@
       "file": "earthy_root.jpg",
       "openverse_id": "81581c00-67ad-45b3-aebc-c875d99b8591",
       "source_page": "https://www.flickr.com/photos/26754370@N00/6904154808",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "spark": {
       "key": "spark",
@@ -376,8 +416,9 @@
       "file": "spark.jpg",
       "openverse_id": "a06a828b-214b-4a2b-801f-e4a915a1c672",
       "source_page": "https://www.flickr.com/photos/79206134@N00/1496231835",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "sweet mist": {
       "key": "sweet mist",
@@ -385,26 +426,29 @@
       "file": "sweet_mist.jpg",
       "openverse_id": "592cf7c1-6cbf-4b05-88e9-1b02b3bc0479",
       "source_page": "https://www.flickr.com/photos/93291596@N00/3013317352",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "hourglass": {
       "key": "hourglass",
       "slug": "hourglass",
       "file": "hourglass.jpg",
-      "openverse_id": "14f1c1c8-e915-49f4-909d-8bc4c8c9abc1",
-      "source_page": "https://www.flickr.com/photos/61098542@N00/8033579260",
-      "version": 1,
-      "empty": false
+      "openverse_id": "55b83ee9-206d-4f6b-ab5d-5859f08657fe",
+      "source_page": "https://www.rawpixel.com/image/6431292/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "glass feather": {
       "key": "glass feather",
       "slug": "glass_feather",
-      "file": "glass_feather.jpg",
-      "openverse_id": "f59c49cf-a5e5-4140-a2f0-73113540a212",
-      "source_page": "https://www.flickr.com/photos/15441953@N00/3136941681",
-      "version": 1,
-      "empty": false
+      "file": "glass_feather.png",
+      "openverse_id": "1035573e-9ecd-446b-93e0-eeb362908b55",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/1096376.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "heat ghost": {
       "key": "heat ghost",
@@ -412,8 +456,9 @@
       "file": "heat_ghost.jpg",
       "openverse_id": "e3544e4e-b540-4dcd-bfdc-2b323c2879e7",
       "source_page": "https://www.flickr.com/photos/23806189@N00/52305328769",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "master key": {
       "key": "master key",
@@ -421,26 +466,29 @@
       "file": "master_key.jpg",
       "openverse_id": "bdb60d90-680d-4446-8900-712b9ab8a91e",
       "source_page": "https://www.flickr.com/photos/9136641@N07/2612046524",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "fork": {
       "key": "fork",
       "slug": "fork",
-      "file": "fork.jpg",
-      "openverse_id": "74f0f42e-3730-4ef3-984d-406baed4c950",
-      "source_page": "https://www.flickr.com/photos/29468339@N02/8349818088",
-      "version": 1,
-      "empty": false
+      "file": "fork.webp",
+      "openverse_id": "938aaac8-0f15-4ee6-b407-edd5cc636f6e",
+      "source_page": "https://www.rawpixel.com/image/6291780/image-vintage-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "chalkboard": {
       "key": "chalkboard",
       "slug": "chalkboard",
-      "file": "chalkboard.jpg",
-      "openverse_id": "f7850acf-1863-4735-87bf-2124b08734d7",
-      "source_page": "https://www.flickr.com/photos/23526149@N00/4798057548",
-      "version": 1,
-      "empty": false
+      "file": "chalkboard.webp",
+      "openverse_id": "72157883-e3e8-4ffa-a915-ff34c770c62c",
+      "source_page": "https://www.rawpixel.com/image/6480480/vector-frame-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "scroll pile": {
       "key": "scroll pile",
@@ -448,17 +496,19 @@
       "file": "scroll_pile.jpg",
       "openverse_id": "9f1765d9-ece9-49c4-b1c7-3c30833ce9d0",
       "source_page": "https://www.flickr.com/photos/14514578@N08/12866123544",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "temple": {
       "key": "temple",
       "slug": "temple",
-      "file": "temple.jpg",
-      "openverse_id": "89099f44-97b7-4c84-9c63-2652c99a3cef",
-      "source_page": "https://www.flickr.com/photos/43992129@N04/5612860099",
-      "version": 1,
-      "empty": false
+      "file": "temple.webp",
+      "openverse_id": "87bd4675-4ff2-4bd8-8f7e-f72f3097e7cd",
+      "source_page": "https://www.rawpixel.com/image/6653745/image-public-domain-vintage-illustration-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "rice pecks": {
       "key": "rice pecks",
@@ -466,8 +516,9 @@
       "file": "rice_pecks.jpg",
       "openverse_id": "65b926b4-b7e8-4872-a51c-f5db2508d659",
       "source_page": "https://www.flickr.com/photos/40646519@N00/310838315",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "ranked tower": {
       "key": "ranked tower",
@@ -484,8 +535,9 @@
       "file": "sage_vision.jpg",
       "openverse_id": "fd6c34a4-c033-45d0-9507-be23f06a9c39",
       "source_page": "https://www.flickr.com/photos/94735450@N03/8641631322",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "three cheeses": {
       "key": "three cheeses",
@@ -493,17 +545,19 @@
       "file": "three_cheeses.jpg",
       "openverse_id": "73c3b87d-e102-489c-b215-c555e1d6c092",
       "source_page": "https://www.flickr.com/photos/10559879@N00/2311636635",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "three faces": {
       "key": "three faces",
       "slug": "three_faces",
-      "file": "three_faces.jpg",
-      "openverse_id": "d0eaba12-5fa7-41d1-bf0a-e5079e057642",
-      "source_page": "https://www.flickr.com/photos/12978395@N00/15181789740",
-      "version": 1,
-      "empty": false
+      "file": "three_faces.webp",
+      "openverse_id": "91e3d639-ae14-4653-a5d6-dea39509f4ff",
+      "source_page": "https://www.rawpixel.com/image/10095856/image-cartoon-illustrations-animal",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "sky blueprint": {
       "key": "sky blueprint",
@@ -511,8 +565,9 @@
       "file": "sky_blueprint.jpg",
       "openverse_id": "2368b162-dab5-4334-8af9-a304c478b36c",
       "source_page": "https://www.flickr.com/photos/91164391@N05/10137006733",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "jade crown": {
       "key": "jade crown",
@@ -520,8 +575,9 @@
       "file": "jade_crown.jpg",
       "openverse_id": "740e66bd-bda9-4022-8fba-13fe7c8435f9",
       "source_page": "https://www.flickr.com/photos/101561334@N08/10153413414",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "cloud throne": {
       "key": "cloud throne",
@@ -529,8 +585,9 @@
       "file": "cloud_throne.jpg",
       "openverse_id": "a8f32981-b346-40a5-9d86-081928d8dd17",
       "source_page": "https://www.flickr.com/photos/14829735@N00/8251577325",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "frozen seal": {
       "key": "frozen seal",
@@ -538,8 +595,9 @@
       "file": "frozen_seal.jpg",
       "openverse_id": "6133f396-7a64-48a9-ab23-7abecfdef20c",
       "source_page": "https://www.flickr.com/photos/86012097@N08/28811743505",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "tiny monastery": {
       "key": "tiny monastery",
@@ -547,8 +605,9 @@
       "file": "tiny_monastery.jpg",
       "openverse_id": "411ddab8-6c2b-4949-a072-831f5cb4db59",
       "source_page": "https://www.flickr.com/photos/55648226@N03/15561545594",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "three beaks": {
       "key": "three beaks",
@@ -556,8 +615,9 @@
       "file": "three_beaks.jpg",
       "openverse_id": "d935fa38-ab69-42eb-a458-cdccf2a4c361",
       "source_page": "https://www.flickr.com/photos/27700069@N05/26225197384",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "herb incense": {
       "key": "herb incense",
@@ -565,8 +625,9 @@
       "file": "herb_incense.jpg",
       "openverse_id": "98512201-a515-4886-b067-46f08becdc57",
       "source_page": "https://www.flickr.com/photos/21728045@N08/2236026140",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "foggy helmet": {
       "key": "foggy helmet",
@@ -574,8 +635,9 @@
       "file": "foggy_helmet.jpg",
       "openverse_id": "81d16164-28b0-4c3a-a56c-ca86431b8d67",
       "source_page": "https://www.flickr.com/photos/72098626@N00/21480385393",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "droopy eyes": {
       "key": "droopy eyes",
@@ -583,8 +645,9 @@
       "file": "droopy_eyes.jpg",
       "openverse_id": "cb6068e2-f259-41de-8d22-fbafe137ceb7",
       "source_page": "https://www.flickr.com/photos/95329455@N02/25980221475",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "giant window": {
       "key": "giant window",
@@ -592,8 +655,9 @@
       "file": "giant_window.jpg",
       "openverse_id": "2caa23fa-54a9-4050-b56c-439267ff7721",
       "source_page": "https://www.flickr.com/photos/37751161@N00/103758540",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "iron curtain": {
       "key": "iron curtain",
@@ -601,8 +665,9 @@
       "file": "iron_curtain.jpg",
       "openverse_id": "fa6bac38-4dd0-4fff-a4c2-2188710fa77a",
       "source_page": "https://www.flickr.com/photos/7156765@N05/51744418693",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "whisper": {
       "key": "whisper",
@@ -610,44 +675,49 @@
       "file": "whisper.jpg",
       "openverse_id": "9593ffb8-eee1-439c-b6ce-6511fab9ecdf",
       "source_page": "https://www.flickr.com/photos/56936646@N07/12858950085",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "rule book": {
       "key": "rule book",
       "slug": "rule_book",
-      "file": "rule_book.jpg",
-      "openverse_id": "6dad3ebc-247d-4051-b1e1-5a79dca7e37a",
-      "source_page": "https://www.flickr.com/photos/42913062@N07/4891410215",
-      "version": 1,
-      "empty": false
+      "file": "rule_book.png",
+      "openverse_id": "1c0e4c4e-c905-4f9c-b545-054f43e86298",
+      "source_page": "https://svgsilh.com/8bc34a/image/2643192.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "fence": {
       "key": "fence",
       "slug": "fence",
       "file": "fence.jpg",
-      "openverse_id": "a683290a-566d-4189-ad46-621e9ebec671",
-      "source_page": "https://www.flickr.com/photos/36224384@N08/10257923903",
-      "version": 1,
-      "empty": false
+      "openverse_id": "d581a0ef-c73a-46cf-a6c6-52ac3f8fd136",
+      "source_page": "https://www.rawpixel.com/image/7613755/png-pattern-cartoon",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "wild horse": {
       "key": "wild horse",
       "slug": "wild_horse",
       "file": "wild_horse.jpg",
-      "openverse_id": "1c1f5e87-6c53-4d12-95f7-b9db37470d9f",
-      "source_page": "https://www.flickr.com/photos/58663868@N00/5656445995",
-      "version": 1,
-      "empty": false
+      "openverse_id": "72fbb4f0-11f7-4286-b7cf-acea79453aaf",
+      "source_page": "https://www.rawpixel.com/image/6535849/png-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "lightning bolt": {
       "key": "lightning bolt",
       "slug": "lightning_bolt",
-      "file": "lightning_bolt.jpg",
-      "openverse_id": "f2921aeb-3f42-49b0-bf5e-2b7b22153f38",
-      "source_page": "https://www.flickr.com/photos/7324617@N04/4249181291",
-      "version": 1,
-      "empty": false
+      "file": "lightning_bolt.png",
+      "openverse_id": "4def65c1-0d99-477c-81cb-67ddd4e69fec",
+      "source_page": "https://svgsilh.com/image/28003.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "broken compass": {
       "key": "broken compass",
@@ -655,17 +725,19 @@
       "file": "broken_compass.jpg",
       "openverse_id": "b0014cd9-fa1c-4d1f-9ca1-c121b929a10f",
       "source_page": "https://www.flickr.com/photos/42868587@N00/16149598529",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "iron harness": {
       "key": "iron harness",
       "slug": "iron_harness",
       "file": "iron_harness.jpg",
-      "openverse_id": "d597c2a4-6880-4ffd-942c-23fecdb32942",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=76761966",
-      "version": 1,
-      "empty": false
+      "openverse_id": "f748e7eb-7fa5-4a96-89f6-5bd5062a72aa",
+      "source_page": "https://www.flickr.com/photos/82134796@N03/14323681237",
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "leather tack": {
       "key": "leather tack",
@@ -673,107 +745,119 @@
       "file": "leather_tack.jpg",
       "openverse_id": "4291f8cb-f037-4347-bb77-ed8f028dd137",
       "source_page": "https://www.flickr.com/photos/95572727@N00/2420250045",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "steering wheel": {
       "key": "steering wheel",
       "slug": "steering_wheel",
       "file": "steering_wheel.jpg",
-      "openverse_id": "4be18ae7-4e24-4c25-9f6e-411a4207710b",
-      "source_page": "https://www.flickr.com/photos/93421824@N06/15173804906",
-      "version": 1,
-      "empty": false
+      "openverse_id": "50f7f9cb-836d-4847-ad91-f33882a0a96b",
+      "source_page": "https://www.rawpixel.com/image/6551680/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "plug": {
       "key": "plug",
       "slug": "plug",
       "file": "plug.jpg",
-      "openverse_id": "1229aaf5-f12c-4c88-a69b-42add946255e",
-      "source_page": "https://www.flickr.com/photos/24973357@N02/3588052802",
-      "version": 1,
-      "empty": false
+      "openverse_id": "cfde819d-92fa-4a85-bdb1-f0bbd9c5ad71",
+      "source_page": "https://www.rawpixel.com/image/6329303/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "wooden cart": {
       "key": "wooden cart",
       "slug": "wooden_cart",
-      "file": "wooden_cart.jpg",
-      "openverse_id": "eec0d54b-ef1a-4ce8-bd07-3e5fc4f389f3",
-      "source_page": "https://www.flickr.com/photos/24469639@N00/11151466286",
-      "version": 1,
-      "empty": false
+      "file": "wooden_cart.png",
+      "openverse_id": "85e3106d-b293-4e15-813e-5bdf10280b5f",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/2027183.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "neon sign": {
       "key": "neon sign",
       "slug": "neon_sign",
       "file": "neon_sign.jpg",
-      "openverse_id": "ed5831c1-9a18-4ff3-b030-ff9ee9a3bc0a",
-      "source_page": "https://www.flickr.com/photos/88244638@N00/4069633895",
-      "version": 1,
-      "empty": false
+      "openverse_id": "8583bfc2-4f92-452f-9a00-a1680959a8ce",
+      "source_page": "https://www.rawpixel.com/image/6755480/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "trophy": {
       "key": "trophy",
       "slug": "trophy",
       "file": "trophy.jpg",
-      "openverse_id": "48bbc310-ee72-4f3e-a34c-d4442c5ea4a4",
-      "source_page": "https://www.flickr.com/photos/43378406@N08/25974610495",
-      "version": 1,
-      "empty": false
+      "openverse_id": "19a739ca-0061-416b-80a5-3073e15a2ede",
+      "source_page": "https://www.rawpixel.com/image/6482123/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bucket": {
       "key": "bucket",
       "slug": "bucket",
-      "file": "bucket.jpg",
-      "openverse_id": "4e624218-1342-4139-b67f-8dfbcc4c04cb",
-      "source_page": "https://www.flickr.com/photos/23294172@N05/3429262187",
-      "version": 1,
-      "empty": false
+      "file": "bucket.png",
+      "openverse_id": "24bf7c43-019d-4ecf-a237-ec4a60a5a8b8",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2868384",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "swimming pool": {
       "key": "swimming pool",
       "slug": "swimming_pool",
-      "file": "swimming_pool.jpg",
-      "openverse_id": "fff5dd0c-c53b-4f0c-be8e-6c680c588d6a",
-      "source_page": "https://www.flickr.com/photos/26966458@N00/2089430124",
-      "version": 1,
-      "empty": false
+      "file": "swimming_pool.png",
+      "openverse_id": "a514d539-7b6b-4093-bb01-73fb86f05cf9",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=105027746",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "filing cabinet": {
       "key": "filing cabinet",
       "slug": "filing_cabinet",
-      "file": "filing_cabinet.jpg",
-      "openverse_id": "4c14cd60-bb68-4976-bfd2-fed6f60aa185",
-      "source_page": "https://www.flickr.com/photos/94348950@N00/3678259367",
-      "version": 1,
-      "empty": false
+      "file": "filing_cabinet.webp",
+      "openverse_id": "dbe8466f-d5dd-466b-b9e6-5f9454c7f45f",
+      "source_page": "https://www.rawpixel.com/image/6314984/vector-paper-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "magnifying glass": {
       "key": "magnifying glass",
       "slug": "magnifying_glass",
       "file": "magnifying_glass.jpg",
-      "openverse_id": "5c8eadac-14c3-42d1-8842-607342affd56",
-      "source_page": "https://www.flickr.com/photos/52182314@N00/9271128986",
-      "version": 1,
-      "empty": false
+      "openverse_id": "d574b097-3734-4935-9f58-8002cd257e50",
+      "source_page": "https://www.rawpixel.com/image/6870737/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "briefcase": {
       "key": "briefcase",
       "slug": "briefcase",
-      "file": "briefcase.jpg",
-      "openverse_id": "4deb74dc-9a8b-4f47-ac24-15d67ae80315",
-      "source_page": "https://www.flickr.com/photos/24906199@N00/2225779179",
-      "version": 1,
-      "empty": false
+      "file": "briefcase.webp",
+      "openverse_id": "c0c9fbe5-c5b8-4e61-ac83-e8c5367640f7",
+      "source_page": "https://www.rawpixel.com/image/10191504/image-illustrations-public-domain-paper-clip",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "centaur": {
       "key": "centaur",
       "slug": "centaur",
       "file": "centaur.jpg",
-      "openverse_id": "ee771beb-f199-43c5-a304-c233bf16521d",
-      "source_page": "https://www.flickr.com/photos/16638697@N00/258119720",
-      "version": 1,
-      "empty": false
+      "openverse_id": "511daca8-ba47-47b6-81b3-0d58dc39e462",
+      "source_page": "https://www.rawpixel.com/image/10192165/png-vintage-horse",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "rubber band": {
       "key": "rubber band",
@@ -781,17 +865,19 @@
       "file": "rubber_band.jpg",
       "openverse_id": "dd2dba8d-fa38-42ba-8ff7-099671cf1de7",
       "source_page": "https://www.flickr.com/photos/30116130@N03/3379420136",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "vault": {
       "key": "vault",
       "slug": "vault",
-      "file": "vault.jpg",
-      "openverse_id": "a9163832-7567-49eb-9d6f-e50ad6102dec",
-      "source_page": "https://www.flickr.com/photos/62490191@N04/16908619735",
-      "version": 1,
-      "empty": false
+      "file": "vault.webp",
+      "openverse_id": "1843f877-969f-49b8-ae29-7bb48d8bfb93",
+      "source_page": "https://www.rawpixel.com/image/6654306/vector-sticker-public-domain-vintage-illustration",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "broken crown": {
       "key": "broken crown",
@@ -799,8 +885,9 @@
       "file": "broken_crown.jpg",
       "openverse_id": "bf759704-c931-4c55-9f6e-96f4f3a7ec0e",
       "source_page": "https://www.flickr.com/photos/44696340@N02/41463292654",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "shredder": {
       "key": "shredder",
@@ -808,224 +895,249 @@
       "file": "shredder.jpg",
       "openverse_id": "9f9a100d-4a47-47d4-8f12-ff83bdc9713a",
       "source_page": "https://www.flickr.com/photos/18090920@N07/4477543316",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "fishing rod": {
       "key": "fishing rod",
       "slug": "fishing_rod",
-      "file": "fishing_rod.jpg",
-      "openverse_id": "238ab745-1567-43a8-93c0-eb97a6820994",
-      "source_page": "https://www.flickr.com/photos/94272988@N00/90648768",
-      "version": 1,
-      "empty": false
+      "file": "fishing_rod.png",
+      "openverse_id": "9f650f89-9e62-4187-8589-651249a30ec3",
+      "source_page": "https://svgsilh.com/image/295096.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "scalpel": {
       "key": "scalpel",
       "slug": "scalpel",
-      "file": "scalpel.jpg",
-      "openverse_id": "08c1e1e2-ec77-4c56-9fc1-fabbfcb43ecd",
-      "source_page": "https://www.flickr.com/photos/68877611@N00/3926067055",
-      "version": 1,
-      "empty": false
+      "file": "scalpel.webp",
+      "openverse_id": "7e543f93-6e84-4e80-9613-b5b2101f6044",
+      "source_page": "https://www.rawpixel.com/image/6724010/vector-sticker-medicine-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "spotlight": {
       "key": "spotlight",
       "slug": "spotlight",
-      "file": "spotlight.jpg",
-      "openverse_id": "e57fef78-d610-49e9-96ee-2a34c681786b",
-      "source_page": "https://www.flickr.com/photos/41890311@N06/52107755535",
-      "version": 1,
-      "empty": false
+      "file": "spotlight.webp",
+      "openverse_id": "14ab5719-6f4f-4385-8b3f-5b9696c4b19f",
+      "source_page": "https://www.rawpixel.com/image/6742499/vector-light-public-domain-black",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "cube": {
       "key": "cube",
       "slug": "cube",
       "file": "cube.jpg",
-      "openverse_id": "58621a49-6bbb-4ab8-bb02-7f4cd9685b02",
-      "source_page": "https://www.flickr.com/photos/30126793@N07/3274122364",
-      "version": 1,
-      "empty": false
+      "openverse_id": "596c5c90-87f3-4171-983a-0eeef818be09",
+      "source_page": "https://www.rawpixel.com/image/7371787/png-sticker-public-domain-blue",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "triangle": {
       "key": "triangle",
       "slug": "triangle",
-      "file": "triangle.jpg",
-      "openverse_id": "d22606eb-f2a7-4972-a875-caa94ae062a8",
-      "source_page": "https://www.flickr.com/photos/41322510@N00/6860252743",
-      "version": 1,
-      "empty": false
+      "file": "triangle.webp",
+      "openverse_id": "736b7e66-6fae-4a07-9fe5-88d828f9efd3",
+      "source_page": "https://www.rawpixel.com/image/6710935/vector-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "brain": {
       "key": "brain",
       "slug": "brain",
       "file": "brain.jpg",
-      "openverse_id": "f73a8e55-2ada-4882-869a-f4ec2f119eba",
-      "source_page": "https://www.flickr.com/photos/74453626@N00/2052009052",
-      "version": 1,
-      "empty": false
+      "openverse_id": "c87bf5c1-fd23-4cf9-bd67-784b78e5ad99",
+      "source_page": "https://www.rawpixel.com/image/6728983/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "glitch": {
       "key": "glitch",
       "slug": "glitch",
       "file": "glitch.jpg",
-      "openverse_id": "1e7c8371-c49b-488c-9cfe-fc2f33a3196f",
-      "source_page": "https://www.flickr.com/photos/90391304@N00/11317425424",
-      "version": 1,
-      "empty": false
+      "openverse_id": "7089b643-8df4-41c1-b608-33d3dabe131a",
+      "source_page": "https://www.rawpixel.com/image/7419568/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "blender": {
       "key": "blender",
       "slug": "blender",
       "file": "blender.jpg",
-      "openverse_id": "d7089284-9516-49d5-82ac-f13df24e41c7",
-      "source_page": "https://www.flickr.com/photos/27052570@N03/3360201050",
-      "version": 1,
-      "empty": false
+      "openverse_id": "71ea3538-d30a-41f3-8282-c704f88d73af",
+      "source_page": "https://www.rawpixel.com/image/6501354/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "engine block": {
       "key": "engine block",
       "slug": "engine_block",
-      "file": "engine_block.jpg",
-      "openverse_id": "d5ae608e-fe6c-40c3-803e-ae20c4aa0ca5",
-      "source_page": "https://www.flickr.com/photos/54719539@N04/6609068187",
-      "version": 1,
-      "empty": false
+      "file": "engine_block.png",
+      "openverse_id": "27edc11e-2617-446d-b48b-5cfb00588d2b",
+      "source_page": "https://svgsilh.com/ms/9e9e9e/image/2176740.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "vacuum": {
       "key": "vacuum",
       "slug": "vacuum",
       "file": "vacuum.jpg",
-      "openverse_id": "cc3a7cfe-b4d2-4b85-a88e-242935698fca",
-      "source_page": "https://www.flickr.com/photos/61135621@N03/31593144973",
-      "version": 1,
-      "empty": false
+      "openverse_id": "810d47e7-be89-4275-8d48-333ded5d8c1c",
+      "source_page": "https://www.rawpixel.com/image/6711022/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "name tag": {
       "key": "name tag",
       "slug": "name_tag",
-      "file": "name_tag.jpg",
-      "openverse_id": "5fd6140f-c6ef-4530-be35-823423f49a81",
-      "source_page": "https://www.flickr.com/photos/38352757@N07/5848761988",
-      "version": 1,
-      "empty": false
+      "file": "name_tag.webp",
+      "openverse_id": "15039540-8cb8-449d-a3db-69bc7cd36cd9",
+      "source_page": "https://www.rawpixel.com/image/6516462/image-public-domain-black-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "sponge": {
       "key": "sponge",
       "slug": "sponge",
-      "file": "sponge.jpg",
-      "openverse_id": "eb302e55-43d2-43c7-9225-6dd0fe775c15",
-      "source_page": "https://www.flickr.com/photos/9352758@N04/3915294688",
-      "version": 1,
-      "empty": false
+      "file": "sponge.png",
+      "openverse_id": "162fe38a-6857-4efe-9a03-8b7ae840aea3",
+      "source_page": "https://svgsilh.com/pt/e91e63/image/304482.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "origami": {
       "key": "origami",
       "slug": "origami",
       "file": "origami.jpg",
-      "openverse_id": "3982048a-d0cf-43a6-926d-09ca95553628",
-      "source_page": "https://www.flickr.com/photos/54166469@N06/5442992544",
-      "version": 1,
-      "empty": false
+      "openverse_id": "f5bd6a8e-92ac-4efe-99e2-195b60fc8791",
+      "source_page": "https://www.rawpixel.com/image/10191099/png-paper-cartoon",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bulldozer": {
       "key": "bulldozer",
       "slug": "bulldozer",
       "file": "bulldozer.jpg",
-      "openverse_id": "34df10d3-ab54-47e2-972d-3d5fc2544559",
-      "source_page": "https://www.flickr.com/photos/7821771@N05/13874831445",
-      "version": 1,
-      "empty": false
+      "openverse_id": "17218e03-d1de-45af-8f4d-194be233c47c",
+      "source_page": "https://www.rawpixel.com/image/6727688/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "well": {
       "key": "well",
       "slug": "well",
-      "file": "well.jpg",
-      "openverse_id": "a2bce1a5-861c-4027-b432-466831dd1a9b",
-      "source_page": "https://www.flickr.com/photos/99247795@N00/3153652073",
-      "version": 1,
-      "empty": false
+      "file": "well.webp",
+      "openverse_id": "8083a02e-7bed-4ccf-ba8e-ce9d0a52c4a6",
+      "source_page": "https://www.rawpixel.com/image/6780559/vector-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stopwatch": {
       "key": "stopwatch",
       "slug": "stopwatch",
-      "file": "stopwatch.jpg",
-      "openverse_id": "0b601bd6-8472-461b-8165-19a485b6eaa6",
-      "source_page": "https://www.flickr.com/photos/51035688462@N01/33749444",
-      "version": 1,
-      "empty": false
+      "file": "stopwatch.png",
+      "openverse_id": "201f625e-5c53-484d-957e-31f64ee56358",
+      "source_page": "https://svgsilh.com/3f51b5/image/145735.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "binoculars": {
       "key": "binoculars",
       "slug": "binoculars",
       "file": "binoculars.jpg",
-      "openverse_id": "625e6b68-2a0b-43dd-a33b-e68a80b1fbba",
-      "source_page": "https://www.flickr.com/photos/19746950@N00/8502151556",
-      "version": 1,
-      "empty": false
+      "openverse_id": "a7a670b4-8c7e-47a9-a1fc-ef85a497d63e",
+      "source_page": "https://www.rawpixel.com/image/6727800/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "skeleton": {
       "key": "skeleton",
       "slug": "skeleton",
       "file": "skeleton.jpg",
-      "openverse_id": "a0ec96f5-8bad-4935-bea9-2f958f1a9d5b",
-      "source_page": "https://www.flickr.com/photos/55761924@N00/132955309",
-      "version": 1,
-      "empty": false
+      "openverse_id": "3b545c6e-0464-490f-8b91-4ec1a491f887",
+      "source_page": "https://www.rawpixel.com/image/7647307/png-vintage-cartoon",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "picnic table": {
       "key": "picnic table",
       "slug": "picnic_table",
       "file": "picnic_table.jpg",
-      "openverse_id": "35f9997a-0b3c-4e20-bf65-e411a3ebb699",
-      "source_page": "https://www.flickr.com/photos/25186605@N04/9627187396",
-      "version": 1,
-      "empty": false
+      "openverse_id": "9326806f-cba8-4182-b525-ffde518fb195",
+      "source_page": "https://www.rawpixel.com/image/6710985/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "spider web": {
       "key": "spider web",
       "slug": "spider_web",
-      "file": "spider_web.jpg",
-      "openverse_id": "87b4aefa-bf5e-4f81-99a0-e8972756b501",
-      "source_page": "https://www.flickr.com/photos/43737207@N07/4202164809",
-      "version": 1,
-      "empty": false
+      "file": "spider_web.webp",
+      "openverse_id": "505255ca-1dc9-4847-bbfd-ff5499e161c5",
+      "source_page": "https://www.rawpixel.com/image/10192241/vector-cartoon-illustrations-animal",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "megaphone": {
       "key": "megaphone",
       "slug": "megaphone",
-      "file": "megaphone.jpg",
-      "openverse_id": "04edc425-a78d-4c48-b68d-efa55dcf0218",
-      "source_page": "https://www.flickr.com/photos/51035734296@N01/2575986601",
-      "version": 1,
-      "empty": false
+      "file": "megaphone.png",
+      "openverse_id": "70aa0f2d-699b-49eb-a379-c12b6812913d",
+      "source_page": "https://svgsilh.com/ms/2196f3/image/2860211.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "running shoes": {
       "key": "running shoes",
       "slug": "running_shoes",
       "file": "running_shoes.jpg",
-      "openverse_id": "f1dd9889-6cdf-404e-91c1-6edaffacfcb0",
-      "source_page": "https://www.flickr.com/photos/55983868@N07/5293284081",
-      "version": 1,
-      "empty": false
+      "openverse_id": "7533d793-5977-4d15-86f1-4aea17bf7523",
+      "source_page": "https://www.rawpixel.com/image/7685235/png-people-pink",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "scarecrow": {
       "key": "scarecrow",
       "slug": "scarecrow",
-      "file": "scarecrow.jpg",
-      "openverse_id": "d8a10b77-b7a4-40bf-b2ba-579e2711a182",
-      "source_page": "https://www.flickr.com/photos/30940619@N05/4074880233",
-      "version": 1,
-      "empty": false
+      "file": "scarecrow.webp",
+      "openverse_id": "66e4057d-25e2-4c50-b9a9-545654ae1251",
+      "source_page": "https://www.rawpixel.com/image/6331489/vector-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "jack": {
       "key": "jack",
       "slug": "jack",
-      "file": "jack.jpg",
-      "openverse_id": "cbd68d36-b0da-4f6e-887b-7ab0fd3a7c30",
-      "source_page": "https://www.flickr.com/photos/14623131@N00/25256526",
-      "version": 1,
-      "empty": false
+      "file": "jack.png",
+      "openverse_id": "2e931a76-d965-4fa0-9826-215a3d3a2a05",
+      "source_page": "https://svgsilh.com/ms/ffc107/image/2164359.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "boomerang": {
       "key": "boomerang",
@@ -1033,278 +1145,309 @@
       "file": "boomerang.jpg",
       "openverse_id": "75688385-92bf-43c5-8a19-c4d6c9a11bdb",
       "source_page": "https://www.flickr.com/photos/99610616@N02/12312661583",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "stamp": {
       "key": "stamp",
       "slug": "stamp",
       "file": "stamp.jpg",
-      "openverse_id": "e8daa51a-0fde-49cd-93ea-c5871301151b",
-      "source_page": "https://www.flickr.com/photos/47066874@N00/2303479014",
-      "version": 1,
-      "empty": false
+      "openverse_id": "e9ba56ac-af0b-4088-a740-4043a073ddb3",
+      "source_page": "https://www.rawpixel.com/image/6870553/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "binder": {
       "key": "binder",
       "slug": "binder",
-      "file": "binder.jpg",
-      "openverse_id": "7fcfa319-8a1a-4a68-bf40-01529490074f",
-      "source_page": "https://www.flickr.com/photos/73935252@N00/141795494",
-      "version": 1,
-      "empty": false
+      "file": "binder.webp",
+      "openverse_id": "c89bbd93-6286-4460-bba0-003716881de8",
+      "source_page": "https://www.rawpixel.com/image/6588392/image-public-domain-black-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "twin": {
       "key": "twin",
       "slug": "twin",
-      "file": "twin.jpg",
-      "openverse_id": "4da76c8b-c876-4044-aaaf-9756fadd8ff3",
-      "source_page": "https://www.flickr.com/photos/42620503@N05/4209950157",
-      "version": 1,
-      "empty": false
+      "file": "twin.webp",
+      "openverse_id": "d51f0720-ad6f-45b4-b5e0-3ea0ac8e2a62",
+      "source_page": "https://www.rawpixel.com/image/6638789/vector-vintage-public-domain-illustration",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "scissors": {
       "key": "scissors",
       "slug": "scissors",
       "file": "scissors.jpg",
-      "openverse_id": "8f868cb8-c2ad-434b-a478-e93b30ca99b8",
-      "source_page": "https://www.flickr.com/photos/26767541@N00/49540522926",
-      "version": 1,
-      "empty": false
+      "openverse_id": "e9d4c804-48a7-4211-b984-b4e9fff4ecc0",
+      "source_page": "https://www.rawpixel.com/image/7555333/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "anchor": {
       "key": "anchor",
       "slug": "anchor",
       "file": "anchor.jpg",
-      "openverse_id": "fb1f422f-bc58-4976-a993-75afe1e4e8fa",
-      "source_page": "https://www.flickr.com/photos/34301797@N00/2514284906",
-      "version": 1,
-      "empty": false
+      "openverse_id": "aafec9e3-2d08-45bb-bd9b-ee043e62c0ab",
+      "source_page": "https://www.rawpixel.com/image/6526161/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "scroll": {
       "key": "scroll",
       "slug": "scroll",
       "file": "scroll.jpg",
-      "openverse_id": "2d562be8-4a7a-40c5-99bd-85c7ed5fe9f3",
-      "source_page": "https://www.flickr.com/photos/16215823@N06/4635563032",
-      "version": 1,
-      "empty": false
+      "openverse_id": "5405c9c1-52f9-4d02-b009-09d85fad4589",
+      "source_page": "https://www.rawpixel.com/image/7576586/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "chest": {
       "key": "chest",
       "slug": "chest",
-      "file": "chest.jpg",
-      "openverse_id": "af3b9ce4-a628-4368-a8f8-823916a314d2",
-      "source_page": "https://www.flickr.com/photos/135717563@N05/34606820173",
-      "version": 1,
-      "empty": false
+      "file": "chest.webp",
+      "openverse_id": "f21b60ef-6f64-421e-845e-ce7fe6b8cf21",
+      "source_page": "https://www.rawpixel.com/image/6715111/vector-vintage-public-domain-black",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "grid": {
       "key": "grid",
       "slug": "grid",
       "file": "grid.jpg",
-      "openverse_id": "e8561935-0fb8-4edc-95f8-5cfcc12d427d",
-      "source_page": "https://www.flickr.com/photos/29310072@N02/4481442187",
-      "version": 1,
-      "empty": false
+      "openverse_id": "2424cea6-3217-4511-b8aa-90ac03e8a89d",
+      "source_page": "https://www.rawpixel.com/image/7573730/png-grid-sticker",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "pillar": {
       "key": "pillar",
       "slug": "pillar",
       "file": "pillar.jpg",
-      "openverse_id": "9b41d790-0064-43dd-9b64-421ea0ce6c0d",
-      "source_page": "https://www.flickr.com/photos/24662369@N07/16189387096",
-      "version": 1,
-      "empty": false
+      "openverse_id": "7a3ecd51-ebf0-4f78-9972-925d1f5a3027",
+      "source_page": "https://www.rawpixel.com/image/6676790/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "clay": {
       "key": "clay",
       "slug": "clay",
-      "file": "clay.jpg",
-      "openverse_id": "55947d0e-13eb-424a-a266-5cf1e88cd413",
-      "source_page": "https://www.flickr.com/photos/62501682@N00/12056703155",
-      "version": 1,
-      "empty": false
+      "file": "clay.png",
+      "openverse_id": "a10f697f-db12-448c-bbb2-b3912ceb7d4c",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/1299445.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "trash can": {
       "key": "trash can",
       "slug": "trash_can",
       "file": "trash_can.jpg",
-      "openverse_id": "3f818635-77ec-494b-b288-729b5a8b77df",
-      "source_page": "https://www.flickr.com/photos/31295868@N06/6031767329",
-      "version": 1,
-      "empty": false
+      "openverse_id": "bb87fdff-ed20-404a-b5aa-c2b4a522e941",
+      "source_page": "https://www.rawpixel.com/image/10096045/png-plastic-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "cloud": {
       "key": "cloud",
       "slug": "cloud",
       "file": "cloud.jpg",
-      "openverse_id": "4f50c59d-3e3c-48bb-b2d2-faadf6a6ebe9",
-      "source_page": "https://www.flickr.com/photos/22178197@N00/9686255739",
-      "version": 1,
-      "empty": false
+      "openverse_id": "d1198fa8-f430-416f-8a6a-34d127748819",
+      "source_page": "https://www.rawpixel.com/image/6330263/png-cloud-sticker",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "accordion": {
       "key": "accordion",
       "slug": "accordion",
-      "file": "accordion.jpg",
-      "openverse_id": "9ac4c959-38c5-46fc-8f92-8076ecf74c3d",
-      "source_page": "https://www.flickr.com/photos/23301167@N05/16187948151",
-      "version": 1,
-      "empty": false
+      "file": "accordion.webp",
+      "openverse_id": "d12bd820-d19e-4ff3-919c-f7e71d4ac7ec",
+      "source_page": "https://www.rawpixel.com/image/6501298/image-vintage-public-domain-green",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "blueprint": {
       "key": "blueprint",
       "slug": "blueprint",
       "file": "blueprint.jpg",
-      "openverse_id": "ee83536f-5618-4a53-ac8a-d1d8b500f7f3",
-      "source_page": "https://www.flickr.com/photos/93278581@N00/3770015991",
-      "version": 1,
-      "empty": false
+      "openverse_id": "69965109-dd6d-4dc7-9320-7a03d950baf9",
+      "source_page": "https://www.rawpixel.com/image/6772570/png-papers-sticker",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "building": {
       "key": "building",
       "slug": "building",
       "file": "building.jpg",
-      "openverse_id": "1c0a2cda-af8d-4bab-8c67-e8bc92fb33d5",
-      "source_page": "https://www.flickr.com/photos/75487768@N04/26225681433",
-      "version": 1,
-      "empty": false
+      "openverse_id": "d92a129a-f12b-4d57-adbe-e31e42c0ade5",
+      "source_page": "https://www.rawpixel.com/image/6810314/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "kit": {
       "key": "kit",
       "slug": "kit",
-      "file": "kit.jpg",
-      "openverse_id": "9f9aaa75-3a80-4208-8d4f-f830f3ae6ab3",
-      "source_page": "https://www.flickr.com/photos/32399923@N08/4558215203",
-      "version": 1,
-      "empty": false
+      "file": "kit.png",
+      "openverse_id": "0a2fc8ee-967b-4576-90bb-dc0212df12d4",
+      "source_page": "https://svgsilh.com/ms/ffffff/image/2535512.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "mirror": {
       "key": "mirror",
       "slug": "mirror",
-      "file": "mirror.jpg",
-      "openverse_id": "50a14bda-9275-4685-ae87-7dd051c3a213",
-      "source_page": "https://www.flickr.com/photos/7241709@N06/7019555347",
-      "version": 1,
-      "empty": false
+      "file": "mirror.webp",
+      "openverse_id": "55b635eb-61aa-45b3-b4f7-b6e8027ed7fc",
+      "source_page": "https://www.rawpixel.com/image/6331957/psd-frame-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "box": {
       "key": "box",
       "slug": "box",
       "file": "box.jpg",
-      "openverse_id": "1190a5b6-5e15-4eb7-a0c8-ec57704d85aa",
-      "source_page": "https://www.flickr.com/photos/75243940@N00/851672959",
-      "version": 1,
-      "empty": false
+      "openverse_id": "c794fd9d-abff-4767-9627-bdc808878894",
+      "source_page": "https://www.rawpixel.com/image/7237392/png-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stage": {
       "key": "stage",
       "slug": "stage",
-      "file": "stage.jpg",
-      "openverse_id": "426a8ee2-4c04-4517-bc0a-5be622df74d0",
-      "source_page": "https://www.flickr.com/photos/37475039@N04/7358723580",
-      "version": 1,
-      "empty": false
+      "file": "stage.webp",
+      "openverse_id": "0f4904a3-f034-48e4-aa95-6b0d05529f26",
+      "source_page": "https://www.rawpixel.com/image/6328705/image-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "screen": {
       "key": "screen",
       "slug": "screen",
       "file": "screen.jpg",
-      "openverse_id": "e92bc187-dc50-41b6-b9df-6c88291dd71b",
-      "source_page": "https://www.flickr.com/photos/35034356424@N01/18107144",
-      "version": 1,
-      "empty": false
+      "openverse_id": "ef83d973-cf10-48fb-bb65-1316673b5960",
+      "source_page": "https://www.rawpixel.com/image/6643424/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "toy": {
       "key": "toy",
       "slug": "toy",
       "file": "toy.jpg",
-      "openverse_id": "f9604df5-6856-48bc-a14c-502a53e0f4ea",
-      "source_page": "https://www.flickr.com/photos/44568283@N02/4372123729",
-      "version": 1,
-      "empty": false
+      "openverse_id": "b55fbf93-11d7-499c-885c-ca2a0d58e1fe",
+      "source_page": "https://www.rawpixel.com/image/6442282/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "frame": {
       "key": "frame",
       "slug": "frame",
       "file": "frame.jpg",
-      "openverse_id": "8ec53748-2acc-4984-8a6f-528cbb3fb3d9",
-      "source_page": "https://www.flickr.com/photos/80682954@N00/3582666281",
-      "version": 1,
-      "empty": false
+      "openverse_id": "662b5ac5-aed7-423a-9085-e69871df64ad",
+      "source_page": "https://www.rawpixel.com/image/7548978/png-frame-sticker",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "room": {
       "key": "room",
       "slug": "room",
-      "file": "room.jpg",
-      "openverse_id": "21f86dc2-30e8-456f-92d8-786030c79dec",
-      "source_page": "https://www.flickr.com/photos/18090920@N07/5669490355",
-      "version": 1,
-      "empty": false
+      "file": "room.png",
+      "openverse_id": "b94ac363-8b77-4322-9252-27589e6eb95f",
+      "source_page": "https://svgsilh.com/image/1321325.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stamps": {
       "key": "stamps",
       "slug": "stamps",
       "file": "stamps.jpg",
-      "openverse_id": "e8daa51a-0fde-49cd-93ea-c5871301151b",
-      "source_page": "https://www.flickr.com/photos/47066874@N00/2303479014",
-      "version": 1,
-      "empty": false
+      "openverse_id": "e9ba56ac-af0b-4088-a740-4043a073ddb3",
+      "source_page": "https://www.rawpixel.com/image/6870553/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "eyes": {
       "key": "eyes",
       "slug": "eyes",
-      "file": "eyes.jpg",
-      "openverse_id": "f4b9c31b-66cc-4fbf-a2f0-e4b12871ca18",
-      "source_page": "https://www.flickr.com/photos/62186767@N00/3038523",
-      "version": 1,
-      "empty": false
+      "file": "eyes.png",
+      "openverse_id": "58f2afa9-715d-4a51-8561-81aac18f5c2e",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=3224752",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "dial": {
       "key": "dial",
       "slug": "dial",
-      "file": "dial.jpg",
-      "openverse_id": "3ca733ea-e1cd-44d5-aa0b-7e25c069e160",
-      "source_page": "https://www.flickr.com/photos/50318388@N00/1997114236",
-      "version": 1,
-      "empty": false
+      "file": "dial.png",
+      "openverse_id": "90bcfd90-c2ea-4058-8b62-89b5ea00e8b3",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=10101272",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "paint": {
       "key": "paint",
       "slug": "paint",
-      "file": "paint.jpg",
-      "openverse_id": "a59cc960-d073-42fb-b4e9-735b047d731b",
-      "source_page": "https://www.flickr.com/photos/51978569@N00/4100417338",
-      "version": 1,
-      "empty": false
+      "file": "paint.png",
+      "openverse_id": "90233c0d-6081-4af2-9ae6-5d7eb29cef51",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=69546219",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "flashlight": {
       "key": "flashlight",
       "slug": "flashlight",
       "file": "flashlight.jpg",
-      "openverse_id": "cccdbd81-b07e-4755-b79a-597bc2ed56d7",
-      "source_page": "https://www.flickr.com/photos/97321205@N00/38408477",
-      "version": 1,
-      "empty": false
+      "openverse_id": "809616bc-4758-4a4c-a7a1-12f056ca2132",
+      "source_page": "https://www.rawpixel.com/image/6742689/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "pop": {
       "key": "pop",
       "slug": "pop",
-      "file": "pop.jpg",
-      "openverse_id": "5e3cbd30-10c4-49ac-b1f0-be4486eef636",
-      "source_page": "https://www.flickr.com/photos/7882112@N05/2913970007",
-      "version": 1,
-      "empty": false
+      "file": "pop.png",
+      "openverse_id": "7474c9ab-0ab6-43f6-9194-96f008ff3630",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=88126563",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "truth": {
       "key": "truth",
       "slug": "truth",
-      "file": "truth.jpg",
-      "openverse_id": "1708cdc2-a53a-4cd3-b0c6-0d474cbda8ea",
-      "source_page": "https://www.flickr.com/photos/21695892@N02/3061069415",
-      "version": 1,
-      "empty": false
+      "file": "truth.webp",
+      "openverse_id": "d3677a42-63be-43bc-a9b2-4ed0bc7734cb",
+      "source_page": "https://www.rawpixel.com/image/6742370/vector-public-domain-green-arrows",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "ledger": {
       "key": "ledger",
@@ -1318,128 +1461,142 @@
     "filter": {
       "key": "filter",
       "slug": "filter",
-      "file": "filter.jpg",
-      "openverse_id": "0644971c-9534-4426-b5f7-fba9bbe83308",
-      "source_page": "https://www.flickr.com/photos/7205246@N02/2372603825",
-      "version": 1,
-      "empty": false
+      "file": "filter.webp",
+      "openverse_id": "4a704eb8-d749-4208-8e65-4870e6c29c5d",
+      "source_page": "https://www.rawpixel.com/image/6753857/vector-public-domain-green-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "magnifier": {
       "key": "magnifier",
       "slug": "magnifier",
       "file": "magnifier.jpg",
-      "openverse_id": "5c8eadac-14c3-42d1-8842-607342affd56",
-      "source_page": "https://www.flickr.com/photos/52182314@N00/9271128986",
-      "version": 1,
-      "empty": false
+      "openverse_id": "52fa0966-6bf0-46f9-9c74-7aae75046f75",
+      "source_page": "https://www.rawpixel.com/image/6641612/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "eraser": {
       "key": "eraser",
       "slug": "eraser",
-      "file": "eraser.jpg",
-      "openverse_id": "ed6c2669-fa1a-4ac8-859d-3790a9e9ac45",
-      "source_page": "https://www.flickr.com/photos/7855946@N08/43447075461",
-      "version": 1,
-      "empty": false
+      "file": "eraser.webp",
+      "openverse_id": "1cbab959-2124-4508-851a-9b48018c8da7",
+      "source_page": "https://www.rawpixel.com/image/6588510/image-public-domain-blue-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "ring": {
       "key": "ring",
       "slug": "ring",
       "file": "ring.jpg",
-      "openverse_id": "39e17456-3795-4ef9-9fba-143906935f6f",
-      "source_page": "https://www.flickr.com/photos/31437555@N00/8476801743",
-      "version": 1,
-      "empty": false
+      "openverse_id": "c7cac80b-86ed-494e-ac7c-f8b1b8e071f2",
+      "source_page": "https://www.rawpixel.com/image/6329320/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "spring": {
       "key": "spring",
       "slug": "spring",
-      "file": "spring.jpg",
-      "openverse_id": "e9142796-c3f7-440c-b662-0a35b92a8d31",
-      "source_page": "https://www.flickr.com/photos/80223459@N05/16520928718",
-      "version": 1,
-      "empty": false
+      "file": "spring.png",
+      "openverse_id": "f759a1f7-07af-4c38-a8b0-a500e55dfb80",
+      "source_page": "https://svgsilh.com/ffc107/image/1320320.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "magnet": {
       "key": "magnet",
       "slug": "magnet",
       "file": "magnet.jpg",
-      "openverse_id": "9c68ebff-b948-48e7-b4ab-ba4388678737",
-      "source_page": "https://www.flickr.com/photos/16318901@N00/194941324",
-      "version": 1,
-      "empty": false
+      "openverse_id": "a5458ae2-85ab-4bb9-aac0-e37221bb8379",
+      "source_page": "https://www.rawpixel.com/image/6430797/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "crayon": {
       "key": "crayon",
       "slug": "crayon",
-      "file": "crayon.jpg",
-      "openverse_id": "43d00ef5-cdb9-49e9-918e-95ee26ab133b",
-      "source_page": "https://www.flickr.com/photos/42140894@N02/4022801992",
-      "version": 1,
-      "empty": false
+      "file": "crayon.webp",
+      "openverse_id": "f496ccbf-a893-49e9-b925-8d21197a0dc8",
+      "source_page": "https://www.rawpixel.com/image/6678087/vector-vintage-art-public-domain",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "rope": {
       "key": "rope",
       "slug": "rope",
       "file": "rope.jpg",
-      "openverse_id": "0f1806e9-6b26-4804-a903-029bc7f66e68",
-      "source_page": "https://www.flickr.com/photos/29468339@N02/3507776919",
-      "version": 1,
-      "empty": false
+      "openverse_id": "7e60dc36-e7eb-4a10-9641-db681b086063",
+      "source_page": "https://www.rawpixel.com/image/6713952/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stripe": {
       "key": "stripe",
       "slug": "stripe",
-      "file": "stripe.jpg",
-      "openverse_id": "7d2a08af-2c47-49fb-ac7b-bab9f4ddbe29",
-      "source_page": "https://www.flickr.com/photos/29468339@N02/5727011975",
-      "version": 1,
-      "empty": false
+      "file": "stripe.png",
+      "openverse_id": "dc6125a4-34ed-486e-8fa3-738889d5910a",
+      "source_page": "https://svgsilh.com/3f51b5/image/2027038.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "wire": {
       "key": "wire",
       "slug": "wire",
-      "file": "wire.jpg",
-      "openverse_id": "5f48aaf3-bef6-44f5-9b76-7ddfd543363c",
-      "source_page": "https://www.flickr.com/photos/31917220@N07/3966992010",
-      "version": 1,
-      "empty": false
+      "file": "wire.webp",
+      "openverse_id": "092407d8-b8b3-4f9e-afb4-1c21c477208f",
+      "source_page": "https://www.rawpixel.com/image/6754244/vector-public-domain-black-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bead": {
       "key": "bead",
       "slug": "bead",
-      "file": "bead.jpg",
-      "openverse_id": "582a53ad-47b2-4772-b6a6-66bb1d90309d",
-      "source_page": "https://www.flickr.com/photos/31973006@N02/4325324904",
-      "version": 1,
-      "empty": false
+      "file": "bead.png",
+      "openverse_id": "a6baa8dc-2391-4830-9e26-5f9b5fc11d43",
+      "source_page": "https://svgsilh.com/9e9e9e/image/1985753.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "clock": {
       "key": "clock",
       "slug": "clock",
       "file": "clock.jpg",
-      "openverse_id": "c214cdd4-b5a6-40f5-9d1b-883b6e386095",
-      "source_page": "https://www.flickr.com/photos/37031529@N00/3658873911",
-      "version": 1,
-      "empty": false
+      "openverse_id": "51c763f3-fb73-4908-95a8-a0754a91867e",
+      "source_page": "https://www.rawpixel.com/image/7554293/png-white-background-people",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "loop": {
       "key": "loop",
       "slug": "loop",
-      "file": "loop.jpg",
-      "openverse_id": "6434dd54-6677-4bfb-a83d-1f386399c4d5",
-      "source_page": "https://www.flickr.com/photos/33681031@N00/3220339778",
-      "version": 1,
-      "empty": false
+      "file": "loop.png",
+      "openverse_id": "500cd8cd-c790-49cc-99b4-b97718a6b25e",
+      "source_page": "https://svgsilh.com/3f51b5/image/2728166.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "calendar": {
       "key": "calendar",
       "slug": "calendar",
       "file": "calendar.jpg",
-      "openverse_id": "f0794aea-2daa-40eb-87f7-b26de591e4b3",
-      "source_page": "https://www.flickr.com/photos/32146215@N06/3215151141",
-      "version": 1,
-      "empty": false
+      "openverse_id": "b5dec617-8882-4e88-b621-f1ba52eb81d1",
+      "source_page": "https://www.rawpixel.com/image/7613798/png-people-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "shuffle": {
       "key": "shuffle",
@@ -1447,224 +1604,249 @@
       "file": "shuffle.jpg",
       "openverse_id": "94137683-eaa4-40ce-be8f-4fc03f91166a",
       "source_page": "https://www.flickr.com/photos/35034351734@N01/41524711",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "bar": {
       "key": "bar",
       "slug": "bar",
-      "file": "bar.jpg",
-      "openverse_id": "5d539dc9-d6f2-4518-bdca-fc943c6a4c99",
-      "source_page": "https://www.flickr.com/photos/33275539@N00/5793655527",
-      "version": 1,
-      "empty": false
+      "file": "bar.webp",
+      "openverse_id": "df37a7f4-4875-4cb2-a090-2860c7cf7d6c",
+      "source_page": "https://www.rawpixel.com/image/6510291/vector-sticker-public-domain-collage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "lens": {
       "key": "lens",
       "slug": "lens",
-      "file": "lens.jpg",
-      "openverse_id": "81258630-06c1-43f8-8dce-5ddba706c65f",
-      "source_page": "https://www.flickr.com/photos/40422902@N00/5856187863",
-      "version": 1,
-      "empty": false
+      "file": "lens.webp",
+      "openverse_id": "9fef31a9-81fd-4d74-8ce8-785ffc31e8de",
+      "source_page": "https://www.rawpixel.com/image/6642441/vector-public-domain-illustrations-camera",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "ribbon": {
       "key": "ribbon",
       "slug": "ribbon",
       "file": "ribbon.jpg",
-      "openverse_id": "aa6aed0d-dbc6-4af6-9e1c-208024f9b2af",
-      "source_page": "https://www.flickr.com/photos/8269641@N03/1673359716",
-      "version": 1,
-      "empty": false
+      "openverse_id": "ee7d8fa7-8be5-44ea-a86e-fb08f93614c4",
+      "source_page": "https://www.rawpixel.com/image/6643496/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "tag": {
       "key": "tag",
       "slug": "tag",
       "file": "tag.jpg",
-      "openverse_id": "7080c81a-207d-4305-b6da-a272e54071c4",
-      "source_page": "https://www.flickr.com/photos/24948101@N08/4308552964",
-      "version": 1,
-      "empty": false
+      "openverse_id": "40f60378-aee7-45a9-b9e9-630fcec9b083",
+      "source_page": "https://www.rawpixel.com/image/7662003/png-people-cartoon",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "band": {
       "key": "band",
       "slug": "band",
-      "file": "band.jpg",
-      "openverse_id": "68db46e0-bdc6-431a-a9be-78887c9372e6",
-      "source_page": "https://www.flickr.com/photos/25925838@N00/15612371071",
-      "version": 1,
-      "empty": false
+      "file": "band.webp",
+      "openverse_id": "3ee308a3-e22b-4e2e-acbd-4a78c807e285",
+      "source_page": "https://www.rawpixel.com/image/6488719/vector-sticker-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "puppet": {
       "key": "puppet",
       "slug": "puppet",
-      "file": "puppet.jpg",
-      "openverse_id": "08bd282b-1066-4ca2-b921-517e53045c27",
-      "source_page": "https://www.flickr.com/photos/8344872@N05/4268547280",
-      "version": 1,
-      "empty": false
+      "file": "puppet.png",
+      "openverse_id": "ab938867-f931-4117-bed8-2347883a60a0",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1714211",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "remote": {
       "key": "remote",
       "slug": "remote",
-      "file": "remote.jpg",
-      "openverse_id": "9f106630-b63a-4233-9567-0706d761b1a0",
-      "source_page": "https://www.flickr.com/photos/64607715@N05/6934949775",
-      "version": 1,
-      "empty": false
+      "file": "remote.webp",
+      "openverse_id": "bb94cd4f-9443-4b14-84fb-f00c3b56964c",
+      "source_page": "https://www.rawpixel.com/image/6480630/image-public-domain-black-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "mosaic": {
       "key": "mosaic",
       "slug": "mosaic",
-      "file": "mosaic.jpg",
-      "openverse_id": "49f65590-6330-483c-b4a8-cdab0ad98ace",
-      "source_page": "https://www.flickr.com/photos/94832693@N00/75095969",
-      "version": 1,
-      "empty": false
+      "file": "mosaic.png",
+      "openverse_id": "427fa705-a0ff-49f7-9e0e-5f8b2b6243b4",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=915557",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "tile": {
       "key": "tile",
       "slug": "tile",
-      "file": "tile.jpg",
-      "openverse_id": "109b6b5b-ba3f-431c-ba6a-c7a606fcd5e9",
-      "source_page": "https://www.flickr.com/photos/44124312001@N01/6191529794",
-      "version": 1,
-      "empty": false
+      "file": "tile.png",
+      "openverse_id": "03a9816b-8723-4a8a-a074-51952bd2ca4e",
+      "source_page": "https://svgsilh.com/image/146364.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "shape": {
       "key": "shape",
       "slug": "shape",
       "file": "shape.jpg",
-      "openverse_id": "221175d4-5aa3-44c1-baff-bc6ff047bdf0",
-      "source_page": "https://www.flickr.com/photos/59258458@N03/5427960442",
-      "version": 1,
-      "empty": false
+      "openverse_id": "b3b94f4e-9994-46f3-8931-c58e27b109f0",
+      "source_page": "https://www.rawpixel.com/image/6728890/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "switch": {
       "key": "switch",
       "slug": "switch",
       "file": "switch.jpg",
-      "openverse_id": "7966b933-a07d-445b-90d9-16d448f68607",
-      "source_page": "https://www.flickr.com/photos/78791543@N02/7831859866",
-      "version": 1,
-      "empty": false
+      "openverse_id": "57e45ba7-90d5-4fb8-9dc3-93bd25686034",
+      "source_page": "https://www.rawpixel.com/image/7154182/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "window": {
       "key": "window",
       "slug": "window",
-      "file": "window.jpg",
-      "openverse_id": "0d8993a5-c1b3-432c-96cd-39c75a2289be",
-      "source_page": "https://www.flickr.com/photos/51686676@N00/8031440441",
-      "version": 1,
-      "empty": false
+      "file": "window.webp",
+      "openverse_id": "93b33612-442a-4a85-9e62-86ffb3e84144",
+      "source_page": "https://www.rawpixel.com/image/6287327/image-public-domain-illustrations-window",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "wrench": {
       "key": "wrench",
       "slug": "wrench",
       "file": "wrench.jpg",
-      "openverse_id": "e9bbd5b5-cb82-43ac-ad50-4d3494b3c60e",
-      "source_page": "https://www.flickr.com/photos/25578802@N04/52522036117",
-      "version": 1,
-      "empty": false
+      "openverse_id": "237e6063-cf9e-465e-838d-f271d6d43616",
+      "source_page": "https://www.rawpixel.com/image/6439391/png-vintage-public-domain",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "pin": {
       "key": "pin",
       "slug": "pin",
       "file": "pin.jpg",
-      "openverse_id": "1a032012-0881-40bd-8b4b-34afdf48e1e5",
-      "source_page": "https://www.flickr.com/photos/58656622@N00/215613483",
-      "version": 1,
-      "empty": false
+      "openverse_id": "143a147e-addd-456a-8bd3-7de71cc3c6a4",
+      "source_page": "https://www.rawpixel.com/image/7554619/png-heart-people",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "card": {
       "key": "card",
       "slug": "card",
       "file": "card.jpg",
-      "openverse_id": "ee25693d-43c7-4992-915e-152096f89076",
-      "source_page": "https://www.flickr.com/photos/51035716156@N01/4249742119",
-      "version": 1,
-      "empty": false
+      "openverse_id": "32059a12-9b6a-4c24-ab86-82fc8831269b",
+      "source_page": "https://www.rawpixel.com/image/6870554/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stretch": {
       "key": "stretch",
       "slug": "stretch",
-      "file": "stretch.jpg",
-      "openverse_id": "146a7492-fdb6-4d52-b989-bef0dd383620",
-      "source_page": "https://www.flickr.com/photos/54781600@N05/6993357856",
-      "version": 1,
-      "empty": false
+      "file": "stretch.png",
+      "openverse_id": "d3d5ccaa-cf07-4776-9990-e1be00e935d2",
+      "source_page": "https://svgsilh.com/f44336/image/2747269.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "map": {
       "key": "map",
       "slug": "map",
-      "file": "map.jpg",
-      "openverse_id": "d9c2204a-e63c-407b-8c71-38885d7af362",
-      "source_page": "https://www.flickr.com/photos/24431382@N03/4086880102",
-      "version": 1,
-      "empty": false
+      "file": "map.webp",
+      "openverse_id": "969bf512-5a0c-474d-8e58-9ef011a5a438",
+      "source_page": "https://www.rawpixel.com/image/6290260/image-vintage-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "lightbulb": {
       "key": "lightbulb",
       "slug": "lightbulb",
       "file": "lightbulb.jpg",
-      "openverse_id": "d17c3a2b-2ca3-4277-8373-1713b91aebab",
-      "source_page": "https://www.flickr.com/photos/37031529@N00/4034037449",
-      "version": 1,
-      "empty": false
+      "openverse_id": "571b30a9-96e2-4950-ac6a-34fb7d55aa7d",
+      "source_page": "https://www.rawpixel.com/image/10121250/png-paper-people",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "dashboard": {
       "key": "dashboard",
       "slug": "dashboard",
       "file": "dashboard.jpg",
-      "openverse_id": "74619f3d-9f8e-40b9-ad26-ed94859b90f3",
-      "source_page": "https://www.flickr.com/photos/45034206@N06/4231603362",
-      "version": 1,
-      "empty": false
+      "openverse_id": "5de3700f-f05b-4b2c-82e0-dfd87a29f6c7",
+      "source_page": "https://www.rawpixel.com/image/10165867/png-illustrations-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "tweezers": {
       "key": "tweezers",
       "slug": "tweezers",
       "file": "tweezers.jpg",
-      "openverse_id": "1fcc8def-f5df-466d-9bbd-bebd0eefc0cb",
-      "source_page": "https://www.flickr.com/photos/13105709@N00/5864017013",
-      "version": 1,
-      "empty": false
+      "openverse_id": "accc153c-8d08-4cdf-8d16-36af36f6b684",
+      "source_page": "https://www.rawpixel.com/image/8699859/png-people-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "scales": {
       "key": "scales",
       "slug": "scales",
       "file": "scales.jpg",
-      "openverse_id": "f3adfbfd-10fd-4807-ae7c-7c21973e6171",
-      "source_page": "https://www.flickr.com/photos/65488604@N02/6908206369",
-      "version": 1,
-      "empty": false
+      "openverse_id": "66e3018a-c1ca-49a0-9763-7e09bc045750",
+      "source_page": "https://www.rawpixel.com/image/6538342/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "tent": {
       "key": "tent",
       "slug": "tent",
-      "file": "tent.jpg",
-      "openverse_id": "1d0aea14-a58d-4b33-b864-dcf7388971bc",
-      "source_page": "https://www.flickr.com/photos/48603151@N00/3694344957",
-      "version": 1,
-      "empty": false
+      "file": "tent.webp",
+      "openverse_id": "d1be4367-ca48-4310-90ee-c92edf212200",
+      "source_page": "https://www.rawpixel.com/image/6654294/vector-sticker-public-domain-vintage-illustration",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "freezer": {
       "key": "freezer",
       "slug": "freezer",
-      "file": "freezer.jpg",
-      "openverse_id": "b2fd0795-2f74-4043-a83b-63c20954a61e",
-      "source_page": "https://www.flickr.com/photos/90921242@N00/264532195",
-      "version": 1,
-      "empty": false
+      "file": "freezer.png",
+      "openverse_id": "b52c26a2-e098-48ff-be4a-37289ce87698",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/30429.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "clipboard": {
       "key": "clipboard",
       "slug": "clipboard",
-      "file": "clipboard.jpg",
-      "openverse_id": "19835246-1889-4d87-b7df-e1eca0f89b9c",
-      "source_page": "https://www.flickr.com/photos/46651916@N00/4825313399",
-      "version": 1,
-      "empty": false
+      "file": "clipboard.webp",
+      "openverse_id": "39a2e205-20ad-438e-a040-74ab114eb5b7",
+      "source_page": "https://www.rawpixel.com/image/10102162/vector-paper-people-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "hamster wheel": {
       "key": "hamster wheel",
@@ -1672,17 +1854,19 @@
       "file": "hamster_wheel.jpg",
       "openverse_id": "7d1acc35-a721-4430-b91b-d110b0d94851",
       "source_page": "https://www.flickr.com/photos/10812336@N02/6054116130",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "funnel": {
       "key": "funnel",
       "slug": "funnel",
       "file": "funnel.jpg",
-      "openverse_id": "f96b9b14-9a38-481c-b72e-d7e3fcb9db65",
-      "source_page": "https://www.flickr.com/photos/52495486@N08/7365351290",
-      "version": 1,
-      "empty": false
+      "openverse_id": "34af0be8-5684-453b-a28b-dd3ef3186ed3",
+      "source_page": "https://www.rawpixel.com/image/6535896/png-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "coffee filter": {
       "key": "coffee filter",
@@ -1690,8 +1874,9 @@
       "file": "coffee_filter.jpg",
       "openverse_id": "aa42c3e6-0802-479e-a1d8-d6ac2cc699d2",
       "source_page": "https://www.flickr.com/photos/60245219@N08/8112895784",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "snowball": {
       "key": "snowball",
@@ -1699,98 +1884,109 @@
       "file": "snowball.jpg",
       "openverse_id": "62209868-0861-4a6a-8dea-d80f2fddceb8",
       "source_page": "https://www.flickr.com/photos/47445767@N05/20900468815",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "lasso": {
       "key": "lasso",
       "slug": "lasso",
-      "file": "lasso.jpg",
-      "openverse_id": "88a9a785-c0bd-4027-9405-330ae2f89c12",
-      "source_page": "https://www.flickr.com/photos/41894198135@N01/626962261",
-      "version": 1,
-      "empty": false
+      "file": "lasso.png",
+      "openverse_id": "80cf87ad-02b8-467b-9e7b-762372d090c1",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=106149354",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "menu": {
       "key": "menu",
       "slug": "menu",
-      "file": "menu.jpg",
-      "openverse_id": "b1bd74e3-7f1f-4954-aa9d-4931ecb395f9",
-      "source_page": "https://www.flickr.com/photos/80144273@N00/69439278",
-      "version": 1,
-      "empty": false
+      "file": "menu.png",
+      "openverse_id": "6845a473-6fd9-4da6-8183-e4bbfcd9b4ec",
+      "source_page": "https://svgsilh.com/ms/607d8b/image/1120961.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "folder": {
       "key": "folder",
       "slug": "folder",
-      "file": "folder.jpg",
-      "openverse_id": "bfcdc290-436e-42d0-a56c-c55fe1e6ce86",
-      "source_page": "https://www.flickr.com/photos/51035796522@N01/1659163",
-      "version": 1,
-      "empty": false
+      "file": "folder.webp",
+      "openverse_id": "fbc9f0f8-564c-4898-81ff-6a5116ef6147",
+      "source_page": "https://www.rawpixel.com/image/6742334/vector-shadow-public-domain-blue",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "bullseye": {
       "key": "bullseye",
       "slug": "bullseye",
-      "file": "bullseye.jpg",
-      "openverse_id": "ccfc14ca-3b02-4cf5-b3fc-54a231179c2e",
-      "source_page": "https://www.flickr.com/photos/86530412@N02/7987532186",
-      "version": 1,
-      "empty": false
+      "file": "bullseye.webp",
+      "openverse_id": "c2d6d3f2-1f78-42e9-bacd-7b277a4ab983",
+      "source_page": "https://www.rawpixel.com/image/6538103/image-public-domain-arrow-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "vinyl record": {
       "key": "vinyl record",
       "slug": "vinyl_record",
       "file": "vinyl_record.jpg",
-      "openverse_id": "06cbb18c-e27b-48f8-b22d-54c355b80005",
-      "source_page": "https://www.flickr.com/photos/8790226@N06/4345630258",
-      "version": 1,
-      "empty": false
+      "openverse_id": "8755b8c4-15e6-49ab-b848-c5cd814f7886",
+      "source_page": "https://www.rawpixel.com/image/6870662/png-sticker-public-domain",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "puzzle piece": {
       "key": "puzzle piece",
       "slug": "puzzle_piece",
       "file": "puzzle_piece.jpg",
-      "openverse_id": "f07f533e-381e-4731-b445-a4829a1dd13e",
-      "source_page": "https://www.flickr.com/photos/85763206@N00/2944407755",
-      "version": 1,
-      "empty": false
+      "openverse_id": "3effcd22-fdc0-46dd-9133-82c6cfbd0453",
+      "source_page": "https://www.rawpixel.com/image/10095764/png-illustrations-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "twins": {
       "key": "twins",
       "slug": "twins",
-      "file": "twins.jpg",
-      "openverse_id": "4da76c8b-c876-4044-aaaf-9756fadd8ff3",
-      "source_page": "https://www.flickr.com/photos/42620503@N05/4209950157",
-      "version": 1,
-      "empty": false
+      "file": "twins.webp",
+      "openverse_id": "d51f0720-ad6f-45b4-b5e0-3ea0ac8e2a62",
+      "source_page": "https://www.rawpixel.com/image/6638789/vector-vintage-public-domain-illustration",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "left hand": {
       "key": "left hand",
       "slug": "left_hand",
-      "file": "left_hand.jpg",
-      "openverse_id": "42d4531b-3389-4400-bd91-2f9bf0bff17e",
-      "source_page": "https://www.flickr.com/photos/42619839@N00/4315046921",
-      "version": 1,
-      "empty": false
+      "file": "left_hand.webp",
+      "openverse_id": "5b007c37-607d-46a6-9ee8-5bb2bdadf0b2",
+      "source_page": "https://www.rawpixel.com/image/7664148/image-hand-pattern-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "table": {
       "key": "table",
       "slug": "table",
       "file": "table.jpg",
-      "openverse_id": "4726baf8-1d66-4e42-9ca2-90391f430a03",
-      "source_page": "https://www.flickr.com/photos/43288932@N07/5673687239",
-      "version": 1,
-      "empty": false
+      "openverse_id": "34517126-a641-4728-866a-ba9ff975e4d2",
+      "source_page": "https://www.rawpixel.com/image/10110507/png-cartoon-wooden",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "outer space": {
       "key": "outer space",
       "slug": "outer_space",
       "file": "outer_space.jpg",
-      "openverse_id": "f0e10788-d5e5-4d82-ae32-3a3eb34d98e7",
-      "source_page": "https://www.flickr.com/photos/46652337@N06/8721947030",
-      "version": 1,
-      "empty": false
+      "openverse_id": "653bccab-4382-4ff5-b2bf-aa6266f551b4",
+      "source_page": "https://www.rawpixel.com/image/6860670/png-sticker-planet",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "lagging foot": {
       "key": "lagging foot",
@@ -1798,44 +1994,49 @@
       "file": "lagging_foot.jpg",
       "openverse_id": "d1e90149-4f34-48fa-a3ec-2dcc75409e5f",
       "source_page": "https://www.flickr.com/photos/9292942@N08/4019902331",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "footprints": {
       "key": "footprints",
       "slug": "footprints",
-      "file": "footprints.jpg",
-      "openverse_id": "d4649ff8-7062-4ce2-bb05-a1311bfb4af7",
-      "source_page": "https://www.flickr.com/photos/52128332@N02/7919734164",
-      "version": 1,
-      "empty": false
+      "file": "footprints.png",
+      "openverse_id": "80fcdf68-8a6a-4c94-8ce2-5e41fcb85b33",
+      "source_page": "https://svgsilh.com/ffc107/image/3350837.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "leash": {
       "key": "leash",
       "slug": "leash",
-      "file": "leash.jpg",
-      "openverse_id": "1303afc2-bbef-408b-84a8-75451ec97832",
-      "source_page": "https://www.flickr.com/photos/38869431@N00/102020122",
-      "version": 1,
-      "empty": false
+      "file": "leash.png",
+      "openverse_id": "ca6b4e04-470a-4d67-9495-2bcfe1c4c4a9",
+      "source_page": "https://svgsilh.com/9c27b0/image/32026.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "stepping stone": {
       "key": "stepping stone",
       "slug": "stepping_stone",
-      "file": "stepping_stone.jpg",
-      "openverse_id": "7e90f18d-4653-4a59-8f6c-b4397d53829d",
-      "source_page": "https://www.flickr.com/photos/68089229@N06/6818869372",
-      "version": 1,
-      "empty": false
+      "file": "stepping_stone.png",
+      "openverse_id": "c0d58cf8-b191-4d67-a2a2-a5e7422d8b57",
+      "source_page": "https://svgsilh.com/ms/image/794603.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "glass divider": {
       "key": "glass divider",
       "slug": "glass_divider",
-      "file": "glass_divider.jpg",
-      "openverse_id": "6b552674-a2dc-48e6-bc5d-8da831732a85",
-      "source_page": "https://www.flickr.com/photos/7666975@N03/10013306373",
-      "version": 1,
-      "empty": false
+      "file": "glass_divider.webp",
+      "openverse_id": "dfb8c14f-370a-4d86-b5e6-934eacb98ad7",
+      "source_page": "https://www.rawpixel.com/image/6501171/image-vintage-public-domain-border",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "pizza slicer": {
       "key": "pizza slicer",
@@ -1843,8 +2044,9 @@
       "file": "pizza_slicer.jpg",
       "openverse_id": "64400441-7acb-45af-ac48-420b6815a877",
       "source_page": "https://www.flickr.com/photos/51612898@N00/6896517",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "cubicle": {
       "key": "cubicle",
@@ -1852,323 +2054,359 @@
       "file": "cubicle.jpg",
       "openverse_id": "e3bd7b97-4908-44e5-8e3e-6028d434c63f",
       "source_page": "https://www.flickr.com/photos/51035626656@N01/521083416",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "abacus": {
       "key": "abacus",
       "slug": "abacus",
-      "file": "abacus.jpg",
-      "openverse_id": "51badb82-252d-4647-9ae2-d3a9c1108915",
-      "source_page": "https://www.flickr.com/photos/29507259@N02/6773901135",
-      "version": 1,
-      "empty": false
+      "file": "abacus.webp",
+      "openverse_id": "99c288be-0675-4eba-87c2-732e3fe63f72",
+      "source_page": "https://www.rawpixel.com/image/6439626/image-vintage-public-domain-black",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "test tube": {
       "key": "test tube",
       "slug": "test_tube",
       "file": "test_tube.jpg",
-      "openverse_id": "ef508b80-d1bd-447b-a474-862391ddd812",
-      "source_page": "https://www.flickr.com/photos/57519914@N00/310155894",
-      "version": 1,
-      "empty": false
+      "openverse_id": "1f10c48c-04d5-4750-8891-97fb6366be95",
+      "source_page": "https://www.rawpixel.com/image/6579394/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "sandglass": {
       "key": "sandglass",
       "slug": "sandglass",
-      "file": "sandglass.jpg",
-      "openverse_id": "d15f9227-c7d3-4da9-84df-2b3d81ecb908",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=19526439",
-      "version": 1,
-      "empty": false
+      "file": "sandglass.webp",
+      "openverse_id": "31bcee28-c179-44c2-b46d-c580b800bb1b",
+      "source_page": "https://www.rawpixel.com/image/6448976/vector-sticker-public-domain-golden",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "syringe": {
       "key": "syringe",
       "slug": "syringe",
       "file": "syringe.jpg",
-      "openverse_id": "f91cc20b-e09b-47f1-b157-0a659086d6e3",
-      "source_page": "https://www.flickr.com/photos/98511198@N00/124389423",
-      "version": 1,
-      "empty": false
+      "openverse_id": "43a2adb7-d1d5-45e3-a7a8-34ff986f0724",
+      "source_page": "https://www.rawpixel.com/image/10098290/png-illustrations-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "needle": {
       "key": "needle",
       "slug": "needle",
-      "file": "needle.jpg",
-      "openverse_id": "701a58e2-1831-4a44-83c0-6620a7e280c6",
-      "source_page": "https://www.flickr.com/photos/72312867@N00/472183124",
-      "version": 1,
-      "empty": false
+      "file": "needle.webp",
+      "openverse_id": "5e40a9f5-fd8f-4d45-b097-64e6b027d0ff",
+      "source_page": "https://www.rawpixel.com/image/6552901/vector-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "open book": {
       "key": "open book",
       "slug": "open_book",
       "file": "open_book.jpg",
-      "openverse_id": "f165bc8a-deb9-4e96-bc61-cca5089bc162",
-      "source_page": "https://www.flickr.com/photos/9186550@N08/2936937247",
-      "version": 1,
-      "empty": false
+      "openverse_id": "428a1a42-929a-456c-a428-ce4e01970a31",
+      "source_page": "https://www.rawpixel.com/image/9069693/png-white-background-paper",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "blanket": {
       "key": "blanket",
       "slug": "blanket",
-      "file": "blanket.jpg",
-      "openverse_id": "de07164b-df59-4424-ae8f-4be02c714f94",
-      "source_page": "https://www.flickr.com/photos/60093836@N00/419231534",
-      "version": 1,
-      "empty": false
+      "file": "blanket.webp",
+      "openverse_id": "cff593b1-4682-4c77-89b5-c7007906e44b",
+      "source_page": "https://www.rawpixel.com/image/6703849/image-public-domain-illustrations-halloween",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "ruler": {
       "key": "ruler",
       "slug": "ruler",
       "file": "ruler.jpg",
-      "openverse_id": "d1cb5b44-6f8a-4ba8-ac78-6984a42ce01b",
-      "source_page": "https://www.flickr.com/photos/21936537@N03/4799422110",
-      "version": 1,
-      "empty": false
+      "openverse_id": "48a84873-c1ce-4857-85f3-7a6088724a8d",
+      "source_page": "https://www.rawpixel.com/image/6727814/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "hardhat": {
       "key": "hardhat",
       "slug": "hardhat",
-      "file": "hardhat.jpg",
-      "openverse_id": "c30faa60-4625-48a2-a9f8-74cadc6ca83b",
-      "source_page": "https://www.flickr.com/photos/12772836@N00/2920769778",
-      "version": 1,
-      "empty": false
+      "file": "hardhat.png",
+      "openverse_id": "4271d1d5-791d-4888-ac18-c533e88b577e",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/156489.html",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "fire": {
       "key": "fire",
       "slug": "fire",
       "file": "fire.jpg",
-      "openverse_id": "2851a21f-2c64-41b4-9c9c-19106c2e5548",
-      "source_page": "https://www.flickr.com/photos/69295680@N00/17095691029",
-      "version": 1,
-      "empty": false
+      "openverse_id": "9611014f-c4e9-4184-bfaf-b3ec2a043162",
+      "source_page": "https://www.rawpixel.com/image/7568267/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "heart": {
       "key": "heart",
       "slug": "heart",
       "file": "heart.jpg",
-      "openverse_id": "413bf4cb-ad4a-49c9-84f6-fda46dbc1fd7",
-      "source_page": "https://www.flickr.com/photos/47409110@N07/4397711604",
-      "version": 1,
-      "empty": false
+      "openverse_id": "09c3090f-c6b1-497a-984e-f9304c2f62ef",
+      "source_page": "https://www.rawpixel.com/image/6330608/png-sticker-heart",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "scale": {
       "key": "scale",
       "slug": "scale",
       "file": "scale.jpg",
-      "openverse_id": "f3adfbfd-10fd-4807-ae7c-7c21973e6171",
-      "source_page": "https://www.flickr.com/photos/65488604@N02/6908206369",
-      "version": 1,
-      "empty": false
+      "openverse_id": "66e3018a-c1ca-49a0-9763-7e09bc045750",
+      "source_page": "https://www.rawpixel.com/image/6538342/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "nose": {
       "key": "nose",
       "slug": "nose",
       "file": "nose.jpg",
-      "openverse_id": "fb1fa699-f9ce-40a4-8435-c7e4b3de8c87",
-      "source_page": "https://www.flickr.com/photos/58827557@N06/35168674173",
-      "version": 1,
-      "empty": false
+      "openverse_id": "3953a264-76ce-4b5f-9a22-0ca500518a15",
+      "source_page": "https://www.rawpixel.com/image/6870671/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "whistle": {
       "key": "whistle",
       "slug": "whistle",
       "file": "whistle.jpg",
-      "openverse_id": "b9b1ea5c-c94d-47d7-9ad3-c447248ce86e",
-      "source_page": "https://www.flickr.com/photos/132033298@N04/24009265240",
-      "version": 1,
-      "empty": false
+      "openverse_id": "fa85bd6f-043a-4770-b1f6-79092d3203e5",
+      "source_page": "https://www.rawpixel.com/image/7574668/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "mat": {
       "key": "mat",
       "slug": "mat",
       "file": "mat.jpg",
-      "openverse_id": "171efa82-49ec-41d2-ad2a-1abb63c3fae2",
-      "source_page": "https://www.flickr.com/photos/32279598@N02/7128657885",
-      "version": 1,
-      "empty": false
+      "openverse_id": "5e23937f-4de9-414b-9be3-cb1f3efc259f",
+      "source_page": "https://www.rawpixel.com/image/6849067/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "laser": {
       "key": "laser",
       "slug": "laser",
-      "file": "laser.jpg",
-      "openverse_id": "f68c9ccc-54e6-43d7-a321-b9d991cc1a9c",
-      "source_page": "https://www.flickr.com/photos/25649741@N04/5391914387",
-      "version": 1,
-      "empty": false
+      "file": "laser.png",
+      "openverse_id": "033772fb-02c9-4445-8ea4-3c5800324bef",
+      "source_page": "https://svgsilh.com/ms/9c27b0/image/98654.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "seeds": {
       "key": "seeds",
       "slug": "seeds",
-      "file": "seeds.jpg",
-      "openverse_id": "0999704f-3bc9-4d04-8f40-dcf9b28d69d5",
-      "source_page": "https://www.flickr.com/photos/54387193@N00/144085146",
-      "version": 1,
-      "empty": false
+      "file": "seeds.png",
+      "openverse_id": "d7192f1a-1b52-4713-a801-9b1227cd2151",
+      "source_page": "https://svgsilh.com/image/146738.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "mower": {
       "key": "mower",
       "slug": "mower",
       "file": "mower.jpg",
-      "openverse_id": "683ef6b8-4a5d-44e1-87ae-127bcb9e38f1",
-      "source_page": "https://www.flickr.com/photos/25984179@N00/151587630",
-      "version": 1,
-      "empty": false
+      "openverse_id": "e11d27dd-da0b-4eb9-aad8-05ade390f483",
+      "source_page": "https://www.rawpixel.com/image/6449503/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "shield": {
       "key": "shield",
       "slug": "shield",
       "file": "shield.jpg",
-      "openverse_id": "6aa10fd7-8aa2-4d35-a6b6-e5075b31bc5c",
-      "source_page": "https://www.flickr.com/photos/34984457@N08/4466030821",
-      "version": 1,
-      "empty": false
+      "openverse_id": "8a73c6a5-5bca-4923-8004-28f40016650f",
+      "source_page": "https://www.rawpixel.com/image/6557030/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "parachute": {
       "key": "parachute",
       "slug": "parachute",
-      "file": "parachute.jpg",
-      "openverse_id": "216372fc-6be2-41ee-a578-0b59b2c37d2f",
-      "source_page": "https://www.flickr.com/photos/29988733@N04/15457095998",
-      "version": 1,
-      "empty": false
+      "file": "parachute.webp",
+      "openverse_id": "8ecba277-9b18-431f-8b4c-af0ad36df2bc",
+      "source_page": "https://www.rawpixel.com/image/10192420/vector-cartoon-illustrations-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "battery": {
       "key": "battery",
       "slug": "battery",
       "file": "battery.jpg",
-      "openverse_id": "489428d4-9858-4516-ade3-26595595ee38",
-      "source_page": "https://www.flickr.com/photos/74717832@N00/13924823655",
-      "version": 1,
-      "empty": false
+      "openverse_id": "f528950f-4b79-4a2a-8821-2545405fef51",
+      "source_page": "https://www.rawpixel.com/image/7568309/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "tightrope": {
       "key": "tightrope",
       "slug": "tightrope",
-      "file": "tightrope.jpg",
-      "openverse_id": "92f6ed7e-d210-4754-8a11-9c16eae5e961",
-      "source_page": "https://www.flickr.com/photos/19953384@N00/7452319616",
-      "version": 1,
-      "empty": false
+      "file": "tightrope.webp",
+      "openverse_id": "83808145-c046-49ac-b2c8-f043382caf9b",
+      "source_page": "https://www.rawpixel.com/image/6557467/vector-vintage-public-domain-illustration",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "hurdles": {
       "key": "hurdles",
       "slug": "hurdles",
       "file": "hurdles.jpg",
-      "openverse_id": "60814e76-0800-4ca8-b377-e9a39655c2fd",
-      "source_page": "https://www.flickr.com/photos/57375014@N00/774926895",
-      "version": 1,
-      "empty": false
+      "openverse_id": "a5f05bcc-a433-44bc-9b71-350853bf8e54",
+      "source_page": "https://www.rawpixel.com/image/11729161/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bumper": {
       "key": "bumper",
       "slug": "bumper",
       "file": "bumper.jpg",
-      "openverse_id": "0cb52c16-e1bc-4879-a0b7-7eea9a701f97",
-      "source_page": "https://www.flickr.com/photos/12914838@N00/9406161950",
-      "version": 1,
-      "empty": false
+      "openverse_id": "0b2e71b6-8fac-4cd8-901f-26b7134487bf",
+      "source_page": "https://www.rawpixel.com/image/10191416/png-cartoon-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "perfume": {
       "key": "perfume",
       "slug": "perfume",
-      "file": "perfume.jpg",
-      "openverse_id": "0e48f4d3-b2f4-482f-aa55-fa4ea19205d6",
-      "source_page": "https://www.flickr.com/photos/9224879@N06/9709084574",
-      "version": 1,
-      "empty": false
+      "file": "perfume.webp",
+      "openverse_id": "2c2d2983-7244-4482-890b-c6c900d380c8",
+      "source_page": "https://www.rawpixel.com/image/11066099/image-face-person-art",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bone": {
       "key": "bone",
       "slug": "bone",
       "file": "bone.jpg",
-      "openverse_id": "83aaa1bb-ef74-4aaa-83fd-43ead767d82b",
-      "source_page": "https://www.flickr.com/photos/84493444@N00/2786883236",
-      "version": 1,
-      "empty": false
+      "openverse_id": "a4daaea1-38cd-46e8-9d96-2b846fd0285f",
+      "source_page": "https://www.rawpixel.com/image/11728979/png-hand-sticker",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "palms": {
       "key": "palms",
       "slug": "palms",
-      "file": "palms.jpg",
-      "openverse_id": "4f78c196-98a1-4a37-be12-8bac3bfd79e9",
-      "source_page": "https://www.flickr.com/photos/16056465@N00/9717810165",
-      "version": 1,
-      "empty": false
+      "file": "palms.png",
+      "openverse_id": "61145a19-348a-4dc6-9227-0d05df5a65e1",
+      "source_page": "https://svgsilh.com/3f51b5/image/294216.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "shirt": {
       "key": "shirt",
       "slug": "shirt",
-      "file": "shirt.jpg",
-      "openverse_id": "69fae9ba-e782-48c7-a742-654940de38e6",
-      "source_page": "https://www.flickr.com/photos/35448539@N00/2368786173",
-      "version": 1,
-      "empty": false
+      "file": "shirt.png",
+      "openverse_id": "483e5939-9e56-4065-8176-dd85d5e3fa70",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=98676369",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "turkey": {
       "key": "turkey",
       "slug": "turkey",
       "file": "turkey.jpg",
-      "openverse_id": "3b6cf615-b59d-4b58-887c-246f2ec820f9",
-      "source_page": "https://www.flickr.com/photos/24330894@N03/4189557623",
-      "version": 1,
-      "empty": false
+      "openverse_id": "830fe5a9-8ab9-4fa9-aa53-32f98a99354e",
+      "source_page": "https://www.rawpixel.com/image/6560219/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "hurdle": {
       "key": "hurdle",
       "slug": "hurdle",
       "file": "hurdle.jpg",
-      "openverse_id": "60814e76-0800-4ca8-b377-e9a39655c2fd",
-      "source_page": "https://www.flickr.com/photos/57375014@N00/774926895",
-      "version": 1,
-      "empty": false
+      "openverse_id": "a5f05bcc-a433-44bc-9b71-350853bf8e54",
+      "source_page": "https://www.rawpixel.com/image/11729161/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "shoe": {
       "key": "shoe",
       "slug": "shoe",
       "file": "shoe.jpg",
-      "openverse_id": "6abe6c2c-82b8-427e-845f-af54cf69207d",
-      "source_page": "https://www.flickr.com/photos/59619742@N00/3396804745",
-      "version": 1,
-      "empty": false
+      "openverse_id": "fdd23369-0b8f-4769-98b0-2d297b0b0edc",
+      "source_page": "https://www.rawpixel.com/image/6727516/png-sticker-vintage",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "magic wand": {
       "key": "magic wand",
       "slug": "magic_wand",
-      "file": "magic_wand.jpg",
-      "openverse_id": "784c1fd3-9711-49fa-84c4-b6a6f9a0bfad",
-      "source_page": "https://www.flickr.com/photos/7423506@N04/3572862685",
-      "version": 1,
-      "empty": false
+      "file": "magic_wand.webp",
+      "openverse_id": "6f5c83bb-671a-4cd2-a91d-cfe2fcab7bfd",
+      "source_page": "https://www.rawpixel.com/image/6743548/image-public-domain-star-shape",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bridge": {
       "key": "bridge",
       "slug": "bridge",
       "file": "bridge.jpg",
-      "openverse_id": "2f3b40b2-e76c-45e6-a0c0-adaa01865a28",
-      "source_page": "https://www.flickr.com/photos/29809546@N00/7979269514",
-      "version": 1,
-      "empty": false
+      "openverse_id": "38d92242-40ee-4b5d-9184-86dc886b64a4",
+      "source_page": "https://www.rawpixel.com/image/7419239/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "robot": {
       "key": "robot",
       "slug": "robot",
       "file": "robot.jpg",
-      "openverse_id": "0851f936-f4f0-4c31-80de-35f2c07daae7",
-      "source_page": "https://www.flickr.com/photos/75264768@N00/336498925",
-      "version": 2,
-      "empty": false
+      "openverse_id": "97c0089f-7d91-42b8-94d3-2f88d078556a",
+      "source_page": "https://www.rawpixel.com/image/6703941/png-sticker-public-domain",
+      "version": 4,
+      "empty": false,
+      "style": "illustration"
     },
     "cable": {
       "key": "cable",
       "slug": "cable",
-      "file": "cable.jpg",
-      "openverse_id": "0c696c01-d5ab-4028-b53c-f54770674e62",
-      "source_page": "https://www.flickr.com/photos/29468339@N02/8376556033",
-      "version": 1,
-      "empty": false
+      "file": "cable.png",
+      "openverse_id": "fa1ea7e3-cf2f-4f00-a74e-7c574706b5a6",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=4138900",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "address bar": {
       "key": "address bar",
@@ -2176,44 +2414,49 @@
       "file": "address_bar.jpg",
       "openverse_id": "fb95ab3b-a319-4a3f-b5f3-65f07a999a2f",
       "source_page": "https://www.flickr.com/photos/73993978@N00/4012405508",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "quill": {
       "key": "quill",
       "slug": "quill",
       "file": "quill.jpg",
-      "openverse_id": "e62bf3da-3308-4149-9f7f-a569cf090c12",
-      "source_page": "https://www.flickr.com/photos/74132825@N05/9293013302",
-      "version": 1,
-      "empty": false
+      "openverse_id": "abf82100-9aa5-41e0-b59c-d7a1115e617b",
+      "source_page": "https://www.rawpixel.com/image/7662123/png-white-background-paper",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "dump truck": {
       "key": "dump truck",
       "slug": "dump_truck",
       "file": "dump_truck.jpg",
-      "openverse_id": "f9a9ff54-ac28-4c7d-be7f-102dd603fe68",
-      "source_page": "https://www.flickr.com/photos/29474631@N04/2755142509",
-      "version": 1,
-      "empty": false
+      "openverse_id": "628139a5-d677-4e89-b6d4-90f82949368f",
+      "source_page": "https://www.rawpixel.com/image/7371924/png-sticker-public-domain-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "forklift": {
       "key": "forklift",
       "slug": "forklift",
-      "file": "forklift.jpg",
-      "openverse_id": "a91b59f5-6f3b-4e9a-9bb6-3a413408b885",
-      "source_page": "https://www.flickr.com/photos/42988571@N08/20772900094",
-      "version": 1,
-      "empty": false
+      "file": "forklift.png",
+      "openverse_id": "6760e486-16ce-40b6-9433-77f1e9cb40af",
+      "source_page": "https://svgsilh.com/3f51b5/image/24069.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "button": {
       "key": "button",
       "slug": "button",
-      "file": "button.jpg",
-      "openverse_id": "024043a3-b94b-4f1f-9a1b-5dda2f912424",
-      "source_page": "https://www.flickr.com/photos/77245385@N00/12875558",
-      "version": 1,
-      "empty": false
+      "file": "button.webp",
+      "openverse_id": "596aa3cf-0765-4b4d-bd04-285f9bbee9a5",
+      "source_page": "https://www.rawpixel.com/image/6330575/image-sticker-public-domain-shape",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "hose": {
       "key": "hose",
@@ -2227,29 +2470,32 @@
     "badge": {
       "key": "badge",
       "slug": "badge",
-      "file": "badge.jpg",
-      "openverse_id": "d288de7f-321a-43d6-93ed-8dbeeebf25bc",
-      "source_page": "https://www.flickr.com/photos/45581782@N00/6373046",
-      "version": 1,
-      "empty": false
+      "file": "badge.webp",
+      "openverse_id": "14f6c53c-a564-46f2-aa50-eff94da639f5",
+      "source_page": "https://www.rawpixel.com/image/6729021/vector-public-domain-star-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "rocket": {
       "key": "rocket",
       "slug": "rocket",
       "file": "rocket.jpg",
-      "openverse_id": "e3f5c237-70e2-4191-9dd9-5239600db0fb",
-      "source_page": "https://www.flickr.com/photos/24662369@N07/50394724127",
-      "version": 1,
-      "empty": false
+      "openverse_id": "919f5ec3-2005-41bb-a3d6-ea98c26f55fa",
+      "source_page": "https://www.rawpixel.com/image/7729511/png-people-cartoon",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "label": {
       "key": "label",
       "slug": "label",
-      "file": "label.jpg",
-      "openverse_id": "8f67babd-a47a-46ed-b729-05ef4f081cf6",
-      "source_page": "https://www.flickr.com/photos/10533549@N08/2237506244",
-      "version": 1,
-      "empty": false
+      "file": "label.png",
+      "openverse_id": "964c2e39-cf6e-4916-b9c6-f0b034b5f8b2",
+      "source_page": "https://svgsilh.com/ms/009688/image/3032846.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "steamroller": {
       "key": "steamroller",
@@ -2257,215 +2503,239 @@
       "file": "steamroller.jpg",
       "openverse_id": "359b0306-c886-43fb-93cf-5cd775c55002",
       "source_page": "https://www.flickr.com/photos/10816734@N03/6767702191",
-      "version": 1,
-      "empty": false
+      "version": 2,
+      "empty": false,
+      "style": "any"
     },
     "glue": {
       "key": "glue",
       "slug": "glue",
-      "file": "glue.jpg",
-      "openverse_id": "f234e384-e3f4-4b8a-8779-62a5b378fea0",
-      "source_page": "https://www.flickr.com/photos/30799144@N00/3836249842",
-      "version": 1,
-      "empty": false
+      "file": "glue.webp",
+      "openverse_id": "768a5014-1b34-4d2e-8614-c18355ff9d03",
+      "source_page": "https://www.rawpixel.com/image/11729232/vector-collage-cartoon-logo",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "bench": {
       "key": "bench",
       "slug": "bench",
       "file": "bench.jpg",
-      "openverse_id": "31059029-3875-49ef-9bce-97abcea0ff92",
-      "source_page": "https://www.flickr.com/photos/66884811@N08/8528993396",
-      "version": 1,
-      "empty": false
+      "openverse_id": "ec8eebad-0760-4ee4-992e-51fc613b16a9",
+      "source_page": "https://www.rawpixel.com/image/6762840/png-sticker-tree",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "speedometer": {
       "key": "speedometer",
       "slug": "speedometer",
-      "file": "speedometer.jpg",
-      "openverse_id": "d7fadc2e-8647-4352-933d-54e9ea44a72b",
-      "source_page": "https://www.flickr.com/photos/12949199@N00/3216888569",
-      "version": 1,
-      "empty": false
+      "file": "speedometer.png",
+      "openverse_id": "2841cbf3-f689-422f-bfbd-d6d6b873e24d",
+      "source_page": "https://svgsilh.com/ms/8bc34a/image/2797347.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "brass key": {
       "key": "brass key",
       "slug": "brass_key",
-      "file": "brass_key.jpg",
-      "openverse_id": "b8f30583-86e9-4e8c-ad4e-3a58444f2c21",
-      "source_page": "https://www.flickr.com/photos/26344495@N05/47633536762",
-      "version": 1,
-      "empty": false
+      "file": "brass_key.png",
+      "openverse_id": "e3a621e8-bd6d-4d31-b274-8adc904f9df0",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=114153683",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "barcode": {
       "key": "barcode",
       "slug": "barcode",
-      "file": "barcode.jpg",
-      "openverse_id": "c38cbd52-91f7-4e5a-9ff6-8ff3fee1c631",
-      "source_page": "https://www.flickr.com/photos/129774421@N05/28105095602",
-      "version": 1,
-      "empty": false
+      "file": "barcode.png",
+      "openverse_id": "e39876a6-ae66-4429-bd87-9dffedede493",
+      "source_page": "https://svgsilh.com/ms/ffc107/image/306926.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "cabinet": {
       "key": "cabinet",
       "slug": "cabinet",
-      "file": "cabinet.jpg",
-      "openverse_id": "f4f13708-64ca-4b70-b384-0e3d34fd567f",
-      "source_page": "https://www.flickr.com/photos/49707497@N06/52340173237",
-      "version": 1,
-      "empty": false
+      "file": "cabinet.webp",
+      "openverse_id": "c596d076-929a-44d5-a815-1507beaa15ee",
+      "source_page": "https://www.rawpixel.com/image/6332991/image-public-domain-vintage-illustrations",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "handcuffs": {
       "key": "handcuffs",
       "slug": "handcuffs",
-      "file": "handcuffs.jpg",
-      "openverse_id": "91d6f41c-e966-4797-a0b6-0c810c5c9a64",
-      "source_page": "https://www.flickr.com/photos/44773781@N00/2595021159",
-      "version": 1,
-      "empty": false
+      "file": "handcuffs.webp",
+      "openverse_id": "a459c482-3f90-46ce-a782-856f9838f8ec",
+      "source_page": "https://www.rawpixel.com/image/6715141/vector-vintage-public-domain-hand",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "razor": {
       "key": "razor",
       "slug": "razor",
       "file": "razor.jpg",
-      "openverse_id": "ea29b241-dee7-4447-9bf3-81d0f1b0db29",
-      "source_page": "https://www.flickr.com/photos/37996580417@N01/534568901",
-      "version": 1,
-      "empty": false
+      "openverse_id": "549afcc3-1165-48c6-b001-d1348c4f659e",
+      "source_page": "https://www.rawpixel.com/image/6709159/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "safe": {
       "key": "safe",
       "slug": "safe",
       "file": "safe.jpg",
-      "openverse_id": "b1ffd6a6-40cb-4c5e-a94f-862bba375c47",
-      "source_page": "https://www.flickr.com/photos/32456018@N03/3035763130",
-      "version": 1,
-      "empty": false
+      "openverse_id": "c775a48d-d92d-4304-95a9-6049303d3d22",
+      "source_page": "https://www.rawpixel.com/image/6516149/png-sticker-vintage",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "drawer": {
       "key": "drawer",
       "slug": "drawer",
-      "file": "drawer.jpg",
-      "openverse_id": "52ce00df-859b-403a-a6fe-335ea584532e",
-      "source_page": "https://www.flickr.com/photos/35034345586@N01/185262165",
-      "version": 1,
-      "empty": false
+      "file": "drawer.png",
+      "openverse_id": "69e1cecc-750c-4b4a-88c3-6285a18b39b0",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=10589492",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "apple": {
       "key": "apple",
       "slug": "apple",
-      "file": "apple.jpg",
-      "openverse_id": "abe939b0-9741-4d30-b63e-19b08b3baf71",
-      "source_page": "https://www.flickr.com/photos/87866532@N04/8074168006",
-      "version": 2,
-      "empty": false
+      "file": "apple.png",
+      "openverse_id": "1f7b976d-48c0-44a5-ba85-44f1f301c77f",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=734321",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "lightning": {
       "key": "lightning",
       "slug": "lightning",
-      "file": "lightning.jpg",
-      "openverse_id": "3295721f-2536-4b6d-b4c8-a7b17c3b70c6",
-      "source_page": "https://www.flickr.com/photos/41449400@N05/6134499740",
-      "version": 1,
-      "empty": false
+      "file": "lightning.png",
+      "openverse_id": "4def65c1-0d99-477c-81cb-67ddd4e69fec",
+      "source_page": "https://svgsilh.com/image/28003.html",
+      "version": 3,
+      "empty": false,
+      "style": "illustration"
     },
     "beaker": {
       "key": "beaker",
       "slug": "beaker",
-      "file": "beaker.jpg",
-      "openverse_id": "80fe1b58-6844-489e-8ee8-d538318dd5e5",
-      "source_page": "https://www.flickr.com/photos/97634575@N00/1279289665",
-      "version": 1,
-      "empty": false
+      "file": "beaker.webp",
+      "openverse_id": "324b469a-9c0f-4a01-9025-7db09d528f1a",
+      "source_page": "https://www.rawpixel.com/image/7375924/image-public-domain-illustrations-free",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "gears": {
       "key": "gears",
       "slug": "gears",
-      "file": "gears.jpg",
-      "openverse_id": "b4df9c06-4fa1-49e6-ae12-12da37edcb4c",
-      "source_page": "https://www.flickr.com/photos/47035523@N00/2671581848",
-      "version": 1,
-      "empty": false
+      "file": "gears.png",
+      "openverse_id": "25fcc494-db0c-43b6-8a12-1495f110534f",
+      "source_page": "https://svgsilh.com/ms/ffc107/image/1294844.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "guillotine": {
       "key": "guillotine",
       "slug": "guillotine",
-      "file": "guillotine.jpg",
-      "openverse_id": "14838100-1848-4e95-96a5-0d3558faf543",
-      "source_page": "https://www.flickr.com/photos/73287007@N00/2906142532",
-      "version": 1,
-      "empty": false
+      "file": "guillotine.webp",
+      "openverse_id": "38386b87-92cd-4a32-abd9-492bff525861",
+      "source_page": "https://www.rawpixel.com/image/6333078/vector-sticker-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "hammock": {
       "key": "hammock",
       "slug": "hammock",
-      "file": "hammock.jpg",
-      "openverse_id": "e7bc2588-575a-420d-8af4-d12b435b5be8",
-      "source_page": "https://www.flickr.com/photos/57768426@N00/30635782",
-      "version": 1,
-      "empty": false
+      "file": "hammock.webp",
+      "openverse_id": "ea705aca-6080-4b1d-8279-bc2c4ebb5d0f",
+      "source_page": "https://www.rawpixel.com/image/6771649/vector-sticker-trees-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "desk": {
       "key": "desk",
       "slug": "desk",
       "file": "desk.jpg",
-      "openverse_id": "3ccaec1b-4a59-482a-b3bc-a61cf72c66a7",
-      "source_page": "https://www.flickr.com/photos/14238175@N08/3593618935",
-      "version": 1,
-      "empty": false
+      "openverse_id": "d4aec401-e0b4-4c5f-b4d2-cd9f0e303373",
+      "source_page": "https://www.rawpixel.com/image/6334919/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "handshake": {
       "key": "handshake",
       "slug": "handshake",
       "file": "handshake.jpg",
-      "openverse_id": "f813ecb3-046f-4cfc-ae2a-fc71e90e7208",
-      "source_page": "https://www.flickr.com/photos/70123617@N00/5150669738",
-      "version": 1,
-      "empty": false
+      "openverse_id": "1da71650-eb08-4440-8042-4863b7734bce",
+      "source_page": "https://www.rawpixel.com/image/10192164/png-hands-cartoon",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "sushi": {
       "key": "sushi",
       "slug": "sushi",
       "file": "sushi.jpg",
-      "openverse_id": "44afb152-476a-4729-8076-c282c6f7eed7",
-      "source_page": "https://www.flickr.com/photos/22211105@N03/3803320257",
-      "version": 1,
-      "empty": false
+      "openverse_id": "3cac3def-0718-4bed-9c94-9d805df680bf",
+      "source_page": "https://www.rawpixel.com/image/6525351/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "spiral pad": {
       "key": "spiral pad",
       "slug": "spiral_pad",
-      "file": "spiral_pad.jpg",
-      "openverse_id": "1422f119-a600-4ed2-8378-349c6bb4abdf",
-      "source_page": "https://www.flickr.com/photos/44124348109@N01/10658097193",
-      "version": 1,
-      "empty": false
+      "file": "spiral_pad.png",
+      "openverse_id": "72582d86-6697-4c4a-be29-a608510d130e",
+      "source_page": "https://svgsilh.com/ms/3f51b5/image/38206.html",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "dictionary": {
       "key": "dictionary",
       "slug": "dictionary",
-      "file": "dictionary.jpg",
-      "openverse_id": "8bba59b7-d51d-4295-8e05-57cb4e9ef4b1",
-      "source_page": "https://www.flickr.com/photos/124247024@N07/14086774111",
-      "version": 1,
-      "empty": false
+      "file": "dictionary.webp",
+      "openverse_id": "6e18a051-c7a7-41c3-87a0-01d349ac9f39",
+      "source_page": "https://www.rawpixel.com/image/6271466/image-book-vintage-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "puzzle": {
       "key": "puzzle",
       "slug": "puzzle",
-      "file": "puzzle.jpg",
-      "openverse_id": "7b49a46e-91ed-48b2-b2f8-ee7357633950",
-      "source_page": "https://www.flickr.com/photos/40262553@N00/366748612",
-      "version": 1,
-      "empty": false
+      "file": "puzzle.webp",
+      "openverse_id": "c217c967-f2d0-486f-a693-b054cccdf024",
+      "source_page": "https://www.rawpixel.com/image/6588454/image-public-domain-blue-pink",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     },
     "factory": {
       "key": "factory",
       "slug": "factory",
       "file": "factory.jpg",
-      "openverse_id": "03478d0c-a369-4452-9f2b-f976b2cd1c03",
-      "source_page": "https://www.flickr.com/photos/27647038@N00/4581702298",
-      "version": 1,
-      "empty": false
+      "openverse_id": "8395d86f-d761-446b-b86f-18ae852ba179",
+      "source_page": "https://www.rawpixel.com/image/6484348/png-sticker-public-domain",
+      "version": 2,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

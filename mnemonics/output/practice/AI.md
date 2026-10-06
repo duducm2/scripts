@@ -18,7 +18,7 @@
 **Concept**
 💡 💡 **Context:** I use the <img alt="[Horse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHorse%5D&color=9fd4ff" />(wild horse) to represent the foundational AI model itself, which possesses raw <img alt="[power]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpower%5D&color=ffd966" />(lightning bolt) but no inherent <img alt="[direction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdirection%5D&color=ffd966" />(broken compass).
 
-<img src="../../web/assets/keyword-images/wild_horse.jpg" alt="wild horse" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/lightning_bolt.jpg" alt="lightning bolt" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/broken_compass.jpg" alt="broken compass" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/wild_horse.jpg" alt="wild horse" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/lightning_bolt.png" alt="lightning bolt" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/broken_compass.jpg" alt="broken compass" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
@@ -42,7 +42,7 @@
 **Concept**
 💡 💡 **Context:** I view the <img alt="[Cart]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCart%5D&color=9fd4ff" />(wooden cart) as the ultimate <img alt="[task]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btask%5D&color=ffd966" />(trophy) or <img alt="[destination]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdestination%5D&color=ffd966" />(neon sign) that needs to be accomplished once the model is harnessed.
 
-<img src="../../web/assets/keyword-images/wooden_cart.jpg" alt="wooden cart" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/neon_sign.jpg" alt="neon sign" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/trophy.jpg" alt="trophy" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/wooden_cart.png" alt="wooden cart" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/neon_sign.jpg" alt="neon sign" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/trophy.jpg" alt="trophy" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “The Cart represents the ultimate Task that needs to be accomplished.”
@@ -54,7 +54,7 @@
 **Concept**
 💡 💡 **Context:** I use a <img alt="[meta]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmeta%5D&color=9fd4ff" />(iron curtain) prompt as a behind-the-scenes <img alt="[instruction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binstruction%5D&color=ffd966" />(whisper) that establishes an AI's baseline parameters like tone, <img alt="[rules]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brules%5D&color=ffd966" />(rule book), and <img alt="[boundaries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bboundaries%5D&color=ffd966" />(fence).
 
-<img src="../../web/assets/keyword-images/iron_curtain.jpg" alt="iron curtain" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/whisper.jpg" alt="whisper" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/rule_book.jpg" alt="rule book" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/fence.jpg" alt="fence" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/iron_curtain.jpg" alt="iron curtain" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/whisper.jpg" alt="whisper" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/rule_book.png" alt="rule book" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/fence.jpg" alt="fence" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
