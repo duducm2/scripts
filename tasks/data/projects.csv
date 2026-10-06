@@ -1,11 +1,11 @@
 id,title,filter,section_path,sort_order,active,created_at,icon_ref,icon_color,icon_tint,status
-PROJ_0002,Doctoral degree,work,Tasks,2580,1,2026-08-29 15:48:39,attachments\icons\PROJ_0002.png,#ffffff,0,waiting
+PROJ_0002,Doctoral degree,work,Tasks,2600,1,2026-08-29 15:48:39,attachments\icons\PROJ_0002.png,#ffffff,0,waiting
 PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,attachments\icons\PROJ_0003.png,#ffffff,0,
-PROJ_0004,TAR,work,Tasks,430,1,2026-08-29 15:48:39,,#ffffff,0,waiting
+PROJ_0004,TAR,work,Tasks,620,1,2026-08-29 15:48:39,,#ffffff,0,waiting
 PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,attachments\icons\PROJ_0005.png,#ffffff,0,
-PROJ_0006,Trainings,work,Tasks,1230,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0,waiting
-PROJ_0011,BPM,work,Projects,620,1,2026-08-29 15:48:39,attachments\icons\PROJ_0011.png,#ffffff,0,waiting
-PROJ_0012,Piloto PT B2B - Data insights,work,Projects,2600,1,2026-08-29 15:48:39,attachments\icons\PROJ_0012.png,#ffffff,0,waiting
+PROJ_0006,Trainings,work,Tasks,2580,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0,waiting
+PROJ_0011,BPM,work,Projects,720,1,2026-08-29 15:48:39,attachments\icons\PROJ_0011.png,#ffffff,0,waiting
+PROJ_0012,Piloto PT B2B - Data insights,work,Projects,2610,1,2026-08-29 15:48:39,attachments\icons\PROJ_0012.png,#ffffff,0,waiting
 PROJ_0013,RISE,work,Projects,160,1,2026-08-29 15:48:39,attachments\icons\PROJ_0013.png,#ffffff,0,
 PROJ_0015,General,personal,,1340,1,2026-08-29 15:48:39,attachments\icons\PROJ_0015.png,#ffffff,0,
 PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2490,1,2026-08-29 15:48:39,attachments\icons\PROJ_0016.png,#ffffff,0,
@@ -14,7 +14,7 @@ PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2360,1,2026-08-29 15:48:39
 PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",habits,,2480,1,2026-08-29 15:48:39,attachments\icons\PROJ_0022.svg,#ffffff,1,
 PROJ_0023,Notes from Your Records (Prior Vaccines),habits,,2550,1,2026-08-29 15:48:39,attachments\icons\PROJ_0023.svg,#ffffff,1,
 PROJ_0024,PHD,personal,,2510,1,2026-08-30 14:53:43,,#ffffff,0,
-PROJ_0025,Ideais,work,,720,1,2026-08-30 15:09:02,attachments\icons\PROJ_0025.svg,#ffffff,0,waiting
+PROJ_0025,Ideais,work,,1230,1,2026-08-30 15:09:02,attachments\icons\PROJ_0025.svg,#ffffff,0,waiting
 PROJ_0026,Dissertation,personal,,1720,1,2026-08-30 21:05:29,,#ffffff,0,
 PROJ_0027,Job Search,personal,,2520,1,2026-09-14 18:09:36,attachments\icons\PROJ_0027.png,#ffffff,0,
 PROJ_0028,Art of Memory,personal,,2530,1,2026-09-14 18:14:10,attachments\icons\PROJ_0028.svg,#ffffff,0,
@@ -24,3 +24,4 @@ PROJ_0031,Father,personal,,2560,1,2026-09-22 19:18:51,attachments\icons\PROJ_003
 PROJ_0032,Piano,personal,,2570,1,2026-09-26 17:42:25,attachments\icons\PROJ_0032.svg,#ffffff,0,
 PROJ_0034,Personal inbox,personal,,2590,1,2026-09-29 12:08:46,,#ffffff,0,
 PROJ_0035,X-Tower,work,,340,1,2026-10-05 14:50:49,attachments\icons\PROJ_0035.svg,#ffffff,0,
+PROJ_0036,UX Super,work,,430,1,2026-10-06 10:49:57,attachments\icons\PROJ_0036.png,#ffffff,0,
