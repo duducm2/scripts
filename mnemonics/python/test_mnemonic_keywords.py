@@ -121,6 +121,17 @@ def test_search_fills_a_short_drawing_page_with_other_pictures(monkeypatch) -> N
     assert [hit["id"] for hit in hits] == ["drawn", "photo"]
 
 
+def test_webp_download_is_stored_as_png() -> None:
+    from io import BytesIO
+
+    from PIL import Image
+
+    raw = BytesIO()
+    Image.new("RGB", (2, 2), (10, 20, 30)).save(raw, format="WEBP")
+    png = keyword_images._png_bytes(raw.getvalue())
+    assert keyword_images._extension_for(png, "") == ".png"
+
+
 def test_search_offers_a_real_picture_instead_of_a_broken_title(monkeypatch) -> None:
     def fake_get(url: str) -> dict:
         return {

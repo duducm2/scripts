@@ -34,7 +34,7 @@
     "road": {
       "key": "road",
       "slug": "road",
-      "file": "road.webp",
+      "file": "road.png",
       "openverse_id": "ffe0c492-6506-4352-9a6c-f1a2b2a7eb59",
       "source_page": "https://www.rawpixel.com/image/6525094/vector-sticker-public-domain-illustrations",
       "version": 3,
@@ -303,7 +303,7 @@
     "yarn ball": {
       "key": "yarn ball",
       "slug": "yarn_ball",
-      "file": "yarn_ball.webp",
+      "file": "yarn_ball.png",
       "openverse_id": "5da70589-d352-4c79-9447-6a800428bce9",
       "source_page": "https://www.rawpixel.com/image/7619799/image-heart-art-pattern",
       "version": 2,
@@ -343,7 +343,7 @@
     "brick-gas": {
       "key": "brick-gas",
       "slug": "brick_gas",
-      "file": "brick_gas.webp",
+      "file": "brick_gas.png",
       "openverse_id": "8795c466-1ac4-45f0-84dc-7531636c75ab",
       "source_page": "https://www.rawpixel.com/image/6446701/image-background-vintage-public-domain",
       "version": 2,
@@ -473,7 +473,7 @@
     "fork": {
       "key": "fork",
       "slug": "fork",
-      "file": "fork.webp",
+      "file": "fork.png",
       "openverse_id": "938aaac8-0f15-4ee6-b407-edd5cc636f6e",
       "source_page": "https://www.rawpixel.com/image/6291780/image-vintage-public-domain-illustrations",
       "version": 2,
@@ -483,7 +483,7 @@
     "chalkboard": {
       "key": "chalkboard",
       "slug": "chalkboard",
-      "file": "chalkboard.webp",
+      "file": "chalkboard.png",
       "openverse_id": "72157883-e3e8-4ffa-a915-ff34c770c62c",
       "source_page": "https://www.rawpixel.com/image/6480480/vector-frame-sticker-public-domain",
       "version": 2,
@@ -503,7 +503,7 @@
     "temple": {
       "key": "temple",
       "slug": "temple",
-      "file": "temple.webp",
+      "file": "temple.png",
       "openverse_id": "87bd4675-4ff2-4bd8-8f7e-f72f3097e7cd",
       "source_page": "https://www.rawpixel.com/image/6653745/image-public-domain-vintage-illustration-illustrations",
       "version": 2,
@@ -552,7 +552,7 @@
     "three faces": {
       "key": "three faces",
       "slug": "three_faces",
-      "file": "three_faces.webp",
+      "file": "three_faces.png",
       "openverse_id": "91e3d639-ae14-4653-a5d6-dea39509f4ff",
       "source_page": "https://www.rawpixel.com/image/10095856/image-cartoon-illustrations-animal",
       "version": 2,
@@ -822,7 +822,7 @@
     "filing cabinet": {
       "key": "filing cabinet",
       "slug": "filing_cabinet",
-      "file": "filing_cabinet.webp",
+      "file": "filing_cabinet.png",
       "openverse_id": "dbe8466f-d5dd-466b-b9e6-5f9454c7f45f",
       "source_page": "https://www.rawpixel.com/image/6314984/vector-paper-vintage-public-domain",
       "version": 2,
@@ -842,7 +842,7 @@
     "briefcase": {
       "key": "briefcase",
       "slug": "briefcase",
-      "file": "briefcase.webp",
+      "file": "briefcase.png",
       "openverse_id": "c0c9fbe5-c5b8-4e61-ac83-e8c5367640f7",
       "source_page": "https://www.rawpixel.com/image/10191504/image-illustrations-public-domain-paper-clip",
       "version": 2,
@@ -872,7 +872,7 @@
     "vault": {
       "key": "vault",
       "slug": "vault",
-      "file": "vault.webp",
+      "file": "vault.png",
       "openverse_id": "1843f877-969f-49b8-ae29-7bb48d8bfb93",
       "source_page": "https://www.rawpixel.com/image/6654306/vector-sticker-public-domain-vintage-illustration",
       "version": 2,
@@ -912,7 +912,7 @@
     "scalpel": {
       "key": "scalpel",
       "slug": "scalpel",
-      "file": "scalpel.webp",
+      "file": "scalpel.png",
       "openverse_id": "7e543f93-6e84-4e80-9613-b5b2101f6044",
       "source_page": "https://www.rawpixel.com/image/6724010/vector-sticker-medicine-vintage",
       "version": 2,
@@ -922,7 +922,7 @@
     "spotlight": {
       "key": "spotlight",
       "slug": "spotlight",
-      "file": "spotlight.webp",
+      "file": "spotlight.png",
       "openverse_id": "14ab5719-6f4f-4385-8b3f-5b9696c4b19f",
       "source_page": "https://www.rawpixel.com/image/6742499/vector-light-public-domain-black",
       "version": 2,
@@ -942,7 +942,7 @@
     "triangle": {
       "key": "triangle",
       "slug": "triangle",
-      "file": "triangle.webp",
+      "file": "triangle.png",
       "openverse_id": "736b7e66-6fae-4a07-9fe5-88d828f9efd3",
       "source_page": "https://www.rawpixel.com/image/6710935/vector-public-domain-illustrations",
       "version": 2,
@@ -1002,7 +1002,7 @@
     "name tag": {
       "key": "name tag",
       "slug": "name_tag",
-      "file": "name_tag.webp",
+      "file": "name_tag.png",
       "openverse_id": "15039540-8cb8-449d-a3db-69bc7cd36cd9",
       "source_page": "https://www.rawpixel.com/image/6516462/image-public-domain-black-illustrations",
       "version": 2,
@@ -1042,7 +1042,7 @@
     "well": {
       "key": "well",
       "slug": "well",
-      "file": "well.webp",
+      "file": "well.png",
       "openverse_id": "8083a02e-7bed-4ccf-ba8e-ce9d0a52c4a6",
       "source_page": "https://www.rawpixel.com/image/6780559/vector-sticker-public-domain-illustrations",
       "version": 2,
@@ -1092,7 +1092,7 @@
     "spider web": {
       "key": "spider web",
       "slug": "spider_web",
-      "file": "spider_web.webp",
+      "file": "spider_web.png",
       "openverse_id": "505255ca-1dc9-4847-bbfd-ff5499e161c5",
       "source_page": "https://www.rawpixel.com/image/10192241/vector-cartoon-illustrations-animal",
       "version": 2,
@@ -1122,7 +1122,7 @@
     "scarecrow": {
       "key": "scarecrow",
       "slug": "scarecrow",
-      "file": "scarecrow.webp",
+      "file": "scarecrow.png",
       "openverse_id": "66e4057d-25e2-4c50-b9a9-545654ae1251",
       "source_page": "https://www.rawpixel.com/image/6331489/vector-sticker-public-domain-illustrations",
       "version": 2,
@@ -1162,7 +1162,7 @@
     "binder": {
       "key": "binder",
       "slug": "binder",
-      "file": "binder.webp",
+      "file": "binder.png",
       "openverse_id": "c89bbd93-6286-4460-bba0-003716881de8",
       "source_page": "https://www.rawpixel.com/image/6588392/image-public-domain-black-illustrations",
       "version": 2,
@@ -1172,7 +1172,7 @@
     "twin": {
       "key": "twin",
       "slug": "twin",
-      "file": "twin.webp",
+      "file": "twin.png",
       "openverse_id": "d51f0720-ad6f-45b4-b5e0-3ea0ac8e2a62",
       "source_page": "https://www.rawpixel.com/image/6638789/vector-vintage-public-domain-illustration",
       "version": 2,
@@ -1212,7 +1212,7 @@
     "chest": {
       "key": "chest",
       "slug": "chest",
-      "file": "chest.webp",
+      "file": "chest.png",
       "openverse_id": "f21b60ef-6f64-421e-845e-ce7fe6b8cf21",
       "source_page": "https://www.rawpixel.com/image/6715111/vector-vintage-public-domain-black",
       "version": 2,
@@ -1272,7 +1272,7 @@
     "accordion": {
       "key": "accordion",
       "slug": "accordion",
-      "file": "accordion.webp",
+      "file": "accordion.png",
       "openverse_id": "d12bd820-d19e-4ff3-919c-f7e71d4ac7ec",
       "source_page": "https://www.rawpixel.com/image/6501298/image-vintage-public-domain-green",
       "version": 2,
@@ -1312,7 +1312,7 @@
     "mirror": {
       "key": "mirror",
       "slug": "mirror",
-      "file": "mirror.webp",
+      "file": "mirror.png",
       "openverse_id": "55b635eb-61aa-45b3-b4f7-b6e8027ed7fc",
       "source_page": "https://www.rawpixel.com/image/6331957/psd-frame-sticker-vintage",
       "version": 2,
@@ -1332,7 +1332,7 @@
     "stage": {
       "key": "stage",
       "slug": "stage",
-      "file": "stage.webp",
+      "file": "stage.png",
       "openverse_id": "0f4904a3-f034-48e4-aa95-6b0d05529f26",
       "source_page": "https://www.rawpixel.com/image/6328705/image-sticker-public-domain-illustrations",
       "version": 2,
@@ -1442,7 +1442,7 @@
     "truth": {
       "key": "truth",
       "slug": "truth",
-      "file": "truth.webp",
+      "file": "truth.png",
       "openverse_id": "d3677a42-63be-43bc-a9b2-4ed0bc7734cb",
       "source_page": "https://www.rawpixel.com/image/6742370/vector-public-domain-green-arrows",
       "version": 2,
@@ -1461,7 +1461,7 @@
     "filter": {
       "key": "filter",
       "slug": "filter",
-      "file": "filter.webp",
+      "file": "filter.png",
       "openverse_id": "4a704eb8-d749-4208-8e65-4870e6c29c5d",
       "source_page": "https://www.rawpixel.com/image/6753857/vector-public-domain-green-illustrations",
       "version": 2,
@@ -1481,7 +1481,7 @@
     "eraser": {
       "key": "eraser",
       "slug": "eraser",
-      "file": "eraser.webp",
+      "file": "eraser.png",
       "openverse_id": "1cbab959-2124-4508-851a-9b48018c8da7",
       "source_page": "https://www.rawpixel.com/image/6588510/image-public-domain-blue-illustrations",
       "version": 2,
@@ -1521,7 +1521,7 @@
     "crayon": {
       "key": "crayon",
       "slug": "crayon",
-      "file": "crayon.webp",
+      "file": "crayon.png",
       "openverse_id": "f496ccbf-a893-49e9-b925-8d21197a0dc8",
       "source_page": "https://www.rawpixel.com/image/6678087/vector-vintage-art-public-domain",
       "version": 3,
@@ -1551,7 +1551,7 @@
     "wire": {
       "key": "wire",
       "slug": "wire",
-      "file": "wire.webp",
+      "file": "wire.png",
       "openverse_id": "092407d8-b8b3-4f9e-afb4-1c21c477208f",
       "source_page": "https://www.rawpixel.com/image/6754244/vector-public-domain-black-illustrations",
       "version": 2,
@@ -1611,7 +1611,7 @@
     "bar": {
       "key": "bar",
       "slug": "bar",
-      "file": "bar.webp",
+      "file": "bar.png",
       "openverse_id": "df37a7f4-4875-4cb2-a090-2860c7cf7d6c",
       "source_page": "https://www.rawpixel.com/image/6510291/vector-sticker-public-domain-collage",
       "version": 2,
@@ -1621,7 +1621,7 @@
     "lens": {
       "key": "lens",
       "slug": "lens",
-      "file": "lens.webp",
+      "file": "lens.png",
       "openverse_id": "9fef31a9-81fd-4d74-8ce8-785ffc31e8de",
       "source_page": "https://www.rawpixel.com/image/6642441/vector-public-domain-illustrations-camera",
       "version": 2,
@@ -1651,7 +1651,7 @@
     "band": {
       "key": "band",
       "slug": "band",
-      "file": "band.webp",
+      "file": "band.png",
       "openverse_id": "3ee308a3-e22b-4e2e-acbd-4a78c807e285",
       "source_page": "https://www.rawpixel.com/image/6488719/vector-sticker-vintage-public-domain",
       "version": 2,
@@ -1671,7 +1671,7 @@
     "remote": {
       "key": "remote",
       "slug": "remote",
-      "file": "remote.webp",
+      "file": "remote.png",
       "openverse_id": "bb94cd4f-9443-4b14-84fb-f00c3b56964c",
       "source_page": "https://www.rawpixel.com/image/6480630/image-public-domain-black-illustrations",
       "version": 2,
@@ -1721,7 +1721,7 @@
     "window": {
       "key": "window",
       "slug": "window",
-      "file": "window.webp",
+      "file": "window.png",
       "openverse_id": "93b33612-442a-4a85-9e62-86ffb3e84144",
       "source_page": "https://www.rawpixel.com/image/6287327/image-public-domain-illustrations-window",
       "version": 2,
@@ -1771,7 +1771,7 @@
     "map": {
       "key": "map",
       "slug": "map",
-      "file": "map.webp",
+      "file": "map.png",
       "openverse_id": "969bf512-5a0c-474d-8e58-9ef011a5a438",
       "source_page": "https://www.rawpixel.com/image/6290260/image-vintage-public-domain-illustrations",
       "version": 2,
@@ -1821,7 +1821,7 @@
     "tent": {
       "key": "tent",
       "slug": "tent",
-      "file": "tent.webp",
+      "file": "tent.png",
       "openverse_id": "d1be4367-ca48-4310-90ee-c92edf212200",
       "source_page": "https://www.rawpixel.com/image/6654294/vector-sticker-public-domain-vintage-illustration",
       "version": 2,
@@ -1841,7 +1841,7 @@
     "clipboard": {
       "key": "clipboard",
       "slug": "clipboard",
-      "file": "clipboard.webp",
+      "file": "clipboard.png",
       "openverse_id": "39a2e205-20ad-438e-a040-74ab114eb5b7",
       "source_page": "https://www.rawpixel.com/image/10102162/vector-paper-people-illustrations",
       "version": 2,
@@ -1911,7 +1911,7 @@
     "folder": {
       "key": "folder",
       "slug": "folder",
-      "file": "folder.webp",
+      "file": "folder.png",
       "openverse_id": "fbc9f0f8-564c-4898-81ff-6a5116ef6147",
       "source_page": "https://www.rawpixel.com/image/6742334/vector-shadow-public-domain-blue",
       "version": 3,
@@ -1921,7 +1921,7 @@
     "bullseye": {
       "key": "bullseye",
       "slug": "bullseye",
-      "file": "bullseye.webp",
+      "file": "bullseye.png",
       "openverse_id": "c2d6d3f2-1f78-42e9-bacd-7b277a4ab983",
       "source_page": "https://www.rawpixel.com/image/6538103/image-public-domain-arrow-illustrations",
       "version": 2,
@@ -1951,7 +1951,7 @@
     "twins": {
       "key": "twins",
       "slug": "twins",
-      "file": "twins.webp",
+      "file": "twins.png",
       "openverse_id": "d51f0720-ad6f-45b4-b5e0-3ea0ac8e2a62",
       "source_page": "https://www.rawpixel.com/image/6638789/vector-vintage-public-domain-illustration",
       "version": 2,
@@ -1961,7 +1961,7 @@
     "left hand": {
       "key": "left hand",
       "slug": "left_hand",
-      "file": "left_hand.webp",
+      "file": "left_hand.png",
       "openverse_id": "5b007c37-607d-46a6-9ee8-5bb2bdadf0b2",
       "source_page": "https://www.rawpixel.com/image/7664148/image-hand-pattern-vintage",
       "version": 2,
@@ -2031,7 +2031,7 @@
     "glass divider": {
       "key": "glass divider",
       "slug": "glass_divider",
-      "file": "glass_divider.webp",
+      "file": "glass_divider.png",
       "openverse_id": "dfb8c14f-370a-4d86-b5e6-934eacb98ad7",
       "source_page": "https://www.rawpixel.com/image/6501171/image-vintage-public-domain-border",
       "version": 2,
@@ -2061,7 +2061,7 @@
     "abacus": {
       "key": "abacus",
       "slug": "abacus",
-      "file": "abacus.webp",
+      "file": "abacus.png",
       "openverse_id": "99c288be-0675-4eba-87c2-732e3fe63f72",
       "source_page": "https://www.rawpixel.com/image/6439626/image-vintage-public-domain-black",
       "version": 2,
@@ -2081,7 +2081,7 @@
     "sandglass": {
       "key": "sandglass",
       "slug": "sandglass",
-      "file": "sandglass.webp",
+      "file": "sandglass.png",
       "openverse_id": "31bcee28-c179-44c2-b46d-c580b800bb1b",
       "source_page": "https://www.rawpixel.com/image/6448976/vector-sticker-public-domain-golden",
       "version": 2,
@@ -2101,7 +2101,7 @@
     "needle": {
       "key": "needle",
       "slug": "needle",
-      "file": "needle.webp",
+      "file": "needle.png",
       "openverse_id": "5e40a9f5-fd8f-4d45-b097-64e6b027d0ff",
       "source_page": "https://www.rawpixel.com/image/6552901/vector-sticker-public-domain-illustrations",
       "version": 2,
@@ -2121,7 +2121,7 @@
     "blanket": {
       "key": "blanket",
       "slug": "blanket",
-      "file": "blanket.webp",
+      "file": "blanket.png",
       "openverse_id": "cff593b1-4682-4c77-89b5-c7007906e44b",
       "source_page": "https://www.rawpixel.com/image/6703849/image-public-domain-illustrations-halloween",
       "version": 2,
@@ -2251,7 +2251,7 @@
     "parachute": {
       "key": "parachute",
       "slug": "parachute",
-      "file": "parachute.webp",
+      "file": "parachute.png",
       "openverse_id": "8ecba277-9b18-431f-8b4c-af0ad36df2bc",
       "source_page": "https://www.rawpixel.com/image/10192420/vector-cartoon-illustrations-public-domain",
       "version": 2,
@@ -2271,7 +2271,7 @@
     "tightrope": {
       "key": "tightrope",
       "slug": "tightrope",
-      "file": "tightrope.webp",
+      "file": "tightrope.png",
       "openverse_id": "83808145-c046-49ac-b2c8-f043382caf9b",
       "source_page": "https://www.rawpixel.com/image/6557467/vector-vintage-public-domain-illustration",
       "version": 2,
@@ -2301,7 +2301,7 @@
     "perfume": {
       "key": "perfume",
       "slug": "perfume",
-      "file": "perfume.webp",
+      "file": "perfume.png",
       "openverse_id": "2c2d2983-7244-4482-890b-c6c900d380c8",
       "source_page": "https://www.rawpixel.com/image/11066099/image-face-person-art",
       "version": 2,
@@ -2371,7 +2371,7 @@
     "magic wand": {
       "key": "magic wand",
       "slug": "magic_wand",
-      "file": "magic_wand.webp",
+      "file": "magic_wand.png",
       "openverse_id": "6f5c83bb-671a-4cd2-a91d-cfe2fcab7bfd",
       "source_page": "https://www.rawpixel.com/image/6743548/image-public-domain-star-shape",
       "version": 2,
@@ -2451,7 +2451,7 @@
     "button": {
       "key": "button",
       "slug": "button",
-      "file": "button.webp",
+      "file": "button.png",
       "openverse_id": "596aa3cf-0765-4b4d-bd04-285f9bbee9a5",
       "source_page": "https://www.rawpixel.com/image/6330575/image-sticker-public-domain-shape",
       "version": 2,
@@ -2470,7 +2470,7 @@
     "badge": {
       "key": "badge",
       "slug": "badge",
-      "file": "badge.webp",
+      "file": "badge.png",
       "openverse_id": "14f6c53c-a564-46f2-aa50-eff94da639f5",
       "source_page": "https://www.rawpixel.com/image/6729021/vector-public-domain-star-illustrations",
       "version": 2,
@@ -2510,7 +2510,7 @@
     "glue": {
       "key": "glue",
       "slug": "glue",
-      "file": "glue.webp",
+      "file": "glue.png",
       "openverse_id": "768a5014-1b34-4d2e-8614-c18355ff9d03",
       "source_page": "https://www.rawpixel.com/image/11729232/vector-collage-cartoon-logo",
       "version": 2,
@@ -2560,7 +2560,7 @@
     "cabinet": {
       "key": "cabinet",
       "slug": "cabinet",
-      "file": "cabinet.webp",
+      "file": "cabinet.png",
       "openverse_id": "c596d076-929a-44d5-a815-1507beaa15ee",
       "source_page": "https://www.rawpixel.com/image/6332991/image-public-domain-vintage-illustrations",
       "version": 2,
@@ -2570,7 +2570,7 @@
     "handcuffs": {
       "key": "handcuffs",
       "slug": "handcuffs",
-      "file": "handcuffs.webp",
+      "file": "handcuffs.png",
       "openverse_id": "a459c482-3f90-46ce-a782-856f9838f8ec",
       "source_page": "https://www.rawpixel.com/image/6715141/vector-vintage-public-domain-hand",
       "version": 2,
@@ -2630,7 +2630,7 @@
     "beaker": {
       "key": "beaker",
       "slug": "beaker",
-      "file": "beaker.webp",
+      "file": "beaker.png",
       "openverse_id": "324b469a-9c0f-4a01-9025-7db09d528f1a",
       "source_page": "https://www.rawpixel.com/image/7375924/image-public-domain-illustrations-free",
       "version": 2,
@@ -2650,7 +2650,7 @@
     "guillotine": {
       "key": "guillotine",
       "slug": "guillotine",
-      "file": "guillotine.webp",
+      "file": "guillotine.png",
       "openverse_id": "38386b87-92cd-4a32-abd9-492bff525861",
       "source_page": "https://www.rawpixel.com/image/6333078/vector-sticker-vintage-public-domain",
       "version": 2,
@@ -2660,7 +2660,7 @@
     "hammock": {
       "key": "hammock",
       "slug": "hammock",
-      "file": "hammock.webp",
+      "file": "hammock.png",
       "openverse_id": "ea705aca-6080-4b1d-8279-bc2c4ebb5d0f",
       "source_page": "https://www.rawpixel.com/image/6771649/vector-sticker-trees-public-domain",
       "version": 2,
@@ -2710,7 +2710,7 @@
     "dictionary": {
       "key": "dictionary",
       "slug": "dictionary",
-      "file": "dictionary.webp",
+      "file": "dictionary.png",
       "openverse_id": "6e18a051-c7a7-41c3-87a0-01d349ac9f39",
       "source_page": "https://www.rawpixel.com/image/6271466/image-book-vintage-public-domain",
       "version": 2,
@@ -2720,7 +2720,7 @@
     "puzzle": {
       "key": "puzzle",
       "slug": "puzzle",
-      "file": "puzzle.webp",
+      "file": "puzzle.png",
       "openverse_id": "c217c967-f2d0-486f-a693-b054cccdf024",
       "source_page": "https://www.rawpixel.com/image/6588454/image-public-domain-blue-pink",
       "version": 2,

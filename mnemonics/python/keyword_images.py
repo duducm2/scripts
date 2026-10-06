@@ -16,6 +16,7 @@ import json
 import os
 import re
 import threading
+from io import BytesIO
 import time
 import urllib.error
 import urllib.parse
@@ -314,6 +315,16 @@ def _extension_for(data: bytes, content_type: str) -> str | None:
     return None
 
 
+def _png_bytes(data: bytes) -> bytes:
+    """WebP does not render in the study markdown. PNG does."""
+    from PIL import Image
+
+    with Image.open(BytesIO(data)) as image:
+        out = BytesIO()
+        image.save(out, format="PNG")
+        return out.getvalue()
+
+
 def _download(url: str, stem: Path) -> str:
     if "wikimedia.org" in url:
         _throttle_wikimedia()
@@ -330,6 +341,9 @@ def _download(url: str, stem: Path) -> str:
     ext = _extension_for(data, ctype)
     if not ext:
         raise RuntimeError("not a raster image")
+    if ext == ".webp":
+        data = _png_bytes(data)
+        ext = ".png"
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     for old in IMAGE_DIR.glob(stem.name + ".*"):
         if old.suffix.lower() != ".json":
@@ -664,6 +678,30 @@ def repair_broken() -> dict:
                 entry.pop("style", None)
         save_manifest(data)
     return refresh_legacy()
+
+
+def convert_cached_webp() -> int:
+    """Rewrite saved WebP keyword pictures as PNG and point the manifest at them."""
+    converted = 0
+    with _manifest_lock:
+        data = load_manifest()
+        for entry in data.get("keywords", {}).values():
+            if not isinstance(entry, dict):
+                continue
+            filename = str(entry.get("file") or "")
+            if not filename.lower().endswith(".webp"):
+                continue
+            src = IMAGE_DIR / filename
+            if not src.is_file():
+                continue
+            dest = src.with_suffix(".png")
+            dest.write_bytes(_png_bytes(src.read_bytes()))
+            entry["file"] = dest.name
+            src.unlink()
+            converted += 1
+        if converted:
+            save_manifest(data)
+    return converted
 
 
 def _load_atom_rows() -> list[dict]:

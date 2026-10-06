@@ -40,7 +40,7 @@
 **Concept**
 💡 The Three Pure Ones are the <img alt="[highest]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhighest%5D&color=9fd4ff" />(three cheeses) Taoist gods, three <img alt="[faces]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfaces%5D&color=ffd966" />(three faces) of the Tao as it takes <img alt="[form]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bform%5D&color=ffd966" />(sky blueprint).
 
-<img src="../../web/assets/keyword-images/three_cheeses.jpg" alt="three cheeses" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/three_faces.webp" alt="three faces" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/sky_blueprint.jpg" alt="sky blueprint" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/three_cheeses.jpg" alt="three cheeses" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/three_faces.png" alt="three faces" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/sky_blueprint.jpg" alt="sky blueprint" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “Three Purities were the supreme Taoist deities: the Celestial Worthy of Primordial Beginning, the Celestial Worthy of Numinous Treasure, and the Celestial Worthy of the Tao and its Virtue.”
@@ -64,7 +64,7 @@
 **Concept**
 💡 Taoism <img alt="[splits]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsplits%5D&color=9fd4ff" />(fork) into Daojia (a <img alt="[school]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bschool%5D&color=ffd966" />(chalkboard) of <img alt="[teachings]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bteachings%5D&color=ffd966" />(scroll pile) and texts) and Daojiao (an organized <img alt="[religion]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breligion%5D&color=ffd966" />(temple)).
 
-<img src="../../web/assets/keyword-images/fork.webp" alt="fork" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/chalkboard.webp" alt="chalkboard" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/scroll_pile.jpg" alt="scroll pile" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/temple.webp" alt="temple" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/fork.png" alt="fork" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/chalkboard.png" alt="chalkboard" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/scroll_pile.jpg" alt="scroll pile" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/temple.png" alt="temple" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “The English word Taoism is often used to translate two distinct terms in Chinese: Daojia (道家; dàojiā; “School/Tradition of the Dao”) is a Han-dynasty label used to classify teachings and texts... Daojiao (道教; dàojiào; “Teachings of the Dao,” often rendered “Taoism” or 'Daoism' in the sense of an organized religion).”
@@ -131,7 +131,7 @@ _No gallery images._
 **Concept**
 💡 Qi is the <img alt="[living]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bliving%5D&color=9fd4ff" />(crackling mane) stuff of the universe, the <img alt="[body]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbody%5D&color=ffd966" />(brick-gas) of the Tao you can <img alt="[feel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfeel%5D&color=ffd966" />(skin hum) in all things.
 
-<img src="../../web/assets/keyword-images/crackling_mane.jpg" alt="crackling mane" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/brick_gas.webp" alt="brick-gas" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/skin_hum.jpg" alt="skin hum" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/crackling_mane.jpg" alt="crackling mane" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/brick_gas.png" alt="brick-gas" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/skin_hum.jpg" alt="skin hum" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “According to Livia Kohn, qi is 'the cosmic energy that pervades all. The concrete aspect of Tao, qi is the material force of the universe, the basic stuff of nature.'”
@@ -143,7 +143,7 @@ _No gallery images._
 **Concept**
 💡 Yin and yang are the <img alt="[paired]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpaired%5D&color=9fd4ff" />(yarn ball) forces (dark/light, soft/hard, and so on) whose <img alt="[play]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplay%5D&color=ffd966" />(spinning circle) shapes the <img alt="[world]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bworld%5D&color=ffd966" />(globe).
 
-<img src="../../web/assets/keyword-images/yarn_ball.webp" alt="yarn ball" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/spinning_circle.png" alt="spinning circle" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/globe.png" alt="globe" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/yarn_ball.png" alt="yarn ball" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/spinning_circle.png" alt="spinning circle" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/globe.png" alt="globe" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “The main distinction in Taoist cosmology is that between yin and yang, which applies to various sets of complementary ideas: bright – dark, light – heavy, soft – hard, strong – weak, above – below, ruler – minister, male – female, and so on.”
@@ -301,7 +301,7 @@ _No gallery images._
 **Concept**
 💡 The Tao is the <img alt="[nameless]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnameless%5D&color=9fd4ff" />(spiderweb) <img alt="[changing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bchanging%5D&color=ffd966" />(river) process under all of <img alt="[reality]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breality%5D&color=ffd966" />(road).
 
-<img src="../../web/assets/keyword-images/spiderweb.png" alt="spiderweb" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/river.png" alt="river" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/road.webp" alt="road" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/spiderweb.png" alt="spiderweb" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/river.png" alt="river" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/road.png" alt="road" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “With a range of meanings and interpretations in Chinese philosophy, translations of Tao include 'way', 'road', 'path', or 'technique', generally understood in the Taoist sense as an enigmatic process of transformation ultimately underlying reality.”
