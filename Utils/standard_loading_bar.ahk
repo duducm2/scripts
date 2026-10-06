@@ -960,7 +960,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
 
     ; Default behavior keeps key capture reliable by activating the overlay.
     ; preserveUserFocus (Send dictation) must not pull the user back to the window where the take started.
-    ; V restores that field itself.
+    ; V pastes into whatever field is focused when it is pressed.
     if (!preserveUserFocus) {
         try {
             if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd

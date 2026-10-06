@@ -54,9 +54,6 @@ global g_DictationCompletedText := ""
 ; Tick until which a stop keeps listening for Handy's copy. 0 means not listening.
 global g_DictationClipboardListenUntil := 0
 global g_DictationClipboardHookOn := false
-; Window and control focused when this take started. V returns there after the banner.
-global g_DictationPasteHwnd := 0
-global g_DictationPasteCtrl := ""
 
 ; AppLaunchers.ahk is the single long-lived owner for ~#!+0, Recording flag, and
 ; Send dictation? banner — same script-name pin as HandyAi_IsOwnerProcess().
@@ -427,52 +424,6 @@ SafePlayDictationSound(filePath) {
             ; Silently ignore playback failures (missing file, sync placeholder, format, etc.)
         }
     }
-}
-
-Dictation_ClearPasteTarget() {
-    global g_DictationPasteHwnd, g_DictationPasteCtrl
-    g_DictationPasteHwnd := 0
-    g_DictationPasteCtrl := ""
-}
-
-; Remember the focused field before the recording flag or Send dictation banner can move it.
-Dictation_RememberPasteTarget() {
-    global g_DictationPasteHwnd, g_DictationPasteCtrl, g_StandardLoadingBarGui
-    if (g_DictationPasteHwnd)
-        return
-    hwnd := 0
-    try hwnd := WinGetID("A")
-    if (!hwnd)
-        return
-    try {
-        if (IsSet(g_StandardLoadingBarGui) && IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd = hwnd)
-            return
-    } catch {
-    }
-    g_DictationPasteHwnd := hwnd
-    g_DictationPasteCtrl := ""
-    try g_DictationPasteCtrl := ControlGetFocus("ahk_id " hwnd)
-    catch
-        g_DictationPasteCtrl := ""
-}
-
-; Put the caret back in the field that was focused when the take started.
-Dictation_RestorePasteTarget(*) {
-    global g_DictationPasteHwnd, g_DictationPasteCtrl
-    hwnd := g_DictationPasteHwnd
-    if (!hwnd || !WinExist("ahk_id " hwnd))
-        return false
-    try {
-        if !WinActive("ahk_id " hwnd)
-            WinActivate("ahk_id " hwnd)
-    } catch {
-    }
-    if (g_DictationPasteCtrl != "") {
-        try ControlFocus(g_DictationPasteCtrl, "ahk_id " hwnd)
-        catch {
-        }
-    }
-    return true
 }
 
 ; Remember Handy’s new clipboard text so V can paste it after the stop.
@@ -975,8 +926,6 @@ CheckDictationRecordingWindow() {
                     ; Silently handle errors - don't interrupt dictation if script fails
                 }
 
-                if (!g_DictationLanguageSwapActive)
-                    Dictation_RememberPasteTarget()
                 ShowDictationIndicator()
                 StartDictationPulseTimer()
             }
@@ -1235,8 +1184,6 @@ Dictation_ArmUserStopCompletion() {
                 try g_DictationStartClipboardText := A_Clipboard
                 catch
                     g_DictationStartClipboardText := ""
-                Dictation_ClearPasteTarget()
-                Dictation_RememberPasteTarget()
             }
             g_LastStateTransitionTick := A_TickCount
             ShowDictationIndicator()

@@ -540,7 +540,7 @@ class D2C_FlowManager {
         this.Reset()
     }
 
-    ; Paste dictated text into the field focused when the take started, then end the D2C flow (menu [V]).
+    ; Paste dictated text into the field that is focused now, then end the D2C flow (menu [V]).
     PasteDictationToActiveWindow() {
         global g_D2C_DictationSubmitMenuCycleFinished
 
@@ -549,14 +549,6 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        restored := false
-        try restored := Dictation_RestorePasteTarget()
-        catch
-            restored := false
-        if (!restored)
-            this.ActivateOriginForPaste()
-        else
-            Sleep 40
         ; Release modifiers before Ctrl+V so a stuck Alt cannot become Clip Angel's Ctrl+Alt+V.
         try UtilityShortcuts_ReleaseStuckModifiers()
         catch {
