@@ -208,6 +208,13 @@ def project_export_filename(project: dict) -> str:
     return f"{slug}__{pid}.json"
 
 
+def task_export_filename(task: dict) -> str:
+    title = (task.get("title") or "task").strip()
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-") or "task"
+    tid = re.sub(r"[^A-Za-z0-9_-]+", "", (task.get("id") or "task").strip()) or "task"
+    return f"{slug}__{tid}.json"
+
+
 def _export_attachments(rows: list[dict]) -> list[dict]:
     out: list[dict] = []
     for a in sorted(rows, key=_export_sort_key):
@@ -1692,6 +1699,76 @@ class TaskStore:
         return {
             "ok": True,
             "filename": project_export_filename(project),
+            "document": document,
+        }
+
+    def export_task(self, task_id: str, *, as_of: date | None = None) -> dict:
+        """Nested snapshot of one task for an AI companion (no image bytes)."""
+        tid = (task_id or "").strip()
+        task = self.find("tasks", tid)
+        if not task:
+            return {"ok": False, "error": "task not found"}
+        today = as_of or date.today()
+        infos = [
+            i
+            for i in self.load("info_points")
+            if i.get("parent_type") == "task" and i.get("parent_id") == tid
+        ]
+        info_ids = {i.get("id") or "" for i in infos}
+        atts = [
+            a
+            for a in self.load("attachments")
+            if (a.get("parent_type") == "task" and a.get("parent_id") == tid)
+            or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
+        ]
+        infos_by_parent: dict[tuple[str, str], list[dict]] = {}
+        for i in infos:
+            infos_by_parent.setdefault(
+                ((i.get("parent_type") or ""), (i.get("parent_id") or "")), []
+            ).append(i)
+        atts_by_parent: dict[tuple[str, str], list[dict]] = {}
+        for a in atts:
+            atts_by_parent.setdefault(
+                ((a.get("parent_type") or ""), (a.get("parent_id") or "")), []
+            ).append(a)
+
+        task_doc = _export_task(task, infos_by_parent, atts_by_parent, today)
+        project = self.find("projects", (task.get("project_id") or "").strip())
+        section = self.find("sections", (task.get("section_id") or "").strip())
+        notes = task_doc.get("info") or []
+        att_n = len(task_doc.get("attachments") or [])
+        att_n += sum(len(i.get("attachments") or []) for i in notes)
+        document: dict[str, Any] = {
+            "schema": "tasks.task",
+            "schema_version": 1,
+            "exported_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "about": (
+                "Snapshot of one task from the local Tasks app. "
+                "Use this file as the whole context when discussing the task. "
+                "info points are notes on this task. "
+                "attachments name image files; image bytes are not included."
+            ),
+            "status_legend": {
+                glyph: name for name, glyph in STATUS_EMOJIS.items() if glyph
+            },
+            "project": {
+                "id": (project or {}).get("id") or (task.get("project_id") or ""),
+                "title": ((project or {}).get("title") or "").strip(),
+            },
+            "task": task_doc,
+            "counts": {
+                "info_points": len(notes),
+                "attachments": att_n,
+            },
+        }
+        if section:
+            document["section"] = {
+                "id": section.get("id") or "",
+                "title": (section.get("title") or "").strip() or GENERAL_SECTION,
+            }
+        return {
+            "ok": True,
+            "filename": task_export_filename(task),
             "document": document,
         }
 

@@ -1127,6 +1127,7 @@ cheatSheets["Tasks"] := "
     ✅ [C] Mark hovered or selected task done (not habits)
     ➡️ [D] Copy selected habit into Personal · General
     📝 [N] Open Info for the selected project or task
+    📄 [X] JSON — selected task (info points included), or the whole project when a project or section is selected
     🖼️ [H] Project icon — open Commons picker and auto-suggest top 5
     🖼️ [V] Paste clipboard image as an info point (selection or Info window)
     📂 [E] Expand all projects and sections, or collapse all projects

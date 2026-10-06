@@ -8,7 +8,12 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from task_store import STATUS_EMOJIS, TaskStore, project_export_filename
+from task_store import (
+    STATUS_EMOJIS,
+    TaskStore,
+    project_export_filename,
+    task_export_filename,
+)
 
 
 class ExportProjectTest(unittest.TestCase):
@@ -247,6 +252,118 @@ class ExportProjectTest(unittest.TestCase):
         self.assertEqual(later["status"], "waiting")
         general = next(s for s in doc["sections"] if s["title"] == "General")
         self.assertNotIn("status", general)
+
+
+class ExportTaskTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.store = TaskStore(Path(self.tmp.name))
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_missing_task(self) -> None:
+        result = self.store.export_task("TASK_MISSING")
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "task not found")
+
+    def test_snapshot_is_one_task_with_its_info_points(self) -> None:
+        proj = self.store.upsert_project(
+            {"title": "Doctoral degree", "filter": "work"}
+        )["project"]
+        sec = self.store.upsert_section(
+            {"project_id": proj["id"], "title": "Outreach"}
+        )["section"]
+        open_task = self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "section_id": sec["id"],
+                "title": "Email universities",
+                "filter": "work",
+                "emoji": "waiting",
+                "kind": "punctual",
+            }
+        )["task"]
+        sibling = self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "section_id": sec["id"],
+                "title": "Draft outline",
+                "filter": "work",
+                "emoji": "done",
+                "kind": "punctual",
+            }
+        )["task"]
+        note = self.store.upsert_info(
+            {
+                "parent_type": "task",
+                "parent_id": open_task["id"],
+                "title": "Contacts",
+                "body": "List of labs",
+                "section_path": "People",
+            }
+        )["info"]
+        self.store.add_attachment(
+            "info",
+            note["id"],
+            "image",
+            r"attachments\labs.png",
+            "labs.png",
+        )
+        self.store.add_attachment(
+            "task",
+            open_task["id"],
+            "image",
+            r"attachments\campus.png",
+            "campus.png",
+        )
+        self.store.upsert_info(
+            {
+                "parent_type": "task",
+                "parent_id": sibling["id"],
+                "title": "Sibling note",
+                "body": "Should stay out",
+            }
+        )
+        self.store.upsert_info(
+            {
+                "parent_type": "project",
+                "parent_id": proj["id"],
+                "title": "Project note",
+                "body": "Also stay out",
+            }
+        )
+
+        result = self.store.export_task(open_task["id"], as_of=date(2026, 9, 28))
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["filename"], task_export_filename(open_task))
+        self.assertEqual(
+            result["filename"], f"Email-universities__{open_task['id']}.json"
+        )
+        doc = result["document"]
+        self.assertEqual(doc["schema"], "tasks.task")
+        self.assertEqual(doc["project"], {"id": proj["id"], "title": "Doctoral degree"})
+        self.assertEqual(doc["section"], {"id": sec["id"], "title": "Outreach"})
+        self.assertEqual(doc["task"]["title"], "Email universities")
+        self.assertEqual(doc["task"]["status"], "waiting")
+        self.assertEqual(doc["task"]["info"][0]["title"], "Contacts")
+        self.assertEqual(doc["task"]["info"][0]["body"], "List of labs")
+        self.assertEqual(doc["task"]["info"][0]["category"], "People")
+        self.assertEqual(
+            doc["task"]["info"][0]["attachments"][0]["file"], "attachments/labs.png"
+        )
+        self.assertEqual(
+            doc["task"]["attachments"][0]["file"], "attachments/campus.png"
+        )
+        self.assertEqual(doc["counts"]["info_points"], 1)
+        self.assertEqual(doc["counts"]["attachments"], 2)
+        dumped = str(doc)
+        self.assertNotIn("Draft outline", dumped)
+        self.assertNotIn("Sibling note", dumped)
+        self.assertNotIn("Should stay out", dumped)
+        self.assertNotIn("Project note", dumped)
+        self.assertNotIn("Also stay out", dumped)
+        self.assertNotIn("sections", doc)
 
 
 if __name__ == "__main__":

@@ -2076,7 +2076,16 @@
           } finally {
             area.remove();
           }
-          if (!ok) throw new Error("Could not copy the project JSON");
+          if (!ok) throw new Error("Could not copy the JSON");
+        }
+
+        function infoPointCount(text) {
+          try {
+            const n = JSON.parse(text)?.counts?.info_points;
+            return Number.isFinite(n) ? n : 0;
+          } catch (_) {
+            return 0;
+          }
         }
 
         async function loadProjectExport(pid) {
@@ -2100,14 +2109,29 @@
           };
         }
 
-        async function exportProjectJson(id) {
-          const pid = projectIdForExport(id);
-          if (!pid) {
-            toast("Select a project first");
-            return;
+        async function loadTaskExport(tid) {
+          const url = "/api/tasks/" + encodeURIComponent(tid) + "/export.json";
+          const res = await fetch(url);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            const msg = err.error || "Export failed";
+            throw new Error(
+              msg === "not found" || msg === "task not found"
+                ? "Could not export " + tid
+                : msg,
+            );
           }
-          const loaded = { text: "", name: pid + ".json" };
-          const blobPromise = loadProjectExport(pid).then((pack) => {
+          const disp = res.headers.get("Content-Disposition") || "";
+          const match = /filename="([^"]+)"/.exec(disp);
+          return {
+            text: await res.text(),
+            name: match ? match[1] : tid + ".json",
+          };
+        }
+
+        async function exportJsonPack(load, emptyName, copiedMessage) {
+          const loaded = { text: "", name: emptyName };
+          const blobPromise = load().then((pack) => {
             loaded.text = pack.text;
             loaded.name = pack.name;
             return new Blob([pack.text], { type: "text/plain" });
@@ -2129,7 +2153,7 @@
           }
           if (!copied) {
             if (!loaded.text) {
-              const pack = await loadProjectExport(pid);
+              const pack = await load();
               loaded.text = pack.text;
               loaded.name = pack.name;
             }
@@ -2151,10 +2175,42 @@
           a.click();
           a.remove();
           setTimeout(() => URL.revokeObjectURL(objUrl), 60000);
+          const okMsg =
+            typeof copiedMessage === "function"
+              ? copiedMessage(loaded)
+              : copiedMessage;
           toast(
-            copied
-              ? "Copied project JSON"
-              : "Saved " + loaded.name + " (copy was blocked)",
+            copied ? okMsg : "Saved " + loaded.name + " (copy was blocked)",
+          );
+        }
+
+        async function exportProjectJson(id) {
+          const pid = projectIdForExport(id);
+          if (!pid) {
+            toast("Select a project first");
+            return;
+          }
+          await exportJsonPack(
+            () => loadProjectExport(pid),
+            pid + ".json",
+            "Copied project JSON",
+          );
+        }
+
+        async function exportTaskJson(id) {
+          const tid = String(id || "").trim();
+          if (!tid) {
+            toast("Select a task first");
+            return;
+          }
+          await exportJsonPack(
+            () => loadTaskExport(tid),
+            tid + ".json",
+            (loaded) => {
+              const n = infoPointCount(loaded.text);
+              const label = n === 1 ? "1 info point" : n + " info points";
+              return "Copied task JSON — " + label;
+            },
           );
         }
 
@@ -2427,6 +2483,7 @@
         <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
+        <button class="btn" data-act="export-task" title="Copy this task as JSON (Shift+X when this task is selected)">JSON</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`
             : `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
@@ -2437,6 +2494,7 @@
         <button class="btn" data-act="emoji" data-key="doubt" title="Doubt (Shift+U)">❓</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
+        <button class="btn" data-act="export-task" title="Copy this task as JSON (Shift+X when this task is selected)">JSON</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`;
           const cutClass =
@@ -2589,7 +2647,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
-          <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON for an AI companion (Shift+X)">JSON</button>
+          <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON (Shift+X when a project or section is selected)">JSON</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -2645,7 +2703,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
-          <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON for an AI companion (Shift+X)">JSON</button>
+          <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON (Shift+X when a project or section is selected)">JSON</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -2694,7 +2752,7 @@
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
-          <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON for an AI companion (Shift+X)">JSON</button>
+          <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON (Shift+X when a project or section is selected)">JSON</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -3833,7 +3891,9 @@
             return;
           }
           if (k === "x") {
-            await exportProjectJson(projectIdForExport());
+            const tid = selectedTaskId();
+            if (tid) await exportTaskJson(tid);
+            else await exportProjectJson(projectIdForExport());
             return;
           }
           if (k === "v") {
@@ -6267,6 +6327,10 @@
             }
             if (act === "export-project") {
               await exportProjectJson(actEl.getAttribute("data-pid") || id);
+              return;
+            }
+            if (act === "export-task") {
+              await exportTaskJson(id);
               return;
             }
             if (act === "icon-project") {
