@@ -159,7 +159,8 @@ HandleCopyFromGeminiModeTrigger(*) {
             char := handler.char
             if (char = "a" || char = "A" || char = "l" || char = "L" || char = "k" || char = "K"
                 || char = "c" || char = "C" || char = "3"
-                || char = "Escape" || char = "Insert" || char = "F2" || char = "Delete" || char = "Enter") {
+                || char = "Escape" || char = "Insert" || char = "F2" || char = "+e" || char = "Delete" || char =
+                "Enter") {
                 continue
             }
             if (handler.HasProp("key") && handler.key != "")

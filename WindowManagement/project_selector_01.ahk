@@ -10,6 +10,7 @@
 ; Hotkey: Ctrl+Alt+Win+0 (see WindowManagement\cursor_window_select.ahk)
 ; ListView of projects (char, name, paths) with add/edit/delete; opens the selected folder.
 ; A (and Insert) adds a project; A is reserved and not assignable as a quick-open char.
+; Shift+E (and F2) edits the selected record, including personal and work folder paths.
 ; =============================================================================
 
 ; Project list lives in assets/data/projects.ini (loaded by Utils\project_data_cursor.ahk).
@@ -370,6 +371,8 @@ ProjectSelector_BindModalHotkeys() {
         g_ProjectHotkeyHandlers.Push({ char: "Insert", key: "Insert", handler: ProjectSelector_OnAdd })
     } catch {
     }
+    ; Shift+E at the same input level as $*e so it wins over a project quick-open on E.
+    ProjectSelector_RegisterHotkey("+e", "+e", ProjectSelector_OnEdit, g_ProjectHotkeyHandlers)
     try {
         Hotkey("F2", ProjectSelector_OnEdit, "On")
         g_ProjectHotkeyHandlers.Push({ char: "F2", key: "F2", handler: ProjectSelector_OnEdit })
@@ -745,8 +748,23 @@ ProjectSelector_OnEdit(*) {
     }
     currentChar := project.HasProp("char") ? project.char : ""
     ch := ProjectSelector_PromptChar(currentChar, idx)
-    ProjectSelector_DialogsEnd()
     if (ch = "") {
+        ProjectSelector_DialogsEnd()
+        ProjectSelector_RefocusGui()
+        return
+    }
+    personalDefault := project.HasProp("path") ? project.path : ""
+    workDefault := project.HasProp("workPath") ? project.workPath : ""
+    paths := ProjectSelector_PromptPaths(personalDefault, workDefault)
+    ProjectSelector_DialogsEnd()
+    if (!IsObject(paths)) {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    personalPath := paths.path
+    workPath := paths.workPath
+    if ((personalPath = "" || !DirExist(personalPath)) && (workPath = "" || !DirExist(workPath))) {
+        ShowNotification_WM("At least one existing folder is required.")
         ProjectSelector_RefocusGui()
         return
     }
@@ -754,7 +772,7 @@ ProjectSelector_OnEdit(*) {
     loop g_Projects.Length {
         item := g_Projects[A_Index]
         if (A_Index = idx)
-            list.Push({ name: name, char: ch, path: item.path, workPath: item.workPath })
+            list.Push({ name: name, char: ch, path: personalPath, workPath: workPath })
         else
             list.Push(item)
     }
