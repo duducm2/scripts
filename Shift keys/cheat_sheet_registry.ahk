@@ -1091,7 +1091,8 @@ cheatSheets["Tasks"] := "
     ⏎ [Enter] Info list — add info
     🔗 [Shift+Enter / Ctrl+Enter] Info list — open highlighted info link
     ✏️ [Shift+E] Info list — edit highlighted info
-    📋 [Ctrl+C] Info list — copy highlighted info text
+    📋 [Ctrl+C] Info list — copy highlighted info point
+    📋 [Ctrl+V] Info list — paste that info point into this list
     📋 [Shift+A] Info list — copy text from every info point
     🗑️ [Delete] Info list — delete highlighted info
     🗂️ [Shift+B] Info list — toggle list / bento layout

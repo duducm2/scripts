@@ -1508,6 +1508,7 @@
           infoFullscreen: false,
           infoCategoryFilter: "", // "" = all | "__uncat__" | category label
           taskClipboard: null, // { ...fields, cutFromId? } for Ctrl+C / Ctrl+X / Ctrl+V
+          infoClipboard: null, // copied info point; Ctrl+V in another info list creates a row
         };
         const INFO_UNCAT = "__uncat__";
         const INFO_CAT_SLOT_MAX = 8; // Shift+2..9
@@ -1937,21 +1938,107 @@
           }
         }
 
+        function infoToClipboard(row) {
+          if (!row) return null;
+          const attachments = (state.data.attachments || [])
+            .filter((a) => a.parent_type === "info" && a.parent_id === row.id)
+            .map((a) => ({
+              kind: a.kind || "",
+              ref: a.ref || "",
+              description: a.description || "",
+            }))
+            .filter((a) => a.ref);
+          return {
+            title: row.title || "",
+            body: row.body || "",
+            section_path: row.section_path || "",
+            emoji: row.emoji || "ℹ️",
+            birth_date: row.birth_date || "",
+            attachments,
+          };
+        }
+
         async function copyInfoById(id) {
           const row = (state.data.info_points || []).find((i) => i.id === id);
+          const clip = infoToClipboard(row);
           const text = infoText(row);
-          if (!text) {
+          if (!clip || !text) {
             toast("Nothing to copy");
             return false;
           }
+          state.infoClipboard = clip;
           try {
             await navigator.clipboard.writeText(text);
-            toast("Copied");
-            return true;
-          } catch (err) {
-            toast(err.message || "Could not copy");
-            return false;
+          } catch (_) {
+            /* The in-app paste still has the info point. */
           }
+          toast("Copied info");
+          return true;
+        }
+
+        async function pasteCopiedInfo() {
+          const clip = state.infoClipboard;
+          const ctx = state.infoCtx;
+          const title = String(clip?.title || clip?.body || "").trim();
+          if (!title) {
+            toast("Nothing to paste — copy an info point first");
+            return;
+          }
+          if (state.infoUi !== "list" || !ctx?.parentType || !ctx?.parentId) {
+            toast("Open an info list to paste into");
+            return;
+          }
+          const r = await api("/api/info", {
+            method: "POST",
+            body: JSON.stringify({
+              title,
+              body: clip.body || "",
+              section_path: clip.section_path || "",
+              parent_type: ctx.parentType,
+              parent_id: ctx.parentId,
+              emoji: clip.emoji || "ℹ️",
+              birth_date: clip.birth_date || "",
+            }),
+          });
+          const iid = r.info?.id || "";
+          let attachmentMissed = false;
+          for (const att of clip.attachments || []) {
+            try {
+              const saved = await api("/api/attachments", {
+                method: "POST",
+                body: JSON.stringify({
+                  parent_type: "info",
+                  parent_id: iid,
+                  kind: att.kind || "image",
+                  ref: att.ref,
+                  description: att.description || "",
+                }),
+              });
+              if (saved.attachment)
+                mergeApiRow("attachments", saved.attachment);
+            } catch (_) {
+              attachmentMissed = true;
+            }
+          }
+          const cat = String(
+            r.info?.section_path || clip.section_path || "",
+          ).trim();
+          const filt = state.infoCategoryFilter || "";
+          if (
+            filt &&
+            ((filt === INFO_UNCAT && cat) ||
+              (filt !== INFO_UNCAT && filt !== cat))
+          )
+            state.infoCategoryFilter = "";
+          toast(
+            attachmentMissed
+              ? "Pasted info (an image was not copied)"
+              : "Pasted info",
+          );
+          await afterEntitySave("info", r, () => {
+            infoListModal(ctx.parentType, ctx.parentId, iid);
+            flashInfoRow(iid);
+          });
         }
 
         async function copySelectedInfo() {
@@ -6489,6 +6576,17 @@
                 } catch (err) {
                   toast(err.message || String(err));
                 }
+                return;
+              }
+              if (k === "v" || e.code === "KeyV") {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  await pasteCopiedInfo();
+                } catch (err) {
+                  toast(err.message || String(err));
+                }
+                return;
               }
               return;
             }
