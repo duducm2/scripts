@@ -521,33 +521,58 @@
         flex: 0 0 auto;
       }
       #overlay .overlay-image {
+        --palace-frame: clamp(18px, 3.4vh, 56px);
+        --palace-frame-out: calc(var(--palace-frame) * 0.52);
         flex: 0 0 auto;
-        width: 100%;
-        max-width: none;
+        align-self: center;
+        width: fit-content;
+        max-width: calc(100% - 2 * var(--palace-frame-out));
         height: auto;
-        max-height: 38vh;
+        max-height: none;
         min-height: 0;
-        margin: 0;
+        margin: var(--palace-frame-out) auto;
         padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #07080b;
+        position: relative;
+        border: none;
+        border-radius: 0;
+        background: transparent;
         cursor: zoom-in;
-        overflow: hidden;
+        overflow: visible;
+        box-sizing: border-box;
       }
       #overlay .overlay-image:empty {
         display: none;
       }
+      #overlay .overlay-image:has(img)::after {
+        content: "";
+        position: absolute;
+        inset: calc(var(--palace-frame-out) * -1);
+        border-style: solid;
+        border-color: transparent;
+        border-width: var(--palace-frame);
+        border-image-source: url("/assets/palace-frame.png");
+        border-image-slice: 196;
+        border-image-width: var(--palace-frame);
+        border-image-repeat: stretch;
+        pointer-events: none;
+      }
       #overlay .overlay-image img {
-        width: 100%;
+        width: auto;
         height: auto;
-        max-height: 38vh;
+        max-width: 100%;
+        max-height: calc(38vh - 2 * var(--palace-frame-out));
         object-fit: contain;
         object-position: center center;
         display: block;
+      }
+      #overlay .overlay-image:has(.missing-lg) {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        cursor: default;
       }
       #overlay .overlay-image .missing-lg {
         padding: 1.25rem;
@@ -689,6 +714,8 @@
       #overlay.image-expanded .overlay-stage {
         display: flex;
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
         height: calc(100vh - 3.6rem);
         min-height: calc(100vh - 3.6rem);
         max-height: calc(100vh - 3.6rem);
@@ -698,19 +725,20 @@
         display: none !important;
       }
       #overlay.image-expanded .overlay-image {
-        flex: 1 1 auto;
-        width: 100%;
-        height: 100%;
+        --palace-frame: clamp(28px, 4.8vh, 80px);
+        flex: 0 1 auto;
+        width: fit-content;
+        max-width: calc(100% - 2 * var(--palace-frame-out));
+        height: auto;
         max-height: none;
         min-height: 0;
-        border: none;
-        border-radius: 0;
         cursor: zoom-out;
       }
       #overlay.image-expanded .overlay-image img {
-        width: 100%;
-        height: 100%;
-        max-height: none;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: calc(100vh - 5rem - 2 * var(--palace-frame-out));
         object-fit: contain;
       }
       @media (max-width: 900px) {
@@ -721,9 +749,14 @@
           overflow: auto;
         }
         #overlay .overlay-image {
-          height: 32vh;
-          max-height: 32vh;
-          min-height: 140px;
+          --palace-frame: clamp(14px, 2.6vh, 32px);
+          height: auto;
+          max-height: none;
+          min-height: 0;
+        }
+        #overlay .overlay-image img {
+          max-height: calc(32vh - 2 * var(--palace-frame-out));
+          max-width: 100%;
         }
         #overlay:not(.image-expanded) #ovAtoms,
         #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"],
@@ -3638,7 +3671,9 @@
           const raw = localStorage.getItem(PLANS_STORAGE_KEY);
           const data = raw ? JSON.parse(raw) : {};
           planCheckMemory =
-            data && typeof data === "object" && !Array.isArray(data) ? data : {};
+            data && typeof data === "object" && !Array.isArray(data)
+              ? data
+              : {};
         } catch {
           planCheckMemory = {};
         }
@@ -3815,11 +3850,12 @@
           restorePlansScroll();
           state.plansScrollRestorePending = false;
         }
-        const hadPlan = !!content.querySelector(".plans-backlog, .plan-section");
+        const hadPlan = !!content.querySelector(
+          ".plans-backlog, .plan-section",
+        );
         const sameStudy = state.plansViewStudyId === sid;
         if (!hadPlan || !sameStudy) setPlansSaveStatus("", "");
-        if (!hadPlan)
-          content.innerHTML = '<p class="muted">Loading plan…</p>';
+        if (!hadPlan) content.innerHTML = '<p class="muted">Loading plan…</p>';
         let view;
         try {
           view = await api(

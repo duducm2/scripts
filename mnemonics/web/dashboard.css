@@ -688,24 +688,61 @@ footer {
   box-sizing: border-box;
 }
 .overlay-image {
-  background: #0a0b0e;
-  border: 1px solid var(--line);
+  --palace-frame: clamp(18px, 3.4vh, 56px);
+  --palace-frame-out: calc(var(--palace-frame) * 0.52);
+  background: transparent;
+  border: none;
   border-radius: 0;
-  overflow: hidden;
-  min-height: 200px;
-  width: 100%;
+  overflow: visible;
+  min-height: 0;
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--palace-frame-out));
+  margin: var(--palace-frame-out) auto;
+  position: relative;
+  box-sizing: border-box;
+}
+.overlay-image:has(img)::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--palace-frame-out) * -1);
+  border-style: solid;
+  border-color: transparent;
+  border-width: var(--palace-frame);
+  border-image-source: url("/assets/palace-frame.png");
+  border-image-slice: 196;
+  border-image-width: var(--palace-frame);
+  border-image-repeat: stretch;
+  pointer-events: none;
 }
 .overlay-image img {
-  width: 100%;
+  width: auto;
   height: auto;
-  max-height: 70vh;
+  max-width: 100%;
+  max-height: calc(38vh - 2 * var(--palace-frame-out));
   object-fit: contain;
   display: block;
+}
+.overlay-image:has(.missing-lg) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.overlay-image:has(.missing-lg)::after {
+  content: none;
 }
 .overlay-image .missing-lg {
   color: var(--muted);
   padding: 3rem;
   text-align: center;
+}
+@media (max-width: 900px) {
+  .overlay-image {
+    --palace-frame: clamp(14px, 2.6vh, 32px);
+  }
+  .overlay-image img {
+    max-height: calc(32vh - 2 * var(--palace-frame-out));
+    max-width: 100%;
+  }
 }
 .overlay-prompt {
   margin-top: 0;
