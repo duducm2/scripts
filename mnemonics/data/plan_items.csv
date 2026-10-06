@@ -968,3 +968,4 @@ PITEM_0969,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,"Defer Snow
 PITEM_0970,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Use Snowpark DataFrames,0,134
 PITEM_0971,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Build a pipeline with dynamic tables,0,135
 PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex functions on warehouse data,0,136
+PITEM_0125,PLAN_0007,Backlog,ACID,0,10
