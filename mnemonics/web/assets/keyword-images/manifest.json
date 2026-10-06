@@ -1911,12 +1911,12 @@
     },
     "blanket": {
       "key": "blanket",
-      "slug": "",
-      "file": "",
-      "openverse_id": "",
-      "source_page": "",
-      "version": 0,
-      "empty": true
+      "slug": "blanket",
+      "file": "blanket.jpg",
+      "openverse_id": "de07164b-df59-4424-ae8f-4be02c714f94",
+      "source_page": "https://www.flickr.com/photos/60093836@N00/419231534",
+      "version": 1,
+      "empty": false
     },
     "ruler": {
       "key": "ruler",

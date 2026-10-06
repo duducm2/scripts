@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from beast_thumb_base import beast_thumb_md_image, short_label
+from keyword_images import practice_markdown_row
 from schemas import (
     embed_keyword_mnemonics,
     format_concept_thought_groups,
 )
-from beast_thumb_base import beast_thumb_md_image, short_label
 
 
 def md_escape(text: str) -> str:
@@ -108,11 +109,11 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
         lines.append(f"🟦 **{tag}**")
         lines.append("")
 
-    lines.extend(
-        format_field_block(
-            "Concept", format_concept(atom.get("concept"), atom.get("keywords"))
-        )
-    )
+    concept = format_concept(atom.get("concept"), atom.get("keywords"))
+    pictures = practice_markdown_row(atom.get("keywords"))
+    if pictures:
+        concept = f"{concept}\n\n{pictures}"
+    lines.extend(format_field_block("Concept", concept))
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
     return lines
 

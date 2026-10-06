@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import html
 import json
 import os
 import re
@@ -72,6 +73,32 @@ def save_manifest(data: dict) -> None:
         json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     tmp.replace(MANIFEST_PATH)
+
+
+def practice_markdown_row(keywords: str | None) -> str:
+    """One picture per tangible keyword, in stored order, for study practice files.
+
+    Paths are relative to mnemonics/output/practice/*.md. Words with no cached
+    file are skipped. Quick Recall does not use this.
+    """
+    stored = load_manifest().get("keywords", {})
+    parts: list[str] = []
+    for left, _right in iter_keyword_pairs(keywords or ""):
+        entry = stored.get(keyword_key(left)) or {}
+        filename = str(entry.get("file") or "")
+        if entry.get("empty") or not filename:
+            continue
+        if "/" in filename or "\\" in filename or filename.startswith("."):
+            continue
+        if not (IMAGE_DIR / filename).is_file():
+            continue
+        alt = html.escape(left, quote=True)
+        src = f"../../web/assets/keyword-images/{filename}"
+        parts.append(
+            f'<img src="{src}" alt="{alt}" width="72" height="72" '
+            f'style="vertical-align:middle;height:72px;width:72px;" />'
+        )
+    return " ".join(parts)
 
 
 def public_map() -> dict[str, dict]:

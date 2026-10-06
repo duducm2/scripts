@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import keyword_images
+import palace_practice_render
 from palace_practice_render import render_atom_block_md
+from study_quick_recall_md import render_atom_line
 from palace_store import PalaceStore
 from schemas import (
     concept_bracket_groups,
@@ -65,6 +68,65 @@ def test_note_suffix_is_not_wrapped() -> None:
     assert "<span" not in note
     assert _chip("clearly", "net") in core
     assert "nuance" not in core
+
+
+def test_practice_markdown_row_uses_cached_files_in_order(
+    monkeypatch, tmp_path
+) -> None:
+    image_dir = tmp_path / "keyword-images"
+    image_dir.mkdir()
+    (image_dir / "calendar.jpg").write_bytes(b"jpg")
+    (image_dir / "notebook.jpg").write_bytes(b"jpg")
+    manifest = {
+        "version": 1,
+        "keywords": {
+            "calendar": {"file": "calendar.jpg", "empty": False},
+            "notebook": {"file": "notebook.jpg", "empty": False},
+            "wand": {"empty": True},
+        },
+    }
+    (image_dir / "manifest.json").write_text(__import__("json").dumps(manifest))
+    monkeypatch.setattr(keyword_images, "IMAGE_DIR", image_dir)
+    monkeypatch.setattr(keyword_images, "MANIFEST_PATH", image_dir / "manifest.json")
+
+    row = keyword_images.practice_markdown_row(
+        "calendar | Databricks Jobs || notebook | notebooks || wand | magic"
+    )
+    calendar_at = row.index("keyword-images/calendar.jpg")
+    notebook_at = row.index("keyword-images/notebook.jpg")
+    assert calendar_at < notebook_at
+    assert "wand" not in row
+    assert 'width="72"' in row
+
+
+def test_atom_block_places_keyword_pictures_under_the_concept(monkeypatch) -> None:
+    monkeypatch.setattr(
+        palace_practice_render,
+        "practice_markdown_row",
+        lambda keywords: '<img src="../../web/assets/keyword-images/calendar.jpg" alt="calendar" width="72" height="72" />',
+    )
+    text = "\n".join(
+        render_atom_block_md(
+            {
+                "concept": JOBS_CONCEPT,
+                "keywords": JOBS_KEYWORDS,
+                "quote": "q",
+            }
+        )
+    )
+    concept_at = text.index("**Concept**")
+    picture_at = text.index("keyword-images/calendar.jpg")
+    quote_at = text.index("**Quote**")
+    assert concept_at < picture_at < quote_at
+
+
+def test_quick_recall_line_stays_without_keyword_pictures() -> None:
+    line = render_atom_line(
+        {"peg_code": "B", "beast_name": "Byron", "beast_source": ""},
+        {"concept": JOBS_CONCEPT, "keywords": JOBS_KEYWORDS, "quote": "q"},
+    )
+    assert "keyword-images" not in line
+    assert _chip("Databricks Jobs", "calendar", lead=True) in line
 
 
 def test_atom_block_omits_keywords_section() -> None:

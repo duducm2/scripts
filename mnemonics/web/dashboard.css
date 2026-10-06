@@ -996,35 +996,38 @@ a.btn-gallery {
 }
 .beast-cluster-head .beast-head-row {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem 0.75rem;
-  margin-top: 0.1rem;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0;
   overflow: visible;
+}
+.beast-cluster-head .beast-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.02rem;
+}
+.beast-cluster-head .beast-title .lbl {
+  margin-bottom: 0;
 }
 .beast-cluster-head .beast-name {
   margin: 0;
-  flex: 1;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
   font-family: Georgia, "Palatino Linotype", serif;
   font-size: 1.2rem;
   font-weight: 650;
   letter-spacing: 0.03em;
-  line-height: 1.3;
+  line-height: 1.2;
   color: var(--rpg-ink);
-  overflow: visible;
-  position: relative;
 }
-.beast-cluster-head .beast-name .beast-thumb-pair {
+.beast-cluster-head .beast-thumb-pair {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
 }
-.beast-cluster-head .beast-name .beast-thumb {
+.beast-cluster-head .beast-thumb {
   flex: 0 0 auto;
   width: 44px;
   height: 44px;
@@ -1046,7 +1049,7 @@ a.btn-gallery {
   position: relative;
   z-index: 1;
 }
-.beast-cluster-head .beast-name .beast-thumb:hover {
+.beast-cluster-head .beast-thumb:hover {
   transform: scale(2.15);
   z-index: 30;
   cursor: none;
@@ -1057,7 +1060,7 @@ a.btn-gallery {
     0 0 0 1px rgba(196, 168, 110, 0.2);
 }
 @media (prefers-reduced-motion: reduce) {
-  .beast-cluster-head .beast-name .beast-thumb {
+  .beast-cluster-head .beast-thumb {
     transition: none;
   }
 }
@@ -1120,13 +1123,22 @@ a.btn-gallery {
 .kw-image-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 0.45rem 0 0.15rem;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(138, 115, 68, 0.45);
+}
+.kw-unit {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
 .kw-image {
-  width: 72px;
-  height: 72px;
-  padding: 4px;
+  box-sizing: border-box;
+  width: 4.75rem;
+  height: 4.75rem;
+  padding: 3px;
   display: grid;
   place-items: center;
   background: var(--rpg-fill);
@@ -1150,10 +1162,10 @@ a.btn-gallery {
   overflow: hidden;
 }
 .kw-image-lead {
-  border: 2px solid #d4b36a;
+  border-color: #e6cc8a;
   box-shadow:
     var(--rpg-inset),
-    0 0 0 1px #d4b36a;
+    inset 0 0 0 2px #d4b36a;
 }
 .kw-image-loading {
   opacity: 0.55;

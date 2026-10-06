@@ -637,19 +637,17 @@
         border-radius: 2px;
       }
       #overlay:not(.image-expanded) .beast-cluster-head {
-        padding-bottom: 0.25rem;
+        padding-bottom: 0.35rem;
       }
       #overlay:not(.image-expanded) .beast-cluster-head .lbl {
         font-size: 0.62rem;
+        letter-spacing: 0.08em;
       }
       #overlay:not(.image-expanded) .beast-cluster-head .beast-name {
         font-size: 1.15rem;
-        line-height: 1.25;
+        line-height: 1.15;
       }
-      #overlay:not(.image-expanded)
-        .beast-cluster-head
-        .beast-name
-        .beast-thumb {
+      #overlay:not(.image-expanded) .beast-cluster-head .beast-thumb {
         width: 44px;
         height: 44px;
       }
@@ -688,9 +686,10 @@
         display: none !important;
       }
       #overlay:not(.image-expanded) .atom-card .field-concept {
-        margin-top: 0.3rem;
-        padding: 0.35rem 0.45rem;
+        margin-top: 0.35rem;
+        padding: 0.45rem 0.55rem 0.5rem;
         border-radius: 2px;
+        line-height: 1.55;
         max-height: none !important;
         overflow: visible !important;
       }
@@ -2914,7 +2913,7 @@
       }
       function keywordChipHtml(phrase, mnemonic, lead) {
         const cls = lead ? "kw-phrase kw-lead" : "kw-phrase";
-        return `<mark class="${cls}"><strong>[${esc(phrase)}]</strong></mark>(${esc(mnemonic)})`;
+        return `<span class="kw-unit"><mark class="${cls}"><strong>[${esc(phrase)}]</strong></mark>(${esc(mnemonic)})</span>`;
       }
       function embedKeywordMnemonics(text, keywords) {
         const raw = String(text || "");
@@ -3133,8 +3132,7 @@
             : "";
         const head = zone ? `<div class="atom-card-head">${zone}</div>` : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
-          <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept, a.keywords)}</p>
-          ${keywordImageRow(a.keywords)}
+          <div class="field field-concept"><span class="lbl">Concept</span><div class="concept-copy">${formatConcept(a.concept, a.keywords)}</div>${keywordImageRow(a.keywords)}</div>
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
         </article>`;
       }
@@ -3165,9 +3163,12 @@
             });
             return `<section class="beast-cluster" data-beast-id="${escAttr(b.id)}" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">
-              <span class="lbl">Beast</span>
               <div class="beast-head-row">
-                <p class="beast-name">${thumbHtml}${dash(b.beast_name || b.peg_code)}</p>
+                ${thumbHtml}
+                <div class="beast-title">
+                  <span class="lbl">Beast</span>
+                  <p class="beast-name">${dash(b.beast_name || b.peg_code)}</p>
+                </div>
               </div>
             </header>
             <div class="beast-cluster-atoms">${cards}</div>
