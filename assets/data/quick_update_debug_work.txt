@@ -1,4 +1,4 @@
-﻿when=2026-10-05 14:41:17
+﻿when=2026-10-06 09:46:13
 computer=CA-C-00806
 user=FIE7CA
 is_work_environment=yes
@@ -8,8 +8,8 @@ script_dir_matches_quick_update_dir=yes
 task_server_py_exists=yes
 disk_has_project_export=yes
 listen_pid_before=0
-health_before=status=200 body={"ok": true, "service": "task_server", "port": 8766, "features": ["state", "crud", "attachments", "import", "open", "icons", "project-export"]}
+health_before=status=200 body={"ok": true, "service": "task_server", "port": 8766, "features": ["state", "crud", "attachments", "import", "open", "icons", "project-export", "task-export"]}
 tasks_server_restarted=yes
 listen_pid_after=0
-health_after=status=200 body={"ok": true, "service": "task_server", "port": 8766, "features": ["state", "crud", "attachments", "import", "open", "icons", "project-export"]}
+health_after=status=200 body={"ok": true, "service": "task_server", "port": 8766, "features": ["state", "crud", "attachments", "import", "open", "icons", "project-export", "task-export"]}
 export_route_probe=status=404 body={"ok": false, "error": "project not found"}
