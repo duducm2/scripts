@@ -490,6 +490,117 @@ AiCompanion_DisarmResponseWatch() {
     return true
 }
 
+; One-shot abort of in-flight reply watches. Posted to the other scripts that include Utils.
+WM_ABORT_AI_COMPANION_REPLY_WATCH := 0x8009
+
+; Clear this process only. Does not post, and does not touch PromptingSubmit / PromptingAction.
+AiCompanion_AbortReplyWatchesLocal() {
+    global g_AiCompanionEnterWatchCb
+    if (g_AiCompanionEnterWatchCb != "") {
+        try SetTimer(g_AiCompanionEnterWatchCb, 0)
+        g_AiCompanionEnterWatchCb := ""
+    }
+    try {
+        flow := D2C_FlowManager.GetInstance()
+        if (flow.CurrentPhase = "Monitoring")
+            flow.Reset()
+    } catch {
+    }
+    try {
+        if (PackPipeline_IsActive())
+            PackPipeline_Reset()
+    } catch {
+    }
+    try GeminiEnterprise_StopGenerationWatch()
+    catch {
+    }
+    try CopilotWeb_StopGenerationWatch()
+    catch {
+    }
+    AiCompanion_StopGeminiDelayedSubmitMonitor()
+}
+
+; Gemini.ahk owns the delayed-submit timer. Other scripts ask it over 0x8003.
+; SendMessage to our own window would wait on this same thread.
+AiCompanion_StopGeminiDelayedSubmitMonitor() {
+    if (A_ScriptName = "Gemini.ahk") {
+        try GeminiDelayedSubmitMonitorStop()
+        catch {
+        }
+        return
+    }
+    try GeminiDelayedSubmitMonitorStopFromUtils()
+    catch {
+    }
+}
+
+AiCompanion_FindAhkScriptHwnd(titleNeedle) {
+    prevDetect := A_DetectHiddenWindows
+    prevMatch := A_TitleMatchMode
+    DetectHiddenWindows true
+    SetTitleMatchMode 2
+    hwnd := 0
+    try hwnd := WinExist(titleNeedle " ahk_class AutoHotkey")
+    catch
+        hwnd := 0
+    if (!hwnd) {
+        for exe in ["AutoHotkey64.exe", "AutoHotkey32.exe", "AutoHotkey.exe"] {
+            try list := WinGetList("ahk_exe " exe)
+            catch
+                continue
+            for candidate in list {
+                title := ""
+                try title := WinGetTitle("ahk_id " candidate)
+                catch
+                    continue
+                if (InStr(title, titleNeedle)) {
+                    hwnd := candidate
+                    break
+                }
+            }
+            if (hwnd)
+                break
+        }
+    }
+    DetectHiddenWindows prevDetect
+    SetTitleMatchMode prevMatch
+    return hwnd
+}
+
+AiCompanion_BroadcastAbortReplyWatches() {
+    global WM_ABORT_AI_COMPANION_REPLY_WATCH
+    selfHwnd := 0
+    try selfHwnd := A_ScriptHwnd
+    catch
+        selfHwnd := 0
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    for name in ["Shift keys.ahk", "AppLaunchers.ahk", "Gemini.ahk"] {
+        hwnd := AiCompanion_FindAhkScriptHwnd(name)
+        if (!hwnd || hwnd = selfHwnd)
+            continue
+        try PostMessage(WM_ABORT_AI_COMPANION_REPLY_WATCH, 0, 0, , "ahk_id " hwnd)
+        catch {
+        }
+    }
+    DetectHiddenWindows prevDetect
+}
+
+; Menu path: clear this process, ask the other hosts to clear theirs, then one overlay.
+AiCompanion_AbortReplyWatches() {
+    AiCompanion_AbortReplyWatchesLocal()
+    AiCompanion_BroadcastAbortReplyWatches()
+    try ShowCenteredOverlay_Utils("Reply watch stopped", 1500, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
+
+AiCompanion_OnAbortReplyWatches(*) {
+    AiCompanion_AbortReplyWatchesLocal()
+}
+
+OnMessage(WM_ABORT_AI_COMPANION_REPLY_WATCH, AiCompanion_OnAbortReplyWatches)
+
 ; Snapshot, skip a blank composer, call sendFn, then track. True only when working.
 AiCompanion_SendAndConfirm(hwnd, companionId, sendFn) {
     snapStatus := ""

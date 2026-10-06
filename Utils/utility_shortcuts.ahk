@@ -28,6 +28,14 @@
     ShowHotstringSelector("Macros")
 }
 
+; Macros [S] — stop in-flight AI companion reply watches and return those flows to idle.
+; The next send can arm them again.
+MacroStopAICompanionReplyWatch(*) {
+    AiCompanion_AbortReplyWatches()
+}
+
+RegisterMacro(MacroStopAICompanionReplyWatch, "⏹ Stop AI companion reply watch", "s")
+
 ; Force Control/Alt/Shift/Win up. {Blind} so AutoHotkey does not press them again.
 ; keybd_event covers the case where the hook already dropped the physical key-up.
 UtilityShortcuts_ReleaseStuckModifiers() {
