@@ -521,12 +521,15 @@ AiCompanion_AbortReplyWatchesLocal() {
 }
 
 ; Gemini.ahk owns the delayed-submit timer. Other scripts ask it over 0x8003.
-; SendMessage to our own window would wait on this same thread.
+; Inside Gemini, PostMessage so this thread does not SendMessage to its own window.
 AiCompanion_StopGeminiDelayedSubmitMonitor() {
     if (A_ScriptName = "Gemini.ahk") {
-        try GeminiDelayedSubmitMonitorStop()
+        prevDetect := A_DetectHiddenWindows
+        DetectHiddenWindows true
+        try PostMessage(0x8003, 0, 0, , "ahk_id " A_ScriptHwnd)
         catch {
         }
+        DetectHiddenWindows prevDetect
         return
     }
     try GeminiDelayedSubmitMonitorStopFromUtils()
