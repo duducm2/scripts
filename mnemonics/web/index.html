@@ -521,8 +521,8 @@
         flex: 0 0 auto;
       }
       #overlay .overlay-image {
-        --palace-frame: clamp(18px, 3.4vh, 56px);
-        --palace-frame-out: calc(var(--palace-frame) * 0.52);
+        --palace-frame: clamp(22px, 4.8vh, 76px);
+        --palace-frame-out: calc(var(--palace-frame) * 0.93);
         flex: 0 0 auto;
         align-self: center;
         width: fit-content;
@@ -553,8 +553,8 @@
         border-style: solid;
         border-color: transparent;
         border-width: var(--palace-frame);
-        border-image-source: url("/assets/palace-frame.png");
-        border-image-slice: 196;
+        border-image-source: url("/assets/palace-frame.png?v=2");
+        border-image-slice: 168;
         border-image-width: var(--palace-frame);
         border-image-repeat: stretch;
         pointer-events: none;
@@ -725,7 +725,7 @@
         display: none !important;
       }
       #overlay.image-expanded .overlay-image {
-        --palace-frame: clamp(28px, 4.8vh, 80px);
+        --palace-frame: clamp(36px, 6.4vh, 108px);
         flex: 0 1 auto;
         width: fit-content;
         max-width: calc(100% - 2 * var(--palace-frame-out));
@@ -749,7 +749,7 @@
           overflow: auto;
         }
         #overlay .overlay-image {
-          --palace-frame: clamp(14px, 2.6vh, 32px);
+          --palace-frame: clamp(18px, 3.6vh, 44px);
           height: auto;
           max-height: none;
           min-height: 0;
