@@ -1092,7 +1092,7 @@ cheatSheets["Tasks"] := "
     🔗 [Shift+Enter / Ctrl+Enter] Info list — open highlighted info link
     ✏️ [Shift+E] Info list — edit highlighted info
     📋 [Ctrl+C] Info list — copy highlighted info point
-    📋 [Ctrl+V] Info list — paste that info point into this list
+    📋 [Ctrl+V] Clipboard image or text becomes an info point on the selected task, or in the open info list. A copied info point pastes as a full row. A copied task pastes into a selected project or section.
     📋 [Shift+A] Info list — copy text from every info point
     🗑️ [Delete] Info list — delete highlighted info
     🗂️ [Shift+B] Info list — toggle list / bento layout
@@ -1112,7 +1112,7 @@ cheatSheets["Tasks"] := "
     🔗 [Enter] Info list — open highlighted info link
     📋 [C] Copy selected or hovered task
     ✂️ [X] Cut selected or hovered task (paste moves it)
-    📋 [V] Paste copied/cut task into selected project / section
+    📋 [V] Clipboard image or text → info on the selected task. Copied task → selected project or section (when the clipboard is not an image).
     
     === Shift ===
     💼 [1] Work column only (toggle)

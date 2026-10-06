@@ -1966,6 +1966,7 @@
             toast("Nothing to copy");
             return false;
           }
+          clip.copiedText = text;
           state.infoClipboard = clip;
           try {
             await navigator.clipboard.writeText(text);
@@ -2003,13 +2004,28 @@
           const iid = r.info?.id || "";
           let attachmentMissed = false;
           for (const att of clip.attachments || []) {
+            const kind = (att.kind || "").trim();
+            if (kind === "image") {
+              try {
+                const file = await fileFromInfoImage(att);
+                if (!file || !iid) {
+                  attachmentMissed = true;
+                  continue;
+                }
+                await uploadImage("info", iid, file, { quiet: true });
+              } catch (_) {
+                attachmentMissed = true;
+              }
+              continue;
+            }
+            if (!att.ref) continue;
             try {
               const saved = await api("/api/attachments", {
                 method: "POST",
                 body: JSON.stringify({
                   parent_type: "info",
                   parent_id: iid,
-                  kind: att.kind || "image",
+                  kind: kind || "url",
                   ref: att.ref,
                   description: att.description || "",
                 }),
@@ -2039,6 +2055,135 @@
             infoListModal(ctx.parentType, ctx.parentId, iid);
             flashInfoRow(iid);
           });
+        }
+
+        async function fileFromInfoImage(att) {
+          const src = attSrc(att);
+          if (!src) return null;
+          const res = await fetch(src);
+          if (!res.ok) throw new Error("image missing");
+          const blob = await res.blob();
+          const raw =
+            String(att.description || "image.png").trim() || "image.png";
+          const name = raw.replace(/[^\w.\-]+/g, "_") || "image.png";
+          return new File([blob], name, { type: blob.type || "image/png" });
+        }
+
+        async function pasteTextAsInfo(target, text) {
+          const value = String(text || "").trim();
+          if (!value || !target?.ptype || !target?.pid) return;
+          const r = await api("/api/info", {
+            method: "POST",
+            body: JSON.stringify({
+              title: value,
+              body: "",
+              section_path:
+                state.infoUi === "list" ? infoDefaultSectionPath() : "",
+              parent_type: target.ptype,
+              parent_id: target.pid,
+              emoji: "ℹ️",
+            }),
+          });
+          const iid = r.info?.id || "";
+          toast("Pasted text");
+          await afterEntitySave("info", r, () => {
+            if (state.infoCtx) {
+              infoListModal(
+                state.infoCtx.parentType,
+                state.infoCtx.parentId,
+                iid,
+              );
+              flashInfoRow(iid);
+              return;
+            }
+            if (target.ptype === "project") flashAdded("project", target.pid);
+            else if (target.ptype === "task") {
+              const t = (state.data.tasks || []).find(
+                (x) => x.id === target.pid,
+              );
+              flashAdded(t?.kind === "habitual" ? "habit" : "task", target.pid);
+            }
+          });
+        }
+
+        function clipboardImageFile(data) {
+          const items = data?.items;
+          if (!items) return null;
+          for (const it of items) {
+            if (it.type && it.type.startsWith("image/")) {
+              const file = it.getAsFile();
+              if (file) return file;
+            }
+          }
+          return null;
+        }
+
+        function pasteTargetIsField(el) {
+          const tag = (el?.tagName || "").toLowerCase();
+          return (
+            tag === "input" ||
+            tag === "textarea" ||
+            tag === "select" ||
+            !!el?.isContentEditable
+          );
+        }
+
+        async function handleTransferPaste(e) {
+          if (pasteTargetIsField(e.target)) return;
+          if (modalOpen() && state.infoUi !== "list") return;
+          const file = clipboardImageFile(e.clipboardData);
+          const text = String(
+            e.clipboardData?.getData("text/plain") || "",
+          ).trim();
+          const target = resolveAttachmentTarget() || state._attTarget;
+          const infoList = state.infoUi === "list" && state.infoCtx;
+          const taskSelected =
+            state.sel?.kind === "task" || state.sel?.kind === "habit";
+          const projectOrSection =
+            state.sel?.kind === "project" || state.sel?.kind === "section";
+          if (file && target?.ptype && target?.pid) {
+            e.preventDefault();
+            await uploadImage(target.ptype, target.pid, file);
+            return;
+          }
+          const copiedText = String(
+            state.infoClipboard?.copiedText || "",
+          ).trim();
+          if (infoList && text && copiedText && text === copiedText) {
+            e.preventDefault();
+            await pasteCopiedInfo();
+            return;
+          }
+          if (
+            (infoList || taskSelected) &&
+            text &&
+            target?.ptype &&
+            target?.pid
+          ) {
+            e.preventDefault();
+            await pasteTextAsInfo(target, text);
+            return;
+          }
+          if (
+            !file &&
+            !infoList &&
+            projectOrSection &&
+            state.taskClipboard?.title
+          ) {
+            e.preventDefault();
+            await pasteCopiedTask();
+            return;
+          }
+          if (
+            !file &&
+            text &&
+            target?.ptype &&
+            target?.pid &&
+            !state.taskClipboard?.title
+          ) {
+            e.preventDefault();
+            await pasteTextAsInfo(target, text);
+          }
         }
 
         async function copySelectedInfo() {
@@ -6116,7 +6261,7 @@
           };
         }
 
-        async function uploadImage(parentType, parentId, file) {
+        async function uploadImage(parentType, parentId, file, opts = {}) {
           const buf = await file.arrayBuffer();
           const bytes = new Uint8Array(buf);
           let binary = "";
@@ -6139,14 +6284,15 @@
               description: file.name || "clipboard image",
             }),
           });
-          toast("Image attached");
+          if (!opts.quiet) toast("Image attached");
           if (TASK_SPA_FULL_REFRESH) {
             await refresh();
           } else {
             if (r.attachment) mergeApiRow("attachments", r.attachment);
             if (r.info) mergeApiRow("info_points", r.info);
-            render();
+            if (!opts.quiet) render();
           }
+          if (opts.quiet) return r;
           if (state.infoCtx) {
             const iid = r.info_id || "";
             infoListModal(
@@ -6484,20 +6630,11 @@
         });
 
         document.addEventListener("paste", async (e) => {
-          const items = e.clipboardData?.items;
-          if (!items) return;
-          let file = null;
-          for (const it of items) {
-            if (it.type.startsWith("image/")) {
-              file = it.getAsFile();
-              break;
-            }
+          try {
+            await handleTransferPaste(e);
+          } catch (err) {
+            toast(err.message || String(err));
           }
-          if (!file) return;
-          const target = resolveAttachmentTarget() || state._attTarget;
-          if (!target?.ptype || !target?.pid) return;
-          e.preventDefault();
-          await uploadImage(target.ptype, target.pid, file);
         });
 
         function clickModalSave() {
@@ -6578,16 +6715,6 @@
                 }
                 return;
               }
-              if (k === "v" || e.code === "KeyV") {
-                e.preventDefault();
-                e.stopPropagation();
-                try {
-                  await pasteCopiedInfo();
-                } catch (err) {
-                  toast(err.message || String(err));
-                }
-                return;
-              }
               return;
             }
             if (modalOpen()) return;
@@ -6601,16 +6728,6 @@
               e.preventDefault();
               e.stopPropagation();
               cutTaskById(selectedTaskId() || hoveredTaskId());
-              return;
-            }
-            if (k === "v" || e.code === "KeyV") {
-              e.preventDefault();
-              e.stopPropagation();
-              try {
-                await pasteCopiedTask();
-              } catch (err) {
-                toast(err.message || String(err));
-              }
               return;
             }
             return;
