@@ -165,3 +165,4 @@ TASK_0389,PROJ_0034,SEC_0149,Use your pharmacy benefits,,punctual,,,,,personal,5
 TASK_0393,PROJ_0034,SEC_0149,Go back to Google Assistant,⚡,punctual,,,,,personal,5660,,2026-10-05 14:07:32,1,
 TASK_0394,PROJ_0035,SEC_0150,Reuniões,,punctual,,,,,work,5670,,2026-10-05 14:50:58,1,
 TASK_0395,PROJ_0035,SEC_0150,Marcar uma agenda William Yakabi Rodrigo Conte,⚡,punctual,,,,,work,5680,,2026-10-05 16:23:47,1,
+TASK_0396,PROJ_0026,SEC_0129,"Quando a biblioteca entregar o PDF da ficha catalográfica, coloque o arquivo em latex/ e, em tese.tex, troque \fichacatalografica{branco.pdf} pelo nome desse PDF.",🔲,punctual,,,,,personal,5690,,2026-10-05 22:27:16,1,
