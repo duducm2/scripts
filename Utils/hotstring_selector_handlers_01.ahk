@@ -454,6 +454,15 @@ PROMPT_PASTE_READY_TIMING := false
 ; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
 PROMPT_PASTE_AUTO_SEND_CAP_MS := 10000
 PROMPT_PASTE_SEND_MIN_SUBMIT_MS := 4000
+; Gemini Enterprise redraws composer chips: they appear, clear for about a second, then return.
+; A full chip count is settled only after it stays up through that gap.
+PROMPT_PASTE_ENTERPRISE_CHIP_HOLD_MS := 1500
+
+; True when this attach must outlast the Enterprise chip redraw before send.
+PromptContext_EnterpriseAttachHold(companionId, fileCount) {
+    return StrLower(Trim(companionId)) = "enterprise" && fileCount > 0
+    && PROMPT_PASTE_ENTERPRISE_CHIP_HOLD_MS > 0
+}
 
 PromptPaste_ReadyTimingLog(phase, ms) {
     if (!PROMPT_PASTE_READY_TIMING)
@@ -813,6 +822,8 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     needStable := Max(1, PROMPT_PASTE_SEND_READY_STABLE_POLLS)
     uploadLatched := false
     pollIndex := 0
+    chipHoldStart := 0
+    enterpriseHold := PromptContext_EnterpriseAttachHold(companionId, fileCount)
     while ((A_TickCount - tStart) < timeoutMs) {
         pollIndex += 1
         if (!IsObject(uia) || Mod(pollIndex, 5) = 1) {
@@ -845,7 +856,20 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
                 if (uploadLatched)
                     sawUploading := true
             }
-            if (chipsOk && noProgress) {
+            ; Enterprise clears the chips for ~1s after they first appear. Missing chips
+            ; plus no ProgressBar is that redraw, not a finished attach.
+            if (enterpriseHold) {
+                if (chipsOk && noProgress) {
+                    if (!chipHoldStart)
+                        chipHoldStart := A_TickCount
+                    if ((A_TickCount - chipHoldStart) >= PROMPT_PASTE_ENTERPRISE_CHIP_HOLD_MS) {
+                        PromptPaste_ReadyTimingLog("attach_idle_enterprise_hold", A_TickCount - tStart)
+                        return
+                    }
+                } else {
+                    chipHoldStart := 0
+                }
+            } else if (chipsOk && noProgress) {
                 stableFast += 1
                 if (stableFast >= needStable) {
                     PromptPaste_ReadyTimingLog("attach_idle_fast", A_TickCount - tStart)
@@ -855,7 +879,8 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
                 stableFast := 0
             }
             ; When chips are not in the UIA tree, ProgressBar-gone is enough (upload Text is sticky).
-            if (!chipsOk && noProgress) {
+            ; Enterprise must not use this: the redraw looks the same (no chips, no ProgressBar).
+            if (!enterpriseHold && !chipsOk && noProgress) {
                 stableNoProg += 1
                 if (stableNoProg >= needStable && (sawProgress || sawUploading || (A_TickCount - tStart) >= 400)) {
                     PromptPaste_ReadyTimingLog("attach_idle_progress", A_TickCount - tStart)
@@ -865,17 +890,31 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
                 stableNoProg := 0
             }
             ; Last-resort floor if progress never appeared and chips never showed.
-            if (!chipsOk && !sawProgress && !uploadLatched && (A_TickCount - tStart) >= minMs) {
+            if (!enterpriseHold && !chipsOk && !sawProgress && !uploadLatched && (A_TickCount - tStart) >= minMs) {
                 PromptPaste_ReadyTimingLog("attach_idle", A_TickCount - tStart)
                 return
             }
-        } else {
+        } else if (!enterpriseHold) {
             up := PromptContext_IsUploading(uia, companionId)
             if (up)
                 sawUploading := true
             if (!up && (sawUploading || (A_TickCount - tStart) >= minMs)) {
                 PromptPaste_ReadyTimingLog("attach_idle", A_TickCount - tStart)
                 return
+            }
+        } else {
+            ; Fast path off: still require the Enterprise chip hold (the redraw has no upload label).
+            chips := PromptContext_CountFileChips(uia, companionId, fileCount)
+            noProgress := !PromptContext_HasProgressBar(uia, companionId)
+            if ((fileCount <= 0 || chips >= fileCount) && noProgress) {
+                if (!chipHoldStart)
+                    chipHoldStart := A_TickCount
+                if ((A_TickCount - chipHoldStart) >= PROMPT_PASTE_ENTERPRISE_CHIP_HOLD_MS) {
+                    PromptPaste_ReadyTimingLog("attach_idle_enterprise_hold", A_TickCount - tStart)
+                    return
+                }
+            } else {
+                chipHoldStart := 0
             }
         }
         Sleep 150
@@ -900,8 +939,10 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
 
     pollMs := Max(50, PROMPT_PASTE_SEND_READY_POLL_MS)
     ; After attach idle already stabilized chips, one ready poll is enough (logs: 2nd poll only repeated proof).
+    ; Enterprise keeps the normal streak: one poll during the chip redraw is a false "all files attached".
     needStable := Max(1, PROMPT_PASTE_SEND_READY_STABLE_POLLS)
-    if (attachCount > 0 && PROMPT_PASTE_USE_FAST_READY_PROBE)
+    enterpriseHold := PromptContext_EnterpriseAttachHold(companionId, attachCount)
+    if (attachCount > 0 && PROMPT_PASTE_USE_FAST_READY_PROBE && !enterpriseHold)
         needStable := 1
     minNoInd := (attachCount > 0) ? Max(0, PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS) : 0
     tStart := A_TickCount
@@ -913,6 +954,8 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
     uia := 0
     pollIndex := 0
     uploadLatched := false
+    chipHoldStart := 0
+    sawChipDrop := false
     ; Body was just pasted by ApplyChoice — skip ~500ms composer UIA on first poll after attach.
     cachedHasText := (attachCount > 0)
     cachedSendEnabled := false
@@ -982,7 +1025,8 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             sendEnabled := cachedSendEnabled || probe.sendEnabled
 
             if (updateBanner) {
-                phase := uploadLatched ? "uploads" : "send"
+                waitingChips := enterpriseHold && attachCount > 0 && probe.chips < attachCount
+                phase := (uploadLatched || waitingChips) ? "uploads" : "send"
                 if (phase != bannerPhase) {
                     bannerPhase := phase
                     msg := (phase = "uploads") ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…"
@@ -997,15 +1041,33 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             }
 
             chipGate := (attachCount <= 0) || (probe.chips >= attachCount)
-            ; Chips + no ProgressBar prove upload settled — do not wait on upload-label text.
-            if (chipGate && probe.noProgress)
-                idleOk := true
-            else if (chipGate)
-                idleOk := !uploadLatched
-            else
-                idleOk := !uploadLatched && (sawUploading || (A_TickCount - tStart) >= minNoInd)
-            ready := idleOk && probe.noProgress && sendEnabled && hasText
-                && (chipGate || (attachCount > 0 && (A_TickCount - tStart) >= minNoInd))
+            if (enterpriseHold) {
+                ; A gap with no chips is the Enterprise redraw, not proof the files are attached.
+                ; After any such gap, the full count has to stay up for the hold before send.
+                if (chipGate && probe.noProgress) {
+                    if (!chipHoldStart)
+                        chipHoldStart := A_TickCount
+                } else {
+                    sawChipDrop := true
+                    chipHoldStart := 0
+                }
+                if (sawChipDrop) {
+                    ready := chipGate && probe.noProgress && sendEnabled && hasText && chipHoldStart
+                        && ((A_TickCount - chipHoldStart) >= PROMPT_PASTE_ENTERPRISE_CHIP_HOLD_MS)
+                } else {
+                    ready := chipGate && probe.noProgress && sendEnabled && hasText
+                }
+            } else {
+                ; Chips + no ProgressBar prove upload settled — do not wait on upload-label text.
+                if (chipGate && probe.noProgress)
+                    idleOk := true
+                else if (chipGate)
+                    idleOk := !uploadLatched
+                else
+                    idleOk := !uploadLatched && (sawUploading || (A_TickCount - tStart) >= minNoInd)
+                ready := idleOk && probe.noProgress && sendEnabled && hasText
+                    && (chipGate || (attachCount > 0 && (A_TickCount - tStart) >= minNoInd))
+            }
             if (ready) {
                 stableFast += 1
                 if (stableFast >= needStable) {
@@ -1038,7 +1100,7 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             }
         }
 
-        if (PROMPT_PASTE_USE_STABLE_SEND_READY) {
+        if (PROMPT_PASTE_USE_STABLE_SEND_READY && !enterpriseHold) {
             idleOk := probe.uploadIdle && (sawUploading || (A_TickCount - tStart) >= minNoInd)
             if (idleOk && probe.sendEnabled && probe.hasText) {
                 stableA += 1
@@ -1056,6 +1118,15 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             try chipOk := PromptContext_ProbeChipReady(hwnd, uia, companionId, attachCount)
             catch {
                 chipOk := false
+            }
+            if (enterpriseHold) {
+                if (chipOk) {
+                    if (!chipHoldStart)
+                        chipHoldStart := A_TickCount
+                    chipOk := (A_TickCount - chipHoldStart) >= PROMPT_PASTE_ENTERPRISE_CHIP_HOLD_MS
+                } else {
+                    chipHoldStart := 0
+                }
             }
             if (chipOk) {
                 stableB += 1
@@ -1307,31 +1378,38 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
 
     ok := false
     confirmState := ""
+    chipsUnsettled := false
     tDeadline := A_TickCount + PROMPT_PASTE_AUTO_SEND_CAP_MS
     try {
         ; Persistent Loading Indication for the whole [Y] auto-send wait/submit/confirm path.
         PromptPaste_BusyEnsure("⏳ Waiting to send…", hwnd)
 
+        enterpriseAttach := PromptContext_EnterpriseAttachHold(companionId, attachCount)
         if (attachCount > 0 || companionId != "") {
             PromptPaste_BusyUpdate((attachCount > 0) ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…")
             ready := false
             waitMs := PromptPaste_SendWaitBudget(tDeadline)
             ; Attach idle already stabilized chips; only a short enablement check after paste.
-            if (attachCount > 0)
+            ; Enterprise keeps the full budget so a mid-paste chip redraw can finish and hold.
+            if (attachCount > 0 && !enterpriseAttach)
                 waitMs := Min(waitMs, 500)
             if (waitMs > 0) {
                 try ready := PromptContext_WaitForSendReady(hwnd, companionId, waitMs, attachCount, true)
                 catch {
                 }
             }
-            if (!ready && attachCount > 0) {
+            if (!ready && attachCount > 0 && !enterpriseAttach) {
                 ; Paste + attach already done — submit anyway rather than stall.
                 ready := true
             }
+            if (enterpriseAttach && !ready)
+                chipsUnsettled := true
         }
 
         confirmState := ""
-        if (PromptPaste_SendRemainingMs(tDeadline) <= PROMPT_PASTE_SEND_MIN_SUBMIT_MS / 2) {
+        if (chipsUnsettled) {
+            ok := false
+        } else if (PromptPaste_SendRemainingMs(tDeadline) <= PROMPT_PASTE_SEND_MIN_SUBMIT_MS / 2) {
             ok := false
         } else if (companionId != "") {
             snapStatus := ""
@@ -1358,7 +1436,11 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
         PromptPaste_BusyHide(0)
     }
 
-    if (confirmState != "")
+    if (chipsUnsettled) {
+        try ShowCenteredOverlay_Utils("⚠ Attachments still settling — prompt not sent", 2600, BANNER_ACCENT_ERROR)
+        catch {
+        }
+    } else if (confirmState != "")
         AiCompanion_AnnounceConfirm(confirmState)
     else if ((companionId != "" || attachCount > 0) && !ok) {
         msg := (A_TickCount >= tDeadline) ? "⚠ Send timed out (10s)" : "⚠ Send may not have started"

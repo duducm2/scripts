@@ -32,53 +32,65 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: Nikola Tesla · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: Nikola Tesla · 4 beasts · 5 atoms</summary>
 
 ![Memory Palace 19](images/science/19.png)
 
-<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+<p><em>4 beasts · 5 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
-### [Bx] [Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.
+### [Bx] Bone Xena, warrior woman
 
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Bone Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intelligence-is-starving-for-1d91fb5bf59f
+💡 For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky.
 
 **Quote**
-—
+“How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?”
 
-### [Bw] [Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.
+### [Bw] Bone wombat
 
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/wombat.png" alt="Bone wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-—
+💡 A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something.
 
 **Quote**
-—
+“Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?”
 
-### [Bv] [Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.
+### [Bv] Bone vulture
 
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/vulture.png" alt="Bone vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-—
+💡 A strong how-question asks how people experience, interpret, perceive, or make sense of something in context.
 
 **Quote**
-—
+“How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?”
 
-### [Bu] [butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Quote: "Does SSL increase trust?" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: "Does SSL increase trust?"
+### [Bu] butterfly
 
 <img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
+🟦 **Z1 · Qualitative purpose**
+
 **Concept**
-—
+💡 Qualitative questions seek meanings, motives, lived experience, and process.
 
 **Quote**
-—
+“the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships.”
+
+---
+
+🟦 **Z2 · Avoid causal testing**
+
+**Concept**
+💡 Qualitative questions avoid count-based or causal-test questions.
+
+**Quote**
+“Does SSL increase trust?”
 
 #### Notes
 
