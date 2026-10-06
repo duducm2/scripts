@@ -1,0 +1,16 @@
+﻿```text
+===PREVIEW===
+6 row(s) · New house construction, food (card), haircuts (x2), groceries, Nubank transfer · Skipped incomplete fragment "spent seven"
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Serviceman constructing new house,"1500,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Food,"7,90",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Haircut,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1
+Haircut,"110,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1
+Groceries,"37,54",expense,CAT_MERCADO,ACC_MERCADOP,,,1
+Transfer to short-term account,"1500,00",transfer,,ACC_NUBANKMA,,ACC_TRANSITI,1
+===END_FILE===
+```
+
+Please copy the code block above and save it as `FINANCE_DAILY.txt` on your Desktop. Is there anything else you would like to adjust?
