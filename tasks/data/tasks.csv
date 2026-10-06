@@ -146,7 +146,7 @@ TASK_0333,PROJ_0026,SEC_0129,Talvez você tenha que voltar a essa tabela posteri
 TASK_0334,PROJ_0032,SEC_0144,Play the songs that are highlighted with stars from one to six,🔲,punctual,,,,,personal,5070,,2026-09-26 17:42:56,1,
 TASK_0335,PROJ_0026,SEC_0129,"You are adding some new articles, so you need to update your literature review",⚡,punctual,,,,,personal,5080,,2026-09-27 15:55:41,1,
 TASK_0339,PROJ_0003,SEC_0003,"Get in touch with some people, checking if they have job openings, opportunities",⚡,punctual,,,,,work,5120,,2026-09-28 08:33:44,1,
-TASK_0346,PROJ_0005,SEC_0005,"09 de outubro, apresentar o resultado do seu mestrado para o time",🔲,punctual,,,,,work,5190,,2026-09-28 10:44:48,1,
+TASK_0346,PROJ_0005,SEC_0005,"16 de outubro, apresentar o resultado do seu mestrado para o time",🔲,punctual,,,,,work,5190,,2026-09-28 10:44:48,1,
 TASK_0358,PROJ_0011,SEC_0011,Fazer o pedido das roles necessárias para vc acessar o ambiente de QA. Pedir de aprovador e editor.,⏳,punctual,,,,,work,5310,,2026-09-29 09:40:24,1,
 TASK_0362,PROJ_0013,SEC_0013,Reuniões,⏳,punctual,,,,,work,5340,,2026-09-29 11:30:01,1,
 TASK_0363,PROJ_0013,SEC_0148,MIRO with the requirements of the automation tool,,punctual,,,,Links,work,5350,,2026-09-29 11:31:54,1,
@@ -173,3 +173,7 @@ TASK_0404,PROJ_0035,SEC_0151,Organize a face-to-face workshop with Amanda in the
 TASK_0407,PROJ_0035,SEC_0151,Define and track KPIs to measure UX improvements,🔲,punctual,,,,Meeting October 5th,work,5800,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0408,PROJ_0035,SEC_0151,Present the initial process mapping and identify areas for deepening,🔲,punctual,,,,Meeting October 5th,work,5810,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0409,PROJ_0035,SEC_0150,Criar uma linha do tempo em CSV no Excel que você possa rapidamente alterar e exportar em uma imagem.,🔲,punctual,,,,,work,5820,,2026-10-06 10:02:32,1,
+TASK_0410,PROJ_0036,SEC_0153,Automatically read articles on Zunder and create proposals,🔲,punctual,,,,Features,work,5830,,2026-10-06 10:59:26,1,
+TASK_0411,PROJ_0036,SEC_0153,Automatically gather more sample group,🔲,punctual,,,,Features,work,5840,,2026-10-06 10:59:36,1,
+TASK_0412,PROJ_0035,SEC_0154,Willian Yakabi: PO,⏳,punctual,,,,Stakeholders,work,5850,,2026-10-06 11:00:27,1,
+TASK_0413,PROJ_0035,SEC_0154,Conte  Rodrigo: gerente de projetos,⏳,punctual,,,,Stakeholders,work,5860,,2026-10-06 11:00:36,1,
