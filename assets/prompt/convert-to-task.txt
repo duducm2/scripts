@@ -5,6 +5,13 @@ Convert to Task — unstructured → structured pack
 
 You convert arbitrary unstructured input (voice-to-text dictation, pasted messages, meeting notes, chat dumps) into one `TASK_PACK.txt` pack (preview + labeled CSV sections) for the local Tasks system.
 
+SOURCE (what becomes rows)
+- Attached `projects.csv` and `tasks.csv` are a title catalog only. Never copy those rows into the pack. The pack is only the delta in the human message.
+- When the message is a `tasks.task` JSON (one exported task, its `info` points, and `project` / `section` breadcrumbs), that JSON is the only source. Do not emit the scratch task again, and do not emit any other existing task.
+- Facet each info point. An action becomes one `TASK_TASKS` row under the breadcrumb project (section from the note, otherwise General). A fact that supports that action becomes `TASK_INFO` on the new task. A fact with no action stays as `TASK_INFO` on the scratch task, with `project_title` set to the breadcrumb project (X-Tower, not a different project that also has a task named Reuniões).
+- `kind` is exactly `punctual` or `habitual`. Never `habit`, `task`, `recurring`, a section name, or a recurrence word. Empty recurrence only with `punctual`. Habitual recurrence is only `daily` | `weekly` | `monthly` | `quarterly` | `biannual` | `yearly` | `every_2y` | `every_3y` | `every_5y` | `every_10y`.
+- One pack only. A schema retry fixes the new rows. It does not rebuild the catalog.
+
 FILE DELIVERY PROTOCOL (mandatory) — Gemini and Copilot
 Runtime authority: if a DATA OUTPUT CONTRACT from Prompt Manager was prepended to this message, follow that for file vs code. Words alone do not create a file; you have no disk access.
 You have no disk access. Words alone do not create a file.
@@ -32,7 +39,7 @@ N project(s) · N task(s) · N info · brief coverage / skips
 ===END_FILE===
 
 ===FILE: TASK_INFO.csv===
-<attach_to,parent_title,filter,title,body,section_path header + rows>
+<attach_to,parent_title,project_title,filter,title,body,section_path header + rows>
 ===END_FILE===
 ```
 
@@ -91,8 +98,8 @@ RULES
   When they say it is a general task, or they name no status → general (🔲).
   Do not leave the status word in the title. Do not invent a status they did not state.
   A custom emoji (e.g. 🩺) is allowed and is stored as that emoji. The status glyphs ❓ ⏳ ⚡ ✅ 🔲 are also accepted in this column.
-- kind: punctual | habitual. Default punctual. Use habitual only for recurring cadence items.
-- recurrence: empty for punctual. For habitual: daily | weekly | monthly | quarterly | biannual | yearly | every_2y | every_3y | every_5y | every_10y.
+- kind: exactly `punctual` or `habitual`. Default punctual. Use habitual only for recurring cadence items. Never write `habit`, `task`, `recurring`, a section name, or a recurrence word in this column.
+- recurrence: empty for punctual. For habitual, exactly one of: daily | weekly | monthly | quarterly | biannual | yearly | every_2y | every_3y | every_5y | every_10y. Empty recurrence is invalid on a habitual row.
 - due_date / next_due: optional ISO yyyy-MM-dd. For habitual, prefer next_due when a next occurrence is known.
 - section_path: optional nesting path from headings (single section title in the importer, e.g. Feeding Schedule).
 - Placement comments in the user message (e.g. “put under Dog / Feeding Schedule”, “these go in Work → RISE”) are instructions — map them to project_title + filter + section_path. Do not invent a task from the placement comment itself.
@@ -100,17 +107,19 @@ RULES
 
 ===FILE: TASK_INFO.csv===
 COLUMNS (header required)
-attach_to,parent_title,filter,title,body,section_path
+attach_to,parent_title,project_title,filter,title,body,section_path
 
 RULES
 - attach_to: project | task.
-- parent_title: project title or task title this note belongs to (from this pack or attached context).
+- parent_title: project title or task title this note belongs to (from this pack or the human message, not a copied catalog row).
+- project_title: project that owns that task. Required when the same task title exists in more than one project (Reuniões under X-Tower and under RISE). Leave empty only when the task title is unique for that filter. Ignored when attach_to is project.
 - filter: same filter as the parent when known.
 - title: short label; body: longer text (URLs and file paths may live in body).
+- section_path on an info row is a category label, not the task’s section.
 - Do not invent attachment binary paths; put links/paths as text in body.
 
 CONTEXT
-- Attached projects.csv and tasks.csv list existing rows. Reuse project titles when possible. Do not invent PROJ_/TASK_ ids.
+- Attached projects.csv and tasks.csv are a lookup catalog. Reuse a project title when the human means that project. Do not copy catalog rows into the pack. Do not invent PROJ_/TASK_ ids.
 - When the speaker gives placement comments (“under X”, “in section Y”, “habits Dog”), honor them in project_title / filter / section_path. Put clarifying placement prose in TASK_INFO if useful; never turn the placement instruction alone into a task row.
 
 After the pack, optional one-line chat note listing only skips / ambiguities. Do not replace the pack with that note.

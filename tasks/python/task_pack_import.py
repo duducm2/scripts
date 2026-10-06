@@ -179,7 +179,26 @@ def preview_pack(store: TaskStore) -> dict[str, Any]:
         "projects": projects,
         "tasks": tasks,
         "info": infos,
+        "catalog_clone": pack_echoes_catalog(store, tasks),
     }
+
+
+def pack_echoes_catalog(store: TaskStore, task_rows: list[dict]) -> bool:
+    """True when every titled task row already exists for that filter."""
+    titled = [r for r in task_rows if (r.get("title") or "").strip()]
+    if not titled:
+        return False
+    existing = {
+        f"{(t.get('filter') or '').strip().lower()}|{(t.get('title') or '').strip().lower()}"
+        for t in store.load("tasks")
+        if (t.get("title") or "").strip()
+    }
+    for r in titled:
+        filt = (r.get("filter") or "work").strip().lower()
+        title = (r.get("title") or "").strip().lower()
+        if f"{filt}|{title}" not in existing:
+            return False
+    return True
 
 
 def validate_pack(pack: dict) -> list[str]:
@@ -320,10 +339,37 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
                 if (r.get("section_path") or "").strip() and not p.get("section_path"):
                     p["section_path"] = r["section_path"].strip()
 
-    task_index: dict[str, str] = {}
-    for t in tasks:
-        if t.get("title") and t.get("filter"):
-            task_index[f"{t['filter']}|{(t['title'] or '').strip().lower()}"] = t["id"]
+    task_parents: list[dict] = [
+        t
+        for t in tasks
+        if (t.get("title") or "").strip() and (t.get("filter") or "").strip()
+    ]
+
+    def project_title_of(project_id: str) -> str:
+        for p in projects:
+            if p.get("id") == project_id:
+                return (p.get("title") or "").strip()
+        return ""
+
+    def resolve_task_parent(filt: str, parent_title: str, project_title: str) -> str:
+        title_l = parent_title.strip().lower()
+        proj_l = project_title.strip().lower()
+        matches = []
+        for t in task_parents:
+            if (t.get("filter") or "").strip().lower() != filt:
+                continue
+            if (t.get("title") or "").strip().lower() != title_l:
+                continue
+            if proj_l and project_title_of(t.get("project_id") or "").lower() != proj_l:
+                continue
+            matches.append(t)
+        if len(matches) == 1:
+            return matches[0].get("id") or ""
+        if not matches:
+            errors.append(f"INFO parent task not found: {parent_title}")
+            return ""
+        errors.append(f"INFO ambiguous parent task: {parent_title}")
+        return ""
 
     import_batch = "IMP-" + datetime.now().strftime("%Y%m%d-%H%M%S")
     hint_filter_counts: dict[str, int] = {}
@@ -373,7 +419,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         }
         new_tasks.append(row)
         tasks.append(row)
-        task_index[f"{filt}|{title.lower()}"] = tid
+        task_parents.append(row)
         hint_filter_counts[filt] = hint_filter_counts.get(filt, 0) + 1
         display_proj = proj_title or INBOX_TITLES.get(filt, "Inbox")
         hint_project_counts[display_proj] = hint_project_counts.get(display_proj, 0) + 1
@@ -393,10 +439,10 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
             parent_id = ensure_project(parent_title or INBOX_TITLES.get(filt, ""), filt)
             parent_type = "project"
         else:
-            key = f"{filt}|{parent_title.lower()}"
-            parent_id = task_index.get(key, "")
+            parent_id = resolve_task_parent(
+                filt, parent_title, (r.get("project_title") or "").strip()
+            )
             if not parent_id:
-                errors.append(f"INFO parent task not found: {parent_title}")
                 continue
             parent_type = "task"
         row = {
@@ -472,6 +518,10 @@ def preview_labels(pack: dict[str, Any]) -> list[str]:
         f"--- Counts: {counts.get('projects', 0)} project(s) · "
         f"{counts.get('tasks', 0)} task(s) · {counts.get('info', 0)} info ---"
     )
+    if pack.get("catalog_clone"):
+        labels.append(
+            "--- Every task title in this pack already exists (catalog clone) ---"
+        )
     projects = pack.get("projects") or []
     if projects:
         labels.append(f"--- Projects ({len(projects)}) ---")
@@ -503,7 +553,10 @@ def preview_labels(pack: dict[str, Any]) -> list[str]:
             title = (r.get("title") or "").strip()
             parent = (r.get("parent_title") or "").strip()
             attach = (r.get("attach_to") or "task").strip()
+            proj = (r.get("project_title") or "").strip()
             line = f"[INFO] → {parent or '?'} ({attach}) · {title}"
+            if proj:
+                line += f" @ {proj}"
             labels.append(line)
     return labels
 
