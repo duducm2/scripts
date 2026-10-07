@@ -471,7 +471,7 @@ CopilotWeb_PlayFocusedChime(minIntervalMs := 400) {
     return true
 }
 
-CopilotWeb_FocusComposer(uia, playChime := true) {
+CopilotWeb_FocusComposer(uia, playChime := true, scrollIntoView := true) {
     el := CopilotWeb_FindComposer(uia)
     if (!el)
         return 0
@@ -483,7 +483,8 @@ CopilotWeb_FocusComposer(uia, playChime := true) {
         }
     } catch {
     }
-    try el.ScrollIntoView()
+    if (scrollIntoView)
+        try el.ScrollIntoView()
     try el.SetFocus()
     Sleep 40
     try el.Click()
@@ -496,12 +497,12 @@ CopilotWeb_FocusComposer(uia, playChime := true) {
     return el
 }
 
-CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
+CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false, scrollIntoView := true) {
     if (!copilotHwnd || !WinActive("ahk_id " copilotHwnd))
         return false
     try {
         uia := UIA_Browser("ahk_id " copilotHwnd)
-        return !!CopilotWeb_FocusComposer(uia, playChime)
+        return !!CopilotWeb_FocusComposer(uia, playChime, scrollIntoView)
     } catch {
     }
     return false
@@ -893,8 +894,8 @@ CopilotWeb_CopyLastMessageToClipboard(options := "", copilotHwnd := 0) {
         }
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " copilotHwnd)
         Sleep COPILOT_WEB_UIA_SETTLE_MS
-        Send "^{End}"
-        Sleep COPILOT_WEB_SCROLL_SETTLE_MS
+        ; Do not Send ^{End}. That keystroke hits whichever window is focused,
+        ; including the one that triggered #!+p.
         copyBtn := CopilotWeb_GetLastCopyButton(uia)
         if (!copyBtn)
             return false
@@ -909,7 +910,7 @@ CopilotWeb_CopyLastMessageToClipboard(options := "", copilotHwnd := 0) {
         if (restoreWindow)
             Send "!{Tab}"
         else
-            CopilotWeb_FocusComposerForHwnd(copilotHwnd, false)
+            CopilotWeb_FocusComposerForHwnd(copilotHwnd, false, false)
         return true
     } catch {
         return false
@@ -933,8 +934,8 @@ CopilotWeb_CopyLastCodeSnippetToClipboard(options := "", copilotHwnd := 0) {
         }
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " copilotHwnd)
         Sleep COPILOT_WEB_UIA_SETTLE_MS
-        Send "^{End}"
-        Sleep COPILOT_WEB_SCROLL_SETTLE_MS
+        ; Do not Send ^{End}. That keystroke hits whichever window is focused,
+        ; including the one that triggered #!+p.
         copyBtn := CopilotWeb_GetLastCopyCodeButton(uia)
         if (!copyBtn)
             return false
@@ -949,7 +950,7 @@ CopilotWeb_CopyLastCodeSnippetToClipboard(options := "", copilotHwnd := 0) {
         if (restoreWindow)
             Send "!{Tab}"
         else
-            CopilotWeb_FocusComposerForHwnd(copilotHwnd, false)
+            CopilotWeb_FocusComposerForHwnd(copilotHwnd, false, false)
         return true
     } catch {
         return false

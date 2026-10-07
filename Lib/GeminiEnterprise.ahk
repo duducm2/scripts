@@ -609,7 +609,7 @@ GeminiEnterprise_WaitForMenuItemByNames(names, timeoutMs := 2000, hwnd := 0) {
 
 ; --- Actions -----------------------------------------------------------------
 
-GeminiEnterprise_FocusComposer(uia := 0, playChime := true) {
+GeminiEnterprise_FocusComposer(uia := 0, playChime := true, scrollIntoView := true) {
     if (!uia)
         uia := GeminiEnterprise_GetActiveUia()
     el := GeminiEnterprise_FindComposer(uia)
@@ -623,7 +623,10 @@ GeminiEnterprise_FocusComposer(uia := 0, playChime := true) {
         }
     } catch {
     }
-    try el.ScrollIntoView()
+    ; ScrollIntoView pulls the chat to the composer. #!+p passes false so the
+    ; window that triggered the hotkey keeps its scroll position.
+    if (scrollIntoView)
+        try el.ScrollIntoView()
     try el.SetFocus()
     Sleep 40
     try el.Click()
@@ -1167,9 +1170,10 @@ GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) 
                 return false
             Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
         }
-        GeminiEnterprise_ScrollFeedToBottom(enterpriseHwnd)
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " enterpriseHwnd)
         Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+        ; Do not scroll the feed first. ScrollFeedToBottom posts a mouse-wheel burst
+        ; and jumps the active window; the copy control is already in the tree.
         copyBtn := GeminiEnterprise_GetLastCopyButton(uia)
         if (!copyBtn)
             return false
@@ -1191,7 +1195,7 @@ GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) 
         else {
             root := GeminiEnterprise_ReadRootFromHwnd(enterpriseHwnd)
             if (IsObject(root))
-                GeminiEnterprise_FocusComposer(root, false)
+                GeminiEnterprise_FocusComposer(root, false, false)
         }
         return true
     } catch {
@@ -1214,20 +1218,13 @@ GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd :=
                 return false
             Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
         }
-        GeminiEnterprise_ScrollFeedToBottom(enterpriseHwnd)
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " enterpriseHwnd)
         Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+        ; Do not scroll the feed or the code header into view. That wheel/scroll
+        ; moves the window the hotkey was pressed in.
         copyBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
         if (!copyBtn)
             return false
-        ; Header of the fence is above a long block once the footer is in view.
-        try copyBtn.ScrollIntoView()
-        catch {
-        }
-        Sleep GEMINI_ENTERPRISE_SCROLL_SETTLE_MS
-        scrolledBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
-        if (scrolledBtn)
-            copyBtn := scrolledBtn
         A_Clipboard := ""
         if (!GeminiEnterprise_ClickUiaElement(copyBtn)) {
             try copyBtn.Click()
@@ -1246,7 +1243,7 @@ GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd :=
         else {
             root := GeminiEnterprise_ReadRootFromHwnd(enterpriseHwnd)
             if (IsObject(root))
-                GeminiEnterprise_FocusComposer(root, false)
+                GeminiEnterprise_FocusComposer(root, false, false)
         }
         return true
     } catch {

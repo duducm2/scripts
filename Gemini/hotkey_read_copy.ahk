@@ -49,10 +49,8 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
         Sleep GEMINI_UIA_SETTLE_MS
 
-        ; Scroll to bottom so the newest response controls are discoverable.
-        Send "^{End}"
-        Sleep GEMINI_SCROLL_SETTLE_MS
-
+        ; Do not Send ^{End}. That keystroke hits whichever window is focused,
+        ; including the one that triggered #!+p.
         lastCopyButton := GeminiState.GetLastCopyButtonCached(uia, geminiHwnd)
 
         if (!lastCopyButton) {
@@ -111,9 +109,8 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
         Sleep GEMINI_UIA_SETTLE_MS
 
-        Send "^{End}"
-        Sleep GEMINI_SCROLL_SETTLE_MS
-
+        ; Do not Send ^{End}. That keystroke hits whichever window is focused,
+        ; including the one that triggered #!+p.
         lastCodeButton := GetLastGeminiCopyCodeButton(uia)
         if (!lastCodeButton) {
             GeminiPerfLog("copy_code", t0)
@@ -184,7 +181,7 @@ HotkeyCopy_RunCopyLastMessage(gen := 0) {
                 if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
                     root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
                     if (IsObject(root))
-                        GeminiEnterprise_FocusComposer(root, true)
+                        GeminiEnterprise_FocusComposer(root, true, false)
                 }
             }
         } else if (companion = "copilot") {
@@ -224,7 +221,7 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
                 if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
                     root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
                     if (IsObject(root))
-                        GeminiEnterprise_FocusComposer(root, true)
+                        GeminiEnterprise_FocusComposer(root, true, false)
                 }
             }
         } else if (companion = "copilot") {
