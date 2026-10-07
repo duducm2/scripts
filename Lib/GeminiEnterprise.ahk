@@ -22,8 +22,10 @@ GEMINI_ENTERPRISE_POST_COPY_SYNC_TIMEOUT_MS := 2000
 GEMINI_ENTERPRISE_CLIPBOARD_POLL_MS := 10
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt".
 GEMINI_ENTERPRISE_COPY_RESPONSE_NAMES := ["Copy response", "Copy Response", "Copy message", "Copy", "Copiar"]
-; Copy code-snippet button names (EN/PT). Distinct from response "Copy" and "Copy prompt".
-GEMINI_ENTERPRISE_COPY_CODE_NAMES := ["Copy code", "Copiar código"]
+; Copy code-snippet button names (EN/PT). Enterprise fences use "Copy code to clipboard",
+; not the consumer exact label "Copy code". Distinct from response "Copy" and "Copy prompt".
+GEMINI_ENTERPRISE_COPY_CODE_NAMES := ["Copy code to clipboard", "Copy code",
+    "Copiar código para a área de transferência", "Copiar código"]
 
 global g_GeminiEnterpriseCachedHwnd := 0
 global g_GeminiEnterpriseHotkeyActive := false
@@ -987,11 +989,45 @@ GeminiEnterprise_IsCopyCodeButton(name) {
         return false
     if (InStr(name, "prompt", false))
         return false
+    ; "Copy code to clipboard" / "Copiar código…" — not only the exact consumer label.
+    if (InStr(name, "copy code", false) || InStr(name, "copiar código", false))
+        return true
     for n in GEMINI_ENTERPRISE_COPY_CODE_NAMES {
         if (name = n || InStr(name, n, false) = 1)
             return true
     }
     return false
+}
+
+; Group.copy-code-button wraps the fence control. The button itself is often
+; "Copy code to clipboard" and can have an empty name until hovered.
+GeminiEnterprise_ButtonFromCopyCodeHost(el) {
+    if (!IsObject(el))
+        return 0
+    try {
+        if (el.Type = 50000 && GeminiEnterprise_IsCopyCodeButton(el.Name))
+            return el
+    } catch {
+    }
+    try {
+        buttons := el.FindAll({ Type: "Button" })
+        named := 0
+        for button in buttons {
+            if (GeminiEnterprise_IsCopyCodeButton(button.Name))
+                return button
+            if (named = 0)
+                named := button
+        }
+        if (named)
+            return named
+    } catch {
+    }
+    try {
+        if (el.Type = 50000)
+            return el
+    } catch {
+    }
+    return 0
 }
 
 GeminiEnterprise_GetCopyButtonsArray(uia) {
@@ -1053,6 +1089,33 @@ GeminiEnterprise_GetLastCopyButton(uia) {
     return lastEl ? lastEl : arr[arr.Length]
 }
 
+GeminiEnterprise_AppendCopyCodeHosts(scope, out) {
+    if (!IsObject(scope))
+        return
+    try {
+        hosts := scope.FindAll({ ClassName: "copy-code-button", matchmode: "Substring" })
+        for host in hosts {
+            btn := GeminiEnterprise_ButtonFromCopyCodeHost(host)
+            if (btn)
+                out.Push(btn)
+        }
+    } catch {
+    }
+}
+
+GeminiEnterprise_AppendCopyCodeButtonsByName(scope, out) {
+    if (!IsObject(scope))
+        return
+    try {
+        allButtons := scope.FindAll({ Type: "Button" })
+        for button in allButtons {
+            if (GeminiEnterprise_IsCopyCodeButton(button.Name))
+                out.Push(button)
+        }
+    } catch {
+    }
+}
+
 GeminiEnterprise_GetCopyCodeButtonsArray(uia) {
     out := []
     if (!IsObject(uia))
@@ -1067,24 +1130,15 @@ GeminiEnterprise_GetCopyCodeButtonsArray(uia) {
         }
     } catch {
     }
-    try {
-        allButtons := scope.FindAll({ Type: "Button" })
-        for button in allButtons {
-            if (GeminiEnterprise_IsCopyCodeButton(button.Name))
-                out.Push(button)
-        }
-    } catch {
-    }
-    if (out.Length = 0 && usedPanel) {
-        try {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for button in allButtons {
-                if (GeminiEnterprise_IsCopyCodeButton(button.Name))
-                    out.Push(button)
-            }
-        } catch {
-        }
-    }
+    ; Enterprise code fences: group.copy-code-button > button "Copy code to clipboard".
+    ; Document order, so the last host is the latest snippet.
+    GeminiEnterprise_AppendCopyCodeHosts(scope, out)
+    if (out.Length = 0 && usedPanel)
+        GeminiEnterprise_AppendCopyCodeHosts(uia, out)
+    if (out.Length = 0)
+        GeminiEnterprise_AppendCopyCodeButtonsByName(scope, out)
+    if (out.Length = 0 && usedPanel)
+        GeminiEnterprise_AppendCopyCodeButtonsByName(uia, out)
     return out
 }
 
@@ -1092,24 +1146,10 @@ GeminiEnterprise_GetLastCopyCodeButton(uia) {
     arr := GeminiEnterprise_GetCopyCodeButtonsArray(uia)
     if (arr.Length = 0)
         return 0
-    lastEl := 0
-    lastTop := ""
-    for btn in arr {
-        try {
-            br := btn.BoundingRectangle
-        } catch {
-            continue
-        }
-        if (!IsObject(br))
-            continue
-        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
-            continue
-        if (lastEl = 0 || br.t >= lastTop) {
-            lastEl := btn
-            lastTop := br.t
-        }
-    }
-    return lastEl ? lastEl : arr[arr.Length]
+    ; The control sits at the top of the fence. After the feed is scrolled to the
+    ; response footer, that header often has an empty BoundingRectangle while an
+    ; earlier snippet is still on screen. Tree order is the latest snippet.
+    return arr[arr.Length]
 }
 
 GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) {
@@ -1180,6 +1220,14 @@ GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd :=
         copyBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
         if (!copyBtn)
             return false
+        ; Header of the fence is above a long block once the footer is in view.
+        try copyBtn.ScrollIntoView()
+        catch {
+        }
+        Sleep GEMINI_ENTERPRISE_SCROLL_SETTLE_MS
+        scrolledBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
+        if (scrolledBtn)
+            copyBtn := scrolledBtn
         A_Clipboard := ""
         if (!GeminiEnterprise_ClickUiaElement(copyBtn)) {
             try copyBtn.Click()
