@@ -899,11 +899,9 @@ class D2C_FlowManager {
             }
 
             ; keepBarVisible so Loading Indication continues through paste.
-            if (!WhatsAppJumpToChat(contact, true)) {
-                return
-            }
-
+            jumped := WhatsAppJumpToChat(contact, true)
             if (D2C_WhatsAppIsSelfContact(contact)) {
+                ; Banner even when composer detection failed: the chat can still be open.
                 WhatsAppJump_HideLoading()
                 if (!D2C_WhatsAppSelfPaste_Confirm())
                     return
@@ -912,6 +910,8 @@ class D2C_FlowManager {
                 sentSelf := true
                 return
             }
+            if (!jumped)
+                return
 
             WhatsAppJump_UpdateLoading("⏳ Pasting message...")
             A_Clipboard := ""

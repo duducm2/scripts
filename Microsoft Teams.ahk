@@ -598,16 +598,30 @@ Teams_StartNewConversationJump() {
 }
 
 WhatsApp_StartNewConversationJump() {
-    contact := Trim(InputBox("Enter a WhatsApp contact name:", "Jump to Chat").Value)
-    if contact = ""
+    ib := InputBox("Enter a WhatsApp contact name:", "Jump to Chat")
+    contact := Trim(ib.Value)
+    if (ib.Result = "Cancel" || contact = "")
         return
+    ; Clipboard before the jump is what Ctrl+V should send to the self-chat.
+    messageText := A_Clipboard
     clipSaved := ClipboardAll()
+    sentSelf := false
     try {
         WhatsAppJumpToChat(contact)
+        if (!D2C_WhatsAppIsSelfContact(contact))
+            return
+        WhatsAppJump_HideLoading()
+        if (!D2C_WhatsAppSelfPaste_Confirm())
+            return
+        if (!D2C_WhatsAppSelfPaste_Send(messageText))
+            return
+        sentSelf := true
     } finally {
         A_Clipboard := clipSaved
         if (ClipWait(1)) {
         }
+        if (sentSelf)
+            ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp", 1500, BANNER_ACCENT_SUCCESS)
     }
 }
 
