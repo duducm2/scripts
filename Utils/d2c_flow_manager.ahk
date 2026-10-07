@@ -1184,14 +1184,15 @@ class D2C_FlowManager {
         }
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner ([P] Copy; [D] Display on origin).
+        ; Same destinations as #!+p, except [H] Here instead of [D] Display:
+        ; Send dictation already uses [D] for Finance daily.
         ; Paste-window keys: pick target immediately → copy reply → paste (same as #!+p [W]).
         ; To add another letter with this identical workflow, append it to pasteWindowKeys and
         ; include it in the pk strip below.
         pasteWindowKeys := ["W"]
         keyCallbacks := Map(
             "P", this.OnActionP.Bind(this),
-            "D", this.OnActionD.Bind(this),
+            "H", this.OnActionH.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
             "O", this.OnActionO.Bind(this),
@@ -1203,10 +1204,10 @@ class D2C_FlowManager {
         if (companion != "enterprise")
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
-            pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+            pk := "[P] Copy  [H] Here  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
         else
             pk :=
-                "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+                "[P] Copy  [H] Here  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
             "❓ Response ready — what next? (5s)",
             keyCallbacks,
@@ -1269,8 +1270,9 @@ class D2C_FlowManager {
         }
     }
 
-    ; [D] Copy reply, restore OriginHwnd, show full text banner (same UX as #!+8 / #!+p [D]).
-    OnActionD(*) {
+    ; [H] Copy reply, restore OriginHwnd, show full text banner (same UX as #!+8 / #!+p [D]).
+    ; Letter is H so it does not collide with Send dictation [D] Finance daily.
+    OnActionH(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
         this.CleanupActionPrompt()
