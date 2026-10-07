@@ -206,6 +206,9 @@ ClipAngel_OpenWithMarkFilter(mode) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
+        ; Window is fully open. One Backspace on the clip list empties a leftover search
+        ; from another filter; Clip Angel does not delete clips on Backspace.
+        ClipAngel_ClearSearchWithBackspace(hwnd)
         ShowCenteredOverlay_Utils(doneMsg, 900, BANNER_ACCENT_SUCCESS)
         try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-open.wav")
         catch {
@@ -218,6 +221,30 @@ ClipAngel_OpenWithMarkFilter(mode) {
         ShowCenteredOverlay_Utils("❌ Clip Angel open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return false
     }
+}
+
+; After Alt+P / Alt+B, the main window is up and the clip list has focus.
+; Clip Angel moves that Backspace into the search box and selects all of its text,
+; so one key empties a search left from another section. Delete removes clips; Backspace does not.
+ClipAngel_ClearSearchWithBackspace(hwnd) {
+    if !hwnd
+        return
+    if !WinActive("ahk_id " hwnd)
+        ClipAngel_EnsureWindowActive(hwnd, 400)
+    dataGrid := 0
+    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    catch
+        dataGrid := 0
+    if dataGrid {
+        try dataGrid.SetFocus()
+        catch {
+        }
+    }
+    ClipAngel_ReleaseChordModifiersForSend()
+    priorSendLevel := A_SendLevel
+    SendLevel 0
+    SendInput "{Backspace}"
+    SendLevel priorSendLevel
 }
 
 ; After native Alt+P / Alt+B open: short settle, one maximize gate, one retry if needed.
