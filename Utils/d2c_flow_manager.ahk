@@ -285,6 +285,7 @@ class D2C_FlowManager {
         this.MonitorButtonEverFound := false
         this.MonitorLastCheckTick := 0
         this.HasCopiedForThisResponse := false
+        this.ShowReplyHereAfterSend := false
     }
 
     ; --- Entry Points ---
@@ -325,6 +326,7 @@ class D2C_FlowManager {
         }
         cancelCb := this.OnSubmitN.Bind(this)
         keyCallbacks := Map(
+            "H", this.OnSubmitH.Bind(this),
             "G", this.OnSubmitG.Bind(this),
             "A", this.OnSubmitA.Bind(this),
             "T", this.OnSubmitT.Bind(this),
@@ -354,7 +356,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks pack  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
+            "[H] Here  [G] Grammar  [A] AI opt  [T] Tasks pack  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
             true,
             true,
             true
@@ -397,6 +399,15 @@ class D2C_FlowManager {
     OnSubmitY(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
+        this.ExecuteGeminiSubmit(true)
+    }
+
+    ; [H] Same send as [Y]. When the reply is done, copy it back onto OriginHwnd
+    ; and show the full text. Skips the Response ready menu. Not [D] (Finance daily).
+    OnSubmitH(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ShowReplyHereAfterSend := true
         this.ExecuteGeminiSubmit(true)
     }
 
@@ -1167,7 +1178,12 @@ class D2C_FlowManager {
                 catch {
                     ; Ignore chime failures
                 }
-                this.PromptForResponseAction()
+                if (this.ShowReplyHereAfterSend) {
+                    ; Reuse [H] Here on the response menu: copy, restore origin, show banner.
+                    this.CurrentPhase := "PromptingAction"
+                    this.OnActionH()
+                } else
+                    this.PromptForResponseAction()
             } else {
                 ; False alarm, the button is still there. Resume polling.
                 SetTimer(this.MonitorTimer, 500)
