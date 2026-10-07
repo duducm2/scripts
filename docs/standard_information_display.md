@@ -157,9 +157,9 @@ These wrap `StandardLoadingBar_*` with preset styles:
 #### WhatsApp self-chat (`[Z]` and Win+Alt+Shift+R double-tap)
 
 - **When:** the WhatsApp contact box (dictation `[Z]`, or the second tap of Win+Alt+Shift+R) is `eu (` or a fast-typing neighbor (`eu(`, `eu`, `eu)`, `euu(`, `ue(`, and the same with spaces removed). The Teams single-tap of that hotkey is unchanged. Other WhatsApp contacts still paste and do not press Enter (`[Z]`), or only open the chat (double-tap).
-- **Category:** Interactive Input, 2 seconds, `StandardLoadingBar_ShowWithKeys` with a timed progress fill, `noBorder: true`, `trackActiveMonitor: true`, `BANNER_ACCENT_INTERMEDIATE`.
-- **Prompt:** `❓ Paste and send to yourself? (2s)` and strip `[Y] Yes  [W] Yes  [Esc] Skip`.
-- **Y or W:** focus the open chat composer, Ctrl+V the dictation, wait 1 second, Enter. Then Information Only `✅ Message sent in WhatsApp` (`BANNER_ACCENT_SUCCESS`, 1.5 s).
+- **Category:** Interactive Input, 4 seconds, `StandardLoadingBar_ShowWithKeys` with a timed progress fill, `noBorder: true`, `trackActiveMonitor: true`, `BANNER_ACCENT_INTERMEDIATE`.
+- **Prompt:** `❓ Paste and send to yourself? (4s)` and strip `[Y] Yes  [Esc] Skip`.
+- **Y:** focus the open chat composer, restore the pre-search clipboard (every format, including images), Ctrl+V, wait 1 second, Enter. Then Information Only `✅ Message sent in WhatsApp` (`BANNER_ACCENT_SUCCESS`, 1.5 s).
 - **Esc or timeout:** leave the open chat as it is. No paste and no Enter.
 
 ### Shift keys.ahk

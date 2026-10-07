@@ -293,20 +293,19 @@ D2C_WhatsAppSelfPaste_OnSkip(*) {
     D2C_WhatsAppSelfPaste_Finish("")
 }
 
-; 2s Interactive Input. Y or W confirms; Esc or timeout leaves the chat untouched.
+; 4s Interactive Input. Y confirms; Esc or timeout leaves the chat untouched.
 D2C_WhatsAppSelfPaste_Confirm() {
     global g_WhatsAppSelfPasteChoice, g_WhatsAppSelfPasteActive
     g_WhatsAppSelfPasteChoice := ""
     g_WhatsAppSelfPasteActive := true
     keyCallbacks := Map(
         "Y", D2C_WhatsAppSelfPaste_OnYes,
-        "W", D2C_WhatsAppSelfPaste_OnYes,
         "Escape", D2C_WhatsAppSelfPaste_OnSkip
     )
     StandardLoadingBar_ShowWithKeys(
-        "❓ Paste and send to yourself? (2s)",
+        "❓ Paste and send to yourself? (4s)",
         keyCallbacks,
-        2000,
+        4000,
         0,
         D2C_WhatsAppSelfPaste_OnSkip,
         BANNER_ACCENT_INTERMEDIATE,
@@ -314,7 +313,7 @@ D2C_WhatsAppSelfPaste_Confirm() {
         17,
         "",
         true,
-        "[Y] Yes  [W] Yes  [Esc] Skip",
+        "[Y] Yes  [Esc] Skip",
         true,
         true,
         false
@@ -324,25 +323,89 @@ D2C_WhatsAppSelfPaste_Confirm() {
     return g_WhatsAppSelfPasteChoice = "yes"
 }
 
-; Chat is already open. Re-focus the composer, paste the dictation, wait 1s, Enter.
-D2C_WhatsAppSelfPaste_Send(messageText) {
+D2C_WhatsAppClipHasPayload(clipData) {
+    try return (IsObject(clipData) && clipData.Size > 0)
+    catch {
+        return false
+    }
+}
+
+; Put every clipboard format back (text, image, files). Text-only ClipWait times out on images.
+D2C_WhatsAppRestoreClip(clipData) {
+    if (!D2C_WhatsAppClipHasPayload(clipData))
+        return false
+    loop 5 {
+        before := DllCall("user32\GetClipboardSequenceNumber", "UInt")
+        try A_Clipboard := clipData
+        catch {
+            Sleep 120
+            continue
+        }
+        deadline := A_TickCount + 900
+        while (A_TickCount < deadline) {
+            seq := DllCall("user32\GetClipboardSequenceNumber", "UInt")
+            ; Second arg 1: any format, not text. Image-only data never satisfies text ClipWait.
+            if (seq != before && ClipWait(0.3, 1))
+                return true
+            Sleep 40
+        }
+        Sleep 80
+    }
+    return false
+}
+
+; Event-mode Ctrl+V so Chrome/WhatsApp receives it after the banner took focus.
+D2C_WhatsAppSendCtrlV(hwnd) {
+    if (hwnd > 0 && !WinActive("ahk_id " hwnd))
+        WhatsAppJump_ActivateHwnd(hwnd, 2)
+    Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}{LCtrl Up}{RCtrl Up}"
+    prevMode := A_SendMode
+    prevDelay := A_KeyDelay
+    prevDuration := A_KeyDuration
+    try {
+        SendMode "Event"
+        SetKeyDelay 40, 30
+        if (hwnd > 0 && WinActive("ahk_id " hwnd))
+            Send "^v"
+        else if (hwnd > 0)
+            ControlSend "^v", , "ahk_id " hwnd
+        else
+            Send "^v"
+    } finally {
+        try SendMode prevMode
+        try SetKeyDelay prevDelay, prevDuration
+    }
+}
+
+; clipData is ClipboardAll captured before the contact search overwrote the clipboard.
+; pressEnter: self-chat waits 1s so the paste (including an image) can land, then sends.
+D2C_WhatsAppPastePayload(clipData, pressEnter := false) {
     hwnd := WhatsAppJump_FindHwnd()
     if (hwnd <= 0 || !WhatsAppJump_ActivateHwnd(hwnd, 3)) {
         ShowCenteredOverlay_Utils("❌ Could not focus WhatsApp to send.", 2500, BANNER_ACCENT_ERROR)
         return false
     }
-    Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
     WhatsAppJump_FocusComposer(hwnd)
-    Sleep 200
-    A_Clipboard := ""
-    A_Clipboard := messageText
-    if (!ClipWait(2)) {
+    Sleep 150
+    if (!D2C_WhatsAppRestoreClip(clipData)) {
         ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - COULD NOT RESTORE DICTATION", 3000, BANNER_ACCENT_ERROR)
         return false
     }
-    Send "^v"
-    Sleep 1000
-    Send "{Enter}"
+    ; Clipboard must be closed before WhatsApp reads it.
+    Sleep 100
+    D2C_WhatsAppSendCtrlV(hwnd)
+    if (pressEnter) {
+        Sleep 1000
+        if (hwnd > 0 && WinActive("ahk_id " hwnd))
+            Send "{Enter}"
+        else if (hwnd > 0)
+            ControlSend "{Enter}", , "ahk_id " hwnd
+        else
+            Send "{Enter}"
+        Sleep 200
+    } else {
+        Sleep 600
+    }
     return true
 }
 
@@ -876,8 +939,8 @@ class D2C_FlowManager {
         }
     }
 
-    ; [Z] Prompt for WhatsApp contact, jump to chat, paste dictated text (no Enter).
-    ; Self-chat ("eu (" and close typos): 2s banner; Y or W pastes, waits 1s, then Enter.
+    ; [Z] Prompt for WhatsApp contact, jump to chat, paste clipboard (no Enter).
+    ; Self-chat ("eu (" and close typos): 4s banner; Y pastes every format, waits 1s, then Enter.
     OnSubmitZ(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -887,7 +950,6 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        messageText := A_Clipboard
         clipSaved := ClipboardAll()
         sentSelf := false
 
@@ -905,7 +967,7 @@ class D2C_FlowManager {
                 WhatsAppJump_HideLoading()
                 if (!D2C_WhatsAppSelfPaste_Confirm())
                     return
-                if (!D2C_WhatsAppSelfPaste_Send(messageText))
+                if (!D2C_WhatsAppPastePayload(clipSaved, true))
                     return
                 sentSelf := true
                 return
@@ -914,24 +976,16 @@ class D2C_FlowManager {
                 return
 
             WhatsAppJump_UpdateLoading("⏳ Pasting message...")
-            A_Clipboard := ""
-            A_Clipboard := messageText
-            if (!ClipWait(2)) {
+            if (!D2C_WhatsAppPastePayload(clipSaved, false)) {
                 WhatsAppJump_HideLoading()
-                ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - COULD NOT RESTORE DICTATION", 3000, BANNER_ACCENT_ERROR)
                 return
             }
-
-            Sleep 200
-            Send "^v"
-            ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
-            Sleep 350
             StandardLoadingBar_Update("✅ Message ready in WhatsApp")
             Sleep 400
         } finally {
             WhatsAppJump_HideLoading()
-            A_Clipboard := clipSaved
-            if (ClipWait(1)) {
+            try A_Clipboard := clipSaved
+            if (ClipWait(1, 1)) {
             }
             if (sentSelf)
                 ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp", 1500, BANNER_ACCENT_SUCCESS)

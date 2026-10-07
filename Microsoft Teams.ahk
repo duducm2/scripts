@@ -602,8 +602,7 @@ WhatsApp_StartNewConversationJump() {
     contact := Trim(ib.Value)
     if (ib.Result = "Cancel" || contact = "")
         return
-    ; Clipboard before the jump is what Ctrl+V should send to the self-chat.
-    messageText := A_Clipboard
+    ; Full clipboard (text, image, or other formats) captured before search overwrites it.
     clipSaved := ClipboardAll()
     sentSelf := false
     try {
@@ -613,12 +612,12 @@ WhatsApp_StartNewConversationJump() {
         WhatsAppJump_HideLoading()
         if (!D2C_WhatsAppSelfPaste_Confirm())
             return
-        if (!D2C_WhatsAppSelfPaste_Send(messageText))
+        if (!D2C_WhatsAppPastePayload(clipSaved, true))
             return
         sentSelf := true
     } finally {
-        A_Clipboard := clipSaved
-        if (ClipWait(1)) {
+        try A_Clipboard := clipSaved
+        if (ClipWait(1, 1)) {
         }
         if (sentSelf)
             ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp", 1500, BANNER_ACCENT_SUCCESS)
