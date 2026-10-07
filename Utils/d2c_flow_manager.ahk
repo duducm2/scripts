@@ -769,6 +769,7 @@ class D2C_FlowManager {
     }
 
     ; [Z] Prompt for WhatsApp contact, jump to chat, paste dictated text (no Enter).
+    ; Contact "eu (" also waits 1s after paste, then presses Enter to send.
     OnSubmitZ(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -804,9 +805,16 @@ class D2C_FlowManager {
 
             Sleep 200
             Send "^v"
-            ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
-            Sleep 350
-            StandardLoadingBar_Update("✅ Message ready in WhatsApp")
+            if (contact = "eu (") {
+                ; Let the paste land, then send.
+                Sleep 1000
+                Send "{Enter}"
+                StandardLoadingBar_Update("✅ Message sent in WhatsApp")
+            } else {
+                ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
+                Sleep 350
+                StandardLoadingBar_Update("✅ Message ready in WhatsApp")
+            }
             Sleep 400
         } finally {
             WhatsAppJump_HideLoading()
