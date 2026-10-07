@@ -54,9 +54,8 @@
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
-; Clip Angel Alt+P / Alt+B: AHK-owned open (clear native Alt+P/B in Clip Angel settings).
+; Clip Angel Alt+P / Alt+B: global open from any window (clear native Alt+P/B in Clip Angel settings).
 ; AutoSlot freeze lives here (WindowManagement includes AutoSlot; Utils does not).
-#HotIf WinExist("ahk_exe ClipAngel.exe")
 !p:: {
     try AutoSlot_BeginPlaceFreeze()
     catch {
@@ -75,7 +74,6 @@
     }
     ClipAngel_OpenWithMarkFilter("favorites")
 }
-#HotIf
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)

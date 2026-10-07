@@ -154,6 +154,14 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | `#!+p` 1×/2×                  | At gesture confirm: `HotkeyCopy_ShowIntentBanner(isCode)` — `ShowWithKeys` "❓ Copy message/code — what next? (5s)" with `[P] Copy  [Y] Desktop  [F] Favorite  [R] Read` (1× message only; omitted for code and Gemini Enterprise) ` [W] Paste window  [O] Clip Angel  [N] No`; **P** copies only (✅ + restore origin); **Y/W** open their UI first (Desktop name list / visible-window paste), then copy, then act; **F/R/O** copy first then act; N or timeout dismisses without copying |
 | 1328–1449                     | Additional loading states                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
+#### D2C WhatsApp self-chat (`[Z]`)
+
+- **When:** the contact box is `eu (` or a fast-typing neighbor (`eu(`, `eu`, `eu)`, `euu(`, `ue(`, and the same with spaces removed). Other contacts still paste and do not press Enter.
+- **Category:** Interactive Input, 2 seconds, `StandardLoadingBar_ShowWithKeys` with a timed progress fill, `noBorder: true`, `trackActiveMonitor: true`, `BANNER_ACCENT_INTERMEDIATE`.
+- **Prompt:** `❓ Paste and send to yourself? (2s)` and strip `[Y] Yes  [W] Yes  [Esc] Skip`.
+- **Y or W:** focus the open chat composer, Ctrl+V the dictation, wait 1 second, Enter. Then Information Only `✅ Message sent in WhatsApp` (`BANNER_ACCENT_SUCCESS`, 1.5 s).
+- **Esc or timeout:** leave the open chat as it is. No paste and no Enter.
+
 ### Shift keys.ahk
 
 | Lines                                           | Context                                                                                                                                                                                                                                                                                                                                                                                                                                 |

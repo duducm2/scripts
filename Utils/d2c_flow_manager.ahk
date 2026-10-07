@@ -249,6 +249,103 @@ D2C_CompanionHasStop(hwnd, companion) {
     return false
 }
 
+; Self-chat names: "eu (" plus fast-typing neighbors (dropped space, extra letter, wrong bracket).
+D2C_WhatsAppIsSelfContact(contact) {
+    compact := StrLower(Trim(contact))
+    compact := RegExReplace(compact, "\s+")
+    if (compact = "")
+        return false
+    aliases := Map(
+        "eu(", true,
+        "eu", true,
+        "e(", true,
+        "eu)", true,
+        "e()", true,
+        "eu((", true,
+        "euu(", true,
+        "euu", true,
+        "ue(", true,
+        "ue", true,
+        "eu[", true,
+        "eu]", true
+    )
+    if (aliases.Has(compact))
+        return true
+    return !!RegExMatch(compact, "^e+u+\W{0,3}$")
+}
+
+global g_WhatsAppSelfPasteChoice := ""
+global g_WhatsAppSelfPasteActive := false
+
+D2C_WhatsAppSelfPaste_Finish(choice) {
+    global g_WhatsAppSelfPasteChoice, g_WhatsAppSelfPasteActive
+    if (!g_WhatsAppSelfPasteActive)
+        return
+    g_WhatsAppSelfPasteChoice := choice
+    g_WhatsAppSelfPasteActive := false
+}
+
+D2C_WhatsAppSelfPaste_OnYes(*) {
+    D2C_WhatsAppSelfPaste_Finish("yes")
+}
+
+D2C_WhatsAppSelfPaste_OnSkip(*) {
+    D2C_WhatsAppSelfPaste_Finish("")
+}
+
+; 2s Interactive Input. Y or W confirms; Esc or timeout leaves the chat untouched.
+D2C_WhatsAppSelfPaste_Confirm() {
+    global g_WhatsAppSelfPasteChoice, g_WhatsAppSelfPasteActive
+    g_WhatsAppSelfPasteChoice := ""
+    g_WhatsAppSelfPasteActive := true
+    keyCallbacks := Map(
+        "Y", D2C_WhatsAppSelfPaste_OnYes,
+        "W", D2C_WhatsAppSelfPaste_OnYes,
+        "Escape", D2C_WhatsAppSelfPaste_OnSkip
+    )
+    StandardLoadingBar_ShowWithKeys(
+        "❓ Paste and send to yourself? (2s)",
+        keyCallbacks,
+        2000,
+        0,
+        D2C_WhatsAppSelfPaste_OnSkip,
+        BANNER_ACCENT_INTERMEDIATE,
+        520,
+        17,
+        "",
+        true,
+        "[Y] Yes  [W] Yes  [Esc] Skip",
+        true,
+        true,
+        false
+    )
+    while (g_WhatsAppSelfPasteActive)
+        Sleep 30
+    return g_WhatsAppSelfPasteChoice = "yes"
+}
+
+; Chat is already open. Re-focus the composer, paste the dictation, wait 1s, Enter.
+D2C_WhatsAppSelfPaste_Send(messageText) {
+    hwnd := WhatsAppJump_FindHwnd()
+    if (hwnd <= 0 || !WhatsAppJump_ActivateHwnd(hwnd, 3)) {
+        ShowCenteredOverlay_Utils("❌ Could not focus WhatsApp to send.", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+    WhatsAppJump_FocusComposer(hwnd)
+    Sleep 200
+    A_Clipboard := ""
+    A_Clipboard := messageText
+    if (!ClipWait(2)) {
+        ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - COULD NOT RESTORE DICTATION", 3000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    Send "^v"
+    Sleep 1000
+    Send "{Enter}"
+    return true
+}
+
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
 ; Replaces legacy fragmented functions with a central authority to prevent race conditions.
@@ -780,7 +877,7 @@ class D2C_FlowManager {
     }
 
     ; [Z] Prompt for WhatsApp contact, jump to chat, paste dictated text (no Enter).
-    ; Contact "eu (" also waits 1s after paste, then presses Enter to send.
+    ; Self-chat ("eu (" and close typos): 2s banner; Y or W pastes, waits 1s, then Enter.
     OnSubmitZ(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -792,6 +889,7 @@ class D2C_FlowManager {
 
         messageText := A_Clipboard
         clipSaved := ClipboardAll()
+        sentSelf := false
 
         try {
             ib := InputBox("Enter a WhatsApp contact name:", "Jump to Chat")
@@ -802,6 +900,16 @@ class D2C_FlowManager {
 
             ; keepBarVisible so Loading Indication continues through paste.
             if (!WhatsAppJumpToChat(contact, true)) {
+                return
+            }
+
+            if (D2C_WhatsAppIsSelfContact(contact)) {
+                WhatsAppJump_HideLoading()
+                if (!D2C_WhatsAppSelfPaste_Confirm())
+                    return
+                if (!D2C_WhatsAppSelfPaste_Send(messageText))
+                    return
+                sentSelf := true
                 return
             }
 
@@ -816,22 +924,17 @@ class D2C_FlowManager {
 
             Sleep 200
             Send "^v"
-            if (contact = "eu (") {
-                ; Let the paste land, then send.
-                Sleep 1000
-                Send "{Enter}"
-                StandardLoadingBar_Update("✅ Message sent in WhatsApp")
-            } else {
-                ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
-                Sleep 350
-                StandardLoadingBar_Update("✅ Message ready in WhatsApp")
-            }
+            ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
+            Sleep 350
+            StandardLoadingBar_Update("✅ Message ready in WhatsApp")
             Sleep 400
         } finally {
             WhatsAppJump_HideLoading()
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
             }
+            if (sentSelf)
+                ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp", 1500, BANNER_ACCENT_SUCCESS)
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true
             this.Reset()

@@ -171,7 +171,6 @@ WhatsAppJump_FindHwnd() {
         }
     }
 
-
     if (hwnd)
         WhatsAppJump_SetCachedHwnd(hwnd)
     return hwnd
@@ -368,6 +367,32 @@ WhatsAppJump_IsComposerEditFocused() {
     } catch {
     }
     return false
+}
+
+; After a banner steals focus, put the message composer back in front.
+WhatsAppJump_FocusComposer(hwnd := 0) {
+    if (WhatsAppJump_IsComposerEditFocused())
+        return true
+    if !(hwnd is Integer) || hwnd <= 0
+        hwnd := WhatsAppJump_FindHwnd()
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        if (uia) {
+            for , name in ["Type a message", "Digite uma mensagem", "Digite a mensagem"] {
+                el := ""
+                try el := uia.FindElement({ Name: name, matchmode: "Substring" })
+                if (!el)
+                    continue
+                try el.SetFocus()
+                if (WhatsAppJump_WaitComposerEditFocused(800, 40))
+                    return true
+            }
+        }
+    } catch {
+    }
+    return WhatsAppJump_IsComposerEditFocused()
 }
 
 ; Poll until message composer Edit is focused (or deadline). Returns true if focused.
