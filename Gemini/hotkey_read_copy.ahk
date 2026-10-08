@@ -117,7 +117,10 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
             return false
         }
         A_Clipboard := ""
-        lastCodeButton.Click()
+        if (!Gemini_InvokeAcceptedCodeCopyButton(lastCodeButton)) {
+            GeminiPerfLog("copy_code", t0)
+            return false
+        }
         if !ClipWait(2) {
             GeminiPerfLog("copy_code", t0)
             return false
