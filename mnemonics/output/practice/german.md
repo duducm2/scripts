@@ -232,7 +232,7 @@ _No gallery images._
 <img src="../../web/assets/beast-thumbs/yak.png" alt="yak" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 The /z/ sound never starts a word in Standard German.
+💡 The letter 's' at the start of a word is the /z/ sound.
 
 **Quote**
 —
