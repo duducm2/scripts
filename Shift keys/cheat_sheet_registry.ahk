@@ -1092,7 +1092,7 @@ cheatSheets["Tasks"] := "
     🔗 [Shift+Enter / Ctrl+Enter] Info list — open highlighted info link
     ✏️ [Shift+E] Info list — edit highlighted info
     📋 [Ctrl+C] Info list — copy highlighted info point
-    📋 [Ctrl+V] Clipboard image or text becomes an info point on the selected task, or in the open info list. A copied info point pastes as a full row. A copied task pastes into a selected project or section.
+    📋 [Ctrl+V] A copied or cut task pastes into the selected project or section, even when the clipboard holds an image. Otherwise a clipboard image or text becomes an info point on the selected task or project, or in the open info list. A copied info point pastes as a full row. A selected section does not receive images.
     📋 [Shift+A] Info list — copy text from every info point
     🗑️ [Delete] Info list — delete highlighted info
     🗂️ [Shift+B] Info list — toggle list / bento layout
@@ -1111,8 +1111,8 @@ cheatSheets["Tasks"] := "
     💾 [Enter] Save open form (info, task, project, section) or inline create field
     🔗 [Enter] Info list — open highlighted info link
     📋 [C] Copy selected or hovered task
-    ✂️ [X] Cut selected or hovered task (paste moves it)
-    📋 [V] Clipboard image or text → info on the selected task. Copied task → selected project or section (when the clipboard is not an image).
+    ✂️ [X] Cut selected or hovered task (paste moves it; close Info first)
+    📋 [V] Copied or cut task → selected project or section, even if the clipboard holds an image. Otherwise clipboard image or text → info on the selected task or project (a section does not receive it).
     
     === Shift ===
     💼 [1] Work column only (toggle)
@@ -1130,7 +1130,7 @@ cheatSheets["Tasks"] := "
     📝 [N] Open Info for the selected project or task
     📄 [X] JSON — selected task (info points included), or the whole project when a project or section is selected
     🖼️ [H] Project icon — open Commons picker and auto-suggest top 5
-    🖼️ [V] Paste clipboard image as an info point (selection or Info window)
+    🖼️ [V] Paste clipboard image as an info point on the selected task or project, or in the Info window (not onto a section)
     📂 [E] Expand all projects and sections, or collapse all projects
     🧹 [F] Clear emoji filter
     ⚡ [T] Important — tag hovered or selected task, or filter the list if none targeted

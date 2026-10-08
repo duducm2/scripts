@@ -2002,40 +2002,10 @@
             }),
           });
           const iid = r.info?.id || "";
-          let attachmentMissed = false;
-          for (const att of clip.attachments || []) {
-            const kind = (att.kind || "").trim();
-            if (kind === "image") {
-              try {
-                const file = await fileFromInfoImage(att);
-                if (!file || !iid) {
-                  attachmentMissed = true;
-                  continue;
-                }
-                await uploadImage("info", iid, file, { quiet: true });
-              } catch (_) {
-                attachmentMissed = true;
-              }
-              continue;
-            }
-            if (!att.ref) continue;
-            try {
-              const saved = await api("/api/attachments", {
-                method: "POST",
-                body: JSON.stringify({
-                  parent_type: "info",
-                  parent_id: iid,
-                  kind: kind || "url",
-                  ref: att.ref,
-                  description: att.description || "",
-                }),
-              });
-              if (saved.attachment)
-                mergeApiRow("attachments", saved.attachment);
-            } catch (_) {
-              attachmentMissed = true;
-            }
-          }
+          const attachmentMissed = await copyAttachmentsOntoInfo(
+            iid,
+            clip.attachments,
+          );
           const cat = String(
             r.info?.section_path || clip.section_path || "",
           ).trim();
@@ -2067,6 +2037,45 @@
             String(att.description || "image.png").trim() || "image.png";
           const name = raw.replace(/[^\w.\-]+/g, "_") || "image.png";
           return new File([blob], name, { type: blob.type || "image/png" });
+        }
+
+        async function copyAttachmentsOntoInfo(iid, attachments) {
+          let missed = false;
+          if (!iid) return true;
+          for (const att of attachments || []) {
+            const kind = (att.kind || "").trim();
+            if (kind === "image") {
+              try {
+                const file = await fileFromInfoImage(att);
+                if (!file) {
+                  missed = true;
+                  continue;
+                }
+                await uploadImage("info", iid, file, { quiet: true });
+              } catch (_) {
+                missed = true;
+              }
+              continue;
+            }
+            if (!att.ref) continue;
+            try {
+              const saved = await api("/api/attachments", {
+                method: "POST",
+                body: JSON.stringify({
+                  parent_type: "info",
+                  parent_id: iid,
+                  kind: kind || "url",
+                  ref: att.ref,
+                  description: att.description || "",
+                }),
+              });
+              if (saved.attachment)
+                mergeApiRow("attachments", saved.attachment);
+            } catch (_) {
+              missed = true;
+            }
+          }
+          return missed;
         }
 
         async function pasteTextAsInfo(target, text) {
@@ -2141,6 +2150,18 @@
             state.sel?.kind === "task" || state.sel?.kind === "habit";
           const projectOrSection =
             state.sel?.kind === "project" || state.sel?.kind === "section";
+          // A cut or copied task wins over a clipboard image. A selected
+          // section is a task destination, not a project image target.
+          if (!infoList && projectOrSection && state.taskClipboard?.title) {
+            e.preventDefault();
+            await pasteCopiedTask();
+            return;
+          }
+          if (file && state.sel?.kind === "section" && !infoList) {
+            e.preventDefault();
+            toast("Select a task or project to paste an image");
+            return;
+          }
           if (file && target?.ptype && target?.pid) {
             e.preventDefault();
             await uploadImage(target.ptype, target.pid, file);
@@ -2162,16 +2183,6 @@
           ) {
             e.preventDefault();
             await pasteTextAsInfo(target, text);
-            return;
-          }
-          if (
-            !file &&
-            !infoList &&
-            projectOrSection &&
-            state.taskClipboard?.title
-          ) {
-            e.preventDefault();
-            await pasteCopiedTask();
             return;
           }
           if (
@@ -3740,9 +3751,21 @@
           return el?.getAttribute("data-id") || "";
         }
 
-        function taskToCopyPayload(t) {
+        function taskInfosForClipboard(taskId) {
+          return (state.data?.info_points || [])
+            .filter((i) => i.parent_type === "task" && i.parent_id === taskId)
+            .sort((a, b) => {
+              const [as, ai] = infoSortKey(a);
+              const [bs, bi] = infoSortKey(b);
+              return as - bs || ai.localeCompare(bi);
+            })
+            .map((row) => infoToClipboard(row))
+            .filter(Boolean);
+        }
+
+        function taskToCopyPayload(t, opts = {}) {
           if (!t) return null;
-          return {
+          const payload = {
             title: t.title || "",
             emoji: t.emoji || "🔲",
             kind: t.kind || "punctual",
@@ -3750,16 +3773,18 @@
             due_date: t.due_date || "",
             next_due: t.next_due || "",
           };
+          if (!opts.cut) payload.infos = taskInfosForClipboard(t.id);
+          return payload;
         }
 
         function copyTaskById(id, opts = {}) {
           const t = taskRowById(id);
-          const payload = taskToCopyPayload(t);
+          const cut = !!opts.cut;
+          const payload = taskToCopyPayload(t, { cut });
           if (!payload) {
             toast("Select or hover a task first");
             return false;
           }
-          const cut = !!opts.cut;
           state.taskClipboard = {
             ...payload,
             cutFromId: cut ? t.id : "",
@@ -3772,6 +3797,35 @@
 
         function cutTaskById(id) {
           return copyTaskById(id, { cut: true });
+        }
+
+        async function cloneCopiedTaskInfos(taskId, infos) {
+          let missed = false;
+          for (const clip of infos || []) {
+            const title = String(clip?.title || clip?.body || "").trim();
+            if (!title || !taskId) {
+              missed = true;
+              continue;
+            }
+            const r = await api("/api/info", {
+              method: "POST",
+              body: JSON.stringify({
+                title,
+                body: clip.body || "",
+                section_path: clip.section_path || "",
+                parent_type: "task",
+                parent_id: taskId,
+                emoji: clip.emoji || "ℹ️",
+                birth_date: clip.birth_date || "",
+              }),
+            });
+            if (r.info) mergeApiRow("info_points", r.info);
+            if (
+              await copyAttachmentsOntoInfo(r.info?.id || "", clip.attachments)
+            )
+              missed = true;
+          }
+          return missed;
         }
 
         async function pasteCopiedTask() {
@@ -3839,8 +3893,17 @@
             method: "POST",
             body: JSON.stringify(payload),
           });
+          let infoMissed = false;
+          if (!moving && r.task?.id)
+            infoMissed = await cloneCopiedTaskInfos(r.task.id, clip.infos);
           if (moving) state.taskClipboard = { ...clip, cutFromId: "" };
-          toast(moving ? "Moved task" : "Pasted task");
+          toast(
+            moving
+              ? "Moved task"
+              : infoMissed
+                ? "Pasted task (an image was not copied)"
+                : "Pasted task",
+          );
           await afterEntitySave("task", r, () => {
             if (r.task?.id) {
               const sk = r.task.kind === "habitual" ? "habit" : "task";
@@ -6321,24 +6384,13 @@
             return { ptype: "project", pid: state.sel.id, label: "project" };
           if (state.sel.kind === "task" || state.sel.kind === "habit")
             return { ptype: "task", pid: state.sel.id, label: "task" };
-          if (state.sel.kind === "section") {
-            const sec = (state.data.sections || []).find(
-              (s) => s.id === state.sel.id,
-            );
-            if (sec?.project_id)
-              return {
-                ptype: "project",
-                pid: sec.project_id,
-                label: "project (from section)",
-              };
-          }
           return null;
         }
 
         async function pasteClipboardImageToSelection() {
           const target = resolveAttachmentTarget();
           if (!target) {
-            toast("Select a project, section, or task first");
+            toast("Select a project or task first");
             return;
           }
           if (!navigator.clipboard?.read) {
@@ -6713,6 +6765,12 @@
                 } catch (err) {
                   toast(err.message || String(err));
                 }
+                return;
+              }
+              if (k === "x" || e.code === "KeyX") {
+                e.preventDefault();
+                e.stopPropagation();
+                toast("Close info to cut a task");
                 return;
               }
               return;
