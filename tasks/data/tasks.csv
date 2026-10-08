@@ -164,7 +164,7 @@ TASK_0388,PROJ_0034,SEC_0149,Use your pharmacy benets,🔲,punctual,,,,,personal
 TASK_0389,PROJ_0034,SEC_0149,Use your pharmacy benefits,,punctual,,,,,personal,5620,,2026-10-05 08:40:10,1,
 TASK_0393,PROJ_0034,SEC_0149,Go back to Google Assistant,⚡,punctual,,,,,personal,5660,,2026-10-05 14:07:32,1,
 TASK_0396,PROJ_0026,SEC_0129,"Quando a biblioteca entregar o PDF da ficha catalográfica, coloque o arquivo em latex/ e, em tese.tex, troque \fichacatalografica{branco.pdf} pelo nome desse PDF.",🔲,punctual,,,,,personal,5690,,2026-10-05 22:27:16,1,
-TASK_0397,PROJ_0035,SEC_0150,Meeting October 5th,,punctual,,,,,work,5670,,2026-10-06 09:51:01,1,IMP-20261006-095101
+TASK_0397,PROJ_0035,SEC_0157,Meeting October 5th,🔲,punctual,,,,Meetings,work,5670,,2026-10-06 09:51:01,1,
 TASK_0398,PROJ_0035,SEC_0151,Understand during discovery if customization is needed or start with global,❓,punctual,,,,Kickoff meeting,work,5710,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0400,PROJ_0035,SEC_0151,Schedule meetings with the team,❓,punctual,,,,Kickoff meeting,work,5730,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0401,PROJ_0035,SEC_0155,Perform a detailed discovery to understand limitations and scope,🔲,punctual,,,,Backlog,work,5740,,2026-10-06 09:51:01,1,
@@ -177,7 +177,6 @@ TASK_0411,PROJ_0036,SEC_0153,Automatically gather more sample group,🔲,punctua
 TASK_0412,PROJ_0035,SEC_0154,Willian Yakabi: PO,,punctual,,,,Stakeholders,work,5850,,2026-10-06 11:00:27,1,
 TASK_0413,PROJ_0035,SEC_0154,Conte  Rodrigo: gerente de projetos,,punctual,,,,Stakeholders,work,5860,,2026-10-06 11:00:36,1,
 TASK_0415,PROJ_0035,SEC_0156,Timeline,,punctual,,,,Files and Links,work,5880,,2026-10-06 12:16:21,1,
-TASK_0416,PROJ_0035,SEC_0150,Check what is the price for Gemini Enterprise,🔲,punctual,,,,,work,5890,,2026-10-06 13:59:32,1,
 TASK_0417,PROJ_0035,SEC_0155,I can already start doing some heuristics evaluations based on the print screens of the tool on Docupedia,🔲,punctual,,,,Backlog,work,5900,,2026-10-06 16:11:10,1,
 TASK_0418,PROJ_0035,SEC_0151,I need a list of people to be interviewed,❓,punctual,,,,Kickoff meeting,work,5910,,2026-10-06 16:34:35,1,
 TASK_0419,PROJ_0035,SEC_0151,"If possible, a list of people to be surveyed",❓,punctual,,,,Kickoff meeting,work,5920,,2026-10-06 16:34:44,1,
