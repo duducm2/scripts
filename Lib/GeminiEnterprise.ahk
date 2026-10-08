@@ -1002,32 +1002,94 @@ GeminiEnterprise_IsCopyCodeButton(name) {
     return false
 }
 
+GeminiEnterprise_ClassHasToken(className, token) {
+    if (!className || !token)
+        return false
+    normalized := StrReplace(StrReplace(StrReplace(className, "`n", " "), "`r", " "), "`t", " ")
+    for part in StrSplit(normalized, " ", " `t") {
+        if (part = token)
+            return true
+    }
+    return false
+}
+
+; Whole-answer controls: "Copy response" / "Copy" / "Copy message" / "Copy prompt".
+; Distinct from the fence button "Copy code to clipboard".
+GeminiEnterprise_IsWholeAnswerCopyName(name) {
+    if (!name)
+        return false
+    if (InStr(name, "Copy prompt", false) || InStr(name, "Copiar prompt", false))
+        return true
+    return GeminiEnterprise_IsCopyResponseButton(name)
+}
+
+; Fail closed. The fence button sits in group.copy-code-button, above the snippet.
+; The whole-answer button sits later, in list.answer-footer > group.answer-button.copy-button.
+; copy-button alone must not pass: it is the footer control, not the fence.
+GeminiEnterprise_AcceptCodeCopyButton(el) {
+    if (!IsObject(el))
+        return false
+    name := ""
+    try name := el.Name
+    catch
+        return false
+    if (GeminiEnterprise_IsWholeAnswerCopyName(name))
+        return false
+    if (name != "" && !GeminiEnterprise_IsCopyCodeButton(name))
+        return false
+    node := el
+    loop 8 {
+        if (!IsObject(node))
+            return false
+        cls := ""
+        try cls := node.ClassName
+        catch
+            cls := ""
+        if (GeminiEnterprise_ClassHasToken(cls, "answer-footer"))
+            return false
+        if (GeminiEnterprise_ClassHasToken(cls, "copy-code-button"))
+            return true
+        if (GeminiEnterprise_ClassHasToken(cls, "answer-button") || GeminiEnterprise_ClassHasToken(cls, "copy-button"))
+            return false
+        parent := 0
+        try parent := node.Parent
+        catch
+            return false
+        node := parent
+    }
+    return false
+}
+
+; Invoke only. A coordinate click can land on Copy response below the fence.
+GeminiEnterprise_InvokeCodeCopyButton(el) {
+    if (!GeminiEnterprise_AcceptCodeCopyButton(el))
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 ; Group.copy-code-button wraps the fence control. The button itself is often
 ; "Copy code to clipboard" and can have an empty name until hovered.
 GeminiEnterprise_ButtonFromCopyCodeHost(el) {
     if (!IsObject(el))
         return 0
     try {
-        if (el.Type = 50000 && GeminiEnterprise_IsCopyCodeButton(el.Name))
+        if (el.Type = 50000 && GeminiEnterprise_AcceptCodeCopyButton(el))
             return el
     } catch {
     }
     try {
         buttons := el.FindAll({ Type: "Button" })
-        named := 0
         for button in buttons {
-            if (GeminiEnterprise_IsCopyCodeButton(button.Name))
+            if (GeminiEnterprise_AcceptCodeCopyButton(button))
                 return button
-            if (named = 0)
-                named := button
         }
-        if (named)
-            return named
-    } catch {
-    }
-    try {
-        if (el.Type = 50000)
-            return el
     } catch {
     }
     return 0
@@ -1149,10 +1211,14 @@ GeminiEnterprise_GetLastCopyCodeButton(uia) {
     arr := GeminiEnterprise_GetCopyCodeButtonsArray(uia)
     if (arr.Length = 0)
         return 0
-    ; The control sits at the top of the fence. After the feed is scrolled to the
-    ; response footer, that header often has an empty BoundingRectangle while an
-    ; earlier snippet is still on screen. Tree order is the latest snippet.
-    return arr[arr.Length]
+    ; Tree order: the last accepted copy-code-button is the latest snippet,
+    ; which sits above that turn's answer-footer Copy response button.
+    last := 0
+    for btn in arr {
+        if (GeminiEnterprise_AcceptCodeCopyButton(btn))
+            last := btn
+    }
+    return last ? last : 0
 }
 
 GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) {
@@ -1223,15 +1289,11 @@ GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd :=
         ; Do not scroll the feed or the code header into view. That wheel/scroll
         ; moves the window the hotkey was pressed in.
         copyBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
-        if (!copyBtn)
+        if (!copyBtn || !GeminiEnterprise_AcceptCodeCopyButton(copyBtn))
             return false
         A_Clipboard := ""
-        if (!GeminiEnterprise_ClickUiaElement(copyBtn)) {
-            try copyBtn.Click()
-            catch {
-                return false
-            }
-        }
+        if (!GeminiEnterprise_InvokeCodeCopyButton(copyBtn))
+            return false
         if !ClipWait(2)
             return false
         if (playChimeAndNotify) {

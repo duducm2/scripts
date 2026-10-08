@@ -751,6 +751,27 @@ CopilotWeb_IsCopyCodeButton(name) {
     return false
 }
 
+; Code copy must be a code-fence name and must not be the whole-answer control.
+; Invoke only: a coordinate click can land on the response Copy button below the fence.
+CopilotWeb_InvokeAcceptedCodeCopyButton(el) {
+    if (!IsObject(el))
+        return false
+    name := ""
+    try name := el.Name
+    catch
+        return false
+    if (!CopilotWeb_IsCopyCodeButton(name) || CopilotWeb_IsCopyResponseButton(name))
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 CopilotWeb_GetCopyButtonsArray(uia) {
     out := []
     if (!IsObject(uia))
@@ -940,7 +961,8 @@ CopilotWeb_CopyLastCodeSnippetToClipboard(options := "", copilotHwnd := 0) {
         if (!copyBtn)
             return false
         A_Clipboard := ""
-        copyBtn.Click()
+        if (!CopilotWeb_InvokeAcceptedCodeCopyButton(copyBtn))
+            return false
         if !ClipWait(2)
             return false
         if (playChimeAndNotify) {

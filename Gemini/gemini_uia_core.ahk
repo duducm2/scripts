@@ -63,6 +63,27 @@ IsGeminiCopyCodeButton(name) {
     return false
 }
 
+; Code copy must be a code-fence name and must not be the whole-answer control.
+; Invoke only: a coordinate click can land on the response Copy button below the fence.
+Gemini_InvokeAcceptedCodeCopyButton(el) {
+    if (!IsObject(el))
+        return false
+    name := ""
+    try name := el.Name
+    catch
+        return false
+    if (!IsGeminiCopyCodeButton(name) || IsGeminiCopyResponseButton(name))
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
 ; Return count of Gemini "Copy response" buttons. Uses centralized GetGeminiCopyButtonsArray. Caller must ensure tab is active and scrolled to bottom.
 GetGeminiCopyButtonCount(uia) {
     return GetGeminiCopyButtonsArray(uia).Length
