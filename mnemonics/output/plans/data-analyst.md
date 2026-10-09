@@ -26,6 +26,8 @@
 
 - [ ] Spark
 
+- [ ] Database view
+
 ## Phase 1: Advanced Tabular Modeling and Automation
 
 ### 1. Interface and Navigation
