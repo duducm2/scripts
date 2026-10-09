@@ -971,3 +971,4 @@ PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex
 PITEM_0125,PLAN_0007,Backlog,ACID,0,10
 PITEM_0140,PLAN_0007,Backlog,Delta Lake,0,11
 PITEM_0143,PLAN_0007,Backlog,Spark,0,12
+PITEM_0973,PLAN_0007,Backlog,Database view,0,13
