@@ -1,0 +1,13 @@
+﻿===PREVIEW===
+6 row(s) · Lunch, groceries, construction materials, and serviceman expenses parsed
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Lunch,"8,97",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Groceries,"10,00",expense,CAT_MERCADO,ACC_MERCADOP,,,1
+Construction materials for new home,"1060,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Construction materials for new home,"280,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Groceries,"126,68",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+Serviceman constructing new home,"500,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+===END_FILE===
