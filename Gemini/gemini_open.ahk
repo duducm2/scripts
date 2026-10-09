@@ -11,7 +11,7 @@
 InitializeGeminiFirstTime() {
     try {
         ; Show banner to inform user
-        StandardLoadingBar_Show("📤 Opening Gemini (2 tabs)...", BANNER_ACCENT_INTERMEDIATE)
+        StandardLoadingBar_Show("📤 Opening Gemini...", BANNER_ACCENT_INTERMEDIATE)
 
         ; Remember existing Chrome windows so we can find the one we're about to create
         existingChromeHwnds := []
@@ -21,8 +21,8 @@ InitializeGeminiFirstTime() {
         } catch {
         }
 
-        ; Run Chrome with new window and two Gemini tabs
-        Run "chrome.exe --new-window https://gemini.google.com/ https://gemini.google.com/"
+        ; Run Chrome with a new window and one Gemini tab
+        Run "chrome.exe --new-window https://gemini.google.com/"
 
         ; Find the newly created Chrome window (WinGetList + optional CREATE hook)
         geminiHwnd := WaitForNewChromeWindow(existingChromeHwnds, GEMINI_FIRST_LAUNCH_MAX_LOOPS *
