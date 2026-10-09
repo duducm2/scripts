@@ -48,10 +48,11 @@ SEC_0144,PROJ_0032,General,0,
 SEC_0148,PROJ_0013,Links,10,waiting
 SEC_0149,PROJ_0034,General,0,
 SEC_0150,PROJ_0035,General,0,
-SEC_0151,PROJ_0035,Kickoff meeting,20,
+SEC_0151,PROJ_0035,Kickoff meeting,10,
 SEC_0152,PROJ_0036,General,0,
 SEC_0153,PROJ_0036,Features,10,
-SEC_0154,PROJ_0035,Stakeholders,10,
-SEC_0155,PROJ_0035,Backlog,30,
-SEC_0156,PROJ_0035,Files and Links,40,
-SEC_0157,PROJ_0035,Meetings,50,
+SEC_0154,PROJ_0035,Stakeholders,50,waiting
+SEC_0155,PROJ_0035,Backlog,20,
+SEC_0156,PROJ_0035,Files and Links,40,waiting
+SEC_0157,PROJ_0035,Meetings,60,waiting
+SEC_0158,PROJ_0035,Portal,30,

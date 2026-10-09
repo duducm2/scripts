@@ -165,10 +165,8 @@ TASK_0389,PROJ_0034,SEC_0149,Use your pharmacy benefits,,punctual,,,,,personal,5
 TASK_0393,PROJ_0034,SEC_0149,Go back to Google Assistant,⚡,punctual,,,,,personal,5660,,2026-10-05 14:07:32,1,
 TASK_0396,PROJ_0026,SEC_0129,"Quando a biblioteca entregar o PDF da ficha catalográfica, coloque o arquivo em latex/ e, em tese.tex, troque \fichacatalografica{branco.pdf} pelo nome desse PDF.",🔲,punctual,,,,,personal,5690,,2026-10-05 22:27:16,1,
 TASK_0397,PROJ_0035,SEC_0157,Meeting October 5th,🔲,punctual,,,,Meetings,work,5670,,2026-10-06 09:51:01,1,
-TASK_0398,PROJ_0035,SEC_0151,Understand during discovery if customization is needed or start with global,❓,punctual,,,,Kickoff meeting,work,5710,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0400,PROJ_0035,SEC_0151,Schedule meetings with the team,❓,punctual,,,,Kickoff meeting,work,5730,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0401,PROJ_0035,SEC_0155,Perform a detailed discovery to understand limitations and scope,🔲,punctual,,,,Backlog,work,5740,,2026-10-06 09:51:01,1,
-TASK_0403,PROJ_0035,SEC_0151,Define a final delivery date,❓,punctual,,,,Kickoff meeting,work,5760,,2026-10-06 09:51:01,1,IMP-20261006-095101
 TASK_0404,PROJ_0035,SEC_0155,Organize a face-to-face workshop with Amanda in the week of the 27th,🔲,punctual,,,,Backlog,work,5770,,2026-10-06 09:51:01,1,
 TASK_0407,PROJ_0035,SEC_0155,Define and track KPIs to measure UX improvements,🔲,punctual,,,,Backlog,work,5800,,2026-10-06 09:51:01,1,
 TASK_0408,PROJ_0035,SEC_0155,Present the initial process mapping and identify areas for deepening,🔲,punctual,,,,Backlog,work,5810,,2026-10-06 09:51:01,1,
@@ -183,6 +181,6 @@ TASK_0419,PROJ_0035,SEC_0151,"If possible, a list of people to be surveyed",❓,
 TASK_0420,PROJ_0035,SEC_0156,Docupedia,,punctual,,,,Files and Links,work,5930,,2026-10-07 16:02:43,1,
 TASK_0421,PROJ_0035,SEC_0150,O Gemini Code Assist custa R$ 28.15 por mês.,,punctual,,,,,work,5940,,2026-10-07 16:19:36,1,
 TASK_0422,PROJ_0003,SEC_0003,Subscribe to this one,⚡,punctual,,,,,work,5950,,2026-10-08 11:09:59,1,
-TASK_0423,PROJ_0035,SEC_0150,They are docuped offers an opportunity to get context about the project. Copy the main pages and store them as JSON,⚡,punctual,,,,,work,5960,,2026-10-08 12:33:45,1,
 TASK_0424,PROJ_0035,SEC_0157,08.10,🔲,punctual,,,,Meetings,work,5970,,2026-10-08 13:12:47,1,
 TASK_0425,PROJ_0035,SEC_0150,Check if the BAT file works with computer without Python installed,🔲,punctual,,,,,work,5980,,2026-10-08 17:59:50,1,
+TASK_0426,PROJ_0035,SEC_0158,Create the ontology and controlled vocabulary for your database,⏳,punctual,,,,Portal,work,5990,,2026-10-09 08:33:40,1,
