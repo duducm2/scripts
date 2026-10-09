@@ -1207,18 +1207,54 @@ GeminiEnterprise_GetCopyCodeButtonsArray(uia) {
     return out
 }
 
-GeminiEnterprise_GetLastCopyCodeButton(uia) {
-    arr := GeminiEnterprise_GetCopyCodeButtonsArray(uia)
-    if (arr.Length = 0)
-        return 0
-    ; Tree order: the last accepted copy-code-button is the latest snippet,
-    ; which sits above that turn's answer-footer Copy response button.
-    last := 0
-    for btn in arr {
-        if (GeminiEnterprise_AcceptCodeCopyButton(btn))
-            last := btn
+GeminiEnterprise_FindClassTokenElements(scope, token) {
+    out := []
+    if (!IsObject(scope) || !token)
+        return out
+    try {
+        els := scope.FindAll({ ClassName: token, matchmode: "Substring" })
+        for el in els {
+            cls := ""
+            try cls := el.ClassName
+            catch
+                continue
+            if (GeminiEnterprise_ClassHasToken(cls, token))
+                out.Push(el)
+        }
+    } catch {
     }
-    return last ? last : 0
+    return out
+}
+
+; Last turn's fence button only: group.copy-code-button > "Copy code to clipboard".
+; Never the answer-footer "Copy response" button that sits below the snippet.
+GeminiEnterprise_GetLastTurnCodeCopyButton(uia) {
+    if (!IsObject(uia))
+        return 0
+    scope := uia
+    try {
+        panel := GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "main-panel" }])
+        if (IsObject(panel))
+            scope := panel
+    } catch {
+    }
+    turns := GeminiEnterprise_FindClassTokenElements(scope, "turn")
+    if (turns.Length = 0 && scope != uia)
+        turns := GeminiEnterprise_FindClassTokenElements(uia, "turn")
+    if (turns.Length = 0)
+        return 0
+    turn := turns[turns.Length]
+    hosts := GeminiEnterprise_FindClassTokenElements(turn, "copy-code-button")
+    if (hosts.Length = 0)
+        return 0
+    btn := GeminiEnterprise_ButtonFromCopyCodeHost(hosts[hosts.Length])
+    if (!btn || !GeminiEnterprise_AcceptCodeCopyButton(btn))
+        return 0
+    return btn
+}
+
+GeminiEnterprise_GetLastCopyCodeButton(uia) {
+    return GeminiEnterprise_GetLastTurnCodeCopyButton(uia)
 }
 
 GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) {
@@ -1286,9 +1322,8 @@ GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd :=
         }
         uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " enterpriseHwnd)
         Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
-        ; Do not scroll the feed or the code header into view. That wheel/scroll
-        ; moves the window the hotkey was pressed in.
-        copyBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
+        ; Fence button in the last turn only. Do not use the answer-footer Copy response control.
+        copyBtn := GeminiEnterprise_GetLastTurnCodeCopyButton(uia)
         if (!copyBtn || !GeminiEnterprise_AcceptCodeCopyButton(copyBtn))
             return false
         A_Clipboard := ""

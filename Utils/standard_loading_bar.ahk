@@ -1009,8 +1009,15 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
     global g_StandardLoadingBarIsKeysOverlay
     if (!g_StandardLoadingBarIsKeysOverlay)
         return
-    ; Ignore while Win/Ctrl/Alt are still physically down, and ignore the opener letter until it is released.
-    ; A stuck modifier (not still held) is released so V is not delivered as Clip Angel's Ctrl+Alt+V.
+    ; A chord such as Win+Alt+Shift+P is the double-tap, not a menu choice.
+    ; Do not release those modifiers and then accept the letter (that starts whole-message copy).
+    chordDown := false
+    try chordDown := GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Alt", "P") || GetKeyState(
+        "Shift", "P")
+    if (chordDown)
+        return
+    ; Ignore while Ctrl is still physically down. A stuck modifier (not still held) is released
+    ; so V is not delivered as Clip Angel's Ctrl+Alt+V.
     if (StandardLoadingBar_KeysSelectionModifiersDown()) {
         StandardLoadingBar_ReleaseStuckModifiers()
         if (StandardLoadingBar_KeysSelectionModifiersDown())
