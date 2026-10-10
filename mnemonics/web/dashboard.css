@@ -27,7 +27,8 @@ body {
   min-height: 100vh;
 }
 header.top {
-  padding: 1.25rem 1.5rem 0.75rem;
+  position: relative;
+  padding: 1.25rem 7.25rem 0.75rem 1.5rem;
   border-bottom: 1px solid var(--rpg-edge);
   display: flex;
   flex-wrap: wrap;
@@ -53,6 +54,71 @@ header.top .sub {
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
   align-items: end;
+}
+.hero-stage {
+  --hero-h: 86px;
+  --hero-w: calc(193 / 424 * var(--hero-h));
+  position: absolute;
+  top: 0.35rem;
+  right: 0.7rem;
+  width: calc(var(--hero-w) + 52px);
+  height: calc(var(--hero-h) + 4px);
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-walker {
+  position: relative;
+  width: var(--hero-w);
+  height: var(--hero-h);
+  transform-origin: center bottom;
+  animation: hero-pace 3.4s linear infinite;
+}
+.hero-walker::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 1px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.38);
+}
+.hero-sprite {
+  width: var(--hero-w);
+  height: var(--hero-h);
+  background: url("assets/hero-avatar.png") 0 0 / calc(var(--hero-w) * 4)
+    var(--hero-h) no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: hero-walk 0.48s steps(4) infinite;
+}
+@keyframes hero-walk {
+  to {
+    background-position: calc(var(--hero-w) * -4) 0;
+  }
+}
+@keyframes hero-pace {
+  0% {
+    transform: translateX(0) scaleX(1);
+  }
+  45% {
+    transform: translateX(52px) scaleX(1);
+  }
+  50% {
+    transform: translateX(52px) scaleX(-1);
+  }
+  95% {
+    transform: translateX(0) scaleX(-1);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-walker,
+  .hero-sprite {
+    animation: none;
+  }
 }
 label {
   color: var(--muted);
