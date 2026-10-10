@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: collectible_import.ahk
-; Desktop COLLECTIBLE_PACK.txt → mnemonics/data/collectibles.json
+; Desktop COLLECTIBLE_PACK.txt → held on the avatar until Save writes mnemonics/data/repl/collectibles.json
 ; AI fix: Desktop COLLECTIBLE_AI_FIX.txt
 ; =============================================================================
 
@@ -91,7 +91,7 @@ Collectible_ImportFromDesktop(*) {
     }
     outPath := A_Temp . "\collectible_import_result.json"
     cmd := pyCmd . ' "' . py . '" import-desktop --data-dir "' . Palace_DataDir()
-        . '" --pack "' . path . '" > "' . outPath . '" 2>&1'
+    . '" --pack "' . path . '" > "' . outPath . '" 2>&1'
     try RunWait(A_ComSpec . " /c " . cmd, Palace_PythonDir(), "Hide")
     catch as e {
         Collectible_Fail("Could not run the collectible importer: " . e.Message)
@@ -116,7 +116,7 @@ Collectible_ImportFromDesktop(*) {
     label := name != "" ? name : "Relic"
     if (slot != "")
         label .= " (" . slot . ")"
-    Palace_Notify("Equipped " . label, 2800, BANNER_ACCENT_SUCCESS)
+    Palace_Notify("Holding " . label . " — Save it in the wardrobe to keep it", 3200, BANNER_ACCENT_SUCCESS)
     Palace_AfterDataWriteRefreshUi()
     Palace_ReturnAfterImport()
     return true

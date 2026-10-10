@@ -50,12 +50,17 @@ _ON_ATTR = re.compile(
 _JS_URL = re.compile(r"javascript\s*:", re.IGNORECASE)
 
 
-def store_path(data_dir: Path) -> Path:
-    return Path(data_dir) / "collectibles.json"
+def repl_path(data_dir: Path) -> Path:
+    """Saved collectibles. Nothing is written here until the user presses Save."""
+    return Path(data_dir) / "repl" / "collectibles.json"
 
 
-def load_items(data_dir: Path) -> list[dict[str, Any]]:
-    path = store_path(data_dir)
+def session_path(data_dir: Path) -> Path:
+    """Relics currently on the avatar that have not been saved."""
+    return Path(data_dir) / "collectibles_session.json"
+
+
+def _read_store(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
     try:
@@ -69,22 +74,67 @@ def load_items(data_dir: Path) -> list[dict[str, Any]]:
     for row in rows:
         if not isinstance(row, dict):
             continue
-        cleaned = _public_item(row)
+        cleaned = _stored_item(row)
         if cleaned:
             items.append(cleaned)
     return items
 
 
-def save_items(data_dir: Path, items: list[dict[str, Any]]) -> None:
-    path = store_path(data_dir)
+def _write_store(path: Path, items: list[dict[str, Any]]) -> None:
+    if not items:
+        if path.is_file():
+            path.unlink()
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = {"items": items}
     path.write_text(
-        json.dumps(body, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps({"items": items}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
 
 
-def _public_item(row: dict[str, Any]) -> dict[str, Any] | None:
+def load_saved(data_dir: Path) -> list[dict[str, Any]]:
+    data_dir = Path(data_dir)
+    repl = repl_path(data_dir)
+    legacy = data_dir / "collectibles.json"
+    if not repl.is_file() and legacy.is_file():
+        _write_store(repl, _read_store(legacy))
+    return _read_store(repl)
+
+
+def load_session(data_dir: Path) -> list[dict[str, Any]]:
+    return _read_store(session_path(data_dir))
+
+
+def load_items(data_dir: Path) -> list[dict[str, Any]]:
+    saved = load_saved(data_dir)
+    session = load_session(data_dir)
+    saved_ids = {row["id"] for row in saved}
+    items: list[dict[str, Any]] = []
+    for row in saved:
+        public = _public_item(row, saved=True)
+        if public:
+            items.append(public)
+    for row in session:
+        if row["id"] in saved_ids:
+            continue
+        public = _public_item(row, saved=False)
+        if public:
+            items.append(public)
+    return items
+
+
+def _stored_item(row: dict[str, Any]) -> dict[str, Any] | None:
+    cleaned = _public_item(row, saved=False)
+    if cleaned is None:
+        return None
+    cleaned.pop("saved", None)
+    created = str(row.get("created_at") or "").strip()
+    if created:
+        cleaned["created_at"] = created
+    return cleaned
+
+
+def _public_item(row: dict[str, Any], saved: bool = False) -> dict[str, Any] | None:
     slot = str(row.get("slot") or "").strip().lower()
     if slot not in SLOTS:
         return None
@@ -103,6 +153,7 @@ def _public_item(row: dict[str, Any]) -> dict[str, Any] | None:
         "anim": anim if anim in ANIMS else "bob",
         "anchor": anchor if anchor in ANCHORS else "side",
         "equipped": bool(row.get("equipped")),
+        "saved": saved,
     }
 
 
@@ -248,7 +299,14 @@ def repair_item(
     )
 
 
+def _unequip_slot(rows: list[dict[str, Any]], slot: str, keep_id: str = "") -> None:
+    for row in rows:
+        if row.get("slot") == slot and row.get("id") != keep_id:
+            row["equipped"] = False
+
+
 def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
+    """Hold a generated relic on the avatar. It is not written to REPL storage."""
     data_dir = Path(data_dir)
     item, notes, error = repair_item(raw, known_palace_ids(data_dir))
     if error or item is None:
@@ -257,39 +315,107 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
             "error": error or "Could not repair collectible.",
             "notes": notes,
         }
-    items = load_items(data_dir)
-    for row in items:
-        if row.get("slot") == item["slot"]:
-            row["equipped"] = False
-    saved = {
+    session = load_session(data_dir)
+    saved = load_saved(data_dir)
+    slot = item["slot"]
+    _unequip_slot(saved, slot)
+    session = [row for row in session if row.get("slot") != slot]
+    held = {
         "id": "col_" + uuid.uuid4().hex[:12],
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         **item,
         "equipped": True,
     }
-    items.append(saved)
-    save_items(data_dir, items)
+    session.append(held)
+    _write_store(session_path(data_dir), session)
+    _write_store(repl_path(data_dir), saved)
     return {
         "ok": True,
-        "item": _public_item(saved),
+        "item": _public_item(held, saved=False),
         "notes": notes,
-        "count": len(items),
+        "count": len(load_items(data_dir)),
+        "saved": False,
     }
 
 
-def set_equipped(data_dir: Path, item_id: str, equipped: bool) -> dict[str, Any]:
-    items = load_items(data_dir)
-    target = next((row for row in items if row.get("id") == item_id), None)
+def persist_item(data_dir: Path, item_id: str) -> dict[str, Any]:
+    """Copy one held relic into REPL storage and drop the unsaved copy."""
+    data_dir = Path(data_dir)
+    item_id = (item_id or "").strip()
+    session = load_session(data_dir)
+    saved = load_saved(data_dir)
+    target = next((row for row in session if row.get("id") == item_id), None)
     if target is None:
+        if any(row.get("id") == item_id for row in saved):
+            return {"ok": True, "items": load_items(data_dir), "saved": True}
         return {"ok": False, "error": "No collectible with that id."}
+    if target.get("equipped"):
+        _unequip_slot(saved, str(target.get("slot") or ""), keep_id=item_id)
+    saved = [row for row in saved if row.get("id") != item_id]
+    stored = _stored_item(target)
+    if stored is None:
+        return {"ok": False, "error": "That collectible could not be saved."}
+    saved.append(stored)
+    session = [row for row in session if row.get("id") != item_id]
+    _write_store(repl_path(data_dir), saved)
+    _write_store(session_path(data_dir), session)
+    return {"ok": True, "items": load_items(data_dir), "saved": True}
+
+
+def remove_item(data_dir: Path, item_id: str) -> dict[str, Any]:
+    """Take an item off the avatar. An unsaved relic is deleted immediately."""
+    data_dir = Path(data_dir)
+    item_id = (item_id or "").strip()
+    session = load_session(data_dir)
+    saved = load_saved(data_dir)
+    in_session = any(row.get("id") == item_id for row in session)
+    in_saved = any(row.get("id") == item_id for row in saved)
+    if not in_session and not in_saved:
+        return {"ok": False, "error": "No collectible with that id."}
+    if in_session and not in_saved:
+        session = [row for row in session if row.get("id") != item_id]
+        _write_store(session_path(data_dir), session)
+        return {"ok": True, "items": load_items(data_dir), "deleted": True}
+    for row in saved:
+        if row.get("id") == item_id:
+            row["equipped"] = False
+    if in_session:
+        session = [row for row in session if row.get("id") != item_id]
+        _write_store(session_path(data_dir), session)
+    _write_store(repl_path(data_dir), saved)
+    return {"ok": True, "items": load_items(data_dir), "deleted": False}
+
+
+def set_equipped(data_dir: Path, item_id: str, equipped: bool) -> dict[str, Any]:
+    data_dir = Path(data_dir)
+    item_id = (item_id or "").strip()
+    session = load_session(data_dir)
+    saved = load_saved(data_dir)
+    target = next((row for row in session if row.get("id") == item_id), None)
+    saved_target = next((row for row in saved if row.get("id") == item_id), None)
+    if target is None and saved_target is None:
+        return {"ok": False, "error": "No collectible with that id."}
+    if not equipped and target is not None and saved_target is None:
+        session = [row for row in session if row.get("id") != item_id]
+        _write_store(session_path(data_dir), session)
+        return {"ok": True, "items": load_items(data_dir), "deleted": True}
+    slot = str((target or saved_target or {}).get("slot") or "")
     if equipped:
-        for row in items:
-            if row.get("slot") == target.get("slot"):
-                row["equipped"] = row.get("id") == item_id
-    else:
-        target["equipped"] = False
-    save_items(data_dir, items)
-    return {"ok": True, "items": items}
+        session = [
+            row
+            for row in session
+            if row.get("slot") != slot or row.get("id") == item_id
+        ]
+        _unequip_slot(saved, slot, keep_id=item_id)
+        if target is not None:
+            target["equipped"] = True
+        if saved_target is not None:
+            saved_target["equipped"] = True
+    elif saved_target is not None:
+        saved_target["equipped"] = False
+    _write_store(session_path(data_dir), session)
+    _write_store(repl_path(data_dir), saved)
+    return {"ok": True, "items": load_items(data_dir)}
 
 
 def _csv_rows(data_dir: Path, name: str) -> list[dict[str, str]]:
@@ -483,7 +609,7 @@ def prepare_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
 
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Import a COLLECTIBLE_PACK into collectibles.json"
+        description="Hold a COLLECTIBLE_PACK on the avatar until it is saved"
     )
     parser.add_argument("command", choices=["import-desktop"])
     parser.add_argument("--data-dir", type=Path, required=True)

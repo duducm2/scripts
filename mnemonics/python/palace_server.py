@@ -21,7 +21,7 @@ from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from collectibles import load_items, prepare_prompt, set_equipped  # noqa: E402
+from collectibles import load_items, persist_item, prepare_prompt, remove_item, set_equipped  # noqa: E402
 from palace_save import save_images, save_notes, save_study_images  # noqa: E402
 from palace_store import PalaceStore  # noqa: E402
 from study_plan_parser import default_studies_root  # noqa: E402
@@ -961,6 +961,16 @@ class PalaceHandler(BaseHTTPRequestHandler):
                     str(payload.get("id") or ""),
                     bool(payload.get("equipped")),
                 )
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
+            if path == "/api/collectibles/save":
+                result = persist_item(self.data_dir, str(payload.get("id") or ""))
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
+            if path == "/api/collectibles/remove":
+                result = remove_item(self.data_dir, str(payload.get("id") or ""))
                 self._json(200 if result.get("ok") else 400, result)
                 return
 

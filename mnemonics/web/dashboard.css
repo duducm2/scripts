@@ -94,7 +94,7 @@ header.top .sub {
 .hero-frames {
   position: absolute;
   inset: 0;
-  background-image: url("assets/hero-avatar.png");
+  background-image: url("assets/hero-avatar.png?v=stride");
   background-repeat: no-repeat;
   background-size: calc(var(--hero-w) * 4) var(--hero-h);
   background-position: 0 0;
@@ -102,9 +102,12 @@ header.top .sub {
   image-rendering: crisp-edges;
 }
 #hero.is-walking .hero-frames {
-  animation: hero-walk 0.48s steps(4) infinite;
+  animation: hero-walk 0.6s steps(4, end) infinite;
 }
 @keyframes hero-walk {
+  from {
+    background-position: 0 0;
+  }
   to {
     background-position: calc(var(--hero-w) * -4) 0;
   }
@@ -279,6 +282,27 @@ header.top .sub {
   width: 100%;
   margin-top: 0.35rem;
   text-align: left;
+}
+.wardrobe-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+.wardrobe-row .wardrobe-item {
+  flex: 1 1 8rem;
+  width: auto;
+  margin-top: 0;
+}
+.wardrobe-unsaved {
+  flex: 1 0 100%;
+  font-size: 0.75rem;
+}
+.wardrobe-save,
+.wardrobe-remove {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
 }
 .wardrobe-item.on {
   outline: 2px solid var(--gold);

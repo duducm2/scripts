@@ -5127,10 +5127,18 @@
           const wearing = owned.find((item) => item.equipped);
           const buttons = owned.length
             ? owned
-                .map(
-                  (item) =>
-                    `<button type="button" class="wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}">${esc(item.name)}</button>`,
-                )
+                .map((item) => {
+                  const save = item.saved
+                    ? ""
+                    : `<button type="button" class="wardrobe-save" data-gear-save="${escAttr(item.id)}">Save</button>`;
+                  const remove = item.equipped
+                    ? `<button type="button" class="wardrobe-remove" data-gear-remove="${escAttr(item.id)}">${item.saved ? "Take off" : "Remove"}</button>`
+                    : "";
+                  const mark = item.saved
+                    ? ""
+                    : `<span class="muted wardrobe-unsaved">Not saved</span>`;
+                  return `<div class="wardrobe-row">${mark}<button type="button" class="wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}" data-gear-saved="${item.saved ? "1" : "0"}">${esc(item.name)}</button>${save}${remove}</div>`;
+                })
                 .join("")
             : '<p class="muted">Empty</p>';
           const blurb = wearing && wearing.blurb ? esc(wearing.blurb) : "";
@@ -5139,16 +5147,61 @@
         panel.innerHTML = `<div class="wardrobe-layout">
           <div class="wardrobe-stage">
             <div class="wardrobe-hero" aria-hidden="true"><div class="hero-sprite"><div class="hero-frames"></div><div class="hero-gear"></div></div></div>
-            <p class="muted">Shift+W closes this screen. Inside a palace, Shift+G asks Gemini for a relic from that place.</p>
+            <p class="muted">Shift+W closes this screen. A new relic stays on the avatar until you press Save. Remove deletes an unsaved relic. Inside a palace, Shift+G asks Gemini for a relic from that place.</p>
           </div>
           <div class="wardrobe-slots">${slots}</div>
         </div>`;
         paintGear(panel.querySelector(".hero-gear"), items, state.gearPop);
         panel.querySelectorAll("[data-gear-id]").forEach((btn) => {
           btn.addEventListener("click", () => {
-            toggleGear(btn.dataset.gearId, btn.dataset.gearOn !== "1");
+            const wearing = btn.dataset.gearOn === "1";
+            const saved = btn.dataset.gearSaved === "1";
+            if (wearing && !saved) return;
+            toggleGear(btn.dataset.gearId, !wearing);
           });
         });
+        panel.querySelectorAll("[data-gear-save]").forEach((btn) => {
+          btn.addEventListener("click", () => saveGear(btn.dataset.gearSave));
+        });
+        panel.querySelectorAll("[data-gear-remove]").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            removeGear(btn.dataset.gearRemove),
+          );
+        });
+      }
+
+      async function saveGear(id) {
+        try {
+          const res = await api("/api/collectibles/save", {
+            method: "POST",
+            body: JSON.stringify({ id }),
+          });
+          state.collectibles = res.items || [];
+          applyGearPaint();
+          if (state.view === "wardrobe") renderWardrobe();
+          toast("Saved");
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+        }
+      }
+
+      async function removeGear(id) {
+        try {
+          const res = await api("/api/collectibles/remove", {
+            method: "POST",
+            body: JSON.stringify({ id }),
+          });
+          state.collectibles = res.items || [];
+          state.gearPop = new Set();
+          localStorage.setItem(
+            "mnemonics-gear-seen",
+            gearSignature(state.collectibles),
+          );
+          applyGearPaint();
+          if (state.view === "wardrobe") renderWardrobe();
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+        }
       }
 
       async function toggleGear(id, equipped) {
@@ -6370,13 +6423,14 @@
         const hero = document.getElementById("hero");
         if (!hero) return;
         const modal = document.getElementById("studyModal");
-        const SPEED = 88;
+        const SPEED = 56;
         const BLOCK =
           "button, a, input, select, textarea, label, h1, h2, h3, h4, article, .beast-cluster, .atom-card, .controls, .app-more, #searchResults, .qr-line, .pick-list, .study-picker, .quick-recall, .modal-foot, nav, .overlay-bar, #wardrobePanel";
         let mode = "page";
         let x = 80;
         let y = 140;
         let dir = 1;
+        let lineY = null;
         let last = performance.now();
 
         function metrics() {
@@ -6403,9 +6457,8 @@
           const size = metrics();
           const spots = [
             [fx, fy - 2],
-            [fx - size.w * 0.32, fy - 6],
-            [fx + size.w * 0.32, fy - 6],
-            [fx, fy - size.h * 0.45],
+            [fx - size.w * 0.32, fy - 4],
+            [fx + size.w * 0.32, fy - 4],
           ];
           return spots.every(function (spot) {
             const px = spot[0];
@@ -6447,6 +6500,16 @@
           floors.push(
             Math.min(window.innerHeight - 12, headerBottom + size.h * 0.2),
           );
+          if (lineY == null) {
+            const mid = (left + right) / 2;
+            lineY = floors[0];
+            for (let i = 0; i < floors.length; i++) {
+              if (isOpen(mid, floors[i])) {
+                lineY = floors[i];
+                break;
+              }
+            }
+          }
           return { left: left, right: right, floors: floors };
         }
 
@@ -6465,24 +6528,7 @@
           }
           const band = pageBand();
           if (band.right - band.left < 24) return null;
-          let yLine = band.floors[0];
-          for (let i = 0; i < band.floors.length; i++) {
-            const ny = band.floors[i];
-            if (isOpen(x, ny) || isOpen((band.left + band.right) / 2, ny)) {
-              yLine = ny;
-              break;
-            }
-          }
-          return { left: band.left, right: band.right, y: yLine };
-        }
-
-        function stepAside(nx, prefer) {
-          if (mode === "modal" || isOpen(nx, prefer)) return prefer;
-          for (let d = 10; d <= 90; d += 10) {
-            if (isOpen(nx, prefer - d)) return prefer - d;
-            if (isOpen(nx, prefer + d)) return prefer + d;
-          }
-          return null;
+          return { left: band.left, right: band.right, y: lineY };
         }
 
         function syncMode() {
@@ -6491,6 +6537,7 @@
           hero.classList.toggle("in-modal", open);
           if (next === mode) return;
           mode = next;
+          lineY = null;
           const lane = patrolRect();
           if (lane) {
             x = lane.left + 4;
@@ -6508,20 +6555,21 @@
           const before = x;
           if (lane && lane.right - lane.left > 24) {
             if (x < lane.left || x > lane.right) x = lane.left + 4;
-            const next = x + dir * SPEED * dt;
+            y = lane.y;
+            let next = x + dir * SPEED * dt;
             const atEnd = next <= lane.left || next >= lane.right;
-            let footY = stepAside(next, lane.y);
-            if (atEnd || footY === null) {
+            if (atEnd || !isOpen(next, lane.y)) {
               dir *= -1;
-              const back = x + dir * SPEED * dt;
-              footY = stepAside(back, lane.y);
-              if (footY !== null && back > lane.left && back < lane.right) {
-                x = back;
-                y = footY;
+              next = x + dir * SPEED * dt;
+              if (
+                next > lane.left &&
+                next < lane.right &&
+                isOpen(next, lane.y)
+              ) {
+                x = next;
               }
             } else {
-              x = Math.min(lane.right, Math.max(lane.left, next));
-              y = footY;
+              x = next;
             }
             hero.classList.toggle("face-left", dir < 0);
           }
@@ -6530,6 +6578,9 @@
           requestAnimationFrame(tick);
         }
 
+        window.addEventListener("resize", function () {
+          lineY = null;
+        });
         if (modal) {
           new MutationObserver(syncMode).observe(modal, {
             attributes: true,

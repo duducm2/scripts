@@ -406,7 +406,8 @@ ImportMgmt_HelpText() {
     . "Re-run: #!+X → [P]`r`n`r`n"
     . "========== [C] PALACE COLLECTIBLE ==========`r`n"
     . "Pack: COLLECTIBLE_PACK.txt (===FILE: COLLECTIBLE.json===)`r`n"
-    . "Writes: mnemonics/data/collectibles.json and equips the new relic`r`n"
+    .
+    "Writes: holds the relic on the avatar. Save in the wardrobe stores it in mnemonics/data/repl/collectibles.json`r`n"
     . "Success: archive → mnemonics/data/imported/; refreshes the Memory Palace tab`r`n"
     . "AI fix: Desktop COLLECTIBLE_AI_FIX.txt (clipboard + ≥5s banner + hub closes)`r`n"
     . "Re-run: #!+X → [C]`r`n`r`n"
