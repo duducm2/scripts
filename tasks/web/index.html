@@ -1648,6 +1648,51 @@
           };
         }
 
+        function patchTaskStatusDom(tid) {
+          const t = taskRowById(tid);
+          const node = document.querySelector(
+            `li.task[data-id="${CSS.escape(tid)}"]`,
+          );
+          if (!t || !node) return false;
+          const em = taskEmoji(t);
+          const waiting = em === "⏳";
+          node.classList.toggle("is-waiting", waiting);
+          node.dataset.emoji = em;
+          const badge = node.querySelector(":scope > .em");
+          if (badge) badge.textContent = waiting ? "" : em;
+          const doubt = node.querySelector(":scope > .doubt-tag");
+          if (isDoubtEmoji(em)) {
+            if (!doubt && badge) {
+              const tag = document.createElement("span");
+              tag.className = "doubt-tag";
+              tag.dataset.act = "clear-doubt";
+              tag.title = "In doubt — click to clear";
+              tag.textContent = "DOUBT";
+              badge.after(tag);
+            }
+          } else if (doubt) doubt.remove();
+          if (typeof applySearchDom === "function") applySearchDom();
+          return true;
+        }
+
+        function patchWaitingDom(kind, id, on) {
+          const sel =
+            kind === "project"
+              ? `details.project[data-id="${CSS.escape(id)}"]`
+              : `.task-section[data-id="${CSS.escape(id)}"]`;
+          const node = document.querySelector(sel);
+          if (!node) return false;
+          node.classList.toggle("is-waiting", on);
+          return true;
+        }
+
+        function dropTaskLocally(taskId) {
+          mergeApiRow("tasks", null, { removeId: taskId });
+          document
+            .querySelector(`li.task[data-id="${CSS.escape(taskId)}"]`)
+            ?.remove();
+        }
+
         function mergeApiRow(entityKey, row, { removeId } = {}) {
           if (!state.data || !entityKey) return;
           invalidateDataIndex();
@@ -3844,7 +3889,6 @@
             return;
           }
           if (!ctx.section_id) {
-            await refresh();
             ctx = resolveTaskCreateContext({
               project_id: ctx.project_id,
               filter: ctx.filter,
@@ -3940,25 +3984,40 @@
               body: JSON.stringify({ key: keyOrEmoji }),
             },
           );
-          await afterEntitySave("task", r, () => {
-            const stored = taskEmoji(r.task);
-            // A status filter hides the row once its mark no longer matches,
-            // and applySelection then drops the selection.
-            if (state.emojiFilter !== null && state.emojiFilter !== stored) {
-              applyEmojiFilter(null);
-            }
-            const t = taskRowById(tid);
-            const leftList =
-              !t ||
-              t.active === "0" ||
-              (t.kind !== "habitual" && stored === "✅");
-            if (leftList && sibling) {
-              setSelection(sibling.kind, sibling.id, true);
-              return;
-            }
-            const kind = t?.kind === "habitual" ? "habit" : "task";
-            setSelection(kind, tid, false);
-          });
+          const stored = taskEmoji(r.task);
+          const tNow = taskRowById(tid);
+          const leftList =
+            !tNow ||
+            tNow.active === "0" ||
+            (tNow.kind !== "habitual" && stored === "✅");
+          const filterMismatch =
+            state.emojiFilter !== null && state.emojiFilter !== stored;
+          if (
+            TASK_SPA_FULL_REFRESH ||
+            leftList ||
+            filterMismatch ||
+            !patchTaskStatusDom(tid)
+          ) {
+            await afterEntitySave("task", r, () => {
+              if (filterMismatch) applyEmojiFilter(null);
+              const t = taskRowById(tid);
+              const gone =
+                !t ||
+                t.active === "0" ||
+                (t.kind !== "habitual" && stored === "✅");
+              if (gone && sibling) {
+                setSelection(sibling.kind, sibling.id, true);
+                return;
+              }
+              const kind = t?.kind === "habitual" ? "habit" : "task";
+              setSelection(kind, tid, false);
+            });
+            return;
+          }
+          mergeApiRow("tasks", r.task);
+          patchTaskStatusDom(tid);
+          const kind = tNow?.kind === "habitual" ? "habit" : "task";
+          setSelection(kind, tid, false);
         }
 
         async function setSelectedTaskEmoji(keyOrEmoji) {
@@ -3987,6 +4046,18 @@
             },
           );
           toast(next ? "Marked waiting" : "Cleared waiting");
+          const rowKey = kind === "project" ? "project" : "section";
+          const saved = r?.[rowKey] || r?.[kind];
+          if (
+            !TASK_SPA_FULL_REFRESH &&
+            saved &&
+            patchWaitingDom(kind, id, !!next)
+          ) {
+            mergeApiRow(kind === "project" ? "projects" : "sections", saved);
+            patchWaitingDom(kind, id, !!next);
+            setSelection(kind, id, false);
+            return;
+          }
           await afterEntitySave(kind, r, () => {
             setSelection(kind, id, false);
           });
@@ -4298,12 +4369,37 @@
           if (state.sel.kind === "project") {
             if (!confirm("Delete project and its tasks/info/attachments?"))
               return;
-            await api("/api/projects/" + encodeURIComponent(state.sel.id), {
+            const pid = state.sel.id;
+            await api("/api/projects/" + encodeURIComponent(pid), {
               method: "DELETE",
             });
             state.sel = null;
             toast("Deleted");
-            await refresh();
+            if (TASK_SPA_FULL_REFRESH) await refresh();
+            else if (pid && state.data) {
+                const taskIds = new Set(
+                  (state.data.tasks || [])
+                    .filter((t) => t.project_id === pid)
+                    .map((t) => t.id),
+                );
+                state.data.projects = (state.data.projects || []).filter(
+                  (p) => p.id !== pid,
+                );
+                state.data.sections = (state.data.sections || []).filter(
+                  (s) => s.project_id !== pid,
+                );
+                state.data.tasks = (state.data.tasks || []).filter(
+                  (t) => t.project_id !== pid,
+                );
+                state.data.info_points = (state.data.info_points || []).filter(
+                  (i) =>
+                    !(i.parent_type === "project" && i.parent_id === pid) &&
+                    !(i.parent_type === "task" && taskIds.has(i.parent_id)),
+                );
+                invalidateDataIndex();
+                recomputeCounts();
+                render();
+            }
             return;
           }
           if (state.sel.kind === "section") {
@@ -4320,7 +4416,8 @@
               method: "DELETE",
             });
             toast("Deleted");
-            await refresh();
+            if (TASK_SPA_FULL_REFRESH) await refresh();
+            else dropTaskLocally(taskId);
             focusAfterTaskRemoved(sibling, projectId);
           }
         }
@@ -6127,7 +6224,6 @@
               filter: ctx.filter,
             });
             if (!ctx.section_id) {
-              await refresh();
               ctx = resolveTaskCreateContext({
                 ...hint,
                 project_id: ctx.project_id,
@@ -6552,7 +6648,32 @@
                 method: "DELETE",
               });
               toast("Deleted");
-              await refresh();
+              if (TASK_SPA_FULL_REFRESH) await refresh();
+              else if (state.data) {
+                const taskIds = new Set(
+                  (state.data.tasks || [])
+                    .filter((t) => t.project_id === id)
+                    .map((t) => t.id),
+                );
+                state.data.projects = (state.data.projects || []).filter(
+                  (p) => p.id !== id,
+                );
+                state.data.sections = (state.data.sections || []).filter(
+                  (s) => s.project_id !== id,
+                );
+                state.data.tasks = (state.data.tasks || []).filter(
+                  (t) => t.project_id !== id,
+                );
+                state.data.info_points = (state.data.info_points || []).filter(
+                  (i) =>
+                    !(i.parent_type === "project" && i.parent_id === id) &&
+                    !(i.parent_type === "task" && taskIds.has(i.parent_id)),
+                );
+                if (state.sel?.id === id) state.sel = null;
+                invalidateDataIndex();
+                recomputeCounts();
+                render();
+              }
               return;
             }
             if (act === "add-task") {
@@ -6648,7 +6769,8 @@
                 method: "DELETE",
               });
               toast("Deleted");
-              await refresh();
+              if (TASK_SPA_FULL_REFRESH) await refresh();
+              else dropTaskLocally(id);
               focusAfterTaskRemoved(sibling, projectId);
               return;
             }

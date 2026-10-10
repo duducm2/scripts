@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "pet",
+
+  "name": "Monet's Clef Alligator",
+
+  "blurb": "Resting on an impressionist lily pad, this painted alligator guards a golden bass-clef amulet to help you place notes accurately on the staff.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><path d=\"M10 50 C 10 40, 54 40, 54 50 C 54 60, 10 60, 10 50 Z\" fill=\"#34d399\"/><circle cx=\"15\" cy=\"55\" r=\"3\" fill=\"#60a5fa\" opacity=\"0.7\"/><circle cx=\"50\" cy=\"45\" r=\"4\" fill=\"#a78bfa\" opacity=\"0.7\"/><path d=\"M44 48 C 64 48, 64 36, 48 36\" fill=\"none\" stroke=\"#047857\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M48 36 C 30 36, 20 50, 16 36 C 14 26, 24 20, 32 20 C 40 20, 42 26, 36 30\" fill=\"none\" stroke=\"#059669\" stroke-width=\"8\" stroke-linecap=\"round\"/><path d=\"M32 16 L34 20 L30 20 Z\" fill=\"#a7f3d0\"/><path d=\"M24 19 L26 23 L22 23 Z\" fill=\"#a7f3d0\"/><path d=\"M16 26 L19 29 L14 30 Z\" fill=\"#a7f3d0\"/><circle cx=\"36\" cy=\"26\" r=\"1.5\" fill=\"#111827\"/><circle cx=\"28\" cy=\"42\" r=\"8\" fill=\"#fbbf24\" stroke=\"#d97706\" stroke-width=\"2\"/><path d=\"M28 36 L28 48\" stroke=\"#92400e\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><circle cx=\"24\" cy=\"40\" r=\"1.5\" fill=\"#92400e\"/><circle cx=\"24\" cy=\"44\" r=\"1.5\" fill=\"#92400e\"/></svg>",
+
+  "anim": "bob",
+
+  "anchor": "side"
+
+}
+
+===END_FILE===

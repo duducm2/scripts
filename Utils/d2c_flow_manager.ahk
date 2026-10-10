@@ -214,6 +214,10 @@ PasteWindow_CompletionForPasteOutcome(autoSend, needsLearnPrompt) {
 
 ; True when this companion window is still generating. One targeted stop lookup per call.
 D2C_CompanionHasStop(hwnd, companion) {
+    return AiGeneratingWatcher_IsGenerating(hwnd, companion, D2C_ProbeCompanionHasStop)
+}
+
+D2C_ProbeCompanionHasStop(hwnd, companion) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     companion := StrLower(Trim(companion))

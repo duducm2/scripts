@@ -138,13 +138,16 @@
         uia.Navigate("https://www.youtube.com/")
     } catch Error as e {
         ; Fallback: use address bar navigation with clipboard paste
-        clipSave := ClipboardAll()
-        A_Clipboard := "https://www.youtube.com/"
-        Send "^l"  ; Focus address bar
-        Sleep 50
-        Send "^v{Enter}"  ; Paste and navigate
-        Sleep 50
-        A_Clipboard := clipSave
+        ClipboardScope_Push()
+        try {
+            A_Clipboard := "https://www.youtube.com/"
+            Send "^l"  ; Focus address bar
+            Sleep 50
+            Send "^v{Enter}"  ; Paste and navigate
+            Sleep 50
+        } finally {
+            ClipboardScope_Pop()
+        }
     }
 }
 
@@ -155,13 +158,16 @@
         uia.Navigate("https://www.youtube.com/feed/history")
     } catch Error as e {
         ; Fallback: use address bar navigation with clipboard paste
-        clipSave := ClipboardAll()
-        A_Clipboard := "https://www.youtube.com/feed/history"
-        Send "^l"  ; Focus address bar
-        Sleep 50
-        Send "^v{Enter}"  ; Paste and navigate
-        Sleep 50
-        A_Clipboard := clipSave
+        ClipboardScope_Push()
+        try {
+            A_Clipboard := "https://www.youtube.com/feed/history"
+            Send "^l"  ; Focus address bar
+            Sleep 50
+            Send "^v{Enter}"  ; Paste and navigate
+            Sleep 50
+        } finally {
+            ClipboardScope_Pop()
+        }
     }
 }
 
@@ -172,13 +178,16 @@
         uia.Navigate("https://www.youtube.com/feed/playlists")
     } catch Error as e {
         ; Fallback: use address bar navigation with clipboard paste
-        clipSave := ClipboardAll()
-        A_Clipboard := "https://www.youtube.com/feed/playlists"
-        Send "^l"  ; Focus address bar
-        Sleep 50
-        Send "^v{Enter}"  ; Paste and navigate
-        Sleep 50
-        A_Clipboard := clipSave
+        ClipboardScope_Push()
+        try {
+            A_Clipboard := "https://www.youtube.com/feed/playlists"
+            Send "^l"  ; Focus address bar
+            Sleep 50
+            Send "^v{Enter}"  ; Paste and navigate
+            Sleep 50
+        } finally {
+            ClipboardScope_Pop()
+        }
     }
 }
 

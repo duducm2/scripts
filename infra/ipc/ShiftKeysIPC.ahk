@@ -274,7 +274,10 @@ ShiftKeysIPC_HealthCheck() {
 ShiftKeysIPC_Bootstrap() {
     if (!USE_DAEMON || !USE_PIPE_IPC)
         return
-    ShiftKeysIPC_Connect()
+    if (ShiftKeysIPC_Connect()) {
+        ShiftKeysIPC_MirrorContext()
+        global USE_DAEMON_CONTEXT_CHATGPT := true
+    }
     ; Mirror daemon context cache periodically for O(1) #HotIf (Phase 2)
     SetTimer(ShiftKeysIPC_MirrorContext, 200)
 }

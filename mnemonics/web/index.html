@@ -1193,6 +1193,7 @@
     <script>
       const LAST_STUDY_KEY = "palace_last_study_id";
       const PALACE_SPA_FULL_REFRESH = false;
+      const PALACE_SPA_VERSIONED_REFRESH = true;
       const state = {
         data: null,
         fullDataLoaded: false,
@@ -1289,6 +1290,7 @@
 
       function applyFullState(full) {
         state.data = full;
+        if (full.version != null) state.dataVersion = full.version;
         state.keywordImages = full.keyword_images || {};
         state.fullDataLoaded = true;
         invalidateDataIndex();
@@ -1343,7 +1345,7 @@
         setInterval(() => {
           if (document.visibilityState !== "visible") return;
           refreshCollectibles().catch(() => {});
-        }, 8000);
+        }, 30000);
       }
 
       function mergeApiRow(entityKey, row, { removeId } = {}) {
@@ -2603,6 +2605,13 @@
         });
       }
 
+      async function ensureEntertainment() {
+        if (!state.data || state.data.entertainmentLoaded) return;
+        const res = await api("/api/entertainment");
+        state.data.entertainment = res.entertainment || [];
+        state.data.entertainmentLoaded = true;
+      }
+
       function setView(v) {
         if (v !== "images") closeImagesFs();
         if (v !== "practice") clearPalaceSelection();
@@ -2612,13 +2621,26 @@
         state.view = v;
         setChromeActive();
         showPanel(v);
+        if (v === "entertainment") {
+          ensureEntertainment()
+            .then(() => render())
+            .catch((e) => toast(String(e.message || e)));
+          return;
+        }
         render();
         if (v === "links") refreshLinkStatus().catch(() => {});
       }
 
       async function refresh(opts = {}) {
+        const keepEntertainment = !!state.data?.entertainmentLoaded;
         state.data = await api("/api/state");
         state.fullDataLoaded = true;
+        if (state.data.version != null) state.dataVersion = state.data.version;
+        if (keepEntertainment || state.view === "entertainment") {
+          const res = await api("/api/entertainment");
+          state.data.entertainment = res.entertainment || [];
+          state.data.entertainmentLoaded = true;
+        }
         invalidateDataIndex();
         updateStatsHeader();
         const gh = state.data.meta?.plans_github || "#";
@@ -4257,7 +4279,8 @@
               });
               if (!r.ok) throw new Error(r.error || "remove failed");
               setPlansSaveStatus("Backlog item removed.", "ok");
-              await refresh();
+              state.plansViewSig = "";
+              await renderPlans();
             } catch (e) {
               setPlansSaveStatus(String(e.message || e), "err");
             }
@@ -4284,7 +4307,8 @@
               if (!r.ok) throw new Error(r.error || "add failed");
               addInput.value = "";
               setPlansSaveStatus("Backlog item added.", "ok");
-              await refresh();
+              state.plansViewSig = "";
+              await renderPlans();
             } catch (e) {
               setPlansSaveStatus(String(e.message || e), "err");
             } finally {
@@ -4366,7 +4390,8 @@
                 editId ? "Source updated." : "Source added.",
                 "ok",
               );
-              await refresh();
+              state.plansViewSig = "";
+              await renderPlans();
             } catch (e) {
               setPlansSaveStatus(String(e.message || e), "err");
             }
@@ -4402,7 +4427,8 @@
               });
               if (!r.ok) throw new Error(r.error || "remove failed");
               setPlansSaveStatus("Source removed.", "ok");
-              await refresh();
+              state.plansViewSig = "";
+              await renderPlans();
             } catch (e) {
               setPlansSaveStatus(String(e.message || e), "err");
             }
@@ -4424,7 +4450,9 @@
           const r = await plansSaveAction({ study_id: sid, todos });
           if (!r.ok) throw new Error(r.error || "fail");
           setPlansSaveStatus("Progress saved.", "ok");
-          await refresh();
+          if (r.plan) state.currentPlanView = r.plan;
+          state.plansViewSig = "";
+          await renderPlans();
         } catch (e) {
           setPlansSaveStatus(String(e.message || e), "err");
         } finally {
@@ -4917,6 +4945,20 @@
 
       // Soft-reload CSV state when the tab is shown again (belt-and-suspenders with
       // AHK post-import F5). Debounced so Alt-Tab chatter does not thrash /api/state.
+      async function refreshIfStale() {
+        try {
+          const ver = await api("/api/version");
+          if (
+            state.dataVersion != null &&
+            String(ver.version) === String(state.dataVersion)
+          )
+            return;
+        } catch (e) {
+          return refresh();
+        }
+        return refresh();
+      }
+
       let externalDataRefreshTimer = 0;
       let lastExternalDataRefreshAt = 0;
       function scheduleExternalDataRefresh() {
@@ -4925,7 +4967,10 @@
           const now = Date.now();
           if (now - lastExternalDataRefreshAt < 2500) return;
           lastExternalDataRefreshAt = now;
-          refresh().catch(() => {});
+          const run = PALACE_SPA_VERSIONED_REFRESH
+            ? refreshIfStale
+            : refresh;
+          run().catch(() => {});
         }, 200);
       }
 
@@ -6430,6 +6475,7 @@
         let dir = 1;
         let last = performance.now();
         let frame = 0;
+        let laneCache = null;
 
         function metrics() {
           const h = 180;
@@ -6443,27 +6489,31 @@
         }
 
         function patrolRect() {
+          if (laneCache) return laneCache;
           const size = metrics();
           const lane = document.querySelector("#studyModal .hero-lane");
           if (!lane) return null;
           const rect = lane.getBoundingClientRect();
           if (rect.width < 48) return null;
-          return {
+          laneCache = {
             left: rect.left + size.w / 2 + 8,
             right: rect.right - size.w / 2 - 8,
             y: rect.bottom - 6,
           };
+          return laneCache;
         }
 
         function stop() {
           if (frame) cancelAnimationFrame(frame);
           frame = 0;
+          laneCache = null;
           hero.classList.remove("in-modal", "is-walking", "face-left");
         }
 
         function start() {
           if (frame || !modal || !modal.classList.contains("open")) return;
           hero.classList.add("in-modal");
+          laneCache = null;
           const lane = patrolRect();
           if (lane) {
             x = lane.left + 4;
@@ -6516,6 +6566,9 @@
           });
           if (modal.classList.contains("open")) start();
         }
+        window.addEventListener("resize", function () {
+          laneCache = null;
+        });
       })();
     </script>
   </body>

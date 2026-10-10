@@ -13,7 +13,8 @@ global g_ImportWatcherBusy := false
 global g_ImportWatcherSeen := Map()       ; lowerPath → "mtime|size"
 global g_ImportWatcherPending := Map()    ; lowerPath → { mtime, size, stable }
 global g_ImportWatcherTimerArmed := false
-global g_ImportWatcherPollMs := 2000
+global g_ImportWatcherPollMs := 5000
+global g_ImportWatcherBurstUntil := 0
 global IMPORT_WATCHER_STABLE_POLLS := 2
 
 ; AppLaunchers is the single long-lived owner (mirrors Dictation_IsOwnerProcess).
@@ -106,14 +107,64 @@ ImportWatcher_SeedSeen() {
     }
 }
 
+ImportWatcher_NameMatches(name, pat) {
+    star := InStr(pat, "*")
+    if (!star)
+        return StrLower(name) = StrLower(pat)
+    pre := SubStr(pat, 1, star - 1)
+    post := SubStr(pat, star + 1)
+    n := StrLower(name)
+    if (SubStr(n, 1, StrLen(pre)) != StrLower(pre))
+        return false
+    return post = "" || (StrLen(n) >= StrLen(post) && SubStr(n, -StrLen(post)) = StrLower(post))
+}
+
 ImportWatcher_ScanCandidates() {
-    global g_ImportWatcherSeen, g_ImportWatcherPending, IMPORT_WATCHER_STABLE_POLLS
+    global g_ImportWatcherSeen, g_ImportWatcherPending, IMPORT_WATCHER_STABLE_POLLS, IMPORT_WATCHER_USE_INDEX
     ready := []
     desktop := ImportWatcher_ResolveDesktopPath()
     if (desktop = "")
         return ready
 
     foundKeys := Map()
+    useIndex := IMPORT_WATCHER_USE_INDEX && IsSet(DesktopMtime_Refresh)
+    if (useIndex) {
+        for full, stamp in DesktopMtime_Refresh(desktop) {
+            SplitPath(full, &name)
+            for item in ImportWatcher_Catalog() {
+                matched := false
+                for pat in item["patterns"] {
+                    if (ImportWatcher_NameMatches(name, pat)) {
+                        matched := true
+                        break
+                    }
+                }
+                if (!matched)
+                    continue
+                key := ImportWatcher_LowerPath(full)
+                foundKeys[key] := true
+                if (g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp) {
+                    if (g_ImportWatcherPending.Has(key))
+                        g_ImportWatcherPending.Delete(key)
+                    continue
+                }
+                parts := StrSplit(stamp, "|")
+                mtime := parts.Length >= 1 ? parts[1] : ""
+                size := parts.Length >= 2 ? parts[2] : "0"
+                if (!g_ImportWatcherPending.Has(key)
+                || g_ImportWatcherPending[key].mtime != mtime
+                || g_ImportWatcherPending[key].size != size) {
+                    g_ImportWatcherPending[key] := { mtime: mtime, size: size, stable: 1, path: full, item: item }
+                    continue
+                }
+                g_ImportWatcherPending[key].stable += 1
+                g_ImportWatcherPending[key].path := full
+                g_ImportWatcherPending[key].item := item
+                if (g_ImportWatcherPending[key].stable >= IMPORT_WATCHER_STABLE_POLLS)
+                    ready.Push({ path: full, stamp: stamp, item: item, key: key })
+            }
+        }
+    } else {
     for item in ImportWatcher_Catalog() {
         for pat in item["patterns"] {
             loop files desktop . "\" . pat, "F" {
@@ -145,6 +196,7 @@ ImportWatcher_ScanCandidates() {
                     ready.Push({ path: path, stamp: stamp, item: item, key: key })
             }
         }
+    }
     }
 
     ; Drop pending entries for files that disappeared.
@@ -271,8 +323,11 @@ ImportWatcher_Poll(*) {
     catch {
         return
     }
-    if (!ready.Length)
+    if (!ready.Length) {
+        ImportWatcher_ApplyPollPeriod(false)
         return
+    }
+    ImportWatcher_ApplyPollPeriod(true)
     ; One at a time; pick the first stable candidate.
     cand := ready[1]
     ImportWatcher_ProcessCandidate(cand)
@@ -297,6 +352,18 @@ ImportWatcher_Start() {
     g_ImportWatcherTimerArmed := true
     ImportWatcher_RefreshTray()
     return true
+}
+
+ImportWatcher_ApplyPollPeriod(burst := false) {
+    global g_ImportWatcherBurstUntil, g_ImportWatcherTimerArmed
+    if (burst)
+        g_ImportWatcherBurstUntil := A_TickCount + 8000
+    ms := (A_TickCount < g_ImportWatcherBurstUntil) ? 500 : ImportWatcher_PollMs()
+    if (!g_ImportWatcherTimerArmed)
+        return
+    try SetTimer(ImportWatcher_Poll, ms)
+    catch {
+    }
 }
 
 ImportWatcher_StopTimer() {

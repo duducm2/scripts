@@ -182,6 +182,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] ChatGPT stop/copy/read so D2C can call them from every host
 #include %A_ScriptDir%\Utils\chatgpt_response.ahk
 
+; [Utils module] Shared companion Stop-button cache -> Utils\ai_generating_watcher.ahk
+#include %A_ScriptDir%\Utils\ai_generating_watcher.ahk
 ; [Utils module] D2C_FlowManager dictation-Gemini-Cursor state machine -> Utils\d2c_flow_manager.ahk
 #include %A_ScriptDir%\Utils\d2c_flow_manager.ahk
 
@@ -254,6 +256,10 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] Desktop to Recycle Bin macro -> Utils\desktop_recycle.ahk
 #include %A_ScriptDir%\Utils\desktop_recycle.ahk
+; [Utils module] Cached Desktop file index -> Utils\desktop_mtime_index.ahk
+#include %A_ScriptDir%\Utils\desktop_mtime_index.ahk
+; [Utils module] Clipboard save/restore scope -> Utils\clipboard_scope.ahk
+#include %A_ScriptDir%\Utils\clipboard_scope.ahk
 
 ; [Utils module] Cut newest Desktop item (#!+O) -> Utils\desktop_cut_newest.ahk
 #include %A_ScriptDir%\Utils\desktop_cut_newest.ahk

@@ -17,11 +17,32 @@ global GEMINI_MODE_MENU_POLL_MS := 40
 global GEMINI_MODE_PICKER_LABEL_WAIT_MS := 700
 global GEMINI_MODEL_SELECT_MAX_CYCLES := 2
 
+global g_GeminiChromeCachedHwnd := 0
+
 FindGeminiChromeHwnd() {
+    global g_GeminiChromeCachedHwnd
+    if (g_GeminiChromeCachedHwnd && WinExist("ahk_id " g_GeminiChromeCachedHwnd)) {
+        try {
+            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " g_GeminiChromeCachedHwnd))
+                return g_GeminiChromeCachedHwnd
+        } catch {
+        }
+    }
+    g_GeminiChromeCachedHwnd := 0
+    active := WinExist("A")
+    try {
+        if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " active)) {
+            g_GeminiChromeCachedHwnd := active
+            return active
+        }
+    } catch {
+    }
     for hwnd in WinGetList("ahk_exe chrome.exe") {
         try {
-            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd))
+            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
+                g_GeminiChromeCachedHwnd := hwnd
                 return hwnd
+            }
         } catch {
         }
     }

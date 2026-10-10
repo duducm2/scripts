@@ -77,6 +77,7 @@ def load_manifest() -> dict:
 
 def save_manifest(data: dict) -> None:
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    invalidate_public_map()
     tmp = MANIFEST_PATH.with_suffix(".json.tmp")
     tmp.write_text(
         json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
@@ -110,8 +111,25 @@ def practice_markdown_row(keywords: str | None) -> str:
     return " ".join(parts)
 
 
+_public_map_cache: dict[str, dict] | None = None
+_public_map_mtime: float = -1.0
+
+
+def invalidate_public_map() -> None:
+    global _public_map_cache, _public_map_mtime
+    _public_map_cache = None
+    _public_map_mtime = -1.0
+
+
 def public_map() -> dict[str, dict]:
     """Keyword key -> {url, version} for pictures the page can show."""
+    global _public_map_cache, _public_map_mtime
+    try:
+        mtime = MANIFEST_PATH.stat().st_mtime if MANIFEST_PATH.is_file() else 0.0
+    except OSError:
+        mtime = 0.0
+    if _public_map_cache is not None and mtime == _public_map_mtime:
+        return _public_map_cache
     out: dict[str, dict] = {}
     for key, entry in load_manifest().get("keywords", {}).items():
         filename = str(entry.get("file") or "")
@@ -121,6 +139,8 @@ def public_map() -> dict[str, dict]:
             "url": f"/assets/keyword-images/{filename}",
             "version": int(entry.get("version") or 1),
         }
+    _public_map_cache = out
+    _public_map_mtime = mtime
     return out
 
 

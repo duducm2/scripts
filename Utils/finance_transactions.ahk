@@ -482,6 +482,8 @@ Finance_TxForm(existing) {
             }
         }
         txs := Finance_Load("transactions")
+        accs := Finance_Load("accounts")
+        cards := Finance_Load("credit_cards")
         newTx := Map(
             "id", isEdit ? existing["id"] : Finance_NextId("TX", txs),
         "date", date,
@@ -506,7 +508,7 @@ Finance_TxForm(existing) {
                     out.Push(r)
             }
             txs := out
-            Finance_ReplaceTransaction(existing, newTx)
+            Finance_ReplaceTransaction(existing, newTx, accs, cards, false)
         } else if (t = "card_expense" && nInst > 1) {
             base := Map()
             for k, v in newTx
@@ -515,13 +517,15 @@ Finance_TxForm(existing) {
             rows := Finance_BuildCardInstallmentRows(base, nInst, txs, cards)
             for row in rows {
                 txs.Push(row)
-                Finance_ApplyTransactionToBalances(row, false)
+                Finance_ApplyTransactionToBalances(row, false, accs, cards, false)
             }
         } else {
             Finance_NormalizeTxInstallmentFields(newTx)
             txs.Push(newTx)
-            Finance_ApplyTransactionToBalances(newTx, false)
+            Finance_ApplyTransactionToBalances(newTx, false, accs, cards, false)
         }
+        Finance_Save("accounts", accs)
+        Finance_Save("credit_cards", cards)
         Finance_Save("transactions", txs)
         ymNew := SubStr(date, 1, 7)
         Finance_RecomputeBudgetSpent(ymNew)

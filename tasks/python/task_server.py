@@ -527,8 +527,14 @@ def main(argv: list[str] | None = None) -> int:
 
     handler = make_handler(data_dir, args.scripts_root.resolve())
     _install_resident_debug(handler, "tasks")
-    get_store(data_dir).migrate_sections()
-    get_store(data_dir).sync_project_json_files()
+    store = get_store(data_dir)
+    store.migrate_sections()
+    folder = store.project_json_dir()
+    has_project_json = any(
+        p.name != "projects.json" for p in folder.glob("*.json")
+    )
+    if not has_project_json:
+        store.sync_project_json_files()
     server = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Tasks server listening on http://{args.host}:{args.port}", file=sys.stderr)
     try:

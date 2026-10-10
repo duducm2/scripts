@@ -789,6 +789,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         return false
     }
     txs := Finance_Load("transactions")
+    accs := Finance_Load("accounts")
     cards := Finance_Load("credit_cards")
     imported := []
     for p in parsed {
@@ -804,17 +805,19 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             rows := Finance_BuildCardInstallmentRows(base, nInst, txs, cards)
             for row in rows {
                 txs.Push(row)
-                Finance_ApplyTransactionToBalances(row, false)
+                Finance_ApplyTransactionToBalances(row, false, accs, cards, false)
                 imported.Push(row)
             }
         } else {
             p["id"] := Finance_NextId("TX", txs)
             Finance_NormalizeTxInstallmentFields(p)
             txs.Push(p)
-            Finance_ApplyTransactionToBalances(p, false)
+            Finance_ApplyTransactionToBalances(p, false, accs, cards, false)
             imported.Push(p)
         }
     }
+    Finance_Save("accounts", accs)
+    Finance_Save("credit_cards", cards)
     Finance_Save("transactions", txs)
     Finance_AfterDailyImport(imported, autoConfirm)
     Finance_ArchiveImported(sourcePath)

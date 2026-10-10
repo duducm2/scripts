@@ -39,20 +39,21 @@
         "It seems you violated one of the conversation rules (e.g., incorrect name spelling). Read the rules below, identify your mistake, and reply ONLY with the corrected content." .
         "`n`n" . promptText
 
-    oldClip := A_Clipboard
-    A_Clipboard := ""
-    A_Clipboard := msg
-    ClipWait 1
-    Send "^v"
-    Sleep 100
-    hwnd := GetChatGPTWindowHwnd()
-    if (!hwnd)
-        hwnd := WinExist("A")
-    if (!AiCompanion_SendAndConfirm(hwnd, "chatgpt", (*) => Send("{Enter}"))) {
-        A_Clipboard := oldClip
-        return
+    ClipboardScope_Push()
+    try {
+        A_Clipboard := ""
+        A_Clipboard := msg
+        ClipWait 1
+        Send "^v"
+        Sleep 100
+        hwnd := GetChatGPTWindowHwnd()
+        if (!hwnd)
+            hwnd := WinExist("A")
+        if (!AiCompanion_SendAndConfirm(hwnd, "chatgpt", (*) => Send("{Enter}")))
+            return
+    } finally {
+        ClipboardScope_Pop()
     }
-    A_Clipboard := oldClip
 
     if (AiCompanion_FinishConfirmedSubmit(hwnd, "chatgpt", hwnd))
         return

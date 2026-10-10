@@ -350,6 +350,10 @@ PackPipeline_StartMonitor() {
 
 ; Hwnd-scoped Stop-button poll only — never WinActivate, never UIA_Browser() (it activates Chrome).
 PackPipeline_CompanionIsGenerating(hwnd, companionId) {
+    return AiGeneratingWatcher_IsGenerating(hwnd, companionId, PackPipeline_ProbeGenerating)
+}
+
+PackPipeline_ProbeGenerating(hwnd, companionId) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     companionId := StrLower(Trim(companionId))

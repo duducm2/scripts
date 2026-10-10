@@ -181,19 +181,21 @@ class PalaceStore:
         self._cache_tree = None
         self._cache_stamp = -1.0
 
-    def _load_tree(self) -> dict[str, list[dict[str, str]]]:
+    def _load_tree(self, *, mutable: bool = False) -> dict[str, list[dict[str, str]]]:
+        """Return the CSV tree. Reads share the cache; writers pass mutable=True."""
         stamp = self._csv_stamp()
-        if self._cache_tree is not None and stamp == self._cache_stamp:
+        if self._cache_tree is None or stamp != self._cache_stamp:
+            data = load_all(self.data_dir)
+            plans = load_plan_tables(self.data_dir)
+            data["plans"] = plans["plans"]
+            data["plan_items"] = plans["plan_items"]
+            data["plan_resources"] = plans["plan_resources"]
+            data["entertainment"] = _read_entertainment(self.data_dir)
+            self._cache_tree = data
+            self._cache_stamp = stamp
+        if mutable:
             return deepcopy(self._cache_tree)
-        data = load_all(self.data_dir)
-        plans = load_plan_tables(self.data_dir)
-        data["plans"] = plans["plans"]
-        data["plan_items"] = plans["plan_items"]
-        data["plan_resources"] = plans["plan_resources"]
-        data["entertainment"] = _read_entertainment(self.data_dir)
-        self._cache_tree = deepcopy(data)
-        self._cache_stamp = stamp
-        return data
+        return self._cache_tree
 
     def _write_kind(
         self, kind: str, headers: list[str], rows: list[dict[str, str]]
@@ -416,12 +418,21 @@ class PalaceStore:
             },
         }
 
-    def state(self) -> dict[str, Any]:
+    def data_version(self) -> dict[str, Any]:
+        return {"ok": True, "version": self._csv_stamp()}
+
+    def entertainment_payload(self) -> dict[str, Any]:
+        data = self._load_tree()
+        return {"ok": True, "entertainment": data.get("entertainment", [])}
+
+    def state(self, include_all: bool = False) -> dict[str, Any]:
         data = self._load_tree()
         included = self._quick_recall_included_ids(data.get("palaces", []))
+        heavy = include_all
         return {
             "ok": True,
             "bootstrap": False,
+            "version": self._cache_stamp,
             "studies": data["studies"],
             "palaces": data["palaces"],
             "palace_images": data.get("palace_images", []),
@@ -429,9 +440,10 @@ class PalaceStore:
             "beasts": data["beasts"],
             "atoms": data["atoms"],
             "plans": data["plans"],
-            "plan_items": data["plan_items"],
-            "plan_resources": data["plan_resources"],
-            "entertainment": data.get("entertainment", []),
+            "plan_items": data["plan_items"] if heavy else [],
+            "plan_resources": data["plan_resources"] if heavy else [],
+            "entertainment": data.get("entertainment", []) if heavy else [],
+            "heavy_omitted": not heavy,
             "quick_recall": {"included_palace_ids": included},
             "keyword_images": _keyword_image_map(),
             "meta": {
@@ -444,7 +456,7 @@ class PalaceStore:
     def upsert(self, entity: str, payload: dict[str, Any]) -> dict[str, Any]:
         if entity not in ENTITY_HEADERS:
             return {"ok": False, "error": f"unknown entity {entity}"}
-        data = self._load_tree()
+        data = self._load_tree(mutable=True)
         rows = list(data.get(entity, []))
         headers = ENTITY_HEADERS[entity]
         rid = str(payload.get("id") or "").strip()
@@ -901,7 +913,7 @@ class PalaceStore:
         entity_id = (entity_id or "").strip()
         if not entity_id or entity not in ENTITY_HEADERS:
             return {"ok": False, "error": "invalid delete"}
-        data = self._load_tree()
+        data = self._load_tree(mutable=True)
         study_id = ""
 
         if entity == "studies":
@@ -1049,7 +1061,7 @@ class PalaceStore:
         self, palace_id: str, desktop: Path | None = None
     ) -> dict[str, Any]:
         palace_id = (palace_id or "").strip()
-        data = self._load_tree()
+        data = self._load_tree(mutable=True)
         palace = next((p for p in data["palaces"] if p.get("id") == palace_id), None)
         if not palace:
             return {"ok": False, "error": "unknown palace_id"}

@@ -531,10 +531,14 @@ class PalaceHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _bytes(self, code: int, data: bytes, content_type: str) -> None:
+    def _bytes(
+        self, code: int, data: bytes, content_type: str, cache: str = ""
+    ) -> None:
         self.send_response(code)
         self.send_header("Content-Type", content_type)
         self._cors()
+        if cache:
+            self.send_header("Cache-Control", cache)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -685,15 +689,30 @@ class PalaceHandler(BaseHTTPRequestHandler):
                                 ctype = "image/webp"
                             elif suf == ".gif":
                                 ctype = "image/gif"
-                            self._bytes(200, asset.read_bytes(), ctype)
+                            self._bytes(
+                                200,
+                                asset.read_bytes(),
+                                ctype,
+                                "public, max-age=3600",
+                            )
                             return
 
         if path == "/api/bootstrap":
             self._json(200, self._store().bootstrap())
             return
 
+        if path == "/api/version":
+            self._json(200, self._store().data_version())
+            return
+
+        if path == "/api/entertainment":
+            self._json(200, self._store().entertainment_payload())
+            return
+
         if path == "/api/state":
-            self._json(200, self._store().state())
+            qs = urllib.parse.parse_qs(parsed.query)
+            include = (qs.get("include") or [""])[0].strip().lower()
+            self._json(200, self._store().state(include_all=include == "all"))
             return
 
         if path == "/api/keyword-images":

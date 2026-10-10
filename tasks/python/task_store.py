@@ -418,6 +418,7 @@ class TaskStore:
         self.attach_dir.mkdir(parents=True, exist_ok=True)
         self.imported_dir.mkdir(parents=True, exist_ok=True)
         self._row_cache: dict[str, list[dict[str, str]]] = {}
+        self._by_id: dict[str, dict[str, dict[str, str]]] = {}
         self._mtime: dict[str, float] = {}
         self._export_follow = False
         self.ensure_files()
@@ -645,7 +646,7 @@ class TaskStore:
         if cached is not None and self._mtime.get(kind) == mt:
             return [dict(r) for r in cached]
         rows = read_csv(path)
-        self._row_cache[kind] = rows
+        self._remember(kind, rows)
         self._mtime[kind] = mt
         return [dict(r) for r in rows]
 
@@ -661,7 +662,7 @@ class TaskStore:
         write_csv(path, headers, rows)
         copied = [{h: str(r.get(h, "") or "") for h in headers} for r in rows]
         if TASK_STORE_CACHE:
-            self._row_cache[kind] = copied
+            self._remember(kind, copied)
             try:
                 self._mtime[kind] = path.stat().st_mtime
             except OSError:
@@ -700,11 +701,16 @@ class TaskStore:
             "status_emojis": STATUS_EMOJIS,
         }
 
+    def _remember(self, kind: str, rows: list[dict[str, str]]) -> None:
+        self._row_cache[kind] = rows
+        self._by_id[kind] = {
+            str(r.get("id") or ""): r for r in rows if str(r.get("id") or "")
+        }
+
     def find(self, kind: str, rid: str) -> dict | None:
-        for r in self.load(kind):
-            if r.get("id") == rid:
-                return r
-        return None
+        self.load(kind)
+        hit = self._by_id.get(kind, {}).get(rid)
+        return dict(hit) if hit else None
 
     # --- projects ---
     def upsert_project(self, payload: dict) -> dict:
@@ -734,7 +740,7 @@ class TaskStore:
                 return {"ok": False, "error": "project not found"}
             self.save("projects", out)
             self.ensure_general_section(rid)
-            self.sync_project_json_files()
+            self.write_project_json(rid)
             return {"ok": True, "project": next(x for x in out if x["id"] == rid)}
         row = {
             "id": next_id("PROJ_", rows),
@@ -751,7 +757,7 @@ class TaskStore:
         rows.append(row)
         self.save("projects", rows)
         gen = self.ensure_general_section(row["id"])
-        self.sync_project_json_files()
+        self.write_project_json(row["id"])
         return {"ok": True, "project": row, "section": gen}
 
     def _icon_file_path(self, icon_ref: str) -> Path | None:
@@ -956,7 +962,12 @@ class TaskStore:
         self.save(
             "projects", [p for p in self.load("projects") if p.get("id") != project_id]
         )
-        self.sync_project_json_files()
+        token = re.sub(r"[^A-Za-z0-9_-]+", "", (project_id or "").strip())
+        folder = self.project_json_dir()
+        if token:
+            for old in folder.glob(f"*__{token}.json"):
+                old.unlink(missing_ok=True)
+        self.write_projects_index()
         return {"ok": True}
 
     # --- sections ---

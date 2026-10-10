@@ -7,6 +7,10 @@ global g_FinanceGui := false
 global g_FinanceHotkeys := []
 global g_FinanceMonth := ""
 global g_FinanceNotifyQueue := []
+global g_FinancePythonCmd := ""
+global g_FinanceLastTxMutation := 0
+global g_FinanceLastBudgetRecompute := 0
+global FINANCE_BUDGET_DEFER_SAVE := true
 
 Finance_DataDir() {
     dir := A_ScriptDir . "\finances\data"
@@ -31,12 +35,17 @@ Finance_PythonDir() {
 
 ; Resolve a working Python launcher (work PCs often lack `python` on PATH).
 Finance_FindPythonCmd() {
+    global g_FinancePythonCmd
+    if (g_FinancePythonCmd != "")
+        return g_FinancePythonCmd
     candidates := ["py -3", "py", "python3", "python"]
     for c in candidates {
         try {
             ec := RunWait(A_ComSpec . ' /c ' . c . ' -c "print(1)" >nul 2>&1', , "Hide")
-            if (ec = 0)
+            if (ec = 0) {
+                g_FinancePythonCmd := c
                 return c
+            }
         } catch {
         }
     }
@@ -50,8 +59,10 @@ Finance_FindPythonCmd() {
         loop files g, "F" {
             try {
                 ec := RunWait('"' . A_LoopFileFullPath . '" -c "print(1)"', , "Hide")
-                if (ec = 0)
-                    return '"' . A_LoopFileFullPath . '"'
+                if (ec = 0) {
+                    g_FinancePythonCmd := '"' . A_LoopFileFullPath . '"'
+                    return g_FinancePythonCmd
+                }
             } catch {
             }
         }
@@ -482,8 +493,15 @@ Finance_Headers(kind) {
     }
 }
 
+Finance_NoteTxMutation() {
+    global g_FinanceLastTxMutation
+    g_FinanceLastTxMutation := A_TickCount
+}
+
 Finance_Save(kind, rows) {
     Finance_WriteCsv(kind . ".csv", rows, Finance_Headers(kind))
+    if (kind = "transactions")
+        Finance_NoteTxMutation()
 }
 
 Finance_Load(kind) {
@@ -929,10 +947,21 @@ Finance_AdjustCard(cards, id, delta) {
     row["current_spent"] := Finance_FormatCsvDecimal(cur + delta)
 }
 
-Finance_ReplaceTransaction(oldTx, newTx) {
+Finance_ReplaceTransaction(oldTx, newTx, accs := 0, cards := 0, save := true) {
+    ownLoad := !IsObject(accs)
+    if (ownLoad) {
+        accs := Finance_Load("accounts")
+        cards := Finance_Load("credit_cards")
+    } else if (!IsObject(cards)) {
+        cards := Finance_Load("credit_cards")
+    }
     if (IsObject(oldTx))
-        Finance_ApplyTransactionToBalances(oldTx, true)
-    Finance_ApplyTransactionToBalances(newTx, false)
+        Finance_ApplyTransactionToBalances(oldTx, true, accs, cards, false)
+    Finance_ApplyTransactionToBalances(newTx, false, accs, cards, false)
+    if (save) {
+        Finance_Save("accounts", accs)
+        Finance_Save("credit_cards", cards)
+    }
 }
 
 ; Net effect of all transactions on one account (same rules as ApplyTransactionToBalances).
@@ -1322,7 +1351,12 @@ Finance_TotalBalance() {
     return tot
 }
 
-Finance_RecomputeBudgetSpent(yearMonth) {
+Finance_RecomputeBudgetSpent(yearMonth, force := false) {
+    global g_FinanceLastTxMutation, g_FinanceLastBudgetRecompute, FINANCE_BUDGET_DEFER_SAVE
+    if (FINANCE_BUDGET_DEFER_SAVE && !force
+        && g_FinanceLastBudgetRecompute != 0
+        && g_FinanceLastTxMutation <= g_FinanceLastBudgetRecompute)
+        return Finance_Load("budgets")
     budgets := Finance_Load("budgets")
     txs := Finance_Load("transactions")
     cats := Finance_Load("categories")
@@ -1340,13 +1374,20 @@ Finance_RecomputeBudgetSpent(yearMonth) {
         a := Finance_ParseDecimal(tx["amount"])
         spentByCat[mainId] := (spentByCat.Has(mainId) ? spentByCat[mainId] : 0.0) + a
     }
+    changed := false
     for b in budgets {
         if (b["year_month"] != yearMonth)
             continue
         s := spentByCat.Has(b["category_id"]) ? spentByCat[b["category_id"]] : 0.0
-        b["spent_amount"] := Finance_FormatCsvDecimal(s)
+        formatted := Finance_FormatCsvDecimal(s)
+        if (!b.Has("spent_amount") || b["spent_amount"] != formatted) {
+            b["spent_amount"] := formatted
+            changed := true
+        }
     }
-    Finance_Save("budgets", budgets)
+    if (changed)
+        Finance_Save("budgets", budgets)
+    g_FinanceLastBudgetRecompute := A_TickCount
     return budgets
 }
 

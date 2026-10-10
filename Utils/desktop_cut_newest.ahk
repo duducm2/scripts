@@ -16,6 +16,12 @@ DESKTOP_CUT_NEWEST_HOLD_MS := 700
 DesktopCutNewest_ResolveNewestPath(desktopPath) {
     if (!desktopPath || !DirExist(desktopPath))
         return ""
+    global IMPORT_WATCHER_USE_INDEX
+    if (IMPORT_WATCHER_USE_INDEX && IsSet(DesktopMtime_Newest)) {
+        try return DesktopMtime_Newest(desktopPath)
+        catch {
+        }
+    }
     newestPath := ""
     newestStamp := ""
     loop files desktopPath "\*", "FD" {

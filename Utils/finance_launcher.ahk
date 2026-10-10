@@ -6,7 +6,6 @@
 global g_FinanceMenuLabels := []
 
 Finance_LaunchApp() {
-    Finance_EnsureData()
     Finance_ShowMainMenu()
 }
 
@@ -133,6 +132,11 @@ Finance_OpenDashboard() {
     }
     dataDir := Finance_DataDir()
     outDir := Finance_OutputDir()
+    html := outDir . "\dashboard.html"
+    if (Finance_ChartsAreCurrent() && FileExist(html)) {
+        Finance_OpenDashboardServer(dataDir, outDir, html)
+        return
+    }
     pyCmd := Finance_FindPythonCmd()
     if (pyCmd = "") {
         Finance_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
@@ -165,6 +169,44 @@ Finance_OpenDashboard() {
     }
     if (!FileExist(html)) {
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_WriteChartStamp()
+    Finance_OpenDashboardServer(dataDir, outDir, html)
+}
+
+Finance_DataStamp() {
+    stamp := ""
+    for name in ["transactions.csv", "accounts.csv", "credit_cards.csv", "budgets.csv", "categories.csv", "goals.csv", "recurring_bills.csv"] {
+        p := Finance_DataDir() . "\" . name
+        stamp .= name . ":" . (FileExist(p) ? FileGetTime(p, "M") : "0") . ";"
+    }
+    return stamp
+}
+
+Finance_ChartsAreCurrent() {
+    stampPath := Finance_OutputDir() . "\chart_stamp.txt"
+    if (!FileExist(stampPath))
+        return false
+    try return Trim(FileRead(stampPath, "UTF-8")) = Finance_DataStamp()
+    catch {
+        return false
+    }
+}
+
+Finance_WriteChartStamp() {
+    path := Finance_OutputDir() . "\chart_stamp.txt"
+    try {
+        if (FileExist(path))
+            FileDelete(path)
+        FileAppend(Finance_DataStamp(), path, "UTF-8")
+    }
+}
+
+Finance_OpenDashboardServer(dataDir, outDir, html) {
+    pyCmd := Finance_FindPythonCmd()
+    if (pyCmd = "") {
+        Finance_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
         return
     }
     serverPy := Finance_PythonDir() . "\dashboard_server.py"

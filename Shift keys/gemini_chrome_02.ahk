@@ -704,33 +704,21 @@ FocusGeminiPromptField() {
             promptFilePath := A_ScriptDir "\assets\data\Gemini_Prompt.txt"
             if FileExist(promptFilePath) {
                 ; Save current clipboard
-                oldClipboard := A_Clipboard
+                ClipboardScope_Push()
                 try {
-                    ; Read and set clipboard
                     promptText := FileRead(promptFilePath, "UTF-8")
                     if (promptText) {
                         A_Clipboard := promptText
-                        ClipWait 1, 1  ; Wait for clipboard to be ready
-
-                        ; Clear any existing text first (select all and delete)
+                        ClipWait 1, 1
                         Send "^a"
                         Sleep 50
-
-                        ; Paste the text from clipboard
                         Send "^v"
                         Sleep 100
-
-                        ; Restore original clipboard
-                        A_Clipboard := oldClipboard
-
                         Sleep 400
                         Send "{Enter}"
                     }
-                } catch Error as e {
-                    ; If file reading fails, try to restore clipboard
-                    try {
-                        A_Clipboard := oldClipboard
-                    }
+                } finally {
+                    ClipboardScope_Pop()
                 }
             } else {
                 ; File not found - could show a message or just silently fail

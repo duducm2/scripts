@@ -58,10 +58,34 @@ SafeDebugLog(text) {
 }
 
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
+global g_ChatGPTCachedHwnd := 0
+
 GetChatGPTWindowHwnd() {
+    global g_ChatGPTCachedHwnd
+    if (g_ChatGPTCachedHwnd && WinExist("ahk_id " g_ChatGPTCachedHwnd)) {
+        try {
+            if InStr(WinGetTitle("ahk_id " g_ChatGPTCachedHwnd), "chatgpt", false)
+                return g_ChatGPTCachedHwnd
+        } catch {
+        }
+    }
+    g_ChatGPTCachedHwnd := 0
+    active := WinExist("A")
+    try {
+        if InStr(WinGetTitle("ahk_id " active), "chatgpt", false) {
+            g_ChatGPTCachedHwnd := active
+            return active
+        }
+    } catch {
+    }
     for hwnd in WinGetList("ahk_exe chrome.exe") {
-        if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false)
-            return hwnd
+        try {
+            if InStr(WinGetTitle("ahk_id " hwnd), "chatgpt", false) {
+                g_ChatGPTCachedHwnd := hwnd
+                return hwnd
+            }
+        } catch {
+        }
     }
     return 0
 }
