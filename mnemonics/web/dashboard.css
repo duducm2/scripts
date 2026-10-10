@@ -1774,7 +1774,8 @@ a.btn-gallery {
 }
 #btnPlans,
 #btnImages,
-#btnEntertainment {
+#btnEntertainment,
+#btnWardrobe {
   background: var(--rpg-fill);
   color: var(--rpg-ink);
   border: 1px solid var(--rpg-edge);
@@ -1793,14 +1794,17 @@ a.btn-gallery {
 #btnImages:hover,
 #btnImages.active,
 #btnEntertainment:hover,
-#btnEntertainment.active {
+#btnEntertainment.active,
+#btnWardrobe:hover,
+#btnWardrobe.active {
   background: var(--rpg-brass);
   color: #1c1408;
   border-color: #e6cc8a;
 }
 #btnPlans:focus,
 #btnImages:focus,
-#btnEntertainment:focus {
+#btnEntertainment:focus,
+#btnWardrobe:focus {
   outline: 2px solid #fff4d0;
   outline-offset: 2px;
 }
