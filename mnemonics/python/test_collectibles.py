@@ -5,7 +5,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from collectibles import import_text, persist_item, remove_item, repair_item, sanitize_svg
+from collectibles import (
+    assign_slot,
+    build_prompt,
+    import_text,
+    persist_item,
+    remove_item,
+    repair_item,
+    sanitize_svg,
+)
 
 PALACE = "pal_brick"
 SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#c45"/></svg>'
@@ -68,7 +76,9 @@ def test_trailing_comma_and_script_are_repaired() -> None:
 
 def test_missing_svg_is_an_error() -> None:
     item, _notes, error = repair_item(
-        _pack(json.dumps({"palace_id": PALACE, "slot": "pet", "name": "Pup", "svg": ""})),
+        _pack(
+            json.dumps({"palace_id": PALACE, "slot": "pet", "name": "Pup", "svg": ""})
+        ),
         {PALACE},
     )
     assert item is None
@@ -77,7 +87,9 @@ def test_missing_svg_is_an_error() -> None:
 
 def test_unknown_palace_is_an_error() -> None:
     _item, _notes, error = repair_item(
-        _pack(json.dumps({"palace_id": "nope", "slot": "pet", "name": "Pup", "svg": SVG})),
+        _pack(
+            json.dumps({"palace_id": "nope", "slot": "pet", "name": "Pup", "svg": SVG})
+        ),
         {PALACE},
     )
     assert "palace_id" in error
@@ -119,7 +131,9 @@ def test_import_holds_the_new_relic_without_writing_the_library(tmp_path: Path) 
     assert first["saved"] is False
     assert not (tmp_path / "repl" / "collectibles.json").exists()
     assert not (tmp_path / "collectibles.json").exists()
-    held = json.loads((tmp_path / "collectibles_session.json").read_text(encoding="utf-8"))
+    held = json.loads(
+        (tmp_path / "collectibles_session.json").read_text(encoding="utf-8")
+    )
     pets = [row for row in held["items"] if row["slot"] == "pet"]
     assert len(pets) == 1
     assert pets[0]["name"] == "Brick pup"
@@ -147,7 +161,9 @@ def test_save_moves_a_relic_into_repl_storage(tmp_path: Path) -> None:
     result = persist_item(tmp_path, item_id)
     assert result["ok"]
     assert not (tmp_path / "collectibles_session.json").exists()
-    library = json.loads((tmp_path / "repl" / "collectibles.json").read_text(encoding="utf-8"))
+    library = json.loads(
+        (tmp_path / "repl" / "collectibles.json").read_text(encoding="utf-8")
+    )
     assert library["items"][0]["id"] == item_id
     assert library["items"][0]["equipped"] is True
     listed = [row for row in result["items"] if row["id"] == item_id]
@@ -199,9 +215,57 @@ def test_taking_off_a_saved_relic_keeps_it_in_the_library(tmp_path: Path) -> Non
     persist_item(tmp_path, item_id)
     result = remove_item(tmp_path, item_id)
     assert result["ok"] and result["deleted"] is False
-    kept = json.loads((tmp_path / "repl" / "collectibles.json").read_text(encoding="utf-8"))
+    kept = json.loads(
+        (tmp_path / "repl" / "collectibles.json").read_text(encoding="utf-8")
+    )
     assert kept["items"][0]["id"] == item_id
     assert kept["items"][0]["equipped"] is False
+
+
+def test_prompt_assigns_armor_before_pet_and_remembers_it(tmp_path: Path) -> None:
+    _library(tmp_path)
+    first = build_prompt(tmp_path, PALACE)
+    second = build_prompt(tmp_path, PALACE)
+    assert first["ok"] and first["slot"] == "armor" and first["anchor"] == "shoulders"
+    assert '"slot": "armor"' in first["prompt"]
+    assert '"slot": "pet"' not in first["prompt"]
+    assert "brick pet" not in first["prompt"]
+    assert second["slot"] == "gloves"
+    saved = json.loads(
+        (tmp_path / "collectible_requests.json").read_text(encoding="utf-8")
+    )
+    assert saved["pending_slot"] == "gloves"
+    assert saved["cycle"] == ["armor", "gloves"]
+
+
+def test_import_stores_the_requested_slot_when_the_pack_says_pet(
+    tmp_path: Path,
+) -> None:
+    _library(tmp_path)
+    assert assign_slot(tmp_path, PALACE) == "armor"
+    result = import_text(
+        tmp_path,
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "pet",
+                    "name": "Brick pup",
+                    "svg": SVG,
+                    "anim": "bob",
+                    "anchor": "side",
+                }
+            )
+        ),
+    )
+    assert result["ok"]
+    assert result["item"]["slot"] == "armor"
+    assert result["item"]["anchor"] == "shoulders"
+    saved = json.loads(
+        (tmp_path / "collectible_requests.json").read_text(encoding="utf-8")
+    )
+    assert saved["pending_slot"] == ""
+    assert "armor" in saved["cycle"]
 
 
 def test_sanitize_svg_drops_javascript_url() -> None:

@@ -26,6 +26,35 @@ SLOTS = (
     "mount",
     "accessory",
 )
+# Ask for worn gear before companions fall back to pets and accessories.
+SLOT_ORDER = (
+    "armor",
+    "gloves",
+    "pants",
+    "shoes",
+    "hat",
+    "ring",
+    "staff",
+    "sword",
+    "cape",
+    "mount",
+    "pet",
+    "accessory",
+)
+SLOT_ANCHOR = {
+    "hat": "head",
+    "armor": "shoulders",
+    "gloves": "hands",
+    "ring": "hands",
+    "staff": "hands",
+    "sword": "hands",
+    "pants": "feet",
+    "shoes": "feet",
+    "cape": "back",
+    "pet": "side",
+    "mount": "below",
+    "accessory": "side",
+}
 ANIMS = ("bob", "sway", "flicker", "orbit", "float")
 ANCHORS = ("head", "shoulders", "hands", "feet", "side", "back", "below")
 
@@ -58,6 +87,11 @@ def repl_path(data_dir: Path) -> Path:
 def session_path(data_dir: Path) -> Path:
     """Relics currently on the avatar that have not been saved."""
     return Path(data_dir) / "collectibles_session.json"
+
+
+def requests_path(data_dir: Path) -> Path:
+    """Category assigned to the relic request currently in flight."""
+    return Path(data_dir) / "collectible_requests.json"
 
 
 def _read_store(path: Path) -> list[dict[str, Any]]:
@@ -305,6 +339,120 @@ def _unequip_slot(rows: list[dict[str, Any]], slot: str, keep_id: str = "") -> N
             row["equipped"] = False
 
 
+def _load_requests(data_dir: Path) -> dict[str, Any]:
+    path = requests_path(data_dir)
+    empty = {"pending_slot": "", "pending_palace_id": "", "cycle": []}
+    if not path.is_file():
+        return empty
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return empty
+    if not isinstance(raw, dict):
+        return empty
+    pending = str(raw.get("pending_slot") or "").strip().lower()
+    cycle = [
+        slot
+        for slot in raw.get("cycle") or []
+        if str(slot).strip().lower() in SLOT_ORDER
+    ]
+    return {
+        "pending_slot": pending if pending in SLOT_ORDER else "",
+        "pending_palace_id": str(raw.get("pending_palace_id") or "").strip(),
+        "cycle": [str(slot).strip().lower() for slot in cycle],
+    }
+
+
+def _save_requests(data_dir: Path, state: dict[str, Any]) -> None:
+    path = requests_path(data_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "pending_slot": state.get("pending_slot") or "",
+                "pending_palace_id": state.get("pending_palace_id") or "",
+                "cycle": list(state.get("cycle") or []),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _occupied_slots(data_dir: Path) -> set[str]:
+    occupied: set[str] = set()
+    for row in load_session(data_dir) + load_saved(data_dir):
+        slot = str(row.get("slot") or "").strip().lower()
+        if slot in SLOT_ORDER:
+            occupied.add(slot)
+    return occupied
+
+
+def _slot_candidates(occupied: set[str], cycle: set[str]) -> list[str]:
+    """Next categories to ask for. Pets and accessories wait until the rest are covered."""
+    early = [slot for slot in SLOT_ORDER if slot not in ("pet", "accessory")]
+    pool = [slot for slot in SLOT_ORDER if slot not in occupied] or list(SLOT_ORDER)
+    ready = all(slot in occupied or slot in cycle for slot in early)
+    picks: list[str] = []
+    for slot in pool:
+        if slot in cycle:
+            continue
+        if slot in ("pet", "accessory") and not ready:
+            continue
+        picks.append(slot)
+    return picks
+
+
+def assign_slot(data_dir: Path, palace_id: str) -> str:
+    """Remember the next relic category and return it."""
+    data_dir = Path(data_dir)
+    state = _load_requests(data_dir)
+    occupied = _occupied_slots(data_dir)
+    cycle = list(state["cycle"])
+    picks = _slot_candidates(occupied, set(cycle))
+    if not picks:
+        cycle = []
+        picks = _slot_candidates(occupied, set())
+    slot = picks[0]
+    if slot not in cycle:
+        cycle.append(slot)
+    _save_requests(
+        data_dir,
+        {
+            "pending_slot": slot,
+            "pending_palace_id": palace_id,
+            "cycle": cycle,
+        },
+    )
+    return slot
+
+
+def _lock_imported_slot(
+    data_dir: Path, item: dict[str, Any], notes: list[str]
+) -> dict[str, Any]:
+    """Store the relic in the category we asked for, even if the pack picked another."""
+    state = _load_requests(data_dir)
+    pending = state.get("pending_slot") or ""
+    if pending not in SLOT_ORDER:
+        return item
+    anchor = SLOT_ANCHOR[pending]
+    if item.get("slot") != pending or item.get("anchor") != anchor:
+        notes.append(
+            f"Requested {pending}; stored that slot instead of {item.get('slot') or '(blank)'}."
+        )
+        item["slot"] = pending
+        item["anchor"] = anchor
+    cycle = list(state.get("cycle") or [])
+    if pending not in cycle:
+        cycle.append(pending)
+    _save_requests(
+        data_dir,
+        {"pending_slot": "", "pending_palace_id": "", "cycle": cycle},
+    )
+    return item
+
+
 def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
     """Hold a generated relic on the avatar. It is not written to REPL storage."""
     data_dir = Path(data_dir)
@@ -315,6 +463,7 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
             "error": error or "Could not repair collectible.",
             "notes": notes,
         }
+    item = _lock_imported_slot(data_dir, item, notes)
     session = load_session(data_dir)
     saved = load_saved(data_dir)
     slot = item["slot"]
@@ -468,6 +617,8 @@ def build_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
     study_title = (study.get("title") or study_id or "this study").strip()
     title = (palace.get("title") or palace_id).strip()
     character = (palace.get("character_name") or "").strip()
+    slot = assign_slot(data_dir, palace_id)
+    anchor = SLOT_ANCHOR[slot]
     prompt = _prompt_text(
         palace_id=palace_id,
         study_title=study_title,
@@ -475,8 +626,17 @@ def build_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
         character=character,
         beasts=beast_names[:8],
         keywords=keywords[:24],
+        slot=slot,
+        anchor=anchor,
     )
-    return {"ok": True, "prompt": prompt, "palace_id": palace_id, "title": title}
+    return {
+        "ok": True,
+        "prompt": prompt,
+        "palace_id": palace_id,
+        "title": title,
+        "slot": slot,
+        "anchor": anchor,
+    }
 
 
 def _prompt_text(
@@ -487,14 +647,17 @@ def _prompt_text(
     character: str,
     beasts: list[str],
     keywords: list[str],
+    slot: str,
+    anchor: str,
 ) -> str:
     beast_line = ", ".join(beasts) if beasts else "(none)"
     keyword_line = ", ".join(keywords) if keywords else "(none)"
     character_line = character or "(none)"
     return (
         "Invent ONE wearable collectible for my Memory Palace walker.\n"
-        "It must be thematically tied to this palace, the way a brick pet or a logo shirt "
-        "would belong to a Databricks palace. Do not invent a generic fantasy item.\n\n"
+        "It must be thematically tied to this palace. Do not invent a generic fantasy item.\n"
+        f'The category is already chosen. Copy slot "{slot}" and anchor "{anchor}" exactly. '
+        "Do not change them.\n\n"
         f"Study: {study_title}\n"
         f"Palace id (copy exactly): {palace_id}\n"
         f"Palace title: {title}\n"
@@ -507,22 +670,21 @@ def _prompt_text(
         "===FILE: COLLECTIBLE.json===\n"
         "{\n"
         f'  "palace_id": "{palace_id}",\n'
-        '  "slot": "pet",\n'
+        f'  "slot": "{slot}",\n'
         '  "name": "Short relic name",\n'
         '  "blurb": "One sentence on why it belongs to this palace.",\n'
         '  "svg": "<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>",\n'
         '  "anim": "bob",\n'
-        '  "anchor": "side"\n'
+        f'  "anchor": "{anchor}"\n'
         "}\n"
         "===END_FILE===\n\n"
         "Rules:\n"
-        f"- slot is one of: {', '.join(SLOTS)}\n"
+        f'- slot must be exactly "{slot}". Do not pick another category.\n'
+        f'- anchor must be exactly "{anchor}". Do not change it.\n'
         f"- anim is one of: {', '.join(ANIMS)}\n"
-        f"- anchor is one of: {', '.join(ANCHORS)} "
-        "(head, shoulders, hands, feet, side for a pet, back for a cape, below for a mount)\n"
         "- svg is one small illustration, under 6000 characters, no scripts, no external images.\n"
-        "- Use the palace's own objects, colors, and names. Replace the example values; "
-        "keep palace_id exactly as given.\n"
+        "- Use the palace's own objects, colors, and names. Replace the example name, blurb, "
+        "svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
         "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
         "Do not add updated, corrected, or v2 to the name.\n"
     )
@@ -604,6 +766,8 @@ def prepare_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
         "copied": copied,
         "gemini_open": open_gemini,
         "title": built.get("title") or "",
+        "slot": built.get("slot") or "",
+        "anchor": built.get("anchor") or "",
     }
 
 

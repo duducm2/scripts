@@ -834,7 +834,7 @@
         >
           Entertainment
         </button>
-        <button type="button" id="btnWardrobe" title="Wardrobe (Shift+W)">
+        <button type="button" id="btnWardrobe" title="Wardrobe (Alt+W)">
           Wardrobe
         </button>
         <div>
@@ -4967,9 +4967,7 @@
           const now = Date.now();
           if (now - lastExternalDataRefreshAt < 2500) return;
           lastExternalDataRefreshAt = now;
-          const run = PALACE_SPA_VERSIONED_REFRESH
-            ? refreshIfStale
-            : refresh;
+          const run = PALACE_SPA_VERSIONED_REFRESH ? refreshIfStale : refresh;
           run().catch(() => {});
         }, 200);
       }
@@ -5193,7 +5191,7 @@
         panel.innerHTML = `<div class="wardrobe-layout">
           <div class="wardrobe-stage">
             <div class="wardrobe-hero" aria-hidden="true"><div class="hero-sprite"><div class="hero-frames"></div><div class="hero-gear"></div></div></div>
-            <p class="muted">Shift+W closes this screen. A new relic stays on the avatar until you press Save. Remove deletes an unsaved relic. Inside a palace, Shift+G asks Gemini for a relic from that place.</p>
+            <p class="muted">Alt+W closes this screen. A new relic stays on the avatar until you press Save. Remove deletes an unsaved relic. Inside a palace, Shift+G asks Gemini for a relic from that place.</p>
           </div>
           <div class="wardrobe-slots">${slots}</div>
         </div>`;
@@ -5290,9 +5288,10 @@
             method: "POST",
             body: JSON.stringify({ palace_id: palaceId }),
           });
-          if (res.gemini_open) toast("Relic prompt sent to Gemini");
+          const slotLabel = res.slot ? ` (${res.slot})` : "";
+          if (res.gemini_open) toast("Relic prompt sent to Gemini" + slotLabel);
           else if (res.copied)
-            toast("Gemini is not open — prompt copied", 4000);
+            toast("Gemini is not open — prompt copied" + slotLabel, 4000);
           else toast("Could not copy the relic prompt", 4000);
         } catch (e) {
           toast(String(e.message || e), 4000);
@@ -5306,7 +5305,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+W</b> Wardrobe · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace relic.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Wardrobe · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace relic.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -6125,6 +6124,17 @@
           return;
         }
         if (
+          e.altKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.shiftKey &&
+          (e.key === "w" || e.key === "W")
+        ) {
+          e.preventDefault();
+          toggleWardrobe();
+          return;
+        }
+        if (
           state.view === "entertainment" &&
           state.entertainment.draft &&
           e.key === "Escape"
@@ -6150,11 +6160,6 @@
           if (k === "F" || k === "f") {
             e.preventDefault();
             openStudyLinkChrome("favorite");
-            return;
-          }
-          if (k === "W" || k === "w") {
-            e.preventDefault();
-            toggleWardrobe();
             return;
           }
         }
