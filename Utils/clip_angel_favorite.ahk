@@ -753,10 +753,21 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false, root := 0) {
 }
 
 ; Macro hotkeys use Ctrl+Alt+Win — release before any Alt chord so Clip Angel sees plain Alt+C (not Win+Alt).
-; Ctrl stays down across the Alt release. A bare Alt-up is a menu key: MainMenu (Window, List, Clip,
-; Settings, Help) takes focus, and the next shortcut hits the ribbon instead of the clip list.
+; A lone Alt-up selects the first ribbon item (Window). Mask while Alt is still down, and do not
+; inject Alt-up when Alt is already up. If the ribbon still took focus, return to the clip list.
 ClipAngel_ReleaseChordModifiersForSend() {
-    SendInput "{LWin up}{RWin up}{LShift up}{RShift up}{LControl down}{RControl up}{LAlt up}{RAlt up}{LControl up}"
+    altDown := GetKeyState("Alt", "P")
+    if altDown
+        SendInput "{Blind}{vkE8}"
+    if altDown
+        SendInput "{LWin up}{RWin up}{LShift up}{RShift up}{LControl down}{RControl up}{LAlt up}{RAlt up}{LControl up}"
+    else
+        SendInput "{LWin up}{RWin up}{LShift up}{RShift up}{LControl up}{RControl up}"
+    if (!altDown || !WinActive("ahk_exe ClipAngel.exe"))
+        return
+    hwnd := ClipAngel_MainHwnd()
+    if hwnd
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
 
 ; True when keyboard focus is the top menu bar or one of its items (Help is the last).
@@ -1337,7 +1348,11 @@ ClipAngel_CopyUnfavoriteSelectedClip() {
         return false
     }
 
-    SendInput "!w"
+    ; Alt+W is the Window menu key. Unmark through the Clip menu, then leave the ribbon.
+    unmarked := ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd)
+    ClipAngel_ReturnFocusFromMainMenu(hwnd)
+    if !unmarked
+        ShowCenteredOverlay_Utils("❌ Copied — could not remove favorite.", 1800, BANNER_ACCENT_ERROR)
     ClipAngel_CloseAndRestoreFocus(priorHwnd)
 
     if (!priorHwnd) {
@@ -2058,6 +2073,67 @@ ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
     }
 }
 
+; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
+ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
+    names := ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
+        "Desmarcar favorito"]
+    deadline := A_TickCount + timeoutMs
+    loop {
+        for name in names {
+            item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: name })
+            if item
+                return item
+        }
+        if (A_TickCount >= deadline)
+            break
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return 0
+}
+
+ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
+    if !hwnd
+        return false
+    try {
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return false
+        }
+        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
+        if !clipMenu
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if clipMenu {
+            if !ClipAngel_UiaInvokeElement(clipMenu)
+                return false
+        } else {
+            ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+        }
+        item := ClipAngel_TrySavedMenu(root, "UnmarkFavorite")
+        if !item
+            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 120)
+        if !item {
+            desktop := 0
+            try desktop := UIA.GetRootElement()
+            catch {
+            }
+            if desktop {
+                item := ClipAngel_TrySavedMenu(desktop, "UnmarkFavorite")
+                if !item
+                    item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root, desktop], 120)
+            }
+        }
+        if !item {
+            ClipAngel_ReleaseChordModifiersForSend()
+            ClipAngel_SendToHwnd(hwnd, "{Escape}")
+            return false
+        }
+        return ClipAngel_UiaInvokeElement(item)
+    } catch {
+        return false
+    }
+}
+
 ; Menu invoke only — never Alt+Q (focuses Window ribbon). Skips Favorite-column FindAll.
 ; Pass root when already attached.
 ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
@@ -2541,15 +2617,19 @@ ClipAngel_UnfavoriteAllClips() {
         priorSendLevel := A_SendLevel
         SendLevel 0
         ClipAngel_ReleaseChordModifiersForSend()
-        ; Select all favorited rows, then native unmark (same as Shift+U → Alt+W).
+        ; Select all favorited rows, then Clip > Unmark (Alt+W would open the Window item).
         SendInput "^a"
         Sleep 80
         if !WinActive("ahk_id " hwnd)
             ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
-        ClipAngel_ReleaseChordModifiersForSend()
-        SendInput "!w"
+        if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+            errMsg := "❌ Could not unmark the selected clips."
+            ok := false
+        } else {
+            ok := true
+        }
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
         SendLevel priorSendLevel
-        ok := true
     } catch Error as e {
         errMsg := "❌ Unfavorite all failed: " . e.Message
         ok := false

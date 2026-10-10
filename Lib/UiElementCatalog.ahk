@@ -352,6 +352,7 @@ UiElementCatalog_All() {
         e.Call("ClipAngel.exe", "ShowAllMarks", "Show all marks", "Utils/clip_angel_favorite.ahk", "any"),
         e.Call("ClipAngel.exe", "ShowOnlyFavorite", "Show only favorite", "Utils/clip_angel_favorite.ahk", "any"),
         e.Call("ClipAngel.exe", "MarkFavorite", "Mark favorite", "Utils/clip_angel_favorite.ahk", "any"),
+        e.Call("ClipAngel.exe", "UnmarkFavorite", "Unmark as favorite", "Utils/clip_angel_favorite.ahk", "any"),
         e.Call("Miro", "CloseSidebar", "Close sidebar", "Shift keys/hotif_miro.ahk", "button"),
         e.Call("Spotify.exe", "Connect", "Connect to a device", "Shift keys/hotif_spotify.ahk", "button"),
         e.Call("Spotify.exe", "OpenLibrary", "Open Your Library", "Shift keys/hotif_spotify.ahk", "button"),

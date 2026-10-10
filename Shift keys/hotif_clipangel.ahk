@@ -69,16 +69,24 @@ ClipAngel_CopyFocusedFilteredContent() {
 ; Shift + X : Clear filters (F7)
 +x:: Send "{F7}"
 
-; Shift + F : Mark as favorite (Alt+Q). Filter combo focus would open the Window menu.
+; Shift + F : Mark as favorite via the Clip menu. Alt+Q focuses the Window ribbon.
 +f:: {
     ClipAngel_FocusGridIfFilterCombo()
-    Send "!q"
+    hwnd := ClipAngel_MainHwnd()
+    if hwnd
+        ClipAngel_InvokeMarkFavoriteViaMenu(hwnd)
+    if hwnd
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
 
-; Shift + U : Unmark as favorite (Unmark) (Alt+W). Same filter-combo guard as Shift+F.
+; Shift + U : Unmark as favorite via the Clip menu. Alt+W opens the Window item.
 +u:: {
     ClipAngel_FocusGridIfFilterCombo()
-    Send "!w"
+    hwnd := ClipAngel_MainHwnd()
+    if hwnd
+        ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd)
+    if hwnd
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
 
 ; Shift + R : Remove favorite status from ALL favorited clips (confirm → favorites → Ctrl+A → Alt+W)
