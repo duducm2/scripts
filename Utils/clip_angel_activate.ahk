@@ -245,6 +245,7 @@ ClipAngel_ClearSearchWithBackspace(hwnd) {
     SendLevel 0
     SendInput "{Backspace}"
     SendLevel priorSendLevel
+    ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
 
 ; After native Alt+P / Alt+B open: short settle, one maximize gate, one retry if needed.

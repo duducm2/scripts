@@ -753,8 +753,50 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false, root := 0) {
 }
 
 ; Macro hotkeys use Ctrl+Alt+Win — release before any Alt chord so Clip Angel sees plain Alt+C (not Win+Alt).
+; Ctrl stays down across the Alt release. A bare Alt-up is a menu key: MainMenu (Window, List, Clip,
+; Settings, Help) takes focus, and the next shortcut hits the ribbon instead of the clip list.
 ClipAngel_ReleaseChordModifiersForSend() {
-    SendInput "{LWin up}{RWin up}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}"
+    SendInput "{LWin up}{RWin up}{LShift up}{RShift up}{LControl down}{RControl up}{LAlt up}{RAlt up}{LControl up}"
+}
+
+; True when keyboard focus is the top menu bar or one of its items (Help is the last).
+ClipAngel_KeyboardFocusIsMainMenu() {
+    el := 0
+    try el := UIA.GetFocusedElement()
+    catch
+        return false
+    if !IsObject(el)
+        return false
+    loop 5 {
+        if !IsObject(el)
+            return false
+        aid := ""
+        try aid := el.AutomationId
+        if (aid = "MainMenu")
+            return true
+        try el := el.Parent
+        catch
+            return false
+    }
+    return false
+}
+
+; Menu-bar focus leaves the clip list. SetFocus on the grid; do not send Escape (that minimizes).
+ClipAngel_ReturnFocusFromMainMenu(hwnd) {
+    if !hwnd || !ClipAngel_KeyboardFocusIsMainMenu()
+        return false
+    dataGrid := 0
+    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    catch
+        dataGrid := 0
+    if !dataGrid
+        return false
+    try {
+        dataGrid.SetFocus()
+        return true
+    } catch {
+        return false
+    }
 }
 
 ; Wait for physical release (KeyWait) then synthetic up - chord hotkeys often leave keys logically down.
@@ -1627,6 +1669,7 @@ ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root := 0) {
         ClipAngel_SendToHwnd(hwnd, keys)
     else
         SendInput keys
+    ClipAngel_ReturnFocusFromMainMenu(hwnd)
     deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
     while (A_TickCount < deadline) {
         if !mf
@@ -1726,6 +1769,7 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     else
         SendInput "^{Home}"
     SendLevel priorSendLevel
+    ClipAngel_ReturnFocusFromMainMenu(hwnd)
     return true
 }
 
