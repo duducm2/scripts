@@ -1,0 +1,10 @@
+﻿===PREVIEW===
+3 row(s) · Lunch (54,13), Groceries (78,74), Pills/Medication (48,06)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Lunch with fiancée,"54,13",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Groceries,"78,74",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+Pills,"48,06",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===
