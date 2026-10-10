@@ -7,21 +7,21 @@ TX009,2026-08-15,Car battery,"549,00",expense,CAT_CARRO,ACC_MERCADOP,,,1,1,,0
 TX010,2026-08-17,Balance adjustment,"7,67",adjustment,CAT_AJUSTE,ACC_MERCADOP,,,1,1,,0
 TX011,2026-08-17,haircut,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
 TX012,2026-08-18,Tranfer,"5000,00",transfer,,ACC_MERCADOP,,ACC_99PAY,1,1,,0
-TX013,2026-08-18,Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX014,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX013,2026-08-18,Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX014,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX015,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
 TX016,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
-TX017,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,description,1,1,,0
-TX018,2026-08-18,Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX019,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX017,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,description,1,1,,1
+TX018,2026-08-18,Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX019,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX020,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
 TX021,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
-TX022,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,description,1,1,,0
+TX022,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,description,1,1,,1
 TX023,2026-08-18,Man to take mirror to garbage,"50,00",expense,CAT_SERVICO,ACC_MERCADOP,,,1,1,,0
-TX024,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX024,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX025,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
 TX026,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
-TX027,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,description,1,1,,0
+TX027,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,description,1,1,,1
 TX028,2026-08-19,Investiment,"10,00",income,CAT_INVESTIM,ACC_MERCADOP,,,1,1,,0
 TX029,2026-08-19,delivery dinner,"58,70",expense,CAT_ALIMENTA,ACC_MERCADOP,,,1,1,,0
 TX030,2026-08-19,YouTube subscription,"16,90",expense,CAT_SUBSCRIP,ACC_MERCADOP,,,1,1,,0
@@ -32,28 +32,28 @@ TX034,2026-08-21,Transfer,"34500,00",transfer,,ACC_MERCADOP,,ACC_MERCADOP3,1,1,,
 TX035,2026-08-21,Phone case,"113,25",expense,CAT_CELULAR,ACC_MERCADOP,,,1,1,,0
 TX036,2026-08-21,Magnetic ring,"126,31",expense,CAT_CELULAR,ACC_MERCADOP,,,1,1,,0
 TX037,2026-08-21,Transfer,"2000,00",transfer,,ACC_MERCADOP,,ACC_MERCADOP2,1,1,,0
-TX038,2026-08-23,Liquidificador for Peterson,"99,00",card_expense,CAT_HUMANITA,,CARD_MP,,1,1,,0
+TX038,2026-08-23,Liquidificador for Peterson,"99,00",card_expense,CAT_HUMANITA,,CARD_MP,,1,1,,1
 TX039,2026-08-23,Transfer,"10000,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX040,2026-08-23,Transfer to father,"10000,00",expense,CAT_AJUSTE,ACC_MERCADOP,,,1,1,,0
-TX041,2026-08-23,Tissue container,"16,49",card_expense,CAT_MATERIAI,,CARD_MP,,1,1,,0
-TX042,2026-08-23,Crux sandal,"283,99",card_expense,CAT_ROUPA,,CARD_MP,,1,1,,0
-TX043,2026-08-23,Keyboard keycaps,"100,00",card_expense,CAT_ELETRONI,,CARD_MP,,1,1,,0
-TX044,2026-08-23,Skincare moisturizer,"100,00",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,0
-TX045,2026-08-23,Coffee grinding machine,"200,00",card_expense,CAT_MATERIAI,,CARD_MP,,1,1,,0
-TX046,2026-08-23,Groceries,"214,89",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,0
-TX047,2026-08-23,MagSafe phone holders,"378,72",card_expense,CAT_CELULAR,,CARD_MP,,1,1,,0
-TX048,2026-08-23,Phone screen protector,"20,00",card_expense,CAT_CELULAR,,CARD_MP,,1,1,,0
-TX049,2026-08-23,Lunch,"36,00",card_expense,CAT_ALIMENTA,,CARD_MP,,1,1,,0
-TX050,2026-08-23,Sunscreen,"16,50",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,0
+TX041,2026-08-23,Tissue container,"16,49",card_expense,CAT_MATERIAI,,CARD_MP,,1,1,,1
+TX042,2026-08-23,Crux sandal,"283,99",card_expense,CAT_ROUPA,,CARD_MP,,1,1,,1
+TX043,2026-08-23,Keyboard keycaps,"100,00",card_expense,CAT_ELETRONI,,CARD_MP,,1,1,,1
+TX044,2026-08-23,Skincare moisturizer,"100,00",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,1
+TX045,2026-08-23,Coffee grinding machine,"200,00",card_expense,CAT_MATERIAI,,CARD_MP,,1,1,,1
+TX046,2026-08-23,Groceries,"214,89",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,1
+TX047,2026-08-23,MagSafe phone holders,"378,72",card_expense,CAT_CELULAR,,CARD_MP,,1,1,,1
+TX048,2026-08-23,Phone screen protector,"20,00",card_expense,CAT_CELULAR,,CARD_MP,,1,1,,1
+TX049,2026-08-23,Lunch,"36,00",card_expense,CAT_ALIMENTA,,CARD_MP,,1,1,,1
+TX050,2026-08-23,Sunscreen,"16,50",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,1
 TX051,2026-08-24,Transfer,"50,00",transfer,,ACC_MERCADOP,,ACC_99PAY,1,1,,0
 TX052,2026-08-24,Therapist,"180,00",expense,CAT_SAUDE,ACC_MERCADOP,,,1,1,,0
 TX053,2026-08-24,Hairdresser,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
-TX054,2026-08-24,Supermarket,"57,07",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX054,2026-08-24,Supermarket,"57,07",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX055,2026-08-25,transfer,"20,00",transfer,,ACC_MERCADOP,,ACC_99PAY,1,1,,0
 TX056,2026-08-25,Hair saloon,"40,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
-TX057,2026-08-25,Lunch,"30,62",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX057,2026-08-25,Lunch,"30,62",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX058,2026-08-26,Loan to boyfriend,"100,00",expense,CAT_EMPRESTI,ACC_MERCADOP,,,1,1,,0
-TX059,2026-08-26,Gasoline,"80,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX059,2026-08-26,Gasoline,"80,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX060,2026-08-28,Salary,"2640,04",income,CAT_SALARIO,ACC_MERCADOP,,,1,1,,0
 TX061,2026-08-28,FGTS: 54104,"936,39",income,CAT_INVESTIM,ACC_FGTS,,,1,1,,0
 TX062,2026-08-28,BoschLife: 13824,"3,00",income,CAT_INVESTIM,ACC_BOSCHLIF,,,1,1,,0
@@ -69,33 +69,33 @@ TX071,2026-08-27,Transfer from Nubank savings to checking,"127,40",transfer,,ACC
 TX072,2026-08-27,Transfer back to Mercado Pago checking account,"1040,00",transfer,,ACC_NUBANKMA,,ACC_MERCADOP,1,1,,0
 TX073,2026-08-27,Transfer from 99Pay to Mercado Pago checking account,"99,00",transfer,,ACC_99PAY,,ACC_MERCADOP,1,1,,0
 TX074,2026-08-29,Income,"90,00",income,CAT_TRANSFER,ACC_MERCADOP,,,1,1,,0
-TX075,2026-08-29,Sushi,"135,50",card_expense,CAT_LAZER,,CARD_MP,,1,1,,0
+TX075,2026-08-29,Sushi,"135,50",card_expense,CAT_LAZER,,CARD_MP,,1,1,,1
 TX076,2026-08-29,Sweet candy,"25,19",expense,CAT_ALIMENTA,ACC_MERCADOP,,,1,1,,0
 TX077,2026-08-29,Groceries,"323,61",expense,CAT_MERCADO,ACC_MERCADOP,,,1,1,,0
-TX078,2026-08-31,Restaurant,"92,80",card_expense,CAT_LAZER,,CARD_MP,,1,1,,0
-TX079,2026-08-31,Adjustment,"350,00",card_expense,CAT_AJUSTE,,CARD_MP,,1,1,,0
+TX078,2026-08-31,Restaurant,"92,80",card_expense,CAT_LAZER,,CARD_MP,,1,1,,1
+TX079,2026-08-31,Adjustment,"350,00",card_expense,CAT_AJUSTE,,CARD_MP,,1,1,,1
 TX080,2026-08-31,Adjustment,"352,00",income,CAT_OUTROS2,ACC_MERCADOP,,,1,1,,0
 TX081,2026-08-31,Meal Voucher,"385,00",income,CAT_SALARIO,ACC_MEALVOUC,,,1,1,,0
 TX082,2026-08-31,Groceries,"385,00",expense,CAT_MERCADO,ACC_MEALVOUC,,,1,1,,0
-TX083,2026-08-30,Groceries,"74,47",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX084,2026-08-30,Sesame,"27,50",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX085,2026-08-30,Cornflakes,"29,50",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX086,2026-08-30,Toothpaste,"223,20",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX087,2026-08-30,Sunglasses,"230,56",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX088,2026-08-30,Gooseneck kettle,"375,96",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX089,2026-08-30,Packs,"80,32",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX090,2026-08-30,French press,"268,37",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX091,2026-08-30,Water sprays,"194,78",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX092,2026-08-30,Adjustment to match 1431,"0,81",card_expense,CAT_OUTROS2,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX093,2026-08-31,Adjustment,"61,00",card_expense,CAT_AJUSTE,,CARD_MP,,1,1,,0
+TX083,2026-08-30,Groceries,"74,47",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX084,2026-08-30,Sesame,"27,50",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX085,2026-08-30,Cornflakes,"29,50",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX086,2026-08-30,Toothpaste,"223,20",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX087,2026-08-30,Sunglasses,"230,56",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX088,2026-08-30,Gooseneck kettle,"375,96",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX089,2026-08-30,Packs,"80,32",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX090,2026-08-30,French press,"268,37",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX091,2026-08-30,Water sprays,"194,78",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX092,2026-08-30,Adjustment to match 1431,"0,81",card_expense,CAT_OUTROS2,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX093,2026-08-31,Adjustment,"61,00",card_expense,CAT_AJUSTE,,CARD_MP,,1,1,,1
 TX094,2026-09-01,Haircut,"30,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
-TX095,2026-09-02,McDonald's coffee for fiancé and family,"17,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX096,2026-09-02,Cinema popcorn for fiancé and family,"85,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
-TX097,2026-09-02,Dinner,"35,00",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX095,2026-09-02,McDonald's coffee for fiancé and family,"17,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX096,2026-09-02,Cinema popcorn for fiancé and family,"85,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,1
+TX097,2026-09-02,Dinner,"35,00",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX098,2026-09-02,Salary,"5508,96",income,CAT_SALARIO,ACC_MERCADOP,,,1,1,,0
 TX099,2026-09-04,Shorts,"251,87",expense,CAT_SAUDE,ACC_MERCADOP,,,1,1,,0
 TX100,2026-09-04,Phone handler,"120,20",card_expense,CAT_ELETRONI,,CARD_MP,,1,1,,0
-TX102,2026-09-03,Dinner with fiancé,"138,38",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX102,2026-09-03,Dinner with fiancé,"67,72",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,1
 TX103,2026-09-03,Parking attendant,"5,00",expense,CAT_CARRO,ACC_MERCADOP,,,1,1,,0
 TX104,2026-09-03,Google services,"96,99",card_expense,CAT_SUBSCRIP,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX105,2026-09-07,Shampoo,"269,97",card_expense,CAT_MERCADO,,CARD_MP,,1,1,,0
@@ -227,3 +227,5 @@ TX232,2026-10-10,1800,"1800,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX233,2026-10-09,Lunch with fiancée,"54,13",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX234,2026-10-09,Groceries,"78,74",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX235,2026-10-09,Pills,"48,06",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX236,2026-09-03,Dinner with fiancé,"70,66",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX237,2026-10-10,Invoice payment — Mercado Pago (partial),"4106,74",transfer,,ACC_MERCADOP,CARD_MP,,1,1,,0

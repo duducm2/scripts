@@ -182,9 +182,8 @@ Finance_CardPayDialog(cardId) {
     card := Finance_FindById(cards, cardId)
     if (!card)
         return
-    txs := Finance_Load("transactions")
-    unpaid := Finance_CardUnpaidTotal(cardId, txs)
-    if (unpaid <= 0) {
+    owed := Finance_ParseDecimal(card["current_spent"])
+    if (owed <= 0) {
         Finance_Notify("Nothing to pay", 1400, BANNER_ACCENT_INFO)
         return
     }
@@ -203,16 +202,16 @@ Finance_CardPayDialog(cardId) {
     Finance_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Pay " . card["name"])
     g.SetFont("s10", "Segoe UI")
-    g.Add("Text", "w360", "Unpaid " . Finance_FormatBrl(unpaid) . " · from " . acc["name"])
+    g.Add("Text", "w360", "Spent " . Finance_FormatBrl(owed) . " · from " . acc["name"])
     g.Add("Text", "y+10", "Payment")
     ddMode := g.Add("DropDownList", "w200 Choose1", ["Pay entire", "Pay partial"])
     g.Add("Text", "y+8", "Amount (partial)")
-    eAmt := g.Add("Edit", "w160", Finance_FormatCsvDecimal(unpaid))
+    eAmt := g.Add("Edit", "w160", Finance_FormatCsvDecimal(owed))
     eAmt.Enabled := false
     ddMode.OnEvent("Change", (*) => (eAmt.Enabled := (ddMode.Value = 2)))
     result := ""
     payMode := 1
-    payRaw := Finance_FormatCsvDecimal(unpaid)
+    payRaw := Finance_FormatCsvDecimal(owed)
     g.Add("Button", "y+16 w100 Default", "Pay").OnEvent("Click", (*) => (
         payMode := ddMode.Value,
         payRaw := eAmt.Value,
@@ -229,15 +228,15 @@ Finance_CardPayDialog(cardId) {
     Finance_DialogsEnd()
     if (result != "ok")
         return
-    payAmt := unpaid
+    payAmt := owed
     if (payMode = 2) {
         payAmt := Finance_ParseDecimal(Finance_NormalizeDot(payRaw))
         if (payAmt <= 0) {
             Finance_Notify("Enter a positive amount", 1600, BANNER_ACCENT_ERROR)
             return
         }
-        if (payAmt > unpaid + 0.001) {
-            Finance_Notify("Amount exceeds unpaid balance", 1800, BANNER_ACCENT_ERROR)
+        if (payAmt > owed + 0.001) {
+            Finance_Notify("Amount exceeds current spent", 1800, BANNER_ACCENT_ERROR)
             return
         }
     }
@@ -251,15 +250,16 @@ Finance_CardMarkPaid(cardId, payAmt := -1) {
     if (!card)
         return
     txs := Finance_Load("transactions")
-    unpaid := Finance_CardUnpaidTotal(cardId, txs)
-    if (unpaid <= 0) {
+    owed := Finance_ParseDecimal(card["current_spent"])
+    if (owed <= 0) {
         Finance_Notify("Nothing to pay", 1400, BANNER_ACCENT_INFO)
         return
     }
-    if (payAmt < 0)
-        payAmt := unpaid
-    if (payAmt > unpaid)
-        payAmt := unpaid
+    if (payAmt < 0 || payAmt > owed)
+        payAmt := owed
+    unpaidTx := Finance_CardUnpaidTotal(cardId, txs)
+    if (payAmt > unpaidTx)
+        payAmt := unpaidTx
     if (payAmt <= 0)
         return
     acc := Finance_FindById(accs, card["linked_account_id"])
@@ -275,7 +275,7 @@ Finance_CardMarkPaid(cardId, payAmt := -1) {
     tx := Map(
         "id", Finance_NextId("TX", txs),
         "date", Finance_Today(),
-        "description", "Invoice payment — " . card["name"] . (settled + 0.001 < unpaid ? " (partial)" : ""),
+        "description", "Invoice payment — " . card["name"] . (settled + 0.001 < owed ? " (partial)" : ""),
         "amount", Finance_FormatCsvDecimal(settled),
         "type", "transfer",
         "category_id", "",
@@ -294,7 +294,7 @@ Finance_CardMarkPaid(cardId, payAmt := -1) {
     Finance_Save("accounts", accs)
     Finance_Save("credit_cards", cards)
     Finance_RecomputeBudgetSpent(SubStr(tx["date"], 1, 7))
-    msg := (settled + 0.001 >= unpaid) ? "Invoice paid" : ("Partial pay " . Finance_FormatBrl(settled))
+    msg := (settled + 0.001 >= owed) ? "Invoice paid" : ("Partial pay " . Finance_FormatBrl(settled))
     Finance_Notify(msg, 1600, BANNER_ACCENT_SUCCESS)
     global g_FinanceCardLv
     if (IsObject(g_FinanceCardLv))
