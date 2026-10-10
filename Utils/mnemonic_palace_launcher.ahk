@@ -11,7 +11,7 @@ global PALACE_LEGACY_DASHBOARD := false
 global PALACE_PICKER_AUTOSLOT_PROP := "PalacePickerTempExclude"
 global PALACE_PICKER_PREVIEW_SCALE := 0.8
 global PALACE_PICKER_PREVIEW_OPACITY := 246
-global PALACE_PICKER_TITLE_NEEDLE := "Select a Study and Quick Recall"
+global PALACE_PICKER_TITLE_NEEDLE := "Select a study"
 global g_PalacePickerWatchHwnd := 0
 global g_PalacePickerWatchTimer := ""
 global g_PalacePickerAnchorHwnd := 0
@@ -404,8 +404,8 @@ Palace_IsChromeWindowTitle(title) {
         return true
     if (InStr(t, "Memory Palace") = 1)
         return true
-    ; Study picker sentinel title (set while Quick Recall modal is open).
-    if (InStr(t, "Select a Study and Quick Recall"))
+    ; Study picker title, set only after bootstrap has opened the modal.
+    if (InStr(t, "Select a study"))
         return true
     ; Title still on the localhost URL (tab not fully titled yet, or URL bar mode).
     port := String(Palace_ServerPort())
@@ -530,6 +530,57 @@ Palace_ActivateWeb(hwnd) {
     return true
 }
 
+Palace_ChromeHwndSnapshot() {
+    seen := Map()
+    try {
+        for h in WinGetList("ahk_exe chrome.exe")
+            seen[h] := true
+    }
+    return seen
+}
+
+Palace_FindNewChromeHwnd(seen) {
+    try {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            if (!seen.Has(h))
+                return h
+        }
+    }
+    return 0
+}
+
+Palace_HideChromeUntilReady(hwnd) {
+    if (!hwnd)
+        return
+    Palace_PickerMarkAutoSlotExclude(hwnd)
+    ; Invisible via Transparent(0) only — WinHide drops Chrome document focus.
+    try WinSetTransparent(0, "ahk_id " hwnd)
+    catch {
+    }
+}
+
+Palace_RevealReadyChrome(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
+    Palace_StopPickerWatch()
+    Palace_StopStudyModeAssert()
+    g_PalacePickerPlaceX := 0
+    g_PalacePickerPlaceY := 0
+    g_PalacePickerPlaceW := 0
+    g_PalacePickerPlaceH := 0
+    try WinSetTransparent("Off", "ahk_id " hwnd)
+    catch {
+    }
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    Palace_ApplyStudyModeChrome(hwnd)
+    Palace_ForceActivatePicker(hwnd)
+    Palace_FocusPickerDocument(hwnd)
+    Palace_ApplyStudyModeChrome(hwnd)
+}
+
 Palace_OpenWebInChrome(url) {
     ; Never spawn a duplicate if we can still see the app window.
     existing := Palace_FindExistingWebHwnd()
@@ -544,6 +595,7 @@ Palace_OpenWebInChrome(url) {
     }
     global g_PalacePickerAnchorHwnd
     g_PalacePickerAnchorHwnd := anchorHwnd
+    seen := Palace_ChromeHwndSnapshot()
     ; Suppress AutoSlot BEFORE Run — SHOW/Schedule races SetProp by hundreds of ms.
     Palace_BeginAutoSlotSuppress(12000)
     try Run('chrome.exe --new-window "' . url . '"')
@@ -554,54 +606,29 @@ Palace_OpenWebInChrome(url) {
             return false
         }
     }
+    ; The HTML title is "Memory Palace" before bootstrap finishes. Stay hidden
+    ; until the study picker title is set, then show the window maximized.
     newHwnd := 0
-    prev := A_TitleMatchMode
-    try {
-        SetTitleMatchMode(2)
-        ; Prefer picker sentinel (set early on boot) or classic Memory Palace title.
-        if WinWait("Select a Study and Quick Recall ahk_exe chrome.exe", , 8) {
-            try newHwnd := WinExist("Select a Study and Quick Recall ahk_exe chrome.exe")
+    deadline := A_TickCount + 20000
+    while (A_TickCount < deadline) {
+        if (!newHwnd || !DllCall("IsWindow", "ptr", newHwnd))
+            newHwnd := Palace_FindNewChromeHwnd(seen)
+        if (newHwnd) {
+            Palace_HideChromeUntilReady(newHwnd)
+            title := ""
+            try title := WinGetTitle("ahk_id " newHwnd)
             catch {
-                newHwnd := 0
+                title := ""
             }
-        }
-        if (!newHwnd && WinWait("Memory Palace ahk_exe chrome.exe", , 4)) {
-            try newHwnd := WinExist("Memory Palace ahk_exe chrome.exe")
-            catch {
-                newHwnd := 0
-            }
-        }
-        if (!newHwnd) {
-            port := String(Palace_ServerPort())
-            if WinWait("127.0.0.1:" . port . " ahk_exe chrome.exe", , 3) {
-                try newHwnd := WinExist("127.0.0.1:" . port . " ahk_exe chrome.exe")
-                catch {
-                    newHwnd := 0
-                }
-            }
-        }
-    } finally {
-        SetTitleMatchMode(prev)
-    }
-    newHwnd := Palace_HwndLooksLikeWeb(newHwnd)
-    if (!newHwnd) {
-        for h in WinGetList("ahk_exe chrome.exe") {
-            newHwnd := Palace_HwndLooksLikeWeb(h)
-            if (newHwnd)
+            if (InStr(title, PALACE_PICKER_TITLE_NEEDLE))
                 break
         }
+        Sleep 50
     }
-    if (newHwnd) {
-        ; Mark AutoSlot exclude BEFORE place to beat SHOW race; stay hidden until final geometry.
-        Palace_PickerMarkAutoSlotExclude(newHwnd)
-        Palace_WebHwndCacheSet(newHwnd)
-        ; Invisible via Transparent(0) only — WinHide drops Chrome document focus.
-        try WinSetTransparent(0, "ahk_id " newHwnd)
-        catch {
-        }
-        Palace_BeginPickerPreviewSession(newHwnd, anchorHwnd)
-        return true
-    }
+    if (!newHwnd)
+        return false
+    Palace_WebHwndCacheSet(newHwnd)
+    Palace_RevealReadyChrome(newHwnd)
     return true
 }
 
