@@ -1341,6 +1341,7 @@
         prefetchFullData().catch(() => {});
         refreshCollectibles().catch(() => {});
         setInterval(() => {
+          if (document.visibilityState !== "visible") return;
           refreshCollectibles().catch(() => {});
         }, 8000);
       }
@@ -5130,14 +5131,14 @@
                 .map((item) => {
                   const save = item.saved
                     ? ""
-                    : `<button type="button" class="wardrobe-save" data-gear-save="${escAttr(item.id)}">Save</button>`;
+                    : `<button type="button" class="spa-btn wardrobe-save" data-gear-save="${escAttr(item.id)}">Save</button>`;
                   const remove = item.equipped
-                    ? `<button type="button" class="wardrobe-remove" data-gear-remove="${escAttr(item.id)}">${item.saved ? "Take off" : "Remove"}</button>`
+                    ? `<button type="button" class="spa-btn danger wardrobe-remove" data-gear-remove="${escAttr(item.id)}">${item.saved ? "Take off" : "Remove"}</button>`
                     : "";
                   const mark = item.saved
                     ? ""
                     : `<span class="muted wardrobe-unsaved">Not saved</span>`;
-                  return `<div class="wardrobe-row">${mark}<button type="button" class="wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}" data-gear-saved="${item.saved ? "1" : "0"}">${esc(item.name)}</button>${save}${remove}</div>`;
+                  return `<div class="wardrobe-row">${mark}<button type="button" class="spa-btn wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}" data-gear-saved="${item.saved ? "1" : "0"}">${esc(item.name)}</button>${save}${remove}</div>`;
                 })
                 .join("")
             : '<p class="muted">Empty</p>';
@@ -6424,17 +6425,14 @@
         if (!hero) return;
         const modal = document.getElementById("studyModal");
         const SPEED = 56;
-        const BLOCK =
-          "button, a, input, select, textarea, label, h1, h2, h3, h4, article, .beast-cluster, .atom-card, .controls, .app-more, #searchResults, .qr-line, .pick-list, .study-picker, .quick-recall, .modal-foot, nav, .overlay-bar, #wardrobePanel";
-        let mode = "page";
         let x = 80;
         let y = 140;
         let dir = 1;
-        let lineY = null;
         let last = performance.now();
+        let frame = 0;
 
         function metrics() {
-          const h = mode === "modal" ? 180 : 140;
+          const h = 180;
           return { h: h, w: (193 / 424) * h };
         }
 
@@ -6444,130 +6442,60 @@
           hero.style.top = y - size.h + "px";
         }
 
-        function blocked(px, py) {
-          const el = document.elementFromPoint(px, py);
-          if (!el || el === document.body || el === document.documentElement) {
-            return false;
-          }
-          if (el.closest("#hero")) return false;
-          return !!el.closest(BLOCK);
-        }
-
-        function isOpen(fx, fy) {
-          const size = metrics();
-          const spots = [
-            [fx, fy - 2],
-            [fx - size.w * 0.32, fy - 4],
-            [fx + size.w * 0.32, fy - 4],
-          ];
-          return spots.every(function (spot) {
-            const px = spot[0];
-            const py = spot[1];
-            if (
-              px < 0 ||
-              py < 0 ||
-              px > window.innerWidth ||
-              py > window.innerHeight
-            ) {
-              return false;
-            }
-            return !blocked(px, py);
-          });
-        }
-
-        function pageBand() {
-          const size = metrics();
-          const header = document.querySelector("header.top");
-          const headerBottom = header
-            ? header.getBoundingClientRect().bottom
-            : 0;
-          let contentTop = window.innerHeight;
-          document
-            .querySelectorAll("article, .beast-cluster, .atom-card")
-            .forEach(function (el) {
-              const r = el.getBoundingClientRect();
-              if (
-                r.height > 0 &&
-                r.top > headerBottom - 4 &&
-                r.top < contentTop
-              )
-                contentTop = r.top;
-            });
-          const left = size.w / 2 + 10;
-          const right = window.innerWidth - size.w / 2 - 10;
-          const floors = [];
-          if (contentTop < window.innerHeight - 8) floors.push(contentTop - 8);
-          floors.push(
-            Math.min(window.innerHeight - 12, headerBottom + size.h * 0.2),
-          );
-          if (lineY == null) {
-            const mid = (left + right) / 2;
-            lineY = floors[0];
-            for (let i = 0; i < floors.length; i++) {
-              if (isOpen(mid, floors[i])) {
-                lineY = floors[i];
-                break;
-              }
-            }
-          }
-          return { left: left, right: right, floors: floors };
-        }
-
         function patrolRect() {
           const size = metrics();
-          if (mode === "modal") {
-            const lane = document.querySelector("#studyModal .hero-lane");
-            if (!lane) return null;
-            const rect = lane.getBoundingClientRect();
-            if (rect.width < 48) return null;
-            return {
-              left: rect.left + size.w / 2 + 8,
-              right: rect.right - size.w / 2 - 8,
-              y: rect.bottom - 6,
-            };
-          }
-          const band = pageBand();
-          if (band.right - band.left < 24) return null;
-          return { left: band.left, right: band.right, y: lineY };
+          const lane = document.querySelector("#studyModal .hero-lane");
+          if (!lane) return null;
+          const rect = lane.getBoundingClientRect();
+          if (rect.width < 48) return null;
+          return {
+            left: rect.left + size.w / 2 + 8,
+            right: rect.right - size.w / 2 - 8,
+            y: rect.bottom - 6,
+          };
         }
 
-        function syncMode() {
-          const open = modal && modal.classList.contains("open");
-          const next = open ? "modal" : "page";
-          hero.classList.toggle("in-modal", open);
-          if (next === mode) return;
-          mode = next;
-          lineY = null;
+        function stop() {
+          if (frame) cancelAnimationFrame(frame);
+          frame = 0;
+          hero.classList.remove("in-modal", "is-walking", "face-left");
+        }
+
+        function start() {
+          if (frame || !modal || !modal.classList.contains("open")) return;
+          hero.classList.add("in-modal");
           const lane = patrolRect();
           if (lane) {
             x = lane.left + 4;
             y = lane.y;
             dir = 1;
+            hero.classList.remove("face-left");
+            place();
           }
-          hero.classList.remove("face-left");
-          place();
+          last = performance.now();
+          frame = requestAnimationFrame(tick);
         }
 
         function tick(now) {
+          if (!modal || !modal.classList.contains("open")) {
+            stop();
+            return;
+          }
           const dt = Math.min(0.05, (now - last) / 1000);
           last = now;
           const lane = patrolRect();
           const before = x;
           if (lane && lane.right - lane.left > 24) {
-            if (x < lane.left || x > lane.right) x = lane.left + 4;
+            if (x < lane.left || x > lane.right) {
+              x = lane.left + 4;
+              y = lane.y;
+            }
             y = lane.y;
             let next = x + dir * SPEED * dt;
-            const atEnd = next <= lane.left || next >= lane.right;
-            if (atEnd || !isOpen(next, lane.y)) {
+            if (next <= lane.left || next >= lane.right) {
               dir *= -1;
               next = x + dir * SPEED * dt;
-              if (
-                next > lane.left &&
-                next < lane.right &&
-                isOpen(next, lane.y)
-              ) {
-                x = next;
-              }
+              if (next > lane.left && next < lane.right) x = next;
             } else {
               x = next;
             }
@@ -6575,26 +6503,19 @@
           }
           hero.classList.toggle("is-walking", Math.abs(x - before) > 0.2);
           place();
-          requestAnimationFrame(tick);
+          frame = requestAnimationFrame(tick);
         }
 
-        window.addEventListener("resize", function () {
-          lineY = null;
-        });
         if (modal) {
-          new MutationObserver(syncMode).observe(modal, {
+          new MutationObserver(function () {
+            if (modal.classList.contains("open")) start();
+            else stop();
+          }).observe(modal, {
             attributes: true,
             attributeFilter: ["class"],
           });
-          syncMode();
+          if (modal.classList.contains("open")) start();
         }
-        const start = patrolRect();
-        if (start) {
-          x = start.left + 4;
-          y = start.y;
-        }
-        place();
-        requestAnimationFrame(tick);
       })();
     </script>
   </body>

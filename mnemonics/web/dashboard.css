@@ -56,8 +56,9 @@ header.top .sub {
   align-items: end;
 }
 #hero {
-  --hero-h: 140px;
+  --hero-h: 180px;
   --hero-w: calc(193 / 424 * var(--hero-h));
+  display: none;
   position: fixed;
   left: 0;
   top: 0;
@@ -67,7 +68,7 @@ header.top .sub {
   pointer-events: none;
 }
 #hero.in-modal {
-  --hero-h: 180px;
+  display: block;
   z-index: 2100;
 }
 #hero::after {
@@ -298,11 +299,6 @@ header.top .sub {
 .wardrobe-unsaved {
   flex: 1 0 100%;
   font-size: 0.75rem;
-}
-.wardrobe-save,
-.wardrobe-remove {
-  font-size: 0.75rem;
-  padding: 0.15rem 0.45rem;
 }
 .wardrobe-item.on {
   outline: 2px solid var(--gold);
