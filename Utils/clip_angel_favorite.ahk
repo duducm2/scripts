@@ -781,6 +781,67 @@ ClipAngel_KeyboardFocusIsMainMenu() {
     return false
 }
 
+; Search box text. found is false when the combo cannot be read (caller may still send Backspace).
+ClipAngel_SearchStringText(hwnd, &found := false) {
+    found := false
+    if !hwnd
+        return ""
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        return ""
+    if !IsObject(root)
+        return ""
+    el := ClipAngel_UiaFindFirst(root, { AutomationId: "comboBoxSearchString" })
+    if !el
+        return ""
+    found := true
+    val := ""
+    try val := el.Value
+    catch
+        val := ""
+    return Trim(val)
+}
+
+; True when keyboard focus is a filter combo or the edit inside it.
+; Alt chords from here open the Window menu instead of mark/unmark.
+ClipAngel_FocusIsFilterCombo() {
+    el := 0
+    try el := UIA.GetFocusedElement()
+    catch
+        return false
+    if !IsObject(el)
+        return false
+    loop 4 {
+        if !IsObject(el)
+            return false
+        aid := ""
+        try aid := el.AutomationId
+        if (aid = "comboBoxSearchString" || aid = "MarkFilter" || aid = "TypeFilter")
+            return true
+        try el := el.Parent
+        catch
+            return false
+    }
+    return false
+}
+
+; Filter combo still focused after a search clear: move to the clip list before Alt+Q / Alt+W.
+ClipAngel_FocusGridIfFilterCombo() {
+    if !ClipAngel_FocusIsFilterCombo()
+        return false
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    dataGrid := 0
+    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    catch
+        return false
+    if !dataGrid
+        return false
+    return ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+}
+
 ; Menu-bar focus leaves the clip list. SetFocus on the grid; do not send Escape (that minimizes).
 ClipAngel_ReturnFocusFromMainMenu(hwnd) {
     if !hwnd || !ClipAngel_KeyboardFocusIsMainMenu()
@@ -1220,14 +1281,20 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
 }
 
 ; Copy the selected list row through ClipAngel itself so every clip type is preserved.
-ClipAngel_CopyFocusedListClip(hwnd) {
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+; prep: false when the caller already focused the grid and released modifiers.
+ClipAngel_CopyFocusedListClip(hwnd, dataGrid := 0, prep := true) {
+    if !dataGrid {
+        try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        catch
+            dataGrid := 0
+    }
     if (!dataGrid)
         return false
-    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
-
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
+    if prep {
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+    }
 
     seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
     SendInput "^c"
@@ -1242,10 +1309,14 @@ ClipAngel_CopyFocusedListClip(hwnd) {
 }
 
 ; Ctrl+Enter / Shift+Enter: copy focused list clip → unmark favorite → paste into prior app.
+; A filter combo still counts: focus the list, then unmark. Preview/edit passthrough stays with the caller.
 ; Returns true when copy+unfavorite succeeded (paste may still warn if target focus fails).
 ClipAngel_CopyUnfavoriteSelectedClip() {
     hwnd := ClipAngel_MainHwnd()
-    if (!hwnd || !ClipAngel_IsListPasteEnterContext(hwnd))
+    if !hwnd
+        return false
+    onFilter := ClipAngel_FocusIsFilterCombo()
+    if (!onFilter && !ClipAngel_IsListPasteEnterContext(hwnd))
         return false
 
     ; Clip Angel is foreground here — ResolvePriorHwnd walks z-order for the paste target.
@@ -1254,17 +1325,19 @@ ClipAngel_CopyUnfavoriteSelectedClip() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
 
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    dataGrid := 0
+    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    catch
+        dataGrid := 0
     if (dataGrid)
         ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
 
-    if !ClipAngel_CopyFocusedListClip(hwnd) {
+    if !ClipAngel_CopyFocusedListClip(hwnd, dataGrid, false) {
         ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
         return false
     }
 
     SendInput "!w"
-    Sleep 50
     ClipAngel_CloseAndRestoreFocus(priorHwnd)
 
     if (!priorHwnd) {

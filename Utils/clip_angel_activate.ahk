@@ -224,8 +224,9 @@ ClipAngel_OpenWithMarkFilter(mode) {
 }
 
 ; After Alt+P / Alt+B, the main window is up and the clip list has focus.
-; Clip Angel moves that Backspace into the search box and selects all of its text,
-; so one key empties a search left from another section. Delete removes clips; Backspace does not.
+; One Backspace on the list empties a leftover search (Clip Angel selects all text in the box).
+; The key leaves the search box focused; SetFocus returns to the clip list.
+; An empty box skips the key so focus never moves into the field.
 ClipAngel_ClearSearchWithBackspace(hwnd) {
     if !hwnd
         return
@@ -235,6 +236,17 @@ ClipAngel_ClearSearchWithBackspace(hwnd) {
     try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
     catch
         dataGrid := 0
+    found := false
+    searchText := ClipAngel_SearchStringText(hwnd, &found)
+    if (found && searchText = "") {
+        if dataGrid {
+            try dataGrid.SetFocus()
+            catch {
+            }
+        }
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+        return
+    }
     if dataGrid {
         try dataGrid.SetFocus()
         catch {
@@ -245,6 +257,11 @@ ClipAngel_ClearSearchWithBackspace(hwnd) {
     SendLevel 0
     SendInput "{Backspace}"
     SendLevel priorSendLevel
+    if dataGrid {
+        try dataGrid.SetFocus()
+        catch {
+        }
+    }
     ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
 
