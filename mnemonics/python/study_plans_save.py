@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -111,6 +112,155 @@ def add_backlog_item_csv(
         data_dir, tables["plans"], tables["plan_items"], tables["plan_resources"]
     )
     return {"ok": True, "study_id": study_id, "item_id": iid}
+
+
+PHASE_TITLE_RE = re.compile(
+    r"^Phase\s+(\d+)(\s*:\s*|\s+)?(.*)$",
+    re.IGNORECASE,
+)
+
+
+def phase_title_parts(title: str) -> tuple[int, str, str] | None:
+    match = PHASE_TITLE_RE.match((title or "").strip())
+    if not match:
+        return None
+    number = int(match.group(1))
+    sep = match.group(2) or ""
+    rest = (match.group(3) or "").strip()
+    if ":" in sep:
+        sep = ": "
+    elif rest:
+        sep = " "
+    else:
+        sep = ""
+    return number, sep, rest
+
+
+def format_phase_title(number: int, sep: str, rest: str) -> str:
+    if rest:
+        return f"Phase {number}{sep}{rest}"
+    return f"Phase {number}"
+
+
+def _top_section(path: str) -> str:
+    parts = [part.strip() for part in (path or "").split(">") if part.strip()]
+    return parts[0] if parts else "Backlog"
+
+
+def _replace_top_section(path: str, old: str, new: str) -> str:
+    if path == old:
+        return new
+    prefix = old + " > "
+    if path.startswith(prefix):
+        return new + path[len(old) :]
+    return path
+
+
+def _sort_num(row: dict[str, str]) -> int:
+    try:
+        return int(row.get("sort_order") or "0")
+    except ValueError:
+        return 0
+
+
+def apply_phase_move(
+    items: list[dict[str, str]],
+    resources: list[dict[str, str]],
+    plan_id: str,
+    phase_title: str,
+    direction: str,
+) -> str | None:
+    """Reorder one phase among the phase slots and renumber Phase N titles.
+
+    Non-phase sections stay in place. Item ids and checked flags stay put.
+    Returns an error string, or None when the rows were updated.
+    """
+    direction = (direction or "").strip().lower()
+    if direction not in ("up", "down"):
+        return "direction must be up or down"
+    phase_title = (phase_title or "").strip()
+    if not phase_title:
+        return "phase_title required"
+
+    plan_items = [row for row in items if row.get("plan_id") == plan_id]
+    plan_resources = [row for row in resources if row.get("plan_id") == plan_id]
+    blocks: list[dict[str, Any]] = []
+    by_title: dict[str, dict[str, Any]] = {}
+    for row in sorted(plan_items, key=_sort_num):
+        title = _top_section(row.get("section_path") or "")
+        block = by_title.get(title)
+        if block is None:
+            block = {"title": title, "items": [], "resources": []}
+            by_title[title] = block
+            blocks.append(block)
+        block["items"].append(row)
+    for row in sorted(plan_resources, key=_sort_num):
+        title = _top_section(row.get("section_path") or "")
+        block = by_title.get(title)
+        if block is None:
+            block = {"title": title, "items": [], "resources": []}
+            by_title[title] = block
+            blocks.append(block)
+        block["resources"].append(row)
+
+    phase_slots = [
+        index for index, block in enumerate(blocks) if phase_title_parts(block["title"])
+    ]
+    phase_titles = [blocks[index]["title"] for index in phase_slots]
+    if phase_title not in phase_titles:
+        return "phase not found"
+    current = phase_titles.index(phase_title)
+    step = -1 if direction == "up" else 1
+    neighbor = current + step
+    if neighbor < 0 or neighbor >= len(phase_slots):
+        return "already at edge"
+
+    start = min(phase_title_parts(blocks[index]["title"])[0] for index in phase_slots)
+    left, right = phase_slots[current], phase_slots[neighbor]
+    blocks[left], blocks[right] = blocks[right], blocks[left]
+
+    for offset, index in enumerate(phase_slots):
+        number, sep, rest = phase_title_parts(blocks[index]["title"])
+        blocks[index]["new_title"] = format_phase_title(start + offset, sep, rest)
+        del number
+
+    order = 0
+    for block in blocks:
+        old = block["title"]
+        new = block.get("new_title") or old
+        for row in block["items"]:
+            order += 1
+            row["section_path"] = _replace_top_section(
+                row.get("section_path") or "", old, new
+            )
+            row["sort_order"] = str(order)
+        for row in block["resources"]:
+            row["section_path"] = _replace_top_section(
+                row.get("section_path") or "", old, new
+            )
+    return None
+
+
+def move_phase_csv(
+    data_dir: Path, study_id: str, phase_title: str, direction: str
+) -> dict[str, Any]:
+    tables = load_plan_tables(data_dir)
+    plan = _plan_for_study(tables, study_id)
+    if not plan:
+        return {"ok": False, "error": "plan not found", "study_id": study_id}
+    error = apply_phase_move(
+        tables["plan_items"],
+        tables["plan_resources"],
+        plan["id"],
+        phase_title,
+        direction,
+    )
+    if error:
+        return {"ok": False, "error": error, "study_id": study_id}
+    save_plan_tables(
+        data_dir, tables["plans"], tables["plan_items"], tables["plan_resources"]
+    )
+    return {"ok": True, "study_id": study_id, "phase_title": phase_title, "dir": direction}
 
 
 def remove_backlog_item_csv(
@@ -339,6 +489,26 @@ def remove_backlog_item(
     return result
 
 
+def move_phase(
+    study_id: str,
+    phase_title: str,
+    direction: str,
+    data_dir: Path,
+    studies_root: Path,
+    output_dir: Path,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    if dry_run:
+        return {"ok": True, "dry_run": True, "study_id": study_id}
+    result = move_phase_csv(data_dir, study_id, phase_title, direction)
+    if not result.get("ok"):
+        return result
+    _sync_study_md(study_id, data_dir, studies_root, output_dir)
+    plan = refresh_plan_payload(study_id, studies_root, data_dir)
+    result["plan"] = plan
+    return result
+
+
 def add_resource(
     study_id: str,
     section_path: str,
@@ -420,6 +590,16 @@ def save_payload(
         return remove_backlog_item(
             str(payload.get("study_id") or ""),
             str(payload.get("todo_id") or ""),
+            data_dir,
+            studies_root,
+            output_dir,
+            dry_run=dry_run,
+        )
+    if payload.get("action") == "move_phase":
+        return move_phase(
+            str(payload.get("study_id") or ""),
+            str(payload.get("phase_title") or ""),
+            str(payload.get("dir") or ""),
             data_dir,
             studies_root,
             output_dir,

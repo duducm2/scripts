@@ -1713,6 +1713,24 @@ a.btn-gallery {
   color: var(--gold);
   border-color: var(--gold);
 }
+.btn-plans-next {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 2px;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+.btn-plans-next:hover {
+  background: #3a3224;
+}
+.plan-todo-next {
+  background: #3a3224;
+  outline: 1px solid var(--gold);
+  scroll-margin: 5rem;
+}
 .btn-plans-save {
   background: var(--rpg-brass);
   color: #1c1408;
@@ -1922,6 +1940,38 @@ a.btn-gallery {
   border-radius: 2px;
   padding: 0.85rem 1rem 1rem;
   margin-bottom: 1.5rem;
+}
+.phase-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.phase-heading-text {
+  min-width: 0;
+}
+.phase-move {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+.phase-move-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 2px;
+  width: 1.7rem;
+  height: 1.7rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.phase-move-btn:hover:not(:disabled) {
+  background: #3a3224;
+}
+.phase-move-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 .plan-section.level-3 {
   background: #1a1612;

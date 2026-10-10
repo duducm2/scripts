@@ -116,89 +116,89 @@ PITEM_0114,PLAN_0001,Goals (End of Year 1),Consistent 5-6 session/week analytica
 PITEM_0115,PLAN_0001,Goals (End of Year 1),Zero unmanaged technical debt in primary repositories,0,115
 PITEM_0116,PLAN_0007,Backlog,Data lake,1,1
 PITEM_0117,PLAN_0007,Backlog,"ETL (Extract, Transform, Load)",1,2
-PITEM_0118,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Master Excel keyboard shortcuts for navigation without relying on the mouse,1,3
-PITEM_0119,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Apply tabular best practices for large dataset management,1,4
-PITEM_0120,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,1,5
-PITEM_0121,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts,1,6
-PITEM_0122,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 2. Advanced Functions,Master XLOOKUP with correct lookup-array vs return-array order,1,7
-PITEM_0123,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 2. Advanced Functions,Build INDEX/MATCH lookups for flexible retrieval,1,8
-PITEM_0124,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 2. Advanced Functions,Write nested IF / logical operators for conditional modeling,1,9
-PITEM_0126,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,Build Pivot Tables from transactional rows into high-level metrics,1,11
-PITEM_0127,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,Compute percentage distributions and relative shares in pivots,1,12
-PITEM_0128,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,Apply dynamic number formatting for stakeholder-ready summaries,1,13
-PITEM_0129,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,"Place fields in Rows, Columns, and Values and check how each area changes the pivot",1,14
-PITEM_0130,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,"Use Power Query to extract, transform, and load dirty data",1,15
-PITEM_0131,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,Learn M language basics for repeatable transformations,1,16
-PITEM_0132,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,Unpivot data and handle null/missing values in the query editor,1,17
-PITEM_0133,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,Build a reusable Power Query that strips bad formatting and merges sources,1,18
-PITEM_0134,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 5. Capstone Synthesis,Complete an end-to-end tabular analysis on a real-world dataset in Excel,1,19
-PITEM_0135,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 5. Capstone Synthesis,Produce a cleaned report ready for review,1,20
-PITEM_0136,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 5. Capstone Synthesis,Save the final cleaned Excel workbook as a stakeholder-facing summary,1,21
-PITEM_0137,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 1. Database Architecture,Install and configure PostgreSQL (or practice MySQL) locally,1,22
-PITEM_0138,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 1. Database Architecture,"Understand schemas, tables, and primary/foreign key relationships",1,23
-PITEM_0139,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 1. Database Architecture,"Write SELECT, FROM, and WHERE queries to extract and filter rows",1,24
-PITEM_0141,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 2. Aggregation Logic,Aggregate with GROUP BY and filter groups with HAVING,1,26
-PITEM_0142,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 2. Aggregation Logic,"Apply SUM, AVG, COUNT, MIN, and MAX correctly",1,27
-PITEM_0144,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,Write INNER JOIN queries across related tables,1,29
-PITEM_0145,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,Write LEFT JOIN queries and interpret NULL placeholders for non-matches,1,30
-PITEM_0146,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,Use OUTER JOIN patterns and table aliases for readable multi-table SQL,1,31
-PITEM_0147,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,"Contrast INNER JOIN and LEFT JOIN, including unmatched rows returned as NULL",1,32
-PITEM_0148,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 4. Query Modularity,Refactor nested subqueries into readable Common Table Expressions (CTEs),1,33
-PITEM_0149,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 4. Query Modularity,Format long queries so each clause stays readable,1,34
-PITEM_0150,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 4. Query Modularity,Replace a long nested query with named Common Table Expressions,1,35
-PITEM_0151,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 5. Advanced Analytics,"Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)",1,36
-PITEM_0152,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 5. Advanced Analytics,Use LEAD and LAG for row-relative comparisons without collapsing grain,1,37
-PITEM_0153,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 5. Advanced Analytics,Practice PARTITION BY windows that preserve row grain while adding running metrics,1,38
-PITEM_0154,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 6. Portfolio Integration,Run Exploratory Data Analysis in SQL on a real-world dataset (e.g. COVID / demographic data),1,39
-PITEM_0155,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 6. Portfolio Integration,Document findings in a clean GitHub markdown logbook,1,40
-PITEM_0156,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 6. Portfolio Integration,Import an unstructured public dataset into PostgreSQL for portfolio EDA,1,41
-PITEM_0157,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 1. Interface and Data Ingestion,Install Power BI Desktop and import practice datasets,1,42
-PITEM_0158,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 1. Interface and Data Ingestion,"Navigate the workspace: Report, Data, and Model views",1,43
-PITEM_0159,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 1. Interface and Data Ingestion,Leverage UX background: treat every dashboard as a user interface with journey mapping,1,44
-PITEM_0160,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 2. Advanced Power Query,"Transform datasets in Power BI Power Query (types, splits, merges)",1,45
-PITEM_0161,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 2. Advanced Power Query,Handle API or external source integrations when needed,1,46
-PITEM_0162,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 2. Advanced Power Query,"Reuse Phase 1 Power Query skills in Power BI, which uses the same engine",1,47
-PITEM_0163,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Construct a Star Schema with a central Fact table and Dimension tables,1,48
-PITEM_0164,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Manage 1-to-Many cardinality and active vs inactive relationships,1,49
-PITEM_0165,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Relate each dimension to the fact table so filters flow through one active relationship,1,50
-PITEM_0166,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Distinguish row context from filter context in DAX,0,51
-PITEM_0167,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,"Master CALCULATE, FILTER, and iterator functions like SUMX",0,52
-PITEM_0168,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Build Time Intelligence measures with DATEADD and related functions,0,53
-PITEM_0169,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Use CALCULATE to change the filter context of a measure,0,54
-PITEM_0170,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Apply UX principles: visual hierarchy, F/Z-pattern, Gestalt layout",0,55
-PITEM_0171,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Choose chart types correctly (bar, line, scatter) and avoid chart junk",0,56
-PITEM_0172,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Create drill-throughs and publish a portfolio dashboard to the service,0,57
-PITEM_0173,PLAN_0007,Phase 3: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Lead stakeholder eye to the primary KPI first using hierarchy and contrast,0,58
-PITEM_0174,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Install Anaconda and open Jupyter Notebooks,0,59
-PITEM_0175,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Import pandas and numpy in a clean analysis environment,0,60
-PITEM_0176,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Use one notebook environment and declare imports at the top,0,61
-PITEM_0177,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 2. Data Structures,Understand a DataFrame as a collection of Series,0,62
-PITEM_0178,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 2. Data Structures,"Index, select, filter, and sort DataFrame columns and rows",0,63
-PITEM_0179,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 2. Data Structures,Practice slicing and boolean filtering without mutating source frames carelessly,0,64
-PITEM_0180,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 3. Exploratory Data Analysis,"Profile datasets with .info(), .describe(), and .isnull().sum()",0,65
-PITEM_0181,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 3. Exploratory Data Analysis,"Interpret mean, std, and percentiles from statistical summaries",0,66
-PITEM_0182,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 3. Exploratory Data Analysis,"Check dtypes, missing values, and row counts before transforming a new dataset",0,67
-PITEM_0183,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 4. Vectorization and Aggregation,Replace iterative for-loops with vectorized column operations,0,68
-PITEM_0184,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 4. Vectorization and Aggregation,Aggregate with groupby() and combine tables with merge(),0,69
-PITEM_0185,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 4. Vectorization and Aggregation,Refuse row-wise Python loops for column transforms; prefer vectorized arrays,0,70
-PITEM_0186,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Compute correlation matrices on cleaned numeric features,0,71
-PITEM_0187,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Plot heatmaps with Seaborn for exploratory visualization,0,72
-PITEM_0188,PLAN_0007,Phase 4: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Keep matplotlib/seaborn for EDA only — do not introduce ML libraries,0,73
-PITEM_0189,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Map stakeholder personas: Executive, Operations Manager, Marketing Lead",0,74
-PITEM_0190,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Build a narrative arc that ends on actionable insight, not exploration process",0,75
-PITEM_0191,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Tailor pitch length and detail to Executive, Operations, and Marketing audiences",0,76
-PITEM_0192,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Eliminate gridlines, excess labels, and 3D/exploding pie charts (Knaflic)",0,77
-PITEM_0193,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Use pre-attentive attributes (color, size, contrast) to force focus on the key metric",0,78
-PITEM_0194,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction",Apply Storytelling with Data: one stark highlight (red line) on otherwise muted slides,0,79
-PITEM_0195,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution","Complete SQL portfolio project: import raw data, query, window functions, document in GitHub",0,80
-PITEM_0196,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Feed SQL insights into a Power BI Star Schema with DAX measures and minimalist visuals,0,81
-PITEM_0197,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Chain SQL exploration output into a dimensional Power BI model for executives,0,82
-PITEM_0198,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Complete Jupyter portfolio: clean a messy dataset with Pandas vectorization,0,83
-PITEM_0199,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Document correlations and transformations as a readable executive-facing notebook,0,84
-PITEM_0200,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Prove programmatic capability beyond BI tools with messy-data cleaning notebook,0,85
-PITEM_0201,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Create a free portfolio website showcasing the three projects,0,86
-PITEM_0202,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Establish a public GitHub repository with clean README and documented queries,0,87
-PITEM_0203,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment","Write portfolio READMEs that show commercial utility, not only academic theory",0,88
+PITEM_0118,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Master Excel keyboard shortcuts for navigation without relying on the mouse,1,13
+PITEM_0119,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Apply tabular best practices for large dataset management,1,14
+PITEM_0120,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,1,15
+PITEM_0121,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts,1,16
+PITEM_0122,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 2. Advanced Functions,Master XLOOKUP with correct lookup-array vs return-array order,1,17
+PITEM_0123,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 2. Advanced Functions,Build INDEX/MATCH lookups for flexible retrieval,1,18
+PITEM_0124,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 2. Advanced Functions,Write nested IF / logical operators for conditional modeling,1,19
+PITEM_0126,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,Build Pivot Tables from transactional rows into high-level metrics,1,20
+PITEM_0127,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,Compute percentage distributions and relative shares in pivots,1,21
+PITEM_0128,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,Apply dynamic number formatting for stakeholder-ready summaries,1,22
+PITEM_0129,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 3. Dimensional Aggregation,"Place fields in Rows, Columns, and Values and check how each area changes the pivot",1,23
+PITEM_0130,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,"Use Power Query to extract, transform, and load dirty data",1,24
+PITEM_0131,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,Learn M language basics for repeatable transformations,1,25
+PITEM_0132,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,Unpivot data and handle null/missing values in the query editor,1,26
+PITEM_0133,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 4. Automated ETL Pipelines,Build a reusable Power Query that strips bad formatting and merges sources,1,27
+PITEM_0134,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 5. Capstone Synthesis,Complete an end-to-end tabular analysis on a real-world dataset in Excel,1,28
+PITEM_0135,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 5. Capstone Synthesis,Produce a cleaned report ready for review,1,29
+PITEM_0136,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 5. Capstone Synthesis,Save the final cleaned Excel workbook as a stakeholder-facing summary,1,30
+PITEM_0137,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 1. Database Architecture,Install and configure PostgreSQL (or practice MySQL) locally,1,31
+PITEM_0138,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 1. Database Architecture,"Understand schemas, tables, and primary/foreign key relationships",1,32
+PITEM_0139,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 1. Database Architecture,"Write SELECT, FROM, and WHERE queries to extract and filter rows",1,33
+PITEM_0141,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 2. Aggregation Logic,Aggregate with GROUP BY and filter groups with HAVING,1,34
+PITEM_0142,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 2. Aggregation Logic,"Apply SUM, AVG, COUNT, MIN, and MAX correctly",1,35
+PITEM_0144,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,Write INNER JOIN queries across related tables,1,36
+PITEM_0145,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,Write LEFT JOIN queries and interpret NULL placeholders for non-matches,1,37
+PITEM_0146,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,Use OUTER JOIN patterns and table aliases for readable multi-table SQL,1,38
+PITEM_0147,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 3. Set Theory and Joins,"Contrast INNER JOIN and LEFT JOIN, including unmatched rows returned as NULL",1,39
+PITEM_0148,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 4. Query Modularity,Refactor nested subqueries into readable Common Table Expressions (CTEs),1,40
+PITEM_0149,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 4. Query Modularity,Format long queries so each clause stays readable,1,41
+PITEM_0150,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 4. Query Modularity,Replace a long nested query with named Common Table Expressions,1,42
+PITEM_0151,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 5. Advanced Analytics,"Apply Window Functions: ROW_NUMBER, RANK, SUM() OVER(PARTITION BY)",1,43
+PITEM_0152,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 5. Advanced Analytics,Use LEAD and LAG for row-relative comparisons without collapsing grain,1,44
+PITEM_0153,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 5. Advanced Analytics,Practice PARTITION BY windows that preserve row grain while adding running metrics,1,45
+PITEM_0154,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 6. Portfolio Integration,Run Exploratory Data Analysis in SQL on a real-world dataset (e.g. COVID / demographic data),1,46
+PITEM_0155,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 6. Portfolio Integration,Document findings in a clean GitHub markdown logbook,1,47
+PITEM_0156,PLAN_0007,Phase 2: Relational Database Extraction and Querying > 6. Portfolio Integration,Import an unstructured public dataset into PostgreSQL for portfolio EDA,1,48
+PITEM_0157,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 1. Interface and Data Ingestion,Install Power BI Desktop and import practice datasets,1,64
+PITEM_0158,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 1. Interface and Data Ingestion,"Navigate the workspace: Report, Data, and Model views",1,65
+PITEM_0159,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 1. Interface and Data Ingestion,Leverage UX background: treat every dashboard as a user interface with journey mapping,1,66
+PITEM_0160,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 2. Advanced Power Query,"Transform datasets in Power BI Power Query (types, splits, merges)",1,67
+PITEM_0161,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 2. Advanced Power Query,Handle API or external source integrations when needed,1,68
+PITEM_0162,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 2. Advanced Power Query,"Reuse Phase 1 Power Query skills in Power BI, which uses the same engine",1,69
+PITEM_0163,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Construct a Star Schema with a central Fact table and Dimension tables,1,70
+PITEM_0164,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Manage 1-to-Many cardinality and active vs inactive relationships,1,71
+PITEM_0165,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Relate each dimension to the fact table so filters flow through one active relationship,1,72
+PITEM_0166,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Distinguish row context from filter context in DAX,0,73
+PITEM_0167,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,"Master CALCULATE, FILTER, and iterator functions like SUMX",0,74
+PITEM_0168,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Build Time Intelligence measures with DATEADD and related functions,0,75
+PITEM_0169,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Use CALCULATE to change the filter context of a measure,0,76
+PITEM_0170,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Apply UX principles: visual hierarchy, F/Z-pattern, Gestalt layout",0,77
+PITEM_0171,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Choose chart types correctly (bar, line, scatter) and avoid chart junk",0,78
+PITEM_0172,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Create drill-throughs and publish a portfolio dashboard to the service,0,79
+PITEM_0173,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Lead stakeholder eye to the primary KPI first using hierarchy and contrast,0,80
+PITEM_0174,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Install Anaconda and open Jupyter Notebooks,0,81
+PITEM_0175,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Import pandas and numpy in a clean analysis environment,0,82
+PITEM_0176,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Use one notebook environment and declare imports at the top,0,83
+PITEM_0177,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 2. Data Structures,Understand a DataFrame as a collection of Series,0,84
+PITEM_0178,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 2. Data Structures,"Index, select, filter, and sort DataFrame columns and rows",0,85
+PITEM_0179,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 2. Data Structures,Practice slicing and boolean filtering without mutating source frames carelessly,0,86
+PITEM_0180,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 3. Exploratory Data Analysis,"Profile datasets with .info(), .describe(), and .isnull().sum()",0,87
+PITEM_0181,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 3. Exploratory Data Analysis,"Interpret mean, std, and percentiles from statistical summaries",0,88
+PITEM_0182,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 3. Exploratory Data Analysis,"Check dtypes, missing values, and row counts before transforming a new dataset",0,89
+PITEM_0183,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 4. Vectorization and Aggregation,Replace iterative for-loops with vectorized column operations,0,90
+PITEM_0184,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 4. Vectorization and Aggregation,Aggregate with groupby() and combine tables with merge(),0,91
+PITEM_0185,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 4. Vectorization and Aggregation,Refuse row-wise Python loops for column transforms; prefer vectorized arrays,0,92
+PITEM_0186,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Compute correlation matrices on cleaned numeric features,0,93
+PITEM_0187,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Plot heatmaps with Seaborn for exploratory visualization,0,94
+PITEM_0188,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Keep matplotlib/seaborn for EDA only — do not introduce ML libraries,0,95
+PITEM_0189,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Map stakeholder personas: Executive, Operations Manager, Marketing Lead",0,96
+PITEM_0190,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Build a narrative arc that ends on actionable insight, not exploration process",0,97
+PITEM_0191,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Tailor pitch length and detail to Executive, Operations, and Marketing audiences",0,98
+PITEM_0192,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Eliminate gridlines, excess labels, and 3D/exploding pie charts (Knaflic)",0,99
+PITEM_0193,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Use pre-attentive attributes (color, size, contrast) to force focus on the key metric",0,100
+PITEM_0194,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction",Apply Storytelling with Data: one stark highlight (red line) on otherwise muted slides,0,101
+PITEM_0195,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution","Complete SQL portfolio project: import raw data, query, window functions, document in GitHub",0,102
+PITEM_0196,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Feed SQL insights into a Power BI Star Schema with DAX measures and minimalist visuals,0,103
+PITEM_0197,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Chain SQL exploration output into a dimensional Power BI model for executives,0,104
+PITEM_0198,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Complete Jupyter portfolio: clean a messy dataset with Pandas vectorization,0,105
+PITEM_0199,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Document correlations and transformations as a readable executive-facing notebook,0,106
+PITEM_0200,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Prove programmatic capability beyond BI tools with messy-data cleaning notebook,0,107
+PITEM_0201,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Create a free portfolio website showcasing the three projects,0,108
+PITEM_0202,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Establish a public GitHub repository with clean README and documented queries,0,109
+PITEM_0203,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment","Write portfolio READMEs that show commercial utility, not only academic theory",0,110
 PITEM_0204,PLAN_0008,Backlog,Archive source curriculum PDF (Senior Data Science Study Plan) under research/ for reference,0,1
 PITEM_0205,PLAN_0008,Backlog,Defer Memory Palace blueprint until ready — leave palaces blank for now,0,2
 PITEM_0206,PLAN_0008,Backlog,"This track includes ML, deep learning, and MLOps (unlike the Data Analyst no-ML constraint)",0,3
@@ -916,59 +916,59 @@ PITEM_0917,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDif
 PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
 PITEM_0919,PLAN_0007,Backlog,schema,1,3
 PITEM_0920,PLAN_0007,Backlog,Visual Information Class PDFs,1,4
-PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,0,6
-PITEM_0923,PLAN_0007,Backlog,snow flake,0,7
-PITEM_0924,PLAN_0007,Backlog,"Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)",0,8
-PITEM_0921,PLAN_0007,Backlog,data bricks project,0,9
-PITEM_0925,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",0,89
-PITEM_0926,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,0,90
-PITEM_0927,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,0,91
-PITEM_0928,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,0,92
-PITEM_0929,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,"Build a medallion pipeline through bronze, silver, and gold",0,93
-PITEM_0930,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 1. Must,"Map how a Databricks workspace, storage, and Unity Catalog sit on Azure",0,94
-PITEM_0931,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Schedule pipelines with Lakeflow Jobs,0,95
-PITEM_0932,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Ingest data with Lakeflow Connect,0,96
-PITEM_0933,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Enforce schema and data-quality checks on Delta tables,0,97
-PITEM_0934,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Version notebooks with Git on the workspace,0,98
-PITEM_0935,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 2. Good to know,Connect Power BI to Databricks SQL,0,99
-PITEM_0936,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Track experiments with MLflow,0,100
-PITEM_0937,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Serve features from a feature store,0,101
-PITEM_0938,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Ingest streaming data into Delta,0,102
-PITEM_0939,PLAN_0007,Phase 6: Azure Databricks (Principal Platform) > 3. Learn after,Apply Unity Catalog row filters and data sharing,0,103
-PITEM_0940,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Create a Fabric workspace and place data in OneLake,0,104
-PITEM_0941,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Build a lakehouse on Delta tables,0,105
-PITEM_0942,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Ingest and transform with Dataflows Gen2 using Power Query,0,106
-PITEM_0943,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Query the SQL analytics endpoint and build a semantic model,0,107
-PITEM_0944,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Connect a Power BI report with Direct Lake on that lakehouse,0,108
-PITEM_0945,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Orchestrate movement with Data Factory pipelines,0,109
-PITEM_0946,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Transform data in Fabric Spark notebooks,0,110
-PITEM_0947,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Reference existing data with OneLake shortcuts,0,111
-PITEM_0948,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Maintain Delta tables with OPTIMIZE and VACUUM,0,112
-PITEM_0949,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Discover streaming sources in Real-Time hub,0,113
-PITEM_0950,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Combine Direct Lake tables with Import tables in a composite model,0,114
-PITEM_0951,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Choose a warehouse versus a lakehouse for a given workload,0,115
-PITEM_0952,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,"Explain SAP Datasphere spaces, the Data Builder, and an analytic model",0,116
-PITEM_0953,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,Describe how SAP Analytics Cloud consumes a Datasphere model,0,117
-PITEM_0954,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,Explain SAP Business Data Cloud and that Datasphere sits inside it,0,118
-PITEM_0955,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,"Map the ERP handoff among SD (sales), MM (procurement), and PP (production)",0,119
-PITEM_0956,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Distinguish replication flows from transformation flows,0,120
-PITEM_0957,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Describe how spaces and authorization separate data,0,121
-PITEM_0958,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Explain Delta Share as zero-copy sharing out of Business Data Cloud,0,122
-PITEM_0959,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,"Map APO planning on those modules: DP/GATP, SNP, and PPDS",0,123
-PITEM_0960,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Explore the Business Builder and the data marketplace,0,124
-PITEM_0961,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Build an SAP Analytics Cloud story on a Datasphere model,0,125
-PITEM_0962,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Study module configuration and Transportation Management only when a role requires it,0,126
-PITEM_0963,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Explain Snowflake storage separated from compute,0,127
-PITEM_0964,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Size a virtual warehouse and relate it to credit consumption,0,128
-PITEM_0965,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Contrast Snowflake SQL analytics with Databricks engineering and AI,0,129
-PITEM_0966,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Share data securely without copying it,0,130
-PITEM_0967,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Set a resource monitor and read credit cost,0,131
-PITEM_0968,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Recover data with time travel and zero-copy clone,0,132
-PITEM_0969,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,"Defer Snowpark, dynamic tables, and Cortex unless a Bosch project asks for Snowflake",0,133
-PITEM_0970,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Use Snowpark DataFrames,0,134
-PITEM_0971,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Build a pipeline with dynamic tables,0,135
-PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex functions on warehouse data,0,136
-PITEM_0125,PLAN_0007,Backlog,ACID,0,10
-PITEM_0140,PLAN_0007,Backlog,Delta Lake,0,11
-PITEM_0143,PLAN_0007,Backlog,Spark,0,12
-PITEM_0973,PLAN_0007,Backlog,Database view,0,13
+PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,0,5
+PITEM_0923,PLAN_0007,Backlog,snow flake,0,6
+PITEM_0924,PLAN_0007,Backlog,"Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)",0,7
+PITEM_0921,PLAN_0007,Backlog,data bricks project,0,8
+PITEM_0925,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",0,49
+PITEM_0926,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,0,50
+PITEM_0927,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,0,51
+PITEM_0928,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,0,52
+PITEM_0929,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Build a medallion pipeline through bronze, silver, and gold",0,53
+PITEM_0930,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Map how a Databricks workspace, storage, and Unity Catalog sit on Azure",0,54
+PITEM_0931,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Schedule pipelines with Lakeflow Jobs,0,55
+PITEM_0932,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Ingest data with Lakeflow Connect,0,56
+PITEM_0933,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Enforce schema and data-quality checks on Delta tables,0,57
+PITEM_0934,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Version notebooks with Git on the workspace,0,58
+PITEM_0935,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Connect Power BI to Databricks SQL,0,59
+PITEM_0936,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 3. Learn after,Track experiments with MLflow,0,60
+PITEM_0937,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 3. Learn after,Serve features from a feature store,0,61
+PITEM_0938,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 3. Learn after,Ingest streaming data into Delta,0,62
+PITEM_0939,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 3. Learn after,Apply Unity Catalog row filters and data sharing,0,63
+PITEM_0940,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Create a Fabric workspace and place data in OneLake,0,111
+PITEM_0941,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Build a lakehouse on Delta tables,0,112
+PITEM_0942,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Ingest and transform with Dataflows Gen2 using Power Query,0,113
+PITEM_0943,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Query the SQL analytics endpoint and build a semantic model,0,114
+PITEM_0944,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 1. Must,Connect a Power BI report with Direct Lake on that lakehouse,0,115
+PITEM_0945,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Orchestrate movement with Data Factory pipelines,0,116
+PITEM_0946,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Transform data in Fabric Spark notebooks,0,117
+PITEM_0947,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Reference existing data with OneLake shortcuts,0,118
+PITEM_0948,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 2. Good to know,Maintain Delta tables with OPTIMIZE and VACUUM,0,119
+PITEM_0949,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Discover streaming sources in Real-Time hub,0,120
+PITEM_0950,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Combine Direct Lake tables with Import tables in a composite model,0,121
+PITEM_0951,PLAN_0007,Phase 7: Microsoft Fabric (Integration Layer) > 3. Learn after,Choose a warehouse versus a lakehouse for a given workload,0,122
+PITEM_0952,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,"Explain SAP Datasphere spaces, the Data Builder, and an analytic model",0,123
+PITEM_0953,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,Describe how SAP Analytics Cloud consumes a Datasphere model,0,124
+PITEM_0954,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,Explain SAP Business Data Cloud and that Datasphere sits inside it,0,125
+PITEM_0955,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 1. Must,"Map the ERP handoff among SD (sales), MM (procurement), and PP (production)",0,126
+PITEM_0956,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Distinguish replication flows from transformation flows,0,127
+PITEM_0957,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Describe how spaces and authorization separate data,0,128
+PITEM_0958,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,Explain Delta Share as zero-copy sharing out of Business Data Cloud,0,129
+PITEM_0959,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 2. Good to know,"Map APO planning on those modules: DP/GATP, SNP, and PPDS",0,130
+PITEM_0960,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Explore the Business Builder and the data marketplace,0,131
+PITEM_0961,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Build an SAP Analytics Cloud story on a Datasphere model,0,132
+PITEM_0962,PLAN_0007,Phase 8: SAP Data for Bosch Roles > 3. Learn after,Study module configuration and Transportation Management only when a role requires it,0,133
+PITEM_0963,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Explain Snowflake storage separated from compute,0,134
+PITEM_0964,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Size a virtual warehouse and relate it to credit consumption,0,135
+PITEM_0965,PLAN_0007,Phase 9: Snowflake (Secondary) > 1. Must,Contrast Snowflake SQL analytics with Databricks engineering and AI,0,136
+PITEM_0966,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Share data securely without copying it,0,137
+PITEM_0967,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Set a resource monitor and read credit cost,0,138
+PITEM_0968,PLAN_0007,Phase 9: Snowflake (Secondary) > 2. Good to know,Recover data with time travel and zero-copy clone,0,139
+PITEM_0969,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,"Defer Snowpark, dynamic tables, and Cortex unless a Bosch project asks for Snowflake",0,140
+PITEM_0970,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Use Snowpark DataFrames,0,141
+PITEM_0971,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Build a pipeline with dynamic tables,0,142
+PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex functions on warehouse data,0,143
+PITEM_0125,PLAN_0007,Backlog,ACID,0,9
+PITEM_0140,PLAN_0007,Backlog,Delta Lake,0,10
+PITEM_0143,PLAN_0007,Backlog,Spark,0,11
+PITEM_0973,PLAN_0007,Backlog,Database view,0,12

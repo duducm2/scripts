@@ -1155,6 +1155,9 @@ cheatSheets["Memory Palace"] := "
     === Navigation ===
     🏠 [Esc] Close study picker / palace overlay / leave Browse / return to Practice
     🔁 [Shift+P] Toggle Practice ↔ Plans
+    ⬇️ [Shift+N] First unchecked task in the phases (skips the backlog)
+    ⬆️ [Shift+Up] Move the phase in view up and renumber (↑ on the phase)
+    ⬇️ [Shift+Down] Move the phase in view down and renumber (↓ on the phase)
     🎬 [Shift+E] Entertainment topics
     🖼 [Shift+I] Image backlog (ordered study snapshots)
     🆕 [Shift+L] Open latest palace for the selected study
@@ -1208,6 +1211,74 @@ cheatSheets["Memory Palace"] := "
     ⬅️ [←] Older palace
     ➡️ [→] Newer palace
     🏠 [Esc] Exit full-screen first, then close overlay
+)"
+
+; --- Finance (AHK menu + Chrome cockpit :8765, title "Finance cockpit") ------
+cheatSheets["Finance"] := "
+(
+    Finance
+    Overlay Win+Alt+Shift+A. Menu: Utility [F] or Win+Alt+Shift+D twice. Cockpit tab title is Finance cockpit.
+    
+    === Menu ===
+    📊 [D] Dashboard (cockpit in Chrome)
+    💸 [T] Transactions
+    🏦 [A] Accounts
+    💳 [C] Credit cards
+    📈 [B] Budgets
+    🎯 [G] Goals
+    🔁 [L] Recurring bills
+    🏷️ [K] Categories
+    ⚙️ [S] Settings
+    ⬅️ [Backspace] Utility Shortcuts
+    🏠 [Esc] Close
+    
+    === Lists ===
+    ➕ [Shift+A] Add (on Categories, Shift+A is All — add is Shift+I)
+    ✏️ [Shift+E] Edit the selected row
+    🗑️ [Delete] Delete the selected row
+    ⬅️ [Backspace] Main menu
+    🏠 [Esc] Main menu (Transactions: Esc closes the category filter first)
+    
+    === Transactions ===
+    📋 [Shift+G] All
+    💸 [Shift+X] Expenses
+    💳 [Shift+C] Card
+    💰 [Shift+N] Income
+    🔁 [Shift+T] Transfers
+    🔍 [Shift+F] Category filter (first letters, Esc closes)
+    ⬅️ [,] Previous month
+    ➡️ [.] Next month
+    
+    === Accounts ===
+    ⚖️ [Shift+J] Adjust balance
+    ⭐ [Shift+R] Set primary
+    
+    === Credit cards ===
+    💳 [Shift+P] Pay the selected card
+    ⭐ [Shift+R] Set primary
+    
+    === Budgets ===
+    ⬅️ [,] Previous month
+    ➡️ [.] Next month
+    
+    === Categories ===
+    📋 [Shift+A] All
+    💸 [Shift+X] Expense
+    💰 [Shift+N] Income
+    ➕ [Shift+I] Add
+    
+    === Goals ===
+    1️⃣ [1] Sort by name
+    2️⃣ [2] Sort by date
+    3️⃣ [3] Sort by percent
+    
+    === Settings ===
+    🔄 [Shift+R] Rebuild balances
+    ⬅️ [Backspace] Main menu
+    🏠 [Esc] Main menu
+    
+    === Cockpit ===
+    ⬅️ [Backspace] Leave a category chart and return to the dashboard
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
@@ -1519,6 +1590,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Alt+A] > Set study article from clipboard
     [Alt+F] > Set favorite link from clipboard
     [Shift+P] > Toggle Practice ↔ Plans
+    [Shift+N] > First unchecked task in the phases (skips the backlog)
+    [Shift+Up] / [Shift+Down] > Move the phase in view up or down and renumber; next task is recalculated
     [Shift+E] > Entertainment topics
     [Shift+I] > Image backlog (ordered study snapshots)
     [Shift+L] > Latest palace (selected study)

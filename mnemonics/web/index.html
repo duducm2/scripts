@@ -893,6 +893,14 @@
                 rel="noopener"
                 >Plans on GitHub</a
               >
+              <button
+                type="button"
+                id="btnPlansNext"
+                class="btn-plans-next"
+                title="First unchecked task in the phases (Shift+N). Skips the backlog."
+              >
+                Next task
+              </button>
               <button type="button" id="btnPlansSave" class="btn-plans-save">
                 Save
               </button>
@@ -1194,6 +1202,7 @@
         planCheckSnapshot: null,
         plansScroll: null,
         plansScrollRestorePending: false,
+        pendingNextPhaseTask: false,
         plansRenderGen: 0,
         plansViewSig: "",
         plansViewStudyId: "",
@@ -1911,7 +1920,8 @@
       }
 
       const PALACE_PAGE_TITLE = "Memory Palace";
-      const PALACE_PICKER_TITLE = "Select a Study and Quick Recall";
+      // Keep the "Memory Palace" prefix so the cheat sheet still matches while the picker is open.
+      const PALACE_PICKER_TITLE = "Memory Palace · Select a study";
 
       function setPalacePickerTitle(active) {
         document.title = active ? PALACE_PICKER_TITLE : PALACE_PAGE_TITLE;
@@ -3879,6 +3889,114 @@
         requestAnimationFrame(apply);
       }
 
+      function jumpToNextPhaseTask() {
+        const content = document.getElementById("plansContent");
+        document.querySelectorAll(".plan-todo-next").forEach((el) => {
+          el.classList.remove("plan-todo-next");
+        });
+        const box = content?.querySelector(
+          '.plan-section[data-in-phase="1"] .plan-todo input[type="checkbox"]:not(:checked)',
+        );
+        if (!box) {
+          toast("No unchecked task in the phases");
+          return;
+        }
+        const row = box.closest(".plan-todo");
+        row?.classList.add("plan-todo-next");
+        (row || box).scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      function maybeJumpNextPhase() {
+        if (!state.pendingNextPhaseTask) return;
+        state.pendingNextPhaseTask = false;
+        jumpToNextPhaseTask();
+      }
+
+      function goToNextPhaseTask() {
+        const content = document.getElementById("plansContent");
+        const ready =
+          state.view === "plans" &&
+          !!content?.querySelector(".plan-section, .plans-backlog");
+        if (!ready) {
+          state.pendingNextPhaseTask = true;
+          if (state.view !== "plans") withFullData(() => setView("plans"));
+          return;
+        }
+        state.pendingNextPhaseTask = false;
+        jumpToNextPhaseTask();
+      }
+
+      function phaseTitleForMove() {
+        const marked = document
+          .querySelector(".plan-todo-next")
+          ?.closest(".plan-section.phase-root");
+        if (marked) return marked.getAttribute("data-phase-title") || "";
+        const roots = [
+          ...document.querySelectorAll(".plan-section.phase-root"),
+        ];
+        let chosen = "";
+        for (const el of roots) {
+          if (el.getBoundingClientRect().top < window.innerHeight * 0.45)
+            chosen = el.getAttribute("data-phase-title") || chosen;
+        }
+        return chosen || roots[0]?.getAttribute("data-phase-title") || "";
+      }
+
+      async function movePhase(title, dir) {
+        const phaseTitle = (title || "").trim();
+        if (!phaseTitle) {
+          toast("No phase to move");
+          return;
+        }
+        if (!state.studyId) {
+          toast("Select a study first");
+          return;
+        }
+        setPlansSaveStatus("Moving phase…", "");
+        try {
+          const result = await plansSaveAction({
+            action: "move_phase",
+            study_id: state.studyId,
+            phase_title: phaseTitle,
+            dir,
+          });
+          if (!result.ok)
+            throw new Error(result.error || "Could not move phase");
+          state.pendingNextPhaseTask = true;
+          state.plansViewSig = "";
+          await refresh();
+          setPlansSaveStatus(
+            "Phase order updated. Next task recalculated.",
+            "ok",
+          );
+        } catch (err) {
+          const msg = String(err.message || err);
+          setPlansSaveStatus(msg, "err");
+          toast(
+            msg === "already at edge" ? "Phase is already at the edge" : msg,
+          );
+        }
+      }
+
+      function wirePhaseMoveButtons(content) {
+        const roots = [...content.querySelectorAll(".plan-section.phase-root")];
+        roots.forEach((el, index) => {
+          const up = el.querySelector('[data-phase-move="up"]');
+          const down = el.querySelector('[data-phase-move="down"]');
+          if (up) up.disabled = index === 0;
+          if (down) down.disabled = index === roots.length - 1;
+        });
+        content.querySelectorAll("[data-phase-move]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (btn.disabled) return;
+            movePhase(
+              btn.getAttribute("data-phase-title"),
+              btn.getAttribute("data-phase-move"),
+            );
+          });
+        });
+      }
+
       function renderPlanTodos(todos, { backlog = false } = {}) {
         if (!todos || !todos.length) return backlog ? "" : "";
         const rows = todos
@@ -3903,7 +4021,13 @@
         return `<ul class="plan-todos">${rows}</ul>`;
       }
 
-      function renderPlanSection(section) {
+      function isPhaseTitle(title) {
+        return /^phase\b/i.test(String(title || "").trim());
+      }
+
+      function renderPlanSection(section, insidePhase = false) {
+        const phaseRoot = !insidePhase && isPhaseTitle(section.title);
+        const inPhase = insidePhase || phaseRoot;
         const lvl = Math.min(Math.max(section.level || 2, 2), 6);
         const tag = "h" + lvl;
         const hasTodos = (section.todos || []).length > 0;
@@ -3915,13 +4039,27 @@
               /\W+/g,
               "-",
             );
+        const phaseAttr = phaseRoot
+          ? ` data-phase-title="${escAttr(section.title)}"`
+          : "";
+        const moveBtns = phaseRoot
+          ? `<span class="phase-move">` +
+            `<button type="button" class="phase-move-btn" data-phase-move="up" data-phase-title="${escAttr(section.title)}" title="Move this phase up (Shift+Up)">↑</button>` +
+            `<button type="button" class="phase-move-btn" data-phase-move="down" data-phase-title="${escAttr(section.title)}" title="Move this phase down (Shift+Down)">↓</button>` +
+            `</span>`
+          : "";
+        const heading = phaseRoot
+          ? `<span class="phase-heading-text">${esc(section.title || "")}</span>${moveBtns}`
+          : esc(section.title || "");
         let html =
-          `<section class="plan-section level-${lvl}${topicCls}" id="${escAttr(anchor)}">` +
-          `<${tag}>${esc(section.title || "")}</${tag}>` +
+          `<section class="plan-section level-${lvl}${topicCls}${phaseRoot ? " phase-root" : ""}" id="${escAttr(anchor)}"` +
+          (inPhase ? ' data-in-phase="1"' : "") +
+          `${phaseAttr}>` +
+          `<${tag}${phaseRoot ? ' class="phase-heading"' : ""}>${heading}</${tag}>` +
           '<div class="plan-topic-body">' +
           renderPlanTodos(section.todos || []);
         (section.children || []).forEach((child) => {
-          html += renderPlanSection(child);
+          html += renderPlanSection(child, inPhase);
         });
         html += "</div>" + renderPlanSources(section) + "</section>";
         return html;
@@ -3985,7 +4123,8 @@
           setPlansSaveStatus("", "");
           return;
         }
-        if (state.plansScrollRestorePending) {
+        if (state.pendingNextPhaseTask) state.plansScrollRestorePending = false;
+        else if (state.plansScrollRestorePending) {
           restorePlansScroll();
           state.plansScrollRestorePending = false;
         }
@@ -4017,10 +4156,17 @@
           updatePlansProgressFromPlan(null);
           state.plansViewSig = "";
           state.plansViewStudyId = "";
+          if (state.pendingNextPhaseTask) {
+            state.pendingNextPhaseTask = false;
+            toast("No study plan for this topic");
+          }
           return;
         }
         const sig = JSON.stringify(plan);
-        if (hadPlan && sameStudy && state.plansViewSig === sig) return;
+        if (hadPlan && sameStudy && state.plansViewSig === sig) {
+          maybeJumpNextPhase();
+          return;
+        }
         empty.classList.add("hidden");
         document.getElementById("plansTitle").textContent =
           plan.title || "Study Plan";
@@ -4030,7 +4176,9 @@
           id: t.id,
           checked: !!t.checked,
         }));
-        if (sameStudy) snapshotPlansScroll();
+        if (state.pendingNextPhaseTask) {
+          /* Next-task jump replaces the saved scroll position. */
+        } else if (sameStudy) snapshotPlansScroll();
         else state.plansScroll = { studyId: sid, y: 0, toc: 0 };
         state.plansViewSig = sig;
         state.plansViewStudyId = sid;
@@ -4050,8 +4198,10 @@
         });
         content.innerHTML = html;
         renderPlansToc(plan);
-        restorePlansScroll();
+        wirePhaseMoveButtons(content);
+        if (!state.pendingNextPhaseTask) restorePlansScroll();
         updatePlansProgressFromPlan(plan);
+        maybeJumpNextPhase();
 
         content
           .querySelectorAll('input[type="checkbox"][data-todo-id]')
@@ -4850,7 +5000,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -4973,6 +5123,8 @@
         clearTimeout(state.notesTimer);
         state.notesTimer = setTimeout(saveNotes, 800);
       };
+      document.getElementById("btnPlansNext").onclick = () =>
+        goToNextPhaseTask();
       document.getElementById("btnPlansSave").onclick = () =>
         savePlanProgress();
       document.getElementById("btnPlansReset").onclick = () =>
@@ -5877,6 +6029,30 @@
         ) {
           e.preventDefault();
           withFullData(() => setView("browse"));
+          return;
+        }
+        if (
+          (e.key === "n" || e.key === "N") &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
+          goToNextPhaseTask();
+          return;
+        }
+        if (
+          state.view === "plans" &&
+          !ovOpen &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          (e.key === "ArrowUp" || e.key === "ArrowDown")
+        ) {
+          e.preventDefault();
+          movePhase(phaseTitleForMove(), e.key === "ArrowUp" ? "up" : "down");
           return;
         }
         if (

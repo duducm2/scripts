@@ -156,7 +156,45 @@
 
 - ▶ [Data Analyst Portfolio Project | SQL Data Exploration | Project 1/4](https://www.youtube.com/watch?v=qfyynHBFOsM)
 
-## Phase 3: Business Intelligence and Dimensional Visualization
+## Phase 3: Azure Databricks (Principal Platform)
+
+### 1. Must
+
+- [ ] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
+- [ ] Query lakehouse tables with Spark SQL
+- [ ] Transform data with PySpark DataFrames
+- [ ] Create Delta tables and use time travel to inspect earlier versions
+- [ ] Build a medallion pipeline through bronze, silver, and gold
+- [ ] Map how a Databricks workspace, storage, and Unity Catalog sit on Azure
+
+**🔗 Resources:**
+
+- 🔗 [Get Started with Databricks for Data Engineering](https://customer-academy.databricks.com/learn/course/external/view/classroom/1511/get-started-with-databricks-for-data-engineering)
+
+### 2. Good to know
+
+- [ ] Schedule pipelines with Lakeflow Jobs
+- [ ] Ingest data with Lakeflow Connect
+- [ ] Enforce schema and data-quality checks on Delta tables
+- [ ] Version notebooks with Git on the workspace
+- [ ] Connect Power BI to Databricks SQL
+
+**🔗 Resources:**
+
+- 🔗 [Data Engineering with Databricks](https://www.databricks.com/training/catalog/data-engineering-with-databricks-911)
+
+### 3. Learn after
+
+- [ ] Track experiments with MLflow
+- [ ] Serve features from a feature store
+- [ ] Ingest streaming data into Delta
+- [ ] Apply Unity Catalog row filters and data sharing
+
+**🔗 Resources:**
+
+- 🔗 [Databricks training catalog](https://www.databricks.com/learn/training/home)
+
+## Phase 4: Business Intelligence and Dimensional Visualization
 
 ### 1. Interface and Data Ingestion
 
@@ -216,7 +254,7 @@
 - ▶ [Power BI Full Course Tutorial (8+ Hours)](https://www.youtube.com/watch?v=e6QD8lP-m6E)
 - 🔗 [Visualization types in Power BI (Microsoft Learn)](https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-types-for-reports-and-q-and-a)
 
-## Phase 4: Programmatic Manipulation and Advanced Transformation
+## Phase 5: Programmatic Manipulation and Advanced Transformation
 
 ### 1. Environment Setup
 
@@ -274,7 +312,7 @@
 - ▶ [Data Analyst Portfolio Project | Correlation in Python](https://www.youtube.com/watch?v=iPYVYBtUTyE)
 - 📄 [seaborn tutorial (official)](https://seaborn.pydata.org/tutorial.html)
 
-## Phase 5: Synthesis, Storytelling, and Portfolio Development
+## Phase 6: Synthesis, Storytelling, and Portfolio Development
 
 ### 1. Audience Empathy and Context
 
@@ -329,44 +367,6 @@
 
 - 🔗 [GitHub Docs: About READMEs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
 - 🔗 [Creating a GitHub Pages site (GitHub Docs)](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
-
-## Phase 6: Azure Databricks (Principal Platform)
-
-### 1. Must
-
-- [ ] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
-- [ ] Query lakehouse tables with Spark SQL
-- [ ] Transform data with PySpark DataFrames
-- [ ] Create Delta tables and use time travel to inspect earlier versions
-- [ ] Build a medallion pipeline through bronze, silver, and gold
-- [ ] Map how a Databricks workspace, storage, and Unity Catalog sit on Azure
-
-**🔗 Resources:**
-
-- 🔗 [Get Started with Databricks for Data Engineering](https://customer-academy.databricks.com/learn/course/external/view/classroom/1511/get-started-with-databricks-for-data-engineering)
-
-### 2. Good to know
-
-- [ ] Schedule pipelines with Lakeflow Jobs
-- [ ] Ingest data with Lakeflow Connect
-- [ ] Enforce schema and data-quality checks on Delta tables
-- [ ] Version notebooks with Git on the workspace
-- [ ] Connect Power BI to Databricks SQL
-
-**🔗 Resources:**
-
-- 🔗 [Data Engineering with Databricks](https://www.databricks.com/training/catalog/data-engineering-with-databricks-911)
-
-### 3. Learn after
-
-- [ ] Track experiments with MLflow
-- [ ] Serve features from a feature store
-- [ ] Ingest streaming data into Delta
-- [ ] Apply Unity Catalog row filters and data sharing
-
-**🔗 Resources:**
-
-- 🔗 [Databricks training catalog](https://www.databricks.com/learn/training/home)
 
 ## Phase 7: Microsoft Fabric (Integration Layer)
 

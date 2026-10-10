@@ -100,6 +100,9 @@ CheatSheet_ResolveActiveKey() {
             return "OUTLOOK.EXE"
     }
 
+    if (RegExMatch(exe, "i)^AutoHotkey") && FinanceCheatSheet_MatchTitle(title) && cheatSheets.Has("Finance"))
+        return "Finance"
+
     if cheatSheets.Has(exe)
         return exe
 
@@ -141,10 +144,13 @@ GetCheatSheetText() {
 
 ChromeTitleWithoutBrowser(title) {
     t := title
+    t := RegExReplace(t, "^\(\d+\)\s+", "")
+    ; Profile suffix can sit before or after the browser name.
+    t := RegExReplace(t, "i) - Profile [0-9]+$", "")
     t := RegExReplace(t, "i) - Google Chrome$", "")
     t := RegExReplace(t, "i) - Microsoft.?Edge$", "")
     t := RegExReplace(t, "i) - Profile [0-9]+$", "")
-    return t
+    return Trim(t)
 }
 
 ; Page title after the browser suffix is removed. "Google Chrome" alone is not a search page.
@@ -188,11 +194,15 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Settle Up"
     if InStr(chromeTitle, "Miro")
         key := "Miro"
-    ; Tasks (:8766) — document.title is always "Tasks" or "Tasks · …" (never bare Habits/Work/Personal).
+    ; Tasks (:8766) — document.title is "Tasks" or "Tasks · …" (Work, Personal, Habits, Important).
     if (chromeTitle = "Tasks" || InStr(chromeTitle, "Tasks") = 1)
         key := "Tasks"
+    ; Memory Palace (:8767) — title stays "Memory Palace" or "Memory Palace · …", including the study picker.
     if (chromeTitle = "Memory Palace" || InStr(chromeTitle, "Memory Palace") = 1)
         key := "Memory Palace"
+    ; Finance cockpit (:8765). The AHK Finance window is matched in CheatSheet_ResolveActiveKey.
+    if (chromeTitle = "Finance cockpit" || InStr(chromeTitle, "Finance cockpit") = 1)
+        key := "Finance"
     if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
         key := "Wikipedia"
     if IsMercadoLivreActive()
@@ -209,7 +219,7 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Google Maps"
     if (key = "" && IsGoogleSearchTitle(chromeTitle))
         key := "Google"
-    ; Belt-and-suspenders: :8766 / :8767 when title matching missed (e.g. stale bare Habits/Work/Personal).
+    ; Belt-and-suspenders: localhost apps when the tab title has not updated yet.
     if (key = "") {
         try {
             url := Mobills_GetActiveBrowserUrl(300)
@@ -217,10 +227,47 @@ PickChromeAppSheetKey(chromeTitle) {
                 key := "Tasks"
             else if (InStr(url, ":8767") || InStr(url, "localhost:8767") || InStr(url, "127.0.0.1:8767"))
                 key := "Memory Palace"
+            else if (InStr(url, ":8765") || InStr(url, "localhost:8765") || InStr(url, "127.0.0.1:8765"))
+                key := "Finance"
         } catch {
         }
     }
     return key
+}
+
+; AHK Finance windows (menu and modules). Chrome cockpit is matched by title/port above.
+FinanceCheatSheet_MatchTitle(title) {
+    t := Trim(title)
+    if (t = "")
+        return false
+    static exact := Map(
+        "Finance", true,
+        "Finance settings", true,
+        "Transactions", true,
+        "Accounts", true,
+        "Credit cards", true,
+        "Budgets", true,
+        "Goals", true,
+        "Recurring bills", true,
+        "Categories", true
+    )
+    if (exact.Has(t))
+        return true
+    for prefix in [
+        "Pay ",
+        "Adjust balance",
+        "Add credit card", "Edit credit card",
+        "Add transaction", "Edit transaction",
+        "Add account", "Edit account",
+        "Add category", "Edit category",
+        "Add recurring bill", "Edit recurring bill",
+        "Add goal", "Edit goal",
+        "Edit import row"
+    ] {
+        if (InStr(t, prefix) = 1)
+            return true
+    }
+    return false
 }
 
 ; ========== Shared variables for cheat sheet state ========================
