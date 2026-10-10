@@ -21,6 +21,7 @@ from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from collectibles import load_items, prepare_prompt, set_equipped  # noqa: E402
 from palace_save import save_images, save_notes, save_study_images  # noqa: E402
 from palace_store import PalaceStore  # noqa: E402
 from study_plan_parser import default_studies_root  # noqa: E402
@@ -701,6 +702,10 @@ class PalaceHandler(BaseHTTPRequestHandler):
             self._json(200, {"ok": True, "images": public_map()})
             return
 
+        if path == "/api/collectibles":
+            self._json(200, {"ok": True, "items": load_items(self.data_dir)})
+            return
+
         if path == "/api/keyword-images/search":
             from keyword_images import OpenverseRateLimit, search_images  # noqa: E402
 
@@ -943,6 +948,20 @@ class PalaceHandler(BaseHTTPRequestHandler):
             if path == "/api/reload":
                 store.invalidate_cache()
                 self._json(200, {"ok": True, "message": "cache invalidated"})
+                return
+
+            if path == "/api/collectibles/prompt":
+                result = prepare_prompt(self.data_dir, str(payload.get("palace_id") or ""))
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
+            if path == "/api/collectibles/equip":
+                result = set_equipped(
+                    self.data_dir,
+                    str(payload.get("id") or ""),
+                    bool(payload.get("equipped")),
+                )
+                self._json(200 if result.get("ok") else 400, result)
                 return
 
             if path == "/api/quick-image":

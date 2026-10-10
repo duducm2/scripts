@@ -341,6 +341,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\mnemonic_palace_practice_md.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_launcher.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
+#include %A_ScriptDir%\Utils\collectible_import.ahk
 
 ; [Utils module] Tasks (Utility Shortcuts [T] → web app on :8766)
 #include %A_ScriptDir%\Utils\task_helpers.ahk

@@ -163,6 +163,9 @@ ImportMgmt_Catalog() {
         Map("char", "P", "emoji", "🏰", "name", "Palace mnemonic pack", "detail",
             "PALACE_PACK.txt → palaces / beasts / atoms",
             "fileName", "PALACE_PACK.txt", "run", ImportMgmt_RunPalacePack),
+        Map("char", "C", "emoji", "🎒", "name", "Palace collectible", "detail",
+            "COLLECTIBLE_PACK.txt → wardrobe relic",
+            "fileName", "COLLECTIBLE_PACK.txt", "run", ImportMgmt_RunCollectiblePack),
         Map("char", "L", "emoji", "📋", "name", "Study plan pack", "detail", "PLAN_PACK.txt → study plans",
             "fileName", "PLAN_PACK.txt", "run", ImportMgmt_RunPlanPack),
         Map("char", "T", "emoji", "✅", "name", "Task pack", "detail", "TASK_PACK.txt → projects / tasks / info",
@@ -194,9 +197,9 @@ ImportMgmt_ShowMainMenu() {
 
     g_ImportMgmtCatalog := ImportMgmt_Catalog()
     contentW := 700
-    lvH := 248
+    lvH := 276
     guiW := 740
-    guiH := 348
+    guiH := 376
 
     g_ImportMgmtGui := Gui("+AlwaysOnTop +ToolWindow", "Import Management")
     g_ImportMgmtGui.SetFont("s10", "Segoe UI")
@@ -293,6 +296,10 @@ ImportMgmt_RunFinanceMonthly(*) {
 
 ImportMgmt_RunPalacePack(*) {
     Palace_ImportMnemonicsFromDesktop()
+}
+
+ImportMgmt_RunCollectiblePack(*) {
+    Collectible_ImportFromDesktop()
 }
 
 ImportMgmt_RunPlanPack(*) {
@@ -397,6 +404,12 @@ ImportMgmt_HelpText() {
     . "Success: archive → mnemonics/data/imported/; optional practice MD sync; hub closes`r`n"
     . "AI fix: Desktop PALACE_AI_FIX.txt (clipboard + ≥5s banner + hub closes)`r`n"
     . "Re-run: #!+X → [P]`r`n`r`n"
+    . "========== [C] PALACE COLLECTIBLE ==========`r`n"
+    . "Pack: COLLECTIBLE_PACK.txt (===FILE: COLLECTIBLE.json===)`r`n"
+    . "Writes: mnemonics/data/collectibles.json and equips the new relic`r`n"
+    . "Success: archive → mnemonics/data/imported/; refreshes the Memory Palace tab`r`n"
+    . "AI fix: Desktop COLLECTIBLE_AI_FIX.txt (clipboard + ≥5s banner + hub closes)`r`n"
+    . "Re-run: #!+X → [C]`r`n`r`n"
     . "========== [L] STUDY PLAN PACK ==========`r`n"
     . "Pack: PLAN_PACK.txt`r`n"
     . "Writes: study plans / plan items / resources; syncs plans Markdown`r`n"

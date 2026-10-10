@@ -834,6 +834,9 @@
         >
           Entertainment
         </button>
+        <button type="button" id="btnWardrobe" title="Wardrobe (Shift+W)">
+          Wardrobe
+        </button>
         <div>
           <label for="atomSearch">Search Knowledge Atoms</label>
           <input
@@ -846,7 +849,10 @@
       </div>
     </header>
     <div id="hero" aria-hidden="true">
-      <div class="hero-sprite"></div>
+      <div class="hero-sprite">
+        <div class="hero-frames"></div>
+        <div class="hero-gear"></div>
+      </div>
     </div>
     <div id="searchResults" aria-live="polite"></div>
     <div class="app-more" id="appMore">
@@ -991,6 +997,8 @@
 
     <div id="entertainmentPanel" class="hidden" aria-hidden="true"></div>
 
+    <div id="wardrobePanel" class="hidden" aria-hidden="true"></div>
+
     <div id="appExtra" class="hidden" aria-hidden="true"></div>
 
     <div id="overlay" aria-hidden="true">
@@ -1035,6 +1043,13 @@
             title="Replace palace scene image (Desktop PNG/JPG or file picker)"
           >
             Change image
+          </button>
+          <button
+            type="button"
+            id="btnFindRelic"
+            title="Ask Gemini for a palace relic (Shift+G)"
+          >
+            Find relic
           </button>
           <button type="button" id="btnClose">Close</button>
         </div>
@@ -1195,6 +1210,8 @@
           jumpAt: 0,
         },
         overlayPalaceId: "",
+        collectibles: [],
+        gearPop: new Set(),
         pendingHeroPalaceId: "",
         selectedPalaceIds: new Set(),
         storyReduction: {
@@ -1322,6 +1339,10 @@
         }
         // Warm full dataset in background for after study selection.
         prefetchFullData().catch(() => {});
+        refreshCollectibles().catch(() => {});
+        setInterval(() => {
+          refreshCollectibles().catch(() => {});
+        }, 8000);
       }
 
       function mergeApiRow(entityKey, row, { removeId } = {}) {
@@ -2549,6 +2570,9 @@
         document
           .getElementById("btnEntertainment")
           .classList.toggle("active", state.view === "entertainment");
+        document
+          .getElementById("btnWardrobe")
+          .classList.toggle("active", state.view === "wardrobe");
         document.querySelectorAll("#appMore [data-view]").forEach((b) => {
           b.classList.toggle("active", b.dataset.view === state.view);
         });
@@ -2561,6 +2585,7 @@
           images: document.getElementById("imagesPanel"),
           method: document.getElementById("methodPanel"),
           entertainment: document.getElementById("entertainmentPanel"),
+          wardrobe: document.getElementById("wardrobePanel"),
           extra: document.getElementById("appExtra"),
         };
         Object.entries(panels).forEach(([k, el]) => {
@@ -2570,6 +2595,7 @@
             (name === "images" && k === "images") ||
             (name === "method" && k === "method") ||
             (name === "entertainment" && k === "entertainment") ||
+            (name === "wardrobe" && k === "wardrobe") ||
             (["browse", "links", "help"].includes(name) && k === "extra");
           el.classList.toggle("hidden", !on);
           el.setAttribute("aria-hidden", on ? "false" : "true");
@@ -2619,6 +2645,7 @@
         else if (state.view === "images") renderImages();
         else if (state.view === "method") renderMethod();
         else if (state.view === "entertainment") renderEntertainment();
+        else if (state.view === "wardrobe") renderWardrobe();
         else if (state.view === "browse")
           renderBrowse(document.getElementById("appExtra"));
         else if (state.view === "links")
@@ -4999,12 +5026,188 @@
         });
       }
 
+      const GEAR_SLOTS = [
+        ["hat", "Hat"],
+        ["armor", "Armor"],
+        ["gloves", "Gloves"],
+        ["pants", "Pants"],
+        ["shoes", "Shoes"],
+        ["cape", "Cape"],
+        ["ring", "Ring"],
+        ["staff", "Staff"],
+        ["sword", "Sword"],
+        ["pet", "Pet"],
+        ["mount", "Mount"],
+        ["accessory", "Accessory"],
+      ];
+
+      function gearSignature(items) {
+        return (items || [])
+          .filter((item) => item.equipped)
+          .map((item) => item.id)
+          .sort()
+          .join(",");
+      }
+
+      function paintGear(root, items, popIds) {
+        if (!root) return;
+        const pop = popIds || new Set();
+        root.innerHTML = (items || [])
+          .filter((item) => item.equipped && item.svg)
+          .map((item) => {
+            const extra = pop.has(item.id) ? " just-equipped" : "";
+            return (
+              `<span class="gear${extra}" data-anim="${escAttr(item.anim || "bob")}" data-anchor="${escAttr(item.anchor || "side")}" title="${escAttr(item.name || "")}">` +
+              item.svg +
+              "</span>"
+            );
+          })
+          .join("");
+      }
+
+      function applyGearPaint() {
+        const items = state.collectibles || [];
+        const pop = state.gearPop || new Set();
+        paintGear(document.querySelector("#hero .hero-gear"), items, pop);
+        paintGear(
+          document.querySelector("#wardrobePanel .hero-gear"),
+          items,
+          pop,
+        );
+      }
+
+      async function refreshCollectibles() {
+        const res = await api("/api/collectibles");
+        const items = res.items || [];
+        const seenKey = "mnemonics-gear-seen";
+        const seenRaw = localStorage.getItem(seenKey);
+        const seen = new Set((seenRaw || "").split(",").filter(Boolean));
+        const pop = new Set();
+        if (seenRaw !== null) {
+          for (const item of items) {
+            if (item.equipped && !seen.has(item.id)) pop.add(item.id);
+          }
+        }
+        localStorage.setItem(
+          seenKey,
+          items
+            .filter((item) => item.equipped)
+            .map((item) => item.id)
+            .sort()
+            .join(","),
+        );
+        state.collectibles = items;
+        state.gearPop = pop;
+        applyGearPaint();
+        if (state.view === "wardrobe") renderWardrobe();
+        if (pop.size) {
+          setTimeout(() => {
+            state.gearPop = new Set();
+            document
+              .querySelectorAll(".gear.just-equipped")
+              .forEach((el) => el.classList.remove("just-equipped"));
+          }, 700);
+        }
+      }
+
+      function toggleWardrobe() {
+        withFullData(() => {
+          if (document.getElementById("overlay").classList.contains("open"))
+            closeOverlay();
+          setView(state.view === "wardrobe" ? "practice" : "wardrobe");
+        });
+      }
+
+      function renderWardrobe() {
+        const panel = document.getElementById("wardrobePanel");
+        if (!panel) return;
+        const items = state.collectibles || [];
+        const slots = GEAR_SLOTS.map(([id, label]) => {
+          const owned = items.filter((item) => item.slot === id);
+          const wearing = owned.find((item) => item.equipped);
+          const buttons = owned.length
+            ? owned
+                .map(
+                  (item) =>
+                    `<button type="button" class="wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}">${esc(item.name)}</button>`,
+                )
+                .join("")
+            : '<p class="muted">Empty</p>';
+          const blurb = wearing && wearing.blurb ? esc(wearing.blurb) : "";
+          return `<section class="wardrobe-slot"><h3>${label}</h3>${blurb ? `<p class="muted">${blurb}</p>` : ""}${buttons}</section>`;
+        }).join("");
+        panel.innerHTML = `<div class="wardrobe-layout">
+          <div class="wardrobe-stage">
+            <div class="wardrobe-hero" aria-hidden="true"><div class="hero-sprite"><div class="hero-frames"></div><div class="hero-gear"></div></div></div>
+            <p class="muted">Shift+W closes this screen. Inside a palace, Shift+G asks Gemini for a relic from that place.</p>
+          </div>
+          <div class="wardrobe-slots">${slots}</div>
+        </div>`;
+        paintGear(panel.querySelector(".hero-gear"), items, state.gearPop);
+        panel.querySelectorAll("[data-gear-id]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            toggleGear(btn.dataset.gearId, btn.dataset.gearOn !== "1");
+          });
+        });
+      }
+
+      async function toggleGear(id, equipped) {
+        try {
+          const res = await api("/api/collectibles/equip", {
+            method: "POST",
+            body: JSON.stringify({ id, equipped }),
+          });
+          state.collectibles = res.items || [];
+          state.gearPop = equipped ? new Set([id]) : new Set();
+          localStorage.setItem(
+            "mnemonics-gear-seen",
+            gearSignature(state.collectibles),
+          );
+          applyGearPaint();
+          if (state.view === "wardrobe") renderWardrobe();
+          if (equipped) {
+            setTimeout(() => {
+              state.gearPop = new Set();
+              document
+                .querySelectorAll(".gear.just-equipped")
+                .forEach((el) => el.classList.remove("just-equipped"));
+            }, 700);
+          }
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+        }
+      }
+
+      async function findRelic() {
+        const palaceId = state.overlayPalaceId;
+        if (!palaceId) {
+          toast("Open a palace first");
+          return;
+        }
+        const btn = document.getElementById("btnFindRelic");
+        if (btn) btn.disabled = true;
+        try {
+          const res = await api("/api/collectibles/prompt", {
+            method: "POST",
+            body: JSON.stringify({ palace_id: palaceId }),
+          });
+          if (res.gemini_open) toast("Relic prompt sent to Gemini");
+          else if (res.copied)
+            toast("Gemini is not open — prompt copied", 4000);
+          else toast("Could not copy the relic prompt", 4000);
+        } catch (e) {
+          toast(String(e.message || e), 4000);
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      }
+
       function renderHelp(root) {
         const practiceGh = state.data.meta?.practice_github || "#";
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt (README + preserve-background + street).</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Shift+W</b> Wardrobe · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace relic.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -5065,6 +5268,8 @@
         withFullData(() => setView("method"));
       document.getElementById("btnEntertainment").onclick = () =>
         toggleEntertainment();
+      document.getElementById("btnWardrobe").onclick = () => toggleWardrobe();
+      document.getElementById("btnFindRelic").onclick = () => findRelic();
       document.getElementById("btnStudyImagesAdd").onclick = () =>
         document.getElementById("studyImagesFileInput").click();
       document.getElementById("btnImagesFsClose").onclick = () =>
@@ -5848,11 +6053,28 @@
             openStudyLinkChrome("favorite");
             return;
           }
+          if (k === "W" || k === "w") {
+            e.preventDefault();
+            toggleWardrobe();
+            return;
+          }
         }
         if (handleStudyModalKey(e)) return;
         const ovOpen = document
           .getElementById("overlay")
           .classList.contains("open");
+        if (
+          ovOpen &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          (e.key === "g" || e.key === "G")
+        ) {
+          e.preventDefault();
+          findRelic();
+          return;
+        }
         if (state.view === "entertainment" && !ovOpen) {
           if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -6148,17 +6370,13 @@
         const hero = document.getElementById("hero");
         if (!hero) return;
         const modal = document.getElementById("studyModal");
-        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
         const SPEED = 88;
         const BLOCK =
-          "button, a, input, select, textarea, label, h1, h2, h3, h4, article, .beast-cluster, .atom-card, .controls, .app-more, #searchResults, .qr-line, .pick-list, .study-picker, .quick-recall, .modal-foot, nav, .overlay-bar";
+          "button, a, input, select, textarea, label, h1, h2, h3, h4, article, .beast-cluster, .atom-card, .controls, .app-more, #searchResults, .qr-line, .pick-list, .study-picker, .quick-recall, .modal-foot, nav, .overlay-bar, #wardrobePanel";
         let mode = "page";
         let x = 80;
         let y = 140;
-        let tx = x;
-        let ty = y;
-        let pauseUntil = 0;
-        let waiting = false;
+        let dir = 1;
         let last = performance.now();
 
         function metrics() {
@@ -6170,28 +6388,6 @@
           const size = metrics();
           hero.style.left = x - size.w / 2 + "px";
           hero.style.top = y - size.h + "px";
-        }
-
-        function roamRect() {
-          const size = metrics();
-          if (mode === "modal") {
-            const lane = document.querySelector("#studyModal .hero-lane");
-            if (!lane) return null;
-            const rect = lane.getBoundingClientRect();
-            const floor = rect.bottom - 6;
-            return {
-              left: rect.left + size.w / 2 + 8,
-              right: rect.right - size.w / 2 - 8,
-              top: floor,
-              bottom: floor,
-            };
-          }
-          return {
-            left: size.w / 2 + 10,
-            right: window.innerWidth - size.w / 2 - 10,
-            top: size.h * 0.62,
-            bottom: window.innerHeight - 12,
-          };
         }
 
         function blocked(px, py) {
@@ -6209,7 +6405,7 @@
             [fx, fy - 2],
             [fx - size.w * 0.32, fy - 6],
             [fx + size.w * 0.32, fy - 6],
-            [fx, fy - size.h * 0.5],
+            [fx, fy - size.h * 0.45],
           ];
           return spots.every(function (spot) {
             const px = spot[0];
@@ -6226,26 +6422,7 @@
           });
         }
 
-        function pathClear(x0, y0, x1, y1) {
-          const steps = Math.max(
-            5,
-            Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 36),
-          );
-          for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            if (!isOpen(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)) return false;
-          }
-          return true;
-        }
-
-        function randomIn(rect) {
-          return {
-            x: rect.left + Math.random() * (rect.right - rect.left),
-            y: rect.top + Math.random() * (rect.bottom - rect.top),
-          };
-        }
-
-        function headerFallback() {
+        function pageBand() {
           const size = metrics();
           const header = document.querySelector("header.top");
           const headerBottom = header
@@ -6265,68 +6442,47 @@
             });
           const left = size.w / 2 + 10;
           const right = window.innerWidth - size.w / 2 - 10;
-          if (right - left < 24) return false;
           const floors = [];
           if (contentTop < window.innerHeight - 8) floors.push(contentTop - 8);
           floors.push(
             Math.min(window.innerHeight - 12, headerBottom + size.h * 0.2),
           );
-          for (let f = 0; f < floors.length; f++) {
-            const ny = floors[f];
-            for (let i = 0; i < 6; i++) {
-              const nx = left + Math.random() * (right - left);
-              if (isOpen(nx, ny)) {
-                tx = nx;
-                ty = ny;
-                return true;
-              }
-            }
-          }
-          return false;
+          return { left: left, right: right, floors: floors };
         }
 
-        function relocate() {
-          if (headerFallback()) {
-            x = tx;
-            y = ty;
-            return true;
-          }
-          const rect = roamRect();
-          if (!rect) return false;
-          for (let i = 0; i < 40; i++) {
-            const next = randomIn(rect);
-            if (isOpen(next.x, next.y)) {
-              x = next.x;
-              y = next.y;
-              tx = x;
-              ty = y;
-              return true;
-            }
-          }
-          return false;
-        }
-
-        function pickTarget() {
-          const rect = roamRect();
-          if (!rect || rect.right - rect.left < 24) {
-            if (mode !== "modal") headerFallback();
-            return;
-          }
+        function patrolRect() {
+          const size = metrics();
           if (mode === "modal") {
-            const next = randomIn(rect);
-            tx = next.x;
-            ty = next.y;
-            return;
+            const lane = document.querySelector("#studyModal .hero-lane");
+            if (!lane) return null;
+            const rect = lane.getBoundingClientRect();
+            if (rect.width < 48) return null;
+            return {
+              left: rect.left + size.w / 2 + 8,
+              right: rect.right - size.w / 2 - 8,
+              y: rect.bottom - 6,
+            };
           }
-          for (let i = 0; i < 28; i++) {
-            const next = randomIn(rect);
-            if (isOpen(next.x, next.y) && pathClear(x, y, next.x, next.y)) {
-              tx = next.x;
-              ty = next.y;
-              return;
+          const band = pageBand();
+          if (band.right - band.left < 24) return null;
+          let yLine = band.floors[0];
+          for (let i = 0; i < band.floors.length; i++) {
+            const ny = band.floors[i];
+            if (isOpen(x, ny) || isOpen((band.left + band.right) / 2, ny)) {
+              yLine = ny;
+              break;
             }
           }
-          headerFallback();
+          return { left: band.left, right: band.right, y: yLine };
+        }
+
+        function stepAside(nx, prefer) {
+          if (mode === "modal" || isOpen(nx, prefer)) return prefer;
+          for (let d = 10; d <= 90; d += 10) {
+            if (isOpen(nx, prefer - d)) return prefer - d;
+            if (isOpen(nx, prefer + d)) return prefer + d;
+          }
+          return null;
         }
 
         function syncMode() {
@@ -6335,70 +6491,45 @@
           hero.classList.toggle("in-modal", open);
           if (next === mode) return;
           mode = next;
-          const rect = roamRect();
-          if (next === "page") {
-            relocate();
-          } else if (rect) {
-            x = (rect.left + rect.right) / 2;
-            y = rect.bottom;
-            tx = x;
-            ty = y;
+          const lane = patrolRect();
+          if (lane) {
+            x = lane.left + 4;
+            y = lane.y;
+            dir = 1;
           }
-          waiting = false;
-          pauseUntil = 0;
-          if (!reduce) pickTarget();
+          hero.classList.remove("face-left");
           place();
         }
 
         function tick(now) {
           const dt = Math.min(0.05, (now - last) / 1000);
           last = now;
-          if (mode === "modal") {
-            const rect = roamRect();
-            if (rect && Math.abs(y - rect.bottom) > 14) {
-              x = Math.min(rect.right, Math.max(rect.left, x));
-              y = rect.bottom;
-              tx = x;
-              ty = y;
-              waiting = false;
-              if (!reduce) pickTarget();
-            }
-          } else if (!reduce && !isOpen(x, y)) {
-            if (relocate()) {
-              waiting = true;
-              pauseUntil = now + 400;
-              hero.classList.remove("is-walking");
-            }
-          }
-          if (!reduce) {
-            const dx = tx - x;
-            const dy = ty - y;
-            const dist = Math.hypot(dx, dy);
-            if (waiting) {
-              hero.classList.remove("is-walking");
-              if (now >= pauseUntil) {
-                waiting = false;
-                pickTarget();
+          const lane = patrolRect();
+          const before = x;
+          if (lane && lane.right - lane.left > 24) {
+            if (x < lane.left || x > lane.right) x = lane.left + 4;
+            const next = x + dir * SPEED * dt;
+            const atEnd = next <= lane.left || next >= lane.right;
+            let footY = stepAside(next, lane.y);
+            if (atEnd || footY === null) {
+              dir *= -1;
+              const back = x + dir * SPEED * dt;
+              footY = stepAside(back, lane.y);
+              if (footY !== null && back > lane.left && back < lane.right) {
+                x = back;
+                y = footY;
               }
-            } else if (dist < 2) {
-              hero.classList.remove("is-walking");
-              waiting = true;
-              pauseUntil = now + 450 + Math.random() * 700;
             } else {
-              hero.classList.add("is-walking");
-              const step = Math.min(dist, SPEED * dt);
-              x += (dx / dist) * step;
-              y += (dy / dist) * step;
-              if (Math.abs(dx) > 1.5)
-                hero.classList.toggle("face-left", dx < 0);
+              x = Math.min(lane.right, Math.max(lane.left, next));
+              y = footY;
             }
+            hero.classList.toggle("face-left", dir < 0);
           }
+          hero.classList.toggle("is-walking", Math.abs(x - before) > 0.2);
           place();
           requestAnimationFrame(tick);
         }
 
-        relocate();
-        place();
         if (modal) {
           new MutationObserver(syncMode).observe(modal, {
             attributes: true,
@@ -6406,10 +6537,12 @@
           });
           syncMode();
         }
-        window.addEventListener("resize", function () {
-          if (!reduce) pickTarget();
-        });
-        if (!reduce) pickTarget();
+        const start = patrolRect();
+        if (start) {
+          x = start.left + 4;
+          y = start.y;
+        }
+        place();
         requestAnimationFrame(tick);
       })();
     </script>

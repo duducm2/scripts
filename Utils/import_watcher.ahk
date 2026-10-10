@@ -57,6 +57,9 @@ ImportWatcher_Catalog() {
         Map("id", "palace_pack", "label", "Palace pack",
             "patterns", ["PALACE_PACK*.txt", "PALACE_PACK*.csv"],
             "canonical", "PALACE_PACK.txt", "run", Palace_ImportMnemonicsFromDesktop),
+        Map("id", "collectible_pack", "label", "Palace collectible",
+            "patterns", ["COLLECTIBLE_PACK*.txt", "COLLECTIBLE_PACK*.csv"],
+            "canonical", "COLLECTIBLE_PACK.txt", "run", Collectible_ImportFromDesktop),
         Map("id", "plan_pack", "label", "Study plan pack",
             "patterns", ["PLAN_PACK*.txt", "PLAN_PACK*.csv"],
             "canonical", "PLAN_PACK.txt", "run", Palace_ImportPlanPackFromDesktop),
@@ -258,6 +261,11 @@ ImportWatcher_Poll(*) {
         return
     if (!ImportWatcher_IsOwnerProcess())
         return
+    try {
+        if (Collectible_SendPendingPrompt())
+            return
+    } catch {
+    }
     ready := []
     try ready := ImportWatcher_ScanCandidates()
     catch {
