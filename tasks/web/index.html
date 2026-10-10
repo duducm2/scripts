@@ -2772,6 +2772,10 @@
             document.title = p ? `Tasks · ${p.title}` : "Tasks";
             return;
           }
+          if (!(state.sectionFocus || "") && state.emojiFilter === "⚡") {
+            document.title = "Tasks · Important";
+            return;
+          }
           const view = focusViewLabel(state.sectionFocus);
           document.title = view ? `Tasks · ${view}` : "Tasks";
         }
@@ -5366,6 +5370,62 @@
             sec.classList.toggle("emoji-hidden", visible === 0);
           });
           applySelection(false);
+          syncDocumentTitle();
+        }
+
+        function revealEmojiMatches() {
+          document.querySelectorAll("details.project").forEach((proj) => {
+            if (!proj.querySelector(".task:not(.emoji-hidden)")) return;
+            proj.open = true;
+            const id = proj.getAttribute("data-id");
+            if (id) state.collapsedProjects.delete(id);
+          });
+          document.querySelectorAll(".task-section").forEach((sec) => {
+            if (!sec.querySelector(".task:not(.emoji-hidden)")) return;
+            sec.classList.remove("collapsed");
+            const id = sec.getAttribute("data-id");
+            if (id) state.collapsedSections.delete(id);
+          });
+          invalidateNavCache();
+        }
+
+        function isAllImportantView() {
+          return (
+            !state.projectFocusId &&
+            !(state.sectionFocus || "") &&
+            state.emojiFilter === "⚡"
+          );
+        }
+
+        // Alt+Shift+T — thunder (⚡) tasks from Personal, Work, and Habits together.
+        function showAllImportant() {
+          const infoWasOpen = !!state.infoUi;
+          if (state.infoUi) dismissInfoModal();
+          if (state.inlineCreate) cancelInlineCreate();
+          if (isAllImportantView()) {
+            if (infoWasOpen) return;
+            const back = state.importantReturnFocus || "";
+            state.importantReturnFocus = "";
+            applyEmojiFilter(null);
+            if (back === "work" || back === "personal" || back === "habits")
+              applySectionFocus(back);
+            return;
+          }
+          state.importantReturnFocus = state.projectFocusId
+            ? state.sectionFocusBeforeProject || state.sectionFocus || ""
+            : state.sectionFocus || "";
+          state.emojiFilter = "⚡";
+          if (
+            state.projectFocusId ||
+            state.sectionFocus ||
+            state.view !== "dashboard"
+          ) {
+            state.view = "dashboard";
+            applySectionFocus("");
+          }
+          applyEmojiFilter("⚡");
+          revealEmojiMatches();
+          scrollToPageHeader();
         }
 
         function modal(html) {
@@ -6795,6 +6855,17 @@
               e.code === "KeyS" || (e.key || "").toLowerCase() === "s";
             const isG =
               e.code === "KeyG" || (e.key || "").toLowerCase() === "g";
+            const isShiftT =
+              e.shiftKey &&
+              !e.ctrlKey &&
+              !e.metaKey &&
+              (e.code === "KeyT" || (e.key || "").toLowerCase() === "t");
+            if (isShiftT) {
+              e.preventDefault();
+              e.stopPropagation();
+              showAllImportant();
+              return;
+            }
             if (isS) {
               e.preventDefault();
               e.stopPropagation();
