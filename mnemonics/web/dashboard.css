@@ -1119,6 +1119,12 @@ a.btn-gallery {
   background: #2c261e;
   border: 1px solid var(--rpg-edge);
   border-radius: 2px;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.atom-card .concept-copy {
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 .kw-image-row {
   display: flex;
@@ -1130,8 +1136,7 @@ a.btn-gallery {
   border-top: 1px solid rgba(138, 115, 68, 0.45);
 }
 .kw-unit {
-  display: inline-block;
-  white-space: nowrap;
+  display: inline;
   vertical-align: baseline;
 }
 .kw-image {
