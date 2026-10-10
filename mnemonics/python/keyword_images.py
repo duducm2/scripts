@@ -1,10 +1,11 @@
-"""One cached Openverse picture per tangible keyword.
+"""One cached picture per tangible keyword.
 
 The key is the keyword text folded to lower case with spaces collapsed.
-A missing keyword is fetched once, preferring an Openverse illustration
-and falling back to any picture of that word. An empty result is recorded
-so later saves do not ask again. A click in the palace can still search
-and replace the canonical file.
+A missing keyword is fetched once: an Openverse drawing first, then any
+Openverse picture, then a Wikimedia Commons file. Only a search that
+found nothing at all is recorded empty, so a later import does not ask
+again. A download failure is left uncached and retried. A click in the
+palace can still search and replace the canonical file.
 """
 
 from __future__ import annotations
@@ -31,12 +32,12 @@ IMAGE_DIR = ROOT / "web" / "assets" / "keyword-images"
 MANIFEST_PATH = IMAGE_DIR / "manifest.json"
 ATOMS_CSV = ROOT / "data" / "atoms.csv"
 OPENVERSE_SEARCH = "https://api.openverse.org/v1/images/"
+COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 USER_AGENT = "MemoryPalace/1.0 (local study tool; keyword icons)"
 # Anonymous Openverse is about 20 requests per minute.
 MIN_INTERVAL_S = 3.05
 # Drawings first. A keyword with no illustration still gets a plain picture.
 RASTER_SUFFIXES = (".jpg", ".jpeg", ".png", ".gif", ".webp")
-# Drawings first. A keyword with no illustration still gets a plain picture.
 PREFERRED_CATEGORY = "illustration"
 
 _manifest_lock = threading.Lock()
@@ -154,20 +155,34 @@ def _throttle_wikimedia() -> None:
         _next_wiki_at = now + WIKI_INTERVAL_S
 
 
+def _with_rate_retry(action):
+    """Wait out a short host limit, then try the same fetch again."""
+    for attempt in range(3):
+        try:
+            return action()
+        except OpenverseRateLimit:
+            if attempt == 2:
+                raise
+            time.sleep(45)
+
+
 def _get_json(url: str) -> dict:
-    _throttle()
-    req = urllib.request.Request(
-        url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"}
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            if resp.status == 429:
-                raise OpenverseRateLimit("Openverse rate limit")
-            return json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        if exc.code == 429:
-            raise OpenverseRateLimit("Openverse rate limit") from exc
-        raise
+    def once() -> dict:
+        _throttle()
+        req = urllib.request.Request(
+            url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                if resp.status == 429:
+                    raise OpenverseRateLimit("Openverse rate limit")
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                raise OpenverseRateLimit("Openverse rate limit") from exc
+            raise
+
+    return _with_rate_retry(once)
 
 
 def _search_openverse(
@@ -325,7 +340,7 @@ def _png_bytes(data: bytes) -> bytes:
         return out.getvalue()
 
 
-def _download(url: str, stem: Path) -> str:
+def _download_once(url: str, stem: Path) -> str:
     if "wikimedia.org" in url:
         _throttle_wikimedia()
     elif "api.openverse.org" in url:
@@ -351,6 +366,18 @@ def _download(url: str, stem: Path) -> str:
     path = stem.with_suffix(ext)
     path.write_bytes(data)
     return path.name
+
+
+def _download(url: str, stem: Path) -> str:
+    def once() -> str:
+        try:
+            return _download_once(url, stem)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                raise OpenverseRateLimit("image host rate limit") from exc
+            raise
+
+    return _with_rate_retry(once)
 
 
 def _download_hit(hit: dict, stem: Path) -> str:
@@ -422,6 +449,7 @@ def _record_empty(key: str) -> dict:
             "source_page": "",
             "version": 0,
             "empty": True,
+            "style": "any",
         }
         data["keywords"][key] = entry
         save_manifest(data)
@@ -433,22 +461,152 @@ def _known(key: str) -> bool:
         return key in load_manifest().get("keywords", {})
 
 
+def _needs_picture(key: str) -> bool:
+    """True when this keyword has no file yet.
+
+    An empty row with no style was saved before the any-picture fallback
+    and is fetched again. An empty row that already tried every source stays.
+    """
+    with _manifest_lock:
+        entry = load_manifest().get("keywords", {}).get(key)
+    if not isinstance(entry, dict):
+        return True
+    if entry.get("empty"):
+        return not str(entry.get("style") or "").strip()
+    filename = str(entry.get("file") or "")
+    return not filename or not (IMAGE_DIR / filename).is_file()
+
+
+def _get_wiki_json(url: str) -> dict:
+    def once() -> dict:
+        _throttle_wikimedia()
+        req = urllib.request.Request(
+            url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                if resp.status == 429:
+                    raise OpenverseRateLimit("Wikimedia rate limit")
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                raise OpenverseRateLimit("Wikimedia rate limit") from exc
+            raise
+
+    return _with_rate_retry(once)
+
+
+def _commons_search(
+    query: str, page_size: int, *, style: str, filetype: str
+) -> list[dict]:
+    params = {
+        "action": "query",
+        "format": "json",
+        "generator": "search",
+        "gsrsearch": f"{query} filetype:{filetype}",
+        "gsrnamespace": "6",
+        "gsrlimit": str(max(1, min(page_size, 10))),
+        "prop": "imageinfo",
+        "iiprop": "url|mime",
+        "iiurlwidth": "330",
+    }
+    payload = _get_wiki_json(f"{COMMONS_API}?{urllib.parse.urlencode(params)}")
+    pages = (payload.get("query") or {}).get("pages") or {}
+    rows = pages.values() if isinstance(pages, dict) else pages
+    hits: list[dict] = []
+    for page in rows:
+        if not isinstance(page, dict) or page.get("missing"):
+            continue
+        info = (page.get("imageinfo") or [{}])[0]
+        if not isinstance(info, dict):
+            continue
+        thumb = str(info.get("thumburl") or "").strip()
+        direct = str(info.get("url") or "").strip()
+        display = thumb or direct
+        page_id = str(page.get("pageid") or "").strip()
+        if not page_id or not display:
+            continue
+        if not thumb and direct.lower().split("?", 1)[0].endswith(".svg"):
+            continue
+        hits.append(
+            {
+                "id": f"commons:{page_id}",
+                "thumbnail": display,
+                "image": display,
+                "title": str(page.get("title") or ""),
+                "source_page": str(info.get("descriptionurl") or ""),
+                "style": style,
+            }
+        )
+        if len(hits) >= page_size:
+            break
+    return hits
+
+
+def _search_commons(query: str, page_size: int = 5) -> list[dict]:
+    """Commons drawings first, then any bitmap of the keyword."""
+    size = max(1, min(page_size, 10))
+    drawings = _commons_search(
+        query, size, style=PREFERRED_CATEGORY, filetype="drawing"
+    )
+    if len(drawings) >= size:
+        return drawings
+    photos = _commons_search(query, size, style="any", filetype="bitmap")
+    if not drawings:
+        return photos
+    seen = {hit["id"] for hit in drawings}
+    merged = list(drawings)
+    for hit in photos:
+        if hit["id"] in seen:
+            continue
+        merged.append(hit)
+        if len(merged) >= size:
+            break
+    return merged
+
+
+def _fetch_keyword(key: str) -> None:
+    """Store one picture. A drawing is preferred; any figure still counts.
+
+    Nothing is marked empty while a host returned hits we could not download.
+    That leaves the keyword for the next import. Empty is only for a word
+    every source searched and did not have.
+    """
+    hits = search_images(key, 5)
+    if hits and _store_some(key, hits):
+        return
+    extras: list[dict] = []
+    if hits:
+        extras = _fallback_hits(key)
+        if _store_some(key, extras):
+            return
+    commons = _search_commons(key, 5)
+    if commons and _store_some(key, commons):
+        return
+    if not hits and not extras and not commons:
+        _record_empty(key)
+
+
 def ensure_keywords(words: list[str]) -> None:
-    """Fetch the first Openverse hit for keywords that are not cached yet.
+    """Fetch one picture for each keyword that does not have one yet.
 
     Skipped under pytest so atom-save tests do not call the network.
     Network and rate-limit failures leave the atom save intact.
     """
     if os.environ.get("PYTEST_CURRENT_TEST"):
         return
+    _ensure_keywords(words)
+
+
+def _ensure_keywords(words: list[str]) -> None:
     seen: set[str] = set()
     for word in words:
         key = keyword_key(word)
-        if not key or key in seen or _known(key):
+        if not key or key in seen or not _needs_picture(key):
             continue
         seen.add(key)
         try:
-            hits = search_images(key, 1)
+            _fetch_keyword(key)
         except OpenverseRateLimit:
             raise
         except (
@@ -458,17 +616,6 @@ def ensure_keywords(words: list[str]) -> None:
             TimeoutError,
             RuntimeError,
         ):
-            continue
-        if _known(key):
-            continue
-        try:
-            if hits:
-                _store_hit(key, hits[0], bump=False)
-            else:
-                _record_empty(key)
-        except OpenverseRateLimit:
-            raise
-        except (OSError, urllib.error.URLError, TimeoutError, RuntimeError):
             continue
 
 
@@ -625,23 +772,23 @@ def keywords_in_atoms(rows: list[dict]) -> list[str]:
 
 
 def backfill_atoms(rows: list[dict]) -> dict:
-    """Fetch every stored keyword that is not already in the manifest."""
+    """Fetch every stored keyword that still has no picture."""
     words = keywords_in_atoms(rows)
-    missing = [word for word in words if not _known(word)]
+    missing = [word for word in words if _needs_picture(word)]
     done = 0
     try:
         ensure_keywords(missing)
-        done = sum(1 for word in missing if _known(word))
+        done = sum(1 for word in missing if not _needs_picture(word))
     except OpenverseRateLimit:
-        done = sum(1 for word in missing if _known(word))
+        done = sum(1 for word in missing if not _needs_picture(word))
         return {
             "ok": True,
             "unique": len(words),
             "fetched": done,
-            "remaining": len(words) - sum(1 for word in words if _known(word)),
+            "remaining": sum(1 for word in words if _needs_picture(word)),
             "stopped": "rate limit",
         }
-    remaining = len(words) - sum(1 for word in words if _known(word))
+    remaining = sum(1 for word in words if _needs_picture(word))
     return {
         "ok": True,
         "unique": len(words),

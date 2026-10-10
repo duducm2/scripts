@@ -143,6 +143,25 @@ Palace_AfterDataWriteRefreshUi() {
     Palace_RefreshRunningWebApp()
 }
 
+; One picture per new keyword. A drawing is preferred; any figure is kept.
+; Soft-fail: a slow or missing fetch must not abort a successful import.
+Palace_BackfillKeywordImages() {
+    py := Palace_PythonDir() . "\keyword_images.py"
+    if (!FileExist(py))
+        return false
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "")
+        return false
+    cmd := pyCmd . ' "' . py . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, Palace_PythonDir(), "Hide")
+    } catch {
+        return false
+    }
+    return (exitCode = 0)
+}
+
 ; Rebuild web/assets/beast-thumb-manifest.json so SPA icon lookup includes new beast IDs.
 ; Soft-fail: missing Python must not abort a successful import.
 Palace_RebuildBeastThumbManifest() {
@@ -1779,6 +1798,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
     syncIds := []
     for sid, _ in syncStudyIds
         syncIds.Push(sid)
+    ; Pictures are written before the practice export and the SPA refresh.
+    if (nAtoms) {
+        Palace_Notify("Fetching a picture for each new keyword", 2500, BANNER_ACCENT_SUCCESS)
+        Palace_BackfillKeywordImages()
+    }
     if (syncIds.Length)
         Palace_SyncPracticeMd(syncIds)
     ; SPA thumbs are keyed by beast id — rebuild before {F5} so new Custom beasts get icons.

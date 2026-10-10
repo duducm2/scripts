@@ -1,0 +1,63 @@
+===PREVIEW===
+STUDY_DATA_ANALYST · 3 palaces · 12 beasts · 12 atoms
+Packing: 5+5+2 (remainder only on last **new** palace in this pack)
+
+PALACE 20 — Databricks Workspace Navigation (Plato) [PALACE_DATA_ANALYST_20]
+  [Ca] camel — Concept: [I use Databricks to analyze] [my data across distributed systems.] | Quote: "Datab bicks is an online platform that we use to analyz..."
+  [Cb] Cold bird of paradise — Concept: [I use the Catalog Tab to explore] [accessible SQL tables through a graphical interface.] | Quote: "the catalog tab gives you a graphical interface for you..."
+  [Cc] Cold cat — Concept: [I use the Compute Tab to build] [my specific cluster and configure the runtime.] | Quote: "the compute tab is very important because here is where..."
+  [Cd] Cold dragon — Concept: [I use the Personal Workspace to store] [my private notebooks and code files.] | Quote: "one quick note is that you should not ever store data h..."
+  [Ce] cenotaur — Concept: [I use the Organization Workspace to share] [items that my entire team needs to view.] | Quote: "this is where you should build stuff that you want your..."
+
+PALACE 21 — Unity Catalog Architecture (Aristotle) [PALACE_DATA_ANALYST_21]
+  [Cf] Cold frog — Concept: [I use the Community Workspace to access] [training materials and presentations from the user servi...] | Quote: "you should be able to access anything here you should n..."
+  [Cg] Cold goat — Concept: [I use Unity Catalog to centralize] [access control and data discovery across all workspaces.] | Quote: "Unity catalog provides centralized Access Control audit..."
+  [Ch] chipmunk — Concept: [I use the Unity Catalog Metastore to manage] [my metadata across modern cloud object storage.] | Quote: "while the hive metastore is designed to work with the H..."
+  [Ci] cicada — Concept: [I use Administrative Roles to distribute] [governance responsibilities across the account and metas...] | Quote: "the main administrative roles in unity catalog are acco..."
+  [Cj] Cold jester — Concept: [I use the Three-Level Namespace to reference] [my data using a catalog, schema, and table format.] | Quote: "each meta store exposes a thre level name space so you ..."
+
+PALACE 22 — Unity Catalog Data Management (Friedrich Nietzsche) [PALACE_DATA_ANALYST_22]
+  [Ck] Cold kitten — Concept: [I use Managed Tables to restrict] [my datasets exclusively to the Delta format.] | Quote: "managed tables can only be of the Delta format external..."
+  [Cl] clown — Concept: [I use Cross-Workspace Permission to propagate] [access rules automatically to all linked environments.] | Quote: "the permissions that you give to your cataloges schemer..."
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATA_ANALYST_20,STUDY_DATA_ANALYST,20,Databricks Workspace Navigation,Plato,,5,"an original fictional ancient philosopher-like man (older adult, long white beard, draped in a white toga, holding a parchment scroll) — not any real or named historical person, stands in the street directing the surreal chaos. Depth slot: ForegroundLeft (stone gate) — A massive camel aggressively chews and crunches on a giant glowing brick that sparks with energy. Depth slot: MidgroundRight (marble column) — A frozen, shivering bird of paradise furiously pecks at a rusty metal filing cabinet that spills endless paper. Depth slot: BackgroundCenter (courtyard steps) — A shivering, frost-covered cat bats around a giant sparking microchip the size of a wagon. Depth slot: Aerial (rooftop ledge) — A frost-covered dragon guards a floating leather diary, snapping its jaws at the freezing air. Depth slot: ForegroundRight (statue pedestal) — A muscular cenotaur rears up and kicks a wooden bulletin board into a thousand splintered pieces."
+PALACE_DATA_ANALYST_21,STUDY_DATA_ANALYST,21,Unity Catalog Architecture,Aristotle,,5,"an original fictional ancient scholar (middle-aged, short curly beard, wearing a rustic tunic, holding a brass astrolabe) — not any real historical person, observes the strange events unfolding. Depth slot: ForegroundLeft (wooden cart) — A frozen, ice-covered frog repeatedly licks a miniature park bench until its tongue sticks. Depth slot: MidgroundRight (stone well) — A shivering goat frantically chews on a giant, vibrating golden ring that hums loudly. Depth slot: BackgroundCenter (tavern door) — A giant chipmunk aggressively shoves a pulsating, squishy brain into its expanded cheeks. Depth slot: Aerial (hanging sign) — A cicada wearing a comically heavy gold crown painfully sheds its glowing skin in mid-air. Depth slot: ForegroundRight (hitching post) — A freezing jester clumsily juggles a massive, heavy iron trident, nearly dropping it on the pavement."
+PALACE_DATA_ANALYST_22,STUDY_DATA_ANALYST,22,Unity Catalog Data Management,Friedrich Nietzsche,,2,"an original fictional 19th-century philosopher-like man (intense stare, enormous bushy walrus mustache, wearing a high-collared dark wool coat) — not any real historical person, watches the street intently. Depth slot: ForegroundLeft (iron fence) — A frost-covered kitten hopelessly tangles itself in a thick, glowing neon leash that tightens around the bars. Depth slot: MidgroundRight (lamppost) — A clown aggressively bites into a thick rubber passport, tearing the pages with absurd force."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATA_ANALYST_Ca,PALACE_DATA_ANALYST_20,Ca,camel,Lynne Kelly,,0,1
+BEAST_DATA_ANALYST_Cb,PALACE_DATA_ANALYST_20,Cb,Cold bird of paradise,Custom,,0,2
+BEAST_DATA_ANALYST_Cc,PALACE_DATA_ANALYST_20,Cc,Cold cat,Custom,,0,3
+BEAST_DATA_ANALYST_Cd,PALACE_DATA_ANALYST_20,Cd,Cold dragon,Custom,,0,4
+BEAST_DATA_ANALYST_Ce,PALACE_DATA_ANALYST_20,Ce,cenotaur,Lynne Kelly,,0,5
+BEAST_DATA_ANALYST_Cf,PALACE_DATA_ANALYST_21,Cf,Cold frog,Custom,,0,1
+BEAST_DATA_ANALYST_Cg,PALACE_DATA_ANALYST_21,Cg,Cold goat,Custom,,0,2
+BEAST_DATA_ANALYST_Ch,PALACE_DATA_ANALYST_21,Ch,chipmunk,Lynne Kelly,,0,3
+BEAST_DATA_ANALYST_Ci,PALACE_DATA_ANALYST_21,Ci,cicada,Lynne Kelly,,0,4
+BEAST_DATA_ANALYST_Cj,PALACE_DATA_ANALYST_21,Cj,Cold jester,Custom,,0,5
+BEAST_DATA_ANALYST_Ck,PALACE_DATA_ANALYST_22,Ck,Cold kitten,Custom,,0,1
+BEAST_DATA_ANALYST_Cl,PALACE_DATA_ANALYST_22,Cl,clown,Lynne Kelly,,0,2
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+ATOM_DATA_ANALYST_Ca,BEAST_DATA_ANALYST_Ca,single,,,"[I use Databricks to analyze] [my data across distributed systems.] — Note: The platform supports Python, R, and SQL using Spark technology.","brick | Databricks || spider web | distributed systems","Datab bicks is an online platform that we use to analyze data in python r and sql databicks makes it easy to use spark which is a distributed data analysis technology",,1
+ATOM_DATA_ANALYST_Cb,BEAST_DATA_ANALYST_Cb,single,,,"[I use the Catalog Tab to explore] [accessible SQL tables through a graphical interface.]","filing cabinet | Catalog Tab || spreadsheet | SQL tables","the catalog tab gives you a graphical interface for you to explore all of the SQL tables that you have access to",,1
+ATOM_DATA_ANALYST_Cc,BEAST_DATA_ANALYST_Cc,single,,,"[I use the Compute Tab to build] [my specific cluster and configure the runtime.]","microchip | Compute Tab || gears | cluster","the compute tab is very important because here is where you are going to build your specific computation cluster this is where you get to configure your particular data bricks runtime",,1
+ATOM_DATA_ANALYST_Cd,BEAST_DATA_ANALYST_Cd,single,,,"[I use the Personal Workspace to store] [my private notebooks and code files.] — Note: You should never store actual data here due to size limits.","diary | Personal Workspace || spiral pad | notebooks","one quick note is that you should not ever store data here the only things stored in here should be notebooks or code files",,1
+ATOM_DATA_ANALYST_Ce,BEAST_DATA_ANALYST_Ce,single,,,"[I use the Organization Workspace to share] [items that my entire team needs to view.]","bulletin board | Organization Workspace || uniform | team","this is where you should build stuff that you want your entire org to view anybody who who has access to your org folder will have access to anything you put in here",,1
+ATOM_DATA_ANALYST_Cf,BEAST_DATA_ANALYST_Cf,single,,,"[I use the Community Workspace to access] [training materials and presentations from the user services team.]","park bench | Community Workspace || textbook | training materials","you should be able to access anything here you should not be able to put anything here but anything that the user services team has built for training material should exist here as well",,1
+ATOM_DATA_ANALYST_Cg,BEAST_DATA_ANALYST_Cg,single,,,"[I use Unity Catalog to centralize] [access control and data discovery across all workspaces.]","golden ring | Unity Catalog || padlock | access control","Unity catalog provides centralized Access Control auditing lineage and data Discovery capabilities across datab bricks workspaces.",,1
+ATOM_DATA_ANALYST_Ch,BEAST_DATA_ANALYST_Ch,single,,,"[I use the Unity Catalog Metastore to manage] [my metadata across modern cloud object storage.]","brain | Unity Catalog Metastore || barcode | metadata","while the hive metastore is designed to work with the Hadoop distributed file system the unity catalog metastore has been designed to work with Cloud object storage such as Amazon S3 and aure data Lake storage.",,1
+ATOM_DATA_ANALYST_Ci,BEAST_DATA_ANALYST_Ci,single,,,"[I use Administrative Roles to distribute] [governance responsibilities across the account and metastore.]","crown | Administrative Roles || gavel | governance responsibilities","the main administrative roles in unity catalog are account admin metast store admin and workpace admins",,1
+ATOM_DATA_ANALYST_Cj,BEAST_DATA_ANALYST_Cj,single,,,"[I use the Three-Level Namespace to reference] [my data using a catalog, schema, and table format.]","trident | Three-Level Namespace || matryoshka doll | catalog, schema, and table","each meta store exposes a thre level name space so you have catalog schema and table that's how you reference your data",,1
+ATOM_DATA_ANALYST_Ck,BEAST_DATA_ANALYST_Ck,single,,,"[I use Managed Tables to restrict] [my datasets exclusively to the Delta format.]","leash | Managed Tables || triangle | Delta format","managed tables can only be of the Delta format external tables can have multiple formats such as Delta par orc Avro CSV Json or text",,1
+ATOM_DATA_ANALYST_Cl,BEAST_DATA_ANALYST_Cl,single,,,"[I use Cross-Workspace Permission to propagate] [access rules automatically to all linked environments.]","passport | Cross-Workspace Permission || stamp | access rules","the permissions that you give to your cataloges schemers and tables and other data assets will be applied to all workspaces that the data is shared to",,1
+===END_FILE===

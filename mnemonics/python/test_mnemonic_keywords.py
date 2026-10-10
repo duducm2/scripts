@@ -459,3 +459,162 @@ def test_unrelated_edit_preserves_legacy_keywords_byte_for_byte(tmp_path) -> Non
     assert result["ok"] is True
     assert result["row"]["keywords"] == legacy_keywords
     assert validate_atom_mnemonics(existing["concept"], legacy_keywords) is not None
+
+
+def _use_manifest(monkeypatch, tmp_path, keywords: dict) -> None:
+    image_dir = tmp_path / "keyword-images"
+    image_dir.mkdir()
+    (image_dir / "manifest.json").write_text(
+        __import__("json").dumps({"version": 1, "keywords": keywords})
+    )
+    monkeypatch.setattr(keyword_images, "IMAGE_DIR", image_dir)
+    monkeypatch.setattr(keyword_images, "MANIFEST_PATH", image_dir / "manifest.json")
+
+
+def test_needs_picture_retries_an_empty_keyword_saved_before_the_fallback(
+    monkeypatch, tmp_path
+) -> None:
+    _use_manifest(
+        monkeypatch,
+        tmp_path,
+        {
+            "hose": {"key": "hose", "empty": True, "file": ""},
+            "ledger": {"key": "ledger", "empty": True, "file": "", "style": "any"},
+            "brick": {"key": "brick", "empty": False, "file": "brick.jpg"},
+        },
+    )
+    (keyword_images.IMAGE_DIR / "brick.jpg").write_bytes(b"jpg")
+    assert keyword_images._needs_picture("hose") is True
+    assert keyword_images._needs_picture("ledger") is False
+    assert keyword_images._needs_picture("brick") is False
+    assert keyword_images._needs_picture("diary") is True
+
+
+def test_fetch_keeps_any_picture_when_the_drawing_will_not_download(
+    monkeypatch,
+) -> None:
+    stored: list[str] = []
+
+    monkeypatch.setattr(
+        keyword_images,
+        "search_images",
+        lambda query, page_size=1: [{"id": "drawn", "style": "illustration"}],
+    )
+    monkeypatch.setattr(
+        keyword_images,
+        "_fallback_hits",
+        lambda key: [{"id": "photo", "style": "any"}],
+    )
+    monkeypatch.setattr(
+        keyword_images,
+        "_search_commons",
+        lambda key, page_size=5: (_ for _ in ()).throw(AssertionError("commons")),
+    )
+
+    def store_some(key, hits):
+        stored.append(hits[0]["id"])
+        return hits[0]["id"] == "photo"
+
+    monkeypatch.setattr(keyword_images, "_store_some", store_some)
+    keyword_images._fetch_keyword("brick")
+    assert stored == ["drawn", "photo"]
+
+
+def test_fetch_uses_commons_when_openverse_has_no_picture(monkeypatch) -> None:
+    stored: list[str] = []
+    monkeypatch.setattr(keyword_images, "search_images", lambda query, page_size=1: [])
+    monkeypatch.setattr(
+        keyword_images,
+        "_fallback_hits",
+        lambda key: (_ for _ in ()).throw(AssertionError("fallback")),
+    )
+    monkeypatch.setattr(
+        keyword_images,
+        "_search_commons",
+        lambda key, page_size=5: [{"id": "commons:9", "style": "any"}],
+    )
+
+    def store_some(key, hits):
+        stored.extend(hit["id"] for hit in hits)
+        return True
+
+    monkeypatch.setattr(keyword_images, "_store_some", store_some)
+    keyword_images._fetch_keyword("ranked tower")
+    assert stored == ["commons:9"]
+
+
+def test_fetch_records_empty_only_after_every_source_misses(
+    monkeypatch, tmp_path
+) -> None:
+    _use_manifest(monkeypatch, tmp_path, {})
+    monkeypatch.setattr(keyword_images, "search_images", lambda query, page_size=1: [])
+    monkeypatch.setattr(
+        keyword_images,
+        "_search_commons",
+        lambda key, page_size=5: [],
+    )
+    keyword_images._fetch_keyword("no such object")
+    saved = keyword_images.load_manifest()["keywords"]["no such object"]
+    assert saved["empty"] is True
+    assert saved["style"] == "any"
+    assert keyword_images._needs_picture("no such object") is False
+
+
+def test_fetch_leaves_a_failed_download_for_the_next_import(
+    monkeypatch, tmp_path
+) -> None:
+    _use_manifest(monkeypatch, tmp_path, {})
+    monkeypatch.setattr(
+        keyword_images,
+        "search_images",
+        lambda query, page_size=1: [{"id": "drawn", "style": "illustration"}],
+    )
+    monkeypatch.setattr(keyword_images, "_fallback_hits", lambda key: [])
+    monkeypatch.setattr(keyword_images, "_search_commons", lambda key, page_size=5: [])
+    monkeypatch.setattr(keyword_images, "_store_some", lambda key, hits: False)
+    keyword_images._fetch_keyword("microchip")
+    assert "microchip" not in keyword_images.load_manifest()["keywords"]
+
+
+def test_commons_prefers_a_drawing_and_fills_with_a_bitmap(monkeypatch) -> None:
+    def fake_get(url: str) -> dict:
+        if "filetype%3Adrawing" in url or "filetype:drawing" in url:
+            return {
+                "query": {
+                    "pages": {
+                        "1": {
+                            "pageid": 1,
+                            "title": "File:Diary.svg",
+                            "imageinfo": [
+                                {
+                                    "thumburl": "https://upload.wikimedia.org/diary.png",
+                                    "url": "https://upload.wikimedia.org/diary.svg",
+                                    "descriptionurl": "https://commons.wikimedia.org/wiki/File:Diary.svg",
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        return {
+            "query": {
+                "pages": {
+                    "2": {
+                        "pageid": 2,
+                        "title": "File:Diary.jpg",
+                        "imageinfo": [
+                            {
+                                "thumburl": "https://upload.wikimedia.org/diary.jpg",
+                                "url": "https://upload.wikimedia.org/diary-full.jpg",
+                            }
+                        ],
+                    }
+                }
+            }
+        }
+
+    monkeypatch.setattr(keyword_images, "_get_wiki_json", fake_get)
+    hits = keyword_images._search_commons("diary", 2)
+    assert [hit["id"] for hit in hits] == ["commons:1", "commons:2"]
+    assert hits[0]["style"] == "illustration"
+    assert hits[0]["thumbnail"].endswith("diary.png")

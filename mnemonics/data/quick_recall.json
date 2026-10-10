@@ -1,5 +1,8 @@
 {
   "included_palace_ids": [
+    "PALACE_DATAANALYST_22",
+    "PALACE_DATAANALYST_21",
+    "PALACE_DATAANALYST_20",
     "PALACE_DATAANALYST_19",
     "| Feature | Star Schema / Dimensional Design | Database Normalization (3NF / BCNF) |",
     "| --- | --- | --- |",
@@ -153,6 +156,9 @@
     "### Where Normalization Would Go Further (Snowflaking)",
     "If you strictly normalized the dimension tables themselves (e.g.",
     "In modern data warehousing (e.g.",
-    "PALACE_DATAANALYST_19"
+    "PALACE_DATAANALYST_19",
+    "PALACE_DATAANALYST_20",
+    "PALACE_DATAANALYST_21",
+    "PALACE_DATAANALYST_22"
   ]
 }

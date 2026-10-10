@@ -63,12 +63,13 @@
     },
     "sleeping cat": {
       "key": "sleeping cat",
-      "slug": "",
-      "file": "",
-      "openverse_id": "",
-      "source_page": "",
-      "version": 0,
-      "empty": true
+      "slug": "sleeping_cat",
+      "file": "sleeping_cat.jpg",
+      "openverse_id": "b54f80e1-0ddc-4ad6-84b3-2a9b1d12297e",
+      "source_page": "https://www.rawpixel.com/image/10793340/png-sleeping-cat-clipart-transparent-background",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     },
     "flood": {
       "key": "flood",
@@ -522,12 +523,13 @@
     },
     "ranked tower": {
       "key": "ranked tower",
-      "slug": "",
-      "file": "",
-      "openverse_id": "",
-      "source_page": "",
-      "version": 0,
-      "empty": true
+      "slug": "ranked_tower",
+      "file": "ranked_tower.png",
+      "openverse_id": "176ca2e5-72df-4a3c-834d-aa474b99a6e1",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1284467",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     },
     "sage-vision": {
       "key": "sage-vision",
@@ -1451,12 +1453,13 @@
     },
     "ledger": {
       "key": "ledger",
-      "slug": "",
-      "file": "",
-      "openverse_id": "",
-      "source_page": "",
-      "version": 0,
-      "empty": true
+      "slug": "ledger",
+      "file": "ledger.png",
+      "openverse_id": "6fafce43-97bc-475f-bf4e-da93533e5c51",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=165737020",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     },
     "filter": {
       "key": "filter",
@@ -2460,12 +2463,13 @@
     },
     "hose": {
       "key": "hose",
-      "slug": "",
-      "file": "",
-      "openverse_id": "",
-      "source_page": "",
-      "version": 0,
-      "empty": true
+      "slug": "hose",
+      "file": "hose.jpg",
+      "openverse_id": "a9af5d6c-9a94-40e2-93d0-0d7a5655ee74",
+      "source_page": "https://www.rawpixel.com/image/10865374/png-water-hose-clipart-transparent-background",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     },
     "badge": {
       "key": "badge",
@@ -2734,6 +2738,156 @@
       "openverse_id": "8395d86f-d761-446b-b86f-18ae852ba179",
       "source_page": "https://www.rawpixel.com/image/6484348/png-sticker-public-domain",
       "version": 2,
+      "empty": false,
+      "style": "illustration"
+    },
+    "brick": {
+      "key": "brick",
+      "slug": "brick",
+      "file": "brick.png",
+      "openverse_id": "bbc2fbb4-3b28-4398-b4b0-db80f0de3c9a",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=41552595",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "spreadsheet": {
+      "key": "spreadsheet",
+      "slug": "spreadsheet",
+      "file": "spreadsheet.png",
+      "openverse_id": "dcaee1ee-1301-4df8-ae82-4214645be20c",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=157246349",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "microchip": {
+      "key": "microchip",
+      "slug": "microchip",
+      "file": "microchip.png",
+      "openverse_id": "a61412db-8f68-42ec-bbc4-d942bbefdb60",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=71512574",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "diary": {
+      "key": "diary",
+      "slug": "diary",
+      "file": "diary.png",
+      "openverse_id": "c0977ba0-fbc4-42f7-9ee8-1a9f147e7bfc",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=173082027",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "bulletin board": {
+      "key": "bulletin board",
+      "slug": "bulletin_board",
+      "file": "bulletin_board.png",
+      "openverse_id": "610b8a67-b5ee-43f8-b895-f0681f4a585d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=34321002",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "uniform": {
+      "key": "uniform",
+      "slug": "uniform",
+      "file": "uniform.png",
+      "openverse_id": "127a9ca0-a9bb-483c-8f4d-95be67929bf8",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=181341108",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "park bench": {
+      "key": "park bench",
+      "slug": "park_bench",
+      "file": "park_bench.jpg",
+      "openverse_id": "ec8eebad-0760-4ee4-992e-51fc613b16a9",
+      "source_page": "https://www.rawpixel.com/image/6762840/png-sticker-tree",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "textbook": {
+      "key": "textbook",
+      "slug": "textbook",
+      "file": "textbook.png",
+      "openverse_id": "51fffe76-ffa2-41a4-84f1-45ed39b81916",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=41193742",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "golden ring": {
+      "key": "golden ring",
+      "slug": "golden_ring",
+      "file": "golden_ring.jpg",
+      "openverse_id": "7457f23b-2160-4131-ab63-51dfeda9080c",
+      "source_page": "https://www.rawpixel.com/image/7595864/png-people-pattern",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "padlock": {
+      "key": "padlock",
+      "slug": "padlock",
+      "file": "padlock.png",
+      "openverse_id": "0a22ba6c-71d0-4fb4-8af9-230e033189e7",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1830538",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "crown": {
+      "key": "crown",
+      "slug": "crown",
+      "file": "crown.png",
+      "openverse_id": "b58b13cb-babb-4388-9f3e-69b476e90659",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=157562733",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "gavel": {
+      "key": "gavel",
+      "slug": "gavel",
+      "file": "gavel.png",
+      "openverse_id": "de1673a6-3f45-486a-a5c3-9f69c2441b4c",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=71511700",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "trident": {
+      "key": "trident",
+      "slug": "trident",
+      "file": "trident.png",
+      "openverse_id": "7860c03b-4293-4db8-934e-b102ab140d06",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=88898546",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "matryoshka doll": {
+      "key": "matryoshka doll",
+      "slug": "matryoshka_doll",
+      "file": "matryoshka_doll.jpg",
+      "openverse_id": "bb818db9-d8da-44d6-8b62-17e9db524413",
+      "source_page": "https://www.rawpixel.com/image/6579363/png-sticker-public-domain",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "passport": {
+      "key": "passport",
+      "slug": "passport",
+      "file": "passport.png",
+      "openverse_id": "fb691e39-e644-46ab-be67-fb95251dacca",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=119853170",
+      "version": 1,
       "empty": false,
       "style": "illustration"
     }
