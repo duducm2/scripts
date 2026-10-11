@@ -473,25 +473,6 @@ header.top .sub {
   justify-content: center;
   animation: trophy-inspect-in 0.16s ease-out;
 }
-.trophy-inspect-art::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 210%;
-  height: 185%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    #fff 0%,
-    #fff 72%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  filter: blur(8px);
-  pointer-events: none;
-}
 .trophy-inspect-art img,
 .trophy-inspect-art svg {
   position: relative;
