@@ -229,3 +229,5 @@ TX234,2026-10-09,Groceries,"78,74",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP
 TX235,2026-10-09,Pills,"48,06",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX236,2026-09-03,Dinner with fiancé,"70,66",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX237,2026-10-10,Invoice payment — Mercado Pago (partial),"4106,74",transfer,,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX238,2026-10-10,Grocery party expense,"24,00",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX239,2026-10-10,Grocery party expense,"13,18",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0

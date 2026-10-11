@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=pedestals" />
+    <link rel="stylesheet" href="/dashboard.css?v=nameplate2" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -1167,14 +1167,24 @@
       aria-labelledby="quickRecallTitle"
     >
       <div class="modal-panel">
-        <div class="hero-lane trophy-hall" aria-label="Trophy hall">
-          <div class="trophy-grid" id="studyTrophies"></div>
+        <div class="recall-head">
+          <div
+            class="hero-lane trophy-hall"
+            id="studyHall"
+            role="button"
+            tabindex="0"
+            aria-expanded="false"
+            aria-label="Trophy hall. Click to enlarge."
+            title="Click to enlarge"
+          >
+            <div class="trophy-grid" id="studyTrophies"></div>
+          </div>
+          <section class="study-picker" aria-labelledby="studyModalTitle">
+            <h2 id="studyModalTitle">Select a study</h2>
+            <p class="hint" id="studyModalHint"></p>
+            <ul class="pick-list" id="studyModalList"></ul>
+          </section>
         </div>
-        <section class="study-picker" aria-labelledby="studyModalTitle">
-          <h2 id="studyModalTitle">Select a study</h2>
-          <p class="hint" id="studyModalHint"></p>
-          <ul class="pick-list" id="studyModalList"></ul>
-        </section>
         <section class="quick-recall" aria-labelledby="quickRecallTitle">
           <h2 id="quickRecallTitle">Quick Recall</h2>
           <p class="qr-hint" id="quickRecallHint">
@@ -1955,6 +1965,25 @@
         return document.getElementById("studyModal").classList.contains("open");
       }
 
+      function toggleStudyHallSize() {
+        const head = document.querySelector("#studyModal .recall-head");
+        const hall = document.getElementById("studyHall");
+        if (!head || !hall) return;
+        const large = head.classList.toggle("is-large");
+        hall.setAttribute("aria-expanded", large ? "true" : "false");
+        hall.setAttribute(
+          "aria-label",
+          large
+            ? "Trophy hall. Click to shrink."
+            : "Trophy hall. Click to enlarge.",
+        );
+        hall.title = large ? "Click to shrink" : "Click to enlarge";
+      }
+
+      document.getElementById("studyHall")?.addEventListener("click", () => {
+        toggleStudyHallSize();
+      });
+
       function closeStudyModal({ focusLatest = true } = {}) {
         const modal = document.getElementById("studyModal");
         modal.classList.remove("open");
@@ -2432,6 +2461,16 @@
 
       function handleStudyModalKey(e) {
         if (!studyModalIsOpen()) return false;
+        const hall = document.getElementById("studyHall");
+        if (
+          hall &&
+          document.activeElement === hall &&
+          (e.key === "Enter" || e.key === " ")
+        ) {
+          e.preventDefault();
+          toggleStudyHallSize();
+          return true;
+        }
         if (e.key === "Escape") {
           e.preventDefault();
           setPalacePickerTitle(false);
@@ -5371,9 +5410,9 @@
             ? `<button type="button" class="spa-btn danger trophy-take" data-gear-remove="${escAttr(item.id)}">Take off</button>`
             : "";
           cells.push(
-            `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}" title="${escAttr(item.blurb || item.name)}">` +
+            `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}">` +
               `<div class="trophy-art">${item.svg}</div>` +
-              `<span class="trophy-name">${esc(item.name)}</span>${take}</div>`,
+              `<div class="trophy-caption"><span class="trophy-name">${esc(item.name)}</span>${take}</div></div>`,
           );
         }
         return cells.join("");

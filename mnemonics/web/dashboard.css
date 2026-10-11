@@ -274,19 +274,39 @@ header.top .sub {
     transform: translateX(-75%);
   }
 }
+#studyModal .recall-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+#studyModal .recall-head .study-picker {
+  flex: 1 1 18rem;
+  min-width: min(100%, 18rem);
+}
 #studyModal .hero-lane {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 5;
   flex: 0 0 auto;
-  width: min(92%, 720px);
+  width: min(220px, 34%);
   aspect-ratio: 16 / 9;
   height: auto;
-  margin-inline: auto;
+  margin: 0;
+  cursor: pointer;
   background: #1a120c url("assets/trophy-hall.png?v=trophies") center / 100%
     100% no-repeat;
   border: 1px solid #3a2a1c;
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+  transition: width 0.2s ease;
+}
+#studyModal .hero-lane:hover,
+#studyModal .hero-lane:focus {
+  outline: none;
+  border-color: #d4b36a;
+}
+#studyModal .recall-head.is-large .hero-lane {
+  width: 100%;
+  max-width: none;
 }
 .trophy-hall {
   position: relative;
@@ -359,32 +379,57 @@ header.top .sub {
 .trophy-spot[data-anim="float"] .trophy-art {
   animation-name: gear-float;
 }
-.trophy-name {
+.trophy-caption {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 2px);
+  z-index: 4;
   transform: translateX(-50%);
-  width: 160%;
-  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.trophy-name {
+  width: max-content;
+  max-width: 9.5rem;
+  padding: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
+  font-family: Georgia, "Palatino Linotype", serif;
   font-size: 9px;
-  line-height: 1.1;
-  color: #f3e6c8;
-  text-shadow: 0 1px 2px #000;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #3a240c;
+  background: #e8b84a;
+  border: 0;
+  box-shadow: none;
+  image-rendering: pixelated;
   pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  height: 0;
+}
+.trophy-spot:hover .trophy-name {
+  height: auto;
+  padding: 3px 6px 2px;
+  background:
+    linear-gradient(#ffe7a3, #ffe7a3) top / 100% 2px no-repeat,
+    linear-gradient(#b58128, #b58128) bottom / 100% 2px no-repeat,
+    #e8b84a;
+  box-shadow:
+    0 0 0 2px #7a5414,
+    0 0 0 3px #2c1c08,
+    3px 3px 0 0 #1a1006;
+  opacity: 1;
+  visibility: visible;
 }
 .trophy-take {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 14px);
-  transform: translateX(-50%);
   font-size: 10px;
   padding: 0 0.35rem;
   line-height: 1.4;
-  z-index: 2;
 }
 @media (prefers-reduced-motion: reduce) {
   .trophy-art {
