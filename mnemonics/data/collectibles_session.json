@@ -41,7 +41,6 @@
     },
     {
       "id": "col_f3ed3b264df5",
-      "created_at": "2026-10-11T18:54:09Z",
       "palace_id": "PALACE_PIANO_11",
       "slot": "trophy",
       "name": "The Great Clefs and Placement Felt Trophy",
@@ -49,6 +48,33 @@
       "svg": "",
       "image": "/assets/trophies/col_f3ed3b264df5.png",
       "anim": "bob",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-11T18:54:09Z"
+    },
+    {
+      "id": "col_878df2835470",
+      "palace_id": "PALACE_COMMUNICATIO_06",
+      "slot": "trophy",
+      "name": "The Voice of Growth Trophy",
+      "blurb": "Carved with an expressive Abyssinian cat and an acorn, this dark marble prize honors your ability to seed ideas and project them with natural, vocal confidence.",
+      "svg": "",
+      "image": "/assets/trophies/col_878df2835470.png",
+      "anim": "bob",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-11T19:15:40Z"
+    },
+    {
+      "id": "col_6077cd38a501",
+      "created_at": "2026-10-11T19:18:01Z",
+      "palace_id": "PALACE_SKILLS_05",
+      "slot": "trophy",
+      "name": "The Shuffling Mind",
+      "blurb": "Representing the art of cognitive shuffling, this miniature bronze owl and Neanderthal navigate a tumbling cascade of scrambled thoughts to quiet the mind for rest.",
+      "svg": "",
+      "image": "/assets/trophies/col_6077cd38a501.png",
+      "anim": "sway",
       "anchor": "pedestal",
       "equipped": true
     }

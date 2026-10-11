@@ -1,0 +1,10 @@
+=FILE: COLLECTIBLE_PACK.txt=
+{
+"palace_id": "PALACE_SKILLS_05",
+"slot": "trophy",
+"name": "The Shuffling Mind",
+"blurb": "Representing the art of cognitive shuffling, this miniature bronze owl and Neanderthal navigate a tumbling cascade of scrambled thoughts to quiet the mind for rest.",
+"anim": "sway",
+"anchor": "pedestal"
+}
+=END_FILE=

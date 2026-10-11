@@ -1,0 +1,11 @@
+=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_COMMUNICATIO_06",
+"slot": "trophy",
+"name": "The Voice of Growth Trophy",
+"blurb": "Carved with an expressive Abyssinian cat and an acorn, this dark marble prize honors your ability to seed ideas and project them with natural, vocal confidence.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
