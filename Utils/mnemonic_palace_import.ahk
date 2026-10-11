@@ -1124,6 +1124,120 @@ Palace_ValidatePackBeastPacking(palaceRows, beastRows) {
     return out
 }
 
+; Reject a short last pack palace when a later palace in the same study still has beasts.
+; Those later beasts must be pulled forward (up to 5 per palace). Excluded palaces do not count.
+Palace_ValidateForwardPull(palaceRows, beastRows, libraryPalaces, libraryBeasts, excludeIds) {
+    out := Map("ok", true, "error", "")
+    if (!IsObject(palaceRows) || !palaceRows.Length || !IsObject(beastRows) || !beastRows.Length)
+        return out
+    if (!IsObject(libraryPalaces) || !IsObject(libraryBeasts))
+        return out
+    if (!IsObject(excludeIds))
+        excludeIds := Map()
+
+    packBeastIds := Map()
+    for b in beastRows {
+        bid := Trim(b.Has("id") ? b["id"] : "")
+        if (bid != "")
+            packBeastIds[bid] := true
+    }
+    metaById := Map()
+    for p in palaceRows {
+        pid := Trim(p.Has("id") ? p["id"] : "")
+        if (pid = "")
+            continue
+        num := 0
+        try num := Integer(p.Has("palace_number") ? p["palace_number"] : 0)
+        catch {
+            num := 0
+        }
+        studyId := Trim(p.Has("study_id") ? p["study_id"] : "")
+        metaById[pid] := Map(
+            "num", num,
+            "study", studyId,
+            "title", Trim(p.Has("title") ? p["title"] : pid)
+        )
+    }
+    counts := Map()
+    for b in beastRows {
+        pid := Trim(b.Has("palace_id") ? b["palace_id"] : "")
+        if (pid = "")
+            continue
+        if (!counts.Has(pid))
+            counts[pid] := 0
+        counts[pid] += 1
+    }
+    lastByStudy := Map()
+    for pid, meta in metaById {
+        nBeasts := counts.Has(pid) ? counts[pid] : 0
+        if (nBeasts <= 0)
+            continue
+        sid := meta["study"] != "" ? meta["study"] : "_"
+        if (!lastByStudy.Has(sid) || meta["num"] > lastByStudy[sid]["num"]) {
+            lastByStudy[sid] := Map(
+                "num", meta["num"],
+                "n", nBeasts,
+                "title", meta["title"]
+            )
+        }
+    }
+    for sid, last in lastByStudy {
+        if (last["n"] >= 5)
+            continue
+        laterPid := ""
+        laterNum := 0
+        laterTitle := ""
+        laterNames := ""
+        for p in libraryPalaces {
+            pid := Trim(p.Has("id") ? p["id"] : "")
+            studyId := Trim(p.Has("study_id") ? p["study_id"] : "")
+            if (pid = "" || studyId != sid || excludeIds.Has(pid))
+                continue
+            num := 0
+            try num := Integer(p.Has("palace_number") ? p["palace_number"] : 0)
+            catch {
+                num := 0
+            }
+            if (num <= last["num"])
+                continue
+            names := ""
+            nLeft := 0
+            for b in libraryBeasts {
+                if (Trim(b.Has("palace_id") ? b["palace_id"] : "") != pid)
+                    continue
+                bid := Trim(b.Has("id") ? b["id"] : "")
+                if (bid != "" && packBeastIds.Has(bid))
+                    continue
+                nLeft += 1
+                beastName := Trim(b.Has("beast_name") ? b["beast_name"] : bid)
+                if (beastName = "")
+                    continue
+                if (names != "")
+                    names .= ", "
+                names .= beastName
+            }
+            if (nLeft <= 0)
+                continue
+            if (laterPid = "" || num < laterNum) {
+                laterPid := pid
+                laterNum := num
+                laterTitle := Trim(p.Has("title") ? p["title"] : pid)
+                laterNames := names
+            }
+        }
+        if (laterPid = "")
+            continue
+        out["ok"] := false
+        out["error"] := "Packing error: palace " . last["num"] . " (" . last["title"]
+        . ") has " . last["n"] . " beast(s), but later palace " . laterNum
+            . " (" . laterTitle . ") still has " . laterNames
+            . ". Pull those later beasts forward until every palace except the last one in the study has 5"
+            . " (max 5). List each emptied later palace as Exclude: <palace_number> <palace_id>."
+        return out
+    }
+    return out
+}
+
 ; Validate incoming atom rows: unique beast_id, single vs zoned mapping rules.
 Palace_ValidateImportAtoms(atomRows, beastRows := "") {
     out := Map("ok", true, "error", "")
@@ -1372,6 +1486,12 @@ Palace_ImportMnemonicsFromDesktop(*) {
         titleP := IsObject(pObj) && pObj.Has("title") ? pObj["title"] : ""
         num := IsObject(pObj) && pObj.Has("palace_number") ? pObj["palace_number"] : labelNum
         excludeLabels.Push("Delete Memory Palace " . num . ": " . titleP . " [" . resolvedId . "]")
+    }
+
+    forwardCheck := Palace_ValidateForwardPull(palaceRows, beastRows, palaces, beasts, excludeIds)
+    if (!forwardCheck["ok"]) {
+        Palace_ReturnAfterImport(Palace_FailAiImport(forwardCheck["error"], 4500))
+        return false
     }
 
     labels := []

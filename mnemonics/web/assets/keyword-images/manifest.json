@@ -2970,6 +2970,26 @@
       "version": 1,
       "empty": false,
       "style": "illustration"
+    },
+    "namespace": {
+      "key": "namespace",
+      "slug": "namespace",
+      "file": "namespace.png",
+      "openverse_id": "5511688c-28c2-4d4f-bf43-7fb37df72111",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2307354",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "schema": {
+      "key": "schema",
+      "slug": "schema",
+      "file": "schema.png",
+      "openverse_id": "10d665d3-1bf6-40f3-96d7-4cbc99d31192",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=844584",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

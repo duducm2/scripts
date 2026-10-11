@@ -7,9 +7,10 @@ HARD PACKING MANDATE (in-scope only — read before any re-peg) — Desktop impo
 - After SMASH/REMOVE, repack surviving **in-scope** beasts: every in-scope palace gets **exactly 5 beasts** before the next.
 - The **only** under-filled in-scope palace (1–4 beasts) allowed is the **last in-scope** palace (highest `palace_number` in this pack) — and only when remaining in-scope beasts < 5.
 - **Illegal (common failure):** one beast (or any 1–4) on an earlier in-scope palace while later in-scope palaces have more — e.g. `1+5+5`, `2+5`, sparse palace N then fuller N+1. Failed delivery — rewrite before send.
-- **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single in-scope palace with 1–4.
+- **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single palace with 1–4, **only when no later palace in the study still has beasts**.
+- **Illegal:** `5+1` (or any 1–4) on the last in-scope palace while a later palace still has beasts. Example: one beast left alone on palace 21 while palace 22 still holds two more. Pull those later beasts onto the short palace, up to 5. A remainder of 1–4 is allowed only on the last palace that still has beasts after that pull.
 - Collapse empty in-scope palaces. Do **not** pull beasts from **earlier** out-of-scope palaces (lower `palace_number`) to fill slots.
-- **Forward pull (later streets only):** if the last in-scope palace would have 1–4 beasts and any later street (higher `palace_number`) still has beasts, pull those later beasts forward in peg order. Repack the combined set 5 per palace; remainder only on the new last palace. Expand `Scope:` to every palace that still has beasts after the pull.
+- **Forward pull (later streets only):** if the last in-scope palace would have 1–4 beasts and any later street (higher `palace_number`) still has beasts, pull those later beasts forward in peg order. Repack the combined set 5 per palace; remainder only on the new last palace. Expand `Scope:` to every palace that still has beasts after the pull. The Desktop importer rejects a short last palace when a later palace still has beasts.
 - A later palace left with zero beasts is excluded. PREVIEW must include `Exclude: <palace_number> <palace_id>` (one palace per line). Do not emit FILE rows for excluded palaces.
 - Re-peg pulled atoms with the normal bestiary shift (no peg gaps). A `Ca` camel pulled onto a palace that ends at `By` becomes `Bz` and takes the `Bz` beast name. Do not keep the old beast name.
 - Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.

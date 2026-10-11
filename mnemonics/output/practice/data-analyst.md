@@ -16,7 +16,7 @@ _No image_
 **Concept**
 💡 [I use <img alt="[Cross-Workspace Permission]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCross-Workspace%20Permission%5D&color=9fd4ff" />(passport) to propagate] [<img alt="[access rules]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baccess%20rules%5D&color=ffd966" />(stamp) automatically to all linked environments.]
 
-<img src="../../web/assets/keyword-images/stamp.jpg" alt="stamp" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/passport.png" alt="passport" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/stamp.jpg" alt="stamp" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “the permissions that you give to your cataloges schemers and tables and other data assets will be applied to all workspaces that the data is shared to”
@@ -44,65 +44,25 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: Aristotle · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: Aristotle · 1 beast · 1 atom</summary>
 
 _No image_
 
-<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+<p><em>1 beast · 1 Knowledge Atom</em></p>
 
 #### Knowledge Atoms
-
-### [Cj] Cold jester
-
-<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Cold jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 [I use the <img alt="[Three-Level Namespace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BThree-Level%20Namespace%5D&color=9fd4ff" />(trident) to reference] [my data using a <img alt="[catalog, schema, and table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcatalog%2C%20schema%2C%20and%20table%5D&color=ffd966" />(matryoshka doll) format.]
-
-**Quote**
-“each meta store exposes a thre level name space so you have catalog schema and table that's how you reference your data”
-
-### [Ci] cicada
-
-<img src="../../web/assets/beast-thumbs/cicada.png" alt="cicada" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 [I use <img alt="[Administrative Roles]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BAdministrative%20Roles%5D&color=9fd4ff" />(crown) to distribute] [<img alt="[governance responsibilities]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgovernance%20responsibilities%5D&color=ffd966" />(gavel) across the account and metastore.]
-
-**Quote**
-“the main administrative roles in unity catalog are account admin metast store admin and workpace admins”
-
-### [Ch] chipmunk
-
-<img src="../../web/assets/beast-thumbs/chipmunk.png" alt="chipmunk" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 [I use the <img alt="[Unity Catalog Metastore]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BUnity%20Catalog%20Metastore%5D&color=9fd4ff" />(brain) to manage] [my <img alt="[metadata]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetadata%5D&color=ffd966" />(barcode) across modern cloud object storage.]
-
-<img src="../../web/assets/keyword-images/brain.jpg" alt="brain" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/barcode.png" alt="barcode" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
-
-**Quote**
-“while the hive metastore is designed to work with the Hadoop distributed file system the unity catalog metastore has been designed to work with Cloud object storage such as Amazon S3 and aure data Lake storage.”
-
-### [Cg] Cold goat
-
-<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Cold goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 [I use <img alt="[Unity Catalog]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BUnity%20Catalog%5D&color=9fd4ff" />(golden ring) to centralize] [<img alt="[access control]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baccess%20control%5D&color=ffd966" />(padlock) and data discovery across all workspaces.]
-
-**Quote**
-“Unity catalog provides centralized Access Control auditing lineage and data Discovery capabilities across datab bricks workspaces.”
 
 ### [Cf] Cold frog
 
 <img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Cold frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the <img alt="[Community Workspace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCommunity%20Workspace%5D&color=9fd4ff" />(park bench) to access] [<img alt="[training materials]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btraining%20materials%5D&color=ffd966" />(textbook) and presentations from the user services team.]
+💡 [I use the <img alt="[Three-Level Namespace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BThree-Level%20Namespace%5D&color=9fd4ff" />(namespace) to reference] [my data using a catalog, <img alt="[schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bschema%5D&color=ffd966" />(schema), and table format.]
+
+<img src="../../web/assets/keyword-images/namespace.png" alt="namespace" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/schema.png" alt="schema" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
-“you should be able to access anything here you should not be able to put anything here but anything that the user services team has built for training material should exist here as well”
+“each meta store exposes a thre level name space so you have catalog schema and table that's how you reference your data”
 
 #### Notes
 
@@ -128,58 +88,60 @@ _No image_
 <img src="../../web/assets/beast-thumbs/cenotaur.png" alt="cenotaur" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the <img alt="[Organization Workspace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BOrganization%20Workspace%5D&color=9fd4ff" />(bulletin board) to share] [items that my entire <img alt="[team]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bteam%5D&color=ffd966" />(uniform) needs to view.]
+💡 [I use <img alt="[Administrative Roles]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BAdministrative%20Roles%5D&color=9fd4ff" />(role) to distribute] [<img alt="[governance]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgovernance%5D&color=ffd966" />(governance) responsibilities across the account and metastore.]
+
+<img src="../../web/assets/keyword-images/role.png" alt="role" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/governance.png" alt="governance" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
-“this is where you should build stuff that you want your entire org to view anybody who who has access to your org folder will have access to anything you put in here”
+“the main administrative roles in unity catalog are account admin metast store admin and workpace admins”
 
 ### [Cd] Cold dragon
 
 <img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Cold dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the <img alt="[Personal Workspace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPersonal%20Workspace%5D&color=9fd4ff" />(diary) to store] [my private <img alt="[notebooks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnotebooks%5D&color=ffd966" />(spiral pad) and code files.] — Note: You should never store actual data here due to size limits.
+💡 [I use the <img alt="[Unity Catalog Metastore]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BUnity%20Catalog%20Metastore%5D&color=9fd4ff" />(metastore) to manage] [my <img alt="[metadata]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetadata%5D&color=ffd966" />(metadata) across modern cloud object storage.]
 
-<img src="../../web/assets/keyword-images/spiral_pad.png" alt="spiral pad" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/metastore.jpg" alt="metastore" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/metadata.png" alt="metadata" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
-“one quick note is that you should not ever store data here the only things stored in here should be notebooks or code files”
+“while the hive metastore is designed to work with the Hadoop distributed file system the unity catalog metastore has been designed to work with Cloud object storage such as Amazon S3 and aure data Lake storage.”
 
 ### [Cc] Cold cat
 
 <img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Cold cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the <img alt="[Compute Tab]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCompute%20Tab%5D&color=9fd4ff" />(microchip) to build] [my specific <img alt="[cluster]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcluster%5D&color=ffd966" />(gears) and configure the runtime.]
+💡 [I use <img alt="[Unity Catalog]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BUnity%20Catalog%5D&color=9fd4ff" />(catalog) to centralize] [access <img alt="[control]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcontrol%5D&color=ffd966" />(control) and data discovery across all workspaces.]
 
-<img src="../../web/assets/keyword-images/gears.png" alt="gears" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/catalog.png" alt="catalog" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/control.png" alt="control" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
-“the compute tab is very important because here is where you are going to build your specific computation cluster this is where you get to configure your particular data bricks runtime”
+“Unity catalog provides centralized Access Control auditing lineage and data Discovery capabilities across datab bricks workspaces.”
 
 ### [Cb] Cold bird of paradise
 
 <img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Cold bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use the <img alt="[Catalog Tab]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCatalog%20Tab%5D&color=9fd4ff" />(filing cabinet) to explore] [accessible <img alt="[SQL tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSQL%20tables%5D&color=ffd966" />(spreadsheet) through a graphical interface.]
+💡 [I use the <img alt="[Organization Workspace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BOrganization%20Workspace%5D&color=9fd4ff" />(workspace) to share] [items that my entire <img alt="[team]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bteam%5D&color=ffd966" />(team) needs to view.]
 
-<img src="../../web/assets/keyword-images/filing_cabinet.png" alt="filing cabinet" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/workspace.png" alt="workspace" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/team.png" alt="team" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
-“the catalog tab gives you a graphical interface for you to explore all of the SQL tables that you have access to”
+“this is where you should build stuff that you want your entire org to view anybody who who has access to your org folder will have access to anything you put in here”
 
 ### [Ca] camel
 
 <img src="../../web/assets/beast-thumbs/camel.png" alt="camel" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
-💡 [I use <img alt="[Databricks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDatabricks%5D&color=9fd4ff" />(brick) to analyze] [my data across <img alt="[distributed systems]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdistributed%20systems%5D&color=ffd966" />(spider web).] — Note: The platform supports Python, R, and SQL using Spark technology.
+💡 [I use the <img alt="[Catalog Tab]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCatalog%20Tab%5D&color=9fd4ff" />(catalog) to explore] [accessible SQL <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=ffd966" />(table) through a graphical interface.]
 
-<img src="../../web/assets/keyword-images/spider_web.png" alt="spider web" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/catalog.png" alt="catalog" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/table.jpg" alt="table" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
-“Datab bicks is an online platform that we use to analyze data in python r and sql databicks makes it easy to use spark which is a distributed data analysis technology”
+“the catalog tab gives you a graphical interface for you to explore all of the SQL tables that you have access to”
 
 #### Notes
 
@@ -402,7 +364,7 @@ _No gallery images._
 **Concept**
 💡 <img alt="[Push Datasets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPush%20Datasets%5D&color=9fd4ff" />(button) [I <img alt="[stream data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstream%20data%5D&color=ffd966" />(hose)] [directly into <img alt="[Power BI]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPower%20BI%5D&color=ffd966" />(battery)] [using its <img alt="[REST API]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BREST%20API%5D&color=ffd966" />(menu)] — Note: This method does not support relationships or joins, so all complex data models must be flattened before ingestion.
 
-<img src="../../web/assets/keyword-images/button.png" alt="button" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/battery.jpg" alt="battery" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/menu.png" alt="menu" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/button.png" alt="button" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/hose.jpg" alt="hose" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/battery.jpg" alt="battery" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/menu.png" alt="menu" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “you can only send data using power bi's push data sets method which doesn't support relationships or joins meaning complex data models must be flattened before ingestion”
@@ -897,7 +859,7 @@ _No gallery images._
 **Concept**
 💡 [<img alt="[Expressiveness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BExpressiveness%5D&color=9fd4ff" />(truth): my visual mapping must express all table <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(ledger)] [and <img alt="[only]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bonly%5D&color=ffd966" />(filter) that data]
 
-<img src="../../web/assets/keyword-images/truth.png" alt="truth" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/filter.png" alt="filter" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/truth.png" alt="truth" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/ledger.png" alt="ledger" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/filter.png" alt="filter" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “De acordo com esse conceito, o mapeamento visual deve fazer com que a estrutura visual expresse todos os dados da tabela de dados, e somente eles.”
