@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "gloves",
+
+  "name": "Spark-Core Handshake Gauntlets",
+
+  "blurb": "Woven with Delta Lake triangles and crackling with Apache Spark lightning, these gauntlets allow Darwin to interact directly with cluster runtimes and orchestrate unified job dependencies.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><defs><linearGradient id=\"gloveBaseL\" x1=\"100%\" y1=\"50%\" x2=\"0%\" y2=\"50%\"><stop offset=\"0%\" stop-color=\"#1b263b\"/><stop offset=\"60%\" stop-color=\"#273b54\"/><stop offset=\"100%\" stop-color=\"#0d1b2a\"/></linearGradient><linearGradient id=\"gloveBaseR\" x1=\"0%\" y1=\"50%\" x2=\"100%\" y2=\"50%\"><stop offset=\"0%\" stop-color=\"#1b263b\"/><stop offset=\"60%\" stop-color=\"#324a67\"/><stop offset=\"100%\" stop-color=\"#132235\"/></linearGradient><linearGradient id=\"deltaGrad\" x1=\"0%\" y1=\"100%\" x2=\"0%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#0077b6\"/><stop offset=\"100%\" stop-color=\"#00b4d8\"/></linearGradient><linearGradient id=\"sparkGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#fff3b0\"/><stop offset=\"100%\" stop-color=\"#ff9100\"/></linearGradient><linearGradient id=\"cuffTrim\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#ff6b35\"/><stop offset=\"100%\" stop-color=\"#d00000\"/></linearGradient></defs><g stroke-linecap=\"round\" stroke-linejoin=\"round\"><g id=\"leftHandGloves\"><path d=\"M58 152 L44 154 L34 158 L22 163 L14 167 L12 173 L18 177 L28 174 L32 178 L18 181 L15 186 L23 189 L35 183 L36 186 L24 190 L23 194 L32 195 L42 188 L43 191 L33 195 L34 198 L44 197 L54 186 L58 180 L62 176 Z\" fill=\"url(#gloveBaseL)\" stroke=\"#0b1320\" stroke-width=\"1.8\"/><path d=\"M54 152 L62 150 L64 178 L56 182 Z\" fill=\"url(#cuffTrim)\" stroke=\"#900C3F\" stroke-width=\"1.5\"/><polygon points=\"42,164 50,174 36,174\" fill=\"url(#deltaGrad)\" stroke=\"#caf0f8\" stroke-width=\"1\"/><circle cx=\"43\" cy=\"170\" r=\"2\" fill=\"#caf0f8\"/><path d=\"M48 156 L43 162 L46 163 L41 170\" fill=\"none\" stroke=\"url(#sparkGrad)\" stroke-width=\"1.5\"/><rect x=\"48\" y=\"178\" width=\"8\" height=\"3\" rx=\"1\" fill=\"#415a77\" stroke=\"#1b263b\" stroke-width=\"0.8\"/><circle cx=\"24\" cy=\"168\" r=\"1.2\" fill=\"#e0e1dd\"/><circle cx=\"27\" cy=\"180\" r=\"1.2\" fill=\"#e0e1dd\"/><circle cx=\"28\" cy=\"188\" r=\"1.2\" fill=\"#e0e1dd\"/></g><g id=\"rightHandGloves\"><path d=\"M246 150 L260 152 L272 156 L284 160 L294 163 L298 168 L292 173 L280 171 L276 175 L290 178 L293 183 L285 186 L273 181 L272 184 L284 188 L285 192 L276 193 L266 186 L265 189 L275 193 L274 196 L264 195 L252 184 L246 177 L242 173 Z\" fill=\"url(#gloveBaseR)\" stroke=\"#0b1320\" stroke-width=\"1.8\"/><path d=\"M250 150 L242 148 L240 175 L248 179 Z\" fill=\"url(#cuffTrim)\" stroke=\"#900C3F\" stroke-width=\"1.5\"/><polygon points=\"264,162 256,172 270,172\" fill=\"url(#deltaGrad)\" stroke=\"#caf0f8\" stroke-width=\"1\"/><circle cx=\"263\" cy=\"168\" r=\"2\" fill=\"#caf0f8\"/><path d=\"M258 154 L263 160 L260 161 L265 168\" fill=\"none\" stroke=\"url(#sparkGrad)\" stroke-width=\"1.5\"/><circle cx=\"257\" cy=\"178\" r=\"2.5\" fill=\"#ff9100\"/><circle cx=\"257\" cy=\"178\" r=\"1\" fill=\"#ffffff\"/><rect x=\"249\" y=\"176\" width=\"8\" height=\"3\" rx=\"1\" fill=\"#415a77\" stroke=\"#1b263b\" stroke-width=\"0.8\"/><circle cx=\"282\" cy=\"165\" r=\"1.2\" fill=\"#e0e1dd\"/><circle cx=\"279\" cy=\"177\" r=\"1.2\" fill=\"#e0e1dd\"/><circle cx=\"278\" cy=\"185\" r=\"1.2\" fill=\"#e0e1dd\"/></g></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "hands"
+
+}
+
+===END_FILE===

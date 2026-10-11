@@ -55,6 +55,35 @@ SLOT_ANCHOR = {
     "mount": "below",
     "accessory": "side",
 }
+# Pixel boxes on the 305x424 standing figure. Ink outside a worn slot is covered by the body.
+STRIP_REGION = {
+    "hat": (
+        "Draw the hat on the hair only, inside x 122-184, y 44-90. "
+        "The brim rests on the hairline near y 90. "
+        "Leave the face below y 96 empty so the forehead, eyes, and beard stay visible."
+    ),
+    "armor": "Draw only on the chest, x 100-210, y 148-268. Leave the arms, head, and legs empty.",
+    "gloves": (
+        "Draw two gloves and nothing else. "
+        "Viewer-left fist is x 2-30, y 160-184. "
+        "Viewer-right fist is x 274-302, y 160-184. "
+        "Each arm is a thin band only about 24 pixels tall. "
+        "A glove on the forearm, or taller than that band, misses the hand."
+    ),
+    "pants": (
+        "Draw trousers on the lower body only. "
+        "Cover the shorts at x 108-198, y 250-312, then both legs: "
+        "viewer-left x 112-146 and viewer-right x 157-188, from y 306 to y 386. "
+        "Stop above the shoes. Leave a gap between the legs. "
+        "Ink drawn up at the hands is hidden behind the arms and will not show."
+    ),
+    "shoes": (
+        "Draw only on the shoes. "
+        "Viewer-left shoe is x 111-140, y 385-417. "
+        "Viewer-right shoe is x 159-204, y 385-416."
+    ),
+    "cape": "Draw behind the shoulders only, x 70-130, y 155-340.",
+}
 SLOT_LAYER = {
     "hat": "gear_head",
     "armor": "gear_torso",
@@ -789,7 +818,7 @@ def _prompt_text(
             "- The walker stands still in a three-quarter T-pose, turned slightly toward the viewer and facing right. Both eyes are visible. Arms are straight out. Do not move or animate the character.\n"
             "- This piece is attached to the body. It must not animate. Set anim to bob; the wardrobe ignores animation on worn clothing.\n"
             "- Draw a 305x424 transparent SVG of the item on that standing figure.\n"
-            f"- Cover only the body region for the {slot}. Leave the rest of the canvas empty.\n"
+            f"- {STRIP_REGION.get(slot, 'Cover only the body region for this slot.')}\n"
             "- Meet the neighboring body with no gap, and do not cover another slot.\n"
             "- Head near the top, feet together at the bottom, arms extended horizontally.\n"
             '- svg viewBox must be "0 0 305 424". A 64x64 icon will be rejected. '
