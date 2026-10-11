@@ -82,7 +82,7 @@ header.top .sub {
   right: calc(100% + 16px);
   bottom: 0;
   height: 72%;
-  aspect-ratio: 96 / 160;
+  aspect-ratio: 192 / 320;
   width: auto;
   z-index: 1;
   pointer-events: none;

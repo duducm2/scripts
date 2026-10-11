@@ -322,7 +322,7 @@ def test_held_icon_is_accepted_and_a_body_strip_is_not() -> None:
                     "palace_id": PALACE,
                     "slot": "sword",
                     "name": "Desk blade",
-                    "svg": SVG,
+                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="#c45"/></svg>',
                     "anchor": "hand_right",
                 }
             )
@@ -334,8 +334,13 @@ def test_held_icon_is_accepted_and_a_body_strip_is_not() -> None:
     assert icon["anchor"] == "hand_right"
     from collectibles import validate_strip
 
-    err, note = validate_strip("sword", SVG)
+    err, note = validate_strip(
+        "sword",
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"></svg>',
+    )
     assert err == "" and note == ""
+    coarse_err, coarse_note = validate_strip("sword", SVG)
+    assert coarse_err == "" and "256x256" in coarse_note
     strip, _notes, strip_error = repair_item(
         _pack(
             json.dumps(

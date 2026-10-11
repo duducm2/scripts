@@ -280,7 +280,7 @@ def sanitize_svg(svg: str) -> str:
     if end < start:
         return ""
     text = text[start : end + len("</svg>")]
-    if len(text) > 6000:
+    if len(text) > 12000:
         return ""
     if "<svg" not in text.lower():
         return ""
@@ -327,31 +327,32 @@ def validate_strip(slot: str, svg: str) -> tuple[str, str]:
             "Strip size does not match the standing walker (305x424). Marked as misfit.",
         )
     if slot in ANCHORED_ICON_SLOTS:
-        if box is None or box[2] >= 180 or box[3] >= 180:
+        if box is None or box[2] >= 300 or box[3] >= 400:
             return (
-                'This slot needs a small icon. Use viewBox "0 0 64 64". '
+                'This slot needs a detailed icon. Use viewBox "0 0 256 256". '
                 "A body strip was rejected.",
                 "",
             )
         width, height = box[2], box[3]
-        if _near(width, 64, 8) and _near(height, 64, 8):
+        if _near(width, 256, 12) and _near(height, 256, 12):
             return "", ""
-        return "", "Icon size does not match 64x64. Marked as misfit."
+        return (
+            "",
+            "Icon grid is 256x256 so the drawing can hold detail. Marked as misfit.",
+        )
     if slot in SIDEKICK_SLOTS:
-        if (
-            box is None
-            or box[2] >= 180
-            or box[3] >= 300
-            or (_near(box[2], 64, 8) and _near(box[3], 64, 8))
-        ):
+        if box is None or (_near(box[2], 305, 8) and _near(box[3], 424, 8)):
             return (
-                'A sidekick is a standing figure. Use viewBox "0 0 96 160". '
-                "A pet icon or a body strip was rejected.",
+                'A sidekick is a standing figure. Use viewBox "0 0 192 320". '
+                "A body strip was rejected.",
                 "",
             )
-        if _near(box[2], 96, 8) and _near(box[3], 160, 12):
+        if _near(box[2], 192, 12) and _near(box[3], 320, 16):
             return "", ""
-        return "", "Sidekick size does not match 96x160. Marked as misfit."
+        return (
+            "",
+            "Sidekick grid is 192x320 so the figure can hold a face and clothes. Marked as misfit.",
+        )
     return "", ""
 
 
@@ -827,21 +828,22 @@ def _prompt_text(
             f"- {STRIP_REGION.get(slot, 'Cover only the body region for this slot.')}\n"
             "- Meet the neighboring body with no gap, and do not cover another slot.\n"
             "- Head near the top, feet together at the bottom, arms extended horizontally.\n"
-            '- svg viewBox must be "0 0 305 424". A 64x64 icon will be rejected. '
-            "A walk strip will be rejected.\n"
+            '- svg viewBox must be "0 0 305 424". Use that full grid for seams, shade bands, and small parts. '
+            "A 64x64 icon will be rejected. A walk strip will be rejected.\n"
         )
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 305 424\\">...</svg>'
     elif slot in HELD_ICON_SLOTS:
         draw_rules = (
             "- The walker stands still. Do not move or animate the character.\n"
             "- anim moves only this icon, pinned to its anchor.\n"
-            f"- Draw a 64x64 transparent SVG of the item. It will be pinned to {anchor}.\n"
+            f"- Draw a 256x256 transparent SVG of the item. It will be pinned to {anchor}.\n"
+            "- The grid is 256 units across. Use it. Draw the edge highlight, wrap on the grip, and small parts. Do not fill the frame with one shape.\n"
             "- Draw it large in that frame. The grip sits on the bottom edge and the blade reaches the top, so the weapon reads at body scale.\n"
             "- A sword needs a blade with an edge highlight, a crossguard, a wrapped grip, and a pommel.\n"
             "- Keep the drawing inside the icon. Do not draw the character.\n"
-            '- svg viewBox must be "0 0 64 64". A full-body strip will be rejected.\n'
+            '- svg viewBox must be "0 0 256 256". A 64x64 icon is too coarse. A full-body strip will be rejected.\n'
         )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 256 256\\">...</svg>'
     elif slot in SIDEKICK_SLOTS:
         draw_rules = (
             "- Draw only the sidekick. Do not draw the main walker.\n"
@@ -849,22 +851,24 @@ def _prompt_text(
             "- Draw a party member from the same RPG: hair, a face with two eyes, clothes, arms, legs, and shoes. Not a circle head or a rectangle body.\n"
             "- Feet touch the bottom edge. The head is near the top.\n"
             "- Leave a small margin at the sides. The figure fills the frame.\n"
-            '- svg viewBox must be "0 0 96 160". A 64x64 pet icon will be rejected. '
+            "- The grid is 192 by 320 units. Use it for eyes, hair, cloth folds, and shoes.\n"
+            '- svg viewBox must be "0 0 192 320". A 96x160 figure is too coarse. '
             "A full-body strip will be rejected.\n"
             "- It stands on the floor to the viewer's left of the walker. "
             "The pet, if any, stays at the hip on the other side.\n"
         )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 96 160\\">...</svg>'
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 192 320\\">...</svg>'
     else:
         draw_rules = (
             "- The walker stands still. Do not move or animate the character.\n"
             "- anim moves only this relic, pinned to its anchor.\n"
-            f"- svg is one small illustration pinned to {anchor}, under 6000 characters.\n"
+            f"- svg is one illustration pinned to {anchor}, under 12000 characters.\n"
+            "- The grid is 256 by 256 units. Use it for a face, ears, and markings. Do not fill the frame with one block.\n"
             "- Keep it tight to that point. Do not let it float away.\n"
             "- A pet is a small creature with a head, a body, and a face. Not a colored block.\n"
-            '- viewBox "0 0 64 64" is enough for a pet or an accessory.\n'
+            '- viewBox must be "0 0 256 256".\n'
         )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 256 256\\">...</svg>'
     if slot in SIDEKICK_SLOTS:
         lead = (
             "Invent ONE sidekick who stands beside my Memory Palace walker.\n"
@@ -878,7 +882,7 @@ def _prompt_text(
         )
         place_rule = (
             "- Follow the body silhouette inside the given box. A rectangle or a floating blob looks wrong.\n"
-            "- For a 64x64 icon, fill most of the canvas with that one object and leave a small margin.\n"
+            "- For a 256x256 icon, fill most of the canvas with that one object and leave a small margin.\n"
         )
     return (
         lead
@@ -911,7 +915,7 @@ def _prompt_text(
             f'- slot must be exactly "{slot}". Do not pick another category.\n'
             f'- anchor must be exactly "{anchor}". Do not change it.\n'
             f"- anim is one of: {', '.join(ANIMS)}\n"
-            "- svg is under 6000 characters, no scripts, no external images.\n"
+            "- svg is under 12000 characters, no scripts, no external images.\n"
             f"{draw_rules}"
             "- Match the walker: a 16-bit RPG sprite, the same game as the hero in the tavern. "
             "Dark outline, hard pixel edges, and two flat shade steps on each material.\n"
@@ -923,7 +927,8 @@ def _prompt_text(
             "A tiny mark on a generic sword, pet, or person is not enough.\n"
             "- Do not illustrate every keyword. Show the topic, then at most one supporting object from the beasts or keywords.\n"
             "- The name names that topic. The blurb says why this relic belongs to it.\n"
-            "- No text, barcodes, or sparkle clusters. Outlines are at least 2 pixels wide.\n"
+            "- No text, barcodes, or sparkle clusters. "
+            "On a 256 grid, outlines are about 6 units wide. Interior details can be thinner.\n"
         )
         + place_rule
         + (
