@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=trophyclear" />
+    <link rel="stylesheet" href="/dashboard.css?v=sparkle" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -24,13 +24,18 @@
         padding: 0.35rem 0.7rem;
         font-family: Georgia, "Palatino Linotype", serif;
         font-size: 0.88rem;
+        font-weight: 600;
         letter-spacing: 0.03em;
         cursor: pointer;
       }
-      .app-more button:hover,
-      .app-more button.active {
+      .app-more button:hover {
         color: #fff6df;
         border-color: #d4b36a;
+      }
+      .app-more button.active {
+        background: #3a3224;
+        color: #fff6df;
+        border-color: #e6cc8a;
       }
       #btnPractice {
         background: var(--rpg-fill);
@@ -38,7 +43,8 @@
         border: 1px solid var(--rpg-edge);
         border-radius: 2px;
         box-shadow: var(--rpg-inset);
-        padding: 0.5rem 0.9rem;
+        padding: 0.5rem 0.72rem;
+        line-height: 1;
         font-family: Georgia, "Palatino Linotype", serif;
         font-size: 0.95rem;
         font-weight: 650;
@@ -800,12 +806,18 @@
           <label for="study">Study</label>
           <select id="study"></select>
         </div>
-        <button type="button" id="btnLatest" title="Latest palace (Shift+L)">
+        <button
+          type="button"
+          id="btnLatest"
+          data-ico="clock"
+          title="Latest palace (Shift+L)"
+        >
           Latest palace
         </button>
         <button
           type="button"
           id="btnStoryReduction"
+          data-ico="funnel"
           title="Toggle Story Reduction Mode (Shift+R)"
         >
           Story Reduction
@@ -814,27 +826,49 @@
           type="button"
           id="btnPractice"
           class="active"
+          data-ico="book"
           title="Practice (Esc)"
         >
           Practice
         </button>
-        <button type="button" id="btnPlans" title="Toggle plans (Shift+P)">
+        <button
+          type="button"
+          id="btnPlans"
+          data-ico="checks"
+          title="Toggle plans (Shift+P)"
+        >
           Plans
         </button>
-        <button type="button" id="btnImages" title="Images backlog (Shift+I)">
+        <button
+          type="button"
+          id="btnImages"
+          data-ico="image"
+          title="Images backlog (Shift+I)"
+        >
           Images
         </button>
-        <button type="button" id="btnMethod" title="Method docs (Shift+M)">
+        <button
+          type="button"
+          id="btnMethod"
+          data-ico="bookmark"
+          title="Method docs (Shift+M)"
+        >
           Method
         </button>
         <button
           type="button"
           id="btnEntertainment"
+          data-ico="film"
           title="Entertainment topics (Shift+E)"
         >
           Entertainment
         </button>
-        <button type="button" id="btnWardrobe" title="Trophies (Alt+W)">
+        <button
+          type="button"
+          id="btnWardrobe"
+          data-ico="trophy"
+          title="Trophies (Alt+W)"
+        >
           Trophies
         </button>
         <div>
@@ -850,13 +884,28 @@
     </header>
     <div id="searchResults" aria-live="polite"></div>
     <div class="app-more" id="appMore">
-      <button type="button" data-view="browse" title="Browse (Shift+B)">
+      <button
+        type="button"
+        data-view="browse"
+        data-ico="grid"
+        title="Browse (Shift+B)"
+      >
         Browse
       </button>
-      <button type="button" data-view="links" title="Links (Shift+1)">
+      <button
+        type="button"
+        data-view="links"
+        data-ico="link"
+        title="Links (Shift+1)"
+      >
         Links
       </button>
-      <button type="button" data-view="help" title="Help (Shift+H)">
+      <button
+        type="button"
+        data-view="help"
+        data-ico="help"
+        title="Help (Shift+H)"
+      >
         Help
       </button>
     </div>
@@ -891,6 +940,7 @@
               <a
                 id="plansGithub"
                 class="plans-github"
+                data-ico="external"
                 href="#"
                 target="_blank"
                 rel="noopener"
@@ -900,14 +950,25 @@
                 type="button"
                 id="btnPlansNext"
                 class="btn-plans-next"
+                data-ico="arrow-right"
                 title="First unchecked task in the phases (Shift+N). Skips the backlog."
               >
                 Next task
               </button>
-              <button type="button" id="btnPlansSave" class="btn-plans-save">
+              <button
+                type="button"
+                id="btnPlansSave"
+                class="btn-plans-save"
+                data-ico="check"
+              >
                 Save
               </button>
-              <button type="button" id="btnPlansReset" class="btn-plans-reset">
+              <button
+                type="button"
+                id="btnPlansReset"
+                class="btn-plans-reset"
+                data-ico="undo"
+              >
                 Reset to file
               </button>
             </div>
@@ -948,7 +1009,12 @@
             </p>
           </div>
           <div class="gallery-toolbar">
-            <button type="button" class="btn-gallery" id="btnStudyImagesAdd">
+            <button
+              type="button"
+              class="btn-gallery"
+              id="btnStudyImagesAdd"
+              data-ico="plus"
+            >
               Add image
             </button>
             <span class="gallery-status" id="imagesStatus"></span>
@@ -969,12 +1035,18 @@
             <a
               id="imagesFsDownload"
               class="spa-btn"
+              data-ico="download"
               href="#"
               download
               title="Download image"
               >Download</a
             >
-            <button type="button" class="spa-btn" id="btnImagesFsClose">
+            <button
+              type="button"
+              class="spa-btn"
+              id="btnImagesFsClose"
+              data-ico="x"
+            >
               Close (Esc)
             </button>
           </div>
@@ -1002,16 +1074,27 @@
           <p class="count" id="ovCount"></p>
         </div>
         <div class="overlay-nav">
-          <button type="button" id="btnPrevPalace" title="Older palace (←)">
-            ← Older
+          <button
+            type="button"
+            id="btnPrevPalace"
+            data-ico="chevron-left"
+            title="Older palace (←)"
+          >
+            Older
           </button>
           <span class="nav-pos" id="ovNavPos"></span>
-          <button type="button" id="btnNextPalace" title="Newer palace (→)">
-            Newer →
+          <button
+            type="button"
+            id="btnNextPalace"
+            data-ico="chevron-right"
+            title="Newer palace (→)"
+          >
+            Newer
           </button>
           <button
             type="button"
             id="btnExpandImage"
+            data-ico="maximize"
             title="Toggle full-screen image (F)"
           >
             Full image (F)
@@ -1019,6 +1102,7 @@
           <button
             type="button"
             id="btnToggleAtomDetails"
+            data-ico="eye"
             title="Show or hide Quote (Shift+D)"
           >
             Details (Shift+D)
@@ -1026,6 +1110,7 @@
           <button
             type="button"
             id="btnCopyPrompt"
+            data-ico="copy"
             title="Copy preserve-background + README + street image prompt (Shift+C)"
             disabled
           >
@@ -1034,6 +1119,7 @@
           <button
             type="button"
             id="btnChangeImage"
+            data-ico="image"
             title="Replace palace scene image (Desktop PNG/JPG or file picker)"
           >
             Change image
@@ -1041,11 +1127,12 @@
           <button
             type="button"
             id="btnFindRelic"
+            data-ico="gem"
             title="Ask Gemini for a palace relic (Shift+G)"
           >
             Find relic
           </button>
-          <button type="button" id="btnClose">Close</button>
+          <button type="button" id="btnClose" data-ico="x">Close</button>
         </div>
       </div>
       <div class="overlay-body">
@@ -1069,7 +1156,12 @@
               placeholder="Palace notes for recall, links, reminders…"
             ></textarea>
             <div class="notes-toolbar">
-              <button type="button" class="btn-notes-save" id="btnNotesSave">
+              <button
+                type="button"
+                class="btn-notes-save"
+                id="btnNotesSave"
+                data-ico="check"
+              >
                 Save notes
               </button>
               <span class="notes-status" id="ovNotesStatus"></span>
@@ -1078,7 +1170,12 @@
           <div class="overlay-gallery" id="ovGallery">
             <h3>Gallery</h3>
             <div class="gallery-toolbar">
-              <button type="button" class="btn-gallery" id="btnGalleryAdd">
+              <button
+                type="button"
+                class="btn-gallery"
+                id="btnGalleryAdd"
+                data-ico="plus"
+              >
                 Add image
               </button>
               <span class="gallery-status" id="ovGalleryStatus"></span>
@@ -1108,6 +1205,7 @@
           type="button"
           id="btnSrClear"
           class="sr-btn-ghost"
+          data-ico="trash"
           title="Clear staging"
         >
           Clear
@@ -1125,8 +1223,13 @@
       <section class="sr-merge" id="srMergeSection">
         <div class="sr-merge-head">
           <h3>Merge</h3>
-          <button type="button" id="btnSrAddGroup" class="sr-btn-ghost">
-            + Group
+          <button
+            type="button"
+            id="btnSrAddGroup"
+            class="sr-btn-ghost"
+            data-ico="plus"
+          >
+            Group
           </button>
         </div>
         <p class="sr-hint">Drop into a group (max 4 · SMASH)</p>
@@ -1137,6 +1240,7 @@
           type="button"
           id="btnSrGenerate"
           class="sr-btn"
+          data-ico="spark"
           title="Copy context + filled story-reduction prompt"
         >
           Generate Prompt
@@ -1154,7 +1258,7 @@
         <h2 id="kwPickerTitle">Keyword</h2>
         <p class="kw-picker-status" id="kwPickerStatus"></p>
         <div class="kw-picker-grid" id="kwPickerGrid"></div>
-        <button type="button" id="kwPickerClose">Close</button>
+        <button type="button" id="kwPickerClose" data-ico="x">Close</button>
       </div>
     </div>
     <div id="toast"></div>
@@ -1565,7 +1669,7 @@
             return `<div class="sr-merge-group" data-sr-drop="merge" data-sr-group="${gi}">
               <div class="sr-group-head">
                 <div class="sr-group-label">Group ${gi + 1} · ${g.length}/${SR_MERGE_MAX}</div>
-                <button type="button" class="sr-btn-ghost sr-btn-remove-group" data-sr-remove-group="${gi}" title="${state.storyReduction.mergeGroups.length <= 1 ? "Clear group" : "Remove group"}">${state.storyReduction.mergeGroups.length <= 1 ? "Clear" : "Remove"}</button>
+                <button type="button" class="sr-btn-ghost sr-btn-remove-group" data-ico="x" data-sr-remove-group="${gi}" title="${state.storyReduction.mergeGroups.length <= 1 ? "Clear group" : "Remove group"}">${state.storyReduction.mergeGroups.length <= 1 ? "Clear" : "Remove"}</button>
               </div>
               <div class="sr-chip-list">${chips || '<span class="sr-hint">Drop beasts here</span>'}</div>
             </div>`;
@@ -2718,7 +2822,7 @@
         if (!t) return '<p class="prompt-empty">No image prompt saved.</p>';
         return (
           '<div class="prompt-block"><div class="prompt-head"><span>Image prompt</span>' +
-          `<button type="button" class="btn-copy" data-copy-id="${escAttr(id)}">Copy prompt</button></div>` +
+          `<button type="button" class="btn-copy" data-ico="copy" data-copy-id="${escAttr(id)}">Copy prompt</button></div>` +
           `<pre class="prompt-text">${esc(prompt)}</pre></div>`
         );
       }
@@ -2848,8 +2952,8 @@
                   <p>${list.length} Memory Palace${list.length === 1 ? "" : "s"} · newest first${noImg.length ? ` · ${noImg.length} without image` : ""}</p>
                 </div>
                 <div class="study-head-actions">
-                  <button type="button" id="btnDeleteImageless" class="btn-palace-delete btn-palace-imageless"${noImg.length === 0 ? " hidden" : ""} title="Delete all Memory Palaces in this study that have no image">${noImgLabel}</button>
-                  <button type="button" id="btnDeletePalaces" class="btn-palace-delete"${selCount === 0 ? " hidden" : ""}>${delLabel}</button>
+                  <button type="button" id="btnDeleteImageless" class="btn-palace-delete btn-palace-imageless" data-ico="trash"${noImg.length === 0 ? " hidden" : ""} title="Delete all Memory Palaces in this study that have no image">${noImgLabel}</button>
+                  <button type="button" id="btnDeletePalaces" class="btn-palace-delete" data-ico="trash"${selCount === 0 ? " hidden" : ""}>${delLabel}</button>
                 </div>
               </div>
             </header>
@@ -3355,6 +3459,7 @@
         if (!btn) return;
         const expanded = ov.classList.contains("image-expanded");
         btn.textContent = expanded ? "Exit full (F)" : "Full image (F)";
+        btn.dataset.ico = expanded ? "minimize" : "maximize";
         btn.title = expanded
           ? "Return to split view (F)"
           : "Toggle full-screen image (F)";
@@ -3366,6 +3471,7 @@
         if (!btn) return;
         const show = ov.classList.contains("show-atom-details");
         btn.textContent = show ? "Concepts (D)" : "Details (D)";
+        btn.dataset.ico = show ? "list" : "eye";
         btn.title = show ? "Show concepts only (D)" : "Show Quote (D)";
         btn.setAttribute("aria-pressed", show ? "true" : "false");
       }
@@ -3685,15 +3791,15 @@
             <div class="gallery-card-body">
               <input type="text" class="stimg-caption" value="${escAttr(g.caption || "")}" data-stimg-id="${escAttr(g.id)}" placeholder="Caption (optional)"/>
               <div class="gallery-card-actions">
-                <button type="button" class="btn-gallery" data-stimg-save="${escAttr(g.id)}">Save caption</button>
-                <button type="button" class="btn-gallery" data-stimg-up="${escAttr(g.id)}" ${idx === 0 ? "disabled" : ""}>↑</button>
-                <button type="button" class="btn-gallery" data-stimg-down="${escAttr(g.id)}" ${idx === imgs.length - 1 ? "disabled" : ""}>↓</button>
+                <button type="button" class="btn-gallery" data-ico="check" data-stimg-save="${escAttr(g.id)}">Save caption</button>
+                <button type="button" class="btn-gallery btn-icon" data-ico="chevron-up" data-stimg-up="${escAttr(g.id)}" aria-label="Move up" ${idx === 0 ? "disabled" : ""}></button>
+                <button type="button" class="btn-gallery btn-icon" data-ico="chevron-down" data-stimg-down="${escAttr(g.id)}" aria-label="Move down" ${idx === imgs.length - 1 ? "disabled" : ""}></button>
                 ${
                   src
-                    ? `<a class="btn-gallery" href="${escAttr(src)}" download="${escAttr(fname)}" data-stimg-dl="${escAttr(g.id)}">Download</a>`
+                    ? `<a class="btn-gallery" data-ico="download" href="${escAttr(src)}" download="${escAttr(fname)}" data-stimg-dl="${escAttr(g.id)}">Download</a>`
                     : ""
                 }
-                <button type="button" class="btn-gallery danger" data-stimg-delete="${escAttr(g.id)}">Delete</button>
+                <button type="button" class="btn-gallery danger" data-ico="trash" data-stimg-delete="${escAttr(g.id)}">Delete</button>
               </div>
             </div>
           </article>`;
@@ -3888,13 +3994,13 @@
               "</span></span>";
           });
         }
-        html += ` <button type="button" class="plan-source-add" data-section-path="${escAttr(sectionPath)}">+ add source</button>`;
+        html += ` <button type="button" class="plan-source-add" data-ico="plus" data-section-path="${escAttr(sectionPath)}">Add source</button>`;
         html +=
           `<div class="plan-source-form hidden" data-form-section="${escAttr(sectionPath)}">` +
           '<input type="text" class="plan-source-title-input" placeholder="Title" autocomplete="off"/>' +
           '<input type="url" class="plan-source-url-input" placeholder="URL" autocomplete="off"/>' +
-          '<button type="button" class="plan-source-save">Save</button>' +
-          '<button type="button" class="plan-source-cancel">Cancel</button>' +
+          '<button type="button" class="plan-source-save" data-ico="check">Save</button>' +
+          '<button type="button" class="plan-source-cancel" data-ico="x">Cancel</button>' +
           "</div></div>";
         return html;
       }
@@ -4133,8 +4239,8 @@
           : "";
         const moveBtns = phaseRoot
           ? `<span class="phase-move">` +
-            `<button type="button" class="phase-move-btn" data-phase-move="up" data-phase-title="${escAttr(section.title)}" title="Move this phase up (Shift+Up)">↑</button>` +
-            `<button type="button" class="phase-move-btn" data-phase-move="down" data-phase-title="${escAttr(section.title)}" title="Move this phase down (Shift+Down)">↓</button>` +
+            `<button type="button" class="phase-move-btn" data-ico="chevron-up" data-phase-move="up" data-phase-title="${escAttr(section.title)}" title="Move this phase up (Shift+Up)" aria-label="Move this phase up"></button>` +
+            `<button type="button" class="phase-move-btn" data-ico="chevron-down" data-phase-move="down" data-phase-title="${escAttr(section.title)}" title="Move this phase down (Shift+Down)" aria-label="Move this phase down"></button>` +
             `</span>`
           : "";
         const heading = phaseRoot
@@ -4280,7 +4386,7 @@
         html +=
           '<div class="plans-backlog-add">' +
           '<input type="text" id="plansBacklogInput" placeholder="Add backlog item…" autocomplete="off"/>' +
-          '<button type="button" id="btnPlansBacklogAdd">Add</button>' +
+          '<button type="button" id="btnPlansBacklogAdd" data-ico="plus">Add</button>' +
           "</div></div>";
         (plan.sections || []).forEach((sec) => {
           html += renderPlanSection(sec);
@@ -4622,6 +4728,7 @@
         document
           .querySelectorAll("#methodPanel .btn-prompt-full")
           .forEach((btn) => {
+            btn.dataset.ico = btn.dataset.ico || "chevron-down";
             btn.onclick = () => {
               const det = btn.closest(".method-prompt");
               if (!det) return;
@@ -4632,6 +4739,7 @@
               full.hidden = showing;
               preview.hidden = !showing;
               btn.textContent = showing ? "Show all" : "Show less";
+              btn.dataset.ico = showing ? "chevron-down" : "chevron-up";
             };
           });
       }
@@ -4651,17 +4759,17 @@
           root.innerHTML =
             crumb +
             `
-            <div class="spa-row"><button class="spa-btn" id="addStudy">Add study</button>
-              <button class="spa-btn" id="up">Back to Practice</button></div>
+            <div class="spa-row"><button class="spa-btn" id="addStudy" data-ico="plus">Add study</button>
+              <button class="spa-btn" id="up" data-ico="arrow-left">Back to Practice</button></div>
             <div class="spa-panel"><table class="spa-table"><thead><tr><th>Title</th><th>Id</th><th>Active</th><th></th></tr></thead>
             <tbody>${studies()
               .map(
                 (
                   s,
                 ) => `<tr data-id="${escAttr(s.id)}"><td>${esc(s.title)}</td><td>${esc(s.id)}</td><td>${esc(s.active)}</td>
-              <td><button class="spa-btn" data-open="${escAttr(s.id)}">Open</button>
-              <button class="spa-btn" data-edit="${escAttr(s.id)}">Edit</button>
-              <button class="spa-btn danger" data-del="${escAttr(s.id)}">Del</button></td></tr>`,
+              <td><button class="spa-btn" data-ico="folder" data-open="${escAttr(s.id)}">Open</button>
+              <button class="spa-btn" data-ico="pencil" data-edit="${escAttr(s.id)}">Edit</button>
+              <button class="spa-btn danger" data-ico="trash" data-del="${escAttr(s.id)}">Del</button></td></tr>`,
               )
               .join("")}</tbody></table></div>`;
           root.querySelector("#up").onclick = () => setView("practice");
@@ -4701,9 +4809,9 @@
           root.innerHTML =
             crumb +
             `
-            <div class="spa-row"><button class="spa-btn" id="up">Up</button>
-              <button class="spa-btn" id="addP">Add palace</button>
-              <button class="spa-btn" id="toPlans">Plans</button></div>
+            <div class="spa-row"><button class="spa-btn" id="up" data-ico="arrow-left">Up</button>
+              <button class="spa-btn" id="addP" data-ico="plus">Add palace</button>
+              <button class="spa-btn" id="toPlans" data-ico="checks">Plans</button></div>
             <div class="spa-panel"><table class="spa-table"><thead><tr><th>#</th><th>Title</th><th>Character</th><th>Image</th><th></th></tr></thead>
             <tbody>${list
               .map((p) => {
@@ -4712,10 +4820,10 @@
                 const mark = ok ? "✓" : "—";
                 return `<tr><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td><td>${esc(p.character_name)}</td>
               <td>${mark}</td>
-              <td><button class="spa-btn" data-open="${escAttr(p.id)}">Open</button>
-              <button class="spa-btn" data-img="${escAttr(p.id)}">Change image</button>
-              <button class="spa-btn" data-edit="${escAttr(p.id)}">Edit</button>
-              <button class="spa-btn danger" data-del="${escAttr(p.id)}">Del</button></td></tr>`;
+              <td><button class="spa-btn" data-ico="folder" data-open="${escAttr(p.id)}">Open</button>
+              <button class="spa-btn" data-ico="image" data-img="${escAttr(p.id)}">Change image</button>
+              <button class="spa-btn" data-ico="pencil" data-edit="${escAttr(p.id)}">Edit</button>
+              <button class="spa-btn danger" data-ico="trash" data-del="${escAttr(p.id)}">Del</button></td></tr>`;
               })
               .join("")}</tbody></table></div>`;
           root.querySelector("#up").onclick = () => {
@@ -4764,19 +4872,19 @@
           root.innerHTML =
             crumb +
             `
-            <div class="spa-row"><button class="spa-btn" id="up">Up</button>
-              <button class="spa-btn" id="changeImg">Change image</button>
-              <button class="spa-btn" id="addB">Add beast</button>
-              <button class="spa-btn" id="practice">Practice overlay</button></div>
+            <div class="spa-row"><button class="spa-btn" id="up" data-ico="arrow-left">Up</button>
+              <button class="spa-btn" id="changeImg" data-ico="image">Change image</button>
+              <button class="spa-btn" id="addB" data-ico="plus">Add beast</button>
+              <button class="spa-btn" id="practice" data-ico="book">Practice overlay</button></div>
             <div class="spa-panel"><table class="spa-table"><thead><tr><th>Peg</th><th>Name</th><th></th></tr></thead>
             <tbody>${list
               .map(
                 (
                   x,
                 ) => `<tr><td>${esc(x.peg_code)}</td><td>${esc(x.beast_name)}</td>
-              <td><button class="spa-btn" data-open="${escAttr(x.id)}">Atoms</button>
-              <button class="spa-btn" data-edit="${escAttr(x.id)}">Edit</button>
-              <button class="spa-btn danger" data-del="${escAttr(x.id)}">Del</button></td></tr>`,
+              <td><button class="spa-btn" data-ico="list" data-open="${escAttr(x.id)}">Atoms</button>
+              <button class="spa-btn" data-ico="pencil" data-edit="${escAttr(x.id)}">Edit</button>
+              <button class="spa-btn danger" data-ico="trash" data-del="${escAttr(x.id)}">Del</button></td></tr>`,
               )
               .join("")}</tbody></table></div>`;
           root.querySelector("#up").onclick = () => {
@@ -4820,16 +4928,16 @@
         root.innerHTML =
           crumb +
           `
-          <div class="spa-row"><button class="spa-btn" id="up">Up</button>
-            <button class="spa-btn" id="addA">Add atom</button></div>
+          <div class="spa-row"><button class="spa-btn" id="up" data-ico="arrow-left">Up</button>
+            <button class="spa-btn" id="addA" data-ico="plus">Add atom</button></div>
           <div class="spa-panel"><table class="spa-table"><thead><tr><th>Kind</th><th>Zone</th><th>Concept</th><th></th></tr></thead>
           <tbody>${list
             .map(
               (
                 a,
               ) => `<tr><td>${esc(a.kind)}</td><td>${esc(a.zone)}</td><td>${esc(a.concept)}</td>
-            <td><button class="spa-btn" data-edit="${escAttr(a.id)}">Edit</button>
-            <button class="spa-btn danger" data-del="${escAttr(a.id)}">Del</button></td></tr>`,
+            <td><button class="spa-btn" data-ico="pencil" data-edit="${escAttr(a.id)}">Edit</button>
+            <button class="spa-btn danger" data-ico="trash" data-del="${escAttr(a.id)}">Del</button></td></tr>`,
             )
             .join("")}</tbody></table></div>`;
         root.querySelector("#up").onclick = () => {
@@ -5076,12 +5184,12 @@
         root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0">Study links</h2>
           <p class="sub" style="color:var(--muted);margin:0 0 12px;font-size:13px">Shift+V/A/F open · Alt+V/A/F save from clipboard (AHK; including Quick Recall). Set buttons use clipboard too. Links [Shift+1].</p>
           <div class="spa-row">
-            <button class="spa-btn" data-k="video" data-a="open">Open video</button>
-            <button class="spa-btn" data-k="video" data-a="set">Set video (clipboard)</button>
-            <button class="spa-btn" data-k="article" data-a="open">Open article</button>
-            <button class="spa-btn" data-k="article" data-a="set">Set article (clipboard)</button>
-            <button class="spa-btn" data-k="favorite" data-a="open">Open favorite</button>
-            <button class="spa-btn" data-k="favorite" data-a="set">Set favorite (clipboard)</button>
+            <button class="spa-btn" data-ico="play" data-k="video" data-a="open">Open video</button>
+            <button class="spa-btn" data-ico="clipboard" data-k="video" data-a="set">Set video (clipboard)</button>
+            <button class="spa-btn" data-ico="file" data-k="article" data-a="open">Open article</button>
+            <button class="spa-btn" data-ico="clipboard" data-k="article" data-a="set">Set article (clipboard)</button>
+            <button class="spa-btn" data-ico="star" data-k="favorite" data-a="open">Open favorite</button>
+            <button class="spa-btn" data-ico="clipboard" data-k="favorite" data-a="set">Set favorite (clipboard)</button>
           </div>
           <pre id="linkOut" style="color:var(--muted);white-space:pre-wrap">Loading…</pre>
         </div>`;
@@ -5410,14 +5518,18 @@
             continue;
           }
           const take = manage
-            ? `<button type="button" class="spa-btn danger trophy-take" data-gear-remove="${escAttr(item.id)}">Take off</button>`
+            ? `<button type="button" class="spa-btn danger trophy-take" data-ico="minus" data-gear-remove="${escAttr(item.id)}">Take off</button>`
             : "";
           const art = item.image
             ? `<img src="${escAttr(item.image)}?v=trophyspots" alt="">`
             : item.svg;
+          const sparkle =
+            i % 4 === 0
+              ? `<span class="trophy-spark" data-spark="${i % 8 === 0 ? "a" : "b"}" aria-hidden="true"></span>`
+              : "";
           cells.push(
             `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}">` +
-              `<div class="trophy-art">${art}</div>` +
+              `<div class="trophy-art">${art}${sparkle}</div>` +
               `<div class="trophy-caption"><span class="trophy-name">${esc(item.name)}</span>${take}</div></div>`,
           );
         }
@@ -5676,8 +5788,8 @@
           <h2 style="margin-top:0">Help / glossary</h2>
           <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
-            <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
-            <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
+            <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
+            <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
           </div>
           <div id="g"></div>
         </div>`;
@@ -6179,8 +6291,8 @@
           <label>Link <input name="url" value="${escAttr(d.url)}" placeholder="https://"></label>
           <label>Notes <textarea name="notes" rows="4">${esc(d.notes)}</textarea></label>
           <div class="ent-actions">
-            <button type="submit" class="spa-btn">Save</button>
-            <button type="button" class="spa-btn" id="entCancel">Cancel</button>
+            <button type="submit" class="spa-btn" data-ico="check">Save</button>
+            <button type="button" class="spa-btn" id="entCancel" data-ico="x">Cancel</button>
           </div>
         </form>`;
       }
@@ -6208,9 +6320,9 @@
       function entActions(n) {
         if (n.id !== state.entertainment.selectedId) return "";
         return `<div class="ent-actions">
-          <button type="button" class="spa-btn" data-add="${escAttr(n.id)}">Add inside</button>
-          <button type="button" class="spa-btn" data-edit="${escAttr(n.id)}">Edit</button>
-          <button type="button" class="spa-btn danger" data-del="${escAttr(n.id)}">Delete</button>
+          <button type="button" class="spa-btn" data-ico="plus" data-add="${escAttr(n.id)}">Add inside</button>
+          <button type="button" class="spa-btn" data-ico="pencil" data-edit="${escAttr(n.id)}">Edit</button>
+          <button type="button" class="spa-btn danger" data-ico="trash" data-del="${escAttr(n.id)}">Delete</button>
         </div>`;
       }
 
@@ -6312,7 +6424,7 @@
             ${kids.length ? `<span class="ent-count">${kids.length}</span>` : ""}
             ${
               !(node.parent_id || "") && kids.length
-                ? `<button type="button" class="spa-btn ent-expand-all" data-expand="${escAttr(node.id)}">${entBranchOpen(node.id) ? "Collapse all" : "Expand all"}</button>`
+                ? `<button type="button" class="spa-btn ent-expand-all" data-ico="${entBranchOpen(node.id) ? "chevron-up" : "chevron-down"}" data-expand="${escAttr(node.id)}">${entBranchOpen(node.id) ? "Collapse all" : "Expand all"}</button>`
                 : ""
             }
           </div>
@@ -6363,7 +6475,7 @@
             <h2>Entertainment</h2>
             <p class="ent-hint">Right opens a topic, Left closes it or steps back. Up and Down move. A letter jumps to a visible title. Click a title to mark it watched. Click a number to score it from 1 to 10 and mark it watched. Ctrl+C copies the title. Shift+E returns to Practice.</p>
           </div>
-          <button type="button" class="spa-btn" id="entAddTopic">Add topic</button>
+          <button type="button" class="spa-btn" id="entAddTopic" data-ico="plus">Add topic</button>
         </div>`;
         if (!vis.length && !(draft && !draft.id && !draft.parent_id))
           html += `<p class="ent-empty">No entertainment topics yet.</p>`;

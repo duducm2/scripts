@@ -105,7 +105,7 @@ def _prompts_section(prompts_dir: Path) -> str:
         toggle = ""
         if truncated:
             toggle = (
-                f'<button type="button" class="btn-prompt-full" '
+                f'<button type="button" class="btn-prompt-full" data-ico="chevron-down" '
                 f'data-prompt="{html.escape(name)}">Show all</button>'
             )
         cards.append(

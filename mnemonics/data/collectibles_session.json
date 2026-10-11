@@ -67,7 +67,6 @@
     },
     {
       "id": "col_6077cd38a501",
-      "created_at": "2026-10-11T19:18:01Z",
       "palace_id": "PALACE_SKILLS_05",
       "slot": "trophy",
       "name": "The Shuffling Mind",
@@ -75,6 +74,20 @@
       "svg": "",
       "image": "/assets/trophies/col_6077cd38a501.png",
       "anim": "sway",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-11T19:18:01Z"
+    },
+    {
+      "id": "col_41f3d04bf701",
+      "created_at": "2026-10-11T19:55:27Z",
+      "palace_id": "PALACE_AI_03",
+      "slot": "trophy",
+      "name": "The Tipped Scales of Elo & Value",
+      "blurb": "An intricate armillary of spiraling rating stairs and weighted pricing scales, endlessly tested and mischievously tipped by climbing imps to represent AI pricing dynamics.",
+      "svg": "",
+      "image": "/assets/trophies/col_41f3d04bf701.png",
+      "anim": "bob",
       "anchor": "pedestal",
       "equipped": true
     }

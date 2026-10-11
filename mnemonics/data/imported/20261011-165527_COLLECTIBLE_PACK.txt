@@ -1,0 +1,11 @@
+=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_AI_03",
+"slot": "trophy",
+"name": "The Tipped Scales of Elo & Value",
+"blurb": "An intricate armillary of spiraling rating stairs and weighted pricing scales, endlessly tested and mischievously tipped by climbing imps to represent AI pricing dynamics.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
