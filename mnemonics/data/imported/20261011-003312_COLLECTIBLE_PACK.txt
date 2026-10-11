@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_GERMAN_11",
+
+  "slot": "accessory",
+
+  "name": "German Alphabet Eszett Pouch",
+
+  "blurb": "A leather satchel patterned with the distinctive German Eszett ligature and umlaut brass badges, clasped by an aquatic leech buckle.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\"><g id=\"eszett_alphabet_pouch\" shape-rendering=\"crispEdges\"><path d=\"M84 18h88v18H84zM66 36h124v24H66zM48 60h160v138H48zM54 198h148v24H54zM66 222h124v16H66z\" fill=\"#121016\"/><path d=\"M90 24h76v12H90zM72 42h112v18H72zM54 66h148v126H54zM60 192h136v24H60zM72 216h112v16H72z\" fill=\"#3a2618\"/><path d=\"M96 28h64v8H96zM78 46h100v14H78zM60 70h136v118H60zM66 188h124v22H66zM78 210h100v16H78z\" fill=\"#5c3c26\"/><path d=\"M100 30h56v4h-56zM82 48h92v6H82zM64 72h128v18H64z\" fill=\"#7a5235\"/><path d=\"M78 60h100v18H78zM84 78h88v12H84z\" fill=\"#121016\"/><path d=\"M82 64h92v10H82zM88 74h80v12H88z\" fill=\"#825838\"/><path d=\"M86 66h84v6H86z\" fill=\"#a06e46\"/><path d=\"M86 96h24v84H86zM86 96h56v16H86zM118 96h24v38h-24zM86 128h56v16H86zM118 134h30v46h-30zM86 164h62v16H86z\" fill=\"#121016\"/><path d=\"M92 102h12v72H92zM92 102h44v6H92zM124 102h12v26h-12zM92 134h44v6H92zM124 140h18v34h-18zM92 170h50v6H92z\" fill=\"#b88a28\"/><path d=\"M94 104h8v68H94zM94 104h40v3H94zM126 104h8v22h-8zM94 136h40v3H94zM126 142h14v30h-14zM94 172h46v3H94z\" fill=\"#ffd859\"/><path d=\"M96 105h4v66H96zM96 105h36v2H96zM128 105h4v19h-4zM96 137h36v2H96zM128 143h10v27h-10zM96 173h42v2H96z\" fill=\"#fff2aa\"/><path d=\"M90 74h16v16H90zM150 74h16v16h-16z\" fill=\"#121016\"/><path d=\"M94 78h8v8H94zM154 78h8v8h-8z\" fill=\"#b88a28\"/><path d=\"M96 80h4v4H96zM156 80h4v4h-4z\" fill=\"#ffd859\"/><path d=\"M112 114h32v32h-32z\" fill=\"#121016\"/><path d=\"M116 118h24v24h-24z\" fill=\"#1a3328\"/><path d=\"M120 122h16v16h-16z\" fill=\"#2b5c46\"/><path d=\"M124 126h8v8h-8z\" fill=\"#4ea87d\"/><path d=\"M126 128h4v4h-4z\" fill=\"#c4eed6\"/><path d=\"M122 148h12v20h-12z\" fill=\"#121016\"/><path d=\"M124 150h8v16h-8z\" fill=\"#1a3328\"/><path d=\"M126 152h4v12h-4z\" fill=\"#2b5c46\"/><path d=\"M54 90h8v96h-8zM194 90h8v96h-8z\" fill=\"#121016\"/><path d=\"M56 94h4v88h-4z\" fill=\"#422b1c\"/><path d=\"M196 94h4v88h-4z\" fill=\"#7a5235\"/><path d=\"M70 200h116v6H70z\" fill=\"#121016\"/><path d=\"M72 202h112v2H72z\" fill=\"#422b1c\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "side"
+
+}
+
+===END_FILE===

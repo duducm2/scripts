@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_20",
+
+  "slot": "shoes",
+
+  "name": "Workspace Navigation Treads",
+
+  "blurb": "Forged with tiered tab treads and brick-laid soles, these boots route the analyst directly across catalogs, compute tabs, and workspace trees.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"workspace_nav_shoes\" shape-rendering=\"crispEdges\"><path d=\"M117 385h17v4h-17zM113 389h25v4h-25zM111 393h28v6h-28zM111 399h29v14h-29zM113 413h27v4h-27z\" fill=\"#0c0f1d\"/><path d=\"M119 387h13v2h-13zM115 389h21v4h-21zM113 393h24v6h-24zM113 399h25v12h-25z\" fill=\"#1e293b\"/><path d=\"M121 389h9v2h-9zM117 391h17v2h-17zM115 393h20v4h-20zM115 397h21v10h-21z\" fill=\"#334155\"/><path d=\"M123 389h5v2h-5zM119 391h13v2h-13zM117 393h16v4h-16zM117 397h17v6h-17z\" fill=\"#64748b\"/><path d=\"M121 395h8v2h-8zM121 397h8v4h-8z\" fill=\"#ff3621\"/><path d=\"M123 397h4v2h-4z\" fill=\"#ff8c7a\"/><path d=\"M111 409h29v2h-29zM111 411h29v2h-29zM113 413h27v2h-27z\" fill=\"#0c0f1d\"/><path d=\"M113 413h5v2h-5zM121 413h5v2h-5zM129 413h5v2h-5zM135 413h4v2h-4z\" fill=\"#e2e8f0\"/><path d=\"M115 415h23v2h-23z\" fill=\"#0c0f1d\"/><path d=\"M165 385h19v4h-19zM161 389h33v4h-33zM159 393h41v6h-41zM159 399h45v13h-45zM161 412h41v4h-41z\" fill=\"#0c0f1d\"/><path d=\"M167 387h15v2h-15zM163 389h29v4h-29zM161 393h37v6h-37zM161 399h41v11h-41z\" fill=\"#1e293b\"/><path d=\"M169 389h11v2h-11zM165 391h25v2h-25zM163 393h33v4h-33zM163 397h35v9h-35z\" fill=\"#334155\"/><path d=\"M171 389h7v2h-7zM167 391h21v2h-21zM165 393h27v4h-27zM165 397h27v6h-27z\" fill=\"#64748b\"/><path d=\"M173 395h16v2h-16zM173 397h16v4h-16z\" fill=\"#ff3621\"/><path d=\"M177 397h8v2h-8z\" fill=\"#ff8c7a\"/><path d=\"M171 395h2v6h-2zM191 395h2v6h-2z\" fill=\"#0c0f1d\"/><path d=\"M159 408h45v2h-45zM159 410h45v2h-45zM161 412h41v2h-41z\" fill=\"#0c0f1d\"/><path d=\"M163 412h6v2h-6zM173 412h6v2h-6zM183 412h6v2h-6zM193 412h6v2h-6z\" fill=\"#e2e8f0\"/><path d=\"M163 414h37v2h-37z\" fill=\"#0c0f1d\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "feet"
+
+}
+
+===END_FILE===

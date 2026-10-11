@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_17",
+
+  "slot": "sidekick",
+
+  "name": "Star Schema Architect",
+
+  "blurb": "An analytical tactician clad in a star-pointed tabard and dimension-linked chainmail who anchors the team around centralized fact metrics.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 192 320\"><g id=\"star_schema_architect\" shape-rendering=\"crispEdges\"><path d=\"M68 288h26v32H68zM110 288h26v32h-26z\" fill=\"#16131c\"/><path d=\"M72 292h20v24H72zM114 292h20v24h-20z\" fill=\"#32283f\"/><path d=\"M74 294h16v10H74zM116 294h16v10h-16z\" fill=\"#514264\"/><path d=\"M66 196h32v96H66zM106 196h32v96h-32z\" fill=\"#1c2230\"/><path d=\"M70 200h24v88H70zM110 200h24v88h-10z\" fill=\"#2b384e\"/><path d=\"M72 204h18v44H72zM112 204h18v44h-18z\" fill=\"#3f516e\"/><path d=\"M58 92h86v108H58z\" fill=\"#161b24\"/><path d=\"M64 96h74v100H64z\" fill=\"#222a38\"/><path d=\"M70 100h62v92H70z\" fill=\"#344155\"/><path d=\"M88 104h26v84H88z\" fill=\"#b88a28\"/><path d=\"M92 108h18v76H92z\" fill=\"#e0ab34\"/><path d=\"M96 112h10v68H96z\" fill=\"#f5cc60\"/><path d=\"M80 134h42v24H80z\" fill=\"#b88a28\"/><path d=\"M84 138h34v16H84z\" fill=\"#e0ab34\"/><path d=\"M88 142h26v8H88z\" fill=\"#f5cc60\"/><path d=\"M94 138h14v16H94z\" fill=\"#1c2230\"/><path d=\"M98 142h6v8h-6z\" fill=\"#f0d070\"/><path d=\"M60 192h82v8H60z\" fill=\"#11151c\"/><path d=\"M90 192h22v8H90z\" fill=\"#d4a22c\"/><path d=\"M38 98h24v92H38zM140 98h24v92h-24z\" fill=\"#1a202c\"/><path d=\"M42 102h16v84H42zM144 102h16v84h-16z\" fill=\"#2c374b\"/><path d=\"M46 106h10v36H46zM148 106h10v36h-10z\" fill=\"#435473\"/><path d=\"M40 186h24v18H40zM142 186h24v18h-24z\" fill=\"#16131c\"/><path d=\"M44 190h16v10H44zM146 190h16v10h-16z\" fill=\"#8c6720\"/><path d=\"M82 78h38v18H82z\" fill=\"#8d5b3d\"/><path d=\"M86 80h30v12H86z\" fill=\"#ba7d56\"/><path d=\"M74 24h56v58H74z\" fill=\"#8d5b3d\"/><path d=\"M80 28h46v50H80z\" fill=\"#c98960\"/><path d=\"M86 32h38v42H86z\" fill=\"#e2a87e\"/><path d=\"M110 44h8v10h-8zM126 44h8v10h-8z\" fill=\"#1a202c\"/><path d=\"M112 46h4v4h-4zM128 46h4v4h-4z\" fill=\"#ffffff\"/><path d=\"M116 48h2v2h-2zM132 48h2v2h-2z\" fill=\"#306ba0\"/><path d=\"M118 64h12v4h-12z\" fill=\"#8d5b3d\"/><path d=\"M70 14h66v22H70z\" fill=\"#2c1a14\"/><path d=\"M68 20h22v42H68z\" fill=\"#2c1a14\"/><path d=\"M74 16h58v14H74z\" fill=\"#4d2f23\"/><path d=\"M78 18h48v6H78z\" fill=\"#704533\"/><path d=\"M72 32h14v28H72z\" fill=\"#4d2f23\"/><path d=\"M140 134h18v48h-18z\" fill=\"#18120e\"/><path d=\"M144 138h10v40h-10z\" fill=\"#6d4f18\"/><path d=\"M142 130h14v10h-14z\" fill=\"#c89626\"/><path d=\"M144 132h10v6h-10z\" fill=\"#f5cc60\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "beside"
+
+}
+
+===END_FILE===

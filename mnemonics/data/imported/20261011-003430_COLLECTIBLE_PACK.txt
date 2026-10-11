@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_ENGLISH_18",
+
+  "slot": "armor",
+
+  "name": "Syllabic Consonant Breastplate",
+
+  "blurb": "Carved from dense Bone Shark cartilage and fossilized toad plates, this armor bears the prominent syllabic diacritic mark that turns raw consonants into vocalic nuclei.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"syllabic_consonant_cuirass\" shape-rendering=\"crispEdges\"><path d=\"M118 148h68v10h-68zM110 158h84v16h-84zM104 174h96v34h-96zM106 208h92v36h-92zM112 244h80v16h-80zM122 260h60v8h-60z\" fill=\"#11161d\"/><path d=\"M122 152h60v8h-60zM114 162h76v14h-76zM108 178h88v30h-88zM110 210h84v32h-84zM116 246h72v12h-72zM126 260h52v6h-52z\" fill=\"#2b3846\"/><path d=\"M126 154h52v6h-52zM118 164h68v12h-68zM112 180h80v26h-80zM114 212h76v28h-76zM120 248h64v8h-64zM128 262h48v4h-48z\" fill=\"#475b6d\"/><path d=\"M128 156h24v4h-24zM120 166h20v10h-20zM114 182h22v22h-22zM116 214h20v24h-20zM122 250h18v6h-18z\" fill=\"#6d859b\"/><path d=\"M104 174h16v20h-16zM184 174h16v20h-16z\" fill=\"#11161d\"/><path d=\"M106 176h12v16h-12z\" fill=\"#8b9bb4\"/><path d=\"M186 176h12v16h-12z\" fill=\"#596e88\"/><path d=\"M108 178h8v12h-8z\" fill=\"#c0d1e3\"/><path d=\"M188 178h8v12h-8z\" fill=\"#8b9bb4\"/><path d=\"M144 162h16v86h-16z\" fill=\"#0d1117\"/><path d=\"M146 164h12v82h-12z\" fill=\"#d2ba6a\"/><path d=\"M148 166h8v78h-8z\" fill=\"#fce89b\"/><path d=\"M149 168h4v74h-4z\" fill=\"#ffffff\"/><path d=\"M146 250h12v12h-12z\" fill=\"#0d1117\"/><path d=\"M148 252h8v8h-8z\" fill=\"#e5a93c\"/><path d=\"M150 254h4v4h-4z\" fill=\"#fff2c2\"/><path d=\"M128 184h14v8h-14zM162 184h14v8h-14zM124 200h18v8h-18zM162 200h18v8h-18zM126 216h16v8h-16zM162 216h16v8h-16z\" fill=\"#1a242f\"/><path d=\"M128 186h12v4h-12zM164 186h12v4h-12zM126 202h14v4h-14zM164 202h14v4h-14zM128 218h12v4h-12zM164 218h12v4h-12z\" fill=\"#9bb3c7\"/><path d=\"M130 186h8v2h-8zM166 186h8v2h-8zM128 202h10v2h-10zM166 202h10v2h-10zM130 218h8v2h-8zM166 218h8v2h-8z\" fill=\"#e3edf7\"/><path d=\"M136 230h8v10h-8zM160 230h8v10h-8z\" fill=\"#1a242f\"/><path d=\"M138 232h4v6h-4zM162 232h4v6h-4z\" fill=\"#6d859b\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "shoulders"
+
+}
+
+===END_FILE===

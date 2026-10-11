@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_SCIENCE_17",
+
+  "slot": "pants",
+
+  "name": "Action-Research Greaves",
+
+  "blurb": "Reinforced with cyclical action-reflection paneling and Darth Vader's armored plating, these trousers ground the researcher in iterative field practice.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"action_research_greaves\" shape-rendering=\"crispEdges\"><path d=\"M108 250h90v4h-90zM106 254h94v6h-94zM106 260h94v44h-94zM108 304h38v8h-38zM158 304h40v8h-40zM110 312h36v74h-36zM158 312h32v74h-32zM112 386h32v2h-32zM160 386h28v2h-28z\" fill=\"#090a0f\"/><path d=\"M110 254h86v4h-86zM108 258h90v44h-90zM110 302h34v10h-34zM160 302h36v10h-36zM112 312h32v72h-32zM160 312h28v72h-28z\" fill=\"#181a24\"/><path d=\"M114 260h78v4h-78zM112 264h82v36h-82zM114 300h28v10h-28zM162 300h30v10h-30zM116 310h24v70h-24zM164 310h20v70h-20z\" fill=\"#2b2e3d\"/><path d=\"M118 266h70v4h-70zM116 270h74v26h-74zM118 296h22v10h-22zM166 296h22v10h-22zM120 306h16v70h-16zM168 306h12v70h-12z\" fill=\"#43485c\"/><path d=\"M146 252h12v12h-12zM148 254h8v8h-8z\" fill=\"#090a0f\"/><path d=\"M148 254h8v8h-8z\" fill=\"#dc2626\"/><path d=\"M150 256h4v4h-4z\" fill=\"#f87171\"/><path d=\"M124 266h20v2h-20zM124 272h20v2h-20zM124 278h20v2h-20zM124 284h20v2h-20zM124 290h20v2h-20zM160 266h20v2h-20zM160 272h20v2h-20zM160 278h20v2h-20zM160 284h20v2h-20zM160 290h20v2h-20z\" fill=\"#11131a\"/><path d=\"M124 268h20v2h-20zM124 274h20v2h-20zM124 280h20v2h-20zM124 286h20v2h-20zM124 292h20v2h-20zM160 268h20v2h-20zM160 274h20v2h-20zM160 280h20v2h-20zM160 286h20v2h-20zM160 292h20v2h-20z\" fill=\"#35394b\"/><path d=\"M120 326h18v16h-18zM166 326h16v16h-16z\" fill=\"#090a0f\"/><path d=\"M122 328h14v12h-14zM168 328h12v12h-12z\" fill=\"#dc2626\"/><path d=\"M124 330h10v8h-10zM170 330h8v8h-8z\" fill=\"#b91c1c\"/><path d=\"M126 332h6v4h-6zM172 332h4v4h-4z\" fill=\"#fca5a5\"/><path d=\"M122 348h14v2h-14zM122 354h14v2h-14zM122 360h14v2h-14zM122 366h14v2h-14zM122 372h14v2h-14zM168 348h12v2h-12zM168 354h12v2h-12zM168 360h12v2h-12zM168 366h12v2h-12zM168 372h12v2h-12z\" fill=\"#11131a\"/><path d=\"M122 350h14v2h-14zM122 356h14v2h-14zM122 362h14v2h-14zM122 368h14v2h-14zM122 374h14v2h-14zM168 350h12v2h-12zM168 356h12v2h-12zM168 362h12v2h-12zM168 368h12v2h-12zM168 374h12v2h-12z\" fill=\"#35394b\"/><path d=\"M112 382h32v4h-32zM158 382h28v4h-28z\" fill=\"#181a24\"/><path d=\"M114 384h28v2h-28zM160 384h24v2h-24z\" fill=\"#43485c\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "feet"
+
+}
+
+===END_FILE===

@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_GERMAN_10",
+
+  "slot": "hat",
+
+  "name": "Resonance Formant Mitre",
+
+  "blurb": "Carved with acoustic frequency tiers and an angel-winged resonance crest, this ceremonial cap charts the shifting vowel formants across speech space.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"formants_resonance_hat\" shape-rendering=\"crispEdges\"><path d=\"M146 44h14v4h-14zM140 48h26v4h-26zM134 52h38v4h-38zM130 56h46v4h-46zM128 60h50v6h-50zM126 66h54v6h-54zM124 72h58v6h-58zM122 78h62v6h-62zM122 84h62v6h-62z\" fill=\"#0c1020\"/><path d=\"M148 46h10v2h-10zM142 50h22v2h-22zM136 54h34v2h-34zM132 58h42v2h-42zM130 62h46v4h-46zM128 68h50v4h-50zM126 74h54v4h-54zM124 80h58v4h-58zM124 84h58v4h-58z\" fill=\"#1e293b\"/><path d=\"M150 48h6v2h-6zM144 52h18v2h-18zM138 56h30v2h-30zM134 60h38v2h-38zM132 64h42v4h-42zM130 70h46v4h-46zM128 76h50v4h-50zM126 82h54v2h-54z\" fill=\"#334155\"/><path d=\"M151 50h4v2h-4zM147 54h12v2h-12zM142 58h22v2h-22zM138 62h30v2h-30zM136 66h34v4h-34zM134 72h38v4h-38zM132 78h42v2h-42z\" fill=\"#38bdf8\"/><path d=\"M152 50h2v2h-2zM149 54h8v2h-8zM145 58h16v2h-16zM141 62h24v2h-24zM139 66h28v2h-28zM137 72h32v2h-32z\" fill=\"#bae6fd\"/><path d=\"M151 46h4v8h-4z\" fill=\"#f59e0b\"/><path d=\"M149 50h8v2h-8z\" fill=\"#fbbf24\"/><path d=\"M138 68h6v4h-6zM148 68h10v4h-10zM162 68h6v4h-6z\" fill=\"#0284c7\"/><path d=\"M140 70h2v2h-2zM152 70h2v2h-2zM164 70h2v2h-2z\" fill=\"#e0f2fe\"/><path d=\"M124 80h58v2h-58z\" fill=\"#f59e0b\"/><path d=\"M126 82h54v2h-54z\" fill=\"#fbbf24\"/><path d=\"M124 86h58v2h-58z\" fill=\"#0f172a\"/><path d=\"M132 86h4v2h-4zM144 86h4v2h-4zM156 86h4v2h-4zM168 86h4v2h-4z\" fill=\"#fef08a\"/><path d=\"M122 88h62v2h-62z\" fill=\"#0c1020\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "head"
+
+}
+
+===END_FILE===

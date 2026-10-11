@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "pet",
+
+  "name": "Clef Placement Alligator",
+
+  "blurb": "A disciplined reptile whose curled arch and paired eye-orbs trace the curve and pitch register of the bass clef.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\"><g id=\"clef_placement_alligator\" shape-rendering=\"crispEdges\"><path d=\"M84 24h60v12H84zM66 36h90v12H66zM54 48h114v12H54zM42 60h132v12H42zM36 72h138v18H36zM30 90h138v18H30zM30 108h132v18H30zM36 126h114v12H36zM48 138h84v12H48zM60 150h54v18H60zM72 168h36v24H72zM78 192h30v24H78zM84 216h24v18H84zM90 234h12v12H90z\" fill=\"#111611\"/><path d=\"M192 66h30v30h-30zM192 126h30v30h-30z\" fill=\"#111611\"/><path d=\"M84 36h54v12H84zM66 48h84v12H66zM54 60h102v12H54zM48 72h108v18H48zM42 90h108v18H42zM42 108h102v18H42zM48 126h84v12H48zM60 138h60v12H60zM72 150h36v18H72zM84 168h18v24H84zM90 192h12v24H90z\" fill=\"#1e402b\"/><path d=\"M96 36h36v12H96zM78 48h66v12H78zM66 60h84v12H66zM60 72h90v18H60zM54 90h90v18H54zM54 108h84v18H54zM60 126h66v12H60zM72 138h42v12H72zM78 150h24v18H78z\" fill=\"#2f6844\"/><path d=\"M108 42h18v6h-18zM90 54h42v6H90zM78 66h60v6H78zM72 78h66v12H72zM66 96h66v12H66zM66 114h54v12H66zM72 126h42v6H72z\" fill=\"#4ea86e\"/><path d=\"M36 78h48v36H36zM30 90h24v18H30z\" fill=\"#1e402b\"/><path d=\"M42 84h36v24H42zM36 90h18v12H36z\" fill=\"#2f6844\"/><path d=\"M48 84h24v12H48z\" fill=\"#4ea86e\"/><path d=\"M36 96h18v6H36z\" fill=\"#e8f4ec\"/><path d=\"M42 102h6v6h-6zM54 102h6v6h-6z\" fill=\"#111611\"/><path d=\"M78 66h24v24H78z\" fill=\"#111611\"/><path d=\"M84 72h12v12H84z\" fill=\"#f5cf47\"/><path d=\"M90 75h4v6h-4z\" fill=\"#111611\"/><path d=\"M92 76h2v2h-2z\" fill=\"#ffffff\"/><path d=\"M78 114h60v6H78zM72 126h54v6H72zM66 138h48v6H66z\" fill=\"#c99c32\"/><path d=\"M84 114h48v4H84zM78 126h42v4H78zM72 138h36v4H72z\" fill=\"#f5cf47\"/><path d=\"M198 72h18v18h-18zM198 132h18v18h-18z\" fill=\"#9e751d\"/><path d=\"M201 75h12v12h-12zM201 135h12v12h-12z\" fill=\"#f5cf47\"/><path d=\"M204 78h6v6h-6zM204 138h6v6h-6z\" fill=\"#fff2a8\"/><path d=\"M138 60h18v6h-18zM144 72h18v6h-18zM144 84h18v6h-18zM138 96h18v6h-18zM132 108h18v6h-18z\" fill=\"#111611\"/><path d=\"M138 66h12v6h-12zM144 78h12v6h-12zM144 90h12v6h-12zM138 102h12v6h-12z\" fill=\"#f5cf47\"/><path d=\"M42 138h30v24H42zM126 132h30v24h-30z\" fill=\"#111611\"/><path d=\"M48 144h18v12H48zM132 138h18v12h-18z\" fill=\"#1e402b\"/><path d=\"M50 156h18v6h-18zM134 150h18v6h-18z\" fill=\"#111611\"/><path d=\"M54 158h4v4h-4zM60 158h4v4h-4zM66 158h4v4h-4zM138 152h4v4h-4zM144 152h4v4h-4zM150 152h4v4h-4z\" fill=\"#e8f4ec\"/><path d=\"M78 204h18v6H78zM84 222h12v6H84z\" fill=\"#c99c32\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "side"
+
+}
+
+===END_FILE===

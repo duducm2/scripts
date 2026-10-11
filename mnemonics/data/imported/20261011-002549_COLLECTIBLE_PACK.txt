@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "sword",
+
+  "name": "Grand Clef Staveblade",
+
+  "blurb": "A ceremonial rapier forged from musical staff lines with a coiled G-clef crossguard and F-clef pommel, placing pitch and rhythm into martial form.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\"><g id=\"grand_clef_staveblade\" shape-rendering=\"crispEdges\"><path d=\"M122 238h12v12h-12zM118 242h20v4h-20z\" fill=\"#1c160c\"/><path d=\"M124 240h8v8h-8z\" fill=\"#d99b26\"/><path d=\"M126 242h4v4h-4z\" fill=\"#ffe680\"/><path d=\"M120 196h16v42h-16z\" fill=\"#1c160c\"/><path d=\"M122 198h12v38h-12z\" fill=\"#59281a\"/><path d=\"M122 202h12v4h-12zM122 212h12v4h-12zM122 222h12v4h-12z\" fill=\"#873d23\"/><path d=\"M124 200h4v36h-4z\" fill=\"#a85232\"/><path d=\"M76 182h104v16H76z\" fill=\"#1c160c\"/><path d=\"M80 184h96v12H80z\" fill=\"#b8821d\"/><path d=\"M82 186h92v4H82z\" fill=\"#ffe680\"/><path d=\"M84 192h88v2H84z\" fill=\"#7a540e\"/><path d=\"M68 156h20v28H68zM58 140h22v20H58zM68 124h28v20H68zM86 112h24v20H86zM98 128h14v30H98z\" fill=\"#1c160c\"/><path d=\"M72 158h12v22H72zM62 144h14v12H62zM72 128h20v12H72zM90 116h16v12H90zM102 132h6v22h-6z\" fill=\"#d99b26\"/><path d=\"M74 160h6v18H74zM64 146h10v6H64zM74 130h16v6H74zM92 118h12v6H92z\" fill=\"#ffe680\"/><path d=\"M168 162h20v24h-20zM176 150h18v16h-18zM170 140h16v14h-16z\" fill=\"#1c160c\"/><path d=\"M172 166h12v16h-12zM180 154h10v8h-10zM174 144h8v6h-8z\" fill=\"#d99b26\"/><path d=\"M174 168h6v12h-6zM182 156h6v4h-6z\" fill=\"#ffe680\"/><path d=\"M198 152h8v8h-8zM198 166h8v8h-8z\" fill=\"#1c160c\"/><path d=\"M200 154h4v4h-4zM200 168h4v4h-4z\" fill=\"#ffe680\"/><path d=\"M116 172h24v12h-24z\" fill=\"#1c160c\"/><path d=\"M118 174h20v8h-20z\" fill=\"#3d6778\"/><path d=\"M124 176h8v4h-8z\" fill=\"#9be5ff\"/><path d=\"M118 20h20v154h-20z\" fill=\"#151b24\"/><path d=\"M122 8h12v12h-12zM124 4h8v4h-8zM126 2h4v2h-4z\" fill=\"#151b24\"/><path d=\"M120 22h8v150h-8z\" fill=\"#7a8f9c\"/><path d=\"M128 22h8v150h-8z\" fill=\"#435463\"/><path d=\"M124 10h4v12h-4zM126 4h2v6h-2z\" fill=\"#c5dce6\"/><path d=\"M121 22h3v150h-3z\" fill=\"#f0f8ff\"/><path d=\"M127 22h2v150h-2z\" fill=\"#151b24\"/><path d=\"M116 36h24v2h-24zM116 64h24v2h-24zM116 92h24v2h-24zM116 120h24v2h-24zM116 148h24v2h-24z\" fill=\"#1c160c\"/><path d=\"M117 37h22v1h-22zM117 65h22v1h-22zM117 93h22v1h-22zM117 121h22v1h-22zM117 149h22v1h-22z\" fill=\"#ffe680\"/><path d=\"M112 58h8v10h-8zM136 86h8v10h-8zM112 114h8v10h-8z\" fill=\"#1c160c\"/><path d=\"M114 60h4v6h-4zM138 88h4v6h-4zM114 116h4v6h-4z\" fill=\"#d99b26\"/><path d=\"M115 61h2v3h-2zM139 89h2v3h-2zM115 117h2v3h-2z\" fill=\"#fff\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "hand_right"
+
+}
+
+===END_FILE===

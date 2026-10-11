@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "cape",
+
+  "name": "Databricks Foundation Mantle",
+
+  "blurb": "A heavy Lakehouse mantle emblazoned with a stepped Delta triangle and Spark insignia, anchoring the walker in unified Databricks architecture.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"databricks_foundation_mantle\" shape-rendering=\"crispEdges\"><path d=\"M96 156h32v8H96zM90 164h38v8H90zM84 172h44v12H84zM78 184h50v16H78zM74 200h54v24H74zM72 224h56v32H72zM70 256h58v36H70zM72 292h54v24H72zM76 316h48v16H76zM80 332h40v8H80z\" fill=\"#0d141e\"/><path d=\"M98 158h28v6H98zM92 164h34v8H92zM86 172h40v12H86zM80 184h46v16H80zM76 200h50v24H76zM74 224h52v32H74zM72 256h54v36H72zM74 292h50v24H74zM78 316h44v14H78zM82 330h36v8H82z\" fill=\"#1a2a3a\"/><path d=\"M104 160h22v4h-22zM98 164h28v8H98zM92 172h34v12H92zM88 184h38v16H88zM84 200h42v24H84zM82 224h44v32H82zM80 256h46v36H80zM82 292h42v24H82zM86 316h36v12H86zM90 328h28v8H90z\" fill=\"#223b54\"/><path d=\"M112 164h14v8h-14zM106 172h20v12h-20zM102 184h24v16h-24zM98 200h28v24H98zM96 224h30v32H96zM94 256h32v36H94zM96 292h30v22H96zM100 314h24v12h-24zM104 326h18v8h-18z\" fill=\"#325274\"/><path d=\"M118 168h8v16h-8zM116 184h10v32h-10zM114 216h12v40h-12zM114 256h12v40h-12zM116 296h10v24h-10z\" fill=\"#47729f\"/><path d=\"M98 214h18v4h-18zM94 218h26v4H94zM90 222h34v4H90zM86 226h42v4H86z\" fill=\"#70160b\"/><path d=\"M100 216h14v2h-14zM96 218h22v2H96zM92 220h30v4H92zM88 224h38v4H88z\" fill=\"#b82e18\"/><path d=\"M102 216h10v2h-10zM98 218h18v2H98zM94 220h26v2H94zM90 222h34v4H90z\" fill=\"#ff3621\"/><path d=\"M104 224h6v2h-6z\" fill=\"#ffe680\"/><path d=\"M104 238h6v6h-6zM102 244h10v4h-10zM100 248h8v4h-8zM98 252h6v4h-6zM104 252h8v4h-8zM102 256h6v4h-6z\" fill=\"#7a540e\"/><path d=\"M106 240h2v4h-2zM104 244h6v2h-6zM102 246h6v4h-6zM100 250h4v4h-4zM106 252h4v2h-4zM104 254h4v4h-4z\" fill=\"#f5a623\"/><path d=\"M106 242h2v2h-2zM104 246h2v2h-2zM102 250h2v2h-2zM106 254h2v2h-2z\" fill=\"#fff2a8\"/><path d=\"M100 156h26v4h-26z\" fill=\"#5e3f10\"/><path d=\"M102 156h22v2h-22z\" fill=\"#d99b26\"/><path d=\"M120 156h8v8h-8z\" fill=\"#1c160c\"/><path d=\"M122 158h4v4h-4z\" fill=\"#f5a623\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "back"
+
+}
+
+===END_FILE===
