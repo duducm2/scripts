@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_TAOISM_04",
+
+  "slot": "hat",
+
+  "name": "Jade Crown of the Three Purities",
+
+  "blurb": "Carved from celestial jade and coiled by Quetzalcoatl crests, this ceremonial headdress channels the three divine faces and frozen court seal of the celestial pantheon.",
+
+  "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 772 424'><g id='f1'><ellipse cx='116' cy='82' rx='24' ry='14' fill='#1b4d3e' stroke='#a3e635' stroke-width='2'/><path d='M96 82 L102 46 L116 58 L130 46 L136 82 Z' fill='#22c55e' stroke='#fef08a' stroke-width='2'/><circle cx='116' cy='52' r='4' fill='#fef08a'/><circle cx='104' cy='60' r='3' fill='#67e8f9'/><circle cx='128' cy='60' r='3' fill='#67e8f9'/><path d='M112 42 L120 42 L116 32 Z' fill='#facc15'/><path d='M98 84 Q116 92 134 84' stroke='#fef08a' stroke-width='2' fill='none'/><path d='M94 78 Q84 70 88 56 Q94 62 98 70' fill='#047857' stroke='#a3e635' stroke-width='1.5'/></g><g id='f2'><ellipse cx='309' cy='80' rx='24' ry='14' fill='#1b4d3e' stroke='#a3e635' stroke-width='2'/><path d='M289 80 L295 44 L309 56 L323 44 L329 80 Z' fill='#22c55e' stroke='#fef08a' stroke-width='2'/><circle cx='309' cy='50' r='4' fill='#fef08a'/><circle cx='297' cy='58' r='3' fill='#67e8f9'/><circle cx='321' cy='58' r='3' fill='#67e8f9'/><path d='M305 40 L313 40 L309 30 Z' fill='#facc15'/><path d='M291 82 Q309 90 327 82' stroke='#fef08a' stroke-width='2' fill='none'/><path d='M287 76 Q277 68 281 54 Q287 60 291 68' fill='#047857' stroke='#a3e635' stroke-width='1.5'/></g><g id='f3'><ellipse cx='502' cy='82' rx='24' ry='14' fill='#1b4d3e' stroke='#a3e635' stroke-width='2'/><path d='M482 82 L488 46 L502 58 L516 46 L522 82 Z' fill='#22c55e' stroke='#fef08a' stroke-width='2'/><circle cx='502' cy='52' r='4' fill='#fef08a'/><circle cx='490' cy='60' r='3' fill='#67e8f9'/><circle cx='514' cy='60' r='3' fill='#67e8f9'/><path d='M498 42 L506 42 L502 32 Z' fill='#facc15'/><path d='M484 84 Q502 92 520 84' stroke='#fef08a' stroke-width='2' fill='none'/><path d='M480 78 Q470 70 474 56 Q480 62 484 70' fill='#047857' stroke='#a3e635' stroke-width='1.5'/></g><g id='f4'><ellipse cx='695' cy='84' rx='24' ry='14' fill='#1b4d3e' stroke='#a3e635' stroke-width='2'/><path d='M675 84 L681 48 L695 60 L709 48 L715 84 Z' fill='#22c55e' stroke='#fef08a' stroke-width='2'/><circle cx='695' cy='54' r='4' fill='#fef08a'/><circle cx='683' cy='62' r='3' fill='#67e8f9'/><circle cx='707' cy='62' r='3' fill='#67e8f9'/><path d='M691 44 L699 44 L695 34 Z' fill='#facc15'/><path d='M677 86 Q695 94 713 86' stroke='#fef08a' stroke-width='2' fill='none'/><path d='M673 80 Q663 72 667 58 Q673 64 677 72' fill='#047857' stroke='#a3e635' stroke-width='1.5'/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "head"
+
+}
+
+===END_FILE===

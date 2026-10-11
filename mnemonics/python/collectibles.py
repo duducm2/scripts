@@ -45,9 +45,9 @@ SLOT_ANCHOR = {
     "hat": "head",
     "armor": "shoulders",
     "gloves": "hands",
-    "ring": "hands",
-    "staff": "hands",
-    "sword": "hands",
+    "ring": "hand_left",
+    "staff": "hand_right",
+    "sword": "hand_right",
     "pants": "feet",
     "shoes": "feet",
     "cape": "back",
@@ -55,8 +55,60 @@ SLOT_ANCHOR = {
     "mount": "below",
     "accessory": "side",
 }
+SLOT_LAYER = {
+    "hat": "gear_head",
+    "armor": "gear_torso",
+    "gloves": "gear_hands_front",
+    "pants": "gear_legs",
+    "shoes": "gear_legs",
+    "cape": "gear_back",
+    "ring": "gear_hands_front",
+    "staff": "gear_hands_front",
+    "sword": "gear_hands_front",
+    "pet": "gear_pet",
+    "mount": "gear_back",
+    "accessory": "gear_accessory",
+}
+# Armor hides the default shirt. Pants and shoes are standing overlays drawn over the legs.
+SLOT_OCCLUDES = {
+    "armor": ("body_torso",),
+}
+# Worn clothing is one still frame the same size as the standing figure.
+STRIP_SLOTS = (
+    "hat",
+    "armor",
+    "gloves",
+    "pants",
+    "shoes",
+    "cape",
+)
+# Held items and companions are small pictures pinned to a named point.
+HELD_ICON_SLOTS = (
+    "ring",
+    "staff",
+    "sword",
+)
+ANCHORED_ICON_SLOTS = (
+    "pet",
+    "mount",
+    "accessory",
+    "ring",
+    "staff",
+    "sword",
+)
+_VIEWBOX = re.compile(r"""viewBox\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
 ANIMS = ("bob", "sway", "flicker", "orbit", "float")
-ANCHORS = ("head", "shoulders", "hands", "feet", "side", "back", "below")
+ANCHORS = (
+    "head",
+    "shoulders",
+    "hands",
+    "feet",
+    "side",
+    "back",
+    "below",
+    "hand_left",
+    "hand_right",
+)
 
 _FENCE = "```"
 _TRAILING_COMMA = re.compile(r",(\s*[}\]])")
@@ -162,6 +214,9 @@ def _stored_item(row: dict[str, Any]) -> dict[str, Any] | None:
     if cleaned is None:
         return None
     cleaned.pop("saved", None)
+    cleaned.pop("layer", None)
+    cleaned.pop("occludes", None)
+    cleaned.pop("misfit", None)
     created = str(row.get("created_at") or "").strip()
     if created:
         cleaned["created_at"] = created
@@ -188,6 +243,9 @@ def _public_item(row: dict[str, Any], saved: bool = False) -> dict[str, Any] | N
         "anchor": anchor if anchor in ANCHORS else "side",
         "equipped": bool(row.get("equipped")),
         "saved": saved,
+        "layer": SLOT_LAYER.get(slot, "gear_accessory"),
+        "occludes": list(SLOT_OCCLUDES.get(slot, ())),
+        "misfit": _strip_misfit(slot, svg),
     }
 
 
@@ -211,6 +269,66 @@ def sanitize_svg(svg: str) -> str:
     if "<svg" not in text.lower():
         return ""
     return text
+
+
+def svg_viewbox(svg: str) -> tuple[float, float, float, float] | None:
+    match = _VIEWBOX.search(svg or "")
+    if not match:
+        return None
+    parts = [part for part in re.split(r"[\s,]+", match.group(1).strip()) if part]
+    if len(parts) != 4:
+        return None
+    try:
+        return tuple(float(part) for part in parts)  # type: ignore[return-value]
+    except ValueError:
+        return None
+
+
+def _near(value: float, target: float, tolerance: float = 2) -> bool:
+    return abs(value - target) < tolerance
+
+
+def validate_strip(slot: str, svg: str) -> tuple[str, str]:
+    """Return (error, note). A non-empty error rejects the import."""
+    box = svg_viewbox(svg)
+    if slot in STRIP_SLOTS:
+        if box is None or box[2] < 180 or box[3] < 180:
+            return (
+                'This slot needs a standing overlay. Use viewBox "0 0 305 424". '
+                "A small icon was rejected.",
+                "",
+            )
+        width, height = box[2], box[3]
+        if (_near(width, 772) or _near(width, 193)) and _near(height, 424):
+            return (
+                'That frame size was rejected. Draw the standing T-pose with viewBox "0 0 305 424".',
+                "",
+            )
+        if _near(width, 305) and _near(height, 424):
+            return "", ""
+        return (
+            "",
+            "Strip size does not match the standing walker (305x424). Marked as misfit.",
+        )
+    if slot in ANCHORED_ICON_SLOTS:
+        if box is None or box[2] >= 180 or box[3] >= 180:
+            return (
+                'This slot needs a small icon. Use viewBox "0 0 64 64". '
+                "A body strip was rejected.",
+                "",
+            )
+        width, height = box[2], box[3]
+        if _near(width, 64, 8) and _near(height, 64, 8):
+            return "", ""
+        return "", "Icon size does not match 64x64. Marked as misfit."
+    return "", ""
+
+
+def _strip_misfit(slot: str, svg: str) -> bool:
+    if slot not in STRIP_SLOTS and slot not in ANCHORED_ICON_SLOTS:
+        return False
+    error, note = validate_strip(slot, svg)
+    return bool(error or note)
 
 
 def _strip_fence(text: str) -> str:
@@ -274,7 +392,7 @@ def known_palace_ids(data_dir: Path) -> set[str]:
 
 
 def repair_item(
-    raw: str, palace_ids: set[str]
+    raw: str, palace_ids: set[str], *, check_art: bool = True
 ) -> tuple[dict[str, Any] | None, list[str], str]:
     """Return (item, notes, error). Error is empty when the item can be saved."""
     notes: list[str] = []
@@ -318,6 +436,12 @@ def repair_item(
     svg = sanitize_svg(str(item.get("svg") or ""))
     if not svg:
         return None, notes, "svg is missing, unsafe, or not a small <svg> illustration."
+    if check_art:
+        strip_error, strip_note = validate_strip(slot, svg)
+        if strip_error:
+            return None, notes, strip_error
+        if strip_note:
+            notes.append(strip_note)
     return (
         {
             "palace_id": palace_id,
@@ -456,7 +580,7 @@ def _lock_imported_slot(
 def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
     """Hold a generated relic on the avatar. It is not written to REPL storage."""
     data_dir = Path(data_dir)
-    item, notes, error = repair_item(raw, known_palace_ids(data_dir))
+    item, notes, error = repair_item(raw, known_palace_ids(data_dir), check_art=False)
     if error or item is None:
         return {
             "ok": False,
@@ -464,6 +588,13 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
             "notes": notes,
         }
     item = _lock_imported_slot(data_dir, item, notes)
+    strip_error, strip_note = validate_strip(
+        str(item.get("slot") or ""), str(item.get("svg") or "")
+    )
+    if strip_error:
+        return {"ok": False, "error": strip_error, "notes": notes}
+    if strip_note and strip_note not in notes:
+        notes.append(strip_note)
     session = load_session(data_dir)
     saved = load_saved(data_dir)
     slot = item["slot"]
@@ -653,6 +784,32 @@ def _prompt_text(
     beast_line = ", ".join(beasts) if beasts else "(none)"
     keyword_line = ", ".join(keywords) if keywords else "(none)"
     character_line = character or "(none)"
+    if slot in STRIP_SLOTS:
+        draw_rules = (
+            "- The walker is standing still in a three-quarter T-pose, turned slightly toward the viewer and facing right. Both eyes are visible. Arms are straight out. Do not animate.\n"
+            "- Draw a 305x424 transparent SVG of the item on that standing figure.\n"
+            f"- Cover only the body region for the {slot}. Leave the rest of the canvas empty.\n"
+            "- Head near the top, feet together at the bottom, arms extended horizontally.\n"
+            '- svg viewBox must be "0 0 305 424". A 64x64 icon will be rejected. '
+            "A walk strip will be rejected.\n"
+        )
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 305 424\\">...</svg>'
+    elif slot in HELD_ICON_SLOTS:
+        draw_rules = (
+            "- The walker is standing still. Do not animate.\n"
+            f"- Draw a 64x64 transparent SVG of the item. It will be pinned to {anchor}.\n"
+            "- Keep the drawing inside the icon. Do not draw the character.\n"
+            '- svg viewBox must be "0 0 64 64". A full-body strip will be rejected.\n'
+        )
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
+    else:
+        draw_rules = (
+            "- The walker is standing still. Do not animate.\n"
+            f"- svg is one small illustration pinned to {anchor}, under 6000 characters.\n"
+            "- Keep it tight to that point. Do not let it float away.\n"
+            '- viewBox "0 0 64 64" is enough for a pet, a mount, or an accessory.\n'
+        )
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
     return (
         "Invent ONE wearable collectible for my Memory Palace walker.\n"
         "It must be thematically tied to this palace. Do not invent a generic fantasy item.\n"
@@ -673,7 +830,7 @@ def _prompt_text(
         f'  "slot": "{slot}",\n'
         '  "name": "Short relic name",\n'
         '  "blurb": "One sentence on why it belongs to this palace.",\n'
-        '  "svg": "<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>",\n'
+        f'  "svg": "{svg_example}",\n'
         '  "anim": "bob",\n'
         f'  "anchor": "{anchor}"\n'
         "}\n"
@@ -682,7 +839,8 @@ def _prompt_text(
         f'- slot must be exactly "{slot}". Do not pick another category.\n'
         f'- anchor must be exactly "{anchor}". Do not change it.\n'
         f"- anim is one of: {', '.join(ANIMS)}\n"
-        "- svg is one small illustration, under 6000 characters, no scripts, no external images.\n"
+        "- svg is under 6000 characters, no scripts, no external images.\n"
+        f"{draw_rules}"
         "- Use the palace's own objects, colors, and names. Replace the example name, blurb, "
         "svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
         "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "

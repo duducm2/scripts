@@ -1,0 +1,34 @@
+{
+  "canvas": { "width": 305, "height": 424 },
+  "frame": { "width": 305, "height": 424, "count": 1 },
+  "silhouette": "hero-idle.png",
+  "flip": "with-sprite",
+  "idle": {
+    "canvas": { "width": 305, "height": 424 },
+    "silhouette": "hero-idle.png",
+    "pose": "three-quarter-t-pose"
+  },
+  "anchors": {
+    "head": { "u": 0.498, "v": 0.271, "side": "center" },
+    "head_top": { "u": 0.498, "v": 0.182, "side": "center" },
+    "head_center": { "u": 0.498, "v": 0.28, "side": "center" },
+    "neck_back": { "u": 0.393, "v": 0.354, "side": "left" },
+    "shoulder_left": { "u": 0.295, "v": 0.396, "side": "left" },
+    "shoulder_right": { "u": 0.689, "v": 0.396, "side": "right" },
+    "shoulders": { "u": 0.492, "v": 0.389, "side": "center" },
+    "hand_left": { "u": 0.052, "v": 0.406, "side": "left" },
+    "hand_right": { "u": 0.941, "v": 0.403, "side": "right" },
+    "hands": { "u": 0.941, "v": 0.403, "side": "right" },
+    "hip_left": { "u": 0.377, "v": 0.708, "side": "left" },
+    "hip_right": { "u": 0.623, "v": 0.708, "side": "right" },
+    "foot_left": { "u": 0.41, "v": 0.946, "side": "left" },
+    "foot_right": { "u": 0.593, "v": 0.943, "side": "right" },
+    "foot_baseline": { "u": 0.502, "v": 0.983, "side": "center" },
+    "feet": { "u": 0.502, "v": 0.946, "side": "center" },
+    "waist_back": { "u": 0.311, "v": 0.566, "side": "left" },
+    "torso_right": { "u": 0.705, "v": 0.543, "side": "right" },
+    "side": { "u": 0.754, "v": 0.684, "side": "right" },
+    "back": { "u": 0.23, "v": 0.448, "side": "left" },
+    "below": { "u": 0.502, "v": 0.995, "side": "center" }
+  }
+}

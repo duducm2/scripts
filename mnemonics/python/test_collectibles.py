@@ -60,7 +60,7 @@ def test_trailing_comma_and_script_are_repaired() -> None:
         "palace_id": PALACE,
         "slot": "hat",
         "name": "Catalog cap",
-        "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><script>alert(1)</script><rect onclick="alert(1)" width="10" height="10"/></svg>',
+        "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><script>alert(1)</script><rect onclick="alert(1)" width="10" height="10"/></svg>',
         "anim": "bob",
         "anchor": "head",
     }
@@ -150,7 +150,7 @@ def test_save_moves_a_relic_into_repl_storage(tmp_path: Path) -> None:
                     "palace_id": PALACE,
                     "slot": "hat",
                     "name": "Catalog cap",
-                    "svg": SVG,
+                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><rect width="40" height="20" fill="#c45"/></svg>',
                     "anim": "bob",
                     "anchor": "head",
                 }
@@ -204,7 +204,7 @@ def test_taking_off_a_saved_relic_keeps_it_in_the_library(tmp_path: Path) -> Non
                     "palace_id": PALACE,
                     "slot": "cape",
                     "name": "Brick cape",
-                    "svg": SVG,
+                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><rect width="40" height="20" fill="#c45"/></svg>',
                     "anim": "sway",
                     "anchor": "back",
                 }
@@ -243,6 +243,7 @@ def test_import_stores_the_requested_slot_when_the_pack_says_pet(
 ) -> None:
     _library(tmp_path)
     assert assign_slot(tmp_path, PALACE) == "armor"
+    wide = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><rect width="40" height="80" fill="#c45"/></svg>'
     result = import_text(
         tmp_path,
         _pack(
@@ -251,7 +252,7 @@ def test_import_stores_the_requested_slot_when_the_pack_says_pet(
                     "palace_id": PALACE,
                     "slot": "pet",
                     "name": "Brick pup",
-                    "svg": SVG,
+                    "svg": wide,
                     "anim": "bob",
                     "anchor": "side",
                 }
@@ -275,3 +276,89 @@ def test_sanitize_svg_drops_javascript_url() -> None:
     )
     assert "javascript" not in cleaned.lower()
     assert "<svg" in cleaned.lower()
+
+
+def test_small_wearable_icon_is_rejected() -> None:
+    item, _notes, error = repair_item(
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "armor",
+                    "name": "Tiny plate",
+                    "svg": SVG,
+                }
+            )
+        ),
+        {PALACE},
+    )
+    assert item is None
+    assert "rejected" in error
+
+
+def test_walk_strip_is_rejected_for_a_standing_slot() -> None:
+    item, _notes, error = repair_item(
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "armor",
+                    "name": "Walk plate",
+                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 772 424"></svg>',
+                }
+            )
+        ),
+        {PALACE},
+    )
+    assert item is None
+    assert "rejected" in error
+
+
+def test_held_icon_is_accepted_and_a_body_strip_is_not() -> None:
+    icon, _notes, error = repair_item(
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "sword",
+                    "name": "Desk blade",
+                    "svg": SVG,
+                    "anchor": "hand_right",
+                }
+            )
+        ),
+        {PALACE},
+    )
+    assert error == ""
+    assert icon is not None
+    assert icon["anchor"] == "hand_right"
+    from collectibles import validate_strip
+
+    err, note = validate_strip("sword", SVG)
+    assert err == "" and note == ""
+    strip, _notes, strip_error = repair_item(
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "sword",
+                    "name": "Tall blade",
+                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"></svg>',
+                }
+            )
+        ),
+        {PALACE},
+    )
+    assert strip is None
+    assert "rejected" in strip_error
+
+
+def test_odd_strip_size_is_kept_and_marked_misfit() -> None:
+    from collectibles import validate_strip
+
+    error, note = validate_strip(
+        "hat",
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"></svg>',
+    )
+    assert error == ""
+    assert "misfit" in note

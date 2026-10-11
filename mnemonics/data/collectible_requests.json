@@ -2,6 +2,15 @@
   "pending_slot": "",
   "pending_palace_id": "",
   "cycle": [
-    "armor"
+    "armor",
+    "gloves",
+    "pants",
+    "shoes",
+    "hat",
+    "ring",
+    "staff",
+    "sword",
+    "cape",
+    "mount"
   ]
 }

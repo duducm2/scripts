@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DOGS_03",
+
+  "slot": "cape",
+
+  "name": "Trade-Weight Mantle",
+
+  "blurb": "Fashioned from a scent-soaked shirt and weighted with a balanced brass trade scale, this mantle billows backward to anchor safe exchanges and halt the chase.",
+
+  "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 772 424'><g id='f0'><path d='M62 108 C75 106 88 116 88 126 C82 170 54 235 48 290 C45 320 58 332 50 342 C40 338 34 300 40 248 C46 195 52 135 62 108 Z' fill='#d97706' opacity='0.95'/><path d='M68 112 C78 110 84 120 84 130 C76 180 58 245 54 295 C51 315 58 326 53 334 C46 324 44 285 48 238 C52 188 58 132 68 112 Z' fill='#f59e0b'/><path d='M64 116 C60 148 56 188 52 230' stroke='#b45309' stroke-width='2' fill='none'/><circle cx='84' cy='124' r='4' fill='#fef3c7'/><line x1='84' y1='124' x2='74' y2='146' stroke='#fef3c7' stroke-width='1.5'/><line x1='67' y1='146' x2='81' y2='146' stroke='#fef3c7' stroke-width='2'/><path d='M64 154 Q67 158 70 154 Z' fill='#fef3c7'/><path d='M78 154 Q81 158 84 154 Z' fill='#fef3c7'/></g><g id='f1'><path d='M255 106 C268 104 281 114 281 124 C273 166 242 228 234 282 C229 312 240 325 231 334 C222 328 220 292 227 240 C234 188 244 132 255 106 Z' fill='#d97706' opacity='0.95'/><path d='M261 110 C271 108 277 118 277 128 C267 176 246 238 240 287 C235 307 240 319 234 326 C228 314 228 277 235 230 C242 181 251 129 261 110 Z' fill='#f59e0b'/><path d='M257 114 C251 146 244 186 238 228' stroke='#b45309' stroke-width='2' fill='none'/><circle cx='277' cy='122' r='4' fill='#fef3c7'/><line x1='277' y1='122' x2='265' y2='144' stroke='#fef3c7' stroke-width='1.5'/><line x1='258' y1='144' x2='272' y2='144' stroke='#fef3c7' stroke-width='2'/><path d='M255 152 Q258 156 261 152 Z' fill='#fef3c7'/><path d='M269 152 Q272 156 275 152 Z' fill='#fef3c7'/></g><g id='f2'><path d='M448 108 C461 106 474 116 474 126 C468 170 440 235 434 290 C431 320 444 332 436 342 C426 338 420 300 426 248 C432 195 438 135 448 108 Z' fill='#d97706' opacity='0.95'/><path d='M454 112 C464 110 470 120 470 130 C462 180 444 245 440 295 C437 315 444 326 439 334 C432 324 430 285 434 238 C438 188 444 132 454 112 Z' fill='#f59e0b'/><path d='M450 116 C446 148 442 188 438 230' stroke='#b45309' stroke-width='2' fill='none'/><circle cx='470' cy='124' r='4' fill='#fef3c7'/><line x1='470' y1='124' x2='460' y2='146' stroke='#fef3c7' stroke-width='1.5'/><line x1='453' y1='146' x2='467' y2='146' stroke='#fef3c7' stroke-width='2'/><path d='M450 154 Q453 158 456 154 Z' fill='#fef3c7'/><path d='M464 154 Q467 158 470 154 Z' fill='#fef3c7'/></g><g id='f3'><path d='M641 109 C654 107 667 117 667 127 C661 172 636 238 632 294 C629 324 644 336 637 346 C627 342 620 304 624 252 C628 200 632 138 641 109 Z' fill='#d97706' opacity='0.95'/><path d='M647 113 C657 111 663 121 663 131 C657 182 642 248 640 299 C637 319 646 330 642 338 C633 328 628 289 630 242 C634 192 638 135 647 113 Z' fill='#f59e0b'/><path d='M643 117 C641 149 639 190 636 232' stroke='#b45309' stroke-width='2' fill='none'/><circle cx='663' cy='125' r='4' fill='#fef3c7'/><line x1='663' y1='125' x2='654' y2='147' stroke='#fef3c7' stroke-width='1.5'/><line x1='647' y1='147' x2='661' y2='147' stroke='#fef3c7' stroke-width='2'/><path d='M644 155 Q647 159 650 155 Z' fill='#fef3c7'/><path d='M658 155 Q661 159 664 155 Z' fill='#fef3c7'/></g></svg>",
+
+  "anim": "sway",
+
+  "anchor": "back"
+
+}
+
+===END_FILE===

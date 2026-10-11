@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_TAOISM_04",
+
+  "slot": "mount",
+
+  "name": "Celestial Cloud Throne",
+
+  "blurb": "Carved from drifting heavenly vapors and sealed with jade authority, this swirling cloud throne bears the walker above worldly dust as the pantheon takes form.",
+
+  "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='cg' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='#ffffff'/><stop offset='60%' stop-color='#e0f2fe'/><stop offset='100%' stop-color='#93c5fd'/></linearGradient><linearGradient id='jg' x1='0%' y1='0%' x2='100%' y2='0%'><stop offset='0%' stop-color='#10b981'/><stop offset='100%' stop-color='#059669'/></linearGradient></defs><ellipse cx='32' cy='46' rx='25' ry='12' fill='#bfdbfe' opacity='0.5'/><path d='M16 48 C10 48 6 42 10 36 C8 30 14 26 20 28 C24 22 34 22 38 27 C44 24 52 28 50 34 C56 36 56 46 48 48 C42 54 22 54 16 48 Z' fill='url(#cg)'/><path d='M18 36 C19 32 25 31 28 34 C31 30 38 31 40 35 C44 34 47 37 46 41 C42 46 22 47 18 41 C16 39 16 37 18 36 Z' fill='#ffffff' opacity='0.8'/><path d='M22 42 Q28 47 38 42' stroke='#38bdf8' stroke-width='1.5' stroke-linecap='round' fill='none'/><path d='M14 44 Q20 50 28 46' stroke='#60a5fa' stroke-width='1.2' stroke-linecap='round' fill='none'/><path d='M34 46 Q42 50 48 43' stroke='#60a5fa' stroke-width='1.2' stroke-linecap='round' fill='none'/><rect x='28' y='32' width='8' height='10' rx='2' fill='url(#jg)'/><path d='M30 35 L34 35 M32 35 L32 39 M30 39 L34 39' stroke='#ecfdf5' stroke-width='1' stroke-linecap='round'/><circle cx='24' cy='38' r='1.5' fill='#fef08a'/><circle cx='40' cy='38' r='1.5' fill='#fef08a'/></svg>",
+
+  "anim": "float",
+
+  "anchor": "below"
+
+}
+
+===END_FILE===

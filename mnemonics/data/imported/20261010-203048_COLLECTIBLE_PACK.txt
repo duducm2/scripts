@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DOGS_01",
+
+  "slot": "shoes",
+
+  "name": "Working-Drive Tracker Stompers",
+
+  "blurb": "Forged with hardhat yellow plating, eagle-claw treads, and high-drive battery soles, these tracking boots anchor every obedience step across rugged scent trails.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 772 424\"><defs><linearGradient id=\"hhY\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#facc15\"/><stop offset=\"100%\" stop-color=\"#ca8a04\"/></linearGradient><linearGradient id=\"gsb\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#374151\"/><stop offset=\"100%\" stop-color=\"#111827\"/></linearGradient><linearGradient id=\"batG\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0%\" stop-color=\"#06b6d4\"/><stop offset=\"100%\" stop-color=\"#3b82f6\"/></linearGradient></defs><g id=\"f1\"><g transform=\"translate(0, 0)\"><path d=\"M68 344 L88 344 L92 366 L104 374 L104 382 L64 382 L64 366 Z\" fill=\"url(#gsb)\"/><path d=\"M68 344 L88 344 L87 352 L68 352 Z\" fill=\"url(#hhY)\"/><rect x=\"64\" y=\"378\" width=\"40\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"74\" cy=\"366\" r=\"3\" fill=\"#f59e0b\"/><path d=\"M124 342 L144 342 L148 364 L162 372 L162 380 L120 380 L120 364 Z\" fill=\"url(#gsb)\"/><path d=\"M124 342 L144 342 L143 350 L124 350 Z\" fill=\"url(#hhY)\"/><rect x=\"120\" y=\"376\" width=\"42\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"132\" cy=\"364\" r=\"3\" fill=\"#f59e0b\"/><polygon points=\"148,368 156,368 152,374\" fill=\"#e0e7ff\"/></g></g><g id=\"f2\"><g transform=\"translate(193, 0)\"><path d=\"M78 346 L98 346 L102 368 L114 376 L114 384 L74 384 L74 368 Z\" fill=\"url(#gsb)\"/><path d=\"M78 346 L98 346 L97 354 L78 354 Z\" fill=\"url(#hhY)\"/><rect x=\"74\" y=\"380\" width=\"40\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"84\" cy=\"368\" r=\"3\" fill=\"#f59e0b\"/><path d=\"M104 344 L124 344 L128 366 L140 374 L140 382 L100 382 L100 366 Z\" fill=\"url(#gsb)\"/><path d=\"M104 344 L124 344 L123 352 L104 352 Z\" fill=\"url(#hhY)\"/><rect x=\"100\" y=\"378\" width=\"40\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"110\" cy=\"366\" r=\"3\" fill=\"#f59e0b\"/><polygon points=\"126,368 134,368 130,374\" fill=\"#e0e7ff\"/></g></g><g id=\"f3\"><g transform=\"translate(386, 0)\"><path d=\"M120 342 L140 342 L144 364 L158 372 L158 380 L116 380 L116 364 Z\" fill=\"url(#gsb)\"/><path d=\"M120 342 L140 342 L139 350 L120 350 Z\" fill=\"url(#hhY)\"/><rect x=\"116\" y=\"376\" width=\"42\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"126\" cy=\"364\" r=\"3\" fill=\"#f59e0b\"/><path d=\"M64 344 L84 344 L88 366 L100 374 L100 382 L60 382 L60 366 Z\" fill=\"url(#gsb)\"/><path d=\"M64 344 L84 344 L83 352 L64 352 Z\" fill=\"url(#hhY)\"/><rect x=\"60\" y=\"378\" width=\"40\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"70\" cy=\"366\" r=\"3\" fill=\"#f59e0b\"/><polygon points=\"86,368 94,368 90,374\" fill=\"#e0e7ff\"/></g></g><g id=\"f4\"><g transform=\"translate(579, 0)\"><path d=\"M72 346 L92 346 L96 368 L108 376 L108 384 L68 384 L68 368 Z\" fill=\"url(#gsb)\"/><path d=\"M72 346 L92 346 L91 354 L72 354 Z\" fill=\"url(#hhY)\"/><rect x=\"68\" y=\"380\" width=\"40\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"78\" cy=\"368\" r=\"3\" fill=\"#f59e0b\"/><path d=\"M112 344 L132 344 L136 366 L150 374 L150 382 L108 382 L108 366 Z\" fill=\"url(#gsb)\"/><path d=\"M112 344 L132 344 L131 352 L112 352 Z\" fill=\"url(#hhY)\"/><rect x=\"108\" y=\"378\" width=\"42\" height=\"4\" rx=\"1\" fill=\"url(#batG)\"/><circle cx=\"120\" cy=\"366\" r=\"3\" fill=\"#f59e0b\"/><polygon points=\"136,368 144,368 140,374\" fill=\"#e0e7ff\"/></g></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "feet"
+
+}
+
+===END_FILE===

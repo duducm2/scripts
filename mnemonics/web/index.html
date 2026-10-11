@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css" />
+    <link rel="stylesheet" href="/dashboard.css?v=photos" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -848,9 +848,27 @@
         </div>
       </div>
     </header>
-    <div id="hero" aria-hidden="true">
+    <div id="hero" class="modular hero-static" aria-hidden="true">
       <div class="hero-sprite">
         <div class="hero-frames"></div>
+        <div class="hero-layers">
+          <div class="hero-layer" data-layer="gear_back"></div>
+          <div class="hero-layer" data-layer="body_back_leg"></div>
+          <div class="hero-layer" data-layer="body_back_arm"></div>
+          <div class="hero-layer" data-layer="gear_hands_back"></div>
+          <div class="hero-layer" data-layer="body_torso"></div>
+          <div class="hero-layer" data-layer="body_front_leg"></div>
+          <div class="hero-layer" data-layer="gear_legs"></div>
+          <div class="hero-layer" data-layer="body_front_arm"></div>
+          <div class="hero-layer" data-layer="body_head"></div>
+          <div class="hero-layer" data-layer="body_hair"></div>
+          <div class="hero-layer" data-layer="gear_torso"></div>
+          <div class="hero-layer" data-layer="gear_hands_front"></div>
+          <div class="hero-layer" data-layer="gear_head"></div>
+          <div class="hero-layer" data-layer="gear_pet"></div>
+          <div class="hero-layer" data-layer="gear_face"></div>
+          <div class="hero-layer" data-layer="gear_accessory"></div>
+        </div>
         <div class="hero-gear"></div>
       </div>
     </div>
@@ -5070,6 +5088,73 @@
         });
       }
 
+      const WALKER_MODULAR_LAYERS = true;
+      const WALKER_STATIC = true;
+      const HERO_LAYERS = [
+        "gear_back",
+        "body_back_leg",
+        "body_back_arm",
+        "gear_hands_back",
+        "body_torso",
+        "body_front_leg",
+        "gear_legs",
+        "body_front_arm",
+        "body_head",
+        "body_hair",
+        "gear_torso",
+        "gear_hands_front",
+        "gear_head",
+        "gear_pet",
+        "gear_face",
+        "gear_accessory",
+      ];
+      const SLOT_LAYER = {
+        hat: "gear_head",
+        armor: "gear_torso",
+        gloves: "gear_hands_front",
+        pants: "gear_legs",
+        shoes: "gear_legs",
+        cape: "gear_back",
+        ring: "gear_hands_front",
+        staff: "gear_hands_front",
+        sword: "gear_hands_front",
+        pet: "gear_pet",
+        mount: "gear_back",
+        accessory: "gear_accessory",
+      };
+      const SLOT_OCCLUDES = {
+        armor: ["body_torso"],
+      };
+      const STRIP_SLOTS = new Set([
+        "hat",
+        "armor",
+        "gloves",
+        "pants",
+        "shoes",
+        "cape",
+      ]);
+      const ICON_SLOTS = new Set([
+        "pet",
+        "accessory",
+        "mount",
+        "ring",
+        "staff",
+        "sword",
+      ]);
+      const SLOT_POINT = {
+        hat: "head_top",
+        armor: "shoulders",
+        gloves: "hand_right",
+        pants: "hip_right",
+        shoes: "foot_right",
+        cape: "back",
+        ring: "hand_left",
+        staff: "hand_right",
+        sword: "hand_right",
+        pet: "side",
+        mount: "below",
+        accessory: "side",
+      };
       const GEAR_SLOTS = [
         ["hat", "Hat"],
         ["armor", "Armor"],
@@ -5084,6 +5169,74 @@
         ["mount", "Mount"],
         ["accessory", "Accessory"],
       ];
+      let heroAnchors = null;
+      let wardrobeTryId = "";
+
+      function heroLayersHtml() {
+        const layers = HERO_LAYERS.map(
+          (name) => `<div class="hero-layer" data-layer="${name}"></div>`,
+        ).join("");
+        return `<div class="hero-frames"></div><div class="hero-layers">${layers}</div><div class="hero-gear"></div>`;
+      }
+
+      function syncModular(el) {
+        if (!el) return;
+        el.classList.toggle("modular", WALKER_MODULAR_LAYERS);
+        el.classList.toggle("hero-static", WALKER_STATIC);
+      }
+
+      function svgCoversBody(svg) {
+        const match = /viewBox\s*=\s*["']([^"']+)["']/i.exec(svg || "");
+        if (!match) return false;
+        const parts = match[1]
+          .trim()
+          .split(/[\s,]+/)
+          .map(Number);
+        return parts.length === 4 && parts[2] >= 180;
+      }
+
+      const SLOT_BOX = {
+        ring: { w: 12, h: 10, du: 0, dv: 0 },
+        staff: { w: 14, h: 32, du: 0.01, dv: -0.14 },
+        sword: { w: 18, h: 24, du: 0.05, dv: -0.08 },
+        pet: { w: 24, h: 20, du: 0, dv: 0 },
+        accessory: { w: 20, h: 16, du: 0, dv: 0 },
+      };
+
+      function boxAt(point, slot) {
+        const spec = SLOT_BOX[slot] || { w: 22, h: 16, du: 0, dv: 0 };
+        const left = (point.u + spec.du) * 100 - spec.w / 2;
+        const top = (point.v + spec.dv) * 100 - spec.h / 2;
+        return { left, top, w: spec.w, h: spec.h };
+      }
+
+      function anchorStyle(slot) {
+        const point = heroAnchors && heroAnchors[SLOT_POINT[slot]];
+        if (!point) return { style: "", track: false };
+        if (WALKER_STATIC || !(point.frames && point.frames.length === 4)) {
+          const box = boxAt(point, slot);
+          return {
+            track: false,
+            style: `left:${box.left.toFixed(1)}%;top:${box.top.toFixed(1)}%;width:${box.w}%;height:${box.h}%;`,
+          };
+        }
+        const frames =
+          point.frames && point.frames.length === 4
+            ? point.frames
+            : [point, point, point, point];
+        const boxes = frames.map((frame) => boxAt(frame, slot));
+        const vars = boxes
+          .map(
+            (box, index) =>
+              `--x${index}:${box.left.toFixed(1)}%;--y${index}:${box.top.toFixed(1)}%`,
+          )
+          .join(";");
+        const first = boxes[0];
+        return {
+          track: true,
+          style: `${vars};left:${first.left.toFixed(1)}%;top:${first.top.toFixed(1)}%;width:${first.w}%;height:${first.h}%;`,
+        };
+      }
 
       function gearSignature(items) {
         return (items || [])
@@ -5093,32 +5246,120 @@
           .join(",");
       }
 
-      function paintGear(root, items, popIds) {
-        if (!root) return;
+      function gearMarkup(item, pop, fitted) {
+        const extra = pop.has(item.id) ? " just-equipped" : "";
+        const fit = fitted ? " fitted" : "";
+        const placed = fitted
+          ? { style: "", track: false }
+          : anchorStyle(item.slot);
+        const track = placed.track ? " track" : "";
+        const styleAttr = placed.style ? ` style="${placed.style}"` : "";
+        return (
+          `<span class="gear${extra}${fit}${track}" data-anim="${escAttr(item.anim || "bob")}" data-anchor="${escAttr(item.anchor || "side")}" data-slot="${escAttr(item.slot || "")}" title="${escAttr(item.name || "")}"${styleAttr}>` +
+          item.svg +
+          "</span>"
+        );
+      }
+
+      function applyOcclusion(el, items) {
+        if (!el) return;
+        const hidden = new Set();
+        for (const item of items || []) {
+          if (!item.equipped) continue;
+          const names = item.occludes || SLOT_OCCLUDES[item.slot] || [];
+          for (const name of names) hidden.add(name);
+        }
+        el.classList.toggle("occ-torso", hidden.has("body_torso"));
+        el.classList.toggle("occ-legs", hidden.has("body_legs"));
+        el.classList.toggle("occ-hair", hidden.has("body_hair"));
+      }
+
+      function paintGear(sprite, items, popIds) {
+        if (!sprite) return;
         const pop = popIds || new Set();
-        root.innerHTML = (items || [])
-          .filter((item) => item.equipped && item.svg)
-          .map((item) => {
-            const extra = pop.has(item.id) ? " just-equipped" : "";
-            return (
-              `<span class="gear${extra}" data-anim="${escAttr(item.anim || "bob")}" data-anchor="${escAttr(item.anchor || "side")}" title="${escAttr(item.name || "")}">` +
-              item.svg +
-              "</span>"
-            );
-          })
-          .join("");
+        const gear = sprite.querySelector(".hero-gear");
+        const layers = sprite.querySelectorAll(".hero-layer");
+        if (!WALKER_MODULAR_LAYERS || !layers.length) {
+          if (gear) {
+            gear.innerHTML = (items || [])
+              .filter((item) => item.equipped && item.svg)
+              .map((item) => gearMarkup(item, pop, false))
+              .join("");
+          }
+          return;
+        }
+        const buckets = {};
+        for (const layer of layers) {
+          buckets[layer.dataset.layer] = [];
+          layer.classList.remove("has-strip");
+          layer.style.backgroundImage = "";
+        }
+        const loose = [];
+        for (const item of items || []) {
+          if (!item.equipped || !item.svg) continue;
+          const layerName = layerFor(item);
+          const fitted = STRIP_SLOTS.has(item.slot) && svgCoversBody(item.svg);
+          const behind =
+            layerName === "gear_back" || layerName === "gear_hands_back";
+          if ((fitted || behind) && buckets[layerName]) {
+            buckets[layerName].push(gearMarkup(item, pop, fitted));
+          } else if (ICON_SLOTS.has(item.slot) || !fitted) {
+            loose.push(gearMarkup(item, pop, false));
+          }
+        }
+        for (const layer of layers) {
+          if (layer.dataset.layer.startsWith("gear_")) {
+            layer.innerHTML = (buckets[layer.dataset.layer] || []).join("");
+          }
+        }
+        if (gear) gear.innerHTML = loose.join("");
+      }
+
+      function layerFor(item) {
+        let name =
+          (item && item.layer) || SLOT_LAYER[item.slot] || "gear_accessory";
+        if (name === "gear_hands") name = "gear_hands_front";
+        if (name === "body_base" || name === "body_legs") name = "body_torso";
+        return name;
       }
 
       function applyGearPaint() {
         const items = state.collectibles || [];
         const pop = state.gearPop || new Set();
-        paintGear(document.querySelector("#hero .hero-gear"), items, pop);
-        paintGear(
-          document.querySelector("#wardrobePanel .hero-gear"),
-          items,
-          pop,
-        );
+        const hero = document.getElementById("hero");
+        syncModular(hero);
+        applyOcclusion(hero, items);
+        paintGear(hero && hero.querySelector(".hero-sprite"), items, pop);
+        paintWardrobeHero();
       }
+
+      function wardrobeItems() {
+        const items = state.collectibles || [];
+        if (!wardrobeTryId) return items;
+        const trial = items.find((item) => item.id === wardrobeTryId);
+        if (!trial) return items;
+        return items.map((item) => {
+          if (item.slot !== trial.slot) return item;
+          return Object.assign({}, item, { equipped: item.id === trial.id });
+        });
+      }
+
+      function paintWardrobeHero() {
+        const hero = document.querySelector("#wardrobePanel .wardrobe-hero");
+        if (!hero) return;
+        syncModular(hero);
+        const items = wardrobeItems();
+        applyOcclusion(hero, items);
+        paintGear(hero.querySelector(".hero-sprite"), items, state.gearPop);
+      }
+
+      fetch("assets/hero-anchors.json?v=photos")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          heroAnchors = (data && data.anchors) || null;
+          applyGearPaint();
+        })
+        .catch(() => {});
 
       async function refreshCollectibles() {
         const res = await api("/api/collectibles");
@@ -5166,6 +5407,9 @@
         const panel = document.getElementById("wardrobePanel");
         if (!panel) return;
         const items = state.collectibles || [];
+        const found = GEAR_SLOTS.filter(([id]) =>
+          items.some((item) => item.slot === id),
+        ).length;
         const slots = GEAR_SLOTS.map(([id, label]) => {
           const owned = items.filter((item) => item.slot === id);
           const wearing = owned.find((item) => item.equipped);
@@ -5181,26 +5425,44 @@
                   const mark = item.saved
                     ? ""
                     : `<span class="muted wardrobe-unsaved">Not saved</span>`;
-                  return `<div class="wardrobe-row">${mark}<button type="button" class="spa-btn wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}" data-gear-saved="${item.saved ? "1" : "0"}">${esc(item.name)}</button>${save}${remove}</div>`;
+                  const warn = item.misfit
+                    ? `<span class="muted wardrobe-unsaved">Does not match the walker frame</span>`
+                    : "";
+                  return `<div class="wardrobe-row">${mark}${warn}<button type="button" class="spa-btn wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}" data-gear-saved="${item.saved ? "1" : "0"}">${esc(item.name)}</button>${save}${remove}</div>`;
                 })
                 .join("")
-            : '<p class="muted">Empty</p>';
+            : `<p class="muted wardrobe-empty"><span class="wardrobe-silhouette" aria-hidden="true"></span>Empty</p>`;
           const blurb = wearing && wearing.blurb ? esc(wearing.blurb) : "";
-          return `<section class="wardrobe-slot"><h3>${label}</h3>${blurb ? `<p class="muted">${blurb}</p>` : ""}${buttons}</section>`;
+          const empty = owned.length ? "" : " is-empty";
+          return `<section class="wardrobe-slot${empty}"><h3>${label}</h3>${blurb ? `<p class="muted">${blurb}</p>` : ""}${buttons}</section>`;
         }).join("");
         panel.innerHTML = `<div class="wardrobe-layout">
           <div class="wardrobe-stage">
-            <div class="wardrobe-hero" aria-hidden="true"><div class="hero-sprite"><div class="hero-frames"></div><div class="hero-gear"></div></div></div>
-            <p class="muted">Alt+W closes this screen. A new relic stays on the avatar until you press Save. Remove deletes an unsaved relic. Inside a palace, Shift+G asks Gemini for a relic from that place.</p>
+            <div class="wardrobe-hero${WALKER_MODULAR_LAYERS ? " modular" : ""}${WALKER_STATIC ? " hero-static" : ""}" aria-hidden="true"><div class="hero-sprite">${heroLayersHtml()}</div></div>
+            <p class="muted">Alt+W closes this screen. A new relic stays on the avatar until you press Save. Remove deletes an unsaved relic. Inside a palace, Shift+G asks Gemini for a relic from that place. Hover a saved piece to try it on.</p>
           </div>
-          <div class="wardrobe-slots">${slots}</div>
+          <div class="wardrobe-slots">
+            <p class="muted wardrobe-progress">${found} of ${GEAR_SLOTS.length} categories discovered</p>
+            ${slots}
+          </div>
         </div>`;
-        paintGear(panel.querySelector(".hero-gear"), items, state.gearPop);
+        paintWardrobeHero();
         panel.querySelectorAll("[data-gear-id]").forEach((btn) => {
+          btn.addEventListener("mouseenter", () => {
+            if (btn.dataset.gearSaved !== "1") return;
+            wardrobeTryId = btn.dataset.gearId;
+            paintWardrobeHero();
+          });
+          btn.addEventListener("mouseleave", () => {
+            if (wardrobeTryId !== btn.dataset.gearId) return;
+            wardrobeTryId = "";
+            paintWardrobeHero();
+          });
           btn.addEventListener("click", () => {
             const wearing = btn.dataset.gearOn === "1";
             const saved = btn.dataset.gearSaved === "1";
             if (wearing && !saved) return;
+            wardrobeTryId = "";
             toggleGear(btn.dataset.gearId, !wearing);
           });
         });
@@ -6484,7 +6746,7 @@
 
         function metrics() {
           const h = 180;
-          return { h: h, w: (193 / 424) * h };
+          return { h: h, w: (305 / 424) * h };
         }
 
         function place() {
@@ -6556,7 +6818,10 @@
             }
             hero.classList.toggle("face-left", dir < 0);
           }
-          hero.classList.toggle("is-walking", Math.abs(x - before) > 0.2);
+          hero.classList.toggle(
+            "is-walking",
+            !WALKER_STATIC && Math.abs(x - before) > 0.2,
+          );
           place();
           frame = requestAnimationFrame(tick);
         }
