@@ -6,8 +6,10 @@ import argparse
 import csv
 import json
 import os
+import random
 import re
 import uuid
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -26,6 +28,47 @@ SIDEKICK_SLOTS: tuple[str, ...] = ()
 _VIEWBOX = re.compile(r"""viewBox\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
 ANIMS = ("bob", "sway", "flicker", "orbit", "float")
 ANCHORS = ("pedestal",)
+# One look is chosen per prompt. The model never sees this list.
+TROPHY_LOOKS = (
+    "a woodcut print",
+    "a stained-glass piece",
+    "a hand-built clay figure",
+    "an ink wash painting",
+    "an enamel badge",
+    "a cast bronze miniature",
+    "a cut-paper collage",
+    "a neon tube object",
+    "an embroidered patch",
+    "a blown-glass sculpture",
+    "a tile mosaic",
+    "a porcelain figurine",
+    "a felt craft",
+    "a linocut",
+    "a watercolor study",
+    "an oil painting of one object",
+    "an origami model",
+    "a charcoal sketch",
+    "a tin toy",
+    "a batik motif",
+    "a gouache illustration",
+    "a knitted charm",
+    "a lacquer ornament",
+    "a wax-seal impression",
+    "a marble carving",
+    "a cardboard model",
+    "a ballpoint doodle",
+    "a risograph print",
+    "a shadow puppet",
+    "a beadwork medallion",
+    "a stop-motion puppet",
+    "a glossy studio object",
+    "a flat cartoon drawing",
+    "a simple 3D render",
+)
+TROPHY_LOOK_MEMORY = 12
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+TROPHY_IMAGE_PREFIX = "/assets/trophies/"
+TROPHY_IMAGE_MAX = 512
 
 _FENCE = "```"
 _TRAILING_COMMA = re.compile(r",(\s*[}\]])")
@@ -136,8 +179,9 @@ def _public_item(row: dict[str, Any], saved: bool = False) -> dict[str, Any] | N
     slot = str(row.get("slot") or "").strip().lower()
     if slot not in SLOTS:
         return None
+    image = _public_image(str(row.get("image") or ""))
     svg = sanitize_svg(str(row.get("svg") or ""))
-    if not svg:
+    if not svg and not image:
         return None
     anim = str(row.get("anim") or "").strip().lower()
     anchor = str(row.get("anchor") or "").strip().lower()
@@ -148,6 +192,7 @@ def _public_item(row: dict[str, Any], saved: bool = False) -> dict[str, Any] | N
         "name": str(row.get("name") or "").strip()[:80],
         "blurb": str(row.get("blurb") or "").strip()[:240],
         "svg": svg,
+        "image": image,
         "anim": anim if anim in ANIMS else "bob",
         "anchor": anchor if anchor in ANCHORS else "pedestal",
         "equipped": bool(row.get("equipped")),
@@ -303,9 +348,215 @@ def _as_item_dict(parsed: Any) -> dict[str, Any] | None:
     items = parsed.get("items")
     if isinstance(items, list) and items and isinstance(items[0], dict):
         return items[0]
-    if "slot" in parsed or "svg" in parsed or "name" in parsed:
+    if "slot" in parsed or "svg" in parsed or "image" in parsed or "name" in parsed:
         return parsed
     return None
+
+
+def _public_image(value: str) -> str:
+    text = str(value or "").strip()
+    if not text.startswith(TROPHY_IMAGE_PREFIX):
+        return ""
+    name = Path(text).name
+    if name != text[len(TROPHY_IMAGE_PREFIX) :] or Path(name).suffix.lower() != ".png":
+        return ""
+    return TROPHY_IMAGE_PREFIX + name
+
+
+def _trophy_dir(data_dir: Path) -> Path:
+    web = Path(data_dir).parent / "web" / "assets"
+    root = web if web.is_dir() else Path(data_dir) / "web-assets"
+    return root / "trophies"
+
+
+def _delete_trophy_file(data_dir: Path, row: dict[str, Any]) -> None:
+    url = _public_image(str(row.get("image") or ""))
+    if not url:
+        return
+    path = _trophy_dir(data_dir) / Path(url).name
+    if path.is_file():
+        path.unlink()
+
+
+def _backdrop_kind(r: int, g: int, b: int) -> str:
+    if min(r, g, b) >= 235 and (max(r, g, b) - min(r, g, b)) <= 12:
+        return "white"
+    if r >= 190 and b >= 140 and g <= 90 and (r - g) >= 70:
+        return "magenta"
+    return ""
+
+
+def _is_backdrop_pixel(r: int, g: int, b: int, kind: str) -> bool:
+    """Pale backdrop, including the off-white sheet a hard 235 cutoff used to leave."""
+    if kind == "white":
+        return min(r, g, b) >= 200 and (max(r, g, b) - min(r, g, b)) <= 28
+    if kind == "magenta":
+        return r >= 175 and b >= 120 and g <= 100 and (r - g) >= 55
+    return False
+
+
+def _is_fringe_pixel(r: int, g: int, b: int, kind: str) -> bool:
+    if kind == "white":
+        return min(r, g, b) >= 186 and (max(r, g, b) - min(r, g, b)) <= 22
+    return _is_backdrop_pixel(r, g, b, kind)
+
+
+def _clear_connected_backdrop(im: Any, kind: str) -> None:
+    width, height = im.size
+    px = im.load()
+    seen = bytearray(width * height)
+    queue: deque[tuple[int, int]] = deque()
+
+    def push(x: int, y: int) -> None:
+        index = y * width + x
+        if seen[index]:
+            return
+        seen[index] = 1
+        red, green, blue, alpha = px[x, y]
+        if alpha >= 20 and not _is_backdrop_pixel(red, green, blue, kind):
+            return
+        queue.append((x, y))
+
+    for x in range(width):
+        push(x, 0)
+        push(x, height - 1)
+    for y in range(height):
+        push(0, y)
+        push(width - 1, y)
+    while queue:
+        x, y = queue.popleft()
+        px[x, y] = (0, 0, 0, 0)
+        if x > 0:
+            push(x - 1, y)
+        if x + 1 < width:
+            push(x + 1, y)
+        if y > 0:
+            push(x, y - 1)
+        if y + 1 < height:
+            push(x, y + 1)
+
+
+def _peel_fringe(im: Any, kind: str, passes: int = 2) -> None:
+    """Drop a thin pale rim that is still stuck to the transparent edge."""
+    width, height = im.size
+    px = im.load()
+    for _ in range(passes):
+        doomed: list[tuple[int, int]] = []
+        for y in range(height):
+            for x in range(width):
+                red, green, blue, alpha = px[x, y]
+                if alpha < 20 or not _is_fringe_pixel(red, green, blue, kind):
+                    continue
+                if (
+                    (x > 0 and px[x - 1, y][3] < 20)
+                    or (x + 1 < width and px[x + 1, y][3] < 20)
+                    or (y > 0 and px[x, y - 1][3] < 20)
+                    or (y + 1 < height and px[x, y + 1][3] < 20)
+                ):
+                    doomed.append((x, y))
+        if not doomed:
+            return
+        for x, y in doomed:
+            px[x, y] = (0, 0, 0, 0)
+
+
+def _crop_to_content(im: Any, pad: int = 1) -> Any:
+    """Drop empty margin so the object fills the pedestal instead of floating inside it."""
+    alpha = im.getchannel("A")
+    mask = alpha.point(lambda value: 255 if value >= 20 else 0)
+    box = mask.getbbox()
+    if not box:
+        return im
+    left, top, right, bottom = box
+    left = max(0, left - pad)
+    top = max(0, top - pad)
+    right = min(im.width, right + pad)
+    bottom = min(im.height, bottom + pad)
+    if (left, top, right, bottom) == (0, 0, im.width, im.height):
+        return im
+    return im.crop((left, top, right, bottom))
+
+
+def knock_out_backdrop(image: Any) -> Any:
+    """Clear a white or magenta backdrop that touches the edges. Interior color stays."""
+    im = image.convert("RGBA")
+    width, height = im.size
+    if width < 2 or height < 2:
+        return im
+    px = im.load()
+    corners = (
+        px[0, 0],
+        px[width - 1, 0],
+        px[0, height - 1],
+        px[width - 1, height - 1],
+    )
+    kinds = [
+        "clear" if pixel[3] < 20 else _backdrop_kind(pixel[0], pixel[1], pixel[2])
+        for pixel in corners
+    ]
+    if kinds.count("clear") == 4:
+        # The flat field is already gone. Peel a pale mat that was left on the silhouette.
+        for kind in ("white", "magenta"):
+            _clear_connected_backdrop(im, kind)
+            _peel_fringe(im, kind)
+        return _crop_to_content(im)
+    kind = ""
+    if kinds.count("white") >= 3:
+        kind = "white"
+    elif kinds.count("magenta") >= 3:
+        kind = "magenta"
+    if not kind:
+        return _crop_to_content(im)
+    _clear_connected_backdrop(im, kind)
+    _peel_fringe(im, kind)
+    return _crop_to_content(im)
+
+
+def prepare_trophy_png(src: Path) -> Any:
+    from PIL import Image
+
+    im = Image.open(src)
+    im = knock_out_backdrop(im)
+    width, height = im.size
+    longest = max(width, height)
+    if longest > TROPHY_IMAGE_MAX:
+        scale = TROPHY_IMAGE_MAX / longest
+        im = im.resize(
+            (max(1, round(width * scale)), max(1, round(height * scale))),
+            Image.Resampling.LANCZOS,
+        )
+    return im
+
+
+def _newest_desktop_image(desktop: Path | None) -> Path | None:
+    """The picture most recently added on the Desktop. The pack does not name it."""
+    if desktop is None:
+        return None
+    root = Path(desktop)
+    if not root.is_dir():
+        return None
+    newest: Path | None = None
+    newest_stamp = -1.0
+    for path in root.iterdir():
+        if not path.is_file() or path.suffix.lower() not in IMAGE_SUFFIXES:
+            continue
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+        stamp = max(stat.st_mtime, getattr(stat, "st_ctime", 0))
+        if stamp >= newest_stamp:
+            newest_stamp = stamp
+            newest = path
+    return newest
+
+
+def _store_trophy_png(data_dir: Path, item_id: str, image: Any) -> str:
+    folder = _trophy_dir(data_dir)
+    folder.mkdir(parents=True, exist_ok=True)
+    filename = f"{item_id}.png"
+    image.save(folder / filename, "PNG")
+    return TROPHY_IMAGE_PREFIX + filename
 
 
 def known_palace_ids(data_dir: Path) -> set[str]:
@@ -338,7 +589,7 @@ def repair_item(
         return None, notes, f"JSON could not be parsed after repair: {exc.msg}"
     item = _as_item_dict(parsed)
     if item is None:
-        return None, notes, "JSON has no collectible object (slot, name, svg)."
+        return None, notes, "JSON has no collectible object (slot or name)."
 
     slot = str(item.get("slot") or "").strip().lower()
     if slot not in SLOTS:
@@ -363,9 +614,7 @@ def repair_item(
             f"palace_id {palace_id or '(blank)'} is not a palace in this library.",
         )
     svg = sanitize_svg(str(item.get("svg") or ""))
-    if not svg:
-        return None, notes, "svg is missing, unsafe, or not a small <svg> illustration."
-    if check_art:
+    if svg and check_art:
         strip_error, strip_note = validate_strip(slot, svg)
         if strip_error:
             return None, notes, strip_error
@@ -378,6 +627,7 @@ def repair_item(
             "name": name[:80],
             "blurb": str(item.get("blurb") or "").strip()[:240],
             "svg": svg,
+            "image": "",
             "anim": anim,
             "anchor": anchor,
         },
@@ -394,7 +644,12 @@ def _unequip_slot(rows: list[dict[str, Any]], slot: str, keep_id: str = "") -> N
 
 def _load_requests(data_dir: Path) -> dict[str, Any]:
     path = requests_path(data_dir)
-    empty = {"pending_slot": "", "pending_palace_id": "", "cycle": []}
+    empty = {
+        "pending_slot": "",
+        "pending_palace_id": "",
+        "cycle": [],
+        "recent_looks": [],
+    }
     if not path.is_file():
         return empty
     try:
@@ -409,10 +664,14 @@ def _load_requests(data_dir: Path) -> dict[str, Any]:
         for slot in raw.get("cycle") or []
         if str(slot).strip().lower() in SLOT_ORDER
     ]
+    recent = [
+        str(look) for look in raw.get("recent_looks") or [] if str(look) in TROPHY_LOOKS
+    ]
     return {
         "pending_slot": pending if pending in SLOT_ORDER else "",
         "pending_palace_id": str(raw.get("pending_palace_id") or "").strip(),
         "cycle": [str(slot).strip().lower() for slot in cycle],
+        "recent_looks": recent[-TROPHY_LOOK_MEMORY:],
     }
 
 
@@ -425,6 +684,11 @@ def _save_requests(data_dir: Path, state: dict[str, Any]) -> None:
                 "pending_slot": state.get("pending_slot") or "",
                 "pending_palace_id": state.get("pending_palace_id") or "",
                 "cycle": list(state.get("cycle") or []),
+                "recent_looks": [
+                    look
+                    for look in state.get("recent_looks") or []
+                    if look in TROPHY_LOOKS
+                ][-TROPHY_LOOK_MEMORY:],
             },
             indent=2,
         )
@@ -476,6 +740,7 @@ def assign_slot(data_dir: Path, palace_id: str) -> str:
             "pending_slot": slot,
             "pending_palace_id": palace_id,
             "cycle": cycle,
+            "recent_looks": state.get("recent_looks") or [],
         },
     )
     return slot
@@ -501,12 +766,19 @@ def _lock_imported_slot(
         cycle.append(pending)
     _save_requests(
         data_dir,
-        {"pending_slot": "", "pending_palace_id": "", "cycle": cycle},
+        {
+            "pending_slot": "",
+            "pending_palace_id": "",
+            "cycle": cycle,
+            "recent_looks": state.get("recent_looks") or [],
+        },
     )
     return item
 
 
-def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
+def import_text(
+    data_dir: Path, raw: str, *, desktop: Path | None = None
+) -> dict[str, Any]:
     """Put a trophy on the newest end of the hall. The library is not written."""
     data_dir = Path(data_dir)
     item, notes, error = repair_item(raw, known_palace_ids(data_dir), check_art=False)
@@ -517,13 +789,31 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
             "notes": notes,
         }
     item = _lock_imported_slot(data_dir, item, notes)
-    strip_error, strip_note = validate_strip(
-        str(item.get("slot") or ""), str(item.get("svg") or "")
-    )
-    if strip_error:
-        return {"ok": False, "error": strip_error, "notes": notes}
-    if strip_note and strip_note not in notes:
-        notes.append(strip_note)
+    prepared = None
+    if not item.get("svg"):
+        src = _newest_desktop_image(desktop)
+        if src is None:
+            return {
+                "ok": False,
+                "error": "No trophy picture on the Desktop. Save the image there and import again.",
+                "notes": notes,
+            }
+        try:
+            prepared = prepare_trophy_png(src)
+        except OSError as exc:
+            return {
+                "ok": False,
+                "error": f"The newest Desktop picture could not be read: {exc}",
+                "notes": notes,
+            }
+    else:
+        strip_error, strip_note = validate_strip(
+            str(item.get("slot") or ""), str(item.get("svg") or "")
+        )
+        if strip_error:
+            return {"ok": False, "error": strip_error, "notes": notes}
+        if strip_note and strip_note not in notes:
+            notes.append(strip_note)
     session = load_session(data_dir)
     held = {
         "id": "col_" + uuid.uuid4().hex[:12],
@@ -531,9 +821,14 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
         **item,
         "equipped": True,
     }
+    if prepared is not None:
+        held["image"] = _store_trophy_png(data_dir, held["id"], prepared)
     session.append(held)
     if len(session) > TROPHY_LIMIT:
-        dropped = len(session) - TROPHY_LIMIT
+        dropped_rows = session[: len(session) - TROPHY_LIMIT]
+        dropped = len(dropped_rows)
+        for row in dropped_rows:
+            _delete_trophy_file(data_dir, row)
         session = session[dropped:]
         notes.append(
             f"The hall holds {TROPHY_LIMIT}. Dropped the {dropped} oldest trophy"
@@ -569,6 +864,9 @@ def remove_item(data_dir: Path, item_id: str) -> dict[str, Any]:
     if not in_session and not in_saved:
         return {"ok": False, "error": "No collectible with that id."}
     if in_session and not in_saved:
+        for row in session:
+            if row.get("id") == item_id:
+                _delete_trophy_file(data_dir, row)
         session = [row for row in session if row.get("id") != item_id]
         _write_store(session_path(data_dir), session)
         return {"ok": True, "items": load_items(data_dir), "deleted": True}
@@ -592,6 +890,7 @@ def set_equipped(data_dir: Path, item_id: str, equipped: bool) -> dict[str, Any]
     if target is None and saved_target is None:
         return {"ok": False, "error": "No collectible with that id."}
     if not equipped and target is not None and saved_target is None:
+        _delete_trophy_file(data_dir, target)
         session = [row for row in session if row.get("id") != item_id]
         _write_store(session_path(data_dir), session)
         return {"ok": True, "items": load_items(data_dir), "deleted": True}
@@ -659,6 +958,7 @@ def build_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
     character = (palace.get("character_name") or "").strip()
     slot = assign_slot(data_dir, palace_id)
     anchor = SLOT_ANCHOR[slot]
+    look = pick_trophy_look(data_dir)
     prompt = _prompt_text(
         palace_id=palace_id,
         study_title=study_title,
@@ -668,6 +968,7 @@ def build_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
         keywords=keywords[:24],
         slot=slot,
         anchor=anchor,
+        look=look,
     )
     return {
         "ok": True,
@@ -677,6 +978,19 @@ def build_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
         "slot": slot,
         "anchor": anchor,
     }
+
+
+def pick_trophy_look(data_dir: Path) -> str:
+    """Choose one look the model has not used lately. The prompt names only that look."""
+    data_dir = Path(data_dir)
+    state = _load_requests(data_dir)
+    recent = [look for look in state.get("recent_looks") or [] if look in TROPHY_LOOKS]
+    pool = [look for look in TROPHY_LOOKS if look not in recent] or list(TROPHY_LOOKS)
+    look = random.choice(pool)
+    recent.append(look)
+    state["recent_looks"] = recent[-TROPHY_LOOK_MEMORY:]
+    _save_requests(data_dir, state)
+    return look
 
 
 def _prompt_text(
@@ -689,25 +1003,37 @@ def _prompt_text(
     keywords: list[str],
     slot: str,
     anchor: str,
+    look: str,
 ) -> str:
     beast_line = ", ".join(beasts) if beasts else "(none)"
     keyword_line = ", ".join(keywords) if keywords else "(none)"
-    svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 256 256\\">...</svg>'
     return (
         "Invent ONE trophy for a Memory Palace hall.\n"
-        "It is a single creative object on a pedestal, drawn as a 16-bit RPG prop. "
-        "Be inventive. It is not a garment, a weapon, a pet, or a person.\n"
-        "The trophy must remind the viewer of this palace's main topic. "
-        "Do not invent a generic cup with a tiny mark.\n"
+        "Use your image generator. Do not draw an SVG.\n"
+        "Make one object that belongs to this palace. It should feel like a prize worth keeping.\n"
+        f"Render this trophy in exactly this look: {look}. "
+        "Use that look for the whole object. Do not switch to another medium.\n"
+        "One object only. Not a scene and not a portrait. "
+        "The named look decides the form. Do not default to a cup.\n"
+        "Show the whole object. Every edge must sit inside the picture, "
+        "including the lowest part, so nothing is sliced off.\n"
+        "Keep it large, with a margin of empty background on every side, including under it.\n"
+        "Do not paint a floor, a shadow, a glow, or a pedestal under it. "
+        "The hall already has the stone table.\n"
+        "Background: transparent if you can. Otherwise one flat pure white, "
+        "the same color in every background pixel, with no gradient.\n"
+        "Do not make the object white, off-white, or pale gray.\n"
         f'Copy slot "{slot}" and anchor "{anchor}" exactly. Do not change them.\n\n'
         f"Study: {study_title}\n"
         f"Palace id (copy exactly): {palace_id}\n"
         f"Palace title: {title}\n"
         f"Main topic, which the trophy must show: {title}\n"
-        f"Beasts, for color and detail only: {beast_line}\n"
-        f"Keywords, for color and detail only: {keyword_line}\n\n"
-        "Deliver one file named exactly COLLECTIBLE_PACK.txt (download chip, or one marked fence).\n"
-        "Never claim you saved it to Desktop. I save the file myself.\n"
+        f"Beasts, for flavor only: {beast_line}\n"
+        f"Keywords, for flavor only: {keyword_line}\n\n"
+        "Deliver the picture as its own image file, and one file named exactly COLLECTIBLE_PACK.txt "
+        "(download chip, or one marked fence).\n"
+        "Do not put a picture filename in the JSON. I use the newest image on the Desktop.\n"
+        "Never claim you saved it to Desktop. I save the files myself.\n"
         "The pack body is only these markers and one JSON object. No Markdown outside the pack.\n\n"
         "===FILE: COLLECTIBLE.json===\n"
         "{\n"
@@ -715,7 +1041,6 @@ def _prompt_text(
         f'  "slot": "{slot}",\n'
         '  "name": "Short trophy name",\n'
         '  "blurb": "One sentence on why this trophy belongs to this palace.",\n'
-        f'  "svg": "{svg_example}",\n'
         '  "anim": "bob",\n'
         f'  "anchor": "{anchor}"\n'
         "}\n"
@@ -724,20 +1049,15 @@ def _prompt_text(
         f'- slot must be exactly "{slot}".\n'
         f'- anchor must be exactly "{anchor}".\n'
         f"- anim is one of: {', '.join(ANIMS)}. It moves only the trophy.\n"
-        "- svg is one object, under 12000 characters, no scripts, no external images.\n"
-        '- svg viewBox must be "0 0 256 256". A 64x64 picture is too coarse. A full-body strip will be rejected.\n'
-        "- The grid is 256 units across. Use it for seams, materials, and small parts. "
-        "Fill most of the canvas and leave a small margin. The trophy rests on the bottom edge, as if on a pedestal.\n"
-        "- 16-bit RPG pixel art: dark outline, hard edges, two flat shade steps on each material.\n"
-        "- No smooth gradients, blur, filters, glow, or fading opacity.\n"
-        "- Build one original object. Do not draw a person, a face, a pet, clothing, or a weapon.\n"
-        "- Use colors that belong to this palace, plus a dark outline and a darker shade.\n"
-        "- The largest shape must show the main topic before the name is read.\n"
-        "- The name names that topic. The blurb says why the trophy belongs to it.\n"
-        "- No text, barcodes, or sparkle clusters. "
-        "On a 256 grid, outlines are about 6 units wide. Interior details can be thinner.\n"
-        "- Draw a new trophy. Do not reuse an earlier drawing.\n"
-        "- Replace the example name, blurb, svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
+        "- Do not include an image filename or an svg. The picture is a separate file.\n"
+        "- The picture is one object on a transparent background, or on one flat pure white if transparency is unavailable.\n"
+        "- Show the whole object. The picture edge must not cut off any part, especially the bottom.\n"
+        "- No floor, shadow, glow, or pedestal in the picture. Leave empty background under the object too.\n"
+        "- The named look decides the form. Do not default to a cup.\n"
+        "- The object is not white, off-white, or pale gray.\n"
+        "- The name names the palace topic. The blurb says why the trophy belongs to it.\n"
+        "- No text in the picture.\n"
+        "- Replace the example name, blurb, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
         "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
         "Do not add updated, corrected, or v2 to the name.\n"
     )
@@ -831,9 +1151,11 @@ def _main(argv: list[str] | None = None) -> int:
     parser.add_argument("command", choices=["import-desktop"])
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--pack", type=Path, required=True)
+    parser.add_argument("--desktop", type=Path, default=None)
     args = parser.parse_args(argv)
     raw = args.pack.read_text(encoding="utf-8")
-    result = import_text(args.data_dir, raw)
+    desktop = args.desktop if args.desktop is not None else args.pack.parent
+    result = import_text(args.data_dir, raw, desktop=desktop)
     print(json.dumps(result, ensure_ascii=False))
     return 0 if result.get("ok") else 1
 

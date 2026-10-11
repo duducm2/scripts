@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=nameplate2" />
+    <link rel="stylesheet" href="/dashboard.css?v=trophyfit" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -5397,7 +5397,10 @@
 
       function trophyGrid(items, manage) {
         const hall = (items || [])
-          .filter((item) => item && item.svg && item.equipped !== false)
+          .filter(
+            (item) =>
+              item && (item.image || item.svg) && item.equipped !== false,
+          )
           .slice(0, 12);
         const cells = [];
         for (let i = 0; i < 12; i++) {
@@ -5409,9 +5412,12 @@
           const take = manage
             ? `<button type="button" class="spa-btn danger trophy-take" data-gear-remove="${escAttr(item.id)}">Take off</button>`
             : "";
+          const art = item.image
+            ? `<img src="${escAttr(item.image)}?v=trophyfit" alt="">`
+            : item.svg;
           cells.push(
             `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}">` +
-              `<div class="trophy-art">${item.svg}</div>` +
+              `<div class="trophy-art">${art}</div>` +
               `<div class="trophy-caption"><span class="trophy-name">${esc(item.name)}</span>${take}</div></div>`,
           );
         }
@@ -5426,6 +5432,45 @@
           );
         });
       }
+
+      function showTrophyInspect(spot) {
+        const hall = spot.closest(".trophy-hall");
+        const art = spot.querySelector(".trophy-art");
+        if (!hall || !art) return;
+        let layer = hall.querySelector(":scope > .trophy-inspect");
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.className = "trophy-inspect";
+          layer.innerHTML =
+            '<div class="trophy-inspect-art"></div><div class="trophy-inspect-name"></div>';
+          hall.appendChild(layer);
+        }
+        layer.querySelector(".trophy-inspect-art").innerHTML = art.innerHTML;
+        layer.querySelector(".trophy-inspect-name").textContent =
+          spot.querySelector(".trophy-name")?.textContent || "";
+        layer.hidden = false;
+        hall.classList.add("is-inspecting");
+      }
+
+      function hideTrophyInspect(hall) {
+        if (!hall) return;
+        const layer = hall.querySelector(":scope > .trophy-inspect");
+        if (layer) layer.hidden = true;
+        hall.classList.remove("is-inspecting");
+      }
+
+      document.addEventListener("mouseover", (event) => {
+        const spot = event.target.closest?.(".trophy-spot:not(.empty)");
+        if (!spot || spot.contains(event.relatedTarget)) return;
+        showTrophyInspect(spot);
+      });
+      document.addEventListener("mouseout", (event) => {
+        const hall = event.target.closest?.(".trophy-hall");
+        if (!hall) return;
+        const next = event.relatedTarget;
+        if (next && hall.contains(next)) return;
+        hideTrophyInspect(hall);
+      });
 
       function paintHalls() {
         const study = document.getElementById("studyTrophies");
@@ -5501,6 +5546,14 @@
               .forEach((el) => el.classList.remove("just-equipped"));
           }, 700);
         }
+      }
+
+      function openTrophyHall() {
+        withFullData(() => {
+          if (document.getElementById("overlay").classList.contains("open"))
+            closeOverlay();
+          if (state.view !== "wardrobe") setView("wardrobe");
+        });
       }
 
       function toggleWardrobe() {
@@ -6447,6 +6500,11 @@
           (e.key === "w" || e.key === "W")
         ) {
           e.preventDefault();
+          if (studyModalIsOpen()) {
+            closeStudyModal({ focusLatest: false });
+            openTrophyHall();
+            return;
+          }
           toggleWardrobe();
           return;
         }

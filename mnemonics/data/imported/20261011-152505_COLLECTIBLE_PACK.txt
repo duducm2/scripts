@@ -1,0 +1,12 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_DATAANALYST_19",
+"slot": "trophy",
+"name": "Foundry of Databricks",
+"blurb": "A handcrafted stop-motion puppet trophy representing the unified Delta triangle and Spark lightning of Databricks.",
+"image": "Gemini_Generated_Image_b0im75b0im75b0im.jpg",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=

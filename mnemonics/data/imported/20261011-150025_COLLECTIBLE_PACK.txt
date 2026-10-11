@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "trophy",
+
+  "name": "Prismatic Delta Spark Relic",
+
+  "blurb": "Forged from blown glass, this tiered triangular prism encases a crystalline lightning spark to celebrate mastery of unified clusters and data workflows.",
+
+  "image": "databricks_foundations_trophy.jpg",
+
+  "anim": "float",
+
+  "anchor": "pedestal"
+
+}
+
+===END_FILE===

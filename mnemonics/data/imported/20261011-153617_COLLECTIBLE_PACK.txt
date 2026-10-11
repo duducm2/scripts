@@ -1,0 +1,11 @@
+﻿===FILE: COLLECTIBLE.json===
+{
+  "palace_id": "PALACE_DATAANALYST_01",
+  "slot": "trophy",
+  "name": "Foundations of Analysis and Science Seal",
+  "blurb": "This wax seal honors the dual mastery of analytical reporting and predictive data science foundations.",
+  "image": "watermarked_img_17561892721117051000.jpg",
+  "anim": "float",
+  "anchor": "pedestal"
+}
+===END_FILE===

@@ -317,7 +317,7 @@ header.top .sub {
 }
 .trophy-spot {
   position: absolute;
-  width: 5.4%;
+  width: 8%;
   aspect-ratio: 1;
   transform: translateX(-50%);
   display: flex;
@@ -366,6 +366,12 @@ header.top .sub {
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+.trophy-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
 }
 .trophy-spot[data-anim="sway"] .trophy-art {
   animation-name: gear-sway;
@@ -426,13 +432,88 @@ header.top .sub {
   opacity: 1;
   visibility: visible;
 }
+.trophy-hall.is-inspecting .trophy-spot {
+  opacity: 0.4;
+}
+.trophy-hall.is-inspecting .trophy-spot:hover {
+  opacity: 1;
+}
+.trophy-hall.is-inspecting .trophy-name {
+  opacity: 0;
+  visibility: hidden;
+  height: 0;
+  padding: 0;
+}
+.trophy-inspect {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 58% 72% at 50% 46%,
+    rgba(18, 12, 6, 0.08),
+    rgba(6, 4, 2, 0.78)
+  );
+}
+.trophy-inspect[hidden] {
+  display: none;
+}
+.trophy-inspect-art {
+  width: 34%;
+  height: 52%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  filter: drop-shadow(0 14px 10px rgba(0, 0, 0, 0.72));
+  animation: trophy-inspect-in 0.16s ease-out;
+}
+.trophy-inspect-art img,
+.trophy-inspect-art svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.trophy-inspect-name {
+  max-width: 78%;
+  padding: 5px 12px 4px;
+  text-align: center;
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: clamp(12px, 2.2vw, 20px);
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: #3a240c;
+  background:
+    linear-gradient(#ffe7a3, #ffe7a3) top / 100% 3px no-repeat,
+    linear-gradient(#b58128, #b58128) bottom / 100% 3px no-repeat,
+    #e8b84a;
+  box-shadow:
+    0 0 0 2px #7a5414,
+    0 0 0 4px #2c1c08,
+    4px 4px 0 0 #1a1006;
+  image-rendering: pixelated;
+}
+@keyframes trophy-inspect-in {
+  from {
+    transform: scale(0.62);
+  }
+  to {
+    transform: scale(1);
+  }
+}
 .trophy-take {
   font-size: 10px;
   padding: 0 0.35rem;
   line-height: 1.4;
 }
 @media (prefers-reduced-motion: reduce) {
-  .trophy-art {
+  .trophy-art,
+  .trophy-inspect-art {
     animation: none;
   }
 }

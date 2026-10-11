@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "trophy",
+
+  "name": "Prismatic Delta Spark Relic",
+
+  "blurb": "A blown-glass triangular relic capturing an internal electrical current to represent Databricks core processing and unified data foundations.",
+
+  "image": "watermarked_img_12428299635203257979.jpg",
+
+  "anim": "float",
+
+  "anchor": "pedestal"
+
+}
+
+===END_FILE===

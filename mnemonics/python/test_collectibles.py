@@ -74,15 +74,15 @@ def test_trailing_comma_and_script_are_repaired() -> None:
     assert "<svg" in item["svg"].lower()
 
 
-def test_missing_svg_is_an_error() -> None:
-    item, _notes, error = repair_item(
-        _pack(
-            json.dumps({"palace_id": PALACE, "slot": "pet", "name": "Pup", "svg": ""})
-        ),
-        {PALACE},
+def test_missing_picture_is_an_error(tmp_path: Path) -> None:
+    _library(tmp_path)
+    result = import_text(
+        tmp_path,
+        _pack(json.dumps({"palace_id": PALACE, "slot": "trophy", "name": "Pup"})),
+        desktop=tmp_path,
     )
-    assert item is None
-    assert "svg" in error
+    assert result["ok"] is False
+    assert "Desktop" in result["error"]
 
 
 def test_unknown_palace_is_an_error() -> None:
@@ -136,7 +136,9 @@ def test_import_keeps_each_trophy_without_writing_the_library(tmp_path: Path) ->
     )
     names = [row["name"] for row in held["items"]]
     assert names == ["First cup", "Brick cup"]
-    assert all(row["slot"] == "trophy" and row["equipped"] is True for row in held["items"])
+    assert all(
+        row["slot"] == "trophy" and row["equipped"] is True for row in held["items"]
+    )
 
 
 def test_save_is_refused(tmp_path: Path) -> None:
@@ -221,7 +223,26 @@ def test_prompt_asks_for_one_trophy(tmp_path: Path) -> None:
     assert first["ok"] and first["slot"] == "trophy" and first["anchor"] == "pedestal"
     assert '"slot": "trophy"' in first["prompt"]
     assert "Databricks" in first["prompt"]
-    assert "garment" in first["prompt"]
+    assert "image generator" in first["prompt"]
+    assert "Do not paint a floor" in first["prompt"]
+    assert "Show the whole object" in first["prompt"]
+    assert "Do not default to a cup" in first["prompt"]
+    assert "16-bit" not in first["prompt"]
+    assert "viewBox" not in first["prompt"]
+    assert "3D, shiny, cartoon" not in first["prompt"]
+    assert '"image":' not in first["prompt"]
+    from collectibles import TROPHY_LOOKS, pick_trophy_look
+
+    hits = [
+        look
+        for look in TROPHY_LOOKS
+        if f"exactly this look: {look}." in first["prompt"]
+    ]
+    assert len(hits) == 1
+    seen = {hits[0]}
+    for _ in range(8):
+        seen.add(pick_trophy_look(tmp_path))
+    assert len(seen) == 9
     assert second["slot"] == "trophy"
     saved = json.loads(
         (tmp_path / "collectible_requests.json").read_text(encoding="utf-8")
@@ -326,3 +347,114 @@ def test_odd_icon_size_is_kept_and_marked_misfit() -> None:
     )
     assert error == ""
     assert "misfit" in note
+
+
+def test_white_backdrop_clears_and_the_center_stays(tmp_path: Path) -> None:
+    from PIL import Image
+
+    _library(tmp_path)
+    picture = Image.new("RGB", (40, 40), (255, 255, 255))
+    for x in range(15, 25):
+        for y in range(18, 36):
+            picture.putpixel((x, y), (200, 40, 40))
+    picture.putpixel((20, 22), (255, 255, 255))
+    (tmp_path / "cup.png").parent.mkdir(parents=True, exist_ok=True)
+    picture.save(tmp_path / "cup.png")
+    result = import_text(
+        tmp_path,
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "trophy",
+                    "name": "White cup",
+                    "image": "cup.png",
+                    "anim": "bob",
+                    "anchor": "pedestal",
+                }
+            )
+        ),
+        desktop=tmp_path,
+    )
+    assert result["ok"], result
+    url = result["item"]["image"]
+    assert url.startswith("/assets/trophies/")
+    assert result["item"]["svg"] == ""
+    stored = tmp_path / "web-assets" / "trophies" / (result["item"]["id"] + ".png")
+    opened = Image.open(stored)
+    assert opened.size[0] < 30
+    pixels = list(opened.getdata())
+    assert any(pixel[3] == 0 for pixel in pixels)
+    assert any(pixel[:3] == (200, 40, 40) and pixel[3] == 255 for pixel in pixels)
+    assert any(pixel[:3] == (255, 255, 255) and pixel[3] == 255 for pixel in pixels)
+
+
+def test_pale_floor_under_the_trophy_is_cleared(tmp_path: Path) -> None:
+    from PIL import Image
+
+    _library(tmp_path)
+    picture = Image.new("RGB", (48, 48), (255, 255, 255))
+    for x in range(16, 32):
+        for y in range(14, 34):
+            picture.putpixel((x, y), (40, 90, 180))
+    for y in range(34, 48):
+        for x in range(8, 40):
+            picture.putpixel((x, y), (228, 228, 228))
+    picture.save(tmp_path / "relic.png")
+    result = import_text(
+        tmp_path,
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "trophy",
+                    "name": "Blue relic",
+                    "image": "relic.png",
+                    "anim": "bob",
+                    "anchor": "pedestal",
+                }
+            )
+        ),
+        desktop=tmp_path,
+    )
+    assert result["ok"], result
+    stored = tmp_path / "web-assets" / "trophies" / (result["item"]["id"] + ".png")
+    opened = Image.open(stored)
+    pixels = list(opened.getdata())
+    assert not any(pixel[:3] == (228, 228, 228) and pixel[3] > 0 for pixel in pixels)
+    assert any(pixel[:3] == (40, 90, 180) and pixel[3] == 255 for pixel in pixels)
+    assert opened.size[0] < 24
+
+
+def test_import_uses_the_newest_desktop_picture(tmp_path: Path) -> None:
+    import time
+    from PIL import Image
+
+    _library(tmp_path)
+    Image.new("RGB", (20, 20), (10, 10, 10)).save(tmp_path / "named.png")
+    time.sleep(0.05)
+    Image.new("RGB", (20, 20), (20, 180, 40)).save(tmp_path / "later.png")
+    result = import_text(
+        tmp_path,
+        _pack(
+            json.dumps(
+                {
+                    "palace_id": PALACE,
+                    "slot": "trophy",
+                    "name": "Newest",
+                    "image": "named.png",
+                    "anim": "bob",
+                    "anchor": "pedestal",
+                }
+            )
+        ),
+        desktop=tmp_path,
+    )
+    assert result["ok"], result
+    stored = tmp_path / "web-assets" / "trophies" / (result["item"]["id"] + ".png")
+    opened = Image.open(stored)
+    assert opened.getpixel((opened.size[0] // 2, opened.size[1] // 2))[:3] == (
+        20,
+        180,
+        40,
+    )

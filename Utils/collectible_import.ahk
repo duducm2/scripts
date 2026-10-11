@@ -44,11 +44,17 @@ Collectible_WriteAiFix(errorMsg, extraNotes := "") {
         body .= "EXTRA NOTES`r`n" . Trim(extraNotes) . "`r`n`r`n"
     body .= "WHAT YOU MUST DO`r`n"
         . "- Re-emit one COLLECTIBLE_PACK.txt whose only data is ===FILE: COLLECTIBLE.json=== … ===END_FILE===.`r`n"
-        . "- The JSON object needs palace_id (unchanged), slot, name, blurb, svg, anim, and anchor.`r`n"
-        . "- slot: armor, gloves, pants, shoes, hat, ring, staff, sword, pet, cape, mount, accessory.`r`n"
+        . "- Also deliver the trophy picture as its own file. Do not put a filename in the JSON.`r`n"
+        . "- The JSON object needs palace_id (unchanged), slot, name, blurb, anim, and anchor.`r`n"
+        . "- slot must be trophy. anchor must be pedestal.`r`n"
         . "- anim: bob, sway, flicker, orbit, float.`r`n"
-        . "- anchor: head, shoulders, hands, feet, side, back, below.`r`n"
-        . "- svg is one small <svg> illustration. No scripts, no event handlers, no javascript: links.`r`n"
+        .
+        "- The picture is one whole object on a transparent background, or on one flat pure white if you cannot make it transparent.`r`n"
+        . "- Show every edge, including the bottom. The frame must not slice any part off.`r`n"
+        . "- No floor, shadow, glow, or pedestal in the picture. Leave empty background under the object.`r`n"
+        .
+        "- The named look decides the form. Do not default to a cup. Do not make the object white, off-white, or pale gray.`r`n"
+        . "- Do not send an svg.`r`n"
         . "- If the error is JSON, remove trailing commas and markdown outside the FILE markers.`r`n`r`n"
         . "DELIVERY RULES (mandatory)`r`n"
         . "- Deliver one complete COLLECTIBLE_PACK.txt (download chip preferred; else one marked code fence).`r`n"
@@ -90,8 +96,10 @@ Collectible_ImportFromDesktop(*) {
         return false
     }
     outPath := A_Temp . "\collectible_import_result.json"
+    Palace_Notify("Trophy pack is in. Removing the background, then placing it in the hall.", 12000, BANNER_ACCENT_INFO
+    )
     cmd := pyCmd . ' "' . py . '" import-desktop --data-dir "' . Palace_DataDir()
-    . '" --pack "' . path . '" > "' . outPath . '" 2>&1'
+    . '" --pack "' . path . '" --desktop "' . A_Desktop . '" > "' . outPath . '" 2>&1'
     try RunWait(A_ComSpec . " /c " . cmd, Palace_PythonDir(), "Hide")
     catch as e {
         Collectible_Fail("Could not run the collectible importer: " . e.Message)
@@ -116,7 +124,7 @@ Collectible_ImportFromDesktop(*) {
     label := name != "" ? name : "Relic"
     if (slot != "")
         label .= " (" . slot . ")"
-    Palace_Notify("Holding " . label . " — Save it in the wardrobe to keep it", 3200, BANNER_ACCENT_SUCCESS)
+    Palace_Notify(label . " is in the trophy hall.", 3200, BANNER_ACCENT_SUCCESS)
     Palace_AfterDataWriteRefreshUi()
     Palace_ReturnAfterImport()
     return true

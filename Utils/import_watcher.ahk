@@ -58,9 +58,7 @@ ImportWatcher_Catalog() {
         Map("id", "palace_pack", "label", "Palace pack",
             "patterns", ["PALACE_PACK*.txt", "PALACE_PACK*.csv"],
             "canonical", "PALACE_PACK.txt", "run", Palace_ImportMnemonicsFromDesktop),
-        Map("id", "collectible_pack", "label", "Palace collectible",
-            "patterns", ["COLLECTIBLE_PACK*.txt", "COLLECTIBLE_PACK*.csv"],
-            "canonical", "COLLECTIBLE_PACK.txt", "run", Collectible_ImportFromDesktop),
+        ; Palace collectibles stay manual: Import Management [C] only.
         Map("id", "plan_pack", "label", "Study plan pack",
             "patterns", ["PLAN_PACK*.txt", "PLAN_PACK*.csv"],
             "canonical", "PLAN_PACK.txt", "run", Palace_ImportPlanPackFromDesktop),
@@ -165,38 +163,38 @@ ImportWatcher_ScanCandidates() {
             }
         }
     } else {
-    for item in ImportWatcher_Catalog() {
-        for pat in item["patterns"] {
-            loop files desktop . "\" . pat, "F" {
-                path := A_LoopFileFullPath
-                key := ImportWatcher_LowerPath(path)
-                foundKeys[key] := true
-                stamp := ImportWatcher_FileStamp(path)
-                if (stamp = "")
-                    continue
-                ; Already processed at this exact stamp.
-                if (g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp) {
-                    if (g_ImportWatcherPending.Has(key))
-                        g_ImportWatcherPending.Delete(key)
-                    continue
+        for item in ImportWatcher_Catalog() {
+            for pat in item["patterns"] {
+                loop files desktop . "\" . pat, "F" {
+                    path := A_LoopFileFullPath
+                    key := ImportWatcher_LowerPath(path)
+                    foundKeys[key] := true
+                    stamp := ImportWatcher_FileStamp(path)
+                    if (stamp = "")
+                        continue
+                    ; Already processed at this exact stamp.
+                    if (g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp) {
+                        if (g_ImportWatcherPending.Has(key))
+                            g_ImportWatcherPending.Delete(key)
+                        continue
+                    }
+                    parts := StrSplit(stamp, "|")
+                    mtime := parts.Length >= 1 ? parts[1] : ""
+                    size := parts.Length >= 2 ? parts[2] : "0"
+                    if (!g_ImportWatcherPending.Has(key)
+                    || g_ImportWatcherPending[key].mtime != mtime
+                    || g_ImportWatcherPending[key].size != size) {
+                        g_ImportWatcherPending[key] := { mtime: mtime, size: size, stable: 1, path: path, item: item }
+                        continue
+                    }
+                    g_ImportWatcherPending[key].stable += 1
+                    g_ImportWatcherPending[key].path := path
+                    g_ImportWatcherPending[key].item := item
+                    if (g_ImportWatcherPending[key].stable >= IMPORT_WATCHER_STABLE_POLLS)
+                        ready.Push({ path: path, stamp: stamp, item: item, key: key })
                 }
-                parts := StrSplit(stamp, "|")
-                mtime := parts.Length >= 1 ? parts[1] : ""
-                size := parts.Length >= 2 ? parts[2] : "0"
-                if (!g_ImportWatcherPending.Has(key)
-                || g_ImportWatcherPending[key].mtime != mtime
-                || g_ImportWatcherPending[key].size != size) {
-                    g_ImportWatcherPending[key] := { mtime: mtime, size: size, stable: 1, path: path, item: item }
-                    continue
-                }
-                g_ImportWatcherPending[key].stable += 1
-                g_ImportWatcherPending[key].path := path
-                g_ImportWatcherPending[key].item := item
-                if (g_ImportWatcherPending[key].stable >= IMPORT_WATCHER_STABLE_POLLS)
-                    ready.Push({ path: path, stamp: stamp, item: item, key: key })
             }
         }
-    }
     }
 
     ; Drop pending entries for files that disappeared.

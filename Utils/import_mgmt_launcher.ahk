@@ -406,6 +406,8 @@ ImportMgmt_HelpText() {
     . "Re-run: #!+X → [P]`r`n`r`n"
     . "========== [C] PALACE COLLECTIBLE ==========`r`n"
     . "Pack: COLLECTIBLE_PACK.txt (===FILE: COLLECTIBLE.json===)`r`n"
+    . "Picture: the newest PNG, JPG, or WEBP on the Desktop. The JSON does not name it.`r`n"
+    . "Not watched. A file on the Desktop imports only when you press [C].`r`n"
     .
     "Writes: holds the relic on the avatar. Save in the wardrobe stores it in mnemonics/data/repl/collectibles.json`r`n"
     . "Success: archive → mnemonics/data/imported/; refreshes the Memory Palace tab`r`n"
