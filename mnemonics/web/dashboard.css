@@ -369,12 +369,12 @@ header.top .sub {
   z-index: 3;
   left: 46%;
   top: 0;
-  width: 14px;
-  height: 14px;
+  width: 16.8px;
+  height: 16.8px;
   pointer-events: none;
   background: var(--spark) center / 100% 100% no-repeat;
   image-rendering: pixelated;
-  filter: drop-shadow(0 0 2px #ffe7a0);
+  filter: drop-shadow(0 0 2.4px #ffe7a0);
   opacity: 0;
   animation:
     trophy-spark-fade 7s linear infinite,
@@ -391,16 +391,16 @@ header.top .sub {
 }
 @keyframes trophy-spark-fade {
   0%,
-  68% {
+  66% {
     opacity: 0;
   }
-  74% {
+  73% {
     opacity: 1;
   }
-  82% {
-    opacity: 0.4;
+  83% {
+    opacity: 0.48;
   }
-  90%,
+  92%,
   100% {
     opacity: 0;
   }
