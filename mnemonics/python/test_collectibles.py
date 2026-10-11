@@ -360,6 +360,8 @@ def test_pure_white_hole_clears_and_off_white_parts_stay(tmp_path: Path) -> None
         for y in range(18, 36):
             picture.putpixel((x, y), (200, 40, 40))
     picture.putpixel((20, 22), (255, 255, 255))
+    picture.putpixel((20, 23), (232, 232, 232))
+    picture.putpixel((21, 22), (250, 200, 140))
     picture.putpixel((19, 28), (245, 242, 230))
     (tmp_path / "cup.png").parent.mkdir(parents=True, exist_ok=True)
     picture.save(tmp_path / "cup.png")
@@ -390,7 +392,9 @@ def test_pure_white_hole_clears_and_off_white_parts_stay(tmp_path: Path) -> None
     assert any(pixel[3] == 0 for pixel in pixels)
     assert any(pixel[:3] == (200, 40, 40) and pixel[3] == 255 for pixel in pixels)
     assert any(pixel[:3] == (245, 242, 230) and pixel[3] == 255 for pixel in pixels)
+    assert any(pixel[:3] == (250, 200, 140) and pixel[3] == 255 for pixel in pixels)
     assert not any(pixel[:3] == (255, 255, 255) and pixel[3] > 0 for pixel in pixels)
+    assert not any(pixel[:3] == (232, 232, 232) and pixel[3] > 0 for pixel in pixels)
 
 
 def test_pale_floor_under_the_trophy_is_cleared(tmp_path: Path) -> None:

@@ -51,7 +51,7 @@ Collectible_WriteAiFix(errorMsg, extraNotes := "") {
         .
         "- The picture is one whole object on a transparent background, or on flat RGB 255,255,255 if you cannot make it transparent.`r`n"
         .
-        "- Openings the hall should show through are that same pure white, even inside the object. I delete every pure-white pixel (red, green, and blue all 250 or higher and almost the same). A part of the trophy is never pure white; a white-looking part is off-white, such as 245,242,230.`r`n"
+        "- Openings the hall should show through are that same pure white, even inside the object. I delete every pure-white pixel (red, green, and blue all 250 or higher and almost the same), and a pale gray rim stuck to an opening. A part of the trophy is never pure white; a white-looking part is off-white, such as 245,242,230. Do not outline the trophy in light gray.`r`n"
         . "- Show every edge, including the bottom. The frame must not slice any part off.`r`n"
         . "- No floor, shadow, glow, or pedestal in the picture. Leave empty background under the object.`r`n"
         .

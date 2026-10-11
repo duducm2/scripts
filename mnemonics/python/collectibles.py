@@ -406,6 +406,11 @@ def _is_pure_white(r: int, g: int, b: int) -> bool:
     return min(r, g, b) >= 250 and (max(r, g, b) - min(r, g, b)) <= 5
 
 
+def _is_hole_fringe(r: int, g: int, b: int) -> bool:
+    """Pale neutral rim left in a crevice. Warm trophy highlights stay."""
+    return min(r, g, b) >= 170 and (max(r, g, b) - min(r, g, b)) <= 8
+
+
 def _clear_connected_backdrop(im: Any, kind: str) -> None:
     width, height = im.size
     px = im.load()
@@ -494,6 +499,44 @@ def _clear_pure_white(im: Any) -> None:
             px[x, y] = (0, 0, 0, 0)
 
 
+def _peel_hole_fringe(im: Any, passes: int = 8) -> None:
+    """Drop pale neutral pixels that touch a hole, a few pixels deep."""
+    width, height = im.size
+    px = im.load()
+    neighbors = (
+        (-1, 0),
+        (1, 0),
+        (0, -1),
+        (0, 1),
+        (-1, -1),
+        (1, -1),
+        (-1, 1),
+        (1, 1),
+    )
+    for _ in range(passes):
+        doomed: list[tuple[int, int]] = []
+        for y in range(height):
+            for x in range(width):
+                red, green, blue, alpha = px[x, y]
+                if alpha < 20 or not _is_hole_fringe(red, green, blue):
+                    continue
+                for dx, dy in neighbors:
+                    nx, ny = x + dx, y + dy
+                    if (
+                        nx < 0
+                        or ny < 0
+                        or nx >= width
+                        or ny >= height
+                        or px[nx, ny][3] < 20
+                    ):
+                        doomed.append((x, y))
+                        break
+        if not doomed:
+            return
+        for x, y in doomed:
+            px[x, y] = (0, 0, 0, 0)
+
+
 def knock_out_backdrop(image: Any) -> Any:
     """Clear a white or magenta backdrop, and pure white enclosed by the trophy.
 
@@ -521,6 +564,7 @@ def knock_out_backdrop(image: Any) -> Any:
             _clear_connected_backdrop(im, kind)
             _peel_fringe(im, kind)
         _clear_pure_white(im)
+        _peel_hole_fringe(im)
         return _crop_to_content(im)
     kind = ""
     if kinds.count("white") >= 3:
@@ -531,6 +575,7 @@ def knock_out_backdrop(image: Any) -> Any:
         _clear_connected_backdrop(im, kind)
         _peel_fringe(im, kind)
     _clear_pure_white(im)
+    _peel_hole_fringe(im)
     return _crop_to_content(im)
 
 
@@ -1048,6 +1093,7 @@ def _prompt_text(
         "paint that opening the same pure white, even when the object surrounds it.\n"
         "I delete every pure-white pixel, including white enclosed inside the trophy. "
         "Pure white means red, green, and blue are all 250 or higher and almost the same.\n"
+        "I also delete a pale gray rim stuck to an opening. Do not outline the trophy in light gray.\n"
         "Do not paint any part of the trophy pure white. "
         "A part that should look white must be off-white, such as 245,242,230, so I keep it.\n"
         "Do not make the whole object white, off-white, or pale gray.\n"

@@ -1,6 +1,6 @@
 {
-  "pending_slot": "",
-  "pending_palace_id": "",
+  "pending_slot": "trophy",
+  "pending_palace_id": "PALACE_AI_03",
   "cycle": [
     "trophy"
   ],
@@ -14,6 +14,7 @@
     "an enamel badge",
     "a felt craft",
     "a marble carving",
-    "a cast bronze miniature"
+    "a cast bronze miniature",
+    "an ink wash painting"
   ]
 }
