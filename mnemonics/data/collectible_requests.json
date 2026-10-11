@@ -1,11 +1,5 @@
 {
   "pending_slot": "",
   "pending_palace_id": "",
-  "cycle": [
-    "armor",
-    "gloves",
-    "pants",
-    "shoes",
-    "hat"
-  ]
+  "cycle": ["armor", "gloves", "pants", "shoes", "hat"]
 }

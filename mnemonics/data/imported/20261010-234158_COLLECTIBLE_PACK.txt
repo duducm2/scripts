@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_GERMAN_11",
+
+  "slot": "ring",
+
+  "name": "Leech-Coil Signet",
+
+  "blurb": "A heavy dark-iron band bearing the coiled crest of an aquatic leech to seize foreign phonemes with a firm grip.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><path d=\"M16 28 H48 V54 H16 Z M26 36 H38 V46 H26 Z\" fill-rule=\"evenodd\" fill=\"#0f172a\"/><path d=\"M20 30 H44 V34 H20 Z\" fill=\"#334155\"/><rect x=\"10\" y=\"12\" width=\"44\" height=\"16\" rx=\"5\" fill=\"#0891b2\"/><rect x=\"14\" y=\"15\" width=\"36\" height=\"10\" rx=\"3\" fill=\"#06b6d4\"/><circle cx=\"32\" cy=\"20\" r=\"4\" fill=\"#67e8f9\"/><circle cx=\"32\" cy=\"20\" r=\"2\" fill=\"#0f172a\"/><rect x=\"20\" y=\"16\" width=\"4\" height=\"8\" rx=\"1\" fill=\"#0f172a\"/><rect x=\"40\" y=\"16\" width=\"4\" height=\"8\" rx=\"1\" fill=\"#0f172a\"/></svg>",
+
+  "anim": "bob",
+
+  "anchor": "hands"
+
+}
+
+===END_FILE===

@@ -18,7 +18,6 @@ SLOTS = (
     "pants",
     "shoes",
     "hat",
-    "ring",
     "staff",
     "sword",
     "pet",
@@ -33,7 +32,6 @@ SLOT_ORDER = (
     "pants",
     "shoes",
     "hat",
-    "ring",
     "staff",
     "sword",
     "cape",
@@ -45,7 +43,6 @@ SLOT_ANCHOR = {
     "hat": "head",
     "armor": "shoulders",
     "gloves": "hands",
-    "ring": "hand_left",
     "staff": "hand_right",
     "sword": "hand_right",
     "pants": "feet",
@@ -91,7 +88,6 @@ SLOT_LAYER = {
     "pants": "gear_legs",
     "shoes": "gear_legs",
     "cape": "gear_back",
-    "ring": "gear_hands_front",
     "staff": "gear_hands_front",
     "sword": "gear_hands_front",
     "pet": "gear_pet",
@@ -113,7 +109,6 @@ STRIP_SLOTS = (
 )
 # Held items and companions are small pictures pinned to a named point.
 HELD_ICON_SLOTS = (
-    "ring",
     "staff",
     "sword",
 )
@@ -121,7 +116,6 @@ ANCHORED_ICON_SLOTS = (
     "pet",
     "mount",
     "accessory",
-    "ring",
     "staff",
     "sword",
 )

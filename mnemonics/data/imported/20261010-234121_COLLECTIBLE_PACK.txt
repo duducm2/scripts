@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "hat",
+
+  "name": "Monet's Clef-Crown Beret",
+
+  "blurb": "Woven like an impressionist artist's beret and pinned with an angelic gold treble clef and amulet ledger lines, it crowns Claude Monet with pitch-perfect note placement.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><defs><linearGradient id=\"beretVelvet\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#475569\"/><stop offset=\"40%\" stop-color=\"#1e293b\"/><stop offset=\"100%\" stop-color=\"#0f172a\"/></linearGradient><linearGradient id=\"staffGold\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#fef08a\"/><stop offset=\"50%\" stop-color=\"#eab308\"/><stop offset=\"100%\" stop-color=\"#a16207\"/></linearGradient><radialGradient id=\"amuletGem\" cx=\"40%\" cy=\"40%\" r=\"60%\"><stop offset=\"0%\" stop-color=\"#67e8f9\"/><stop offset=\"70%\" stop-color=\"#0891b2\"/><stop offset=\"100%\" stop-color=\"#164e63\"/></radialGradient></defs><g stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M121 114 C120 95 133 74 153 73 C171 72 186 86 185 106 C184 114 179 122 173 126 C163 129 135 128 124 122 Z\" fill=\"url(#beretVelvet)\" stroke=\"#090d16\" stroke-width=\"1.4\"/><path d=\"M150 73 C151 68 155 68 155 73 Z\" stroke=\"url(#staffGold)\" stroke-width=\"1.5\" fill=\"none\"/><path d=\"M125 118 C135 123 162 124 174 118 C176 123 172 128 165 130 C153 133 134 132 126 126 Z\" fill=\"#1e293b\" stroke=\"#090d16\" stroke-width=\"1\"/><path d=\"M129 105 Q153 100 178 107\" stroke=\"url(#staffGold)\" stroke-width=\"0.75\" fill=\"none\" opacity=\"0.85\"/><path d=\"M131 109 Q153 104 176 111\" stroke=\"url(#staffGold)\" stroke-width=\"0.75\" fill=\"none\" opacity=\"0.85\"/><path d=\"M133 113 Q153 108 174 115\" stroke=\"url(#staffGold)\" stroke-width=\"0.75\" fill=\"none\" opacity=\"0.85\"/><path d=\"M136 117 Q153 112 171 119\" stroke=\"url(#staffGold)\" stroke-width=\"0.75\" fill=\"none\" opacity=\"0.85\"/><path d=\"M140 121 Q153 116 168 123\" stroke=\"url(#staffGold)\" stroke-width=\"0.75\" fill=\"none\" opacity=\"0.85\"/><path d=\"M163 127 C164 123 162 120 159 119 C155 118 153 121 153 124 C153 128 158 130 161 127 C165 124 167 113 165 105 C164 100 161 93 158 92 C156 91 154 93 155 97 C156 102 163 110 159 116 C157 119 153 120 150 119 C147 118 145 114 147 110 C149 106 153 105 156 107\" fill=\"none\" stroke=\"url(#staffGold)\" stroke-width=\"1.3\"/><circle cx=\"157\" cy=\"124\" r=\"1.2\" fill=\"#fef08a\"/><circle cx=\"139\" cy=\"111\" r=\"5.5\" fill=\"url(#amuletGem)\" stroke=\"url(#staffGold)\" stroke-width=\"1.2\"/><path d=\"M139 106 L141 111 L139 116 L137 111 Z\" fill=\"#ecfeff\" opacity=\"0.7\"/><circle cx=\"147\" cy=\"107\" r=\"1.6\" fill=\"#090d16\"/><circle cx=\"169\" cy=\"113\" r=\"1.6\" fill=\"#090d16\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "head"
+
+}
+
+===END_FILE===
