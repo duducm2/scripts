@@ -364,63 +364,62 @@ header.top .sub {
   animation: gear-bob 2.6s ease-in-out infinite;
 }
 .trophy-spark {
-  --spark-sm: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'><rect fill='%23fffef4' x='3' y='2' width='1' height='3'/><rect fill='%23fffef4' x='2' y='3' width='3' height='1'/><rect fill='%23fff' x='3' y='3' width='1' height='1'/></svg>");
-  --spark-lg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'><rect fill='%23e8c56a' x='3' y='0' width='1' height='1'/><rect fill='%23e8c56a' x='3' y='6' width='1' height='1'/><rect fill='%23e8c56a' x='0' y='3' width='1' height='1'/><rect fill='%23e8c56a' x='6' y='3' width='1' height='1'/><rect fill='%23fff4c4' x='2' y='2' width='1' height='1'/><rect fill='%23fff4c4' x='4' y='2' width='1' height='1'/><rect fill='%23fff4c4' x='2' y='4' width='1' height='1'/><rect fill='%23fff4c4' x='4' y='4' width='1' height='1'/><rect fill='%23fffef6' x='3' y='1' width='1' height='5'/><rect fill='%23fffef6' x='1' y='3' width='5' height='1'/><rect fill='%23fff' x='3' y='3' width='1' height='1'/></svg>");
-  --d: 0.6s;
+  --spark: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'><rect fill='%23e8c56a' x='3' y='0' width='1' height='1'/><rect fill='%23e8c56a' x='3' y='6' width='1' height='1'/><rect fill='%23e8c56a' x='0' y='3' width='1' height='1'/><rect fill='%23e8c56a' x='6' y='3' width='1' height='1'/><rect fill='%23fff4c4' x='2' y='2' width='1' height='1'/><rect fill='%23fff4c4' x='4' y='2' width='1' height='1'/><rect fill='%23fff4c4' x='2' y='4' width='1' height='1'/><rect fill='%23fff4c4' x='4' y='4' width='1' height='1'/><rect fill='%23fffef6' x='3' y='1' width='1' height='5'/><rect fill='%23fffef6' x='1' y='3' width='5' height='1'/><rect fill='%23fff' x='3' y='3' width='1' height='1'/></svg>");
   position: absolute;
-  z-index: 2;
-  top: -6%;
-  right: -4%;
-  width: 46%;
-  aspect-ratio: 1;
+  z-index: 3;
+  left: 46%;
+  top: 0;
+  width: 14px;
+  height: 14px;
   pointer-events: none;
-  background: var(--spark-sm) center / 100% 100% no-repeat;
+  background: var(--spark) center / 100% 100% no-repeat;
   image-rendering: pixelated;
+  filter: drop-shadow(0 0 2px #ffe7a0);
   opacity: 0;
-  animation: trophy-sparkle 6.8s steps(1, end) infinite;
-  animation-delay: var(--d);
+  animation:
+    trophy-spark-fade 7s linear infinite,
+    trophy-spark-hop 7s steps(1, end) infinite;
+  animation-delay: calc(var(--i, 0) * -2.2s);
 }
-.trophy-spark[data-spark="b"] {
-  --d: 3.4s;
-  top: 2%;
-  right: auto;
-  left: -2%;
+#studyModal .recall-head:not(.is-large) .trophy-spark {
+  display: none;
 }
-.trophy-spark::after {
-  content: "";
-  position: absolute;
-  left: 78%;
-  top: 62%;
-  width: 46%;
-  height: 46%;
-  background: var(--spark-sm) center / 100% 100% no-repeat;
-  image-rendering: pixelated;
-  opacity: 0;
-  animation: trophy-sparkle 6.8s steps(1, end) infinite;
-  animation-delay: calc(var(--d) + 0.55s);
+.trophy-art img,
+.trophy-art > svg {
+  position: relative;
+  z-index: 1;
 }
-@keyframes trophy-sparkle {
+@keyframes trophy-spark-fade {
   0%,
-  74% {
+  68% {
     opacity: 0;
-    background-image: var(--spark-sm);
   }
-  78% {
-    opacity: 0.95;
-    background-image: var(--spark-sm);
-  }
-  84% {
+  74% {
     opacity: 1;
-    background-image: var(--spark-lg);
   }
-  90% {
-    opacity: 0.7;
-    background-image: var(--spark-sm);
+  82% {
+    opacity: 0.4;
   }
-  96%,
+  90%,
   100% {
     opacity: 0;
-    background-image: var(--spark-sm);
+  }
+}
+@keyframes trophy-spark-hop {
+  0%,
+  33% {
+    left: 48%;
+    top: 2%;
+  }
+  33.01%,
+  66% {
+    left: 6%;
+    top: 34%;
+  }
+  66.01%,
+  100% {
+    left: 58%;
+    top: 18%;
   }
 }
 .trophy-art svg {
@@ -580,14 +579,8 @@ header.top .sub {
 }
 @media (prefers-reduced-motion: reduce) {
   .trophy-art,
-  .trophy-inspect-art,
-  .trophy-spark,
-  .trophy-spark::after {
+  .trophy-inspect-art {
     animation: none;
-  }
-  .trophy-spark,
-  .trophy-spark::after {
-    opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

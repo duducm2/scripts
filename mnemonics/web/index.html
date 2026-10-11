@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=sparkle" />
+    <link rel="stylesheet" href="/dashboard.css?v=sparkle6" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -5524,11 +5524,11 @@
             ? `<img src="${escAttr(item.image)}?v=trophyspots" alt="">`
             : item.svg;
           const sparkle =
-            i % 4 === 0
-              ? `<span class="trophy-spark" data-spark="${i % 8 === 0 ? "a" : "b"}" aria-hidden="true"></span>`
+            i % 3 === 0
+              ? `<span class="trophy-spark" style="--i:${Math.floor(i / 3)}" aria-hidden="true"></span>`
               : "";
           cells.push(
-            `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}">` +
+            `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}" style="--i:${i}">` +
               `<div class="trophy-art">${art}${sparkle}</div>` +
               `<div class="trophy-caption"><span class="trophy-name">${esc(item.name)}</span>${take}</div></div>`,
           );
