@@ -1,17 +1,17 @@
 # Data Analyst
 
 <details open>
-<summary><strong>Memory Palace 22: Unity Catalog Data Management</strong> · Character: Friedrich Nietzsche · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: Aristotle · 3 beasts · 3 atoms</summary>
 
 _No image_
 
-<p><em>2 beasts · 2 Knowledge Atoms</em></p>
+<p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
-### [Cl] clown
+### [Ch] chipmunk
 
-<img src="../../web/assets/beast-thumbs/clown.png" alt="clown" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/chipmunk.png" alt="chipmunk" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [I use <img alt="[Cross-Workspace Permission]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCross-Workspace%20Permission%5D&color=9fd4ff" />(passport) to propagate] [<img alt="[access rules]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baccess%20rules%5D&color=ffd966" />(stamp) automatically to all linked environments.]
@@ -21,9 +21,9 @@ _No image_
 **Quote**
 “the permissions that you give to your cataloges schemers and tables and other data assets will be applied to all workspaces that the data is shared to”
 
-### [Ck] Cold kitten
+### [Cg] Cold goat
 
-<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Cold kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Cold goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
 **Concept**
 💡 [I use <img alt="[Managed Tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BManaged%20Tables%5D&color=9fd4ff" />(leash) to restrict] [my datasets exclusively to the <img alt="[Delta format]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDelta%20format%5D&color=ffd966" />(triangle).]
@@ -32,25 +32,6 @@ _No image_
 
 **Quote**
 “managed tables can only be of the Delta format external tables can have multiple formats such as Delta par orc Avro CSV Json or text”
-
-#### Notes
-
-_No notes._
-
-#### Gallery
-
-_No gallery images._
-
-</details>
-
-<details open>
-<summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: Aristotle · 1 beast · 1 atom</summary>
-
-_No image_
-
-<p><em>1 beast · 1 Knowledge Atom</em></p>
-
-#### Knowledge Atoms
 
 ### [Cf] Cold frog
 
