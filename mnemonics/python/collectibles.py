@@ -845,6 +845,7 @@ def _prompt_text(
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
     return (
         "Invent ONE wearable collectible for my Memory Palace walker.\n"
+        "Make it a simple pixel-art prop, not a detailed illustration.\n"
         "It must be thematically tied to this palace. Do not invent a generic fantasy item.\n"
         f'The category is already chosen. Copy slot "{slot}" and anchor "{anchor}" exactly. '
         "Do not change them.\n\n"
@@ -874,6 +875,16 @@ def _prompt_text(
         f"- anim is one of: {', '.join(ANIMS)}\n"
         "- svg is under 6000 characters, no scripts, no external images.\n"
         f"{draw_rules}"
+        "- The walker is chunky pixel art: flat colors, hard edges, no shading. "
+        "The relic is shown small, so hairlines and tiny dots disappear. Draw a few big shapes.\n"
+        "- Flat fills only. No gradients, filters, blur, shadows, or fading opacity.\n"
+        "- Use 3 or 4 colors. One is a signature color from this palace. Keep the others dark and quiet.\n"
+        "- One motif, readable at a glance. Do not draw every keyword. "
+        "No text, no barcodes, no clusters of beads or sparkles.\n"
+        "- At most 8 shapes. Any stroke is at least 2 pixels wide. No curve thinner than 4 pixels.\n"
+        "- Follow the body silhouette inside the given box. A rectangle or a floating blob looks wrong.\n"
+        "- For a 64x64 icon, fill most of the canvas with that one object and leave a small margin.\n"
+        "- Draw this slot only. Do not reuse an earlier relic's drawing.\n"
         "- Use the palace's own objects, colors, and names. Replace the example name, blurb, "
         "svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
         "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
