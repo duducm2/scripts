@@ -18,11 +18,10 @@ SLOTS = (
     "pants",
     "shoes",
     "hat",
-    "staff",
     "sword",
     "pet",
     "cape",
-    "mount",
+    "sidekick",
     "accessory",
 )
 # Ask for worn gear before companions fall back to pets and accessories.
@@ -32,10 +31,9 @@ SLOT_ORDER = (
     "pants",
     "shoes",
     "hat",
-    "staff",
     "sword",
     "cape",
-    "mount",
+    "sidekick",
     "pet",
     "accessory",
 )
@@ -43,13 +41,12 @@ SLOT_ANCHOR = {
     "hat": "head",
     "armor": "shoulders",
     "gloves": "hands",
-    "staff": "hand_right",
     "sword": "hand_right",
     "pants": "feet",
     "shoes": "feet",
     "cape": "back",
     "pet": "side",
-    "mount": "below",
+    "sidekick": "beside",
     "accessory": "side",
 }
 # Pixel boxes on the 305x424 standing figure. Ink outside a worn slot is covered by the body.
@@ -88,10 +85,8 @@ SLOT_LAYER = {
     "pants": "gear_legs",
     "shoes": "gear_legs",
     "cape": "gear_back",
-    "staff": "gear_hands_front",
     "sword": "gear_hands_front",
     "pet": "gear_pet",
-    "mount": "gear_back",
     "accessory": "gear_accessory",
 }
 # Armor hides the default shirt. Pants and shoes are standing overlays drawn over the legs.
@@ -108,17 +103,14 @@ STRIP_SLOTS = (
     "cape",
 )
 # Held items and companions are small pictures pinned to a named point.
-HELD_ICON_SLOTS = (
-    "staff",
-    "sword",
-)
+HELD_ICON_SLOTS = ("sword",)
 ANCHORED_ICON_SLOTS = (
     "pet",
-    "mount",
     "accessory",
-    "staff",
     "sword",
 )
+# A sidekick is a second standing figure, not a hip icon and not a worn strip.
+SIDEKICK_SLOTS = ("sidekick",)
 _VIEWBOX = re.compile(r"""viewBox\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
 ANIMS = ("bob", "sway", "flicker", "orbit", "float")
 ANCHORS = (
@@ -131,6 +123,7 @@ ANCHORS = (
     "below",
     "hand_left",
     "hand_right",
+    "beside",
 )
 
 _FENCE = "```"
@@ -344,11 +337,30 @@ def validate_strip(slot: str, svg: str) -> tuple[str, str]:
         if _near(width, 64, 8) and _near(height, 64, 8):
             return "", ""
         return "", "Icon size does not match 64x64. Marked as misfit."
+    if slot in SIDEKICK_SLOTS:
+        if (
+            box is None
+            or box[2] >= 180
+            or box[3] >= 300
+            or (_near(box[2], 64, 8) and _near(box[3], 64, 8))
+        ):
+            return (
+                'A sidekick is a standing figure. Use viewBox "0 0 96 160". '
+                "A pet icon or a body strip was rejected.",
+                "",
+            )
+        if _near(box[2], 96, 8) and _near(box[3], 160, 12):
+            return "", ""
+        return "", "Sidekick size does not match 96x160. Marked as misfit."
     return "", ""
 
 
 def _strip_misfit(slot: str, svg: str) -> bool:
-    if slot not in STRIP_SLOTS and slot not in ANCHORED_ICON_SLOTS:
+    if (
+        slot not in STRIP_SLOTS
+        and slot not in ANCHORED_ICON_SLOTS
+        and slot not in SIDEKICK_SLOTS
+    ):
         return False
     error, note = validate_strip(slot, svg)
     return bool(error or note)
@@ -828,61 +840,91 @@ def _prompt_text(
             '- svg viewBox must be "0 0 64 64". A full-body strip will be rejected.\n'
         )
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
+    elif slot in SIDEKICK_SLOTS:
+        draw_rules = (
+            "- Draw only the sidekick. Do not draw the main walker.\n"
+            "- This is a second hero standing still, facing right. Not a pet, not a mascot, not an object.\n"
+            "- One full figure: head, torso, arms, legs, and feet. Feet touch the bottom edge. The head is near the top.\n"
+            "- Leave a small margin at the sides. The figure fills the frame.\n"
+            '- svg viewBox must be "0 0 96 160". A 64x64 pet icon will be rejected. '
+            "A full-body strip will be rejected.\n"
+            "- It stands on the floor to the viewer's left of the walker. "
+            "The pet, if any, stays at the hip on the other side.\n"
+        )
+        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 96 160\\">...</svg>'
     else:
         draw_rules = (
             "- The walker stands still. Do not move or animate the character.\n"
             "- anim moves only this relic, pinned to its anchor.\n"
             f"- svg is one small illustration pinned to {anchor}, under 6000 characters.\n"
             "- Keep it tight to that point. Do not let it float away.\n"
-            '- viewBox "0 0 64 64" is enough for a pet, a mount, or an accessory.\n'
+            '- viewBox "0 0 64 64" is enough for a pet or an accessory.\n'
         )
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
+    if slot in SIDEKICK_SLOTS:
+        lead = (
+            "Invent ONE sidekick who stands beside my Memory Palace walker.\n"
+            "This is a second hero, not a pet and not a trinket.\n"
+        )
+        place_rule = "- The sidekick is a person-shaped silhouette, feet on the ground, not a rectangle.\n"
+    else:
+        lead = (
+            "Invent ONE wearable collectible for my Memory Palace walker.\n"
+            "Make it a simple pixel-art prop, not a detailed illustration.\n"
+        )
+        place_rule = (
+            "- Follow the body silhouette inside the given box. A rectangle or a floating blob looks wrong.\n"
+            "- For a 64x64 icon, fill most of the canvas with that one object and leave a small margin.\n"
+        )
     return (
-        "Invent ONE wearable collectible for my Memory Palace walker.\n"
-        "Make it a simple pixel-art prop, not a detailed illustration.\n"
-        "It must be thematically tied to this palace. Do not invent a generic fantasy item.\n"
-        f'The category is already chosen. Copy slot "{slot}" and anchor "{anchor}" exactly. '
-        "Do not change them.\n\n"
-        f"Study: {study_title}\n"
-        f"Palace id (copy exactly): {palace_id}\n"
-        f"Palace title: {title}\n"
-        f"Character: {character_line}\n"
-        f"Beasts: {beast_line}\n"
-        f"Keywords: {keyword_line}\n\n"
-        "Deliver one file named exactly COLLECTIBLE_PACK.txt (download chip, or one marked fence).\n"
-        "Never claim you saved it to Desktop. I save the file myself.\n"
-        "The pack body is only these markers and one JSON object. No Markdown outside the pack.\n\n"
-        "===FILE: COLLECTIBLE.json===\n"
-        "{\n"
-        f'  "palace_id": "{palace_id}",\n'
-        f'  "slot": "{slot}",\n'
-        '  "name": "Short relic name",\n'
-        '  "blurb": "One sentence on why it belongs to this palace.",\n'
-        f'  "svg": "{svg_example}",\n'
-        '  "anim": "bob",\n'
-        f'  "anchor": "{anchor}"\n'
-        "}\n"
-        "===END_FILE===\n\n"
-        "Rules:\n"
-        f'- slot must be exactly "{slot}". Do not pick another category.\n'
-        f'- anchor must be exactly "{anchor}". Do not change it.\n'
-        f"- anim is one of: {', '.join(ANIMS)}\n"
-        "- svg is under 6000 characters, no scripts, no external images.\n"
-        f"{draw_rules}"
-        "- The walker is chunky pixel art: flat colors, hard edges, no shading. "
-        "The relic is shown small, so hairlines and tiny dots disappear. Draw a few big shapes.\n"
-        "- Flat fills only. No gradients, filters, blur, shadows, or fading opacity.\n"
-        "- Use 3 or 4 colors. One is a signature color from this palace. Keep the others dark and quiet.\n"
-        "- One motif, readable at a glance. Do not draw every keyword. "
-        "No text, no barcodes, no clusters of beads or sparkles.\n"
-        "- At most 8 shapes. Any stroke is at least 2 pixels wide. No curve thinner than 4 pixels.\n"
-        "- Follow the body silhouette inside the given box. A rectangle or a floating blob looks wrong.\n"
-        "- For a 64x64 icon, fill most of the canvas with that one object and leave a small margin.\n"
-        "- Draw this slot only. Do not reuse an earlier relic's drawing.\n"
-        "- Use the palace's own objects, colors, and names. Replace the example name, blurb, "
-        "svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
-        "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
-        "Do not add updated, corrected, or v2 to the name.\n"
+        lead
+        + (
+            "It must be thematically tied to this palace. Do not invent a generic fantasy item.\n"
+            f'The category is already chosen. Copy slot "{slot}" and anchor "{anchor}" exactly. '
+            "Do not change them.\n\n"
+            f"Study: {study_title}\n"
+            f"Palace id (copy exactly): {palace_id}\n"
+            f"Palace title: {title}\n"
+            f"Character: {character_line}\n"
+            f"Beasts: {beast_line}\n"
+            f"Keywords: {keyword_line}\n\n"
+            "Deliver one file named exactly COLLECTIBLE_PACK.txt (download chip, or one marked fence).\n"
+            "Never claim you saved it to Desktop. I save the file myself.\n"
+            "The pack body is only these markers and one JSON object. No Markdown outside the pack.\n\n"
+            "===FILE: COLLECTIBLE.json===\n"
+            "{\n"
+            f'  "palace_id": "{palace_id}",\n'
+            f'  "slot": "{slot}",\n'
+            '  "name": "Short relic name",\n'
+            '  "blurb": "One sentence on why it belongs to this palace.",\n'
+            f'  "svg": "{svg_example}",\n'
+            '  "anim": "bob",\n'
+            f'  "anchor": "{anchor}"\n'
+            "}\n"
+            "===END_FILE===\n\n"
+            "Rules:\n"
+            f'- slot must be exactly "{slot}". Do not pick another category.\n'
+            f'- anchor must be exactly "{anchor}". Do not change it.\n'
+            f"- anim is one of: {', '.join(ANIMS)}\n"
+            "- svg is under 6000 characters, no scripts, no external images.\n"
+            f"{draw_rules}"
+            "- The walker is chunky pixel art: flat colors, hard edges, no shading. "
+            "The relic is shown small, so hairlines and tiny dots disappear. Draw a few big shapes.\n"
+            "- Flat fills only. No gradients, filters, blur, shadows, or fading opacity.\n"
+            "- Use 3 or 4 colors. One is a signature color from this palace. Keep the others dark and quiet.\n"
+            "- One motif, readable at a glance. Do not draw every keyword. "
+            "No text, no barcodes, no clusters of beads or sparkles.\n"
+            "- At most 8 shapes for a worn piece or an icon. A sidekick may use about 12 shapes for the body.\n"
+            "- Any stroke is at least 2 pixels wide. No curve thinner than 4 pixels.\n"
+        )
+        + place_rule
+        + (
+            "- Draw this slot only. Do not reuse an earlier relic's drawing.\n"
+            "- Use the palace's own objects, colors, and names. Replace the example name, blurb, "
+            "svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
+            "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
+            "Do not add updated, corrected, or v2 to the name.\n"
+        )
     )
 
 

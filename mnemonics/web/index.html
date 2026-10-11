@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=gearlock" />
+    <link rel="stylesheet" href="/dashboard.css?v=sidekick" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -5116,10 +5116,9 @@
         pants: "gear_legs",
         shoes: "gear_legs",
         cape: "gear_back",
-        staff: "gear_hands_front",
         sword: "gear_hands_front",
         pet: "gear_pet",
-        mount: "gear_back",
+        sidekick: "beside",
         accessory: "gear_accessory",
       };
       const SLOT_OCCLUDES = {};
@@ -5131,13 +5130,8 @@
         "shoes",
         "cape",
       ]);
-      const ICON_SLOTS = new Set([
-        "pet",
-        "accessory",
-        "mount",
-        "staff",
-        "sword",
-      ]);
+      const ICON_SLOTS = new Set(["pet", "accessory", "sword"]);
+      const SIDEKICK_SLOT = "sidekick";
       const SLOT_POINT = {
         hat: "head_top",
         armor: "shoulders",
@@ -5145,10 +5139,9 @@
         pants: "hip_right",
         shoes: "foot_right",
         cape: "back",
-        staff: "hand_right",
         sword: "hand_right",
         pet: "side",
-        mount: "below",
+        sidekick: "beside",
         accessory: "side",
       };
       const GEAR_SLOTS = [
@@ -5158,10 +5151,9 @@
         ["pants", "Pants"],
         ["shoes", "Shoes"],
         ["cape", "Cape"],
-        ["staff", "Staff"],
         ["sword", "Sword"],
         ["pet", "Pet"],
-        ["mount", "Mount"],
+        ["sidekick", "Sidekick"],
         ["accessory", "Accessory"],
       ];
       let heroAnchors = null;
@@ -5191,7 +5183,6 @@
       }
 
       const SLOT_BOX = {
-        staff: { w: 14, h: 32, du: 0.01, dv: -0.14 },
         sword: { w: 18, h: 24, du: 0.05, dv: -0.08 },
         pet: { w: 24, h: 20, du: 0, dv: 0 },
         accessory: { w: 20, h: 16, du: 0, dv: 0 },
@@ -5320,6 +5311,7 @@
               .map((item) => gearMarkup(item, pop, false))
               .join("");
           }
+          paintSidekick(sprite, items, pop);
           return;
         }
         const buckets = {};
@@ -5331,6 +5323,7 @@
         const looseItems = [];
         for (const item of items || []) {
           if (!item.equipped || !item.svg) continue;
+          if (item.slot === SIDEKICK_SLOT) continue;
           const layerName = layerFor(item);
           const fitted = STRIP_SLOTS.has(item.slot) && svgCoversBody(item.svg);
           const behind =
@@ -5351,6 +5344,31 @@
           }
         }
         if (gear) gear.innerHTML = loose.join("");
+        paintSidekick(sprite, items, pop);
+      }
+
+      function paintSidekick(sprite, items, pop) {
+        const host = sprite && sprite.parentElement;
+        if (!host) return;
+        let box = host.querySelector(":scope > .hero-sidekick");
+        if (!box) {
+          box = document.createElement("div");
+          box.className = "hero-sidekick";
+          host.appendChild(box);
+        }
+        const figures = (items || []).filter(
+          (item) => item.equipped && item.svg && item.slot === SIDEKICK_SLOT,
+        );
+        box.innerHTML = figures
+          .map((item) => {
+            const extra = pop.has(item.id) ? " just-equipped" : "";
+            return (
+              `<span class="sidekick${extra}" data-anim="${escAttr(item.anim || "bob")}" data-slot="sidekick" title="${escAttr(item.name || "")}">` +
+              item.svg +
+              "</span>"
+            );
+          })
+          .join("");
       }
 
       function layerFor(item) {
