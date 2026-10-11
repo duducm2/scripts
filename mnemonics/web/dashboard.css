@@ -195,17 +195,13 @@ header.top .sub {
 }
 .hero-static .hero-layer,
 .hero-static .hero-frames,
-.hero-static .gear.track,
-.hero-static .hero-layer.has-strip .gear.fitted {
+.hero-static .gear.track {
   animation: none;
   transform: none;
 }
 .hero-static .hero-layer[data-layer^="body_"] {
   background-size: 100% 100%;
   background-position: 0 0;
-}
-.hero-static .hero-sprite .gear[data-anim] {
-  animation: none;
 }
 .hero-static .hero-sprite .gear.just-equipped {
   animation: gear-pop 0.55s ease;

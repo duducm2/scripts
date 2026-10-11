@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=photos" />
+    <link rel="stylesheet" href="/dashboard.css?v=still" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -6736,109 +6736,38 @@
         const hero = document.getElementById("hero");
         if (!hero) return;
         const modal = document.getElementById("studyModal");
-        const SPEED = 56;
-        let x = 80;
-        let y = 140;
-        let dir = 1;
-        let last = performance.now();
-        let frame = 0;
-        let laneCache = null;
 
         function metrics() {
           const h = 180;
           return { h: h, w: (305 / 424) * h };
         }
 
-        function place() {
+        function park() {
+          if (!modal || !modal.classList.contains("open")) {
+            hero.classList.remove("in-modal", "is-walking", "face-left");
+            return;
+          }
           const size = metrics();
+          const lane = document.querySelector("#studyModal .hero-lane");
+          hero.classList.add("in-modal");
+          hero.classList.remove("is-walking", "face-left");
+          if (!lane) return;
+          const rect = lane.getBoundingClientRect();
+          if (rect.width < 48) return;
+          const x = (rect.left + rect.right) / 2;
+          const y = rect.bottom - 6;
           hero.style.left = x - size.w / 2 + "px";
           hero.style.top = y - size.h + "px";
         }
 
-        function patrolRect() {
-          if (laneCache) return laneCache;
-          const size = metrics();
-          const lane = document.querySelector("#studyModal .hero-lane");
-          if (!lane) return null;
-          const rect = lane.getBoundingClientRect();
-          if (rect.width < 48) return null;
-          laneCache = {
-            left: rect.left + size.w / 2 + 8,
-            right: rect.right - size.w / 2 - 8,
-            y: rect.bottom - 6,
-          };
-          return laneCache;
-        }
-
-        function stop() {
-          if (frame) cancelAnimationFrame(frame);
-          frame = 0;
-          laneCache = null;
-          hero.classList.remove("in-modal", "is-walking", "face-left");
-        }
-
-        function start() {
-          if (frame || !modal || !modal.classList.contains("open")) return;
-          hero.classList.add("in-modal");
-          laneCache = null;
-          const lane = patrolRect();
-          if (lane) {
-            x = lane.left + 4;
-            y = lane.y;
-            dir = 1;
-            hero.classList.remove("face-left");
-            place();
-          }
-          last = performance.now();
-          frame = requestAnimationFrame(tick);
-        }
-
-        function tick(now) {
-          if (!modal || !modal.classList.contains("open")) {
-            stop();
-            return;
-          }
-          const dt = Math.min(0.05, (now - last) / 1000);
-          last = now;
-          const lane = patrolRect();
-          const before = x;
-          if (lane && lane.right - lane.left > 24) {
-            if (x < lane.left || x > lane.right) {
-              x = lane.left + 4;
-              y = lane.y;
-            }
-            y = lane.y;
-            let next = x + dir * SPEED * dt;
-            if (next <= lane.left || next >= lane.right) {
-              dir *= -1;
-              next = x + dir * SPEED * dt;
-              if (next > lane.left && next < lane.right) x = next;
-            } else {
-              x = next;
-            }
-            hero.classList.toggle("face-left", dir < 0);
-          }
-          hero.classList.toggle(
-            "is-walking",
-            !WALKER_STATIC && Math.abs(x - before) > 0.2,
-          );
-          place();
-          frame = requestAnimationFrame(tick);
-        }
-
         if (modal) {
-          new MutationObserver(function () {
-            if (modal.classList.contains("open")) start();
-            else stop();
-          }).observe(modal, {
+          new MutationObserver(park).observe(modal, {
             attributes: true,
             attributeFilter: ["class"],
           });
-          if (modal.classList.contains("open")) start();
+          if (modal.classList.contains("open")) park();
         }
-        window.addEventListener("resize", function () {
-          laneCache = null;
-        });
+        window.addEventListener("resize", park);
       })();
     </script>
   </body>

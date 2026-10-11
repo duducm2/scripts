@@ -786,7 +786,8 @@ def _prompt_text(
     character_line = character or "(none)"
     if slot in STRIP_SLOTS:
         draw_rules = (
-            "- The walker is standing still in a three-quarter T-pose, turned slightly toward the viewer and facing right. Both eyes are visible. Arms are straight out. Do not animate.\n"
+            "- The walker stands still in a three-quarter T-pose, turned slightly toward the viewer and facing right. Both eyes are visible. Arms are straight out. Do not move or animate the character.\n"
+            "- anim moves only this relic. The body stays a fixed puzzle.\n"
             "- Draw a 305x424 transparent SVG of the item on that standing figure.\n"
             f"- Cover only the body region for the {slot}. Leave the rest of the canvas empty.\n"
             "- Head near the top, feet together at the bottom, arms extended horizontally.\n"
@@ -796,7 +797,8 @@ def _prompt_text(
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 305 424\\">...</svg>'
     elif slot in HELD_ICON_SLOTS:
         draw_rules = (
-            "- The walker is standing still. Do not animate.\n"
+            "- The walker stands still. Do not move or animate the character.\n"
+            "- anim moves only this icon, pinned to its anchor.\n"
             f"- Draw a 64x64 transparent SVG of the item. It will be pinned to {anchor}.\n"
             "- Keep the drawing inside the icon. Do not draw the character.\n"
             '- svg viewBox must be "0 0 64 64". A full-body strip will be rejected.\n'
@@ -804,7 +806,8 @@ def _prompt_text(
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
     else:
         draw_rules = (
-            "- The walker is standing still. Do not animate.\n"
+            "- The walker stands still. Do not move or animate the character.\n"
+            "- anim moves only this relic, pinned to its anchor.\n"
             f"- svg is one small illustration pinned to {anchor}, under 6000 characters.\n"
             "- Keep it tight to that point. Do not let it float away.\n"
             '- viewBox "0 0 64 64" is enough for a pet, a mount, or an accessory.\n'
