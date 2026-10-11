@@ -1,0 +1,12 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_PIANO_11",
+"slot": "trophy",
+"name": "The Great Clefs and Placement Felt Trophy",
+"blurb": "A whimsical hand-stitched felt creation celebrating note placement and key clefs, flanked by an angel, alligator, and friends who have gathered to learn the staff.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
+=END_FILE=

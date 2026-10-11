@@ -52,7 +52,7 @@
 **Concept**
 💡 The Way of the Celestial Masters was the <img alt="[first]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfirst%5D&color=9fd4ff" />(rice pecks) <img alt="[organized]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Borganized%5D&color=ffd966" />(ranked tower) Taoist group, started by Zhang Daoling after a <img alt="[vision]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvision%5D&color=ffd966" />(sage-vision) of Laozi.
 
-<img src="../../web/assets/keyword-images/rice_pecks.jpg" alt="rice pecks" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/sage_vision.jpg" alt="sage-vision" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/rice_pecks.jpg" alt="rice pecks" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/ranked_tower.png" alt="ranked tower" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/sage_vision.jpg" alt="sage-vision" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “The first organized form of Taoism was the Way of the Celestial Masters, which developed from the Five Pecks of Rice movement at the end of the 2nd century CE. The latter had been founded by Zhang Daoling, who was said to have had a vision of Laozi in 142 CE”
@@ -277,7 +277,7 @@ _No gallery images._
 **Concept**
 💡 Wu wei is <img alt="[effortless]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Beffortless%5D&color=9fd4ff" />(sleeping cat) action: you reach a goal by <img alt="[flowing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bflowing%5D&color=ffd966" />(flood) with the world, not by <img alt="[forcing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bforcing%5D&color=ffd966" />(crowbar) it.
 
-<img src="../../web/assets/keyword-images/flood.jpg" alt="flood" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/crowbar.png" alt="crowbar" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+<img src="../../web/assets/keyword-images/sleeping_cat.jpg" alt="sleeping cat" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/flood.jpg" alt="flood" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/crowbar.png" alt="crowbar" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
 
 **Quote**
 “Wu wei is a primary ethical concept in Taoism. Standard translations are non-action, effortless action, action without intent, non-interference, and non-intervention.”

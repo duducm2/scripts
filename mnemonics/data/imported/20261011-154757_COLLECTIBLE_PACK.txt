@@ -1,0 +1,10 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+{
+"palace_id": "PALACE_DATAANALYST_20",
+"slot": "trophy",
+"name": "The Compass of the Cascading Workspace",
+"blurb": "Awarded for mastering the intricate pathways of Databricks Workspace Navigation, finding the golden routes through catalog tables under the icy gaze of the data dragon.",
+"anim": "sway",
+"anchor": "pedestal"
+}
+=END_FILE=

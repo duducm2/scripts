@@ -96,14 +96,14 @@ Collectible_ImportFromDesktop(*) {
         return false
     }
     outPath := A_Temp . "\collectible_import_result.json"
-    Palace_Notify("Trophy pack is in. Removing the background, then placing it in the hall.", 12000, BANNER_ACCENT_INFO
-    )
+    hubClosed := ImportMgmt_CloseIfOpen()
+    Palace_Notify("Trophy pack is in. Removing the background, then placing it in the hall.", 12000, BANNER_ACCENT_INFO)
     cmd := pyCmd . ' "' . py . '" import-desktop --data-dir "' . Palace_DataDir()
     . '" --pack "' . path . '" --desktop "' . A_Desktop . '" > "' . outPath . '" 2>&1'
     try RunWait(A_ComSpec . " /c " . cmd, Palace_PythonDir(), "Hide")
     catch as e {
         Collectible_Fail("Could not run the collectible importer: " . e.Message)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(hubClosed)
         return false
     }
     out := Palace_ReadUtf8(outPath)
@@ -112,7 +112,7 @@ Collectible_ImportFromDesktop(*) {
         if (err = "")
             err := Trim(out) != "" ? Trim(out) : "COLLECTIBLE_PACK could not be imported."
         Collectible_Fail(err)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(hubClosed)
         return false
     }
     name := Collectible_JsonField(out, "name")
@@ -126,7 +126,7 @@ Collectible_ImportFromDesktop(*) {
         label .= " (" . slot . ")"
     Palace_Notify(label . " is in the trophy hall.", 3200, BANNER_ACCENT_SUCCESS)
     Palace_AfterDataWriteRefreshUi()
-    Palace_ReturnAfterImport()
+    Palace_ReturnAfterImport(hubClosed)
     return true
 }
 

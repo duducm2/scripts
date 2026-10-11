@@ -15,7 +15,6 @@
     },
     {
       "id": "col_7c529a1a057c",
-      "created_at": "2026-10-11T18:36:17Z",
       "palace_id": "PALACE_DATAANALYST_01",
       "slot": "trophy",
       "name": "Foundations of Analysis and Science Seal",
@@ -23,6 +22,33 @@
       "svg": "",
       "image": "/assets/trophies/col_7c529a1a057c.png",
       "anim": "float",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-11T18:36:17Z"
+    },
+    {
+      "id": "col_bf3d6986f6da",
+      "palace_id": "PALACE_DATAANALYST_20",
+      "slot": "trophy",
+      "name": "The Compass of the Cascading Workspace",
+      "blurb": "Awarded for mastering the intricate pathways of Databricks Workspace Navigation, finding the golden routes through catalog tables under the icy gaze of the data dragon.",
+      "svg": "",
+      "image": "/assets/trophies/col_bf3d6986f6da.png",
+      "anim": "sway",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-11T18:47:56Z"
+    },
+    {
+      "id": "col_f3ed3b264df5",
+      "created_at": "2026-10-11T18:54:09Z",
+      "palace_id": "PALACE_PIANO_11",
+      "slot": "trophy",
+      "name": "The Great Clefs and Placement Felt Trophy",
+      "blurb": "A whimsical hand-stitched felt creation celebrating note placement and key clefs, flanked by an angel, alligator, and friends who have gathered to learn the staff.",
+      "svg": "",
+      "image": "/assets/trophies/col_f3ed3b264df5.png",
+      "anim": "bob",
       "anchor": "pedestal",
       "equipped": true
     }
