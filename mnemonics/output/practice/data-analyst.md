@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: Aristotle · 3 beasts · 3 atoms</summary>
 
-_No image_
+![Memory Palace 21](images/data-analyst/21.jpg)
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
@@ -58,7 +58,7 @@ _No gallery images._
 <details open>
 <summary><strong>Memory Palace 20: Databricks Workspace Navigation</strong> · Character: Plato · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 20](images/data-analyst/20.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 

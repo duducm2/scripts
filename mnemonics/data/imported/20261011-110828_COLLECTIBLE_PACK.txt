@@ -1,0 +1,14 @@
+﻿```text
+===FILE: COLLECTIBLE.json===
+{
+  "palace_id": "PALACE_DATAANALYST_19",
+  "slot": "trophy",
+  "name": "Unified Spark Engine",
+  "blurb": "A reinforced foundation of data bricks, bridging the relentless lightning of Spark with a solid Delta core.",
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\"><g id=\"bone-horns\"><path d=\"M 64 176 C 30 140 20 90 32 72 C 44 96 56 128 84 152 Z\" fill=\"#F3F4F6\" stroke=\"#111827\" stroke-width=\"6\" stroke-linejoin=\"round\"/><path d=\"M 84 152 C 56 128 44 96 32 72 C 38 96 48 120 70 144 Z\" fill=\"#D1D5DB\"/><path d=\"M 192 176 C 226 140 236 90 224 72 C 212 96 200 128 172 152 Z\" fill=\"#F3F4F6\" stroke=\"#111827\" stroke-width=\"6\" stroke-linejoin=\"round\"/><path d=\"M 192 176 C 226 140 236 90 224 72 C 218 96 208 120 186 144 Z\" fill=\"#9CA3AF\"/></g><g id=\"delta-core\"><path d=\"M 128 16 L 212 170 L 44 170 Z M 128 76 L 83 146 L 173 146 Z\" fill-rule=\"evenodd\" fill=\"#111827\"/><path d=\"M 128 26 L 202 164 L 54 164 Z M 128 86 L 93 140 L 163 140 Z\" fill-rule=\"evenodd\" fill=\"#EF4444\"/><path d=\"M 128 26 L 202 164 L 128 164 Z M 128 86 L 128 140 L 163 140 Z\" fill-rule=\"evenodd\" fill=\"#B91C1C\"/><path d=\"M 128 26 L 54 164 L 66 164 L 128 50 Z\" fill=\"#FCA5A5\"/><path d=\"M 128 86 L 163 140 L 147 140 L 128 110 Z\" fill=\"#FCA5A5\"/></g><g id=\"pedestal\"><path d=\"M 32 250 L 224 250 L 224 196 L 168 156 L 88 156 L 32 196 Z\" fill=\"#111827\"/><path d=\"M 38 244 L 218 244 L 218 200 L 166 162 L 90 162 L 38 200 Z\" fill=\"#6B7280\"/><path d=\"M 128 162 L 166 162 L 218 200 L 218 244 L 128 244 Z\" fill=\"#4B5563\"/><path d=\"M 38 200 L 90 162 L 128 162 L 128 174 L 94 174 L 46 208 L 46 244 L 38 244 Z\" fill=\"#9CA3AF\"/><path d=\"M 38 222 L 218 222 M 128 222 L 128 244 M 82 200 L 82 222 M 174 200 L 174 222\" stroke=\"#111827\" stroke-width=\"6\" stroke-linejoin=\"miter\"/><polygon points=\"120,166 136,166 142,176 154,178 156,190 166,196 156,204 154,216 142,218 136,228 120,228 114,218 102,216 100,204 90,196 100,190 102,178 114,176\" fill=\"#F59E0B\" stroke=\"#111827\" stroke-width=\"6\" stroke-linejoin=\"miter\"/><circle cx=\"128\" cy=\"197\" r=\"14\" fill=\"#B45309\"/><circle cx=\"128\" cy=\"197\" r=\"10\" fill=\"#111827\"/><path d=\"M 120 166 L 136 166 L 142 176 L 128 176 Z\" fill=\"#FDE68A\"/></g><g id=\"spark\"><polygon points=\"176,16 96,104 136,104 76,204 164,116 124,116\" fill=\"#FBBF24\" stroke=\"#111827\" stroke-width=\"8\" stroke-linejoin=\"miter\"/><path d=\"M 176 16 L 96 104 L 116 104 Z M 136 104 L 76 204 L 106 164 Z\" fill=\"#FEF3C7\"/><path d=\"M 76 204 L 164 116 L 134 116 Z M 124 116 L 176 16 L 156 46 Z\" fill=\"#D97706\"/></g></svg>",
+  "anim": "bob",
+  "anchor": "pedestal"
+}
+===END_FILE===
+
+```
