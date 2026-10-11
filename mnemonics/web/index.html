@@ -2193,7 +2193,7 @@
         if (state.beastThumbManifestPromise)
           return state.beastThumbManifestPromise;
         state.beastThumbManifestPromise = fetch(
-          "/assets/beast-thumb-manifest.json",
+          "/assets/beast-thumb-manifest.json?v=recallthumbs",
         )
           .then((r) => (r.ok ? r.json() : null))
           .then((m) => {

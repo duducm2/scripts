@@ -1,6 +1,6 @@
 {
-  "pending_slot": "",
-  "pending_palace_id": "",
+  "pending_slot": "trophy",
+  "pending_palace_id": "PALACE_ENGLISH_13",
   "cycle": [
     "trophy"
   ]

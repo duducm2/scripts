@@ -3907,22 +3907,22 @@
       "adj_filename": "adj_bone.png",
       "adj_url": "/assets/beast-thumbs/adj_bone.png"
     },
-    "BEAST_DATAANALYST_22_Ck": {
-      "label": "Cold kitten",
-      "peg_code": "Ck",
-      "filename": "kitten.png",
-      "url": "/assets/beast-thumbs/kitten.png",
-      "source_slug": "kitten",
+    "BEAST_DATAANALYST_21_Cg": {
+      "label": "Cold goat",
+      "peg_code": "Cg",
+      "filename": "goat.png",
+      "url": "/assets/beast-thumbs/goat.png",
+      "source_slug": "goat",
       "adjective": "cold",
       "adj_filename": "adj_cold.png",
       "adj_url": "/assets/beast-thumbs/adj_cold.png"
     },
-    "BEAST_DATAANALYST_22_Cl": {
-      "label": "clown",
-      "peg_code": "Cl",
-      "filename": "clown.png",
-      "url": "/assets/beast-thumbs/clown.png",
-      "source_slug": "clown",
+    "BEAST_DATAANALYST_21_Ch": {
+      "label": "chipmunk",
+      "peg_code": "Ch",
+      "filename": "chipmunk.png",
+      "url": "/assets/beast-thumbs/chipmunk.png",
+      "source_slug": "chipmunk",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
