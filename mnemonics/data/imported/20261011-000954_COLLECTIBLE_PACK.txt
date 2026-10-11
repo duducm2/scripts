@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "accessory",
+
+  "name": "Delta Core Pouch",
+
+  "blurb": "Darwin's side satchel holds the Core apple and Delta crystal, keeping raw tables ready for notebook pipelines.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" shape-rendering=\"crispEdges\"><path d=\"M16,10 h32 v4 h-32 z M12,14 h40 v4 h-40 z M10,18 h44 v8 h-44 z M8,26 h48 v22 h-48 z M10,48 h44 v6 h-44 z M14,54 h36 v4 h-36 z M18,58 h28 v2 h-28 z\" fill=\"#1e1b4b\"/><path d=\"M16,14 h32 v4 h-32 z M14,18 h36 v6 h-36 z M12,24 h40 v6 h-40 z\" fill=\"#78350f\"/><path d=\"M18,16 h28 v2 h-28 z M16,20 h32 v2 h-32 z\" fill=\"#b45309\"/><path d=\"M12,28 h40 v18 h-40 z M14,46 h36 v6 h-36 z M18,52 h28 v4 h-28 z\" fill=\"#92400e\"/><path d=\"M14,30 h36 v14 h-36 z M18,44 h28 v6 h-28 z\" fill=\"#b45309\"/><path d=\"M18,32 h28 v10 h-28 z\" fill=\"#d97706\"/><path d=\"M28,8 h8 v4 h-8 z M26,12 h12 v2 h-12 z\" fill=\"#312e81\"/><path d=\"M28,12 h8 v2 h-8 z\" fill=\"#f59e0b\"/><path d=\"M24,24 h16 v20 h-16 z\" fill=\"#1e1b4b\"/><path d=\"M26,26 h12 v16 h-12 z\" fill=\"#b91c1c\"/><path d=\"M28,28 h8 v12 h-8 z\" fill=\"#ef4444\"/><path d=\"M28,24 h8 v4 h-8 z\" fill=\"#15803d\"/><path d=\"M30,22 h4 v4 h-4 z\" fill=\"#22c55e\"/><path d=\"M26,34 h12 v4 h-12 z\" fill=\"#0284c7\"/><path d=\"M28,32 h8 v2 h-8 z\" fill=\"#38bdf8\"/><path d=\"M30,30 h4 v2 h-4 z\" fill=\"#e0f2fe\"/><path d=\"M30,36 h4 v6 h-4 z\" fill=\"#0369a1\"/><path d=\"M12,48 h40 v2 h-40 z\" fill=\"#451a03\"/><path d=\"M16,54 h32 v2 h-32 z\" fill=\"#451a03\"/></svg>",
+
+  "anim": "bob",
+
+  "anchor": "side"
+
+}
+
+===END_FILE===

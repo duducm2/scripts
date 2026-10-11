@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "shoes",
+
+  "name": "Monet's Pedal Sabatons",
+
+  "blurb": "Padded leather sabatons dyed in water-lily teal, tipped with brass damper brackets so Claude Monet can ground every bass note firmly to the pedals.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"monet_pedal_sabatons\"><path d=\"M117 385h20v6h3v22h-4v4h-23v-8h2v-16h2z\" fill=\"#121b20\"/><path d=\"M119 387h16v4h3v18h-2v4h-19v-4h2z\" fill=\"#1c4e56\"/><path d=\"M121 389h12v4h3v12h-2v4h-13z\" fill=\"#327e8a\"/><path d=\"M125 397h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M117 413h16v4h-16z\" fill=\"#0d1417\"/><path d=\"M165 385h26v6h11v21h-4v4h-39v-8h3v-15h3z\" fill=\"#121b20\"/><path d=\"M167 387h22v4h11v17h-2v4h-33v-4h2z\" fill=\"#1c4e56\"/><path d=\"M169 389h18v4h11v11h-2v4h-27z\" fill=\"#327e8a\"/><path d=\"M177 397h10v8h-10z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M163 412h34v4h-34z\" fill=\"#0d1417\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "feet"
+
+}
+
+===END_FILE===

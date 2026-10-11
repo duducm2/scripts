@@ -883,12 +883,13 @@ def _prompt_text(
     return (
         lead
         + (
-            "It must be thematically tied to this palace. Do not invent a generic fantasy item.\n"
+            "The relic must remind the viewer of this palace's main topic. Do not invent a generic fantasy item.\n"
             f'The category is already chosen. Copy slot "{slot}" and anchor "{anchor}" exactly. '
             "Do not change them.\n\n"
             f"Study: {study_title}\n"
             f"Palace id (copy exactly): {palace_id}\n"
             f"Palace title: {title}\n"
+            f"Main topic, which the relic must show: {title}\n"
             f"Character: {character_line}\n"
             f"Beasts: {beast_line}\n"
             f"Keywords: {keyword_line}\n\n"
@@ -917,8 +918,11 @@ def _prompt_text(
             "- No smooth gradients, blur, filters, glow, or fading opacity.\n"
             "- Build a real object or person. Do not draw a stick figure, a circle for a head, "
             "a rectangle for a torso, or a stack of simple polygons.\n"
-            "- Use a handful of colors from the palace, plus a dark outline and a darker shade. "
-            "One palace detail only, such as a mark, gem, or clasp. Do not diagram every keyword.\n"
+            "- Use a handful of colors from the palace, plus a dark outline and a darker shade.\n"
+            "- The largest shape must remind someone of the main topic before they read the name. "
+            "A tiny mark on a generic sword, pet, or person is not enough.\n"
+            "- Do not illustrate every keyword. Show the topic, then at most one supporting object from the beasts or keywords.\n"
+            "- The name names that topic. The blurb says why this relic belongs to it.\n"
             "- No text, barcodes, or sparkle clusters. Outlines are at least 2 pixels wide.\n"
         )
         + place_rule

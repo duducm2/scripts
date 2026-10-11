@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "armor",
+
+  "name": "Cluster Core Cuirass",
+
+  "blurb": "Forged for Charles Darwin's Databricks expedition, uniting cluster gears with an illuminated Delta crest across the chest.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"cluster_core_cuirass\"><path d=\"M118 152 h68 l16 20 v82 l-18 14 h-64 l-16 -14 v-82 Z\" fill=\"#1c202a\" stroke=\"#0c0e14\" stroke-width=\"4\" stroke-linejoin=\"miter\"/><path d=\"M122 156 h60 l14 18 v74 l-14 12 h-56 l-14 -12 v-74 Z\" fill=\"#2b3344\"/><path d=\"M122 156 h18 l-6 74 h-6 v12 h-6 l-12 -12 v-74 Z\" fill=\"#1e2430\"/><path d=\"M170 156 h12 l14 18 v74 l-14 12 h-6 v-12 l-6 -74 Z\" fill=\"#3b455b\"/><path d=\"M136 152 h32 v22 h-32 Z\" fill=\"#d96b27\" stroke=\"#1c202a\" stroke-width=\"2\"/><path d=\"M140 154 h24 v16 h-24 Z\" fill=\"#f58231\"/><path d=\"M138 184 h28 l10 12 l-24 50 l-24 -50 Z\" fill=\"#131a26\" stroke=\"#0c0e14\" stroke-width=\"3\" stroke-linejoin=\"miter\"/><polygon points=\"152,192 168,226 136,226\" fill=\"#00a8e8\" stroke=\"#006494\" stroke-width=\"2\"/><polygon points=\"152,200 162,222 142,222\" fill=\"#70d6ff\"/><path d=\"M104 172 h16 v18 h-16 Z\" fill=\"#545e75\" stroke=\"#0c0e14\" stroke-width=\"2\"/><circle cx=\"112\" cy=\"181\" r=\"5\" fill=\"#c9d1d9\" stroke=\"#30363d\" stroke-width=\"2\"/><path d=\"M184 172 h16 v18 h-16 Z\" fill=\"#545e75\" stroke=\"#0c0e14\" stroke-width=\"2\"/><circle cx=\"192\" cy=\"181\" r=\"5\" fill=\"#c9d1d9\" stroke=\"#30363d\" stroke-width=\"2\"/><path d=\"M128 252 h48 v12 h-48 Z\" fill=\"#1c202a\" stroke=\"#0c0e14\" stroke-width=\"2\"/><rect x=\"146\" y=\"254\" width=\"12\" height=\"8\" fill=\"#f58231\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "shoulders"
+
+}
+
+===END_FILE===

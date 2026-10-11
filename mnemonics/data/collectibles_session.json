@@ -1,39 +1,63 @@
 {
   "items": [
     {
-      "id": "col_8aae68d7eb63",
-      "palace_id": "PALACE_DATAANALYST_19",
-      "slot": "sword",
-      "name": "Spark Delta Blade",
-      "blurb": "Forged with a Delta triangular crossguard and an electric Spark lightning edge to slice through raw data clusters.",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><circle cx=\"32\" cy=\"57\" r=\"4\" fill=\"#0f172a\"/><rect x=\"30\" y=\"44\" width=\"4\" height=\"12\" rx=\"1\" fill=\"#0f172a\"/><polygon points=\"18,44 46,44 32,35\" fill=\"#0284c7\"/><polygon points=\"27,42 37,42 32,38\" fill=\"#facc15\"/><rect x=\"29\" y=\"18\" width=\"6\" height=\"17\" fill=\"#38bdf8\"/><polygon points=\"29,18 35,18 40,11 34,11 36,4 26,13 30,13\" fill=\"#facc15\"/></svg>",
-      "anim": "sway",
-      "anchor": "hand_right",
-      "equipped": true,
-      "created_at": "2026-10-11T02:56:06Z"
-    },
-    {
-      "id": "col_e252239a2b9a",
-      "palace_id": "PALACE_DATAANALYST_19",
-      "slot": "cape",
-      "name": "Abstraction Cloak",
-      "blurb": "Woven like a warm data blanket to conceal backend infrastructure beneath a clean layer of abstraction.",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><polygon points=\"106,155 128,158 126,200 96,200\" fill=\"#0284c7\"/><polygon points=\"96,170 126,200 122,336 78,336\" fill=\"#0369a1\"/><polygon points=\"78,336 94,336 94,310 78,310\" fill=\"#0f172a\"/><polygon points=\"98,336 114,336 114,310 98,310\" fill=\"#0f172a\"/><polygon points=\"84,204 118,204 116,254 82,254\" fill=\"#38bdf8\"/><polygon points=\"92,216 110,216 100,238\" fill=\"#facc15\"/><circle cx=\"116\" cy=\"164\" r=\"6\" fill=\"#0f172a\"/><circle cx=\"116\" cy=\"164\" r=\"3\" fill=\"#facc15\"/></svg>",
-      "anim": "bob",
-      "anchor": "back",
-      "equipped": true,
-      "created_at": "2026-10-11T03:00:30Z"
-    },
-    {
-      "id": "col_72df1485375a",
-      "created_at": "2026-10-11T03:02:03Z",
+      "id": "col_3773da22c8de",
       "palace_id": "PALACE_PIANO_11",
-      "slot": "sidekick",
-      "name": "Celestial Clef Cantor",
-      "blurb": "Monet's harmonizing angel stands watchful at the staff to guide note pitch along the celestial clefs.",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 96 160\"><polygon points=\"18,48 42,66 22,96\" fill=\"#38bdf8\"/><circle cx=\"52\" cy=\"28\" r=\"16\" fill=\"#f8fafc\"/><rect x=\"54\" y=\"24\" width=\"6\" height=\"6\" fill=\"#0f172a\"/><polygon points=\"38,44 68,44 76,104 32,104\" fill=\"#1e293b\"/><rect x=\"44\" y=\"46\" width=\"12\" height=\"58\" fill=\"#facc15\"/><polygon points=\"58,54 78,74 72,82 52,62\" fill=\"#38bdf8\"/><polygon points=\"34,104 50,104 46,152 30,152\" fill=\"#0f172a\"/><polygon points=\"54,104 70,104 74,152 58,152\" fill=\"#0f172a\"/><rect x=\"28\" y=\"152\" width=\"20\" height=\"8\" fill=\"#facc15\"/><rect x=\"58\" y=\"152\" width=\"22\" height=\"8\" fill=\"#facc15\"/></svg>",
+      "slot": "pet",
+      "name": "Bass Clef Gator",
+      "blurb": "Monet's low-register alligator stays low at the walker's side, keeping bass clef rhythm grounded.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" shape-rendering=\"crispEdges\"><path d=\"M22,12 h14 v4 h-14 z M18,16 h24 v4 h-24 z M14,20 h32 v4 h-32 z M12,24 h38 v6 h-38 z M10,30 h42 v8 h-42 z M8,38 h46 v8 h-46 z M10,46 h42 v6 h-42 z M14,52 h12 v4 h-12 z M36,52 h14 v4 h-14 z M12,56 h16 v4 h-16 z M34,56 h18 v4 h-34 z\" fill=\"#0f172a\"/><path d=\"M24,16 h10 v4 h-10 z M20,20 h20 v4 h-20 z M16,24 h28 v6 h-28 z M14,30 h34 v8 h-34 z M12,38 h38 v6 h-38 z M14,44 h34 v6 h-34 z M16,50 h8 v4 h-8 z M38,50 h10 v4 h-10 z M14,54 h12 v4 h-12 z M36,54 h14 v4 h-14 z\" fill=\"#166534\"/><path d=\"M26,16 h6 v4 h-6 z M22,20 h14 v4 h-14 z M18,24 h22 v4 h-22 z M16,28 h26 v8 h-26 z M14,36 h20 v6 h-20 z M16,42 h16 v6 h-16 z\" fill=\"#22c55e\"/><path d=\"M18,22 h6 v6 h-6 z M32,22 h6 v6 h-6 z\" fill=\"#0f172a\"/><path d=\"M20,24 h4 v4 h-4 z M34,24 h4 v4 h-4 z\" fill=\"#fef08a\"/><path d=\"M22,24 h2 v2 h-2 z M36,24 h2 v2 h-2 z\" fill=\"#0f172a\"/><path d=\"M20,28 h2 v2 h-2 z M34,28 h2 v2 h-2 z\" fill=\"#ffffff\"/><path d=\"M22,32 h2 v4 h-2 z M34,32 h2 v4 h-2 z\" fill=\"#0f172a\"/><path d=\"M16,36 h26 v2 h-26 z\" fill=\"#0f172a\"/><path d=\"M18,38 h2 v2 h-2 z M24,38 h2 v2 h-2 z M30,38 h2 v2 h-2 z M36,38 h2 v2 h-2 z\" fill=\"#f8fafc\"/><path d=\"M34,36 h12 v10 h-12 z\" fill=\"#0f172a\"/><path d=\"M36,38 h8 v6 h-8 z\" fill=\"#eab308\"/><path d=\"M38,40 h4 v2 h-4 z\" fill=\"#fef08a\"/><path d=\"M14,44 h24 v4 h-24 z\" fill=\"#15803d\"/></svg>",
       "anim": "bob",
-      "anchor": "beside",
+      "anchor": "side",
+      "equipped": true,
+      "created_at": "2026-10-11T03:08:26Z"
+    },
+    {
+      "id": "col_0a376d49db2b",
+      "palace_id": "PALACE_DATAANALYST_19",
+      "slot": "accessory",
+      "name": "Delta Core Pouch",
+      "blurb": "Darwin's side satchel holds the Core apple and Delta crystal, keeping raw tables ready for notebook pipelines.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" shape-rendering=\"crispEdges\"><path d=\"M16,10 h32 v4 h-32 z M12,14 h40 v4 h-40 z M10,18 h44 v8 h-44 z M8,26 h48 v22 h-48 z M10,48 h44 v6 h-44 z M14,54 h36 v4 h-36 z M18,58 h28 v2 h-28 z\" fill=\"#1e1b4b\"/><path d=\"M16,14 h32 v4 h-32 z M14,18 h36 v6 h-36 z M12,24 h40 v6 h-40 z\" fill=\"#78350f\"/><path d=\"M18,16 h28 v2 h-28 z M16,20 h32 v2 h-32 z\" fill=\"#b45309\"/><path d=\"M12,28 h40 v18 h-40 z M14,46 h36 v6 h-36 z M18,52 h28 v4 h-28 z\" fill=\"#92400e\"/><path d=\"M14,30 h36 v14 h-36 z M18,44 h28 v6 h-28 z\" fill=\"#b45309\"/><path d=\"M18,32 h28 v10 h-28 z\" fill=\"#d97706\"/><path d=\"M28,8 h8 v4 h-8 z M26,12 h12 v2 h-12 z\" fill=\"#312e81\"/><path d=\"M28,12 h8 v2 h-8 z\" fill=\"#f59e0b\"/><path d=\"M24,24 h16 v20 h-16 z\" fill=\"#1e1b4b\"/><path d=\"M26,26 h12 v16 h-12 z\" fill=\"#b91c1c\"/><path d=\"M28,28 h8 v12 h-8 z\" fill=\"#ef4444\"/><path d=\"M28,24 h8 v4 h-8 z\" fill=\"#15803d\"/><path d=\"M30,22 h4 v4 h-4 z\" fill=\"#22c55e\"/><path d=\"M26,34 h12 v4 h-12 z\" fill=\"#0284c7\"/><path d=\"M28,32 h8 v2 h-8 z\" fill=\"#38bdf8\"/><path d=\"M30,30 h4 v2 h-4 z\" fill=\"#e0f2fe\"/><path d=\"M30,36 h4 v6 h-4 z\" fill=\"#0369a1\"/><path d=\"M12,48 h40 v2 h-40 z\" fill=\"#451a03\"/><path d=\"M16,54 h32 v2 h-32 z\" fill=\"#451a03\"/></svg>",
+      "anim": "bob",
+      "anchor": "side",
+      "equipped": true,
+      "created_at": "2026-10-11T03:09:54Z"
+    },
+    {
+      "id": "col_21ab7312abb0",
+      "palace_id": "PALACE_DATAANALYST_19",
+      "slot": "armor",
+      "name": "Cluster Core Cuirass",
+      "blurb": "Forged for Charles Darwin's Databricks expedition, uniting cluster gears with an illuminated Delta crest across the chest.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"cluster_core_cuirass\"><path d=\"M118 152 h68 l16 20 v82 l-18 14 h-64 l-16 -14 v-82 Z\" fill=\"#1c202a\" stroke=\"#0c0e14\" stroke-width=\"4\" stroke-linejoin=\"miter\"/><path d=\"M122 156 h60 l14 18 v74 l-14 12 h-56 l-14 -12 v-74 Z\" fill=\"#2b3344\"/><path d=\"M122 156 h18 l-6 74 h-6 v12 h-6 l-12 -12 v-74 Z\" fill=\"#1e2430\"/><path d=\"M170 156 h12 l14 18 v74 l-14 12 h-6 v-12 l-6 -74 Z\" fill=\"#3b455b\"/><path d=\"M136 152 h32 v22 h-32 Z\" fill=\"#d96b27\" stroke=\"#1c202a\" stroke-width=\"2\"/><path d=\"M140 154 h24 v16 h-24 Z\" fill=\"#f58231\"/><path d=\"M138 184 h28 l10 12 l-24 50 l-24 -50 Z\" fill=\"#131a26\" stroke=\"#0c0e14\" stroke-width=\"3\" stroke-linejoin=\"miter\"/><polygon points=\"152,192 168,226 136,226\" fill=\"#00a8e8\" stroke=\"#006494\" stroke-width=\"2\"/><polygon points=\"152,200 162,222 142,222\" fill=\"#70d6ff\"/><path d=\"M104 172 h16 v18 h-16 Z\" fill=\"#545e75\" stroke=\"#0c0e14\" stroke-width=\"2\"/><circle cx=\"112\" cy=\"181\" r=\"5\" fill=\"#c9d1d9\" stroke=\"#30363d\" stroke-width=\"2\"/><path d=\"M184 172 h16 v18 h-16 Z\" fill=\"#545e75\" stroke=\"#0c0e14\" stroke-width=\"2\"/><circle cx=\"192\" cy=\"181\" r=\"5\" fill=\"#c9d1d9\" stroke=\"#30363d\" stroke-width=\"2\"/><path d=\"M128 252 h48 v12 h-48 Z\" fill=\"#1c202a\" stroke=\"#0c0e14\" stroke-width=\"2\"/><rect x=\"146\" y=\"254\" width=\"12\" height=\"8\" fill=\"#f58231\"/></g></svg>",
+      "anim": "bob",
+      "anchor": "shoulders",
+      "equipped": true,
+      "created_at": "2026-10-11T03:11:10Z"
+    },
+    {
+      "id": "col_8ffa48ef72e4",
+      "palace_id": "PALACE_DATAANALYST_17",
+      "slot": "gloves",
+      "name": "Surrogate Cuffs",
+      "blurb": "Forged for Isaac Newton's star schema model, binding the wrists in gold-keyed gauntlets that lock dimensions into consistent rows.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"surrogate_cuffs\"><path d=\"M2 160h28v24H2z\" fill=\"#1c1a24\"/><path d=\"M4 162h24v20H4z\" fill=\"#39354a\"/><path d=\"M6 164h16v16H6z\" fill=\"#585270\"/><path d=\"M10 168h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M274 160h28v24h-28z\" fill=\"#1c1a24\"/><path d=\"M276 162h24v20h-24z\" fill=\"#39354a\"/><path d=\"M282 164h16v16h-16z\" fill=\"#585270\"/><path d=\"M286 168h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/></g></svg>",
+      "anim": "bob",
+      "anchor": "hands",
+      "equipped": true,
+      "created_at": "2026-10-11T03:13:17Z"
+    },
+    {
+      "id": "col_505b69cf7ea7",
+      "created_at": "2026-10-11T03:14:24Z",
+      "palace_id": "PALACE_PIANO_11",
+      "slot": "shoes",
+      "name": "Monet's Pedal Sabatons",
+      "blurb": "Padded leather sabatons dyed in water-lily teal, tipped with brass damper brackets so Claude Monet can ground every bass note firmly to the pedals.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"monet_pedal_sabatons\"><path d=\"M117 385h20v6h3v22h-4v4h-23v-8h2v-16h2z\" fill=\"#121b20\"/><path d=\"M119 387h16v4h3v18h-2v4h-19v-4h2z\" fill=\"#1c4e56\"/><path d=\"M121 389h12v4h3v12h-2v4h-13z\" fill=\"#327e8a\"/><path d=\"M125 397h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M117 413h16v4h-16z\" fill=\"#0d1417\"/><path d=\"M165 385h26v6h11v21h-4v4h-39v-8h3v-15h3z\" fill=\"#121b20\"/><path d=\"M167 387h22v4h11v17h-2v4h-33v-4h2z\" fill=\"#1c4e56\"/><path d=\"M169 389h18v4h11v11h-2v4h-27z\" fill=\"#327e8a\"/><path d=\"M177 397h10v8h-10z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M163 412h34v4h-34z\" fill=\"#0d1417\"/></g></svg>",
+      "anim": "bob",
+      "anchor": "feet",
       "equipped": true
     }
   ]

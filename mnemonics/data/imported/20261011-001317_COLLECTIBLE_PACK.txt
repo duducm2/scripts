@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_17",
+
+  "slot": "gloves",
+
+  "name": "Surrogate Cuffs",
+
+  "blurb": "Forged for Isaac Newton's star schema model, binding the wrists in gold-keyed gauntlets that lock dimensions into consistent rows.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"surrogate_cuffs\"><path d=\"M2 160h28v24H2z\" fill=\"#1c1a24\"/><path d=\"M4 162h24v20H4z\" fill=\"#39354a\"/><path d=\"M6 164h16v16H6z\" fill=\"#585270\"/><path d=\"M10 168h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M274 160h28v24h-28z\" fill=\"#1c1a24\"/><path d=\"M276 162h24v20h-24z\" fill=\"#39354a\"/><path d=\"M282 164h16v16h-16z\" fill=\"#585270\"/><path d=\"M286 168h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "hands"
+
+}
+
+===END_FILE===
