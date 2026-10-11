@@ -69,7 +69,12 @@ header.top .sub {
 }
 #hero.in-modal {
   display: block;
-  z-index: 2100;
+  position: absolute;
+  left: 50%;
+  top: auto;
+  bottom: 2px;
+  z-index: 2;
+  margin-left: calc(var(--hero-w) / -2);
 }
 #hero::after {
   content: "";
@@ -230,8 +235,17 @@ header.top .sub {
   }
 }
 #studyModal .hero-lane {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   flex: 0 0 auto;
-  height: 196px;
+  width: min(92%, 520px);
+  height: 293px;
+  margin-inline: auto;
+  background: #1a120c url("assets/tavern-room.png?v=tavern") center bottom /
+    100% 100% no-repeat;
+  border: 1px solid #3a2a1c;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-sprite .gear {
@@ -414,6 +428,11 @@ header.top .sub {
 .wardrobe-stage {
   width: 220px;
   flex: 0 0 auto;
+  padding: 0.65rem 0.4rem 0.35rem;
+  background: #1a120c url("assets/tavern-room.png?v=tavern") center bottom /
+    auto 100% no-repeat;
+  border: 1px solid #3a2a1c;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35);
 }
 .wardrobe-hero {
   --hero-h: 240px;

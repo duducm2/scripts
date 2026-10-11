@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=still" />
+    <link rel="stylesheet" href="/dashboard.css?v=tavern3" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -848,30 +848,6 @@
         </div>
       </div>
     </header>
-    <div id="hero" class="modular hero-static" aria-hidden="true">
-      <div class="hero-sprite">
-        <div class="hero-frames"></div>
-        <div class="hero-layers">
-          <div class="hero-layer" data-layer="gear_back"></div>
-          <div class="hero-layer" data-layer="body_back_leg"></div>
-          <div class="hero-layer" data-layer="body_back_arm"></div>
-          <div class="hero-layer" data-layer="gear_hands_back"></div>
-          <div class="hero-layer" data-layer="body_torso"></div>
-          <div class="hero-layer" data-layer="body_front_leg"></div>
-          <div class="hero-layer" data-layer="gear_legs"></div>
-          <div class="hero-layer" data-layer="body_front_arm"></div>
-          <div class="hero-layer" data-layer="body_head"></div>
-          <div class="hero-layer" data-layer="body_hair"></div>
-          <div class="hero-layer" data-layer="gear_torso"></div>
-          <div class="hero-layer" data-layer="gear_hands_front"></div>
-          <div class="hero-layer" data-layer="gear_head"></div>
-          <div class="hero-layer" data-layer="gear_pet"></div>
-          <div class="hero-layer" data-layer="gear_face"></div>
-          <div class="hero-layer" data-layer="gear_accessory"></div>
-        </div>
-        <div class="hero-gear"></div>
-      </div>
-    </div>
     <div id="searchResults" aria-live="polite"></div>
     <div class="app-more" id="appMore">
       <button type="button" data-view="browse" title="Browse (Shift+B)">
@@ -1191,7 +1167,32 @@
       aria-labelledby="quickRecallTitle"
     >
       <div class="modal-panel">
-        <div class="hero-lane" aria-hidden="true"></div>
+        <div class="hero-lane" aria-hidden="true">
+          <div id="hero" class="modular hero-static" aria-hidden="true">
+            <div class="hero-sprite">
+              <div class="hero-frames"></div>
+              <div class="hero-layers">
+                <div class="hero-layer" data-layer="gear_back"></div>
+                <div class="hero-layer" data-layer="body_back_leg"></div>
+                <div class="hero-layer" data-layer="body_back_arm"></div>
+                <div class="hero-layer" data-layer="gear_hands_back"></div>
+                <div class="hero-layer" data-layer="body_torso"></div>
+                <div class="hero-layer" data-layer="body_front_leg"></div>
+                <div class="hero-layer" data-layer="gear_legs"></div>
+                <div class="hero-layer" data-layer="body_front_arm"></div>
+                <div class="hero-layer" data-layer="body_head"></div>
+                <div class="hero-layer" data-layer="body_hair"></div>
+                <div class="hero-layer" data-layer="gear_torso"></div>
+                <div class="hero-layer" data-layer="gear_hands_front"></div>
+                <div class="hero-layer" data-layer="gear_head"></div>
+                <div class="hero-layer" data-layer="gear_pet"></div>
+                <div class="hero-layer" data-layer="gear_face"></div>
+                <div class="hero-layer" data-layer="gear_accessory"></div>
+              </div>
+              <div class="hero-gear"></div>
+            </div>
+          </div>
+        </div>
         <section class="study-picker" aria-labelledby="studyModalTitle">
           <h2 id="studyModalTitle">Select a study</h2>
           <p class="hint" id="studyModalHint"></p>
@@ -6737,27 +6738,15 @@
         if (!hero) return;
         const modal = document.getElementById("studyModal");
 
-        function metrics() {
-          const h = 180;
-          return { h: h, w: (305 / 424) * h };
-        }
-
         function park() {
+          hero.style.left = "";
+          hero.style.top = "";
           if (!modal || !modal.classList.contains("open")) {
             hero.classList.remove("in-modal", "is-walking", "face-left");
             return;
           }
-          const size = metrics();
-          const lane = document.querySelector("#studyModal .hero-lane");
           hero.classList.add("in-modal");
           hero.classList.remove("is-walking", "face-left");
-          if (!lane) return;
-          const rect = lane.getBoundingClientRect();
-          if (rect.width < 48) return;
-          const x = (rect.left + rect.right) / 2;
-          const y = rect.bottom - 6;
-          hero.style.left = x - size.w / 2 + "px";
-          hero.style.top = y - size.h + "px";
         }
 
         if (modal) {
