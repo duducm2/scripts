@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "sidekick",
+
+  "name": "Celestial Clef Cantor",
+
+  "blurb": "Monet's harmonizing angel stands watchful at the staff to guide note pitch along the celestial clefs.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 96 160\"><polygon points=\"18,48 42,66 22,96\" fill=\"#38bdf8\"/><circle cx=\"52\" cy=\"28\" r=\"16\" fill=\"#f8fafc\"/><rect x=\"54\" y=\"24\" width=\"6\" height=\"6\" fill=\"#0f172a\"/><polygon points=\"38,44 68,44 76,104 32,104\" fill=\"#1e293b\"/><rect x=\"44\" y=\"46\" width=\"12\" height=\"58\" fill=\"#facc15\"/><polygon points=\"58,54 78,74 72,82 52,62\" fill=\"#38bdf8\"/><polygon points=\"34,104 50,104 46,152 30,152\" fill=\"#0f172a\"/><polygon points=\"54,104 70,104 74,152 58,152\" fill=\"#0f172a\"/><rect x=\"28\" y=\"152\" width=\"20\" height=\"8\" fill=\"#facc15\"/><rect x=\"58\" y=\"152\" width=\"22\" height=\"8\" fill=\"#facc15\"/></svg>",
+
+  "anim": "bob",
+
+  "anchor": "beside"
+
+}
+
+===END_FILE===a

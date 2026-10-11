@@ -837,6 +837,7 @@ def _prompt_text(
             "- anim moves only this icon, pinned to its anchor.\n"
             f"- Draw a 64x64 transparent SVG of the item. It will be pinned to {anchor}.\n"
             "- Draw it large in that frame. The grip sits on the bottom edge and the blade reaches the top, so the weapon reads at body scale.\n"
+            "- A sword needs a blade with an edge highlight, a crossguard, a wrapped grip, and a pommel.\n"
             "- Keep the drawing inside the icon. Do not draw the character.\n"
             '- svg viewBox must be "0 0 64 64". A full-body strip will be rejected.\n'
         )
@@ -845,7 +846,8 @@ def _prompt_text(
         draw_rules = (
             "- Draw only the sidekick. Do not draw the main walker.\n"
             "- This is a second hero standing still, facing right. Not a pet, not a mascot, not an object.\n"
-            "- One full figure: head, torso, arms, legs, and feet. Feet touch the bottom edge. The head is near the top.\n"
+            "- Draw a party member from the same RPG: hair, a face with two eyes, clothes, arms, legs, and shoes. Not a circle head or a rectangle body.\n"
+            "- Feet touch the bottom edge. The head is near the top.\n"
             "- Leave a small margin at the sides. The figure fills the frame.\n"
             '- svg viewBox must be "0 0 96 160". A 64x64 pet icon will be rejected. '
             "A full-body strip will be rejected.\n"
@@ -859,19 +861,20 @@ def _prompt_text(
             "- anim moves only this relic, pinned to its anchor.\n"
             f"- svg is one small illustration pinned to {anchor}, under 6000 characters.\n"
             "- Keep it tight to that point. Do not let it float away.\n"
+            "- A pet is a small creature with a head, a body, and a face. Not a colored block.\n"
             '- viewBox "0 0 64 64" is enough for a pet or an accessory.\n'
         )
         svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 64 64\\">...</svg>'
     if slot in SIDEKICK_SLOTS:
         lead = (
             "Invent ONE sidekick who stands beside my Memory Palace walker.\n"
-            "This is a second hero, not a pet and not a trinket.\n"
+            "This is a second hero from the same 16-bit RPG, not a pet and not a trinket.\n"
         )
         place_rule = "- The sidekick is a person-shaped silhouette, feet on the ground, not a rectangle.\n"
     else:
         lead = (
             "Invent ONE wearable collectible for my Memory Palace walker.\n"
-            "Make it a simple pixel-art prop, not a detailed illustration.\n"
+            "Draw it as a 16-bit RPG sprite from the same game as the walker.\n"
         )
         place_rule = (
             "- Follow the body silhouette inside the given box. A rectangle or a floating blob looks wrong.\n"
@@ -909,14 +912,14 @@ def _prompt_text(
             f"- anim is one of: {', '.join(ANIMS)}\n"
             "- svg is under 6000 characters, no scripts, no external images.\n"
             f"{draw_rules}"
-            "- The walker is chunky pixel art: flat colors, hard edges, no shading. "
-            "The relic is shown small, so hairlines and tiny dots disappear. Draw a few big shapes.\n"
-            "- Flat fills only. No gradients, filters, blur, shadows, or fading opacity.\n"
-            "- Use 3 or 4 colors. One is a signature color from this palace. Keep the others dark and quiet.\n"
-            "- One motif, readable at a glance. Do not draw every keyword. "
-            "No text, no barcodes, no clusters of beads or sparkles.\n"
-            "- At most 8 shapes for a worn piece or an icon. A sidekick may use about 12 shapes for the body.\n"
-            "- Any stroke is at least 2 pixels wide. No curve thinner than 4 pixels.\n"
+            "- Match the walker: a 16-bit RPG sprite, the same game as the hero in the tavern. "
+            "Dark outline, hard pixel edges, and two flat shade steps on each material.\n"
+            "- No smooth gradients, blur, filters, glow, or fading opacity.\n"
+            "- Build a real object or person. Do not draw a stick figure, a circle for a head, "
+            "a rectangle for a torso, or a stack of simple polygons.\n"
+            "- Use a handful of colors from the palace, plus a dark outline and a darker shade. "
+            "One palace detail only, such as a mark, gem, or clasp. Do not diagram every keyword.\n"
+            "- No text, barcodes, or sparkle clusters. Outlines are at least 2 pixels wide.\n"
         )
         + place_rule
         + (

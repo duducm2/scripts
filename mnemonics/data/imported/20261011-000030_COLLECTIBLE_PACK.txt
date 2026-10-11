@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_19",
+
+  "slot": "cape",
+
+  "name": "Abstraction Cloak",
+
+  "blurb": "Woven like a warm data blanket to conceal backend infrastructure beneath a clean layer of abstraction.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><polygon points=\"106,155 128,158 126,200 96,200\" fill=\"#0284c7\"/><polygon points=\"96,170 126,200 122,336 78,336\" fill=\"#0369a1\"/><polygon points=\"78,336 94,336 94,310 78,310\" fill=\"#0f172a\"/><polygon points=\"98,336 114,336 114,310 98,310\" fill=\"#0f172a\"/><polygon points=\"84,204 118,204 116,254 82,254\" fill=\"#38bdf8\"/><polygon points=\"92,216 110,216 100,238\" fill=\"#facc15\"/><circle cx=\"116\" cy=\"164\" r=\"6\" fill=\"#0f172a\"/><circle cx=\"116\" cy=\"164\" r=\"3\" fill=\"#facc15\"/></svg>",
+
+  "anim": "bob",
+
+  "anchor": "back"
+
+}
+
+===END_FILE===

@@ -2,7 +2,6 @@
   "items": [
     {
       "id": "col_8aae68d7eb63",
-      "created_at": "2026-10-11T02:56:06Z",
       "palace_id": "PALACE_DATAANALYST_19",
       "slot": "sword",
       "name": "Spark Delta Blade",
@@ -10,6 +9,31 @@
       "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><circle cx=\"32\" cy=\"57\" r=\"4\" fill=\"#0f172a\"/><rect x=\"30\" y=\"44\" width=\"4\" height=\"12\" rx=\"1\" fill=\"#0f172a\"/><polygon points=\"18,44 46,44 32,35\" fill=\"#0284c7\"/><polygon points=\"27,42 37,42 32,38\" fill=\"#facc15\"/><rect x=\"29\" y=\"18\" width=\"6\" height=\"17\" fill=\"#38bdf8\"/><polygon points=\"29,18 35,18 40,11 34,11 36,4 26,13 30,13\" fill=\"#facc15\"/></svg>",
       "anim": "sway",
       "anchor": "hand_right",
+      "equipped": true,
+      "created_at": "2026-10-11T02:56:06Z"
+    },
+    {
+      "id": "col_e252239a2b9a",
+      "palace_id": "PALACE_DATAANALYST_19",
+      "slot": "cape",
+      "name": "Abstraction Cloak",
+      "blurb": "Woven like a warm data blanket to conceal backend infrastructure beneath a clean layer of abstraction.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><polygon points=\"106,155 128,158 126,200 96,200\" fill=\"#0284c7\"/><polygon points=\"96,170 126,200 122,336 78,336\" fill=\"#0369a1\"/><polygon points=\"78,336 94,336 94,310 78,310\" fill=\"#0f172a\"/><polygon points=\"98,336 114,336 114,310 98,310\" fill=\"#0f172a\"/><polygon points=\"84,204 118,204 116,254 82,254\" fill=\"#38bdf8\"/><polygon points=\"92,216 110,216 100,238\" fill=\"#facc15\"/><circle cx=\"116\" cy=\"164\" r=\"6\" fill=\"#0f172a\"/><circle cx=\"116\" cy=\"164\" r=\"3\" fill=\"#facc15\"/></svg>",
+      "anim": "bob",
+      "anchor": "back",
+      "equipped": true,
+      "created_at": "2026-10-11T03:00:30Z"
+    },
+    {
+      "id": "col_72df1485375a",
+      "created_at": "2026-10-11T03:02:03Z",
+      "palace_id": "PALACE_PIANO_11",
+      "slot": "sidekick",
+      "name": "Celestial Clef Cantor",
+      "blurb": "Monet's harmonizing angel stands watchful at the staff to guide note pitch along the celestial clefs.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 96 160\"><polygon points=\"18,48 42,66 22,96\" fill=\"#38bdf8\"/><circle cx=\"52\" cy=\"28\" r=\"16\" fill=\"#f8fafc\"/><rect x=\"54\" y=\"24\" width=\"6\" height=\"6\" fill=\"#0f172a\"/><polygon points=\"38,44 68,44 76,104 32,104\" fill=\"#1e293b\"/><rect x=\"44\" y=\"46\" width=\"12\" height=\"58\" fill=\"#facc15\"/><polygon points=\"58,54 78,74 72,82 52,62\" fill=\"#38bdf8\"/><polygon points=\"34,104 50,104 46,152 30,152\" fill=\"#0f172a\"/><polygon points=\"54,104 70,104 74,152 58,152\" fill=\"#0f172a\"/><rect x=\"28\" y=\"152\" width=\"20\" height=\"8\" fill=\"#facc15\"/><rect x=\"58\" y=\"152\" width=\"22\" height=\"8\" fill=\"#facc15\"/></svg>",
+      "anim": "bob",
+      "anchor": "beside",
       "equipped": true
     }
   ]
