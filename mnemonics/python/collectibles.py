@@ -787,9 +787,10 @@ def _prompt_text(
     if slot in STRIP_SLOTS:
         draw_rules = (
             "- The walker stands still in a three-quarter T-pose, turned slightly toward the viewer and facing right. Both eyes are visible. Arms are straight out. Do not move or animate the character.\n"
-            "- anim moves only this relic. The body stays a fixed puzzle.\n"
+            "- This piece is attached to the body. It must not animate. Set anim to bob; the wardrobe ignores animation on worn clothing.\n"
             "- Draw a 305x424 transparent SVG of the item on that standing figure.\n"
             f"- Cover only the body region for the {slot}. Leave the rest of the canvas empty.\n"
+            "- Meet the neighboring body with no gap, and do not cover another slot.\n"
             "- Head near the top, feet together at the bottom, arms extended horizontally.\n"
             '- svg viewBox must be "0 0 305 424". A 64x64 icon will be rejected. '
             "A walk strip will be rejected.\n"

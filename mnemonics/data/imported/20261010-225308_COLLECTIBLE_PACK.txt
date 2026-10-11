@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_GERMAN_10",
+
+  "slot": "pet",
+
+  "name": "Resonating Aoudad",
+
+  "blurb": "Carrying the acoustic memory of vocal formants through its sweeping curled horns, this miniature aoudad matches the walker's cadence side by side.",
+
+  "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><ellipse cx='32' cy='56' rx='18' ry='4' fill='#000000' opacity='0.25'/><path d='M20 34 C20 28 26 26 36 26 C45 26 48 31 48 38 C48 45 42 47 34 47 C24 47 20 42 20 34 Z' fill='#b45309'/><path d='M22 36 C24 42 28 45 34 45 C40 45 44 42 45 37 C42 34 33 33 25 35' fill='#d97706'/><path d='M22 32 C18 28 17 21 21 16 C23 13 27 12 30 14 C33 16 33 20 30 24 C28 27 26 29 22 32 Z' fill='#b45309'/><path d='M25 12 C29 9 37 10 40 15 C42 19 40 24 35 25 C34 25 33 24 34 23 C37 22 38 18 36 15 C34 12 28 11 25 14 Z' fill='#78350f'/><path d='M22 13 C25 11 31 11 33 14 C34 17 33 20 30 21 C29 20 31 18 30 16 C28 14 24 14 22 15 Z' fill='#451a03'/><ellipse cx='22' cy='18' rx='1.5' ry='1.5' fill='#fef3c7'/><circle cx='22' cy='18' r='0.8' fill='#1c1917'/><path d='M17 19 Q16 23 18 24' stroke='#78350f' stroke-width='1.2' fill='none' stroke-linecap='round'/><path d='M20 25 C19 28 19 33 21 37 C22 36 23 32 23 28 Z' fill='#fef3c7'/><path d='M22 28 C21 31 21 35 23 39 C24 37 25 33 24 29 Z' fill='#fde68a'/><rect x='24' y='42' width='3.5' height='12' rx='1.5' fill='#92400e'/><rect x='30' y='43' width='3.5' height='11' rx='1.5' fill='#78350f'/><rect x='38' y='42' width='3.5' height='12' rx='1.5' fill='#92400e'/><rect x='44' y='41' width='3.5' height='11' rx='1.5' fill='#78350f'/><path d='M24 53 L27.5 53 L27 55 L24 55 Z' fill='#292524'/><path d='M30 52 L33.5 52 L33 54 L30 54 Z' fill='#1c1917'/><path d='M38 53 L41.5 53 L41 55 L38 55 Z' fill='#292524'/><path d='M44 51 L47.5 51 L47 53 L44 53 Z' fill='#1c1917'/><path d='M46 33 Q52 35 50 39' stroke='#92400e' stroke-width='2.5' fill='none' stroke-linecap='round'/><path d='M39 12 Q44 14 45 18' stroke='#fbbf24' stroke-width='1' fill='none' opacity='0.7'/><path d='M41 9 Q48 12 50 17' stroke='#fbbf24' stroke-width='1' fill='none' opacity='0.4'/></svg>",
+
+  "anim": "bob",
+
+  "anchor": "side"
+
+}
+
+===END_FILE===

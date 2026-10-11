@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DOGS_03",
+
+  "slot": "armor",
+
+  "name": "Scent-Laced Trade Cuirass",
+
+  "blurb": "Fashioned from Brian Griffin's scent-rubbed shirt and reinforced with bone-carved scales, this chest plate balances superior chew trades against forbidden lure shoes.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><defs><linearGradient id=\"cuirassGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#eceff1\"/><stop offset=\"50%\" stop-color=\"#cfd8dc\"/><stop offset=\"100%\" stop-color=\"#90a4ae\"/></linearGradient><linearGradient id=\"leatherStrap\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#8d6e63\"/><stop offset=\"100%\" stop-color=\"#5d4037\"/></linearGradient><linearGradient id=\"boneGold\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#fff9c4\"/><stop offset=\"100%\" stop-color=\"#fbc02d\"/></linearGradient><radialGradient id=\"perfumeGlow\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0%\" stop-color=\"#f48fb1\" stop-opacity=\"0.9\"/><stop offset=\"100%\" stop-color=\"#ad1457\" stop-opacity=\"0.6\"/></radialGradient></defs><g stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M118 136 Q153 148 188 136 L210 162 L216 232 Q156 256 94 230 L100 162 Z\" fill=\"url(#cuirassGrad)\" stroke=\"#455a64\" stroke-width=\"2.5\"/><path d=\"M118 136 L100 162 L78 170 L82 152 L112 134 Z\" fill=\"url(#leatherStrap)\" stroke=\"#3e2723\" stroke-width=\"2\"/><path d=\"M188 136 L210 162 L232 170 L228 152 L194 134 Z\" fill=\"url(#leatherStrap)\" stroke=\"#3e2723\" stroke-width=\"2\"/><path d=\"M74 152 C74 140 102 138 114 148 L96 174 C84 174 74 164 74 152 Z\" fill=\"#b0bec5\" stroke=\"#37474f\" stroke-width=\"2\"/><path d=\"M236 152 C236 140 208 138 196 148 L214 174 C226 174 236 164 236 152 Z\" fill=\"#cfd8dc\" stroke=\"#37474f\" stroke-width=\"2\"/><path d=\"M120 160 L188 160\" stroke=\"#b0bec5\" stroke-width=\"1.5\" stroke-dasharray=\"3,3\"/><path d=\"M112 182 L198 182\" stroke=\"#b0bec5\" stroke-width=\"1.5\" stroke-dasharray=\"3,3\"/><path d=\"M104 204 L206 204\" stroke=\"#b0bec5\" stroke-width=\"1.5\" stroke-dasharray=\"3,3\"/><path d=\"M140 148 L170 148 M155 148 L155 186\" stroke=\"#8d6e63\" stroke-width=\"2\"/><circle cx=\"155\" cy=\"153\" r=\"3.5\" fill=\"#d7ccc8\" stroke=\"#5d4037\" stroke-width=\"1\"/><path d=\"M140 162 L132 174 L148 174 Z\" fill=\"url(#boneGold)\" stroke=\"#795548\" stroke-width=\"1.5\"/><path d=\"M170 162 L162 174 L178 174 Z\" fill=\"url(#boneGold)\" stroke=\"#795548\" stroke-width=\"1.5\"/><path d=\"M155 174 L147 186 L163 186 Z\" fill=\"url(#boneGold)\" stroke=\"#795548\" stroke-width=\"1.5\"/><path d=\"M138 190 Q155 182 172 190 Q168 198 155 196 Q142 198 138 190 Z\" fill=\"#fff9c4\" stroke=\"#8d6e63\" stroke-width=\"1.5\"/><circle cx=\"138\" cy=\"188\" r=\"2.5\" fill=\"#fff9c4\" stroke=\"#8d6e63\" stroke-width=\"1\"/><circle cx=\"172\" cy=\"188\" r=\"2.5\" fill=\"#fff9c4\" stroke=\"#8d6e63\" stroke-width=\"1\"/><circle cx=\"155\" cy=\"138\" r=\"6\" fill=\"url(#perfumeGlow)\" stroke=\"#880e4f\" stroke-width=\"1.5\"/><path d=\"M153 130 L157 130 L156 132 L154 132 Z\" fill=\"#fbc02d\" stroke=\"#f57f17\" stroke-width=\"1\"/><path d=\"M98 226 L212 228 L210 248 L100 246 Z\" fill=\"url(#leatherStrap)\" stroke=\"#3e2723\" stroke-width=\"2\"/><rect x=\"144\" y=\"223\" width=\"22\" height=\"28\" rx=\"3\" fill=\"url(#boneGold)\" stroke=\"#5d4037\" stroke-width=\"2\"/><rect x=\"150\" y=\"229\" width=\"10\" height=\"16\" rx=\"1.5\" fill=\"#4e342e\"/><path d=\"M112 246 L106 270 L126 268 L128 247 Z\" fill=\"#b0bec5\" stroke=\"#37474f\" stroke-width=\"1.5\"/><path d=\"M142 250 L140 274 L168 274 L166 250 Z\" fill=\"#cfd8dc\" stroke=\"#37474f\" stroke-width=\"1.5\"/><path d=\"M182 247 L184 268 L204 270 L198 246 Z\" fill=\"#b0bec5\" stroke=\"#37474f\" stroke-width=\"1.5\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "shoulders"
+
+}
+
+===END_FILE===

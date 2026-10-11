@@ -341,6 +341,14 @@ header.top .sub {
 .hero-sprite .gear.just-equipped {
   animation: gear-pop 0.55s ease;
 }
+.hero-sprite .gear.fitted,
+.hero-sprite .gear.fitted[data-anim],
+.hero-static .hero-sprite .gear.fitted.just-equipped {
+  animation: none;
+}
+.hero-gear .gear {
+  overflow: hidden;
+}
 @keyframes gear-bob {
   50% {
     transform: translateY(-10%);

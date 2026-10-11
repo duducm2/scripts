@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_11",
+
+  "slot": "accessory",
+
+  "name": "Monet's Clef Palette Charm",
+
+  "blurb": "Carried at the painter's hip, this enameled stave-ruled artist's palette anchors floating clefs and chromatic pitch dabs directly to Monet's musical staff.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"palGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#e2ba7e\"/><stop offset=\"100%\" stop-color=\"#b5844a\"/></linearGradient><radialGradient id=\"gem\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0%\" stop-color=\"#ffe082\"/><stop offset=\"100%\" stop-color=\"#d48817\"/></radialGradient></defs><g stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M32 6 C18 6 10 18 10 32 C10 46 20 58 35 58 C41 58 45 54 44 48 C43.5 44 46 41 50 41 C55 41 58 37 58 31 C58 17 46 6 32 6 Z\" fill=\"url(#palGrad)\" stroke=\"#5a3a1a\" stroke-width=\"2\"/><circle cx=\"42\" cy=\"46\" r=\"4\" fill=\"#22150b\"/><path d=\"M15 22 L51 22 M13 26 L53 26 M12 30 L54 30 M13 34 L52 34 M15 38 L44 38\" stroke=\"#80562e\" stroke-width=\"1\" opacity=\"0.55\"/><circle cx=\"20\" cy=\"18\" r=\"3\" fill=\"#d32f2f\"/><circle cx=\"28\" cy=\"14\" r=\"3\" fill=\"#1976d2\"/><circle cx=\"37\" cy=\"15\" r=\"3\" fill=\"#388e3c\"/><circle cx=\"46\" cy=\"19\" r=\"3\" fill=\"#fbc02d\"/><circle cx=\"51\" cy=\"27\" r=\"2.8\" fill=\"#8e24aa\"/><path d=\"M24 38 C23 35 24 33 26 33 C27.5 33 28.5 34.5 28 36 C27.5 37.5 25.5 38 24 38 M26.5 33 C26.5 29 27.5 23 25.5 20 C24.5 18.5 23 20 23.5 23 C24.5 29 20 32.5 20 37 C20 41 24 43 27 41 C30 39 30 35 27 34 C24.5 33 24 36 25.5 37 C26.5 37.7 27.5 37.2 27.5 36 M25.5 20 L25.5 45 C25.5 47 23.5 47 23 45.5\" fill=\"none\" stroke=\"#261608\" stroke-width=\"1.4\"/><path d=\"M36 29 C36 25 39 23 41.5 24.5 C43 25.5 43.5 28 42 29.5 C40 31.5 38 33 38 35 M44.5 25.5 C44.5 26 44 26.5 43.5 26.5 M44.5 30 C44.5 30.5 44 31 43.5 31\" fill=\"none\" stroke=\"#261608\" stroke-width=\"1.4\"/><circle cx=\"37\" cy=\"26\" r=\"1.2\" fill=\"#261608\"/><circle cx=\"32\" cy=\"10\" r=\"2.5\" fill=\"url(#gem)\" stroke=\"#5a3a1a\" stroke-width=\"1\"/><path d=\"M32 2 L32 8\" stroke=\"#c99a38\" stroke-width=\"1.8\"/></g></svg>",
+
+  "anim": "sway",
+
+  "anchor": "side"
+
+}
+
+===END_FILE===

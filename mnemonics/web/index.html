@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=tavern3" />
+    <link rel="stylesheet" href="/dashboard.css?v=gearlock" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -5123,9 +5123,7 @@
         mount: "gear_back",
         accessory: "gear_accessory",
       };
-      const SLOT_OCCLUDES = {
-        armor: ["body_torso"],
-      };
+      const SLOT_OCCLUDES = {};
       const STRIP_SLOTS = new Set([
         "hat",
         "armor",
@@ -5211,11 +5209,14 @@
         return { left, top, w: spec.w, h: spec.h };
       }
 
-      function anchorStyle(slot) {
+      function anchorStyle(slot, nudge) {
         const point = heroAnchors && heroAnchors[SLOT_POINT[slot]];
         if (!point) return { style: "", track: false };
+        const shift = nudge || { du: 0, dv: 0 };
         if (WALKER_STATIC || !(point.frames && point.frames.length === 4)) {
           const box = boxAt(point, slot);
+          box.left += shift.du * 100;
+          box.top += shift.dv * 100;
           return {
             track: false,
             style: `left:${box.left.toFixed(1)}%;top:${box.top.toFixed(1)}%;width:${box.w}%;height:${box.h}%;`,
@@ -5247,16 +5248,51 @@
           .join(",");
       }
 
-      function gearMarkup(item, pop, fitted) {
-        const extra = pop.has(item.id) ? " just-equipped" : "";
+      function stackLoose(items) {
+        const groups = new Map();
+        for (const item of items) {
+          const key = SLOT_POINT[item.slot] || item.anchor || "side";
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(item);
+        }
+        const nudge = new Map();
+        for (const [key, group] of groups) {
+          const horizontal =
+            key === "hand_left" ||
+            key === "hand_right" ||
+            key === "hands" ||
+            key === "below" ||
+            key === "back";
+          const sign = key === "hand_left" || key === "back" ? -1 : 1;
+          let cursor = 0;
+          for (const item of group) {
+            const spec = SLOT_BOX[item.slot] || { w: 22, h: 16 };
+            const step = (horizontal ? spec.w : spec.h) / 100 + 0.03;
+            nudge.set(
+              item.id,
+              horizontal
+                ? { du: sign * cursor, dv: 0 }
+                : { du: 0, dv: -cursor },
+            );
+            cursor += step;
+          }
+        }
+        return nudge;
+      }
+
+      function gearMarkup(item, pop, fitted, nudge) {
+        const extra = !fitted && pop.has(item.id) ? " just-equipped" : "";
         const fit = fitted ? " fitted" : "";
         const placed = fitted
           ? { style: "", track: false }
-          : anchorStyle(item.slot);
+          : anchorStyle(item.slot, nudge);
         const track = placed.track ? " track" : "";
         const styleAttr = placed.style ? ` style="${placed.style}"` : "";
+        const animAttr = fitted
+          ? ""
+          : ` data-anim="${escAttr(item.anim || "bob")}"`;
         return (
-          `<span class="gear${extra}${fit}${track}" data-anim="${escAttr(item.anim || "bob")}" data-anchor="${escAttr(item.anchor || "side")}" data-slot="${escAttr(item.slot || "")}" title="${escAttr(item.name || "")}"${styleAttr}>` +
+          `<span class="gear${extra}${fit}${track}"${animAttr} data-anchor="${escAttr(item.anchor || "side")}" data-slot="${escAttr(item.slot || "")}" title="${escAttr(item.name || "")}"${styleAttr}>` +
           item.svg +
           "</span>"
         );
@@ -5268,7 +5304,9 @@
         for (const item of items || []) {
           if (!item.equipped) continue;
           const names = item.occludes || SLOT_OCCLUDES[item.slot] || [];
-          for (const name of names) hidden.add(name);
+          for (const name of names) {
+            if (name !== "body_torso") hidden.add(name);
+          }
         }
         el.classList.toggle("occ-torso", hidden.has("body_torso"));
         el.classList.toggle("occ-legs", hidden.has("body_legs"));
@@ -5295,7 +5333,7 @@
           layer.classList.remove("has-strip");
           layer.style.backgroundImage = "";
         }
-        const loose = [];
+        const looseItems = [];
         for (const item of items || []) {
           if (!item.equipped || !item.svg) continue;
           const layerName = layerFor(item);
@@ -5305,9 +5343,13 @@
           if ((fitted || behind) && buckets[layerName]) {
             buckets[layerName].push(gearMarkup(item, pop, fitted));
           } else if (ICON_SLOTS.has(item.slot) || !fitted) {
-            loose.push(gearMarkup(item, pop, false));
+            looseItems.push(item);
           }
         }
+        const nudge = stackLoose(looseItems);
+        const loose = looseItems.map((item) =>
+          gearMarkup(item, pop, false, nudge.get(item.id)),
+        );
         for (const layer of layers) {
           if (layer.dataset.layer.startsWith("gear_")) {
             layer.innerHTML = (buckets[layer.dataset.layer] || []).join("");
