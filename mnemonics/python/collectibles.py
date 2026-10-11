@@ -836,6 +836,7 @@ def _prompt_text(
             "- The walker stands still. Do not move or animate the character.\n"
             "- anim moves only this icon, pinned to its anchor.\n"
             f"- Draw a 64x64 transparent SVG of the item. It will be pinned to {anchor}.\n"
+            "- Draw it large in that frame. The grip sits on the bottom edge and the blade reaches the top, so the weapon reads at body scale.\n"
             "- Keep the drawing inside the icon. Do not draw the character.\n"
             '- svg viewBox must be "0 0 64 64". A full-body strip will be rejected.\n'
         )
