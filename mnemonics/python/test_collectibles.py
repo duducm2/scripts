@@ -227,6 +227,8 @@ def test_prompt_asks_for_one_trophy(tmp_path: Path) -> None:
     assert "Do not paint a floor" in first["prompt"]
     assert "Show the whole object" in first["prompt"]
     assert "Do not default to a cup" in first["prompt"]
+    assert "I delete every pure-white pixel" in first["prompt"]
+    assert "245,242,230" in first["prompt"]
     assert "16-bit" not in first["prompt"]
     assert "viewBox" not in first["prompt"]
     assert "3D, shiny, cartoon" not in first["prompt"]
@@ -349,7 +351,7 @@ def test_odd_icon_size_is_kept_and_marked_misfit() -> None:
     assert "misfit" in note
 
 
-def test_white_backdrop_clears_and_the_center_stays(tmp_path: Path) -> None:
+def test_pure_white_hole_clears_and_off_white_parts_stay(tmp_path: Path) -> None:
     from PIL import Image
 
     _library(tmp_path)
@@ -358,6 +360,7 @@ def test_white_backdrop_clears_and_the_center_stays(tmp_path: Path) -> None:
         for y in range(18, 36):
             picture.putpixel((x, y), (200, 40, 40))
     picture.putpixel((20, 22), (255, 255, 255))
+    picture.putpixel((19, 28), (245, 242, 230))
     (tmp_path / "cup.png").parent.mkdir(parents=True, exist_ok=True)
     picture.save(tmp_path / "cup.png")
     result = import_text(
@@ -386,7 +389,8 @@ def test_white_backdrop_clears_and_the_center_stays(tmp_path: Path) -> None:
     pixels = list(opened.getdata())
     assert any(pixel[3] == 0 for pixel in pixels)
     assert any(pixel[:3] == (200, 40, 40) and pixel[3] == 255 for pixel in pixels)
-    assert any(pixel[:3] == (255, 255, 255) and pixel[3] == 255 for pixel in pixels)
+    assert any(pixel[:3] == (245, 242, 230) and pixel[3] == 255 for pixel in pixels)
+    assert not any(pixel[:3] == (255, 255, 255) and pixel[3] > 0 for pixel in pixels)
 
 
 def test_pale_floor_under_the_trophy_is_cleared(tmp_path: Path) -> None:

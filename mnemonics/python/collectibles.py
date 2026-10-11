@@ -401,6 +401,11 @@ def _is_fringe_pixel(r: int, g: int, b: int, kind: str) -> bool:
     return _is_backdrop_pixel(r, g, b, kind)
 
 
+def _is_pure_white(r: int, g: int, b: int) -> bool:
+    """White the generator may use only for the backdrop and for see-through holes."""
+    return min(r, g, b) >= 250 and (max(r, g, b) - min(r, g, b)) <= 5
+
+
 def _clear_connected_backdrop(im: Any, kind: str) -> None:
     width, height = im.size
     px = im.load()
@@ -477,8 +482,24 @@ def _crop_to_content(im: Any, pad: int = 1) -> Any:
     return im.crop((left, top, right, bottom))
 
 
+def _clear_pure_white(im: Any) -> None:
+    """Drop pure white wherever it sits, including a hole the trophy frames."""
+    width, height = im.size
+    px = im.load()
+    for y in range(height):
+        for x in range(width):
+            red, green, blue, alpha = px[x, y]
+            if alpha < 20 or not _is_pure_white(red, green, blue):
+                continue
+            px[x, y] = (0, 0, 0, 0)
+
+
 def knock_out_backdrop(image: Any) -> Any:
-    """Clear a white or magenta backdrop that touches the edges. Interior color stays."""
+    """Clear a white or magenta backdrop, and pure white enclosed by the trophy.
+
+    Off-white pixels stay. The generator is told to reserve pure white for the
+    backdrop and for openings, and to paint trophy parts a step darker.
+    """
     im = image.convert("RGBA")
     width, height = im.size
     if width < 2 or height < 2:
@@ -499,16 +520,17 @@ def knock_out_backdrop(image: Any) -> Any:
         for kind in ("white", "magenta"):
             _clear_connected_backdrop(im, kind)
             _peel_fringe(im, kind)
+        _clear_pure_white(im)
         return _crop_to_content(im)
     kind = ""
     if kinds.count("white") >= 3:
         kind = "white"
     elif kinds.count("magenta") >= 3:
         kind = "magenta"
-    if not kind:
-        return _crop_to_content(im)
-    _clear_connected_backdrop(im, kind)
-    _peel_fringe(im, kind)
+    if kind:
+        _clear_connected_backdrop(im, kind)
+        _peel_fringe(im, kind)
+    _clear_pure_white(im)
     return _crop_to_content(im)
 
 
@@ -1021,8 +1043,14 @@ def _prompt_text(
         "Do not paint a floor, a shadow, a glow, or a pedestal under it. "
         "The hall already has the stone table.\n"
         "Background: transparent if you can. Otherwise one flat pure white, "
-        "the same color in every background pixel, with no gradient.\n"
-        "Do not make the object white, off-white, or pale gray.\n"
+        "RGB 255,255,255, the same color in every background pixel, with no gradient.\n"
+        "If the trophy has an opening and the hall should show through it, "
+        "paint that opening the same pure white, even when the object surrounds it.\n"
+        "I delete every pure-white pixel, including white enclosed inside the trophy. "
+        "Pure white means red, green, and blue are all 250 or higher and almost the same.\n"
+        "Do not paint any part of the trophy pure white. "
+        "A part that should look white must be off-white, such as 245,242,230, so I keep it.\n"
+        "Do not make the whole object white, off-white, or pale gray.\n"
         f'Copy slot "{slot}" and anchor "{anchor}" exactly. Do not change them.\n\n'
         f"Study: {study_title}\n"
         f"Palace id (copy exactly): {palace_id}\n"
@@ -1050,11 +1078,13 @@ def _prompt_text(
         f'- anchor must be exactly "{anchor}".\n'
         f"- anim is one of: {', '.join(ANIMS)}. It moves only the trophy.\n"
         "- Do not include an image filename or an svg. The picture is a separate file.\n"
-        "- The picture is one object on a transparent background, or on one flat pure white if transparency is unavailable.\n"
+        "- The picture is one object on a transparent background, or on flat RGB 255,255,255 if transparency is unavailable.\n"
+        "- Openings the hall should show through are that same pure white, even inside the object. "
+        "I delete every pure-white pixel. Trophy parts are never pure white; a white-looking part is off-white, such as 245,242,230.\n"
         "- Show the whole object. The picture edge must not cut off any part, especially the bottom.\n"
         "- No floor, shadow, glow, or pedestal in the picture. Leave empty background under the object too.\n"
         "- The named look decides the form. Do not default to a cup.\n"
-        "- The object is not white, off-white, or pale gray.\n"
+        "- The whole object is not white, off-white, or pale gray. A white-looking part is off-white, never pure white.\n"
         "- The name names the palace topic. The blurb says why the trophy belongs to it.\n"
         "- No text in the picture.\n"
         "- Replace the example name, blurb, and anim. Keep palace_id, slot, and anchor exactly as given.\n"

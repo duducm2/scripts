@@ -49,11 +49,13 @@ Collectible_WriteAiFix(errorMsg, extraNotes := "") {
         . "- slot must be trophy. anchor must be pedestal.`r`n"
         . "- anim: bob, sway, flicker, orbit, float.`r`n"
         .
-        "- The picture is one whole object on a transparent background, or on one flat pure white if you cannot make it transparent.`r`n"
+        "- The picture is one whole object on a transparent background, or on flat RGB 255,255,255 if you cannot make it transparent.`r`n"
+        .
+        "- Openings the hall should show through are that same pure white, even inside the object. I delete every pure-white pixel (red, green, and blue all 250 or higher and almost the same). A part of the trophy is never pure white; a white-looking part is off-white, such as 245,242,230.`r`n"
         . "- Show every edge, including the bottom. The frame must not slice any part off.`r`n"
         . "- No floor, shadow, glow, or pedestal in the picture. Leave empty background under the object.`r`n"
         .
-        "- The named look decides the form. Do not default to a cup. Do not make the object white, off-white, or pale gray.`r`n"
+        "- The named look decides the form. Do not default to a cup. Do not make the whole object white, off-white, or pale gray.`r`n"
         . "- Do not send an svg.`r`n"
         . "- If the error is JSON, remove trailing commas and markdown outside the FILE markers.`r`n`r`n"
         . "DELIVERY RULES (mandatory)`r`n"
@@ -97,7 +99,8 @@ Collectible_ImportFromDesktop(*) {
     }
     outPath := A_Temp . "\collectible_import_result.json"
     hubClosed := ImportMgmt_CloseIfOpen()
-    Palace_Notify("Trophy pack is in. Removing the background, then placing it in the hall.", 12000, BANNER_ACCENT_INFO)
+    Palace_Notify("Trophy pack is in. Removing the background, then placing it in the hall.", 12000, BANNER_ACCENT_INFO
+    )
     cmd := pyCmd . ' "' . py . '" import-desktop --data-dir "' . Palace_DataDir()
     . '" --pack "' . path . '" --desktop "' . A_Desktop . '" > "' . outPath . '" 2>&1'
     try RunWait(A_ComSpec . " /c " . cmd, Palace_PythonDir(), "Hide")
