@@ -50,7 +50,6 @@
     },
     {
       "id": "col_505b69cf7ea7",
-      "created_at": "2026-10-11T03:14:24Z",
       "palace_id": "PALACE_PIANO_11",
       "slot": "shoes",
       "name": "Monet's Pedal Sabatons",
@@ -58,6 +57,19 @@
       "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"monet_pedal_sabatons\"><path d=\"M117 385h20v6h3v22h-4v4h-23v-8h2v-16h2z\" fill=\"#121b20\"/><path d=\"M119 387h16v4h3v18h-2v4h-19v-4h2z\" fill=\"#1c4e56\"/><path d=\"M121 389h12v4h3v12h-2v4h-13z\" fill=\"#327e8a\"/><path d=\"M125 397h8v8h-8z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M117 413h16v4h-16z\" fill=\"#0d1417\"/><path d=\"M165 385h26v6h11v21h-4v4h-39v-8h3v-15h3z\" fill=\"#121b20\"/><path d=\"M167 387h22v4h11v17h-2v4h-33v-4h2z\" fill=\"#1c4e56\"/><path d=\"M169 389h18v4h11v11h-2v4h-27z\" fill=\"#327e8a\"/><path d=\"M177 397h10v8h-10z\" fill=\"#d4a017\" stroke=\"#876208\" stroke-width=\"2\"/><path d=\"M163 412h34v4h-34z\" fill=\"#0d1417\"/></g></svg>",
       "anim": "bob",
       "anchor": "feet",
+      "equipped": true,
+      "created_at": "2026-10-11T03:14:24Z"
+    },
+    {
+      "id": "col_72c954bb620c",
+      "created_at": "2026-10-11T03:17:41Z",
+      "palace_id": "PALACE_TAOISM_04",
+      "slot": "hat",
+      "name": "Pantheon Jade Crown",
+      "blurb": "A tiered Daoist cap carved from celestial jade, representing the stratified celestial pantheon and the ritual authority governing the Three Purities.",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"pantheon_jade_crown\"><path d=\"M124 88h58v4h-58z\" fill=\"#111c16\"/><path d=\"M126 84h54v4h-54z\" fill=\"#1c382b\"/><path d=\"M128 80h50v4h-50z\" fill=\"#2f634f\"/><path d=\"M132 72h42v8h-42z\" fill=\"#111c16\"/><path d=\"M134 74h38v4h-38z\" fill=\"#3d8368\"/><path d=\"M138 64h30v8h-30z\" fill=\"#111c16\"/><path d=\"M140 66h26v4h-26z\" fill=\"#5cb892\"/><path d=\"M144 54h18v10h-18z\" fill=\"#111c16\"/><path d=\"M146 56h14v6h-14z\" fill=\"#8ae0b8\"/><path d=\"M148 46h10v8h-10z\" fill=\"#8c6812\"/><path d=\"M150 48h6v4h-6z\" fill=\"#ffd154\"/><path d=\"M120 78h10v4h-10zM176 78h10v4h-10z\" fill=\"#8c6812\"/><path d=\"M122 80h6v2h-6zM178 80h6v2h-6z\" fill=\"#ffd154\"/><path d=\"M151 70h4v6h-4z\" fill=\"#ffd154\"/></g></svg>",
+      "anim": "bob",
+      "anchor": "head",
       "equipped": true
     }
   ]

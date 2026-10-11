@@ -1,0 +1,21 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_TAOISM_04",
+
+  "slot": "hat",
+
+  "name": "Pantheon Jade Crown",
+
+  "blurb": "A tiered Daoist cap carved from celestial jade, representing the stratified celestial pantheon and the ritual authority governing the Three Purities.",
+
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 305 424\"><g id=\"pantheon_jade_crown\"><path d=\"M124 88h58v4h-58z\" fill=\"#111c16\"/><path d=\"M126 84h54v4h-54z\" fill=\"#1c382b\"/><path d=\"M128 80h50v4h-50z\" fill=\"#2f634f\"/><path d=\"M132 72h42v8h-42z\" fill=\"#111c16\"/><path d=\"M134 74h38v4h-38z\" fill=\"#3d8368\"/><path d=\"M138 64h30v8h-30z\" fill=\"#111c16\"/><path d=\"M140 66h26v4h-26z\" fill=\"#5cb892\"/><path d=\"M144 54h18v10h-18z\" fill=\"#111c16\"/><path d=\"M146 56h14v6h-14z\" fill=\"#8ae0b8\"/><path d=\"M148 46h10v8h-10z\" fill=\"#8c6812\"/><path d=\"M150 48h6v4h-6z\" fill=\"#ffd154\"/><path d=\"M120 78h10v4h-10zM176 78h10v4h-10z\" fill=\"#8c6812\"/><path d=\"M122 80h6v2h-6zM178 80h6v2h-6z\" fill=\"#ffd154\"/><path d=\"M151 70h4v6h-4z\" fill=\"#ffd154\"/></g></svg>",
+
+  "anim": "bob",
+
+  "anchor": "head"
+
+}
+
+===END_FILE===
