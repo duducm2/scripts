@@ -2890,6 +2890,86 @@
       "version": 1,
       "empty": false,
       "style": "illustration"
+    },
+    "catalog": {
+      "key": "catalog",
+      "slug": "catalog",
+      "file": "catalog.png",
+      "openverse_id": "bc5d73b7-3ec1-402e-a7fd-207b3853cfbc",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=54102800",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "workspace": {
+      "key": "workspace",
+      "slug": "workspace",
+      "file": "workspace.png",
+      "openverse_id": "0ea796e3-7db2-4640-b094-748ea7a48578",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=5079071",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "team": {
+      "key": "team",
+      "slug": "team",
+      "file": "team.png",
+      "openverse_id": "126bb4c8-c2db-4ca7-9e5e-35d5cd49f4cb",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=48125401",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "control": {
+      "key": "control",
+      "slug": "control",
+      "file": "control.png",
+      "openverse_id": "eda980c7-a1de-4ee1-ab45-fe85329776f0",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=47545879",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "metastore": {
+      "key": "metastore",
+      "slug": "metastore",
+      "file": "metastore.jpg",
+      "openverse_id": "25f17e21-3ada-464d-a2dc-60f8936afd6c",
+      "source_page": "https://www.flickr.com/photos/50318388@N00/8675821774",
+      "version": 1,
+      "empty": false,
+      "style": "any"
+    },
+    "metadata": {
+      "key": "metadata",
+      "slug": "metadata",
+      "file": "metadata.png",
+      "openverse_id": "1d6289d6-d3f5-4958-80f5-3a5ce8bf188b",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=38050366",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "role": {
+      "key": "role",
+      "slug": "role",
+      "file": "role.png",
+      "openverse_id": "b23cf07c-873f-4541-8292-843c10673005",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=106875956",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "governance": {
+      "key": "governance",
+      "slug": "governance",
+      "file": "governance.png",
+      "openverse_id": "95016fae-7230-4d80-ab8c-dbc69d52928f",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=29432467",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

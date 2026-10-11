@@ -12,119 +12,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SLOTS = (
-    "armor",
-    "gloves",
-    "pants",
-    "shoes",
-    "hat",
-    "sword",
-    "pet",
-    "cape",
-    "sidekick",
-    "accessory",
-)
-# Ask for worn gear before companions fall back to pets and accessories.
-SLOT_ORDER = (
-    "armor",
-    "gloves",
-    "pants",
-    "shoes",
-    "hat",
-    "sword",
-    "cape",
-    "sidekick",
-    "pet",
-    "accessory",
-)
-SLOT_ANCHOR = {
-    "hat": "head",
-    "armor": "shoulders",
-    "gloves": "hands",
-    "sword": "hand_right",
-    "pants": "feet",
-    "shoes": "feet",
-    "cape": "back",
-    "pet": "side",
-    "sidekick": "beside",
-    "accessory": "side",
-}
-# Pixel boxes on the 305x424 standing figure. Ink outside a worn slot is covered by the body.
-STRIP_REGION = {
-    "hat": (
-        "Draw the hat on the hair only, inside x 122-184, y 44-90. "
-        "The brim rests on the hairline near y 90. "
-        "Leave the face below y 96 empty so the forehead, eyes, and beard stay visible."
-    ),
-    "armor": "Draw only on the chest, x 100-210, y 148-268. Leave the arms, head, and legs empty.",
-    "gloves": (
-        "Draw two gloves and nothing else. "
-        "Viewer-left fist is x 2-30, y 160-184. "
-        "Viewer-right fist is x 274-302, y 160-184. "
-        "Each arm is a thin band only about 24 pixels tall. "
-        "A glove on the forearm, or taller than that band, misses the hand."
-    ),
-    "pants": (
-        "Draw trousers on the lower body only. "
-        "Cover the shorts at x 108-198, y 250-312, then both legs: "
-        "viewer-left x 112-146 and viewer-right x 157-188, from y 306 to y 386. "
-        "Stop above the shoes. Leave a gap between the legs. "
-        "Ink drawn up at the hands is hidden behind the arms and will not show."
-    ),
-    "shoes": (
-        "Draw only on the shoes. "
-        "Viewer-left shoe is x 111-140, y 385-417. "
-        "Viewer-right shoe is x 159-204, y 385-416."
-    ),
-    "cape": "Draw behind the shoulders only, x 70-130, y 155-340.",
-}
-SLOT_LAYER = {
-    "hat": "gear_head",
-    "armor": "gear_torso",
-    "gloves": "gear_hands_front",
-    "pants": "gear_legs",
-    "shoes": "gear_legs",
-    "cape": "gear_back",
-    "sword": "gear_hands_front",
-    "pet": "gear_pet",
-    "accessory": "gear_accessory",
-}
-# Armor hides the default shirt. Pants and shoes are standing overlays drawn over the legs.
-SLOT_OCCLUDES = {
-    "armor": ("body_torso",),
-}
-# Worn clothing is one still frame the same size as the standing figure.
-STRIP_SLOTS = (
-    "hat",
-    "armor",
-    "gloves",
-    "pants",
-    "shoes",
-    "cape",
-)
-# Held items and companions are small pictures pinned to a named point.
-HELD_ICON_SLOTS = ("sword",)
-ANCHORED_ICON_SLOTS = (
-    "pet",
-    "accessory",
-    "sword",
-)
-# A sidekick is a second standing figure, not a hip icon and not a worn strip.
-SIDEKICK_SLOTS = ("sidekick",)
+TROPHY_LIMIT = 12
+SLOTS = ("trophy",)
+SLOT_ORDER = ("trophy",)
+SLOT_ANCHOR = {"trophy": "pedestal"}
+STRIP_REGION: dict[str, str] = {}
+SLOT_LAYER = {"trophy": "trophy"}
+SLOT_OCCLUDES: dict[str, tuple[str, ...]] = {}
+STRIP_SLOTS: tuple[str, ...] = ()
+HELD_ICON_SLOTS: tuple[str, ...] = ()
+ANCHORED_ICON_SLOTS = ("trophy",)
+SIDEKICK_SLOTS: tuple[str, ...] = ()
 _VIEWBOX = re.compile(r"""viewBox\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
 ANIMS = ("bob", "sway", "flicker", "orbit", "float")
-ANCHORS = (
-    "head",
-    "shoulders",
-    "hands",
-    "feet",
-    "side",
-    "back",
-    "below",
-    "hand_left",
-    "hand_right",
-    "beside",
-)
+ANCHORS = ("pedestal",)
 
 _FENCE = "```"
 _TRAILING_COMMA = re.compile(r",(\s*[}\]])")
@@ -153,7 +54,7 @@ def repl_path(data_dir: Path) -> Path:
 
 
 def session_path(data_dir: Path) -> Path:
-    """Relics currently on the avatar that have not been saved."""
+    """Trophies on the hall shelves. They are never copied into the library."""
     return Path(data_dir) / "collectibles_session.json"
 
 
@@ -208,21 +109,13 @@ def load_session(data_dir: Path) -> list[dict[str, Any]]:
 
 
 def load_items(data_dir: Path) -> list[dict[str, Any]]:
-    saved = load_saved(data_dir)
-    session = load_session(data_dir)
-    saved_ids = {row["id"] for row in saved}
+    """The hall is the session queue only, oldest first, at most twelve."""
     items: list[dict[str, Any]] = []
-    for row in saved:
-        public = _public_item(row, saved=True)
-        if public:
-            items.append(public)
-    for row in session:
-        if row["id"] in saved_ids:
-            continue
+    for row in load_session(data_dir):
         public = _public_item(row, saved=False)
         if public:
             items.append(public)
-    return items
+    return items[:TROPHY_LIMIT]
 
 
 def _stored_item(row: dict[str, Any]) -> dict[str, Any] | None:
@@ -256,7 +149,7 @@ def _public_item(row: dict[str, Any], saved: bool = False) -> dict[str, Any] | N
         "blurb": str(row.get("blurb") or "").strip()[:240],
         "svg": svg,
         "anim": anim if anim in ANIMS else "bob",
-        "anchor": anchor if anchor in ANCHORS else "side",
+        "anchor": anchor if anchor in ANCHORS else "pedestal",
         "equipped": bool(row.get("equipped")),
         "saved": saved,
         "layer": SLOT_LAYER.get(slot, "gear_accessory"),
@@ -449,16 +342,16 @@ def repair_item(
 
     slot = str(item.get("slot") or "").strip().lower()
     if slot not in SLOTS:
-        notes.append(f"Unknown slot {slot or '(blank)'} mapped to accessory.")
-        slot = "accessory"
+        notes.append(f"Unknown slot {slot or '(blank)'} mapped to trophy.")
+        slot = "trophy"
     anim = str(item.get("anim") or "").strip().lower()
     if anim not in ANIMS:
         notes.append(f"Unknown anim {anim or '(blank)'} mapped to bob.")
         anim = "bob"
     anchor = str(item.get("anchor") or "").strip().lower()
     if anchor not in ANCHORS:
-        notes.append(f"Unknown anchor {anchor or '(blank)'} mapped to side.")
-        anchor = "side"
+        notes.append(f"Unknown anchor {anchor or '(blank)'} mapped to pedestal.")
+        anchor = "pedestal"
     name = str(item.get("name") or "").strip()
     if not name:
         return None, notes, "Missing name."
@@ -614,7 +507,7 @@ def _lock_imported_slot(
 
 
 def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
-    """Hold a generated relic on the avatar. It is not written to REPL storage."""
+    """Put a trophy on the newest end of the hall. The library is not written."""
     data_dir = Path(data_dir)
     item, notes, error = repair_item(raw, known_palace_ids(data_dir), check_art=False)
     if error or item is None:
@@ -632,10 +525,6 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
     if strip_note and strip_note not in notes:
         notes.append(strip_note)
     session = load_session(data_dir)
-    saved = load_saved(data_dir)
-    slot = item["slot"]
-    _unequip_slot(saved, slot)
-    session = [row for row in session if row.get("slot") != slot]
     held = {
         "id": "col_" + uuid.uuid4().hex[:12],
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -643,8 +532,14 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
         "equipped": True,
     }
     session.append(held)
+    if len(session) > TROPHY_LIMIT:
+        dropped = len(session) - TROPHY_LIMIT
+        session = session[dropped:]
+        notes.append(
+            f"The hall holds {TROPHY_LIMIT}. Dropped the {dropped} oldest trophy"
+            + ("s." if dropped != 1 else ".")
+        )
     _write_store(session_path(data_dir), session)
-    _write_store(repl_path(data_dir), saved)
     return {
         "ok": True,
         "item": _public_item(held, saved=False),
@@ -655,27 +550,12 @@ def import_text(data_dir: Path, raw: str) -> dict[str, Any]:
 
 
 def persist_item(data_dir: Path, item_id: str) -> dict[str, Any]:
-    """Copy one held relic into REPL storage and drop the unsaved copy."""
-    data_dir = Path(data_dir)
-    item_id = (item_id or "").strip()
-    session = load_session(data_dir)
-    saved = load_saved(data_dir)
-    target = next((row for row in session if row.get("id") == item_id), None)
-    if target is None:
-        if any(row.get("id") == item_id for row in saved):
-            return {"ok": True, "items": load_items(data_dir), "saved": True}
-        return {"ok": False, "error": "No collectible with that id."}
-    if target.get("equipped"):
-        _unequip_slot(saved, str(target.get("slot") or ""), keep_id=item_id)
-    saved = [row for row in saved if row.get("id") != item_id]
-    stored = _stored_item(target)
-    if stored is None:
-        return {"ok": False, "error": "That collectible could not be saved."}
-    saved.append(stored)
-    session = [row for row in session if row.get("id") != item_id]
-    _write_store(repl_path(data_dir), saved)
-    _write_store(session_path(data_dir), session)
-    return {"ok": True, "items": load_items(data_dir), "saved": True}
+    """Trophies stay in the session hall and are never written to the library."""
+    del data_dir, item_id
+    return {
+        "ok": False,
+        "error": "Trophies stay in the hall. They are not saved to the library.",
+    }
 
 
 def remove_item(data_dir: Path, item_id: str) -> dict[str, Any]:
@@ -715,14 +595,7 @@ def set_equipped(data_dir: Path, item_id: str, equipped: bool) -> dict[str, Any]
         session = [row for row in session if row.get("id") != item_id]
         _write_store(session_path(data_dir), session)
         return {"ok": True, "items": load_items(data_dir), "deleted": True}
-    slot = str((target or saved_target or {}).get("slot") or "")
     if equipped:
-        session = [
-            row
-            for row in session
-            if row.get("slot") != slot or row.get("id") == item_id
-        ]
-        _unequip_slot(saved, slot, keep_id=item_id)
         if target is not None:
             target["equipped"] = True
         if saved_target is not None:
@@ -819,125 +692,54 @@ def _prompt_text(
 ) -> str:
     beast_line = ", ".join(beasts) if beasts else "(none)"
     keyword_line = ", ".join(keywords) if keywords else "(none)"
-    character_line = character or "(none)"
-    if slot in STRIP_SLOTS:
-        draw_rules = (
-            "- The walker stands still in a three-quarter T-pose, turned slightly toward the viewer and facing right. Both eyes are visible. Arms are straight out. Do not move or animate the character.\n"
-            "- This piece is attached to the body. It must not animate. Set anim to bob; the wardrobe ignores animation on worn clothing.\n"
-            "- Draw a 305x424 transparent SVG of the item on that standing figure.\n"
-            f"- {STRIP_REGION.get(slot, 'Cover only the body region for this slot.')}\n"
-            "- Meet the neighboring body with no gap, and do not cover another slot.\n"
-            "- Head near the top, feet together at the bottom, arms extended horizontally.\n"
-            '- svg viewBox must be "0 0 305 424". Use that full grid for seams, shade bands, and small parts. '
-            "A 64x64 icon will be rejected. A walk strip will be rejected.\n"
-        )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 305 424\\">...</svg>'
-    elif slot in HELD_ICON_SLOTS:
-        draw_rules = (
-            "- The walker stands still. Do not move or animate the character.\n"
-            "- anim moves only this icon, pinned to its anchor.\n"
-            f"- Draw a 256x256 transparent SVG of the item. It will be pinned to {anchor}.\n"
-            "- The grid is 256 units across. Use it. Draw the edge highlight, wrap on the grip, and small parts. Do not fill the frame with one shape.\n"
-            "- Draw it large in that frame. The grip sits on the bottom edge and the blade reaches the top, so the weapon reads at body scale.\n"
-            "- A sword needs a blade with an edge highlight, a crossguard, a wrapped grip, and a pommel.\n"
-            "- Keep the drawing inside the icon. Do not draw the character.\n"
-            '- svg viewBox must be "0 0 256 256". A 64x64 icon is too coarse. A full-body strip will be rejected.\n'
-        )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 256 256\\">...</svg>'
-    elif slot in SIDEKICK_SLOTS:
-        draw_rules = (
-            "- Draw only the sidekick. Do not draw the main walker.\n"
-            "- This is a second hero standing still, facing right. Not a pet, not a mascot, not an object.\n"
-            "- Draw a party member from the same RPG: hair, a face with two eyes, clothes, arms, legs, and shoes. Not a circle head or a rectangle body.\n"
-            "- Feet touch the bottom edge. The head is near the top.\n"
-            "- Leave a small margin at the sides. The figure fills the frame.\n"
-            "- The grid is 192 by 320 units. Use it for eyes, hair, cloth folds, and shoes.\n"
-            '- svg viewBox must be "0 0 192 320". A 96x160 figure is too coarse. '
-            "A full-body strip will be rejected.\n"
-            "- It stands on the floor to the viewer's left of the walker. "
-            "The pet, if any, stays at the hip on the other side.\n"
-        )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 192 320\\">...</svg>'
-    else:
-        draw_rules = (
-            "- The walker stands still. Do not move or animate the character.\n"
-            "- anim moves only this relic, pinned to its anchor.\n"
-            f"- svg is one illustration pinned to {anchor}, under 12000 characters.\n"
-            "- The grid is 256 by 256 units. Use it for a face, ears, and markings. Do not fill the frame with one block.\n"
-            "- Keep it tight to that point. Do not let it float away.\n"
-            "- A pet is a small creature with a head, a body, and a face. Not a colored block.\n"
-            '- viewBox must be "0 0 256 256".\n'
-        )
-        svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 256 256\\">...</svg>'
-    if slot in SIDEKICK_SLOTS:
-        lead = (
-            "Invent ONE sidekick who stands beside my Memory Palace walker.\n"
-            "This is a second hero from the same 16-bit RPG, not a pet and not a trinket.\n"
-        )
-        place_rule = "- The sidekick is a person-shaped silhouette, feet on the ground, not a rectangle.\n"
-    else:
-        lead = (
-            "Invent ONE wearable collectible for my Memory Palace walker.\n"
-            "Draw it as a 16-bit RPG sprite from the same game as the walker.\n"
-        )
-        place_rule = (
-            "- Follow the body silhouette inside the given box. A rectangle or a floating blob looks wrong.\n"
-            "- For a 256x256 icon, fill most of the canvas with that one object and leave a small margin.\n"
-        )
+    svg_example = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 256 256\\">...</svg>'
     return (
-        lead
-        + (
-            "The relic must remind the viewer of this palace's main topic. Do not invent a generic fantasy item.\n"
-            f'The category is already chosen. Copy slot "{slot}" and anchor "{anchor}" exactly. '
-            "Do not change them.\n\n"
-            f"Study: {study_title}\n"
-            f"Palace id (copy exactly): {palace_id}\n"
-            f"Palace title: {title}\n"
-            f"Main topic, which the relic must show: {title}\n"
-            f"Character: {character_line}\n"
-            f"Beasts: {beast_line}\n"
-            f"Keywords: {keyword_line}\n\n"
-            "Deliver one file named exactly COLLECTIBLE_PACK.txt (download chip, or one marked fence).\n"
-            "Never claim you saved it to Desktop. I save the file myself.\n"
-            "The pack body is only these markers and one JSON object. No Markdown outside the pack.\n\n"
-            "===FILE: COLLECTIBLE.json===\n"
-            "{\n"
-            f'  "palace_id": "{palace_id}",\n'
-            f'  "slot": "{slot}",\n'
-            '  "name": "Short relic name",\n'
-            '  "blurb": "One sentence on why it belongs to this palace.",\n'
-            f'  "svg": "{svg_example}",\n'
-            '  "anim": "bob",\n'
-            f'  "anchor": "{anchor}"\n'
-            "}\n"
-            "===END_FILE===\n\n"
-            "Rules:\n"
-            f'- slot must be exactly "{slot}". Do not pick another category.\n'
-            f'- anchor must be exactly "{anchor}". Do not change it.\n'
-            f"- anim is one of: {', '.join(ANIMS)}\n"
-            "- svg is under 12000 characters, no scripts, no external images.\n"
-            f"{draw_rules}"
-            "- Match the walker: a 16-bit RPG sprite, the same game as the hero in the tavern. "
-            "Dark outline, hard pixel edges, and two flat shade steps on each material.\n"
-            "- No smooth gradients, blur, filters, glow, or fading opacity.\n"
-            "- Build a real object or person. Do not draw a stick figure, a circle for a head, "
-            "a rectangle for a torso, or a stack of simple polygons.\n"
-            "- Use a handful of colors from the palace, plus a dark outline and a darker shade.\n"
-            "- The largest shape must remind someone of the main topic before they read the name. "
-            "A tiny mark on a generic sword, pet, or person is not enough.\n"
-            "- Do not illustrate every keyword. Show the topic, then at most one supporting object from the beasts or keywords.\n"
-            "- The name names that topic. The blurb says why this relic belongs to it.\n"
-            "- No text, barcodes, or sparkle clusters. "
-            "On a 256 grid, outlines are about 6 units wide. Interior details can be thinner.\n"
-        )
-        + place_rule
-        + (
-            "- Draw this slot only. Do not reuse an earlier relic's drawing.\n"
-            "- Use the palace's own objects, colors, and names. Replace the example name, blurb, "
-            "svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
-            "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
-            "Do not add updated, corrected, or v2 to the name.\n"
-        )
+        "Invent ONE trophy for a Memory Palace hall.\n"
+        "It is a single creative object on a pedestal, drawn as a 16-bit RPG prop. "
+        "Be inventive. It is not a garment, a weapon, a pet, or a person.\n"
+        "The trophy must remind the viewer of this palace's main topic. "
+        "Do not invent a generic cup with a tiny mark.\n"
+        f'Copy slot "{slot}" and anchor "{anchor}" exactly. Do not change them.\n\n'
+        f"Study: {study_title}\n"
+        f"Palace id (copy exactly): {palace_id}\n"
+        f"Palace title: {title}\n"
+        f"Main topic, which the trophy must show: {title}\n"
+        f"Beasts, for color and detail only: {beast_line}\n"
+        f"Keywords, for color and detail only: {keyword_line}\n\n"
+        "Deliver one file named exactly COLLECTIBLE_PACK.txt (download chip, or one marked fence).\n"
+        "Never claim you saved it to Desktop. I save the file myself.\n"
+        "The pack body is only these markers and one JSON object. No Markdown outside the pack.\n\n"
+        "===FILE: COLLECTIBLE.json===\n"
+        "{\n"
+        f'  "palace_id": "{palace_id}",\n'
+        f'  "slot": "{slot}",\n'
+        '  "name": "Short trophy name",\n'
+        '  "blurb": "One sentence on why this trophy belongs to this palace.",\n'
+        f'  "svg": "{svg_example}",\n'
+        '  "anim": "bob",\n'
+        f'  "anchor": "{anchor}"\n'
+        "}\n"
+        "===END_FILE===\n\n"
+        "Rules:\n"
+        f'- slot must be exactly "{slot}".\n'
+        f'- anchor must be exactly "{anchor}".\n'
+        f"- anim is one of: {', '.join(ANIMS)}. It moves only the trophy.\n"
+        "- svg is one object, under 12000 characters, no scripts, no external images.\n"
+        '- svg viewBox must be "0 0 256 256". A 64x64 picture is too coarse. A full-body strip will be rejected.\n'
+        "- The grid is 256 units across. Use it for seams, materials, and small parts. "
+        "Fill most of the canvas and leave a small margin. The trophy rests on the bottom edge, as if on a pedestal.\n"
+        "- 16-bit RPG pixel art: dark outline, hard edges, two flat shade steps on each material.\n"
+        "- No smooth gradients, blur, filters, glow, or fading opacity.\n"
+        "- Build one original object. Do not draw a person, a face, a pet, clothing, or a weapon.\n"
+        "- Use colors that belong to this palace, plus a dark outline and a darker shade.\n"
+        "- The largest shape must show the main topic before the name is read.\n"
+        "- The name names that topic. The blurb says why the trophy belongs to it.\n"
+        "- No text, barcodes, or sparkle clusters. "
+        "On a 256 grid, outlines are about 6 units wide. Interior details can be thinner.\n"
+        "- Draw a new trophy. Do not reuse an earlier drawing.\n"
+        "- Replace the example name, blurb, svg, and anim. Keep palace_id, slot, and anchor exactly as given.\n"
+        "- Re-deliver with the exact filename COLLECTIBLE_PACK.txt. "
+        "Do not add updated, corrected, or v2 to the name.\n"
     )
 
 

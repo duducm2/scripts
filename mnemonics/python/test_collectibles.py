@@ -37,8 +37,8 @@ def test_maps_unknown_slot_and_strips_fence(tmp_path: Path) -> None:
             {
                 "palace_id": PALACE,
                 "slot": "logo-shirt",
-                "name": "Brick pup",
-                "blurb": "A pet made of bricks.",
+                "name": "Brick cup",
+                "blurb": "A trophy made of bricks.",
                 "svg": SVG,
                 "anim": "wiggle",
                 "anchor": "orbit",
@@ -49,20 +49,20 @@ def test_maps_unknown_slot_and_strips_fence(tmp_path: Path) -> None:
     item, notes, error = repair_item(raw, {PALACE})
     assert error == ""
     assert item is not None
-    assert item["slot"] == "accessory"
+    assert item["slot"] == "trophy"
     assert item["anim"] == "bob"
-    assert item["anchor"] == "side"
-    assert any("accessory" in note for note in notes)
+    assert item["anchor"] == "pedestal"
+    assert any("trophy" in note for note in notes)
 
 
 def test_trailing_comma_and_script_are_repaired() -> None:
     payload = {
         "palace_id": PALACE,
-        "slot": "hat",
-        "name": "Catalog cap",
-        "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><script>alert(1)</script><rect onclick="alert(1)" width="10" height="10"/></svg>',
+        "slot": "trophy",
+        "name": "Catalog cup",
+        "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><script>alert(1)</script><rect onclick="alert(1)" width="10" height="10"/></svg>',
         "anim": "bob",
-        "anchor": "head",
+        "anchor": "pedestal",
     }
     text = json.dumps(payload)
     text = text[:-1] + ",}"
@@ -95,7 +95,7 @@ def test_unknown_palace_is_an_error() -> None:
     assert "palace_id" in error
 
 
-def test_import_holds_the_new_relic_without_writing_the_library(tmp_path: Path) -> None:
+def test_import_keeps_each_trophy_without_writing_the_library(tmp_path: Path) -> None:
     _library(tmp_path)
     first = import_text(
         tmp_path,
@@ -103,11 +103,11 @@ def test_import_holds_the_new_relic_without_writing_the_library(tmp_path: Path) 
             json.dumps(
                 {
                     "palace_id": PALACE,
-                    "slot": "pet",
-                    "name": "First pup",
+                    "slot": "trophy",
+                    "name": "First cup",
                     "svg": SVG,
                     "anim": "bob",
-                    "anchor": "side",
+                    "anchor": "pedestal",
                 }
             )
         ),
@@ -118,11 +118,11 @@ def test_import_holds_the_new_relic_without_writing_the_library(tmp_path: Path) 
             json.dumps(
                 {
                     "palace_id": PALACE,
-                    "slot": "pet",
-                    "name": "Brick pup",
+                    "slot": "trophy",
+                    "name": "Brick cup",
                     "svg": SVG,
                     "anim": "float",
-                    "anchor": "side",
+                    "anchor": "pedestal",
                 }
             )
         ),
@@ -134,13 +134,12 @@ def test_import_holds_the_new_relic_without_writing_the_library(tmp_path: Path) 
     held = json.loads(
         (tmp_path / "collectibles_session.json").read_text(encoding="utf-8")
     )
-    pets = [row for row in held["items"] if row["slot"] == "pet"]
-    assert len(pets) == 1
-    assert pets[0]["name"] == "Brick pup"
-    assert pets[0]["equipped"] is True
+    names = [row["name"] for row in held["items"]]
+    assert names == ["First cup", "Brick cup"]
+    assert all(row["slot"] == "trophy" and row["equipped"] is True for row in held["items"])
 
 
-def test_save_moves_a_relic_into_repl_storage(tmp_path: Path) -> None:
+def test_save_is_refused(tmp_path: Path) -> None:
     _library(tmp_path)
     imported = import_text(
         tmp_path,
@@ -148,29 +147,22 @@ def test_save_moves_a_relic_into_repl_storage(tmp_path: Path) -> None:
             json.dumps(
                 {
                     "palace_id": PALACE,
-                    "slot": "hat",
-                    "name": "Catalog cap",
-                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><rect width="40" height="20" fill="#c45"/></svg>',
+                    "slot": "trophy",
+                    "name": "Catalog cup",
+                    "svg": SVG,
                     "anim": "bob",
-                    "anchor": "head",
+                    "anchor": "pedestal",
                 }
             )
         ),
     )
-    item_id = imported["item"]["id"]
-    result = persist_item(tmp_path, item_id)
-    assert result["ok"]
-    assert not (tmp_path / "collectibles_session.json").exists()
-    library = json.loads(
-        (tmp_path / "repl" / "collectibles.json").read_text(encoding="utf-8")
-    )
-    assert library["items"][0]["id"] == item_id
-    assert library["items"][0]["equipped"] is True
-    listed = [row for row in result["items"] if row["id"] == item_id]
-    assert listed[0]["saved"] is True
+    result = persist_item(tmp_path, imported["item"]["id"])
+    assert result["ok"] is False
+    assert (tmp_path / "collectibles_session.json").is_file()
+    assert not (tmp_path / "repl" / "collectibles.json").exists()
 
 
-def test_removing_an_unsaved_relic_deletes_it(tmp_path: Path) -> None:
+def test_removing_a_trophy_deletes_it(tmp_path: Path) -> None:
     _library(tmp_path)
     imported = import_text(
         tmp_path,
@@ -178,11 +170,11 @@ def test_removing_an_unsaved_relic_deletes_it(tmp_path: Path) -> None:
             json.dumps(
                 {
                     "palace_id": PALACE,
-                    "slot": "pet",
-                    "name": "Brick pup",
+                    "slot": "trophy",
+                    "name": "Brick cup",
                     "svg": SVG,
                     "anim": "float",
-                    "anchor": "side",
+                    "anchor": "pedestal",
                 }
             )
         ),
@@ -194,56 +186,56 @@ def test_removing_an_unsaved_relic_deletes_it(tmp_path: Path) -> None:
     assert not (tmp_path / "repl" / "collectibles.json").exists()
 
 
-def test_taking_off_a_saved_relic_keeps_it_in_the_library(tmp_path: Path) -> None:
+def test_a_thirteenth_trophy_drops_the_oldest(tmp_path: Path) -> None:
     _library(tmp_path)
-    imported = import_text(
-        tmp_path,
-        _pack(
-            json.dumps(
-                {
-                    "palace_id": PALACE,
-                    "slot": "cape",
-                    "name": "Brick cape",
-                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><rect width="40" height="20" fill="#c45"/></svg>',
-                    "anim": "sway",
-                    "anchor": "back",
-                }
-            )
-        ),
+    for index in range(13):
+        result = import_text(
+            tmp_path,
+            _pack(
+                json.dumps(
+                    {
+                        "palace_id": PALACE,
+                        "slot": "trophy",
+                        "name": f"Cup {index}",
+                        "svg": SVG,
+                        "anim": "bob",
+                        "anchor": "pedestal",
+                    }
+                )
+            ),
+        )
+        assert result["ok"]
+    held = json.loads(
+        (tmp_path / "collectibles_session.json").read_text(encoding="utf-8")
     )
-    item_id = imported["item"]["id"]
-    persist_item(tmp_path, item_id)
-    result = remove_item(tmp_path, item_id)
-    assert result["ok"] and result["deleted"] is False
-    kept = json.loads(
-        (tmp_path / "repl" / "collectibles.json").read_text(encoding="utf-8")
-    )
-    assert kept["items"][0]["id"] == item_id
-    assert kept["items"][0]["equipped"] is False
+    names = [row["name"] for row in held["items"]]
+    assert names == [f"Cup {index}" for index in range(1, 13)]
+    assert result["count"] == 12
+    assert not (tmp_path / "repl" / "collectibles.json").exists()
 
 
-def test_prompt_assigns_armor_before_pet_and_remembers_it(tmp_path: Path) -> None:
+def test_prompt_asks_for_one_trophy(tmp_path: Path) -> None:
     _library(tmp_path)
     first = build_prompt(tmp_path, PALACE)
     second = build_prompt(tmp_path, PALACE)
-    assert first["ok"] and first["slot"] == "armor" and first["anchor"] == "shoulders"
-    assert '"slot": "armor"' in first["prompt"]
-    assert '"slot": "pet"' not in first["prompt"]
-    assert "brick pet" not in first["prompt"]
-    assert second["slot"] == "gloves"
+    assert first["ok"] and first["slot"] == "trophy" and first["anchor"] == "pedestal"
+    assert '"slot": "trophy"' in first["prompt"]
+    assert "Databricks" in first["prompt"]
+    assert "garment" in first["prompt"]
+    assert second["slot"] == "trophy"
     saved = json.loads(
         (tmp_path / "collectible_requests.json").read_text(encoding="utf-8")
     )
-    assert saved["pending_slot"] == "gloves"
-    assert saved["cycle"] == ["armor", "gloves"]
+    assert saved["pending_slot"] == "trophy"
+    assert saved["cycle"] == ["trophy"]
 
 
-def test_import_stores_the_requested_slot_when_the_pack_says_pet(
+def test_import_stores_the_requested_trophy_when_the_pack_says_pet(
     tmp_path: Path,
 ) -> None:
     _library(tmp_path)
-    assert assign_slot(tmp_path, PALACE) == "armor"
-    wide = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"><rect width="40" height="80" fill="#c45"/></svg>'
+    assert assign_slot(tmp_path, PALACE) == "trophy"
+    icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="40" height="80" fill="#c45"/></svg>'
     result = import_text(
         tmp_path,
         _pack(
@@ -251,8 +243,8 @@ def test_import_stores_the_requested_slot_when_the_pack_says_pet(
                 {
                     "palace_id": PALACE,
                     "slot": "pet",
-                    "name": "Brick pup",
-                    "svg": wide,
+                    "name": "Brick cup",
+                    "svg": icon,
                     "anim": "bob",
                     "anchor": "side",
                 }
@@ -260,13 +252,13 @@ def test_import_stores_the_requested_slot_when_the_pack_says_pet(
         ),
     )
     assert result["ok"]
-    assert result["item"]["slot"] == "armor"
-    assert result["item"]["anchor"] == "shoulders"
+    assert result["item"]["slot"] == "trophy"
+    assert result["item"]["anchor"] == "pedestal"
     saved = json.loads(
         (tmp_path / "collectible_requests.json").read_text(encoding="utf-8")
     )
     assert saved["pending_slot"] == ""
-    assert "armor" in saved["cycle"]
+    assert "trophy" in saved["cycle"]
 
 
 def test_sanitize_svg_drops_javascript_url() -> None:
@@ -278,33 +270,15 @@ def test_sanitize_svg_drops_javascript_url() -> None:
     assert "<svg" in cleaned.lower()
 
 
-def test_small_wearable_icon_is_rejected() -> None:
+def test_body_strip_is_rejected_for_a_trophy() -> None:
     item, _notes, error = repair_item(
         _pack(
             json.dumps(
                 {
                     "palace_id": PALACE,
-                    "slot": "armor",
-                    "name": "Tiny plate",
-                    "svg": SVG,
-                }
-            )
-        ),
-        {PALACE},
-    )
-    assert item is None
-    assert "rejected" in error
-
-
-def test_walk_strip_is_rejected_for_a_standing_slot() -> None:
-    item, _notes, error = repair_item(
-        _pack(
-            json.dumps(
-                {
-                    "palace_id": PALACE,
-                    "slot": "armor",
+                    "slot": "trophy",
                     "name": "Walk plate",
-                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 772 424"></svg>',
+                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"></svg>',
                 }
             )
         ),
@@ -314,16 +288,16 @@ def test_walk_strip_is_rejected_for_a_standing_slot() -> None:
     assert "rejected" in error
 
 
-def test_held_icon_is_accepted_and_a_body_strip_is_not() -> None:
+def test_trophy_icon_is_accepted_and_a_coarse_grid_is_marked() -> None:
     icon, _notes, error = repair_item(
         _pack(
             json.dumps(
                 {
                     "palace_id": PALACE,
-                    "slot": "sword",
-                    "name": "Desk blade",
+                    "slot": "trophy",
+                    "name": "Desk cup",
                     "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="#c45"/></svg>',
-                    "anchor": "hand_right",
+                    "anchor": "pedestal",
                 }
             )
         ),
@@ -331,38 +305,23 @@ def test_held_icon_is_accepted_and_a_body_strip_is_not() -> None:
     )
     assert error == ""
     assert icon is not None
-    assert icon["anchor"] == "hand_right"
+    assert icon["anchor"] == "pedestal"
     from collectibles import validate_strip
 
     err, note = validate_strip(
-        "sword",
+        "trophy",
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"></svg>',
     )
     assert err == "" and note == ""
-    coarse_err, coarse_note = validate_strip("sword", SVG)
+    coarse_err, coarse_note = validate_strip("trophy", SVG)
     assert coarse_err == "" and "256x256" in coarse_note
-    strip, _notes, strip_error = repair_item(
-        _pack(
-            json.dumps(
-                {
-                    "palace_id": PALACE,
-                    "slot": "sword",
-                    "name": "Tall blade",
-                    "svg": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 305 424"></svg>',
-                }
-            )
-        ),
-        {PALACE},
-    )
-    assert strip is None
-    assert "rejected" in strip_error
 
 
-def test_odd_strip_size_is_kept_and_marked_misfit() -> None:
+def test_odd_icon_size_is_kept_and_marked_misfit() -> None:
     from collectibles import validate_strip
 
     error, note = validate_strip(
-        "hat",
+        "trophy",
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"></svg>',
     )
     assert error == ""

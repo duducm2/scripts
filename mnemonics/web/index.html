@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=sidekick" />
+    <link rel="stylesheet" href="/dashboard.css?v=trophies2" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -834,8 +834,8 @@
         >
           Entertainment
         </button>
-        <button type="button" id="btnWardrobe" title="Wardrobe (Alt+W)">
-          Wardrobe
+        <button type="button" id="btnWardrobe" title="Trophies (Alt+W)">
+          Trophies
         </button>
         <div>
           <label for="atomSearch">Search Knowledge Atoms</label>
@@ -1167,31 +1167,8 @@
       aria-labelledby="quickRecallTitle"
     >
       <div class="modal-panel">
-        <div class="hero-lane" aria-hidden="true">
-          <div id="hero" class="modular hero-static" aria-hidden="true">
-            <div class="hero-sprite">
-              <div class="hero-frames"></div>
-              <div class="hero-layers">
-                <div class="hero-layer" data-layer="gear_back"></div>
-                <div class="hero-layer" data-layer="body_back_leg"></div>
-                <div class="hero-layer" data-layer="body_back_arm"></div>
-                <div class="hero-layer" data-layer="gear_hands_back"></div>
-                <div class="hero-layer" data-layer="body_torso"></div>
-                <div class="hero-layer" data-layer="body_front_leg"></div>
-                <div class="hero-layer" data-layer="gear_legs"></div>
-                <div class="hero-layer" data-layer="body_front_arm"></div>
-                <div class="hero-layer" data-layer="body_head"></div>
-                <div class="hero-layer" data-layer="body_hair"></div>
-                <div class="hero-layer" data-layer="gear_torso"></div>
-                <div class="hero-layer" data-layer="gear_hands_front"></div>
-                <div class="hero-layer" data-layer="gear_head"></div>
-                <div class="hero-layer" data-layer="gear_pet"></div>
-                <div class="hero-layer" data-layer="gear_face"></div>
-                <div class="hero-layer" data-layer="gear_accessory"></div>
-              </div>
-              <div class="hero-gear"></div>
-            </div>
-          </div>
+        <div class="hero-lane trophy-hall" aria-label="Trophy hall">
+          <div class="trophy-grid" id="studyTrophies"></div>
         </div>
         <section class="study-picker" aria-labelledby="studyModalTitle">
           <h2 id="studyModalTitle">Select a study</h2>
@@ -5379,14 +5356,50 @@
         return name;
       }
 
+      function trophyGrid(items, manage) {
+        const hall = (items || [])
+          .filter((item) => item && item.svg && item.equipped !== false)
+          .slice(0, 12);
+        const cells = [];
+        for (let i = 0; i < 12; i++) {
+          const item = hall[i];
+          if (!item) {
+            cells.push('<div class="trophy-spot empty"></div>');
+            continue;
+          }
+          const take = manage
+            ? `<button type="button" class="spa-btn danger trophy-take" data-gear-remove="${escAttr(item.id)}">Take off</button>`
+            : "";
+          cells.push(
+            `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}" title="${escAttr(item.blurb || item.name)}">` +
+              `<div class="trophy-art">${item.svg}</div>` +
+              `<span class="trophy-name">${esc(item.name)}</span>${take}</div>`,
+          );
+        }
+        return cells.join("");
+      }
+
+      function bindTrophyRemove(root) {
+        if (!root) return;
+        root.querySelectorAll("[data-gear-remove]").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            removeGear(btn.dataset.gearRemove),
+          );
+        });
+      }
+
+      function paintHalls() {
+        const study = document.getElementById("studyTrophies");
+        if (study) study.innerHTML = trophyGrid(state.collectibles, false);
+        const room = document.getElementById("wardrobeTrophies");
+        if (room) {
+          room.innerHTML = trophyGrid(state.collectibles, true);
+          bindTrophyRemove(room);
+        }
+      }
+
       function applyGearPaint() {
-        const items = state.collectibles || [];
-        const pop = state.gearPop || new Set();
-        const hero = document.getElementById("hero");
-        syncModular(hero);
-        applyOcclusion(hero, items);
-        paintGear(hero && hero.querySelector(".hero-sprite"), items, pop);
-        paintWardrobeHero();
+        paintHalls();
       }
 
       function wardrobeItems() {
@@ -5462,69 +5475,15 @@
       function renderWardrobe() {
         const panel = document.getElementById("wardrobePanel");
         if (!panel) return;
-        const items = state.collectibles || [];
-        const found = GEAR_SLOTS.filter(([id]) =>
-          items.some((item) => item.slot === id),
-        ).length;
-        const slots = GEAR_SLOTS.map(([id, label]) => {
-          const owned = items.filter((item) => item.slot === id);
-          const wearing = owned.find((item) => item.equipped);
-          const buttons = owned.length
-            ? owned
-                .map((item) => {
-                  const save = item.saved
-                    ? ""
-                    : `<button type="button" class="spa-btn wardrobe-save" data-gear-save="${escAttr(item.id)}">Save</button>`;
-                  const remove = item.equipped
-                    ? `<button type="button" class="spa-btn danger wardrobe-remove" data-gear-remove="${escAttr(item.id)}">${item.saved ? "Take off" : "Remove"}</button>`
-                    : "";
-                  const mark = item.saved
-                    ? ""
-                    : `<span class="muted wardrobe-unsaved">Not saved</span>`;
-                  const warn = item.misfit
-                    ? `<span class="muted wardrobe-unsaved">Does not match the walker frame</span>`
-                    : "";
-                  return `<div class="wardrobe-row">${mark}${warn}<button type="button" class="spa-btn wardrobe-item${item.equipped ? " on" : ""}" data-gear-id="${escAttr(item.id)}" data-gear-on="${item.equipped ? "1" : "0"}" data-gear-saved="${item.saved ? "1" : "0"}">${esc(item.name)}</button>${save}${remove}</div>`;
-                })
-                .join("")
-            : `<p class="muted wardrobe-empty"><span class="wardrobe-silhouette" aria-hidden="true"></span>Empty</p>`;
-          const blurb = wearing && wearing.blurb ? esc(wearing.blurb) : "";
-          const empty = owned.length ? "" : " is-empty";
-          return `<section class="wardrobe-slot${empty}"><h3>${label}</h3>${blurb ? `<p class="muted">${blurb}</p>` : ""}${buttons}</section>`;
-        }).join("");
+        const items = (state.collectibles || []).filter(
+          (item) => item && item.equipped !== false,
+        );
         panel.innerHTML = `<div class="wardrobe-layout">
-          <div class="wardrobe-stage">
-            <div class="wardrobe-hero${WALKER_MODULAR_LAYERS ? " modular" : ""}${WALKER_STATIC ? " hero-static" : ""}" aria-hidden="true"><div class="hero-sprite">${heroLayersHtml()}</div></div>
-            <p class="muted">Alt+W closes this screen. A new relic stays on the avatar until you press Save. Remove deletes an unsaved relic. Inside a palace, Shift+G asks Gemini for a relic from that place. Hover a saved piece to try it on.</p>
+          <div class="wardrobe-stage trophy-hall">
+            <div class="trophy-grid" id="wardrobeTrophies">${trophyGrid(items, true)}</div>
           </div>
-          <div class="wardrobe-slots">
-            <p class="muted wardrobe-progress">${found} of ${GEAR_SLOTS.length} categories discovered</p>
-            ${slots}
-          </div>
+          <p class="muted">Alt+W closes this hall. Up to 12 trophies stay here, oldest at the start of the shelves. A 13th replaces the oldest. Take off removes a trophy. Inside a palace, Shift+G asks Gemini for a trophy from that place.</p>
         </div>`;
-        paintWardrobeHero();
-        panel.querySelectorAll("[data-gear-id]").forEach((btn) => {
-          btn.addEventListener("mouseenter", () => {
-            if (btn.dataset.gearSaved !== "1") return;
-            wardrobeTryId = btn.dataset.gearId;
-            paintWardrobeHero();
-          });
-          btn.addEventListener("mouseleave", () => {
-            if (wardrobeTryId !== btn.dataset.gearId) return;
-            wardrobeTryId = "";
-            paintWardrobeHero();
-          });
-          btn.addEventListener("click", () => {
-            const wearing = btn.dataset.gearOn === "1";
-            const saved = btn.dataset.gearSaved === "1";
-            if (wearing && !saved) return;
-            wardrobeTryId = "";
-            toggleGear(btn.dataset.gearId, !wearing);
-          });
-        });
-        panel.querySelectorAll("[data-gear-save]").forEach((btn) => {
-          btn.addEventListener("click", () => saveGear(btn.dataset.gearSave));
-        });
         panel.querySelectorAll("[data-gear-remove]").forEach((btn) => {
           btn.addEventListener("click", () =>
             removeGear(btn.dataset.gearRemove),
@@ -5623,7 +5582,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Wardrobe · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace relic.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
