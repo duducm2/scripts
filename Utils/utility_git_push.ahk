@@ -196,45 +196,6 @@ Utility_GitExportEntertainmentMd(scriptsRoot) {
     return "ok"
 }
 
-Utility_GitExportTrophyPhone(scriptsRoot) {
-    py := scriptsRoot . "\mnemonics\python\render_trophy_phone.py"
-    if (!FileExist(py))
-        return "error:render_trophy_phone.py not found"
-    pyCmd := ""
-    try pyCmd := Task_FindPythonCmd()
-    catch {
-        pyCmd := ""
-    }
-    if (pyCmd = "")
-        return "error:Python not found for phone trophy hall"
-    cmd := pyCmd . ' "' . py . '" --scripts-root "' . scriptsRoot . '"'
-    bat := A_Temp . "\utility-git-export-trophy-phone-" . A_TickCount . ".cmd"
-    try FileDelete(bat)
-    catch {
-    }
-    try FileAppend("@echo off`r`n" . cmd . "`r`n", bat, "CP0")
-    catch as e {
-        return "error:Phone trophy hall failed: " . e.Message
-    }
-    exitCode := 0
-    try {
-        exitCode := RunWaitWithTimeout('"' . bat . '"', scriptsRoot, "Hide", 120000)
-    } catch as e {
-        try FileDelete(bat)
-        catch {
-        }
-        return "error:Phone trophy hall failed: " . e.Message
-    }
-    try FileDelete(bat)
-    catch {
-    }
-    if (exitCode = 124)
-        return "error:Phone trophy hall timed out"
-    if (exitCode != 0)
-        return "error:Phone trophy hall failed (exit " . exitCode . ")"
-    return "ok"
-}
-
 ; Backward-compatible alias (#!+9 / Utility [G] path).
 Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
     return Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
@@ -250,10 +211,6 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
         return export
 
     export := Utility_GitExportEntertainmentMd(scriptsRoot)
-    if (SubStr(export, 1, 6) = "error:")
-        return export
-
-    export := Utility_GitExportTrophyPhone(scriptsRoot)
     if (SubStr(export, 1, 6) = "error:")
         return export
 
