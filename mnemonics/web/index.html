@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=sparkle7" />
+    <link rel="stylesheet" href="/dashboard.css?v=sparkle8" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -5520,15 +5520,16 @@
           const take = manage
             ? `<button type="button" class="spa-btn danger trophy-take" data-ico="minus" data-gear-remove="${escAttr(item.id)}">Take off</button>`
             : "";
+          const shining = i % 3 === 0;
+          const sparkIndex = Math.floor(i / 3);
           const art = item.image
             ? `<img src="${escAttr(item.image)}?v=trophyspots" alt="">`
             : item.svg;
-          const sparkle =
-            i % 3 === 0
-              ? `<span class="trophy-spark" style="--i:${Math.floor(i / 3)}" aria-hidden="true"></span>`
-              : "";
+          const sparkle = shining
+            ? `<span class="trophy-spark" style="--i:${sparkIndex}" aria-hidden="true"></span>`
+            : "";
           cells.push(
-            `<div class="trophy-spot" data-anim="${escAttr(item.anim || "bob")}" style="--i:${i}">` +
+            `<div class="trophy-spot${shining ? " is-shining" : ""}" data-anim="${escAttr(item.anim || "bob")}" style="--i:${shining ? sparkIndex : i}">` +
               `<div class="trophy-art">${art}${sparkle}</div>` +
               `<div class="trophy-caption"><span class="trophy-name">${esc(item.name)}</span>${take}</div></div>`,
           );
@@ -5557,7 +5558,13 @@
             '<div class="trophy-inspect-art"></div><div class="trophy-inspect-name"></div>';
           hall.appendChild(layer);
         }
-        layer.querySelector(".trophy-inspect-art").innerHTML = art.innerHTML;
+        const frame = layer.querySelector(".trophy-inspect-art");
+        frame.innerHTML = art.innerHTML;
+        frame.classList.toggle(
+          "is-shining",
+          spot.classList.contains("is-shining"),
+        );
+        frame.style.setProperty("--i", spot.style.getPropertyValue("--i"));
         layer.querySelector(".trophy-inspect-name").textContent =
           spot.querySelector(".trophy-name")?.textContent || "";
         layer.hidden = false;

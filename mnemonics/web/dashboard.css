@@ -388,6 +388,43 @@ header.top .sub {
 .trophy-art > svg {
   position: relative;
   z-index: 1;
+  animation: trophy-ambient 9.5s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -1.15s);
+}
+.trophy-spot.is-shining .trophy-art img,
+.trophy-spot.is-shining .trophy-art > svg {
+  animation: trophy-gleam 7s linear infinite;
+  animation-delay: calc(var(--i, 0) * -2.2s);
+}
+#studyModal .recall-head:not(.is-large) .trophy-art img,
+#studyModal .recall-head:not(.is-large) .trophy-art > svg {
+  animation: none;
+  filter: none;
+}
+@keyframes trophy-ambient {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.1) drop-shadow(0 0 2px rgba(255, 210, 130, 0.35));
+  }
+}
+@keyframes trophy-gleam {
+  0%,
+  66% {
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  73% {
+    filter: brightness(1.42) drop-shadow(0 0 7px rgba(255, 224, 150, 0.95));
+  }
+  83% {
+    filter: brightness(1.16) drop-shadow(0 0 4px rgba(255, 210, 120, 0.5));
+  }
+  92%,
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
 }
 @keyframes trophy-spark-fade {
   0%,
@@ -542,6 +579,27 @@ header.top .sub {
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 8px 5px rgba(0, 0, 0, 0.28));
+}
+.trophy-inspect-art.is-shining img,
+.trophy-inspect-art.is-shining svg {
+  animation: trophy-gleam-inspect 7s linear infinite;
+  animation-delay: calc(var(--i, 0) * -2.2s);
+}
+@keyframes trophy-gleam-inspect {
+  0%,
+  66%,
+  92%,
+  100% {
+    filter: brightness(1) drop-shadow(0 8px 5px rgba(0, 0, 0, 0.28));
+  }
+  73% {
+    filter: brightness(1.42) drop-shadow(0 0 12px rgba(255, 224, 150, 0.95))
+      drop-shadow(0 8px 5px rgba(0, 0, 0, 0.28));
+  }
+  83% {
+    filter: brightness(1.16) drop-shadow(0 0 6px rgba(255, 210, 120, 0.5))
+      drop-shadow(0 8px 5px rgba(0, 0, 0, 0.28));
+  }
 }
 .trophy-inspect-name {
   position: relative;
