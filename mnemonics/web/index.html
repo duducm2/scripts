@@ -1842,8 +1842,9 @@
 
       function buildAtomQuestionPrompt() {
         const lines = [
-          "Answer the question using only these knowledge atoms.",
-          "Do not rewrite them and do not emit a PALACE_PACK.",
+          "Use these knowledge atoms as context for the question.",
+          "Search the web when the atoms do not already contain the answer, and give an accurate answer, including examples.",
+          "Do not rewrite the atoms and do not emit a PALACE_PACK.",
           "",
           "=== KNOWLEDGE ATOMS ===",
         ];
@@ -5005,9 +5006,7 @@
           <div class="spa-panel"><table class="spa-table"><thead><tr><th>Concept</th><th></th></tr></thead>
           <tbody>${list
             .map(
-              (
-                a,
-              ) => `<tr><td>${esc(a.concept)}</td>
+              (a) => `<tr><td>${esc(a.concept)}</td>
             <td><button class="spa-btn" data-ico="pencil" data-edit="${escAttr(a.id)}">Edit</button>
             <button class="spa-btn danger" data-ico="trash" data-del="${escAttr(a.id)}">Del</button></td></tr>`,
             )
