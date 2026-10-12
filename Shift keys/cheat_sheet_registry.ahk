@@ -1188,7 +1188,7 @@ cheatSheets["Memory Palace"] := "
     === Ask ===
     ❓ [Shift+Q] Toggle Ask (Practice overview or palace overlay)
     🟧 Drag knowledge atoms into the panel (the list stays when you change palaces)
-    📋 Generate Prompt — those atoms plus your question, copied to the clipboard
+    📋 Generate Prompt — copies the atoms and your question, pastes them into the open AI companion, and sends
     
     === Study links (anywhere in the app) ===
     🎬 [Shift+V] Open stored video in Chrome (new window)

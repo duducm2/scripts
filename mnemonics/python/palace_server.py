@@ -21,7 +21,13 @@ from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from collectibles import load_items, persist_item, prepare_prompt, remove_item, set_equipped  # noqa: E402
+from collectibles import (
+    load_items,
+    persist_item,
+    prepare_prompt,
+    remove_item,
+    set_equipped,
+)  # noqa: E402
 from palace_save import save_images, save_notes, save_study_images  # noqa: E402
 from palace_store import PalaceStore  # noqa: E402
 from study_plan_parser import default_studies_root  # noqa: E402
@@ -211,6 +217,174 @@ def _is_valid_http_url(raw: str) -> bool:
         return False
     parsed = urlparse(target)
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+ASK_SEND_MESSAGE = "MEMORY_PALACE_ASK_SEND"
+ASK_PROMPT_NAME = "memory_palace_ask_prompt.txt"
+
+
+def _ask_prompt_path() -> Path:
+    return (
+        Path(os.environ.get("TEMP") or os.environ.get("TMP") or ".") / ASK_PROMPT_NAME
+    )
+
+
+def _win_ptr(value: int):
+    """Window and memory handles are pointer-sized. A plain int overflows past 32 bits."""
+    import ctypes
+
+    bits = ctypes.sizeof(ctypes.c_void_p) * 8
+    return ctypes.c_void_p(int(value) & ((1 << bits) - 1))
+
+
+def _user32():
+    import ctypes
+
+    user32 = ctypes.windll.user32
+    ptr = ctypes.c_void_p
+    user32.GetClassNameW.argtypes = [ptr, ctypes.c_wchar_p, ctypes.c_int]
+    user32.GetClassNameW.restype = ctypes.c_int
+    user32.GetWindowTextLengthW.argtypes = [ptr]
+    user32.GetWindowTextLengthW.restype = ctypes.c_int
+    user32.GetWindowTextW.argtypes = [ptr, ctypes.c_wchar_p, ctypes.c_int]
+    user32.GetWindowTextW.restype = ctypes.c_int
+    user32.SetClipboardData.argtypes = [ctypes.c_uint, ptr]
+    user32.SetClipboardData.restype = ptr
+    user32.GetClipboardData.restype = ptr
+    return user32
+
+
+def _clipboard_set(text: str) -> bool:
+    if os.name != "nt":
+        return False
+    import ctypes
+
+    CF_UNICODETEXT = 13
+    GMEM_MOVEABLE = 0x0002
+    user32 = _user32()
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GlobalAlloc.restype = ctypes.c_void_p
+    kernel32.GlobalLock.argtypes = [ctypes.c_void_p]
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    kernel32.GlobalUnlock.argtypes = [ctypes.c_void_p]
+    kernel32.GlobalFree.argtypes = [ctypes.c_void_p]
+    raw = ctypes.create_unicode_buffer(text)
+    size = ctypes.sizeof(raw)
+    if not user32.OpenClipboard(0):
+        return False
+    try:
+        if not user32.EmptyClipboard():
+            return False
+        handle = kernel32.GlobalAlloc(GMEM_MOVEABLE, size)
+        if not handle:
+            return False
+        handle = _win_ptr(handle)
+        locked = kernel32.GlobalLock(handle)
+        if not locked:
+            kernel32.GlobalFree(handle)
+            return False
+        try:
+            ctypes.memmove(locked, raw, size)
+        finally:
+            kernel32.GlobalUnlock(handle)
+        if not user32.SetClipboardData(CF_UNICODETEXT, handle):
+            kernel32.GlobalFree(handle)
+            return False
+        return True
+    finally:
+        user32.CloseClipboard()
+
+
+def _companion_owner_hwnd() -> int:
+    """AppLaunchers owns the companion paste path. A standalone Utils.ahk is the fallback."""
+    if os.name != "nt":
+        return 0
+    import ctypes
+
+    user32 = _user32()
+    owners: list[int] = []
+    fallback: list[int] = []
+
+    @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+    def _enum(hwnd, _lparam):
+        window = _win_ptr(hwnd)
+        class_name = ctypes.create_unicode_buffer(64)
+        user32.GetClassNameW(window, class_name, 64)
+        if class_name.value != "AutoHotkey":
+            return True
+        length = user32.GetWindowTextLengthW(window)
+        if length <= 0:
+            return True
+        title = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(window, title, length + 1)
+        name = title.value.replace("/", "\\").lower()
+        stored = int(window.value or 0)
+        if "\\applaunchers.ahk" in name:
+            owners.append(stored)
+        elif "\\utils.ahk" in name:
+            fallback.append(stored)
+        return True
+
+    user32.EnumWindows(_enum, 0)
+    if owners:
+        return owners[0]
+    if fallback:
+        return fallback[0]
+    return 0
+
+
+def send_ask_prompt(text: str) -> dict[str, Any]:
+    """Copy the Ask prompt and ask Utils to paste it into the open AI companion and send."""
+    body = (text or "").strip()
+    if not body:
+        return {"ok": False, "error": "Prompt is empty"}
+    path = _ask_prompt_path()
+    path.write_text(body, encoding="utf-8")
+    copied = _clipboard_set(body)
+    if os.name != "nt":
+        return {
+            "ok": False,
+            "error": "Companion send is only available on Windows",
+            "copied": copied,
+        }
+    import time
+
+    # AppLaunchers can still be starting when its window already exists.
+    # A single post during that window is discarded, so keep posting until the file is taken.
+    deadline = time.monotonic() + 8
+    while time.monotonic() < deadline:
+        hwnd = _companion_owner_hwnd()
+        if hwnd:
+            _post_ask_message(hwnd)
+        time.sleep(0.2)
+        if not path.exists():
+            return {
+                "ok": True,
+                "copied": True,
+                "message": "Sending to the AI companion",
+            }
+    return {
+        "ok": False,
+        "error": "Reload AppLaunchers, then generate again",
+        "copied": copied,
+    }
+
+
+def _post_ask_message(hwnd: int) -> bool:
+    import ctypes
+
+    user32 = _user32()
+    user32.RegisterWindowMessageW.argtypes = [ctypes.c_wchar_p]
+    user32.RegisterWindowMessageW.restype = ctypes.c_uint
+    user32.PostMessageW.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_uint,
+        ctypes.c_size_t,
+        ctypes.c_ssize_t,
+    ]
+    user32.PostMessageW.restype = ctypes.c_int
+    msg = user32.RegisterWindowMessageW(ASK_SEND_MESSAGE)
+    return bool(msg and user32.PostMessageW(_win_ptr(hwnd), msg, 0, 0))
 
 
 def _clipboard_get() -> str:
@@ -956,6 +1130,11 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 self._json(200, open_user_target(str(payload.get("target") or "")))
                 return
 
+            if path == "/api/ask/send":
+                result = send_ask_prompt(str(payload.get("text") or ""))
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
             if path == "/api/regen":
                 self._json(200, store.regen_all())
                 return
@@ -966,7 +1145,9 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 return
 
             if path == "/api/collectibles/prompt":
-                result = prepare_prompt(self.data_dir, str(payload.get("palace_id") or ""))
+                result = prepare_prompt(
+                    self.data_dir, str(payload.get("palace_id") or "")
+                )
                 self._json(200 if result.get("ok") else 400, result)
                 return
 

@@ -1275,7 +1275,7 @@
           id="btnAqGenerate"
           class="sr-btn"
           data-ico="spark"
-          title="Copy the question prompt"
+          title="Copy the question, paste it into the AI companion, and send"
         >
           Generate Prompt
         </button>
@@ -1887,10 +1887,18 @@
         }
         const text = buildAtomQuestionPrompt();
         try {
-          await navigator.clipboard.writeText(text);
-          toast("Question prompt copied");
+          const result = await api("/api/ask/send", {
+            method: "POST",
+            body: JSON.stringify({ text }),
+          });
+          toast(result.message || "Sending to the AI companion");
         } catch (e) {
-          toast(String(e.message || e));
+          try {
+            await navigator.clipboard.writeText(text);
+            toast("Prompt copied. " + String(e.message || e));
+          } catch {
+            toast(String(e.message || e));
+          }
         }
       }
 
@@ -5851,7 +5859,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>

@@ -1501,3 +1501,70 @@ Palace_OnStudyLinkOpenFavorite(*) {
 !a:: Palace_OnStudyLinkSetArticle()
 !f:: Palace_OnStudyLinkSetFavorite()
 #HotIf
+
+; Ask (Shift+Q) — page posts the prompt; Utils pastes it into the resolved AI companion and sends.
+Palace_AskPromptPath() {
+    return A_Temp "\memory_palace_ask_prompt.txt"
+}
+
+Palace_AskSendDeferred() {
+    path := Palace_AskPromptPath()
+    if !FileExist(path)
+        return
+    text := ""
+    try text := FileRead(path, "UTF-8")
+    catch
+        text := ""
+    try FileDelete(path)
+    catch {
+    }
+    text := Trim(text, "`r`n `t")
+    if (text = "")
+        return
+    companion := ""
+    try companion := ResolveGlobalAICompanion()
+    catch
+        companion := ""
+    if (companion = "gemini" && !FindGeminiChromeHwnd()) {
+        try ShowCenteredOverlay_Utils("⚠ Personal Gemini is not open", 2800, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        try A_Clipboard := text
+        catch {
+        }
+        return
+    }
+    global g_lastExpansion
+    g_lastExpansion := 0
+    try {
+        ; prompt false, no file attach, paste the body, send. Companion comes from ResolveGlobalAICompanion.
+        UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send")
+    } catch as err {
+        try ShowCenteredOverlay_Utils("⚠ Ask prompt was not sent: " err.Message, 2800, BANNER_ACCENT_ERROR)
+        catch {
+        }
+    }
+    try A_Clipboard := text
+    catch {
+    }
+}
+
+Palace_OnAskSendMsg(wParam, lParam, msg, hwnd) {
+    SetTimer(Palace_AskSendDeferred, -10)
+    return 0
+}
+
+Palace_InstallAskSendListener() {
+    static installed := false
+    if (installed)
+        return
+    ; Utils is included by several scripts. Only the AppLaunchers owner pastes and sends.
+    if (A_ScriptName != "AppLaunchers.ahk" && A_ScriptName != "Utils.ahk")
+        return
+    msgId := DllCall("RegisterWindowMessage", "Str", "MEMORY_PALACE_ASK_SEND", "UInt")
+    if (msgId)
+        OnMessage(msgId, Palace_OnAskSendMsg)
+    installed := true
+}
+
+Palace_InstallAskSendListener()
