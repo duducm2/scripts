@@ -1185,6 +1185,11 @@ cheatSheets["Memory Palace"] := "
     🟧 Drag overlay beasts into Delete (REMOVE) or Merge groups (SMASH · max 4)
     📋 Generate Prompt — context (README · characters · bestiary · prior study) + filled story-reduction prompt
     
+    === Ask ===
+    ❓ [Shift+Q] Toggle Ask (Practice overview or palace overlay)
+    🟧 Drag knowledge atoms into the panel (the list stays when you change palaces)
+    📋 Generate Prompt — those atoms plus your question, copied to the clipboard
+    
     === Study links (anywhere in the app) ===
     🎬 [Shift+V] Open stored video in Chrome (new window)
     📄 [Shift+A] Open stored article in Chrome (new window)

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=hall2" />
+    <link rel="stylesheet" href="/dashboard.css?v=ask1" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -824,6 +824,14 @@
         </button>
         <button
           type="button"
+          id="btnAtomQuestion"
+          data-ico="help"
+          title="Ask about knowledge atoms (Shift+Q)"
+        >
+          Ask
+        </button>
+        <button
+          type="button"
           id="btnPractice"
           class="active"
           data-ico="book"
@@ -1233,6 +1241,47 @@
       </footer>
     </aside>
 
+    <aside
+      id="atomQuestionPanel"
+      class="story-reduction-panel"
+      hidden
+      aria-label="Ask about knowledge atoms"
+    >
+      <header class="sr-panel-head">
+        <h2>Ask</h2>
+        <button
+          type="button"
+          id="btnAqClear"
+          class="sr-btn-ghost"
+          data-ico="trash"
+          title="Clear staging"
+        >
+          Clear
+        </button>
+      </header>
+      <section class="sr-drop" id="aqDropZone" data-aq-drop="atoms">
+        <h3>Atoms</h3>
+        <p class="sr-hint">Drop knowledge atoms, then write your question</p>
+        <div class="sr-chip-list" id="aqAtomList"></div>
+      </section>
+      <textarea
+        id="aqQuestion"
+        class="aq-question"
+        placeholder="What is unclear about these atoms?"
+      ></textarea>
+      <footer class="sr-panel-foot">
+        <button
+          type="button"
+          id="btnAqGenerate"
+          class="sr-btn"
+          data-ico="spark"
+          title="Copy the question prompt"
+        >
+          Generate Prompt
+        </button>
+      </footer>
+    </aside>
+
     <div id="kwPicker" hidden>
       <div
         class="kw-picker-panel"
@@ -1313,6 +1362,11 @@
         storyReduction: {
           active: false,
           deleteIds: [],
+        },
+        atomQuestion: {
+          active: false,
+          atomIds: [],
+          question: "",
         },
         notesTimer: null,
         planCheckSnapshot: null,
@@ -1576,6 +1630,9 @@
       function beastById(id) {
         return (state.data?.beasts || []).find((b) => b.id === id);
       }
+      function atomById(id) {
+        return (state.data?.atoms || []).find((a) => a.id === id);
+      }
 
       function srAllStagedIds() {
         return new Set(state.storyReduction.deleteIds);
@@ -1649,8 +1706,13 @@
 
       function setStoryReductionActive(on) {
         state.storyReduction.active = !!on;
+        if (on && state.atomQuestion.active) {
+          state.atomQuestion.active = false;
+          renderAtomQuestionPanel();
+        }
         renderStoryReductionPanel();
         bindStoryReductionDrag();
+        bindAtomQuestionDrag();
       }
 
       function toggleStoryReduction() {
@@ -1661,6 +1723,175 @@
         state.storyReduction.deleteIds = [];
         renderStoryReductionPanel();
         bindStoryReductionDrag();
+      }
+
+      function aqChipLabel(atomId) {
+        const atom = atomById(atomId);
+        if (!atom) return atomId;
+        const beast = beastById(atom.beast_id);
+        const peg = String(beast?.peg_code || "").trim();
+        const concept = String(atom.concept || "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const short =
+          concept.length > 48 ? concept.slice(0, 48) + "…" : concept;
+        const head = peg ? `[${peg}] ` : "";
+        return head + (short || beast?.beast_name || atomId);
+      }
+
+      function renderAtomQuestionPanel() {
+        const panel = document.getElementById("atomQuestionPanel");
+        const btn = document.getElementById("btnAtomQuestion");
+        if (!panel || !btn) return;
+        const on = state.atomQuestion.active;
+        panel.hidden = !on;
+        btn.classList.toggle("active", on);
+        if (!on) return;
+        const list = document.getElementById("aqAtomList");
+        list.innerHTML = state.atomQuestion.atomIds
+          .map(
+            (id) =>
+              `<button type="button" class="sr-chip" data-aq-unstage="${escAttr(id)}" title="Remove">${esc(aqChipLabel(id))}</button>`,
+          )
+          .join("");
+        list.querySelectorAll("[data-aq-unstage]").forEach((el) => {
+          el.onclick = () => {
+            state.atomQuestion.atomIds = state.atomQuestion.atomIds.filter(
+              (id) => id !== el.dataset.aqUnstage,
+            );
+            renderAtomQuestionPanel();
+            bindAtomQuestionDrag();
+          };
+        });
+        const question = document.getElementById("aqQuestion");
+        if (question && document.activeElement !== question) {
+          question.value = state.atomQuestion.question;
+        }
+        const zone = document.getElementById("aqDropZone");
+        if (!zone || zone.dataset.aqBound) return;
+        zone.dataset.aqBound = "1";
+        zone.ondragover = (e) => {
+          e.preventDefault();
+          zone.classList.add("sr-drag-over");
+        };
+        zone.ondragleave = () => zone.classList.remove("sr-drag-over");
+        zone.ondrop = (e) => {
+          e.preventDefault();
+          zone.classList.remove("sr-drag-over");
+          const atomId =
+            e.dataTransfer.getData("text/atom-id") ||
+            e.dataTransfer.getData("text/plain");
+          if (!atomId || !atomById(atomId)) return;
+          if (!state.atomQuestion.atomIds.includes(atomId)) {
+            state.atomQuestion.atomIds.push(atomId);
+          }
+          renderAtomQuestionPanel();
+          bindAtomQuestionDrag();
+        };
+      }
+
+      function setAtomQuestionActive(on) {
+        state.atomQuestion.active = !!on;
+        if (on && state.storyReduction.active) {
+          state.storyReduction.active = false;
+          renderStoryReductionPanel();
+          bindStoryReductionDrag();
+        }
+        renderAtomQuestionPanel();
+        bindAtomQuestionDrag();
+      }
+
+      function toggleAtomQuestion() {
+        setAtomQuestionActive(!state.atomQuestion.active);
+      }
+
+      function clearAtomQuestionStaging() {
+        state.atomQuestion.atomIds = [];
+        state.atomQuestion.question = "";
+        const question = document.getElementById("aqQuestion");
+        if (question) question.value = "";
+        renderAtomQuestionPanel();
+        bindAtomQuestionDrag();
+      }
+
+      function bindAtomQuestionDrag() {
+        const root = document.getElementById("ovAtoms");
+        if (!root) return;
+        const staged = new Set(state.atomQuestion.atomIds);
+        const active = state.atomQuestion.active;
+        root.querySelectorAll(".atom-card[data-atom-id]").forEach((el) => {
+          const id = el.dataset.atomId;
+          el.classList.toggle("sr-draggable", active);
+          el.classList.toggle("sr-staged", active && staged.has(id));
+          el.draggable = active;
+          if (!active) {
+            el.ondragstart = null;
+            el.ondragend = null;
+            return;
+          }
+          el.ondragstart = (e) => {
+            e.stopPropagation();
+            e.dataTransfer.setData("text/atom-id", id);
+            e.dataTransfer.setData("text/plain", id);
+            e.dataTransfer.effectAllowed = "copyMove";
+            el.classList.add("sr-dragging");
+          };
+          el.ondragend = () => el.classList.remove("sr-dragging");
+        });
+      }
+
+      function buildAtomQuestionPrompt() {
+        const lines = [
+          "Answer the question using only these knowledge atoms.",
+          "Do not rewrite them and do not emit a PALACE_PACK.",
+          "",
+          "=== KNOWLEDGE ATOMS ===",
+        ];
+        for (const id of state.atomQuestion.atomIds) {
+          const atom = atomById(id);
+          if (!atom) continue;
+          const beast = beastById(atom.beast_id);
+          const palace = beast ? palaceById(beast.palace_id) : null;
+          const num = palace?.palace_number || "?";
+          const title = String(palace?.title || "").trim();
+          lines.push(`Memory Palace ${num}: ${title}`.trim());
+          const peg = String(beast?.peg_code || "").trim();
+          const name = String(beast?.beast_name || "").trim();
+          lines.push(`${peg ? `[${peg}] ` : ""}${name}`.trim());
+          lines.push(`Concept: ${String(atom.concept || "").trim() || "—"}`);
+          lines.push(`Keywords: ${String(atom.keywords || "").trim() || "—"}`);
+          lines.push(`Quote: ${String(atom.quote || "").trim() || "—"}`);
+          lines.push(`Story: ${String(atom.story || "").trim() || "—"}`);
+          const notes = String(beast?.beast_notes || "").trim();
+          if (notes) {
+            lines.push("Beast notes:");
+            lines.push(notes);
+          }
+          lines.push("");
+        }
+        lines.push("=== QUESTION ===");
+        lines.push(state.atomQuestion.question.trim());
+        return lines.join("\n");
+      }
+
+      async function generateAtomQuestionPrompt() {
+        const questionEl = document.getElementById("aqQuestion");
+        if (questionEl) state.atomQuestion.question = questionEl.value;
+        if (!state.atomQuestion.atomIds.length) {
+          toast("Stage a knowledge atom first");
+          return;
+        }
+        if (!state.atomQuestion.question.trim()) {
+          toast("Write your question first");
+          return;
+        }
+        const text = buildAtomQuestionPrompt();
+        try {
+          await navigator.clipboard.writeText(text);
+          toast("Question prompt copied");
+        } catch (e) {
+          toast(String(e.message || e));
+        }
       }
 
       function bindStoryReductionDrag() {
@@ -3257,6 +3488,7 @@
             delete overlay.dataset.beastCount;
           }
           bindStoryReductionDrag();
+          bindAtomQuestionDrag();
         };
         paintAtoms();
         loadBeastThumbManifest().then(paintAtoms);
@@ -5619,7 +5851,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -5663,6 +5895,15 @@
       });
       document.getElementById("btnStoryReduction").onclick = () =>
         toggleStoryReduction();
+      document.getElementById("btnAtomQuestion").onclick = () =>
+        toggleAtomQuestion();
+      document.getElementById("btnAqClear").onclick = () =>
+        clearAtomQuestionStaging();
+      document.getElementById("btnAqGenerate").onclick = () =>
+        generateAtomQuestionPrompt();
+      document.getElementById("aqQuestion").oninput = (e) => {
+        state.atomQuestion.question = e.target.value;
+      };
       document.getElementById("btnSrClear").onclick = () =>
         clearStoryReductionStaging();
       document.getElementById("btnSrGenerate").onclick = () =>
@@ -6557,6 +6798,18 @@
         ) {
           e.preventDefault();
           toggleStoryReduction();
+          return;
+        }
+        if (
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          (e.key === "Q" || e.key === "q") &&
+          (ovOpen || state.view === "practice")
+        ) {
+          e.preventDefault();
+          toggleAtomQuestion();
           return;
         }
         if (
