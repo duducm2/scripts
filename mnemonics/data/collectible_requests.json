@@ -1,6 +1,6 @@
 {
-  "pending_slot": "",
-  "pending_palace_id": "",
+  "pending_slot": "trophy",
+  "pending_palace_id": "PALACE_DATAANALYST_21",
   "cycle": [
     "trophy"
   ],
@@ -15,6 +15,7 @@
     "a felt craft",
     "a marble carving",
     "a cast bronze miniature",
-    "an ink wash painting"
+    "an ink wash painting",
+    "a simple 3D render"
   ]
 }
