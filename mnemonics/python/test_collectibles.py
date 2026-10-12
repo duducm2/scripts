@@ -459,6 +459,7 @@ def test_import_uses_the_newest_desktop_picture(tmp_path: Path) -> None:
         desktop=tmp_path,
     )
     assert result["ok"], result
+    assert Path(result["source_image"]).name == "later.png"
     stored = tmp_path / "web-assets" / "trophies" / (result["item"]["id"] + ".png")
     opened = Image.open(stored)
     assert opened.getpixel((opened.size[0] // 2, opened.size[1] // 2))[:3] == (

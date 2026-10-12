@@ -410,7 +410,7 @@ ImportMgmt_HelpText() {
     . "Not watched. A file on the Desktop imports only when you press [C].`r`n"
     .
     "Writes: holds the relic on the avatar. Save in the wardrobe stores it in mnemonics/data/repl/collectibles.json`r`n"
-    . "Success: archive → mnemonics/data/imported/; refreshes the Memory Palace tab`r`n"
+    . "Success: archive pack and picture → mnemonics/data/imported/; refreshes the Memory Palace tab`r`n"
     . "AI fix: Desktop COLLECTIBLE_AI_FIX.txt (clipboard + ≥5s banner + hub closes)`r`n"
     . "Re-run: #!+X → [C]`r`n`r`n"
     . "========== [L] STUDY PLAN PACK ==========`r`n"

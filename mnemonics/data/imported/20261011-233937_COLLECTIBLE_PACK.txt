@@ -1,0 +1,12 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_DATAANALYST_20",
+"slot": "trophy",
+"name": "Navigation Astrolabe & Metastore Catalog",
+"blurb": "An intricate, ever-shifting navigational device used to catalog data pathways and manage workspace organization within the palace's Unity Catalog.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
+=END_FILE=

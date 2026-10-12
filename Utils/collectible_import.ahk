@@ -120,10 +120,10 @@ Collectible_ImportFromDesktop(*) {
     }
     name := Collectible_JsonField(out, "name")
     slot := Collectible_JsonField(out, "slot")
-    stamp := FormatTime(, "yyyyMMdd-HHmmss")
-    try FileCopy(path, Palace_DataDir() . "\imported\" . stamp . "_COLLECTIBLE_PACK.txt", 1)
-    catch {
-    }
+    Palace_ArchiveImported(path)
+    imagePath := StrReplace(Collectible_JsonField(out, "source_image"), "\\", "\")
+    if (imagePath != "" && FileExist(imagePath))
+        Palace_ArchiveImported(imagePath)
     label := name != "" ? name : "Relic"
     if (slot != "")
         label .= " (" . slot . ")"

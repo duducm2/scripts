@@ -80,13 +80,26 @@
     },
     {
       "id": "col_41f3d04bf701",
-      "created_at": "2026-10-11T19:55:27Z",
       "palace_id": "PALACE_AI_03",
       "slot": "trophy",
       "name": "The Tipped Scales of Elo & Value",
       "blurb": "An intricate armillary of spiraling rating stairs and weighted pricing scales, endlessly tested and mischievously tipped by climbing imps to represent AI pricing dynamics.",
       "svg": "",
       "image": "/assets/trophies/col_41f3d04bf701.png",
+      "anim": "bob",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-11T19:55:27Z"
+    },
+    {
+      "id": "col_7c5b753df1e4",
+      "created_at": "2026-10-12T02:39:37Z",
+      "palace_id": "PALACE_DATAANALYST_20",
+      "slot": "trophy",
+      "name": "Navigation Astrolabe & Metastore Catalog",
+      "blurb": "An intricate, ever-shifting navigational device used to catalog data pathways and manage workspace organization within the palace's Unity Catalog.",
+      "svg": "",
+      "image": "/assets/trophies/col_7c5b753df1e4.png",
       "anim": "bob",
       "anchor": "pedestal",
       "equipped": true

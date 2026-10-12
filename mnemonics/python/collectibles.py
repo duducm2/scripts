@@ -582,8 +582,9 @@ def knock_out_backdrop(image: Any) -> Any:
 def prepare_trophy_png(src: Path) -> Any:
     from PIL import Image
 
-    im = Image.open(src)
-    im = knock_out_backdrop(im)
+    with Image.open(src) as opened:
+        im = knock_out_backdrop(opened)
+        im.load()
     width, height = im.size
     longest = max(width, height)
     if longest > TROPHY_IMAGE_MAX:
@@ -857,6 +858,7 @@ def import_text(
         }
     item = _lock_imported_slot(data_dir, item, notes)
     prepared = None
+    source_image = ""
     if not item.get("svg"):
         src = _newest_desktop_image(desktop)
         if src is None:
@@ -865,6 +867,7 @@ def import_text(
                 "error": "No trophy picture on the Desktop. Save the image there and import again.",
                 "notes": notes,
             }
+        source_image = str(src)
         try:
             prepared = prepare_trophy_png(src)
         except OSError as exc:
@@ -907,6 +910,7 @@ def import_text(
         "item": _public_item(held, saved=False),
         "notes": notes,
         "count": len(load_items(data_dir)),
+        "source_image": source_image,
         "saved": False,
     }
 
