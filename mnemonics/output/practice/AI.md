@@ -1,7 +1,7 @@
 # Ai
 
 <details open>
-<summary><strong>Memory Palace 5: AI System Architecture</strong> · 3 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 5: AI System Architecture</strong> · Character: — · 3 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/AI/5.png)
 
@@ -82,7 +82,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · 1 beast · 2 atoms</summary>
+<summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · Character: — · 1 beast · 2 atoms</summary>
 
 ![Memory Palace 3](images/AI/3.jpg)
 
@@ -123,7 +123,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: The Semantic Layer & RAG Structure</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 2: The Semantic Layer & RAG Structure</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/AI/2.png)
 
@@ -192,7 +192,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Foundations & Semantic Interoperability</strong> · 3 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Foundations & Semantic Interoperability</strong> · Character: — · 3 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/AI/1.png)
 

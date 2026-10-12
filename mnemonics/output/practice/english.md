@@ -1,7 +1,7 @@
 # English
 
 <details open>
-<summary><strong>Memory Palace 18: Syllabic Consonants</strong> · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 18: Syllabic Consonants</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 18](images/english/18.png)
 
@@ -50,7 +50,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 17: Elision & Intrusion Rules</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 17: Elision & Intrusion Rules</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 17](images/english/17.png)
 
@@ -89,7 +89,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 16: Connected Speech & Assimilation</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 16: Connected Speech & Assimilation</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 16](images/english/16.png)
 
@@ -158,7 +158,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 15: Rhythm and Flow</strong> · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 15: Rhythm and Flow</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 15](images/english/15.png)
 
@@ -217,7 +217,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 14: Pitch and Notation</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 14: Pitch and Notation</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 14](images/english/14.png)
 
@@ -256,7 +256,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 13: Suprasegmental Basics</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 13: Suprasegmental Basics</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 13](images/english/13.png)
 
@@ -325,7 +325,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 12: Negation, Mistakes, & Time</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 12: Negation, Mistakes, & Time</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 12](images/english/12.png)
 
@@ -394,7 +394,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 11: Prefixes & Suffixes Definitions</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 11: Prefixes & Suffixes Definitions</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 11](images/english/11.png)
 
@@ -463,7 +463,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: Nominalization & Definitions</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 10: Nominalization & Definitions</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 10](images/english/10.png)
 
@@ -532,7 +532,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: Passive & Mistakes</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 9: Passive & Mistakes</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 9](images/english/9.png)
 
@@ -571,7 +571,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: Consequences & Past Forms</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 8: Consequences & Past Forms</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 8](images/english/8.png)
 
@@ -640,7 +640,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Participle Definitions & Active Forms</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 7: Participle Definitions & Active Forms</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 7](images/english/7.png)
 
@@ -709,7 +709,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Discourse Markers (Result & Reason)</strong> · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 6: Discourse Markers (Result & Reason)</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 6](images/english/6.png)
 
@@ -768,7 +768,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Advanced Application</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 5: Advanced Application</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 5](images/english/5.png)
 
@@ -807,7 +807,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Ellipsis & Substitution Basics</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 4: Ellipsis & Substitution Basics</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/english/4.png)
 
@@ -876,7 +876,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Special Variations</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 3: Special Variations</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 3](images/english/3.png)
 
@@ -915,7 +915,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Wh-Clefts & Rules</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 2: Wh-Clefts & Rules</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/english/2.png)
 
@@ -984,7 +984,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Cleft Sentences & It-Clefts</strong> · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 1: Cleft Sentences & It-Clefts</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 1](images/english/1.png)
 

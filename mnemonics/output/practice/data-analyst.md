@@ -1,7 +1,7 @@
 # Data Analyst
 
 <details open>
-<summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 21](images/data-analyst/21.jpg)
 
@@ -56,7 +56,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 20: Databricks Workspace Navigation</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 20: Databricks Workspace Navigation</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 20](images/data-analyst/20.jpg)
 
@@ -135,7 +135,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 19: Databricks Foundations</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 19: Databricks Foundations</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 19](images/data-analyst/19.jpg)
 
@@ -220,7 +220,7 @@ _No notes._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 18: Star Schema Best Practices</strong> · 1 beast · 1 atom</summary>
+<summary><strong>Memory Palace 18: Star Schema Best Practices</strong> · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 18](images/data-analyst/18.png)
 
@@ -251,7 +251,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 17: Star Schema Core Architecture</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 17: Star Schema Core Architecture</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 17](images/data-analyst/17.png)
 
@@ -330,7 +330,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 16: API to Power BI</strong> · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 16: API to Power BI</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 16](images/data-analyst/16.jpg)
 
@@ -397,7 +397,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 15: SQL Window Functions</strong> · 4 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 15: SQL Window Functions</strong> · Character: — · 4 beasts · 5 atoms</summary>
 
 ![Memory Palace 15](images/data-analyst/15.jpg)
 
@@ -478,7 +478,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 14: SQL Joins</strong> · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 14: SQL Joins</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 14](images/data-analyst/14.jpg)
 
@@ -533,7 +533,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 13: SQL Advanced Analytics</strong> · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 13: SQL Advanced Analytics</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 13](images/data-analyst/13.jpg)
 
@@ -600,7 +600,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 12: Location Probes & Rearrangement</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 12: Location Probes & Rearrangement</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 12](images/data-analyst/12.jpg)
 
@@ -643,7 +643,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 11: Hybrid Marks & View Transforms</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 11: Hybrid Marks & View Transforms</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 11](images/data-analyst/11.jpg)
 
@@ -722,7 +722,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: Multivariate Line & Table Views</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 10: Multivariate Line & Table Views</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 10](images/data-analyst/10.jpg)
 
@@ -801,7 +801,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: Encoding & Perception Basics</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 9: Encoding & Perception Basics</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 9](images/data-analyst/9.jpg)
 
@@ -880,7 +880,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: Schema & Visual Structure Core</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 8: Schema & Visual Structure Core</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 8](images/data-analyst/8.jpg)
 
@@ -959,7 +959,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: M Code Pipeline & Database Architectures</strong> · 1 beast · 1 atom</summary>
+<summary><strong>Memory Palace 7: M Code Pipeline & Database Architectures</strong> · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 7](images/data-analyst/7.jpg)
 
@@ -990,7 +990,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Power Query Transformations & Step Reuse</strong> · 5 beasts · 6 atoms</summary>
+<summary><strong>Memory Palace 6: Power Query Transformations & Step Reuse</strong> · Character: — · 5 beasts · 6 atoms</summary>
 
 ![Memory Palace 6](images/data-analyst/6.jpg)
 
@@ -1083,7 +1083,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: M Engine & Syntax</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 5: M Engine & Syntax</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/data-analyst/5.jpg)
 
@@ -1162,7 +1162,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Data Architectures 2</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 4: Data Architectures 2</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/data-analyst/4.png)
 
@@ -1241,7 +1241,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Data Architectures 1</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 3: Data Architectures 1</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/data-analyst/3.png)
 
@@ -1310,7 +1310,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Data Analytics Fundamentals</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 2: Data Analytics Fundamentals</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/data-analyst/2.jpg)
 
@@ -1379,7 +1379,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Data Analyst vs Data Scientist Foundations</strong> · 4 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Data Analyst vs Data Scientist Foundations</strong> · Character: — · 4 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/data-analyst/1.jpg)
 

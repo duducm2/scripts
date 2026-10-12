@@ -1,7 +1,7 @@
 # Piano
 
 <details open>
-<summary><strong>Memory Palace 11: Clefs and Note Placement</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 11: Clefs and Note Placement</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 11](images/piano/11.png)
 
@@ -70,7 +70,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: Reading and Hand Posture</strong> · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 10: Reading and Hand Posture</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 10](images/piano/10.jpg)
 
@@ -109,7 +109,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: Note Symbols and Counting</strong> · 1 beast · 1 atom</summary>
+<summary><strong>Memory Palace 9: Note Symbols and Counting</strong> · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 9](images/piano/9.png)
 
@@ -138,7 +138,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: Reading Spaces and Resolution</strong> · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 8: Reading Spaces and Resolution</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 8](images/piano/8.png)
 
@@ -187,7 +187,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Musical Structure</strong> · 3 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 7: Musical Structure</strong> · Character: — · 3 beasts · 4 atoms</summary>
 
 ![Memory Palace 7](images/piano/7.png)
 
@@ -248,7 +248,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Chord Positions and Harmony Basics</strong> · 5 beasts · 7 atoms</summary>
+<summary><strong>Memory Palace 6: Chord Positions and Harmony Basics</strong> · Character: — · 5 beasts · 7 atoms</summary>
 
 ![Memory Palace 6](images/piano/6.png)
 
@@ -341,7 +341,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Chord Construction and Types</strong> · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 5: Chord Construction and Types</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/piano/5.png)
 
@@ -410,7 +410,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Key Choice, Chords, and Pedal</strong> · 3 beasts · 6 atoms</summary>
+<summary><strong>Memory Palace 4: Key Choice, Chords, and Pedal</strong> · Character: — · 3 beasts · 6 atoms</summary>
 
 ![Memory Palace 4](images/piano/4.png)
 
@@ -493,7 +493,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Practice Structure and Scale Steps</strong> · 5 beasts · 8 atoms</summary>
+<summary><strong>Memory Palace 3: Practice Structure and Scale Steps</strong> · Character: — · 5 beasts · 8 atoms</summary>
 
 ![Memory Palace 3](images/piano/3.png)
 
@@ -600,7 +600,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Note Values and Relaxed Hand</strong> · 5 beasts · 11 atoms</summary>
+<summary><strong>Memory Palace 2: Note Values and Relaxed Hand</strong> · Character: — · 5 beasts · 11 atoms</summary>
 
 ![Memory Palace 2](images/piano/2.png)
 
@@ -737,7 +737,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Keyboard Map and Reading System</strong> · 5 beasts · 11 atoms</summary>
+<summary><strong>Memory Palace 1: Keyboard Map and Reading System</strong> · Character: — · 5 beasts · 11 atoms</summary>
 
 ![Memory Palace 1](images/piano/1.png)
 
