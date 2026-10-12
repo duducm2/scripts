@@ -1,0 +1,10 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+{
+"palace_id": "PALACE_DATAANALYST_17",
+"slot": "trophy",
+"name": "Star Schema Core Architecture",
+"blurb": "This central fact block bound to its surrounding dimension nodes represents the highly optimized, linked structure of a data warehouse.",
+"anim": "float",
+"anchor": "pedestal"
+}
+=END_FILE=

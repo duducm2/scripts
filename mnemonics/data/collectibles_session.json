@@ -106,13 +106,26 @@
     },
     {
       "id": "col_51a36a1a16d1",
-      "created_at": "2026-10-12T02:54:13Z",
       "palace_id": "PALACE_PIANO_10",
       "slot": "trophy",
       "name": "Reading and Hand Posture Mosaic",
       "blurb": "An arched ceramic mosaic hand vaulted over a keyboard and score honors the disciplined dome posture and sight-reading fundamentals of the palace.",
       "svg": "",
       "image": "/assets/trophies/col_51a36a1a16d1.png",
+      "anim": "float",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-12T02:54:13Z"
+    },
+    {
+      "id": "col_c26948c52fda",
+      "created_at": "2026-10-12T18:35:26Z",
+      "palace_id": "PALACE_DATAANALYST_17",
+      "slot": "trophy",
+      "name": "Star Schema Core Architecture",
+      "blurb": "This central fact block bound to its surrounding dimension nodes represents the highly optimized, linked structure of a data warehouse.",
+      "svg": "",
+      "image": "/assets/trophies/col_c26948c52fda.png",
       "anim": "float",
       "anchor": "pedestal",
       "equipped": true

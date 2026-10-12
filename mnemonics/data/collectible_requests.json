@@ -1,11 +1,10 @@
 {
-  "pending_slot": "trophy",
-  "pending_palace_id": "PALACE_DATAANALYST_20",
+  "pending_slot": "",
+  "pending_palace_id": "",
   "cycle": [
     "trophy"
   ],
   "recent_looks": [
-    "a wax-seal impression",
     "an enamel badge",
     "a felt craft",
     "a marble carving",
@@ -16,6 +15,7 @@
     "a hand-built clay figure",
     "an embroidered patch",
     "a tile mosaic",
-    "a ballpoint doodle"
+    "a ballpoint doodle",
+    "a linocut"
   ]
 }
