@@ -1,0 +1,11 @@
+﻿===PREVIEW===
+4 row(s) · Gasoline, coxinhas, groceries, smartphone recharge
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Gasoline,"80,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1
+Coxinhas,"29,80",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Groceries,"66,37",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+Smartphone recharge,"40,00",expense,CAT_CELULAR,ACC_MERCADOP,,,1
+===END_FILE===
