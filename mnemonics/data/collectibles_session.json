@@ -27,19 +27,6 @@
       "created_at": "2026-10-11T18:36:17Z"
     },
     {
-      "id": "col_bf3d6986f6da",
-      "palace_id": "PALACE_DATAANALYST_20",
-      "slot": "trophy",
-      "name": "The Compass of the Cascading Workspace",
-      "blurb": "Awarded for mastering the intricate pathways of Databricks Workspace Navigation, finding the golden routes through catalog tables under the icy gaze of the data dragon.",
-      "svg": "",
-      "image": "/assets/trophies/col_bf3d6986f6da.png",
-      "anim": "sway",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-11T18:47:56Z"
-    },
-    {
       "id": "col_f3ed3b264df5",
       "palace_id": "PALACE_PIANO_11",
       "slot": "trophy",
@@ -93,7 +80,6 @@
     },
     {
       "id": "col_7c5b753df1e4",
-      "created_at": "2026-10-12T02:39:37Z",
       "palace_id": "PALACE_DATAANALYST_20",
       "slot": "trophy",
       "name": "Navigation Astrolabe & Metastore Catalog",
@@ -101,6 +87,33 @@
       "svg": "",
       "image": "/assets/trophies/col_7c5b753df1e4.png",
       "anim": "bob",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-12T02:39:37Z"
+    },
+    {
+      "id": "col_5d5043e4354b",
+      "palace_id": "PALACE_GERMAN_11",
+      "slot": "trophy",
+      "name": "The Clay Alphabet Coil",
+      "blurb": "A hand-built clay tower featuring the letters of the German Alphabet, entwined with native aquatic leeches for the palace's collection.",
+      "svg": "",
+      "image": "/assets/trophies/col_5d5043e4354b.png",
+      "anim": "bob",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-12T02:47:30Z"
+    },
+    {
+      "id": "col_51a36a1a16d1",
+      "created_at": "2026-10-12T02:54:13Z",
+      "palace_id": "PALACE_PIANO_10",
+      "slot": "trophy",
+      "name": "Reading and Hand Posture Mosaic",
+      "blurb": "An arched ceramic mosaic hand vaulted over a keyboard and score honors the disciplined dome posture and sight-reading fundamentals of the palace.",
+      "svg": "",
+      "image": "/assets/trophies/col_51a36a1a16d1.png",
+      "anim": "float",
       "anchor": "pedestal",
       "equipped": true
     }

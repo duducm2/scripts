@@ -1,0 +1,20 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_PIANO_10",
+
+  "slot": "trophy",
+
+  "name": "Reading and Hand Posture Mosaic",
+
+  "blurb": "An arched ceramic mosaic hand vaulted over a keyboard and score honors the disciplined dome posture and sight-reading fundamentals of the palace.",
+
+  "anim": "float",
+
+  "anchor": "pedestal"
+
+}
+
+===END_FILE===
+

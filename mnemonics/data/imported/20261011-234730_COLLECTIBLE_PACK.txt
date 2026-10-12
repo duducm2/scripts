@@ -1,0 +1,10 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+{
+"palace_id": "PALACE_GERMAN_11",
+"slot": "trophy",
+"name": "The Clay Alphabet Coil",
+"blurb": "A hand-built clay tower featuring the letters of the German Alphabet, entwined with native aquatic leeches for the palace's collection.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
