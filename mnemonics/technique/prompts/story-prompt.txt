@@ -261,7 +261,7 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 
 ### 4. Image prompts
 
-- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; plain English; bizarreness levers reflected. Never name a real person or a copyrighted character (`README §Image composition rules`).
+- One `image_prompt` per palace row: foreground only; depth slots + a different structural anchor for each beast, with clear empty space between beasts (never a huddle or a shared object); plain English; bizarreness levers reflected. Never name a real person or a copyrighted character (`README §Image composition rules`).
 - Each beast physically engages the fantasy object of its one topic keyword (`README §Image composition rules`). That object is the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. One beast, one object.
 - Leave `character_name` blank. In `image_prompt` NEVER write a real, celebrity, historical, or copyrighted character name.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
