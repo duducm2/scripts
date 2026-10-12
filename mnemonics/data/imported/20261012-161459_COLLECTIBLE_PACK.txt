@@ -1,0 +1,10 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+{
+"palace_id": "PALACE_PIANO_01",
+"slot": "trophy",
+"name": "The Clockwork Key mapper",
+"blurb": "This mechanical tin masterpiece perfectly maps key locations and decoding patterns to help navigate the palace’s entire reading system.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=

@@ -569,21 +569,14 @@ ClipAngelExport_PasteFirstClipToDesktop() {
     desktopPath := AiQuickDownload_ResolveDesktopPath()
     if (desktopPath = "" || !DirExist(desktopPath))
         return ""
-    beforePath := ""
-    beforeStamp := ""
-    try {
-        beforePath := DesktopCutNewest_ResolveNewestPath(desktopPath)
-        if (beforePath != "")
-            beforeStamp := AiQuickDownload_ItemStamp(beforePath)
-    } catch {
-    }
     desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
     if (!desktopHwnd)
         return ""
+    beforeSnap := AiQuickDownload_SnapshotDesktop(desktopPath)
     if !ClipAngelExport_PasteFirstClipIntoHwnd(desktopHwnd)
         return ""
     outPath := ""
-    try outPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp)
+    try outPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforeSnap)
     catch {
         outPath := ""
     }

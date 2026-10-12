@@ -62,13 +62,12 @@ ClickSeqScript_Run(scriptId) {
 ClickSeqScript_DesktopWait() {
     ctx := ClickSeqScript_Ctx()
     desktopPath := ctx.HasProp("desktopPath") ? ctx.desktopPath : ""
-    beforePath := ctx.HasProp("beforePath") ? ctx.beforePath : ""
-    beforeStamp := ctx.HasProp("beforeStamp") ? ctx.beforeStamp : ""
+    beforeSnap := (ctx.HasProp("beforeSnap") && (ctx.beforeSnap is Map)) ? ctx.beforeSnap : ""
     try StandardLoadingBar_Update("⏳ Waiting for Desktop file…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
     newPath := ""
-    try newPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp)
+    try newPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforeSnap)
     catch {
         newPath := ""
     }

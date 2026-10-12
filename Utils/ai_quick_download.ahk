@@ -85,14 +85,13 @@ AiQuickDownload_RunInner(doCut := true) {
     }
 
     desktopPath := AiQuickDownload_ResolveDesktopPath()
-    beforePath := ""
+    ; Full live listing before any click. Newest-by-mtime misses exports whose
+    ; modified time is older than something already on the Desktop.
+    beforeSnap := AiQuickDownload_SnapshotDesktop(desktopPath)
+    beforePath := AiQuickDownload_NewestHintFromSnap(beforeSnap)
     beforeStamp := ""
-    try {
-        beforePath := DesktopCutNewest_ResolveNewestPath(desktopPath)
-        if (beforePath != "")
-            beforeStamp := AiQuickDownload_ItemStamp(beforePath)
-    } catch {
-    }
+    if (beforePath != "")
+        beforeStamp := AiQuickDownload_ItemStamp(beforePath)
 
     extras := {
         doCut: doCut,
@@ -100,6 +99,7 @@ AiQuickDownload_RunInner(doCut := true) {
         desktopPath: desktopPath,
         beforePath: beforePath,
         beforeStamp: beforeStamp,
+        beforeSnap: beforeSnap,
         desktopName: desktopName,
         desktopExt: desktopExt
     }
@@ -243,51 +243,195 @@ AiQuickDownload_IsTempDownloadName(name) {
     return false
 }
 
-AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp) {
+AiQuickDownload_ReadFileStat(path) {
+    ctime := ""
+    mtime := ""
+    size := -1
+    try ctime := FileGetTime(path, "C")
+    catch {
+        ctime := ""
+    }
+    try mtime := FileGetTime(path, "M")
+    catch {
+        mtime := ""
+    }
+    try size := FileGetSize(path)
+    catch {
+        size := -1
+    }
+    return { size: size, ctime: ctime, mtime: mtime }
+}
+
+; Live listing. Does not use the folder-mtime index: a download can arrive
+; without updating the folder timestamp, and with a modified time older than
+; files already on the Desktop.
+AiQuickDownload_SnapshotDesktop(desktopPath) {
+    snap := Map()
     if (!desktopPath || !DirExist(desktopPath))
+        return snap
+    loop files desktopPath "\*", "F" {
+        if (StrLower(A_LoopFileName) = "desktop.ini")
+            continue
+        stat := AiQuickDownload_ReadFileStat(A_LoopFileFullPath)
+        snap[StrLower(A_LoopFileFullPath)] := {
+            path: A_LoopFileFullPath,
+            size: stat.size,
+            ctime: stat.ctime,
+            mtime: stat.mtime
+        }
+    }
+    return snap
+}
+
+; Finance CSV hint only. Detection uses the full snapshot, not this path.
+AiQuickDownload_NewestHintFromSnap(beforeSnap) {
+    bestPath := ""
+    bestStamp := ""
+    if !(beforeSnap is Map)
+        return ""
+    for snapKey, row in beforeSnap {
+        if (!IsObject(row) || !row.HasProp("path"))
+            continue
+        SplitPath(row.path, &name)
+        if (AiQuickDownload_IsTempDownloadName(name))
+            continue
+        stamp := ""
+        if (row.ctime != "" && row.mtime != "")
+            stamp := (row.ctime >= row.mtime) ? row.ctime : row.mtime
+        else
+            stamp := row.ctime != "" ? row.ctime : row.mtime
+        if (bestPath = "" || (stamp != "" && stamp > bestStamp)) {
+            bestPath := row.path
+            bestStamp := stamp
+        }
+    }
+    return bestPath
+}
+
+AiQuickDownload_CtimeIsLater(ctime, bestCtime) {
+    if (bestCtime = "")
+        return true
+    if (ctime = "")
+        return false
+    return ctime > bestCtime
+}
+
+; status idle: no folder change. pending: temp download or locked candidate.
+; ready: non-temp file that is new, or whose size or creation time changed.
+AiQuickDownload_ProbeDesktop(desktopPath, beforeSnap) {
+    result := { status: "idle", path: "", size: -1, ctime: "" }
+    if (!desktopPath || !DirExist(desktopPath))
+        return result
+    if !(beforeSnap is Map)
+        beforeSnap := Map()
+
+    bestPath := ""
+    bestCtime := ""
+    bestSize := -1
+    pending := false
+
+    loop files desktopPath "\*", "F" {
+        if (StrLower(A_LoopFileName) = "desktop.ini")
+            continue
+        full := A_LoopFileFullPath
+        key := StrLower(full)
+        stat := AiQuickDownload_ReadFileStat(full)
+        inBase := beforeSnap.Has(key)
+        prior := inBase ? beforeSnap[key] : ""
+
+        if (AiQuickDownload_IsTempDownloadName(A_LoopFileName)) {
+            if (!inBase)
+                pending := true
+            else if (stat.size >= 0 && IsObject(prior) && prior.size >= 0 && stat.size != prior.size)
+                pending := true
+            else if (stat.ctime != "" && IsObject(prior) && prior.ctime != "" && stat.ctime != prior.ctime)
+                pending := true
+            continue
+        }
+
+        changed := !inBase
+        if (inBase && IsObject(prior)) {
+            if (stat.size >= 0 && prior.size >= 0 && stat.size != prior.size)
+                changed := true
+            else if (stat.ctime != "" && prior.ctime != "" && stat.ctime != prior.ctime)
+                changed := true
+        }
+        if (!changed)
+            continue
+        if (stat.size < 0) {
+            pending := true
+            continue
+        }
+        if (bestPath = "" || AiQuickDownload_CtimeIsLater(stat.ctime, bestCtime)) {
+            bestPath := full
+            bestCtime := stat.ctime
+            bestSize := stat.size
+        }
+    }
+
+    if (bestPath != "") {
+        result.status := "ready"
+        result.path := bestPath
+        result.size := bestSize
+        result.ctime := bestCtime
+        return result
+    }
+    if (pending)
+        result.status := "pending"
+    return result
+}
+
+AiQuickDownload_SetWaitBanner(which, &banner) {
+    if (which = banner)
+        return
+    banner := which
+    msg := (which = "progress") ? "⏳ Download in progress…" : "⏳ Waiting for Desktop file…"
+    try StandardLoadingBar_Update(msg, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+}
+
+; beforeSnap: Map from AiQuickDownload_SnapshotDesktop, taken before the download.
+AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforeSnap) {
+    if (!desktopPath || !DirExist(desktopPath))
+        return ""
+    if !(beforeSnap is Map)
         return ""
     start := A_TickCount
     lastPath := ""
     lastSize := -1
     stableCount := 0
+    banner := ""
     while (A_TickCount - start < AI_QD_DESKTOP_TIMEOUT_MS) {
-        newest := ""
-        try newest := DesktopCutNewest_ResolveNewestPath(desktopPath)
-        catch {
-            newest := ""
-        }
-        if (newest = "") {
+        probe := AiQuickDownload_ProbeDesktop(desktopPath, beforeSnap)
+        if (probe.status = "pending") {
+            AiQuickDownload_SetWaitBanner("progress", &banner)
+            lastPath := ""
+            lastSize := -1
+            stableCount := 0
             Sleep AI_QD_DESKTOP_POLL_MS
             continue
         }
-        SplitPath(newest, &name)
-        if (AiQuickDownload_IsTempDownloadName(name)) {
+        if (probe.status != "ready" || probe.path = "") {
+            AiQuickDownload_SetWaitBanner("waiting", &banner)
+            lastPath := ""
+            lastSize := -1
+            stableCount := 0
             Sleep AI_QD_DESKTOP_POLL_MS
             continue
         }
-        stamp := AiQuickDownload_ItemStamp(newest)
-        isNew := (beforePath = "") || (newest != beforePath) || (stamp != "" && beforeStamp != "" && stamp >
-            beforeStamp)
-        if (!isNew) {
-            Sleep AI_QD_DESKTOP_POLL_MS
-            continue
-        }
-        size := -1
-        try size := FileGetSize(newest)
-        catch {
-            size := -1
-        }
-        if (size < 0) {
-            Sleep AI_QD_DESKTOP_POLL_MS
-            continue
-        }
-        if (newest = lastPath && size = lastSize) {
+        if (probe.path = lastPath && probe.size = lastSize) {
             stableCount += 1
             if (stableCount >= AI_QD_DESKTOP_STABLE_POLLS)
-                return newest
+                return probe.path
+            AiQuickDownload_SetWaitBanner("waiting", &banner)
         } else {
-            lastPath := newest
-            lastSize := size
+            if (lastPath != "")
+                AiQuickDownload_SetWaitBanner("progress", &banner)
+            else
+                AiQuickDownload_SetWaitBanner("waiting", &banner)
+            lastPath := probe.path
+            lastSize := probe.size
             stableCount := 1
         }
         Sleep AI_QD_DESKTOP_POLL_MS

@@ -346,10 +346,31 @@ ClickSeq_SequencesForCompanion(macro, companion) {
     return out
 }
 
-; Returns true if every Slot in the Shortcut chain succeeds.
-; extras: { doCut, desktopPath, beforePath, beforeStamp, seqAttempts }
+; True when the Desktop diff shows a download already started.
+; No baseline means this macro is not Quick Download — sibling search stays as-is.
+ClickSeq_DownloadAlreadyStarted() {
+    global g_ClickSeqRunCtx
+    if (!IsObject(g_ClickSeqRunCtx))
+        return false
+    if (!g_ClickSeqRunCtx.HasProp("beforeSnap") || !(g_ClickSeqRunCtx.beforeSnap is Map))
+        return false
+    desktopPath := g_ClickSeqRunCtx.HasProp("desktopPath") ? g_ClickSeqRunCtx.desktopPath : ""
+    probe := ""
+    try probe := AiQuickDownload_ProbeDesktop(desktopPath, g_ClickSeqRunCtx.beforeSnap)
+    catch {
+        return false
+    }
+    if (!IsObject(probe) || !probe.HasProp("status"))
+        return false
+    return (probe.status = "pending" || probe.status = "ready")
+}
+
+; True when one sibling sequence's clicks all succeed, or a Desktop download
+; has already started (pending temp file, or a new/changed file).
 ClickSeq_TrySiblingSequences(seqs, hwnd) {
     for seq in seqs {
+        if (ClickSeq_DownloadAlreadyStarted())
+            return true
         clicks := seq.HasProp("clicks") ? seq.clicks : []
         if (!IsObject(clicks) || clicks.Length = 0)
             continue
@@ -358,25 +379,37 @@ ClickSeq_TrySiblingSequences(seqs, hwnd) {
             continue
         ok := true
         for click in clicks {
-            if (!ClickSeq_ExecuteClick(uia, hwnd, click)) {
+            clicked := ClickSeq_ExecuteClick(uia, hwnd, click)
+            if (clicked) {
+                settleVal := click.HasProp("settleMs") ? click.settleMs : CLICKSEQ_DEFAULT_SETTLE_MS
+                settle := ClickSeqData_Int(settleVal, CLICKSEQ_DEFAULT_SETTLE_MS)
+                if (settle < 0)
+                    settle := 0
+                if (settle > 0)
+                    Sleep settle
+            }
+            ; A click that reported failure can still have started the download.
+            if (ClickSeq_DownloadAlreadyStarted())
+                return true
+            if (!clicked) {
                 ok := false
                 break
             }
-            settleVal := click.HasProp("settleMs") ? click.settleMs : CLICKSEQ_DEFAULT_SETTLE_MS
-            settle := ClickSeqData_Int(settleVal, CLICKSEQ_DEFAULT_SETTLE_MS)
-            if (settle < 0)
-                settle := 0
-            if (settle > 0)
-                Sleep settle
             uia := ClickSeq_AttachUia(hwnd)
             if (!IsObject(uia)) {
+                if (ClickSeq_DownloadAlreadyStarted())
+                    return true
                 ok := false
                 break
             }
         }
         if (ok)
             return true
+        if (ClickSeq_DownloadAlreadyStarted())
+            return true
     }
+    if (ClickSeq_DownloadAlreadyStarted())
+        return true
     return false
 }
 
@@ -431,6 +464,7 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
     desktopPath := ""
     beforePath := ""
     beforeStamp := ""
+    beforeSnap := ""
     desktopName := ""
     desktopExt := ""
     if (IsSet(extras) && IsObject(extras)) {
@@ -444,6 +478,8 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
             beforePath := extras.beforePath
         if (extras.HasProp("beforeStamp"))
             beforeStamp := extras.beforeStamp
+        if (extras.HasProp("beforeSnap"))
+            beforeSnap := extras.beforeSnap
         if (extras.HasProp("desktopName"))
             desktopName := extras.desktopName
         if (extras.HasProp("desktopExt"))
@@ -462,6 +498,7 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
         desktopPath: desktopPath,
         beforePath: beforePath,
         beforeStamp: beforeStamp,
+        beforeSnap: beforeSnap,
         lastPath: "",
         doCut: doCut,
         desktopName: desktopName,
