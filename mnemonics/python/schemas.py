@@ -468,13 +468,6 @@ def validate_dataset(
             issues.append(
                 f"Palace {st.get('id')} has unknown study_id {st.get('study_id')}"
             )
-        if not (st.get("character_name") or "").strip():
-            issues.append(f"Palace {st.get('id')} missing character_name")
-        elif (st.get("character_name") or "").startswith("(unassigned"):
-            issues.append(
-                f"Palace {st.get('id')} has placeholder character (fill via Palaces module)"
-            )
-
     chars_by_study: dict[str, set[str]] = {}
     for st in palaces:
         sid = st.get("study_id") or ""

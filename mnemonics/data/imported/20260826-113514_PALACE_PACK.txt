@@ -20,8 +20,8 @@ Discard candidates: none
 ===END_PREVIEW===
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_COMMUNICATIO_01,STUDY_COMMUNICATIO,1,The Sketch Studio,The Brooding Painter,,5,"an interior of a cluttered art studio filled with easels and crumpled sketches, a large physical sketch pad in the center, featuring an original fictional brooding artist who resembles a young French painter from the 1900s with messy hair and a paint-stained smock - not any real, living, historical, or named public figure and not any copyrighted character."
-PALACE_COMMUNICATIO_02,STUDY_COMMUNICATIO,2,The Biological Stage,The Stoic Orator,,5,"a grand wooden stage illuminated by a single harsh spotlight, scattered with physiological tracking spreadsheets and a large microphone, featuring an original fictional stoic orator who resembles an ancient Greek philosopher with a flowing white beard and a draped toga - not any real, living, historical, or named public figure and not any copyrighted character."
+PALACE_COMMUNICATIO_01,STUDY_COMMUNICATIO,1,The Sketch Studio,,,5,"an interior of a cluttered art studio filled with easels and crumpled sketches, a large physical sketch pad in the center, featuring an original fictional brooding artist who resembles a young French painter from the 1900s with messy hair and a paint-stained smock - not any real, living, historical, or named public figure and not any copyrighted character."
+PALACE_COMMUNICATIO_02,STUDY_COMMUNICATIO,2,The Biological Stage,,,5,"a grand wooden stage illuminated by a single harsh spotlight, scattered with physiological tracking spreadsheets and a large microphone, featuring an original fictional stoic orator who resembles an ancient Greek philosopher with a flowing white beard and a draped toga - not any real, living, historical, or named public figure and not any copyrighted character."
 ===END_FILE===
 ===FILE: PALACE_BEASTS.csv===
 id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order

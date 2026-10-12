@@ -2,14 +2,14 @@
 STUDY_DOGS · 2 palaces · 6 beasts · 6 atoms
 Packing: 5+1 (remainder only on last **new** palace in this pack)
 
-PALACE 1 — German Shepherd Traits (Scooby-Doo) [PALACE_DOGS_01]
+PALACE 1 — German Shepherd Traits [PALACE_DOGS_01]
   [A] Arachne — Concept: [Origins] [I breed German Shepherds] [to manage and guard sheep] [across open pasture]... | Quote: "They were actually livestock guardians They were bred to herd and protect sheep..." | Story: Arachne spins a massive wool web across the iron gate to trap a flock of sheep. The tall clumsy brown dog runs into the sticky threads and bounces off, dropping a German flag.
   [B] bird of paradise — Concept: [Breeding Lines] [I choose working lines] [for extreme intensity] [and pet lines] [for calm companions]... | Quote: "There are the working line shepherds bred for extreme drive and intensity Showine shepherds bred..." | Story: A skyscraper-tall bird of paradise crashes onto a parked car, splitting the steel into three pieces. It rips out the engine with extreme intensity while gently rocking a calm teddy bear in its other wing.
   [C] cat — Concept: [Health Risks] [I monitor the dog] [for severe joint malformations] [and neurological decay]... | Quote: "hip and elbow dysplasia are some of the most common issues in German shepherds" | Story: A colossal cat stretches against the building facade until its elbows shatter with a deafening crack. The brown dog wraps the cat's limbs in giant bandages while the cat swallows a massive balloon that inflates its stomach.
   [D] dragon — Concept: [Shelter Reality] [I surrender the dog] [when I fail to channel] [its intense working drive]... | Quote: "They're brought by people who love the idea of having a big protective dog but..." | Story: A microscopic dragon trapped in a rusted birdcage on the roof breathes intense fire, melting the metal bars. It chews up a heavy work boot in barrier frustration while blasting smoke signals.
   [E] eagle — Concept: [Proper Fulfillment] [I balance the dog] [with predictable routines] [and cognitive scent games]... | Quote: "German Shepherds thrive when they have structure clear communication and mental stimulation" | Story: An eagle wearing a referee whistle scatter-feeds glowing kibble into the brick wall, punching deep holes in the stone. The brown dog sniffs out the glowing pieces while the eagle shouts strict drop-it commands.
 
-PALACE 2 — German Shepherd Scoring (Snoopy) [PALACE_DOGS_02]
+PALACE 2 — German Shepherd Scoring [PALACE_DOGS_02]
   [F] frog — Concept: [Breed Suitability] [I score the breed poorly] [for novice tolerance] [and passive household life]... | Quote: "If you want a super chill relaxed dog probably not the one for you" | Story: A jelly-like frog melts onto the fire hydrant, tasting the bitter metal as it frantically grades a giant scorecard. The small white beagle tries to hand the frog a chill pill, but the frog slaps it away with high-strung panic.
 
 Discard candidates: none
@@ -17,8 +17,8 @@ Discard candidates: none
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_DOGS_01,STUDY_DOGS,1,German Shepherd Traits (Scooby-Doo),Scooby-Doo,,5,"A realistic street scene featuring an original fictional cartoon great dane dog who resembles a tall clumsy brown canine with black spots and a blue collar — not any copyrighted character. Depth slot: ForegroundLeft (iron gate) with a giant half-spider woman spinning a thick wool web. Depth slot: MidgroundRight (parked car) crushed by a skyscraper-tall bird of paradise. Depth slot: BackgroundCenter (building facade) showing a colossal cat stretching its joints against the bricks. Depth slot: Aerial (roof) holding a microscopic dragon breathing intense fire in a rusted birdcage. Depth slot: ForegroundRight (brick wall) where a large eagle scatters glowing kibble into the stone."
-PALACE_DOGS_02,STUDY_DOGS,2,German Shepherd Scoring (Snoopy),Snoopy,,1,"A realistic street scene featuring an original fictional cartoon beagle who resembles a small white dog with black ears and a red collar — not any copyrighted character. Depth slot: ForegroundLeft (fire hydrant) with a jelly-like frog melting over the metal, grading a giant scorecard."
+PALACE_DOGS_01,STUDY_DOGS,1,German Shepherd Traits (Scooby-Doo),,,5,A realistic street scene featuring an original fictional cartoon great dane dog who resembles a tall clumsy brown canine with black spots and a blue collar — not any copyrighted character. Depth slot: ForegroundLeft (iron gate) with a giant half-spider woman spinning a thick wool web. Depth slot: MidgroundRight (parked car) crushed by a skyscraper-tall bird of paradise. Depth slot: BackgroundCenter (building facade) showing a colossal cat stretching its joints against the bricks. Depth slot: Aerial (roof) holding a microscopic dragon breathing intense fire in a rusted birdcage. Depth slot: ForegroundRight (brick wall) where a large eagle scatters glowing kibble into the stone.
+PALACE_DOGS_02,STUDY_DOGS,2,German Shepherd Scoring (Snoopy),,,1,"A realistic street scene featuring an original fictional cartoon beagle who resembles a small white dog with black ears and a red collar — not any copyrighted character. Depth slot: ForegroundLeft (fire hydrant) with a jelly-like frog melting over the metal, grading a giant scorecard."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===

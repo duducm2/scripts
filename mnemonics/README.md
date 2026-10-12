@@ -34,7 +34,7 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 | ------------------ | -------------------------------------------------------------------- |
 | **Study**          | Broad domain (english, german, …). Owns Memory Palaces.              |
 | **Memory Palace**  | Location; **one** generated image per palace.                        |
-| **Character**      | From `characters.json`; one per Memory Palace.                       |
+| **Character**      | Unused slot. Leave blank. Do not assign a named person or copyrighted character. |
 | **Beast**          | From `bestiary.json`; peg animal that carries a Knowledge Atom.      |
 | **Knowledge Atom** | Discrete information on a Beast, made of Concept + Keywords + Quote. |
 | **Concept**        | Rehearsal definition of the fact.                                    |

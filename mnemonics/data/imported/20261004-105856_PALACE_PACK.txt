@@ -5,7 +5,7 @@ Scope: palaces 19–19 · pegs Bv–Bz
 Packing: 4 (remainder only on last in-scope palace)
 Changes: Removed peg Bw; shifted subsequent atoms left (Bx -> Bw, By -> Bx, Bz -> By)
 
-PALACE 19 — Databricks Foundations (Charles Darwin) [PALACE_DATAANALYST_19]
+PALACE 19 — Databricks Foundations [PALACE_DATAANALYST_19]
   [Bv] Bone vulture — Concept: [Databricks Core] [I process data with Spark] [store it in Delta Lake] [and manage models with MLflow] | Quote: "databricks is not just one open source solution but in fact it's multiple at its core in particular it's spark delta lake and ml flow"
   [Bw] Bone wombat — Concept: [Compute Clusters] [I configure Spark machines] [to terminate automatically] [after a period of inactivity] — Note: This prevents wasted cloud spend when the resources are not being used. | Quote: "you can also set it to terminate after inactivity which is great again trying to reduce cost if you're not using your machine"
   [Bx] Bone Xena, warrior woman — Concept: [Databricks Tables] [I interact with data] [through an abstraction layer] [that sits over raw files] | Quote: "you are going to be dealing with tables at the abstraction of almost pretty much a file which essentially is in a data lake or a data lake house"
@@ -16,7 +16,7 @@ Discard candidates: none
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_DATAANALYST_19,STUDY_DATAANALYST,19,Databricks Foundations,Charles Darwin,,4,"Depth slot: ForegroundLeft gate, a skeletal bone vulture aggressively eating a crackling lightning bolt that scorches its ribs. Depth slot: MidgroundRight parked car, a bone wombat phases through the metal door while chewing on a glowing toy robot. Depth slot: BackgroundCenter facade, a skeletal warrior woman with a sword gives a dramatic handshake to a disembodied giant floating hand. Depth slot: Aerial lamp post, a Victorian poet hangs upside down, stabbing the metal with a colossal fountain pen that squirts glowing blue ink. Wandering the scene is an original fictional 19th-century naturalist who resembles an older adult with a long white beard, bald on top, wearing a heavy tweed overcoat and holding a magnifying glass — not any real, living, historical, or named public figure and not any copyrighted character."
+PALACE_DATAANALYST_19,STUDY_DATAANALYST,19,Databricks Foundations,,,4,"Depth slot: ForegroundLeft gate, a skeletal bone vulture aggressively eating a crackling lightning bolt that scorches its ribs. Depth slot: MidgroundRight parked car, a bone wombat phases through the metal door while chewing on a glowing toy robot. Depth slot: BackgroundCenter facade, a skeletal warrior woman with a sword gives a dramatic handshake to a disembodied giant floating hand. Depth slot: Aerial lamp post, a Victorian poet hangs upside down, stabbing the metal with a colossal fountain pen that squirts glowing blue ink. Wandering the scene is an original fictional 19th-century naturalist who resembles an older adult with a long white beard, bald on top, wearing a heavy tweed overcoat and holding a magnifying glass — not any real, living, historical, or named public figure and not any copyrighted character."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===

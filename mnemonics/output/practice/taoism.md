@@ -1,7 +1,7 @@
 # Taoism
 
 <details open>
-<summary><strong>Memory Palace 4: Religious Development & Pantheon</strong> · Character: (unassigned palace 4) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 4: Religious Development & Pantheon</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/taoism/4.jpg)
 
@@ -80,7 +80,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Cosmology & The Body</strong> · Character: The Jade Emperor · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 3: Cosmology & The Body</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/taoism/3.jpg)
 
@@ -159,7 +159,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Foundational Texts & Figures</strong> · Character: (unassigned palace 2) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 2: Foundational Texts & Figures</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/taoism/2.jpg)
 
@@ -238,7 +238,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Core Philosophy</strong> · Character: (unassigned palace 1) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Core Philosophy</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/taoism/1.jpg)
 

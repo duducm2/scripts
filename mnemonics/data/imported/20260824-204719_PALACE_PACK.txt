@@ -2,7 +2,7 @@
 Mode REMOVE · STUDY_PIANO · 1 palaces · 5 beasts · 5 atoms
 Changes: Removed Arachne, dragon, eagle, goat. Kept bird of paradise, cat, frog, hydra, imp. Re-pegged to Al-Ap to continue from Palace 10 in the existing file. Added uppercase vs lowercase nuance to the final atom.
 
-PALACE 11 - Clefs and Note Placement (Claude Monet) [PALACE_PIANO_11]
+PALACE 11 - Clefs and Note Placement [PALACE_PIANO_11]
   [Al] alligator - Concept: Bass F sits on the second line from the top and acts as a symmetrical mirror image... | Quote: "Treble G is up this far..." | Story: Claude Monet watches an enormous alligator balance vertically... | Sensory: visual 👁️
   [Am] amulet - Concept: Middle C for the left hand is drawn with a downward stem... | Quote: "So I can draw this middle C..." | Story: A heavy, cursed amulet floats above a drawn bass staff... | Sensory: visual 👁️
   [An] angel - Concept: Moving to an adjacent white key on the piano means stepping between... | Quote: "when we play on the piano we move..." | Story: A skyscraper-sized angel lands on the street and physically hops... | Sensory: tactile ✋
@@ -14,7 +14,7 @@ Discard candidates: none
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_PIANO_11,STUDY_PIANO,11,Clefs and Note Placement,Claude Monet,,5,"Depth slot ForegroundLeft (left wall): an enormous alligator balancing vertically on its tail on a giant piano key while holding a massive, ornate mirror in its jaws. Depth slot MidgroundRight (bench): a heavy, glowing amulet floating in mid-air and shooting a thick downward laser beam to scorch a straight line into the pavement. Depth slot BackgroundCenter (street end): a skyscraper-sized angel with bare feet hopping between painted street lines and the smooth concrete spaces between them. Depth slot Aerial (roof): a wild aoudad ramming its curved horns into a floating staff and dipping its head into a deep puddle. Depth slot ForegroundRight (lamp post): a silver-backed ape furiously crushing small lowercase letter blocks into powder while stacking massive uppercase block letters into a monument, with Claude Monet standing nearby."
+PALACE_PIANO_11,STUDY_PIANO,11,Clefs and Note Placement,,,5,"Depth slot ForegroundLeft (left wall): an enormous alligator balancing vertically on its tail on a giant piano key while holding a massive, ornate mirror in its jaws. Depth slot MidgroundRight (bench): a heavy, glowing amulet floating in mid-air and shooting a thick downward laser beam to scorch a straight line into the pavement. Depth slot BackgroundCenter (street end): a skyscraper-sized angel with bare feet hopping between painted street lines and the smooth concrete spaces between them. Depth slot Aerial (roof): a wild aoudad ramming its curved horns into a floating staff and dipping its head into a deep puddle. Depth slot ForegroundRight (lamp post): a silver-backed ape furiously crushing small lowercase letter blocks into powder while stacking massive uppercase block letters into a monument, with Claude Monet standing nearby."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===

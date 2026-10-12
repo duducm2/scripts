@@ -142,7 +142,7 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 ```
 
 - Preserve stable `id` values when palaces survive reduction; `palace_number` may be left empty (importer assigns next free index) or renumbered if empty palaces are removed. Keep a clear `title`.
-- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character as lookalike — `README §Image composition rules`; NEVER paste `character_name` or any real/celebrity/historical/IP name into `image_prompt`).
+- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; `README §Image composition rules`; leave `character_name` blank and NEVER write a real or copyrighted character name into `image_prompt`).
 - `depth_slots_used` = post-reduction beast count (0–5).
 - `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.
 
@@ -215,7 +215,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 2. Each merge group → one smashed beast after re-sequencing **in scope**. Pegs not listed stay single-atom.
 3. Max 4 pegs per merge group; split larger groups and note splits in the chat note.
 4. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom copies its source atom’s `concept` and `keywords` byte-for-byte, plus the verbatim quote. Do **not** write a zone narrative. Leave `story` empty.
-5. Re-peg **in scope only** (continue after last out-of-scope peg; never restart at `A` unless scope truly starts at `A`); pack beasts **5 per in-scope palace** (remainder < 5 on the last in-scope palace only); **forward-pull** later streets when the last palace would stay at 1–4; `Exclude:` emptied later palaces; collapse empty in-scope palaces; one character per palace. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
+5. Re-peg **in scope only** (continue after last out-of-scope peg; never restart at `A` unless scope truly starts at `A`); pack beasts **5 per in-scope palace** (remainder < 5 on the last in-scope palace only); **forward-pull** later streets when the last palace would stay at 1–4; `Exclude:` emptied later palaces; collapse empty in-scope palaces; leave `character_name` blank. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
 
 ## Procedure — REMOVE mode
 
@@ -223,11 +223,11 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 2. Remove atoms whose **current** peg is listed (must be in scope).
 3. Bestiary shifting for remaining **in-scope** beasts only; update beast names/pegs without touching earlier study pegs.
 4. Rewrite **in-scope** palace/beast rows and reattach atom rows; preserve verbatim quote excerpts; copy each survivor’s `concept` and `keywords` byte-for-byte; keep smashed structure when survivors stay zoned. Leave `story` empty. Do not rewrite narratives or concept text.
-5. Re-pack **in-scope** survivors **5 beasts per palace** (remainder < 5 only on the last in-scope palace); **forward-pull** later streets when the last palace would stay at 1–4; `Exclude:` emptied later palaces; collapse empty in-scope palaces; one character per palace. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
+5. Re-pack **in-scope** survivors **5 beasts per palace** (remainder < 5 only on the last in-scope palace); **forward-pull** later streets when the last palace would stay at 1–4; `Exclude:` emptied later palaces; collapse empty in-scope palaces; leave `character_name` blank. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
 
 ## Image prompts (both modes)
 
-After the reduced **in-scope** model is final, write a long concrete foreground `image_prompt` per surviving **in-scope** palace: depth slots, every zoned accessory with active engagement, one character via the lookalike formula (`an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`), realistic integration, bizarreness levers, **easy plain English** (PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`). Keep canon names only in `character_name` / PREVIEW — never in `image_prompt`. Do not regenerate image prompts for out-of-scope palaces. Each beast physically engages the fantasy object of its topic keyword (`README §Image composition rules`): the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. For a smashed beast, each zone accessory is that sub-atom’s topic mnemonic.
+After the reduced **in-scope** model is final, write a long concrete foreground `image_prompt` per surviving **in-scope** palace: depth slots, every zoned accessory with active engagement, realistic integration, bizarreness levers, **easy plain English** (PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`). Leave `character_name` blank and never write a real or copyrighted character name in `image_prompt`. Do not regenerate image prompts for out-of-scope palaces. Each beast physically engages the fantasy object of its topic keyword (`README §Image composition rules`): the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. For a smashed beast, each zone accessory is that sub-atom’s topic mnemonic.
 
 ---
 

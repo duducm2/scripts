@@ -4,7 +4,7 @@ Scope: palaces 15–16 · pegs Bh–Bo
 Packing: 2
 Changes: removals Bi, Bj, Bk, Bm, Bn, Bo / peg map Bl->Bi
 
-PALACE 15 — Dataverse (Isaac Newton) [PALACE_DATA_ANALYST_15]
+PALACE 15 — Dataverse [PALACE_DATA_ANALYST_15]
   [Bh] Bone Hydra — Concept: [Microsoft Dataverse] [I use this cloud-based service] [to securely manage relational data] [for my business applications] | Quote: "Primarily refers to Microsoft Dataverse (formerly Common Data Service), a cloud-based storage and relational database service designed to securely manage data for business applications." | Story: A Bone Hydra wraps its skeletal necks around a floating server cloud, clicking giant padlocks shut on leather briefcases full of business data.
   [Bi] bison — Concept: [Data Lakehouse] [I merge the flexible scalability] [of a low-cost data lake] [with the structured reliability] [of a data warehouse] | Quote: "A modern data architecture that merges the flexible, low-cost scalability of a data lake with the structured querying, data management, and reliability of a data warehouse." | Story: A colossal bison drags a wooden cabin onto a giant rubber band, stretching a muddy pond until it crashes into a solid brick warehouse wall.
 
@@ -13,7 +13,7 @@ Discard candidates: none
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_DATA_ANALYST_15,STUDY_DATA_ANALYST,15,Dataverse,Isaac Newton,,2,"an original fictional 17th-century scholar (long wavy grey hair, formal dark academic robe, holding an apple) — not any real, living, historical, or named public figure and not any copyrighted character. Depth slot: ForegroundLeft on the front gate - A Bone Hydra wraps its skeletal necks around a floating server cloud. Depth slot: MidgroundRight by the parked van - A colossal bison drags a wooden cabin onto a giant rubber band."
+PALACE_DATA_ANALYST_15,STUDY_DATA_ANALYST,15,Dataverse,,,2,"an original fictional 17th-century scholar (long wavy grey hair, formal dark academic robe, holding an apple) — not any real, living, historical, or named public figure and not any copyrighted character. Depth slot: ForegroundLeft on the front gate - A Bone Hydra wraps its skeletal necks around a floating server cloud. Depth slot: MidgroundRight by the parked van - A colossal bison drags a wooden cabin onto a giant rubber band."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===

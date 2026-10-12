@@ -2,7 +2,7 @@
 STUDY_COMMUNICATION · 1 palaces · 5 beasts · 5 atoms
 Packing: 5 (remainder only on last palace)
 
-PALACE 4 - The Elite Lexicon (Ada Lovelace) [PALACE_COMMUNICATION_04]
+PALACE 4 - The Elite Lexicon [PALACE_COMMUNICATION_04]
   [R] rat - Concept: Achieving bedrock clarity requires stripping away unnecessary details. | Quote: "Achieving bedrock clarity requires strippi..." | Story: A microscopic rat sits on the iron gate in... | Sensory: visual 👁️
   [S] skull - Concept: Consciously move evocative words from your deep passive lexicon to your surface automatic retrieval. | Quote: "You must consciously move evocative words..." | Story: A colossal, floating bone skull hovers by... | Sensory: auditory 👂
   [T] toucan - Concept: Anchor abstract ideas in lived sensory memory by populating speech with Time, Audio, Kinesthetic, Eyes, and Smell. | Quote: "To give your words "blood and bone," popul..." | Story: A giant toucan crashes into the Backgroun... | Sensory: tactile ✋
@@ -14,7 +14,7 @@ Discard candidates: none | all unique atoms mapped perfectly
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-"PALACE_COMMUNICATION_04","STUDY_COMMUNICATION","4","The Elite Lexicon","Ada Lovelace","","5","ForegroundLeft: an iron gate with a microscopic rat erasing a glowing bull painting. MidgroundRight: a lamp post where a colossal floating bone skull vomits rusted iron words. BackgroundCenter: a building facade where a giant toucan regurgitates a ticking clock and fish. Aerial: a roof with an ethereal unicorn exhaling a glowing box. ForegroundRight: a parked car with a featherless vulture eating raw broccoli. An original fictional Victorian mathematician-like woman (dark braided hair updo, 19th-century sweeping gown, holding a brass mechanical gear) - not any real, living, historical, or named public figure and not any copyrighted character, interacting with the scene."
+PALACE_COMMUNICATION_04,STUDY_COMMUNICATION,4,The Elite Lexicon,,,5,"ForegroundLeft: an iron gate with a microscopic rat erasing a glowing bull painting. MidgroundRight: a lamp post where a colossal floating bone skull vomits rusted iron words. BackgroundCenter: a building facade where a giant toucan regurgitates a ticking clock and fish. Aerial: a roof with an ethereal unicorn exhaling a glowing box. ForegroundRight: a parked car with a featherless vulture eating raw broccoli. An original fictional Victorian mathematician-like woman (dark braided hair updo, 19th-century sweeping gown, holding a brass mechanical gear) - not any real, living, historical, or named public figure and not any copyrighted character, interacting with the scene."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===

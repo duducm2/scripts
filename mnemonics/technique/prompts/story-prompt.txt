@@ -114,7 +114,7 @@ Isolated facts still require transcript context in this Architect flow.
 Software vocabulary (use in CSV fields and chat notes):
 - **Study** — domain (`study_id`)
 - **Memory Palace** — location / former "street"; one image prompt per palace
-- **Character** — exactly one per Memory Palace
+- **Character** — leave `character_name` blank. Do not assign a real person or a copyrighted character.
 - **Beast** — peg holder
 - **Knowledge Atom** — Concept + Keywords + Quote on a beast. Do **not** author a mnemonic story. The user writes that later from the keywords.
 
@@ -135,10 +135,9 @@ PLAIN ENGLISH HARD MANDATE (read before any concept / image_prompt — `README �
 Confirm every required item. If any is missing, ask before generating.
 
 1. **Video transcription** — Markdown from prompt **5** (Transcript Youtube Video), **or** curated concept Markdown from prompt **6** (Curate knowledge atoms). Cursor cannot access YouTube; use Gemini for raw transcripts when needed.
-2. **Existing inventory** (preferred) — attached practice `.md` and/or `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` for the target study. **Read-only:** skip already-known concepts; use highest palace_number / last peg / reserved characters only. Never re-emit existing palaces or top them up. Do not emit Markdown as output.
-3. **Characters** — `studies/technique/characters.json`.
-4. **Bestiary** — `studies/technique/bestiary.json`.
-5. **README** — `studies/technique/README.md` (framework rules). Cite as `README §<Section Name>`.
+2. **Existing inventory** (preferred) — attached practice `.md` and/or `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` for the target study. **Read-only:** skip already-known concepts; use highest palace_number / last peg only. Never re-emit existing palaces or top them up. Do not emit Markdown as output.
+3. **Bestiary** — `studies/technique/bestiary.json`.
+4. **README** — `studies/technique/README.md` (framework rules). Cite as `README §<Section Name>`.
 
 **study_id (mandatory):**
 - Violin test: use `STUDY_VIOLIN` and attach that study’s context pack when available.
@@ -163,10 +162,10 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 Rules:
 - Prefer `id` like `PALACE_<STUDY_SLUG>_<NN>` for **new** palaces (e.g. next free `NN` after inventory). Leave empty only if the importer must assign.
 - `palace_number` — optional integer within the study. Prefer values **after** the highest existing palace in inventory (or leave empty for importer next-free). Prefer a stable `id` and a clear `title` (title is the human identifier).
-- `character_name` — exactly one unused canon character per palace (file-wide uniqueness vs attached inventory + new rows).
+- `character_name` — leave blank. Do not write a real person, historical figure, celebrity, or copyrighted character.
 - `image_rel_path` — relative to notes studies root when known (e.g. `violin/images/1.png`); leave empty if unknown (human may use Memory Palace **[Q]** later).
 - `depth_slots_used` — 0–5 (beast count / depth slots for that **new** palace).
-- `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section. Character MUST use the lookalike formula (`README §Image composition rules`); NEVER paste `character_name` into this field.
+- `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section. Never write a real person or copyrighted character name in this field (`README §Image composition rules`).
 
 ### 2) `PALACE_BEASTS.csv`
 
@@ -264,9 +263,9 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 
 ### 4. Image prompts
 
-- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; one character as a **lookalike** (`README §Image composition rules` — Character likeness / image-safety); plain English; bizarreness levers reflected.
+- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; plain English; bizarreness levers reflected. Never name a real person or a copyrighted character (`README §Image composition rules`).
 - Each beast physically engages the fantasy object of its topic keyword (`README §Image composition rules`). That object is the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. For a smashed beast, each zone accessory is that sub-atom’s topic mnemonic.
-- `character_name` keeps the canon name for recall. In `image_prompt` NEVER write that name (or any real/celebrity/historical/IP name). Use the lookalike formula: `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`.
+- Leave `character_name` blank. In `image_prompt` NEVER write a real, celebrity, historical, or copyrighted character name.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
 
 ### 5. Common failure modes (NEVER)
@@ -319,9 +318,7 @@ Do **not** attach a separate mnemonic theory paste — the README below is canon
 
 📎 Video transcription
 
-📎 Existing inventory (practice `.md`) — Prompt Manager story picker. **Read-only:** skip already-known concepts; use only for next palace_number / next peg / reserved characters. Do **not** re-encode inventory atoms or top up existing under-filled palaces. CSV context packs are also accepted if attached manually.
-
-📎 Characters (`@studies/technique/characters.json` or paste)
+📎 Existing inventory (practice `.md`) — Prompt Manager story picker. **Read-only:** skip already-known concepts; use only for next palace_number / next peg. Do **not** re-encode inventory atoms or top up existing under-filled palaces. CSV context packs are also accepted if attached manually.
 
 📎 Bestiary (`@studies/technique/bestiary.json` or paste)
 

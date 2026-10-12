@@ -1,7 +1,7 @@
 # Communication
 
 <details open>
-<summary><strong>Memory Palace 6: Memory Palace 6: How to Speak Pt 2</strong> · Character: Doc Brown (Back to the Future) · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 6: Memory Palace 6: How to Speak Pt 2</strong> · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 6](images/communication/6.png)
 
@@ -40,7 +40,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Memory Palace 5: How to Speak Pt 1</strong> · Character: Sherlock Holmes · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 5: Memory Palace 5: How to Speak Pt 1</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/communication/5.png)
 
@@ -109,7 +109,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: The Elite Lexicon</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 4: The Elite Lexicon</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/communication/4.png)
 
@@ -178,7 +178,7 @@ Test
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Leading Myself</strong> · Character: Alan Turing · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 3: Leading Myself</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/communication/3.png)
 
@@ -247,7 +247,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Leading the Business and Others</strong> · Character: (unassigned palace 2) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 2: Leading the Business and Others</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/communication/2.png)
 
@@ -316,7 +316,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: The Foundations of Rhetoric</strong> · Character: (unassigned palace 1) · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 1: The Foundations of Rhetoric</strong> · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 1](images/communication/1.png)
 

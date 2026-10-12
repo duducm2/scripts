@@ -1,7 +1,7 @@
 # Science
 
 <details open>
-<summary><strong>Memory Palace 20: Visual Analysis Definition</strong> · Character: SpongeBob SquarePants · 1 beast · 1 atom</summary>
+<summary><strong>Memory Palace 20: Visual Analysis Definition</strong> · 1 beast · 1 atom</summary>
 
 ![Memory Palace 20](images/science/20.jpg)
 
@@ -32,7 +32,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: Nikola Tesla · 4 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 19: How and Why Questions</strong> · 4 beasts · 5 atoms</summary>
 
 ![Memory Palace 19](images/science/19.png)
 
@@ -103,7 +103,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 18: Definition and Characteristics</strong> · Character: Belo · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 18: Definition and Characteristics</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 18](images/science/18.png)
 
@@ -162,7 +162,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 17: Participatory Action Research Mechanics</strong> · Character: Darth Vader · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 17: Participatory Action Research Mechanics</strong> · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 17](images/science/17.png)
 
@@ -211,7 +211,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 16: From Raw Data to Theory</strong> · Character: Charles Darwin · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 16: From Raw Data to Theory</strong> · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 16](images/science/16.png)
 
@@ -260,7 +260,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 15: From Social Theory to Bosch UX Practice</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 15: From Social Theory to Bosch UX Practice</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 15](images/science/15.png)
 
@@ -329,7 +329,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 14: Foundations of Reasoning</strong> · Character: (unassigned palace 14) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 14: Foundations of Reasoning</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 14](images/science/14.png)
 
@@ -388,7 +388,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 13: The Evolution of Grounded Theory</strong> · Character: Socrates · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 13: The Evolution of Grounded Theory</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 13](images/science/13.png)
 
@@ -457,7 +457,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 12: Foundations and Constant Comparison</strong> · Character: (unassigned palace 12) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 12: Foundations and Constant Comparison</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 12](images/science/12.png)
 
@@ -516,7 +516,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 11: The Structure Web</strong> · Character: (unassigned palace 11) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 11: The Structure Web</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 11](images/science/11.png)
 
@@ -575,7 +575,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: The Coin Flip Casino</strong> · Character: Isaac Newton · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 10: The Coin Flip Casino</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 10](images/science/10.png)
 
@@ -644,7 +644,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: The Bayesian Courtroom</strong> · Character: (unassigned palace 9) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 9: The Bayesian Courtroom</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 9](images/science/9.png)
 
@@ -713,7 +713,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: The Hypothesis Courtroom</strong> · Character: (unassigned palace 8) · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 8: The Hypothesis Courtroom</strong> · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 8](images/science/8.png)
 
@@ -752,7 +752,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Paradigms, Crisis, and Shifts</strong> · Character: (unassigned palace 7) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 7: Paradigms, Crisis, and Shifts</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 7](images/science/7.png)
 
@@ -821,7 +821,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Science vs. Pseudoscience</strong> · Character: Albert Einstein · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 6: Science vs. Pseudoscience</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 6](images/science/6.png)
 
@@ -890,7 +890,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Research Bias</strong> · Character: Daenerys Targaryen · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 5: Research Bias</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 5](images/science/5.png)
 
@@ -949,7 +949,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Calculating Share and Demand</strong> · Character: (unassigned palace 4) · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 4: Calculating Share and Demand</strong> · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 4](images/science/4.png)
 
@@ -998,7 +998,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Conjoint Analysis Basics</strong> · Character: Tony Stark (Iron Man) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 3: Conjoint Analysis Basics</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/science/3.png)
 
@@ -1067,7 +1067,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: The Comparative Method of Valuation</strong> · Character: Steve Jobs · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 2: The Comparative Method of Valuation</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 2](images/science/2.png)
 
@@ -1126,7 +1126,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: What your sample says vs. what the world might say</strong> · Character: Marie Curie · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 1: What your sample says vs. what the world might say</strong> · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 1](images/science/1.png)
 

@@ -2,12 +2,12 @@
 Mode REMOVE · STUDY_COMMUNICATION · 2 palaces · 8 beasts · 8 atoms
 Changes: Removed peg M (marmoset). Shifted former N–U down to M–T.
 
-PALACE 4 — The Mechanics of Speaking (Alan Turing) [PALACE_COMMUNICATION_04]
+PALACE 4 — The Mechanics of Speaking [PALACE_COMMUNICATION_04]
   [M] marmoset — Concept: Clarity requires diagnosing bad outputs and repeating them. | Quote: "The formula for clarity..." | Story: A microscopic marmoset stands on the gate, shouting out terrible equations... | Sensory: auditory 👂
   [N] Neanderthal — Concept: Use uncommon words from your deep lexicon for creative impact. | Quote: "texture is about word choice..." | Story: A colossal Neanderthal crashes onto the parked car, vomiting 35,000 thorny vines... | Sensory: tactile ✋
   [O] owl — Concept: Use Time, Audio, Kinesthetic, Eyesight, and Smell to describe memories. | Quote: "the simplest formula we teach..." | Story: An owl balances on the distant facade, radiating the overwhelming smell of fresh grass... | Sensory: olfactory 👃
   [P] panther — Concept: A mental model of your elite future self for analyzing word choices. | Quote: "the vocal ego is a representation..." | Story: A glowing panther perches on a lamp post, spitting out an elite AI hologram... | Sensory: gustatory 👅
-PALACE 5 — The Psychology of Speaking (Ada Lovelace) [PALACE_COMMUNICATION_05]
+PALACE 5 — The Psychology of Speaking [PALACE_COMMUNICATION_05]
   [Q] Quetzalcoatl — Concept: Align body and mind before speaking. | Quote: "comfort is built before you speak" | Story: A Quetzalcoatl the size of a bus sleeps on the wall, radiating freezing cold anxiety... | Sensory: thermal 🌡️
   [R] rat — Concept: Eliminate anxiety by focusing on serving the audience. | Quote: "fear and anxiety disappears..." | Story: A floating, neon rat shoots blinding light from the mailbox... | Sensory: visual 👁️
   [S] skull — Concept: Use deeply held beliefs as scaffolding for speech. | Quote: "your values are the scaffolding..." | Story: A gigantic skull wears a heavy steel saddle welded to its core bones... | Sensory: tactile ✋
@@ -18,8 +18,8 @@ Discard candidates: none
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_COMMUNICATION_04,STUDY_COMMUNICATION,4,The Mechanics of Speaking,Alan Turing,communication/images/4.png,4,"Depth slot: ForegroundLeft (gate) - a microscopic marmoset shouting equations; Depth slot: MidgroundRight (parked car) - a colossal Neanderthal vomiting thorny vines; Depth slot: BackgroundCenter (distant facade) - an owl radiating wind and grass; Depth slot: Aerial (lamp post) - a glowing panther spitting a hologram. An original fictional 1940s mathematician (older adult, tweed jacket, messy hair, holding a notepad) — not any real, living, historical, or named public figure and not any copyrighted character — interacts with the beasts on the street."
-PALACE_COMMUNICATION_05,STUDY_COMMUNICATION,5,The Psychology of Speaking,Ada Lovelace,communication/images/5.png,4,"Depth slot: ForegroundLeft (wall) - a bus-sized Quetzalcoatl radiating freezing cold; Depth slot: MidgroundRight (mailbox) - a floating neon rat shooting blinding light beams; Depth slot: BackgroundCenter (street end) - a gigantic skull wearing a heavy steel saddle; Depth slot: Aerial (balcony) - a toucan standing upside down chewing on glass beakers. An original fictional 19th-century noblewoman (adult, dark Victorian dress, elegant updo, holding a mechanical brass gear) — not any real, living, historical, or named public figure and not any copyrighted character — interacts with the beasts on the street."
+PALACE_COMMUNICATION_04,STUDY_COMMUNICATION,4,The Mechanics of Speaking,,communication/images/4.png,4,"Depth slot: ForegroundLeft (gate) - a microscopic marmoset shouting equations; Depth slot: MidgroundRight (parked car) - a colossal Neanderthal vomiting thorny vines; Depth slot: BackgroundCenter (distant facade) - an owl radiating wind and grass; Depth slot: Aerial (lamp post) - a glowing panther spitting a hologram. An original fictional 1940s mathematician (older adult, tweed jacket, messy hair, holding a notepad) — not any real, living, historical, or named public figure and not any copyrighted character — interacts with the beasts on the street."
+PALACE_COMMUNICATION_05,STUDY_COMMUNICATION,5,The Psychology of Speaking,,communication/images/5.png,4,"Depth slot: ForegroundLeft (wall) - a bus-sized Quetzalcoatl radiating freezing cold; Depth slot: MidgroundRight (mailbox) - a floating neon rat shooting blinding light beams; Depth slot: BackgroundCenter (street end) - a gigantic skull wearing a heavy steel saddle; Depth slot: Aerial (balcony) - a toucan standing upside down chewing on glass beakers. An original fictional 19th-century noblewoman (adult, dark Victorian dress, elegant updo, holding a mechanical brass gear) — not any real, living, historical, or named public figure and not any copyrighted character — interacts with the beasts on the street."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===

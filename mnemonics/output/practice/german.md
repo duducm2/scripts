@@ -1,7 +1,7 @@
 # German
 
 <details open>
-<summary><strong>Memory Palace 11: The German Alphabet</strong> · Character: (unassigned palace 11) · 1 beast · 1 atom</summary>
+<summary><strong>Memory Palace 11: The German Alphabet</strong> · 1 beast · 1 atom</summary>
 
 ![Memory Palace 11](images/german/11.png)
 
@@ -30,7 +30,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: Formants and Resonance</strong> · Character: (unassigned palace 10) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 10: Formants and Resonance</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 10](images/german/10.png)
 
@@ -99,7 +99,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: Simple and Complex Sound Foundations</strong> · Character: (unassigned palace 9) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 9: Simple and Complex Sound Foundations</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 9](images/german/9.png)
 
@@ -158,7 +158,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: The German R Variations</strong> · Character: (unassigned palace 8) · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 8: The German R Variations</strong> · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 8](images/german/8.png)
 
@@ -209,7 +209,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Consonant Limits and Vowel Reductions</strong> · Character: (unassigned palace 7) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 7: Consonant Limits and Vowel Reductions</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 7](images/german/7.png)
 
@@ -278,7 +278,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Vowel Length Rules</strong> · Character: Wolfgang Amadeus Mozart · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 6: Vowel Length Rules</strong> · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 6](images/german/6.png)
 
@@ -317,7 +317,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Compound Stress and Consonants</strong> · Character: Harry Potter · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 5: Compound Stress and Consonants</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/german/5.png)
 
@@ -386,7 +386,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Drops and Fast Diphthongs</strong> · Character: (unassigned palace 4) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 4: Drops and Fast Diphthongs</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 4](images/german/4.png)
 
@@ -445,7 +445,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Shifted Placements and Rounded Vowels</strong> · Character: Glossonauta · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 3: Shifted Placements and Rounded Vowels</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/german/3.png)
 
@@ -514,7 +514,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Deep German Sounds</strong> · Character: Johann Sebastian Bach · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 2: Deep German Sounds</strong> · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 2](images/german/2.png)
 
@@ -563,7 +563,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Re-tuned Mouth Moves</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Re-tuned Mouth Moves</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/german/1.png)
 

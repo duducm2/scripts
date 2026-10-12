@@ -1,7 +1,7 @@
 # Skills
 
 <details open>
-<summary><strong>Memory Palace 5: Cognitive Shuffling Fundamentals</strong> · Character: (unassigned palace 5) · 2 beasts · 6 atoms</summary>
+<summary><strong>Memory Palace 5: Cognitive Shuffling Fundamentals</strong> · 2 beasts · 6 atoms</summary>
 
 ![Memory Palace 5](images/skills/5.png)
 
@@ -84,7 +84,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Rotina de Ativação Matinal</strong> · Character: (unassigned palace 4) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 4: Rotina de Ativação Matinal</strong> · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 4](images/skills/4.png)
 
@@ -143,7 +143,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Vital Signs</strong> · Character: (unassigned palace 3) · 2 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 3: Vital Signs</strong> · 2 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/skills/3.jpg)
 
@@ -216,7 +216,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Enhancing Brain Focus and Retention</strong> · Character: (unassigned palace 2) · 2 beasts · 2 atoms</summary>
+<summary><strong>Memory Palace 2: Enhancing Brain Focus and Retention</strong> · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 2](images/skills/2.png)
 
@@ -255,7 +255,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Core Speed Reading Principles</strong> · Character: (unassigned palace 1) · 5 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Core Speed Reading Principles</strong> · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/skills/1.png)
 

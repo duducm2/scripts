@@ -1,6 +1,6 @@
 # Mnemonic Study System
 
-This system helps you memorize complex topics (e.g. Piano, English Grammar, Communication) by combining a **Bestiary** (beasts as concept holders) with a **Memory Palace** (unique geolocations). Each knowledge atom is anchored to a Beast on a Street, with one required Character anchor per Street and Actions to make recall vivid and durable.
+This system helps you memorize complex topics (e.g. Piano, English Grammar, Communication) by combining a **Bestiary** (beasts as concept holders) with a **Memory Palace** (unique geolocations). Each knowledge atom is anchored to a Beast on a Street, with Actions to make recall vivid and durable.
 
 **Reading order:** Read Quick Start and the workflow diagram once. Prompt templates live in `studies/technique/prompts/`; each prompt's **Input (always last)** section lists what to attach (lines starting with 📎).
 
@@ -18,7 +18,7 @@ This system helps you memorize complex topics (e.g. Piano, English Grammar, Comm
 | **1 — Watch**                | You                  | Watch the recommended YouTube video enough to grasp the concept                                                    | —                                                                                                                    |
 | **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                                                   |
 | **3 — Curate atoms**         | Cursor (when needed) | `prompts/concept-curation-prompt.txt` — when the transcript/text is too long or dense                              | Source transcript/text · optional practice `.md` · this README                                                       |
-| **4 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Transcription **or** curated concept `.md` · existing study list · `characters.json` · `bestiary.json` · this README |
+| **4 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Transcription **or** curated concept `.md` · existing study list · `bestiary.json` · this README |
 | **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **SMASH** or **REMOVE** mode                                               | Reduction mode · in-scope palace pack · merge groups or peg letters to remove · `bestiary.json`                      |
 | **6 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 4 or 5                                                              |
 | **7 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                                       |
@@ -47,7 +47,7 @@ flowchart TB
   subgraph pathPostTranscript [Post-transcript pipeline]
     transcribeNode["<b>Transcribe</b> — <code>video-transcription-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>YouTube video link</span> <span style='color:#888'>(Gemini · Input section)</span><br/><br/><span style='color:#9cdcfe'>You:</span> Paste the link in Gemini.<br/><span style='color:#b5cea8'><b>Save</b></span> Markdown transcript.<br/><span style='color:#888'>Required before Story Architect (or Curate).</span>"]
     curateNode["<b>Curate atoms</b> — <code>concept-curation-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>Source transcript/text · optional practice <code>.md</code> · README</span><br/><br/><span style='color:#9cdcfe'>You:</span> when the source is too long/dense.<br/><span style='color:#b5cea8'><b>Save</b></span> curated concept Markdown.<br/><span style='color:#888'>Optional; feeds Story Architect as transcription.</span>"]
-    storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Transcription <b>or</b> curated concept <code>.md</code> · 📎 Existing study list <code>.md</code> · 📎 <code>characters.json</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
+    storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Transcription <b>or</b> curated concept <code>.md</code> · 📎 Existing study list <code>.md</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
     refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Reduction mode SMASH or REMOVE · 📎 In-scope palace pack · 📎 Merge groups or peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when merging atoms or trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> reduced palace pack · refreshed <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(accessory-detail prompts)</span>. Do not rewrite narratives."]
     mapsNode["<b>Google Maps</b><br/><br/><span style='color:#9cdcfe'>You:</span> N locations · one screenshot per street.<br/><span style='color:#888'>Use the latest <code>🖼️ Mnemonic image prompts</code> from the current story output.</span>"]
       genNode["<b>Foreground Composite</b> — <code>image-background-preservation-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Street screenshot · 📎 Matching line from <code>🖼️ Mnemonic image prompts</code></span><br/><span style='color:#9cdcfe'>You:</span> place the preservation prompt above the street prompt, then add mnemonic foreground elements without altering the place."]
@@ -142,7 +142,7 @@ Locations taken from your hometown, e.g. using Google Maps.
 - **Street packing (minimize street count):** Applies to **new streets/Memory Palaces created in the current Architect run (this pack) only**. Assign **exactly 5 beasts to each new street**. The **only** new street allowed to have fewer than 5 beasts is the **last new street in that run** — and only when the remaining **new** beast pool is < 5. Example for 16 new beasts: `5+5+5+1` (remainder on the last new street), **never** `1+5+5+5` / `1+5` / sparse new street then fuller later new streets. NEVER leave an earlier **new** street sparse while any later **new** street exists. Existing under-filled streets already in the study stay as-is — do **not** top them up to 5.
 - Streets are dynamically assigned per study topic; the Story Generator MUST state **how many** streets the topic requires (`Total streets required: N` = ceil(beast_count / 5)).
 - A later continuous session leaves every existing under-filled street untouched and adds **new** streets packed 5-at-a-time with remainder only on the newest last street of that run. Continue peg letters after the last existing peg; start new street numbers after the highest existing street/palace number.
-- **Character anchor (required):** Exactly one character from `characters.json` anchors each street—see **Characters**.
+- **No named character:** Do not assign a real person or a copyrighted character to a street. Leave `character_name` blank.
 - **Maps capture tip (user):** Prefer Street View locations with visible depth cues—facades, roofs, gates, corners—not flat homogeneous pavement filling the frame.
 
 **Depth slots (Fan Effect mitigation):**
@@ -236,28 +236,11 @@ When the palace has too many beasts or streets, run **Story Reduction** in **SMA
 
 ### Characters
 
-Famous figures (history, pop culture, fictional, etc.) that interact with Beasts in your scenes. The canonical name pool is `studies/technique/characters.json`.
+Named public figures and copyrighted characters are not street anchors. `characters.json` is an empty catalog. Leave `character_name` blank.
 
-- **Street-anchor role:** Each street has **exactly one** character from `characters.json` that anchors access to that street during recall. The character is a **street-level anchor in the composite image**—not narrative glue tying beasts together.
-- **Exactly one per street (required):** Every `## Street` MUST have one assigned character. NEVER assign two or more named characters to the same street.
-- **File-wide uniqueness:** In one mnemonic list file (`mnemonics-<topic>.md` or a portal file), **each character name MAY appear at most once**. NEVER reuse a character already assigned to another street in the same file.
-- **Pool exhausted:** If unused names in `characters.json` are fewer than streets needing assignment, flag this in the AI quality summary—NEVER silently skip a street or reuse a name.
-- **Portal scope:** Uniqueness applies **per file**. Avoid reusing a character from the main list in a linked portal file when both are reviewed as one palace.
-- **Name vs image split:** Keep the canon name in `character_name` and PREVIEW titles (human recall). For **image generation** (`image_prompt` and Background Preservation), NEVER use that name — use the lookalike formula in **Image composition rules**. AIB does not write a story.
-
-**Check before adding a character:**
-
-1. Scan the **full existing study list** for character names already in use.
-2. Pick only **unused** names from `characters.json`.
-3. Assign **exactly one** unused character to each new street—do not repeat a name from step 1.
-4. Confirm every street has its one character in `character_name`, and the matching `image_prompt` uses the lookalike formula (no real/IP names).
-
-**Character preservation after SMASH / REMOVE:**
-
-- After street collapse or reassignment, **every resulting street MUST have exactly one character**.
-- When merging streets that each had a character: **keep one anchor on the merged street**; reassign the surplus character only to another street that lacks one—NEVER leave two characters on one street.
-- When a street is removed: its character slot is freed for reassignment elsewhere in the same file.
-- Do not introduce a character already used elsewhere in the story unless explicitly replacing a removed street's anchor.
+- Do not assign a real person, historical figure, celebrity, or copyrighted character to a street.
+- Do not put those names in `character_name`, PREVIEW titles, stories, or `image_prompt`.
+- Streets are recalled through their beasts and the place. Do not add a named character when merging or removing streets.
 
 ### Language & IPA
 
@@ -323,7 +306,7 @@ After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken 
 
 **2. Foreground elements:**
 
-- **Subjects:** Animals (Beasts), characters performing actions.
+- **Subjects:** Animals (Beasts) performing actions.
 - **Topic mnemonic (required):** Each beast physically engages the fantasy object of its topic keyword — pair 1. Keyword pairs are stored as `Keyword | RecognizableWord`. Pair 1’s RecognizableWord is the formal concept name in the first square-bracket group; that phrase renders blue and is the topic. The interaction object is the Keyword (left side) of that first pair. Do not use pair 2 (the orange word in the second clause). Do not act out the rest of the sentence. Example: `[I use Databricks Jobs to convert] [my interactive notebooks into scheduled production pipelines.]` → `calendar | Databricks Jobs || notebook | notebooks`, so the beast handles a calendar (the mnemonic for the blue topic “Databricks Jobs”), not a notebook. For a smashed beast, each zone accessory is that sub-atom’s topic mnemonic.
 - **Beast-bound accessories:** For smashed beasts, each `🟦` accessory is a **knowledge atom** anchored to an **Anatomical Micro-Loci zone**—render **every** one in its assigned zone with **active engagement** (deformation, grip, emission, penetration, etc.); NEVER as floating or unassigned props; NEVER omit accessories to simplify the scene. The accessory itself is that sub-atom’s topic mnemonic.
 - **Neutral beast body (smashed):** The beast body is a canvas only—image prompts MUST NOT invent a separate knowledge-encoding action on the whole body. The `🟧` baseline sensory cue MAY appear as body presence (pose, smell, texture), but all knowledge payloads live on `🟦` zone accessories.
@@ -332,23 +315,9 @@ After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken 
 - **Placement:** Composite foreground elements into the fixed background as physically grounded inserts.
 - **Depth slots (required):** Assign each beast on a street its depth slot per **Streets and Depth Slots**. One beast per slot; no clustering on the same depth plane or lateral zone; no pavement-only anchors when structures exist in frame.
 - **Mnemonic salience:** Preserve story memorability through **realistic rendering** of symbolic, strange, exaggerated, metaphorical foreground details. Every beat SHOULD reflect the **Bizarreness Gate**. Prefer dramatic expressions, texture, absurd contrast, bizarre juxtapositions, non-graphic grotesque elements, adult-safe non-explicit sensual tension, startling but non-graphic impact over explicit depictions.
-- **Character likeness / image-safety (mandatory for all image prompts):** Image generators often block named real people (living or historical), celebrities, and copyrighted/IP characters. Treat every palace character as an **original lookalike**, never as that named person or franchise character.
+- **Image safety (mandatory for all image prompts):** Never write a real person's name, a celebrity's name, a historical figure's name, or a copyrighted character's name in `image_prompt` or in any text sent to an image model. Leave `character_name` blank. If a human figure is necessary, describe an original fictional person and state that they are not any real, living, historical, or named public figure and not any copyrighted character.
 
-  **Rules:**
-  1. In `image_prompt` (and any text sent to an image model): NEVER write real person names, celebrity names, historical figure names, or IP/franchise character names (e.g. no "Johann Sebastian Bach", "Michael Jackson", "Ada Lovelace", "Yoda", "Hermione Granger").
-  2. Describe an **original fictional person** who shares the memorable visual traits of the assigned character (age band, era/clothing, hair, signature props, posture, vibe) so recall still works.
-  3. Explicitly disclaim identity in the same sentence: e.g. `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure / not any copyrighted character`.
-  4. `character_name` in CSV/PREVIEW/stories MAY keep the canon name for human recall; only the image path must stay nameless.
-
-  **Lookalike formula (use this shape in every `image_prompt`):**
-  `an original fictional [brief role] who resembles [age band], [hair/face cues], [era or signature clothing], [1–2 signature props or gestures] — not any real, living, historical, or named public figure and not any copyrighted character`
-
-  **Examples:**
-  - Canon `Johann Sebastian Bach` → `an original fictional 18th-century composer-like man (older adult, white powdered wig, dark baroque coat, conducting with a baton) — not any real or named historical person`
-  - Canon `Michael Jackson` → `an original fictional pop performer (slim build, sequined jacket, single glitter glove, fedora, moonwalk-ready stance) — not any real celebrity`
-  - Canon `Yoda` → `a small green elderly alien-like mentor with pointy ears and a simple robe — not any copyrighted character`
-
-Always preserve the background's recognizability. The street MUST remain the anchor of the memory image; beasts and characters are foreground additions, not replacements for the place.
+Always preserve the background's recognizability. The street MUST remain the anchor of the memory image; beasts are foreground additions, not replacements for the place.
 
 ### Topic and Street headings
 
@@ -382,7 +351,7 @@ Use simple markdown `#` levels to separate topics and streets in the mnemonic li
 ### Data format strategy
 
 - **Study list:** `.md` at the topic root, sibling to `images/` (see **Standardized Directory Layout**).
-- **Data / indices** (`bestiary.json`, `characters.json`): JSON for programmatic use and as the canonical source for Beasts and characters.
+- **Data / indices:** `bestiary.json` is the canonical source for Beasts. `characters.json` is an empty catalog and is not a name pool.
 
 Keep formats consistent so both humans and AI can read and update the same files.
 

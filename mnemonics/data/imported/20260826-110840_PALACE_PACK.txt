@@ -1,7 +1,7 @@
 ===PREVIEW===
 STUDY_COMMUNICATIO · 1 palaces · 4 beasts · 4 atoms
 Packing: 4 (remainder only on last palace)
-PALACE 4 — Biological and Emotional Foundations (Ada Lovelace) [PALACE_COMMUNICATIO_04]
+PALACE 4 — Biological and Emotional Foundations [PALACE_COMMUNICATIO_04]
   [R] rat — Concept: You can only explain the world as much as you've explored it. | Quote: "you can only explain the world as much as you've explored it" | Story: A massive rat digs a deep tunnel into the street, aggressively exploring the glowing subterranean dirt... | Sensory: visual 👁️
   [S] skull — Concept: Comfort is built before you start speaking. | Quote: "comfort is built before you speak" | Story: A giant floating skull lands on a soft velvet pillow near the street corner, relaxing deeply before opening its jaw... | Sensory: tactile ✋
   [T] toucan — Concept: The soul cannot settle when your words are dishonest. | Quote: "the soul cannot settle when the mouth is dishonest" | Story: A colossal toucan vomits out black, dishonest sludge from its colorful beak... | Sensory: visual 👁️
@@ -11,7 +11,7 @@ Discard candidates: none
 
 ===FILE: PALACE_PALACES.csv===
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
-PALACE_COMMUNICATIO_04,STUDY_COMMUNICATIO,4,Biological and Emotional Foundations,Ada Lovelace,,4,"ForegroundLeft: a massive rat digging into a brick gate; MidgroundRight: a giant skull resting on a velvet pillow on a parked car; BackgroundCenter: a colossal toucan perched on a street corner vomiting sludge; Aerial: a muscular unicorn eating junk food on a lamp post. An original fictional 19th-century mathematician-like woman (dark hair in a Victorian updo, long elegant dress, holding a large gear and mechanical notes) stands observing — not any real, living, historical, or named public figure and not any copyrighted character."
+PALACE_COMMUNICATIO_04,STUDY_COMMUNICATIO,4,Biological and Emotional Foundations,,,4,"ForegroundLeft: a massive rat digging into a brick gate; MidgroundRight: a giant skull resting on a velvet pillow on a parked car; BackgroundCenter: a colossal toucan perched on a street corner vomiting sludge; Aerial: a muscular unicorn eating junk food on a lamp post. An original fictional 19th-century mathematician-like woman (dark hair in a Victorian updo, long elegant dress, holding a large gear and mechanical notes) stands observing — not any real, living, historical, or named public figure and not any copyrighted character."
 ===END_FILE===
 
 ===FILE: PALACE_BEASTS.csv===
