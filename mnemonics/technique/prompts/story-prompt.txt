@@ -53,7 +53,7 @@ PALACE N+1 — <title> (<character>) [<palace_id>]
   [Y] <beast> — Concept: … | Quote: "…"
 PALACE N+2 — <title> (<character>) [<palace_id>]   ← last new palace in this pack may have 1–4
   [Z] <beast> — Concept: … | Quote: "…"
-  [Aa] <beast> Z1 — Concept: … | Quote: "…"
+  [Aa] <beast> — Concept: … | Quote: "…"
   [Aa] <beast> Z2 — …
 
 Discard candidates: none | list pegs / palace ids with one-line why (incl. already-known skipped from inventory)
@@ -73,7 +73,7 @@ Discard candidates: none | list pegs / palace ids with one-line why (incl. alrea
 ```
 
 PREVIEW rules (mandatory — inside the pack only):
-- Plain text only. One line per Knowledge Atom that appears in `PALACE_ATOMS.csv` (zoned: show `Z1`–`Z4` after the peg).
+- Plain text only. One line per Knowledge Atom that appears in `PALACE_ATOMS.csv`. One atom per beast. Do not mark a zone after the peg.
 - Concept / Quote short enough to scan; truncate long quotes with ….
 - No CSV rows and no markdown tables inside PREVIEW.
 - Failed delivery if PREVIEW is missing from the pack, only counts/palace titles, or omits any atom from the atoms FILE section.
@@ -172,7 +172,7 @@ Rules:
 Header (exact):
 
 ```
-id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
 ```
 
 Rules:
@@ -180,7 +180,7 @@ Rules:
 - Prefer `id` like `BEAST_<palace slug>_<peg>`.
 - `peg_code` — bestiary letter codes only (no numeric pegs); unbroken sequence **continuing after the last inventory peg** (do not restart at `A` unless the study has no beasts yet).
 - `beast_name` / `beast_source` from bestiary; leave `sensory_channel` empty (legacy column; do not fill topic modality).
-- `is_smashed` — `0` for single-atom beasts; `1` when the beast carries zoned atoms.
+- `is_smashed` — always `0`. Leave `beast_notes` empty on a new beast.
 - `sort_order` — order within the palace (1…).
 - Max **5 beasts per Memory Palace** (`README §Streets and Depth Slots`).
 - **Packing rule (HARD — same as HARD PACKING MANDATE; this pack’s new palaces only):** fill every **new** palace to **exactly 5 beasts** before opening the next **new** palace. The **only** new palace that may have fewer than 5 is the **last new palace in this pack** (highest `palace_number` among pack rows) — and only when remaining new beasts < 5.
@@ -198,10 +198,8 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
 
 Rules:
 - `beast_id` must match this pack’s beasts (new beasts only).
-- `kind` — `single` or `zoned` (legacy `subtopic` → `zoned`).
-- Mapping: one `single` atom **or** up to four `zoned` atoms (`Z1`–`Z4`) per beast — never mix on the same beast.
-- `single`: leave `zone` and `zone_label` empty.
-- `zoned`: `zone` = `Z1`–`Z4`; short hook in `zone_label`.
+- `kind` — `single`. One atom row per beast.
+- Leave `zone` and `zone_label` empty. Do not use `zoned` or body zones as extra atoms.
 - Field mapping from technique prose (`README §Knowledge Atom Structure`):
   - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>` (Note stays **impersonal**—not first person). Otherwise omit the Note. After compression, apply **Two-part sentence (square brackets)** to the compressed core (see below).
   - **Two-part sentence (HARD)** — new atoms only (`README §Knowledge Atom Structure`). The compressed `concept` core is exactly two square-bracket groups that read as one grammatical sentence:
@@ -264,7 +262,7 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 ### 4. Image prompts
 
 - One `image_prompt` per palace row: foreground only; depth slots + structural anchors; plain English; bizarreness levers reflected. Never name a real person or a copyrighted character (`README §Image composition rules`).
-- Each beast physically engages the fantasy object of its topic keyword (`README §Image composition rules`). That object is the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. For a smashed beast, each zone accessory is that sub-atom’s topic mnemonic.
+- Each beast physically engages the fantasy object of its one topic keyword (`README §Image composition rules`). That object is the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. One beast, one object.
 - Leave `character_name` blank. In `image_prompt` NEVER write a real, celebrity, historical, or copyrighted character name.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
 

@@ -150,6 +150,7 @@ def snapshot(
                             "beast_id": b.get("id", ""),
                             "peg_code": b.get("peg_code", ""),
                             "beast_name": b.get("beast_name", ""),
+                            "beast_notes": b.get("beast_notes", ""),
                             "sort_order": a.get("sort_order", ""),
                         }
                     )

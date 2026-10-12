@@ -99,16 +99,6 @@ def format_field_block(label: str, body: str) -> list[str]:
 
 def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
     lines: list[str] = []
-    zone = (atom.get("zone") or "").strip()
-    zone_label = (atom.get("zone_label") or "").strip()
-    if zone or zone_label:
-        if zone and zone_label:
-            tag = f"{zone} · {zone_label}"
-        else:
-            tag = zone or zone_label
-        lines.append(f"🟦 **{tag}**")
-        lines.append("")
-
     concept = format_concept(atom.get("concept"), atom.get("keywords"))
     pictures = practice_markdown_row(atom.get("keywords"))
     if pictures:
@@ -154,6 +144,13 @@ def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str
             lines.append("---")
             lines.append("")
         lines.extend(render_atom_block_md(atom))
+    notes = ""
+    for atom in atoms:
+        notes = (atom.get("beast_notes") or "").strip()
+        if notes:
+            break
+    if notes:
+        lines.extend(format_field_block("Notes", md_escape(notes)))
     return lines
 
 

@@ -27,6 +27,7 @@ from schemas import (
     PLANS_HEADERS,
     STUDIES_HEADERS,
     STUDY_IMAGES_HEADERS,
+    collapse_beast_atoms,
     ensure_data_dir,
     validate_atom_mnemonics,
     validate_beast_atoms,
@@ -343,6 +344,20 @@ class PalaceStore:
 
     def _sync_practice(self, study_id: str) -> None:
         self._schedule_sync_practice(study_id)
+
+    def collapse_merged_atoms(self) -> dict[str, int]:
+        """Fold every extra atom into beast_notes and rewrite practice Markdown."""
+        data = self._load_tree(mutable=True)
+        before = len(data.get("atoms") or [])
+        beasts, atoms = collapse_beast_atoms(
+            data.get("beasts") or [], data.get("atoms") or []
+        )
+        data["beasts"] = beasts
+        data["atoms"] = atoms
+        self._save_tree(data, ["beasts", "atoms"])
+        for study in data.get("studies") or []:
+            self._sync_practice_now(str(study.get("id") or ""))
+        return {"atoms_before": before, "atoms_after": len(atoms)}
 
     def _sync_plans(self, study_id: str) -> None:
         self._schedule_sync_plans(study_id)
@@ -684,13 +699,16 @@ class PalaceStore:
                 or (existing or {}).get("sensory_channel")
                 or ""
             ),
-            "is_smashed": str(
-                payload.get("is_smashed", (existing or {}).get("is_smashed", "0"))
-            ),
+            "is_smashed": "0",
             "sort_order": str(
                 payload.get("sort_order")
                 or (existing or {}).get("sort_order")
                 or _next_sort(siblings)
+            ),
+            "beast_notes": (
+                str(payload.get("beast_notes") or "")
+                if "beast_notes" in payload
+                else str((existing or {}).get("beast_notes") or "")
             ),
         }
         if existing:
@@ -720,11 +738,17 @@ class PalaceStore:
         if not rid:
             ids = {r.get("id") or "" for r in rows}
             rid = next_id("ATOM_", ids)
-        kind = (
-            str(payload.get("kind") or (existing or {}).get("kind") or "single")
-            .strip()
-            .lower()
-        )
+        if any(
+            r.get("beast_id") == beast_id and (r.get("id") or "") != rid for r in rows
+        ):
+            return {"ok": False, "error": "Beast may carry only one Knowledge Atom."}
+        requested_kind = str(payload.get("kind") or "single").strip().lower()
+        if requested_kind in ("zoned", "subtopic"):
+            return {
+                "ok": False,
+                "error": "Beast cannot carry a zoned Knowledge Atom.",
+            }
+        kind = "single"
         concept = str(payload.get("concept", (existing or {}).get("concept", "")))
         raw_keywords = str(
             payload.get("keywords", (existing or {}).get("keywords", ""))
@@ -745,10 +769,8 @@ class PalaceStore:
             "id": rid,
             "beast_id": beast_id,
             "kind": kind,
-            "zone": str(payload.get("zone", (existing or {}).get("zone", ""))),
-            "zone_label": str(
-                payload.get("zone_label", (existing or {}).get("zone_label", ""))
-            ),
+            "zone": "",
+            "zone_label": "",
             "concept": concept,
             "keywords": keywords,
             "quote": str(payload.get("quote", (existing or {}).get("quote", ""))),
@@ -781,21 +803,6 @@ class PalaceStore:
         else:
             rows.append(row)
             data["atoms"] = rows
-        # smash flag
-        zoned = any(
-            (a.get("kind") or "").lower() in ("zoned", "subtopic")
-            for a in data["atoms"]
-            if a.get("beast_id") == beast_id
-        )
-        new_beasts = []
-        for b in data["beasts"]:
-            if b.get("id") == beast_id:
-                bb = dict(b)
-                bb["is_smashed"] = "1" if zoned else "0"
-                new_beasts.append(bb)
-            else:
-                new_beasts.append(b)
-        data["beasts"] = new_beasts
         beast = next((b for b in data["beasts"] if b.get("id") == beast_id), None)
         palace = None
         if beast:
@@ -803,7 +810,7 @@ class PalaceStore:
                 (p for p in data["palaces"] if p.get("id") == beast.get("palace_id")),
                 None,
             )
-        self._save_tree(data, ["beasts", "atoms"])
+        self._save_tree(data, ["atoms"])
         if palace:
             self._sync_practice(palace.get("study_id") or "")
         try:

@@ -32,11 +32,11 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: — · 4 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 19](images/science/19.png)
 
-<p><em>4 beasts · 5 Knowledge Atoms</em></p>
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
@@ -74,23 +74,16 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/butterfly.png" alt="butterfly" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · Qualitative purpose**
-
 **Concept**
 💡 Qualitative questions seek meanings, motives, lived experience, and process.
 
 **Quote**
 “the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships.”
 
----
-
-🟦 **Z2 · Avoid causal testing**
-
-**Concept**
-💡 Qualitative questions avoid count-based or causal-test questions.
-
-**Quote**
-“Does SSL increase trust?”
+**Notes**
+[Z2 · Avoid causal testing]
+Concept: Qualitative questions avoid count-based or causal-test questions.
+Quote: Does SSL increase trust?
 
 #### Notes
 

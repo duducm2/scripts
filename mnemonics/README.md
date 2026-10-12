@@ -39,7 +39,7 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 | **Knowledge Atom** | Discrete information on a Beast, made of Concept + Keywords + Quote. |
 | **Concept**        | Rehearsal definition of the fact.                                    |
 | **Quote**          | Verbatim source payload.                                             |
-| **Mapping**        | One atom per beast, or up to four zoned atoms (Z1–Z4).               |
+| **Mapping**        | One atom per beast. Extra legacy atoms live in `beast_notes`.        |
 
 ## Web app views
 

@@ -43,6 +43,7 @@ BEASTS_HEADERS = [
     "sensory_channel",
     "is_smashed",
     "sort_order",
+    "beast_notes",
 ]
 ATOMS_HEADERS = [
     "id",
@@ -433,21 +434,87 @@ HEADERS = {
 }
 
 
-def validate_beast_atoms(atoms_for_beast: list[dict[str, Any]]) -> str | None:
-    singles = 0
-    zoned = 0
-    for a in atoms_for_beast:
-        kind = (a.get("kind") or "single").strip().lower()
-        if kind in ("zoned", "subtopic"):
-            zoned += 1
+def format_archived_atom(atom: dict[str, Any]) -> str:
+    """Keep a folded atom's text so a merge removal does not drop knowledge."""
+    zone = str(atom.get("zone") or "").strip()
+    label = str(atom.get("zone_label") or "").strip()
+    title = " · ".join(part for part in (zone, label) if part) or "Archived atom"
+    lines = [f"[{title}]"]
+    for key, name in (
+        ("concept", "Concept"),
+        ("keywords", "Keywords"),
+        ("quote", "Quote"),
+        ("story", "Story"),
+    ):
+        value = str(atom.get(key) or "").strip()
+        if value:
+            lines.append(f"{name}: {value}")
+    return "\n".join(lines)
+
+
+def _atom_collapse_key(atom: dict[str, Any]) -> tuple[int, str, str]:
+    raw = str(atom.get("sort_order") or "").strip()
+    try:
+        order = int(raw)
+    except ValueError:
+        order = 0
+    return (order, str(atom.get("zone") or ""), str(atom.get("id") or ""))
+
+
+def _as_single_atom(atom: dict[str, Any]) -> dict[str, Any]:
+    row = dict(atom)
+    row["kind"] = "single"
+    row["zone"] = ""
+    row["zone_label"] = ""
+    return row
+
+
+def collapse_beast_atoms(
+    beasts: list[dict[str, Any]], atoms: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """One atom per beast. Extra atoms are appended to beast_notes."""
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    loose: list[dict[str, Any]] = []
+    for atom in atoms:
+        beast_id = str(atom.get("beast_id") or "").strip()
+        if not beast_id:
+            loose.append(_as_single_atom(atom))
+            continue
+        grouped.setdefault(beast_id, []).append(atom)
+    notes_for: dict[str, str] = {}
+    kept: list[dict[str, Any]] = []
+    for beast_id, group in grouped.items():
+        ordered = sorted(group, key=_atom_collapse_key)
+        kept.append(_as_single_atom(ordered[0]))
+        extras = ordered[1:]
+        if extras:
+            notes_for[beast_id] = "\n\n".join(
+                format_archived_atom(atom) for atom in extras
+            )
+    new_beasts: list[dict[str, Any]] = []
+    for beast in beasts:
+        row = dict(beast)
+        row["is_smashed"] = "0"
+        beast_id = str(row.get("id") or "")
+        extra = notes_for.get(beast_id, "")
+        existing = str(row.get("beast_notes") or "").strip()
+        if extra and existing:
+            row["beast_notes"] = f"{existing}\n\n{extra}"
+        elif extra:
+            row["beast_notes"] = extra
         else:
-            singles += 1
-    if singles and zoned:
-        return "Beast cannot mix a single Knowledge Atom with zoned Knowledge Atoms."
-    if singles > 1:
-        return "Beast may carry only one comprehensive Knowledge Atom."
-    if zoned > 4:
-        return "Beast may carry at most four zoned Knowledge Atoms (Z1–Z4)."
+            row["beast_notes"] = str(row.get("beast_notes") or "")
+        new_beasts.append(row)
+    return new_beasts, kept + loose
+
+
+def validate_beast_atoms(atoms_for_beast: list[dict[str, Any]]) -> str | None:
+    if len(atoms_for_beast) > 1:
+        return "Beast may carry only one Knowledge Atom."
+    for atom in atoms_for_beast:
+        kind = (atom.get("kind") or "single").strip().lower()
+        if kind in ("zoned", "subtopic"):
+            return "Beast cannot carry a zoned Knowledge Atom."
     return None
 
 

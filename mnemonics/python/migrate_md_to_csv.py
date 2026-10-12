@@ -13,7 +13,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import save_all  # noqa: E402
-from schemas import ensure_data_dir, validate_dataset  # noqa: E402
+from schemas import collapse_beast_atoms, ensure_data_dir, validate_dataset  # noqa: E402
 
 ORANGE = "🟧"
 BLUE = "🟦"
@@ -257,8 +257,7 @@ def parse_beast_blocks(street_body: str) -> list[dict[str, Any]]:
                     if m.group(0).strip().startswith("🟦")
                 ]
             if loose:
-                # Cap at 4 zoned Knowledge Atoms (technique max)
-                for j, sm in enumerate(loose[:4]):
+                for j, sm in enumerate(loose):
                     label = sm.group(1).strip()
                     hook = (sm.group(2) or "").strip()
                     fields = parse_field_block(rest[sm.start() :])
@@ -504,6 +503,7 @@ def migrate(
             if not beasts_parsed:
                 warnings.append(f"No beasts parsed on {folder} palace {num}")
 
+    beasts, atoms = collapse_beast_atoms(beasts, atoms)
     data = {
         "studies": studies,
         "palaces": palaces,

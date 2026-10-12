@@ -48,7 +48,7 @@ GLOSSARY = [
         "def": "Location / former street; one character; up to 5 beasts.",
     },
     {"term": "Character", "def": "Exactly one canon character per palace."},
-    {"term": "Beast", "def": "Bestiary peg holder for knowledge atoms."},
+    {"term": "Beast", "def": "Bestiary peg that carries one Knowledge Atom."},
     {"term": "Knowledge Atom", "def": "Concept + Keywords + Quote on a beast."},
     {"term": "Peg", "def": "Letter code from bestiary (never numeric)."},
     {"term": "Plan", "def": "Study checklist (plans / plan_items / plan_resources)."},
@@ -404,12 +404,8 @@ def synthesize_inscope_inventory(
             lines.append(
                 f"### [{peg}] {b.get('beast_name') or ''} · beast_id={b.get('id')}"
             )
-            for i, a in enumerate(_atoms_for_beast(data, b.get("id") or ""), 1):
-                zone = " · ".join(
-                    x for x in (a.get("zone") or "", a.get("zone_label") or "") if x
-                )
-                head = f"Atom {i}" + (f" [{zone}]" if zone else "")
-                lines.append(f"- {head} id={a.get('id') or '?'}")
+            for a in _atoms_for_beast(data, b.get("id") or ""):
+                lines.append(f"- Knowledge Atom id={a.get('id') or '?'}")
                 lines.append(f"  Concept: {(a.get('concept') or '').strip() or '—'}")
                 lines.append(f"  Quote: {(a.get('quote') or '').strip() or '—'}")
         lines.append("")

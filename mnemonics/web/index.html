@@ -1220,21 +1220,6 @@
         <p class="sr-hint">Drop beasts to remove (REMOVE)</p>
         <div class="sr-chip-list" id="srDeleteList"></div>
       </section>
-      <section class="sr-merge" id="srMergeSection">
-        <div class="sr-merge-head">
-          <h3>Merge</h3>
-          <button
-            type="button"
-            id="btnSrAddGroup"
-            class="sr-btn-ghost"
-            data-ico="plus"
-          >
-            Group
-          </button>
-        </div>
-        <p class="sr-hint">Drop into a group (max 4 · SMASH)</p>
-        <div class="sr-merge-groups" id="srMergeGroups"></div>
-      </section>
       <footer class="sr-panel-foot">
         <button
           type="button"
@@ -1328,7 +1313,6 @@
         storyReduction: {
           active: false,
           deleteIds: [],
-          mergeGroups: [[]],
         },
         notesTimer: null,
         planCheckSnapshot: null,
@@ -1593,43 +1577,14 @@
         return (state.data?.beasts || []).find((b) => b.id === id);
       }
 
-      const SR_MERGE_MAX = 4;
-
       function srAllStagedIds() {
-        const ids = new Set(state.storyReduction.deleteIds);
-        for (const g of state.storyReduction.mergeGroups) {
-          for (const id of g) ids.add(id);
-        }
-        return ids;
-      }
-
-      function srRemoveFromMerge(beastId) {
-        state.storyReduction.mergeGroups = state.storyReduction.mergeGroups.map(
-          (g) => g.filter((id) => id !== beastId),
-        );
-        if (!state.storyReduction.mergeGroups.length) {
-          state.storyReduction.mergeGroups = [[]];
-        }
+        return new Set(state.storyReduction.deleteIds);
       }
 
       function srRemoveFromDelete(beastId) {
         state.storyReduction.deleteIds = state.storyReduction.deleteIds.filter(
           (id) => id !== beastId,
         );
-      }
-
-      function srRemoveMergeGroup(groupIndex) {
-        const groups = state.storyReduction.mergeGroups;
-        if (groups.length <= 1) {
-          groups[0] = [];
-          renderStoryReductionPanel();
-          bindStoryReductionDrag();
-          return;
-        }
-        if (groupIndex < 0 || groupIndex >= groups.length) return;
-        groups.splice(groupIndex, 1);
-        renderStoryReductionPanel();
-        bindStoryReductionDrag();
       }
 
       function srChipLabel(beastId) {
@@ -1657,38 +1612,9 @@
           )
           .join("");
 
-        const groupsEl = document.getElementById("srMergeGroups");
-        groupsEl.innerHTML = state.storyReduction.mergeGroups
-          .map((g, gi) => {
-            const chips = g
-              .map(
-                (id) =>
-                  `<button type="button" class="sr-chip sr-chip-merge" data-sr-unstage="${escAttr(id)}" data-sr-from="merge" title="Remove from merge">${esc(srChipLabel(id))}</button>`,
-              )
-              .join("");
-            return `<div class="sr-merge-group" data-sr-drop="merge" data-sr-group="${gi}">
-              <div class="sr-group-head">
-                <div class="sr-group-label">Group ${gi + 1} · ${g.length}/${SR_MERGE_MAX}</div>
-                <button type="button" class="sr-btn-ghost sr-btn-remove-group" data-ico="x" data-sr-remove-group="${gi}" title="${state.storyReduction.mergeGroups.length <= 1 ? "Clear group" : "Remove group"}">${state.storyReduction.mergeGroups.length <= 1 ? "Clear" : "Remove"}</button>
-              </div>
-              <div class="sr-chip-list">${chips || '<span class="sr-hint">Drop beasts here</span>'}</div>
-            </div>`;
-          })
-          .join("");
-
-        panel.querySelectorAll("[data-sr-remove-group]").forEach((el) => {
-          el.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            srRemoveMergeGroup(Number(el.dataset.srRemoveGroup));
-          };
-        });
-
         panel.querySelectorAll("[data-sr-unstage]").forEach((el) => {
           el.onclick = () => {
-            const id = el.dataset.srUnstage;
-            if (el.dataset.srFrom === "delete") srRemoveFromDelete(id);
-            else srRemoveFromMerge(id);
+            srRemoveFromDelete(el.dataset.srUnstage);
             renderStoryReductionPanel();
             bindStoryReductionDrag();
           };
@@ -1707,49 +1633,16 @@
               e.dataTransfer.getData("text/beast-id") ||
               e.dataTransfer.getData("text/plain");
             if (!beastId) return;
-            if (zone.dataset.srDrop === "delete") {
-              srStageDelete(beastId);
-            } else {
-              const gi = Number(zone.dataset.srGroup || 0);
-              srStageMerge(beastId, gi);
-            }
+            srStageDelete(beastId);
           };
         });
       }
 
       function srStageDelete(beastId) {
         if (!beastById(beastId)) return;
-        srRemoveFromMerge(beastId);
         if (!state.storyReduction.deleteIds.includes(beastId)) {
           state.storyReduction.deleteIds.push(beastId);
         }
-        renderStoryReductionPanel();
-        bindStoryReductionDrag();
-      }
-
-      function srStageMerge(beastId, groupIndex) {
-        if (!beastById(beastId)) return;
-        const groups = state.storyReduction.mergeGroups;
-        let gi = groupIndex;
-        if (gi < 0 || gi >= groups.length) gi = groups.length - 1;
-        if (groups[gi].includes(beastId)) {
-          renderStoryReductionPanel();
-          return;
-        }
-        if (groups[gi].length >= SR_MERGE_MAX) {
-          toast(`Merge group max is ${SR_MERGE_MAX} beasts (Z1–Z4)`);
-          return;
-        }
-        srRemoveFromDelete(beastId);
-        srRemoveFromMerge(beastId);
-        // after remove, groups array may have changed references — re-resolve
-        const g2 = state.storyReduction.mergeGroups;
-        if (gi >= g2.length) gi = g2.length - 1;
-        if (g2[gi].length >= SR_MERGE_MAX) {
-          toast(`Merge group max is ${SR_MERGE_MAX} beasts (Z1–Z4)`);
-          return;
-        }
-        g2[gi].push(beastId);
         renderStoryReductionPanel();
         bindStoryReductionDrag();
       }
@@ -1766,7 +1659,6 @@
 
       function clearStoryReductionStaging() {
         state.storyReduction.deleteIds = [];
-        state.storyReduction.mergeGroups = [[]];
         renderStoryReductionPanel();
         bindStoryReductionDrag();
       }
@@ -1812,28 +1704,6 @@
         return { beastsMeta, palaceIds, palaceNums, pegs };
       }
 
-      function srFormatMergeGroupsText() {
-        return state.storyReduction.mergeGroups
-          .map((g, gi) => {
-            if (g.length < 2) return "";
-            const pegs = g
-              .map((id) => {
-                const b = beastById(id);
-                return b?.peg_code ? `[${b.peg_code}]` : `[${id}]`;
-              })
-              .join("+");
-            const ids = g
-              .map((id) => {
-                const b = beastById(id);
-                return b ? b.id : id;
-              })
-              .join(", ");
-            return `Group ${gi + 1}: Merge ${pegs} into one beast (beast_ids: ${ids})`;
-          })
-          .filter(Boolean)
-          .join("\n");
-      }
-
       function srFormatDeletePegsText() {
         return state.storyReduction.deleteIds
           .map((id) => {
@@ -1845,26 +1715,17 @@
           .join("\n");
       }
 
-      function srBuildStagingManifest(mode, scope, merges, removes) {
-        const hasMerge = !!merges;
-        const hasDelete = !!removes;
+      function srBuildStagingManifest(scope, removes) {
         const lines = [
           "=== STAGED FROM MEMORY PALACE UI (authoritative — do not ignore) ===",
-          `Reduction mode: ${mode}`,
+          "Reduction mode: REMOVE",
           `Reduction scope: ${scope || "(derive from staged pegs/palaces below)"}`,
           "",
+          "One beast carries one Knowledge Atom. Do not merge atoms onto body zones.",
+          "",
+          "PEGS / BEASTS TO REMOVE (REMOVE):",
+          removes || "(none)",
         ];
-        if (hasMerge && hasDelete) {
-          lines.push(
-            "Apply BOTH actions in one pack: SMASH the merge groups, then REMOVE the listed pegs (or remove them as part of the same in-scope rewrite).",
-            "",
-          );
-        }
-        lines.push("MERGE GROUPS (SMASH):");
-        lines.push(merges || "(none)");
-        lines.push("");
-        lines.push("PEGS / BEASTS TO REMOVE (REMOVE):");
-        lines.push(removes || "(none)");
         lines.push(
           "",
           "Atom Concept/Quote for in-scope beasts are in CONTEXT → In-scope working set.",
@@ -1876,14 +1737,8 @@
       }
 
       function srFillPromptTemplate(tpl) {
-        const hasMerge = state.storyReduction.mergeGroups.some(
-          (g) => g.length >= 2,
-        );
         const hasDelete = state.storyReduction.deleteIds.length > 0;
-        let mode = hasMerge ? "SMASH" : "REMOVE";
-        if (hasMerge && hasDelete) {
-          mode = "SMASH";
-        }
+        const mode = "REMOVE";
         const { palaceNums, pegs } = srStagedBeastMeta();
         let scope = "";
         if (palaceNums.length) {
@@ -1898,23 +1753,12 @@
               ? `pegs ${pegs.join(", ")}`
               : `pegs ${pegs[0]}…${pegs[pegs.length - 1]}`);
         }
-        const merges = srFormatMergeGroupsText();
         const removes = srFormatDeletePegsText();
-        const modeBlock =
-          hasMerge && hasDelete
-            ? `${mode}\n(Also REMOVE every peg listed under Peg letters to remove below.)`
-            : mode;
-        const mergeBlock = merges || "(none — no SMASH groups staged)";
         const removeBlock = removes || "(none — no REMOVE pegs staged)";
-        const manifest = srBuildStagingManifest(
-          modeBlock,
-          scope,
-          merges,
-          removes,
-        );
+        const manifest = srBuildStagingManifest(scope, removes);
 
         let out = tpl;
-        out = out.replace("[SMASH or REMOVE]", modeBlock);
+        out = out.replace("[SMASH or REMOVE]", mode);
         out = out.replace(
           "[SCOPE OR LEAVE BLANK FOR LATEST SEGMENT]",
           scope || "(latest staged segment from Memory Palace UI)",
@@ -1923,7 +1767,7 @@
           "[ATTACH OR PASTE]",
           "See CONTEXT block at the top (bridge tip + in-scope working set only). Bestiary/characters are sliced there — not full technique dumps. Technique rules are already in this prompt.",
         );
-        out = out.replace("[LIST GROUPS]", mergeBlock);
+        out = out.replace("[LIST GROUPS]", "(none — do not merge atoms)");
         out = out.replace("[LIST PEGS]", removeBlock);
         out = out.replace(
           "📎 Bestiary (`@studies/technique/bestiary.json`)",
@@ -1938,7 +1782,6 @@
         return {
           text: out,
           mode,
-          hasMerge,
           hasDelete,
           scope,
           beforePalace: palaceNums[0] || 0,
@@ -1969,11 +1812,8 @@
       }
 
       async function generateStoryReductionPrompt() {
-        if (
-          !state.storyReduction.deleteIds.length &&
-          !state.storyReduction.mergeGroups.some((g) => g.length >= 2)
-        ) {
-          toast("Stage beasts in Delete or Merge first");
+        if (!state.storyReduction.deleteIds.length) {
+          toast("Stage beasts in Delete first");
           return;
         }
         const { palaceNums } = srStagedBeastMeta();
@@ -2398,10 +2238,6 @@
                   a.concept,
                   a.keywords,
                 );
-                const marks = [];
-                if (a.zone || a.zone_label) {
-                  marks.push('<span aria-hidden="true">🟦</span>');
-                }
                 const bodyParts = [];
                 if (peg) bodyParts.push(`[${esc(peg)}]`);
                 if (name) bodyParts.push(esc(name));
@@ -2410,12 +2246,8 @@
                   imgClass: "qr-thumb",
                   size: 28,
                 });
-                const marksHtml = marks.length
-                  ? `<span class="qr-marks">${marks.join("")}</span>`
-                  : "";
                 btn.innerHTML =
                   thumbHtml +
-                  marksHtml +
                   `<span class="qr-body">${bodyParts.join(" ")}</span>`;
                 btn.addEventListener("click", () =>
                   pickQuickRecallPalace(p.id),
@@ -3329,12 +3161,7 @@
       }
 
       function renderAtomCard(a) {
-        const zone =
-          a.zone || a.zone_label
-            ? `<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> ${dash(a.zone)}${a.zone_label ? " · " + dash(a.zone_label) : ""}</p>`
-            : "";
-        const head = zone ? `<div class="atom-card-head">${zone}</div>` : "";
-        return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
+        return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">
           <div class="field field-concept"><span class="lbl">Concept</span><div class="concept-copy">${formatConcept(a.concept, a.keywords)}</div>${keywordImageRow(a.keywords)}</div>
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
         </article>`;
@@ -3360,6 +3187,10 @@
             const cards =
               ats.map((a) => renderAtomCard(a)).join("") ||
               '<p class="empty">No atoms</p>';
+            const notes = String(b.beast_notes || "").trim();
+            const notesHtml = notes
+              ? `<div class="field"><span class="lbl">Notes</span><p>${esc(notes)}</p></div>`
+              : "";
             const thumbHtml = beastThumbPairHtml(b.id, {
               imgClass: "beast-thumb",
               size: 44,
@@ -3375,6 +3206,7 @@
               </div>
             </header>
             <div class="beast-cluster-atoms">${cards}</div>
+            ${notesHtml}
           </section>`;
           })
           .join("");
@@ -4930,12 +4762,12 @@
           `
           <div class="spa-row"><button class="spa-btn" id="up" data-ico="arrow-left">Up</button>
             <button class="spa-btn" id="addA" data-ico="plus">Add atom</button></div>
-          <div class="spa-panel"><table class="spa-table"><thead><tr><th>Kind</th><th>Zone</th><th>Concept</th><th></th></tr></thead>
+          <div class="spa-panel"><table class="spa-table"><thead><tr><th>Concept</th><th></th></tr></thead>
           <tbody>${list
             .map(
               (
                 a,
-              ) => `<tr><td>${esc(a.kind)}</td><td>${esc(a.zone)}</td><td>${esc(a.concept)}</td>
+              ) => `<tr><td>${esc(a.concept)}</td>
             <td><button class="spa-btn" data-ico="pencil" data-edit="${escAttr(a.id)}">Edit</button>
             <button class="spa-btn danger" data-ico="trash" data-del="${escAttr(a.id)}">Del</button></td></tr>`,
             )
@@ -5018,8 +4850,6 @@
           .catch((e) => toast(String(e.message || e)));
       }
       function editAtom(a, beastId) {
-        const kind =
-          prompt("Kind (single/zoned)", a?.kind || "single") || "single";
         const concept = prompt(
           "Concept ([Name] [definition group] […]; 3–6 groups)",
           a?.concept || "",
@@ -5031,17 +4861,13 @@
         );
         if (keywordsRaw == null) return;
         const quote = prompt("Quote", a?.quote || "") || "";
-        const zone = prompt("Zone (optional)", a?.zone || "") || "";
-        const zone_label = prompt("Zone label", a?.zone_label || "") || "";
         const body = {
           beast_id: beastId,
-          kind,
+          kind: "single",
           concept,
           keywords: keywordsRaw,
           quote,
           story: a?.story || "",
-          zone,
-          zone_label,
         };
         if (a?.id) body.id = a.id;
         api("/api/atoms", { method: "POST", body: JSON.stringify(body) })
@@ -5793,7 +5619,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete/Merge · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -5839,10 +5665,6 @@
         toggleStoryReduction();
       document.getElementById("btnSrClear").onclick = () =>
         clearStoryReductionStaging();
-      document.getElementById("btnSrAddGroup").onclick = () => {
-        state.storyReduction.mergeGroups.push([]);
-        renderStoryReductionPanel();
-      };
       document.getElementById("btnSrGenerate").onclick = () =>
         generateStoryReductionPrompt();
       document.getElementById("btnPractice").onclick = () =>

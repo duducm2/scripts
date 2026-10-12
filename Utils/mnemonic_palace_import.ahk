@@ -550,6 +550,12 @@ Palace_AiCompanionFixGuidance(errorMsg) {
         . "- Re-emit with exact CSV headers and real data rows in all three FILE sections.`r`n"
         . "- PREVIEW must list every atom (Concept | Quote | Story)."
     }
+    if (InStr(e, "one knowledge atom") || InStr(e, "zoned")) {
+        return "- One beast carries exactly one Knowledge Atom.`r`n"
+        . "- Do not merge atoms onto body zones. Do not use kind=zoned or Z1-Z4.`r`n"
+        . "- Give each atom its own beast.`r`n"
+        . "- Re-emit a corrected full pack."
+    }
     if (InStr(e, "0 imported")) {
         return "- Rows were present but none imported (likely bad study_id / palace_id / beast_id links).`r`n"
         . "- Re-check ids match the study and cross-link correctly across the three CSV sections.`r`n"
@@ -661,7 +667,8 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
             "beast_source", "Lynne Kelly",
             "sensory_channel", "",
             "is_smashed", "0",
-            "sort_order", String(sortOrder)
+            "sort_order", String(sortOrder),
+            "beast_notes", ""
         ))
         atoms.Push(Map(
             "id", "",
@@ -1238,7 +1245,7 @@ Palace_ValidateForwardPull(palaceRows, beastRows, libraryPalaces, libraryBeasts,
     return out
 }
 
-; Validate incoming atom rows: unique beast_id, single vs zoned mapping rules.
+; Validate incoming atom rows: one Knowledge Atom per beast.
 Palace_ValidateImportAtoms(atomRows, beastRows := "") {
     out := Map("ok", true, "error", "")
     if (!IsObject(atomRows) || !atomRows.Length)
@@ -1265,45 +1272,30 @@ Palace_ValidateImportAtoms(atomRows, beastRows := "") {
             out["error"] := "Atom references unknown beast_id " . bid
             return out
         }
-        zone := Trim(r.Has("zone") ? r["zone"] : "")
-        key := bid . "|" . zone
-        if (seen.Has(key)) {
+        if (seen.Has(bid)) {
             out["ok"] := false
-            out["error"] := "Duplicate atom for beast " . bid
-                . (zone != "" ? " zone " . zone : "")
+            out["error"] := "Beast " . bid . ": one beast carries one Knowledge Atom"
             return out
         }
-        seen[key] := true
+        seen[bid] := true
         if (!byBeast.Has(bid))
             byBeast[bid] := []
         byBeast[bid].Push(r)
     }
     for bid, rows in byBeast {
-        hasSingle := false
-        hasZoned := false
+        if (rows.Length > 1) {
+            out["ok"] := false
+            out["error"] := "Beast " . bid . ": one beast carries one Knowledge Atom"
+            return out
+        }
         for a in rows {
             k := StrLower(Trim(a.Has("kind") ? a["kind"] : "single"))
-            if (k = "subtopic")
-                k := "zoned"
-            if (k = "zoned")
-                hasZoned := true
-            else
-                hasSingle := true
-        }
-        if (hasSingle && hasZoned) {
-            out["ok"] := false
-            out["error"] := "Beast " . bid . ": cannot mix single and zoned atoms"
-            return out
-        }
-        if (hasSingle && rows.Length > 1) {
-            out["ok"] := false
-            out["error"] := "Beast " . bid . ": single mapping allows only one atom"
-            return out
-        }
-        if (hasZoned && rows.Length > 4) {
-            out["ok"] := false
-            out["error"] := "Beast " . bid . ": zoned mapping allows at most four atoms"
-            return out
+            if (k = "subtopic" || k = "zoned") {
+                out["ok"] := false
+                out["error"] := "Beast " . bid
+                    . ": zoned atoms are not allowed. One beast carries one Knowledge Atom."
+                return out
+            }
         }
     }
     ; New or changed rows must satisfy the two-part contract. An unchanged
@@ -1651,6 +1643,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
     palaces := cleanedPalaces
 
     ; --- Beasts: wipe only palaces with at least one insertable row; remap colliding ids ---
+    priorBeastNotes := Map()
+    for b in beasts {
+        if (b.Has("id") && b.Has("beast_notes") && Trim(b["beast_notes"]) != "")
+            priorBeastNotes[b["id"]] := b["beast_notes"]
+    }
     replacePalaceIds := Map()
     if (beastRows.Length) {
         insertable := []
@@ -1702,6 +1699,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
             if (packId != "")
                 beastIdRemap[packId] := id
             beastIdRemap[id] := id
+            keptNotes := r.Has("beast_notes") ? r["beast_notes"] : ""
+            if (Trim(keptNotes) = "" && priorBeastNotes.Has(id))
+                keptNotes := priorBeastNotes[id]
+            if (Trim(keptNotes) = "" && packId != "" && priorBeastNotes.Has(packId))
+                keptNotes := priorBeastNotes[packId]
             beasts.Push(Map(
                 "id", id,
                 "palace_id", palaceId,
@@ -1709,8 +1711,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "beast_name", name,
                 "beast_source", r.Has("beast_source") ? r["beast_source"] : "",
                 "sensory_channel", r.Has("sensory_channel") ? r["sensory_channel"] : "",
-                "is_smashed", r.Has("is_smashed") ? r["is_smashed"] : "0",
-                "sort_order", r.Has("sort_order") ? r["sort_order"] : "1"
+                "is_smashed", "0",
+                "sort_order", r.Has("sort_order") ? r["sort_order"] : "1",
+                "beast_notes", keptNotes
             ))
             sid := Palace_StudyIdForPalace(palaceId)
             if (sid != "")
@@ -1736,11 +1739,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 Palace_Notify("Skip atom: unknown beast_id " . rawBeastId, 2200, BANNER_ACCENT_ERROR)
                 continue
             }
-            kind := r.Has("kind") ? StrLower(Trim(r["kind"])) : "single"
-            if (kind = "")
-                kind := "single"
-            if (kind = "subtopic")
-                kind := "zoned"
+            kind := "single"
             id := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"]) : ""
             if (id = "" || usedAtomIds.Has(id))
                 id := Palace_NextId("ATOM_", scratchAtoms, 4)
@@ -1753,8 +1752,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "id", id,
                 "beast_id", beastId,
                 "kind", kind,
-                "zone", r.Has("zone") ? r["zone"] : "",
-                "zone_label", r.Has("zone_label") ? r["zone_label"] : "",
+                "zone", "",
+                "zone_label", "",
                 "concept", concept,
                 "keywords", keywords,
                 "quote", r.Has("quote") ? r["quote"] : "",

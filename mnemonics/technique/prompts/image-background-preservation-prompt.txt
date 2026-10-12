@@ -13,7 +13,7 @@ Your task: preserve the real place while compositing mnemonic foreground element
 ## Inputs
 
 1. **Background image** — the locked Google Maps or Street View screenshot.
-2. **Mnemonic image prompt for this street** — one line from the palace `image_prompt` (or legacy `🖼️ Mnemonic image prompts` section). Contains beast list, depth slots, `🟦` accessories (if any), character as a **lookalike description** (never a real/celebrity/IP name), and story details.
+2. **Mnemonic image prompt for this street** — one line from the palace `image_prompt` (or legacy `🖼️ Mnemonic image prompts` section). Contains the beast list, depth slots, one topic object per beast, character as a **lookalike description** (never a real/celebrity/IP name), and story details.
 3. **README** (recommended reference) — `studies/technique/README.md`; cite as `README §<Section Name>` when applying framework rules.
 
 ---
@@ -82,18 +82,15 @@ Image models often refuse named real people, celebrities, historical figures, an
 **Beast-bound accessories (mandatory when the prompt lists them):**
 
 - Render each prop, object, or action cue **on or with the correct beast** (held, worn, embedded in pose) — NEVER floating unassigned in the scene.
-- **Anatomical Micro-Loci** per `README §Anatomical Micro-Loci`: when the street prompt names zones (Z1 Head, Z2 Forelimbs, Z3 Torso, Z4 Hindquarters), render each accessory in its assigned anatomical zone with visible active engagement (deformation, grip, emission, penetration).
-- If the street prompt describes a beast with multiple accessories (from `🟦` sub-atom lines), show **all of them on that same beast** in one readable composition. The beast body is a **neutral canvas**; zone-anchored accessories carry **all** knowledge atoms.
+- Each beast engages **one** topic object, the accessory named for that beast’s single knowledge atom. Do not add a second accessory, and do not park extra atoms on the head, forelimbs, torso, or hindquarters.
 - Story Reduction image prompts are intentionally detailed — NEVER simplify away accessories when compositing.
 
-**Complete topic and subtopic fidelity:**
+**One atom on each beast:**
 
-- For **smashed beasts**, the beast body (`🟧` header) is a **neutral canvas** and MUST NOT encode any knowledge atom; each **accessory on that beast** encodes one knowledge atom (`🟦` line).
-- For **single-atom beasts** (no `🟦` lines), the beast body may carry the topic sensory from the `🟧` header as usual.
-- When the street prompt includes `· sensory:` on a smashed `🟧` header, render that cue only as body presence (pose, texture, smell)—never as a separate knowledge-encoding action.
-- If the street prompt lists *N* accessories on one beast, **all N MUST appear clearly and readably** in the final image.
-- NEVER drop, merge, or simplify accessories to reduce clutter.
-- Prioritize **legibility of every knowledge-atom prop** over minimalism.
+- Each beast carries one knowledge atom and one topic object. The beast body may show that topic.
+- Do not split one beast into body-zone atoms, and do not add a second accessory because an older prompt listed several.
+- NEVER drop the topic object to reduce clutter.
+- Prioritize **legibility of that one prop** over minimalism.
 
 ### 5. Realistic integration
 
@@ -137,8 +134,7 @@ Because this prompt runs in an image model, the self-check is a mental pass, not
 | No forbidden change applied (no reframing, no cartoon overlay, no landmark distortion) | Procedure §3 | Yes |
 | Every beast from the prompt is present | Procedure §4 | Yes |
 | The street's single assigned character is present as a lookalike (not a named celebrity/IP) | Procedure §4b · `README §Image composition rules` | Yes |
-| Beast-body sensory cue from `🟧` rendered as presence only when smashed; no knowledge on body | `README §Anatomical Micro-Loci` | Yes |
-| Every `🟦` accessory rendered in its Anatomical Micro-Loci zone with active engagement | `README §Anatomical Micro-Loci` | Yes |
+| Each beast engages one topic object; no second accessory and no body-zone atoms | `README §One atom per beast` | Yes |
 | No floating or unassigned props | Procedure §4 | Yes |
 | Depth slots respected; one beast per slot | `README §Streets and Depth Slots` | Yes |
 | Mnemonic scale exaggeration matches prompt (when specified) | Procedure §5 | Yes |

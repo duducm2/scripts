@@ -170,8 +170,6 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/afghan_hound.png" alt="Afghan hound" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · Additional notes (non-mnemonic)**
-
 **Concept**
 💡 Reharse the german alphabet depicted here:
 

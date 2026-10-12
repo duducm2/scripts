@@ -12,18 +12,18 @@ This system helps you memorize complex topics (e.g. Piano, English Grammar, Comm
 
 **Constraint:** Cursor IDE AI cannot access YouTube. Produce the transcript in a web AI (e.g. Gemini), then use that transcript in Cursor for story generation and later steps.
 
-| Step                         | Owner                | Prompt / action                                                                                                    | Attach (📎)                                                                                                          |
-| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| **0 — Plan**                 | You                  | Open `studies/[topic]/plan.md` for topic research, video picks, checklists                                         | —                                                                                                                    |
-| **1 — Watch**                | You                  | Watch the recommended YouTube video enough to grasp the concept                                                    | —                                                                                                                    |
-| **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                                                   |
-| **3 — Curate atoms**         | Cursor (when needed) | `prompts/concept-curation-prompt.txt` — when the transcript/text is too long or dense                              | Source transcript/text · optional practice `.md` · this README                                                       |
+| Step                         | Owner                | Prompt / action                                                                                                    | Attach (📎)                                                                                      |
+| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **0 — Plan**                 | You                  | Open `studies/[topic]/plan.md` for topic research, video picks, checklists                                         | —                                                                                                |
+| **1 — Watch**                | You                  | Watch the recommended YouTube video enough to grasp the concept                                                    | —                                                                                                |
+| **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                               |
+| **3 — Curate atoms**         | Cursor (when needed) | `prompts/concept-curation-prompt.txt` — when the transcript/text is too long or dense                              | Source transcript/text · optional practice `.md` · this README                                   |
 | **4 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Transcription **or** curated concept `.md` · existing study list · `bestiary.json` · this README |
-| **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **SMASH** or **REMOVE** mode                                               | Reduction mode · in-scope palace pack · merge groups or peg letters to remove · `bestiary.json`                      |
-| **6 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 4 or 5                                                              |
-| **7 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                                       |
-| **8 — Save files**           | You                  | Store snapshots and composites in `studies/[Topic]/images/` as `N.png` matching Street N                           | —                                                                                                                    |
-| **9 — Markdown assembly**    | You                  | Paste finalized story into `mnemonics-<topic>.md`; set `![Street N](images/N.png)` links                           | —                                                                                                                    |
+| **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **REMOVE** mode                                                            | In-scope palace pack · peg letters to remove · `bestiary.json`                                   |
+| **6 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 4 or 5                                          |
+| **7 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                   |
+| **8 — Save files**           | You                  | Store snapshots and composites in `studies/[Topic]/images/` as `N.png` matching Street N                           | —                                                                                                |
+| **9 — Markdown assembly**    | You                  | Paste finalized story into `mnemonics-<topic>.md`; set `![Street N](images/N.png)` links                           | —                                                                                                |
 
 **Key terms:**
 
@@ -48,7 +48,7 @@ flowchart TB
     transcribeNode["<b>Transcribe</b> — <code>video-transcription-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>YouTube video link</span> <span style='color:#888'>(Gemini · Input section)</span><br/><br/><span style='color:#9cdcfe'>You:</span> Paste the link in Gemini.<br/><span style='color:#b5cea8'><b>Save</b></span> Markdown transcript.<br/><span style='color:#888'>Required before Story Architect (or Curate).</span>"]
     curateNode["<b>Curate atoms</b> — <code>concept-curation-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>Source transcript/text · optional practice <code>.md</code> · README</span><br/><br/><span style='color:#9cdcfe'>You:</span> when the source is too long/dense.<br/><span style='color:#b5cea8'><b>Save</b></span> curated concept Markdown.<br/><span style='color:#888'>Optional; feeds Story Architect as transcription.</span>"]
     storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Transcription <b>or</b> curated concept <code>.md</code> · 📎 Existing study list <code>.md</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
-    refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Reduction mode SMASH or REMOVE · 📎 In-scope palace pack · 📎 Merge groups or peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when merging atoms or trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> reduced palace pack · refreshed <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(accessory-detail prompts)</span>. Do not rewrite narratives."]
+    refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 REMOVE · 📎 In-scope palace pack · 📎 Peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> reduced palace pack · refreshed <code>🖼️ Mnemonic image prompts</code>. Do not rewrite narratives. One beast keeps one atom."]
     mapsNode["<b>Google Maps</b><br/><br/><span style='color:#9cdcfe'>You:</span> N locations · one screenshot per street.<br/><span style='color:#888'>Use the latest <code>🖼️ Mnemonic image prompts</code> from the current story output.</span>"]
       genNode["<b>Foreground Composite</b> — <code>image-background-preservation-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Street screenshot · 📎 Matching line from <code>🖼️ Mnemonic image prompts</code></span><br/><span style='color:#9cdcfe'>You:</span> place the preservation prompt above the street prompt, then add mnemonic foreground elements without altering the place."]
     filesNode["<b>Save files</b><br/><br/><span style='color:#9cdcfe'>You:</span> Study <code>images/</code> folder · save as <code>N.png</code> matching Street N."]
@@ -91,7 +91,7 @@ All prompts cite these sections by exact heading name (`README §<Heading>`). Ru
 - **Keywords (`keywords`):** Ordered association pairs from every bracket group in the concept core. Store each as `Keyword | RecognizableWord`, joined with `||`. A **new** atom has **exactly two** pairs, one per group. **Keyword** = tangible memory anchor (physical object, action, actor, or cartoon character). **RecognizableWord** = a prominent word or short term taken from that same group. Pair 1’s RecognizableWord is the formal concept name from group 1 (renders blue). Pair 2’s RecognizableWord comes from group 2 (renders orange). Preserve exact left-to-right group order in storage and display. Never put two keys in one group. Display under Concept in practice MD and the web SPA as `[word] → [keyword]`. Never invent pairs for Note text. Keywords are the recall cue the user turns into a story later. **AIB does not write that story.** Legacy atoms keep their existing `keywords` string.
 - **Quote:** Direct transcript excerpt from the video source, verbatim. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote.
 
-**Sensory channel emojis** (required beside every `· sensory:` marker on `🟧` and `🟦` lines; channel word first, then its emoji):
+**Sensory channel emojis** (required beside every `· sensory:` marker on an `🟧` beast header; channel word first, then its emoji):
 
 | Channel   | Emoji |
 | --------- | ----- |
@@ -104,7 +104,7 @@ All prompts cite these sections by exact heading name (`README §<Heading>`). Ru
 
 Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEVER invent other sensory emojis; NEVER omit the emoji; NEVER place the emoji before the channel word.
 
-**Allowed emojis (Story Architect / Story Reduction output):** Only `🟧` (topic/beast header), `🟦` (sub-atom), `💡` (definition / `**Context:**` line), and the sensory-channel emojis above—plus the fixed section title `🖼️ Mnemonic image prompts` required by the output contract. NEVER invent any other emoji in beast headers, Context, Quote, summaries, or image-prompt body text.
+**Allowed emojis (Story Architect / Story Reduction output):** Only `🟧` (beast header), `💡` (definition / `**Context:**` line), and the sensory-channel emojis above—plus the fixed section title `🖼️ Mnemonic image prompts` required by the output contract. NEVER invent any other emoji in beast headers, Context, Quote, summaries, or image-prompt body text. Do not encode a second knowledge atom with `🟦`.
 
 **Structure per Knowledge Atom** (separated by clear line breaks):
 
@@ -115,13 +115,9 @@ Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEV
 
 **Retrieval path:** peg → `💡 **Context:**` (ultra-short core + optional Note) → **Keywords** → Quote. The user may later turn the keywords into a story outside this system. AIB does not write that story.
 
-**Smashed beast structure (after Story Reduction SMASH mode):**
+**One atom per beast:** A beast holds exactly one Knowledge Atom. Do not merge several atoms onto one beast, and do not split an atom across body zones. Story Reduction only removes pegs.
 
-1. **Header:** `🟧` `[Peg Letters]` `[Beast Name]` `· sensory: [channel] [emoji]` — peg identity and a **baseline** sensory channel for the beast body only (required; distinct from every `🟦` channel on this beast; emoji from **Sensory channel emojis**). The beast body is a **neutral canvas**: it MUST NOT encode any knowledge atom and MUST NOT carry a definition (`💡 **Context:**`) on the `🟧` level.
-2. **Sub-atoms (Anatomical Micro-Loci):** Up to **4** `🟦` lines in **Z1→Z4 order**—**every** merged knowledge atom MUST be assigned to exactly one `🟦` zone. Each `🟦` line names its zone, active anatomical interaction, brief knowledge hook, and sensory channel with emoji (e.g. `· sensory: visual 👁️`). Immediately under each `🟦` line, emit that atom's definition as `💡 **Context:** …`. A newly authored atom uses the two-part sentence above. An atom that already exists keeps its stored concept and keywords. Optional impersonal ` — Note:` belongs only on a newly authored concept when nuance was stripped. Do **not** use a combined group-level Context under the `🟧` header.
-3. **Quote(s):** One verbatim video quote per merged atom, in source order. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote. Do not write a narrative. Keywords on each sub-atom are the recall cue; the user writes any story later.
-
-**Example (single-atom beast):**
+**Example:**
 
 ```md
 🟧 **[B] [bird of paradise]** · sensory: visual 👁️
@@ -164,7 +160,7 @@ Five beasts on one street is high-density loci (near working-memory limits). Sim
 
 ### Independent Beast Beats
 
-- Each beast is a **self-contained retrieval unit**. Its concept, keywords, and quote encode only **its** knowledge atom (and, if smashed, its own `🟦` sub-atoms via accessories). The street does **not** share a narrative thread, shared props, or cross-beast story links. AIB does not write the user's story.
+- Each beast is a **self-contained retrieval unit**. Its concept, keywords, and quote encode only **its** one knowledge atom. The street does **not** share a narrative thread, shared props, or cross-beast story links. AIB does not write the user's story.
 - **Any-order recall:** Random access works because each beat is isolated at its **depth slot**—not because the user reconstructs sibling beasts via shared props, environmental cues, or thematic echoes.
 - **No fixed chain language:** NEVER imply a required sequence like "next", "then", "after this beast", or "Beast 1 → Beast 2 → …".
 - **Beast-to-beast interaction (optional, default none):** Direct links between beasts are allowed **only** when they serve the concept, transcript logic, or a stronger mnemonic. Do not add generic references to other beasts on the street (e.g. shouting, bleating, or waving at a nearby beast) when there is no meaningful link. NEVER require reading another beast's narrative to decode this one.
@@ -183,7 +179,6 @@ Each image-prompt beat MUST include **at least one** improbability lever:
 
 - **Reject mundane defaults:** If the beat could pass as a normal documentary caption, rewrite until at least one lever is obvious.
 - **Image prompts:** Carry the same lever into foreground description (state scale or surreal detail explicitly when used).
-- **SMASH sub-atoms:** Each `🟦` zone interaction SHOULD also be bizarre or physically impossible—not a passive prop.
 
 ### Actions palette
 
@@ -199,40 +194,14 @@ These are the **tools** for passing the **Bizarreness Gate**—not optional deco
 
 NEVER add moderation-bypass language, explicit sexual content, or graphic gore. Favor memorable but platform-safe imagery.
 
-### Anatomical Micro-Loci
+### One atom per beast
 
-When the palace has too many beasts or streets, run **Story Reduction** in **SMASH** mode to merge similar or related knowledge atoms into **one beast** (schema blending) instead of giving each atom its own peg.
+A beast holds exactly one Knowledge Atom. Body zones are not knowledge slots.
 
-- **One beast, up to four sub-atoms:** Each merged atom becomes one `🟦` subtopic line (maximum **4** per beast; merge groups with more than 4 pegs MUST split into multiple smashed beasts). All knowledge atoms live on `🟦` lines plus their paired `💡 **Context:**` definitions—never on the beast body itself.
-- **Neutral beast body:** The `🟧` header names the peg and a baseline sensory channel for the beast's body presence only. The beast body MUST NOT encode any knowledge atom and MUST NOT carry `💡 **Context:**`; it is a neutral canvas that holds zone accessories.
-- **Encode nuances on zone anatomy:** Alter features, expression, posture, and zone-specific anatomy via `🟦` accessories—not by encoding facts on the whole body, and not by adding extra beasts.
-- **Definition per sub-atom:** Immediately under every `🟦` line, emit that atom's `💡 **Context:**`. Copy an existing atom's concept and keywords byte-for-byte. A concept newly authored in the reduction uses the two-part sentence in **Knowledge Atom Structure**. The `🟦` line is the zone/accessory mnemonic cue; the `💡 **Context:**` line is the definition. NEVER put `💡` on Quote. Do not author a narrative for the zone.
-- **Image prompts:** Story Reduction outputs long, detailed foreground prompts so each accessory renders in its **assigned anatomical zone** with **active engagement** on the beast. Do not invent a separate "main topic" action on the beast body.
-
-| Sub-atom order | Zone                | Body area                             |
-| -------------- | ------------------- | ------------------------------------- |
-| 1st `🟦`       | **Z1 Head**         | Head, face, eyes, beak, mouth, horns  |
-| 2nd `🟦`       | **Z2 Forelimbs**    | Forelimbs, front, claws, paws, chest  |
-| 3rd `🟦`       | **Z3 Torso**        | Torso, back, wings, spine, abdomen    |
-| 4th `🟦`       | **Z4 Hindquarters** | Hindquarters, tail, back legs, hooves |
-
-- **Top-down rule:** Assign sub-atoms to zones **in order** (Z1 → Z2 → Z3 → Z4). With fewer than 4 atoms, use only the first N zones in sequence.
-- **Active anatomical interaction:** The assigned zone MUST **mechanically engage** with or be **physically altered** by the accessory—use tangible, grotesque, or impactful actions. Forbidden: static placement (e.g. "floating near the head" or "worn passively" without deformation, grip, emission, or penetration).
-- **Sensory domain isolation:** The `🟧` baseline channel and every `🟦` sub-atom on the same beast each use a **distinct sensory channel** (visual, auditory, tactile/tangible, olfactory, gustatory, thermal, etc.), each with its mapped emoji from **Sensory channel emojis** under **Knowledge Atom Structure**. No two channels among (`🟧` + all `🟦`) may match within one beast. Only the `🟦` lines are knowledge items.
-- **Orange header format:** `🟧 **[Peg] [Beast Name]** · sensory: [channel] [emoji]` — baseline body channel only; no knowledge payload; no `💡 **Context:**` on the `🟧` level.
-- **Line format:** `🟦 **Z[N] [Zone name] | [label]:** [active interaction + hook] · sensory: [channel] [emoji]` followed immediately by `💡 **Context:** [definition for that sub-atom]`
-
-**Smashed beast example:**
-
-```md
-🟧 **[B] [bird of paradise]** · sensory: olfactory 👃
-
-🟦 **Z1 Head | Past participle rule:** neon grammar crown fused into its beak, splitting the keratin · sensory: visual 👁️
-💡 **Context:** I form past perfect with had + past participle.
-
-🟦 **Z2 Forelimbs | Irregular forms:** frozen chalkboard crushed between its claws, splintering the wood · sensory: tactile ✋
-💡 **Context:** I memorize irregular past participles as exceptions.
-```
+- Do not merge several atoms onto one beast.
+- Do not assign atoms to Z1–Z4, and do not use `kind=zoned`.
+- When a palace has too many beasts, run **Story Reduction** in **REMOVE** mode and drop the pegs you do not want. Each remaining beast still carries its own atom.
+- Older libraries that once stored extra atoms on one beast keep that text in `beast_notes`. Those notes are not a second atom.
 
 ### Characters
 
@@ -240,7 +209,7 @@ Named public figures and copyrighted characters are not street anchors. `charact
 
 - Do not assign a real person, historical figure, celebrity, or copyrighted character to a street.
 - Do not put those names in `character_name`, PREVIEW titles, stories, or `image_prompt`.
-- Streets are recalled through their beasts and the place. Do not add a named character when merging or removing streets.
+- Streets are recalled through their beasts and the place. Do not add a named character when removing streets.
 
 ### Language & IPA
 
@@ -265,32 +234,28 @@ Named public figures and copyrighted characters are not street anchors. `charact
 
 An A–Z list of "Beasts," based on Lynne Kelly's work (_Memory Craft_). The list iterates A–Z, then AA–ZZ as needed. Entries live in `bestiary.json`.
 
-- By default (Story Architect flow), each Beast holds exactly one **Knowledge Atom** (one concept; one fact).
-- **After Story Reduction (SMASH mode):** one Beast MAY hold **up to 4 knowledge atoms**, encoded exclusively as `🟦` lines using **Anatomical Micro-Loci** on that same beast. The `🟧` header remains as peg identity and baseline sensory only—it MUST NOT carry a knowledge atom when `🟦` lines are present.
+- Each Beast holds exactly one **Knowledge Atom** (one concept; one fact). Story Reduction does not put extra atoms on that beast.
 - **Peg constraint:** Use the Bestiary `code` field (e.g. A, B, AB) for the Peg. NEVER use numeric identifiers (1, 2, 01, etc.).
 
 **Two-letter pegs and Custom gap-fillers:** Beyond the primary A–Z row, pegs continue as two-letter codes (`Aa`, `Ab`, …, `Zz`). When a Lynne Kelly beast exists for that letter pair, it is used directly. When no beast fits, a **Custom** gap-filler is generated as `{physical adjective from 1st letter} + {A–Z peg beast from 2nd letter}`—for example, `Bh` → Bone Hydra (not a random hawk), `Bd` → Bone dragon.
 
 **Mnemonic peg coloring** (GitHub strips inline CSS; use portable emoji markers):
 
-| Marker | Scope                         | Meaning                                                                                                                                                      |
-| ------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `🟧`   | Beast **header line**         | Peg identity; single-atom beasts encode the topic here; smashed beasts use it as a **neutral canvas** only — always ends with `· sensory: [channel] [emoji]` |
-| `🟦`   | Each **merged sub-atom line** | Zone/accessory mnemonic line inside a smashed beast — always ends with `· sensory: [channel] [emoji]`; followed by that atom's `💡 **Context:**` definition  |
-| `💡`   | **Definition** line           | Maximally compressed rehearsal knowledge — always as `💡 **Context:** …`; NEVER on Quote                                                                     |
+| Marker | Scope                 | Meaning                                                                                       |
+| ------ | --------------------- | --------------------------------------------------------------------------------------------- |
+| `🟧`   | Beast **header line** | Peg identity for the one atom on this beast — always ends with `· sensory: [channel] [emoji]` |
+| `💡`   | **Definition** line   | Maximally compressed rehearsal knowledge — always as `💡 **Context:** …`; NEVER on Quote      |
 
 ### Bestiary Shifting Logic
 
-After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken alphabetical mnemonic**. No gaps.
+After Story Reduction (REMOVE), the peg sequence MUST be an **unbroken alphabetical mnemonic**. No gaps.
 
 - **Rule:** For each **remaining** beast, in **remaining order**, assign the **next consecutive peg** from the bestiary (A, B, C, …). Update the Beast name to the beast for that new peg (from `bestiary.json`).
 - **Example:** Atoms at pegs A, B, C, D, E. User removes B and D. Remaining (A, C, E) → re-pegged as A, B, C with beasts from pegs A, B, C.
 - Apply this shift to the **entire** story: every Header, and every in-narrative reference to a Beast or peg, MUST use the new peg and Beast name.
 - Sequence continues A, B, C, … (or A, B, …, Z, Aa, …) with no gaps.
 
-**SMASH constraints:** Do not add new factual content; combine only the atoms the user grouped. NEVER drop sub-atom knowledge or verbatim quote excerpts. Copy each sub-atom's `concept` and `keywords` byte-for-byte. Do not rewrite stored concept text into the two-part sentence.
-
-**REMOVE constraints:** Do not add new knowledge atoms; only remove requested pegs and re-peg the rest. Preserve every remaining atom's `concept` and `keywords` byte-for-byte, and preserve **video quote excerpt(s)** verbatim.
+**REMOVE constraints:** Do not add new knowledge atoms. Do not merge remaining atoms onto one beast. Only remove requested pegs and re-peg the rest. Preserve every remaining atom's `concept` and `keywords` byte-for-byte, and preserve **video quote excerpt(s)** verbatim.
 
 ### Image composition rules
 
@@ -307,10 +272,7 @@ After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken 
 **2. Foreground elements:**
 
 - **Subjects:** Animals (Beasts) performing actions.
-- **Topic mnemonic (required):** Each beast physically engages the fantasy object of its topic keyword — pair 1. Keyword pairs are stored as `Keyword | RecognizableWord`. Pair 1’s RecognizableWord is the formal concept name in the first square-bracket group; that phrase renders blue and is the topic. The interaction object is the Keyword (left side) of that first pair. Do not use pair 2 (the orange word in the second clause). Do not act out the rest of the sentence. Example: `[I use Databricks Jobs to convert] [my interactive notebooks into scheduled production pipelines.]` → `calendar | Databricks Jobs || notebook | notebooks`, so the beast handles a calendar (the mnemonic for the blue topic “Databricks Jobs”), not a notebook. For a smashed beast, each zone accessory is that sub-atom’s topic mnemonic.
-- **Beast-bound accessories:** For smashed beasts, each `🟦` accessory is a **knowledge atom** anchored to an **Anatomical Micro-Loci zone**—render **every** one in its assigned zone with **active engagement** (deformation, grip, emission, penetration, etc.); NEVER as floating or unassigned props; NEVER omit accessories to simplify the scene. The accessory itself is that sub-atom’s topic mnemonic.
-- **Neutral beast body (smashed):** The beast body is a canvas only—image prompts MUST NOT invent a separate knowledge-encoding action on the whole body. The `🟧` baseline sensory cue MAY appear as body presence (pose, smell, texture), but all knowledge payloads live on `🟦` zone accessories.
-- **Anatomical Micro-Loci rendering:** Image prompts MUST name **zone + active anatomical state + sensory cue** per `🟦` accessory (Z1 Head through Z4 Hindquarters).
+- **Topic mnemonic (required):** Each beast physically engages the fantasy object of its topic keyword — pair 1. Keyword pairs are stored as `Keyword | RecognizableWord`. Pair 1’s RecognizableWord is the formal concept name in the first square-bracket group; that phrase renders blue and is the topic. The interaction object is the Keyword (left side) of that first pair. Do not use pair 2 (the orange word in the second clause). Do not act out the rest of the sentence. Example: `[I use Databricks Jobs to convert] [my interactive notebooks into scheduled production pipelines.]` → `calendar | Databricks Jobs || notebook | notebooks`, so the beast handles a calendar (the mnemonic for the blue topic “Databricks Jobs”), not a notebook. One beast, one object.
 - **Style:** **Realistic photographic integration** with the Maps background—match perspective, **lighting, shadows, and materials** so beasts blend with the real street. **Mnemonic scale MAY exaggerate** (microscopic or colossal beasts) when the narrative uses disproportionate scale; keep lighting and contact shadows consistent with the scene. Mnemonic content MAY stay surreal but MUST NOT look like flat cartoon overlays.
 - **Placement:** Composite foreground elements into the fixed background as physically grounded inserts.
 - **Depth slots (required):** Assign each beast on a street its depth slot per **Streets and Depth Slots**. One beast per slot; no clustering on the same depth plane or lateral zone; no pavement-only anchors when structures exist in frame.
@@ -345,7 +307,7 @@ Use simple markdown `#` levels to separate topics and streets in the mnemonic li
 - **Street:** A memory palace location within a Topic; contains 1 to 5 Animals (Beasts).
   - _Constraint:_ Maximum 5 Animals per Street.
   - _Visuals:_ One AI-generated image per **Street** (snapshot of the street + animals), stored under the topic `images/` folder.
-- **Animal (Beast):** A specific mnemonic image holding one **Knowledge Atom** by default; after SMASH reduction, one beast MAY hold multiple knowledge atoms exclusively as `🟦` lines (accessories)—the `🟧` body stays a neutral canvas.
+- **Animal (Beast):** A specific mnemonic image holding one **Knowledge Atom**.
 - **Portal:** A nested memory palace for a large sub-topic (see `research/nested-memory-palaces.md`). The main List keeps a Beast as the gateway; the expanded content lives in `studies/<Topic>/portals/<slug>.md` and is linked from that Beast's Context.
 
 ### Data format strategy

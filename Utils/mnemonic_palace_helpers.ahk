@@ -602,7 +602,7 @@ Palace_Headers(kind) {
             return ["id", "study_id", "image_rel_path", "caption", "sort_order"]
         case "beasts":
             return ["id", "palace_id", "peg_code", "beast_name", "beast_source", "sensory_channel", "is_smashed",
-                "sort_order"]
+                "sort_order", "beast_notes"]
         case "atoms":
             return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "keywords", "quote", "story", "ipa",
                 "sort_order"]

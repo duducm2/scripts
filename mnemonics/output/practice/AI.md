@@ -1,19 +1,17 @@
 # Ai
 
 <details open>
-<summary><strong>Memory Palace 5: AI System Architecture</strong> · Character: — · 3 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 5: AI System Architecture</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 5](images/AI/5.png)
 
-<p><em>3 beasts · 5 Knowledge Atoms</em></p>
+<p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
 ### [O] owl
 
 <img src="../../web/assets/beast-thumbs/owl.png" alt="owl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-🟦 **Z1 · The Horse**
 
 **Concept**
 💡 💡 **Context:** I use the <img alt="[Horse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHorse%5D&color=9fd4ff" />(wild horse) to represent the foundational AI model itself, which possesses raw <img alt="[power]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpower%5D&color=ffd966" />(lightning bolt) but no inherent <img alt="[direction]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdirection%5D&color=ffd966" />(broken compass).
@@ -23,29 +21,18 @@
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
 
----
+**Notes**
+[Z2 · Harness Layer]
+Concept: 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.
+Keywords: iron harness | Harness || leather tack | Tack || steering wheel | steer || plug | connect
+Quote: The Harness/Tack acts as the engineering layer that interacts with the model.
+Story: A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snapping thick leather tack securely to physically contain and steer its thrashing electricity.
 
-🟦 **Z2 · Harness Layer**
-
-**Concept**
-💡 💡 **Context:** I build a <img alt="[Harness]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHarness%5D&color=9fd4ff" />(iron harness) or <img alt="[Tack]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BTack%5D&color=ffd966" />(leather tack) as the engineering layer to <img alt="[steer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsteer%5D&color=ffd966" />(steering wheel) and <img alt="[connect]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconnect%5D&color=ffd966" />(plug) the model's raw power.
-
-<img src="../../web/assets/keyword-images/iron_harness.jpg" alt="iron harness" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/leather_tack.jpg" alt="leather tack" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/steering_wheel.jpg" alt="steering wheel" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/plug.jpg" alt="plug" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
-
-**Quote**
-“The Harness/Tack acts as the engineering layer that interacts with the model.”
-
----
-
-🟦 **Z3 · The Cart Task**
-
-**Concept**
-💡 💡 **Context:** I view the <img alt="[Cart]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCart%5D&color=9fd4ff" />(wooden cart) as the ultimate <img alt="[task]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btask%5D&color=ffd966" />(trophy) or <img alt="[destination]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdestination%5D&color=ffd966" />(neon sign) that needs to be accomplished once the model is harnessed.
-
-<img src="../../web/assets/keyword-images/wooden_cart.png" alt="wooden cart" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/neon_sign.jpg" alt="neon sign" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/trophy.jpg" alt="trophy" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
-
-**Quote**
-“The Cart represents the ultimate Task that needs to be accomplished.”
+[Z3 · The Cart Task]
+Concept: 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.
+Keywords: wooden cart | Cart || neon sign | destination || trophy | task
+Quote: The Cart represents the ultimate Task that needs to be accomplished.
+Story: A massive wooden cart is bolted straight through the owl's spine, glowing with bright neon destination coordinates as the restrained bird perfectly pulls the heavy load.
 
 ### [N] Neanderthal
 
@@ -82,11 +69,11 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · Character: — · 1 beast · 2 atoms</summary>
+<summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 3](images/AI/3.jpg)
 
-<p><em>1 beast · 2 Knowledge Atoms</em></p>
+<p><em>1 beast · 1 Knowledge Atom</em></p>
 
 #### Knowledge Atoms
 
@@ -94,23 +81,17 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/imp.png" alt="imp" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · Z1 Head | Token Metric**
-
 **Concept**
 💡 a giant glowing green price tag clamps aggressively over its face, mutating its skull into a loudly ringing cash register
 
 **Quote**
 “Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.”
 
----
-
-🟦 **Z2 · Z2 Forelimbs | Output Cost**
-
-**Concept**
-💡 its claws violently vomit blistering hot golden coins that visibly melt the concrete
-
-**Quote**
-“Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.”
+**Notes**
+[Z2 · Z2 Forelimbs | Output Cost]
+Concept: its claws violently vomit blistering hot golden coins that visibly melt the concrete
+Quote: Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.
+Story: A colossal, skyscraper-sized imp phases through the solid iron front gate, reeking of burning sulfur. A giant glowing green price tag violently clamps over its face, mutating its skull into a mechanical cash register that rings with a deafening crash. As a figure watches in awe, the imp's front claws violently vomit blistering hot golden coins that melt the concrete, demonstrating the heavy, expensive computing power needed for output generation.
 
 #### Notes
 
@@ -192,11 +173,11 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Foundations & Semantic Interoperability</strong> · Character: — · 3 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Foundations & Semantic Interoperability</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 1](images/AI/1.png)
 
-<p><em>3 beasts · 5 Knowledge Atoms</em></p>
+<p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
@@ -204,33 +185,22 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/cat.png" alt="cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · Z1 Head | Data-lake translator jaws**
-
 **Concept**
 💡 The cat's jaws violently gulp raw data-lake water and spit it out as neatly labeled golden folders that glow with piercing light.
 
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
 
----
+**Notes**
+[Z2 · Z2 Forelimbs | Crystal sphere helmet]
+Concept: The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_.
+Quote: In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .
+Story: A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.
 
-🟦 **Z2 · Z2 Forelimbs | Crystal sphere helmet**
-
-**Concept**
-💡 The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_.
-
-**Quote**
-“In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
-
----
-
-🟦 **Z3 · Z3 Torso | Blueprint projector ribs**
-
-**Concept**
-💡 The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating.
-
-**Quote**
-“In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
+[Z3 · Z3 Torso | Blueprint projector ribs]
+Concept: The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating.
+Quote: In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .
+Story: A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.
 
 ### [B] bird of paradise
 

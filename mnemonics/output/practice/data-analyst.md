@@ -397,11 +397,11 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 15: SQL Window Functions</strong> · Character: — · 4 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 15: SQL Window Functions</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 15](images/data-analyst/15.jpg)
 
-<p><em>4 beasts · 5 Knowledge Atoms</em></p>
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
@@ -445,8 +445,6 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/adj_bone.png" alt="bone" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/hydra.png" alt="Bone Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · LAG Function**
-
 **Concept**
 💡 <img alt="[LAG Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLAG%20Function%5D&color=9fd4ff" />(lagging foot) [I <img alt="[query data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%20data%5D&color=ffd966" />(magnifying glass)] [from <img alt="[preceding rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpreceding%20rows%5D&color=ffd966" />(footprints)] [relative to the <img alt="[current evaluation row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcurrent%20evaluation%20row%5D&color=ffd966" />(anchor)] — Note: It requires an explicit ordering clause and evaluates to null when a preceding row does not exist.
 
@@ -455,17 +453,12 @@ _No gallery images._
 **Quote**
 “a lag is going to be for previous days and so notice how on the first day in the results there's no previous day so you see null there”
 
----
-
-🟦 **Z2 · LEAD Function**
-
-**Concept**
-💡 <img alt="[LEAD Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLEAD%20Function%5D&color=9fd4ff" />(leash) [I <img alt="[query data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquery%20data%5D&color=ffd966" />(binoculars)] [from <img alt="[subsequent rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsubsequent%20rows%5D&color=ffd966" />(stepping stone)] [relative to the <img alt="[current evaluation row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcurrent%20evaluation%20row%5D&color=ffd966" />(compass)] — Note: It returns a null value at the final dataset record where no subsequent row exists.
-
-<img src="../../web/assets/keyword-images/leash.png" alt="leash" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/binoculars.jpg" alt="binoculars" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/stepping_stone.png" alt="stepping stone" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/compass.png" alt="compass" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
-
-**Quote**
-“notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead”
+**Notes**
+[Z2 · LEAD Function]
+Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists.
+Keywords: leash | LEAD Function || binoculars | query data || stepping stone | subsequent rows || compass | current evaluation row
+Quote: notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead
+Story: The Bone Hydra's front claws grip a glowing neon leash attached to a golden compass, tearing stepping stones out of the empty air ahead of it.
 
 #### Notes
 
@@ -990,11 +983,11 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Power Query Transformations & Step Reuse</strong> · Character: — · 5 beasts · 6 atoms</summary>
+<summary><strong>Memory Palace 6: Power Query Transformations & Step Reuse</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 6](images/data-analyst/6.jpg)
 
-<p><em>5 beasts · 6 Knowledge Atoms</em></p>
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
@@ -1038,8 +1031,6 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · Reusing query steps**
-
 **Concept**
 💡 [I <img alt="[reuse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breuse%5D&color=9fd4ff" />(stamp) my query steps] [across different <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(binder)] [sharing the exact same table <img alt="[structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructure%5D&color=ffd966" />(twin)] — Note: Identical column headers and data formats are required so the query steps run without error.
 
@@ -1048,17 +1039,12 @@ _No gallery images._
 **Quote**
 “since the format of both files are the same I want to apply the exact same steps to my second file”
 
----
-
-🟦 **Z2 · Copying transformation steps**
-
-**Concept**
-💡 [I <img alt="[copy]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcopy%5D&color=9fd4ff" />(scissors) all transformation steps] [below the initial <img alt="[source]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsource%5D&color=ffd966" />(anchor) line] [from the Advanced <img alt="[Editor]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BEditor%5D&color=ffd966" />(scroll)] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
-
-<img src="../../web/assets/keyword-images/scissors.jpg" alt="scissors" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/anchor.jpg" alt="anchor" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/scroll.jpg" alt="scroll" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
-
-**Quote**
-“the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy”
+**Notes**
+[Z2 · Copying transformation steps]
+Concept: [I copy all transformation steps] [below the initial source line] [from the Advanced Editor] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
+Keywords: scissors | copy || anchor | source || scroll | editor
+Quote: the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy
+Story: Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched.
 
 ### [Aa] aardvark
 
@@ -1379,11 +1365,11 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Data Analyst vs Data Scientist Foundations</strong> · Character: — · 4 beasts · 5 atoms</summary>
+<summary><strong>Memory Palace 1: Data Analyst vs Data Scientist Foundations</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 1](images/data-analyst/1.jpg)
 
-<p><em>4 beasts · 5 Knowledge Atoms</em></p>
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
@@ -1421,23 +1407,17 @@ _No gallery images._
 
 <img src="../../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
 
-🟦 **Z1 · Head**
-
 **Concept**
 💡 Core objective difference: Data Analysts explain past/present to inform decisions; Data Scientists build predictive models to forecast and automate.
 
 **Quote**
 “The primary difference lies in their core focus: a Data Analyst examines historical data to answer specific business questions and identify existing trends, while a Data Scientist builds predictive models, algorithms, and experiments to forecast future outcomes and discover unknowns.”
 
----
-
-🟦 **Z2 · Forelimbs**
-
-**Concept**
-💡 Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).
-
-**Quote**
-“Descriptive and diagnostic analysis (answering "What happened?" and "Why?")”
+**Notes**
+[Z2 · Forelimbs]
+Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).
+Quote: Descriptive and diagnostic analysis (answering "What happened?" and "Why?")
+Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.
 
 #### Notes
 
