@@ -1,21 +1,21 @@
 {
-  "pending_slot": "trophy",
-  "pending_palace_id": "PALACE_DATAANALYST_21",
+  "pending_slot": "",
+  "pending_palace_id": "",
   "cycle": [
     "trophy"
   ],
   "recent_looks": [
-    "a marble carving",
-    "a cast bronze miniature",
-    "an ink wash painting",
-    "a simple 3D render",
-    "an oil painting of one object",
-    "a hand-built clay figure",
-    "an embroidered patch",
     "a tile mosaic",
     "a ballpoint doodle",
     "a linocut",
     "a tin toy",
-    "a watercolor study"
+    "a cardboard model",
+    "a stop-motion puppet",
+    "a knitted charm",
+    "a woodcut print",
+    "an origami model",
+    "a lacquer ornament",
+    "a porcelain figurine",
+    "a batik motif"
   ]
 }
