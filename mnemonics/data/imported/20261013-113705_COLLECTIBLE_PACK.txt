@@ -1,0 +1,1 @@
+﻿===FILE: COLLECTIBLE_PACK.txt=== { "palace_id": "PALACE_DATAANALYST_21", "slot": "trophy", "name": "Unity Namespace Reliquary", "blurb": "Its three stacked tiers embody the catalog, schema, and table hierarchy that organizes and governs Unity Catalog architecture.", "anim": "float", "anchor": "pedestal" } ===END_FILE===
