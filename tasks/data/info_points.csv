@@ -404,3 +404,28 @@ Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou 
 INFO_0353,task,TASK_0432,IMG_20261010_125211.jpg,,ℹ️,,20,2026-10-10 15:04:08,,
 INFO_0354,task,TASK_0432,IMG_20261010_125128.jpg,,ℹ️,,30,2026-10-10 15:04:12,,
 INFO_0355,task,TASK_0435,image.png,,ℹ️,,10,2026-10-13 09:08:23,,
+INFO_0356,task,TASK_0435,https://inside-docupedia.bosch.com/confluence2/spaces/FARM/pages/961642962/%F0%9F%9A%80+Getting+Started,,ℹ️,,20,2026-10-13 09:30:02,,
+INFO_0357,task,TASK_0438,"Your credentials
+Api key: cf3387c41e2c4126968b355fe9e95393
+The API key must be send as a custom request header in the following form: genaiplatform-farm-subscription-key=<your-api-key>
+The domain is: https://aoai-farm.bosch-temp.com
+Your subscription ID (required for the Token Tracking Dashboard): personal-pra3jvl-prod
+
+
+Documentation, Code Examples & Network Guide
+- Quick start guide
+- Comprehensive documentation: All available models, token prices, context windows and more are documented on our Docupedia page.
+- Code Examples: We also have some code examples to ensure a quick start.
+- Network guide: In case you would like to use the Model Farm from an IDE on your laptop or a server located in the Bosch network especially our network guide might be of interest for you.
+
+Support
+Via our Teams channel we inform about new models, new model versions and other important news that are related to the Model Farm.
+Please also use this channel to get support from the community in case of any questions related to the Model Farm.
+
+Token Tracking Dashboard
+With your subscription ID you can track your token consumption via our Token Tracking dashboard: https://bos.ch/model-farm-reports.
+Alternative link: Token Tracking dashboard
+You will be granted fresh tokens at the 1st day of every month. Tokens that you have not used will expire by the last day at every month. Once the tokens are exceeded, you won't be charged anything, the service then just responds with a hint that you are out of tokens.
+
+Enterprise Subscription
+In case you decide to switch to the paid plan with access to the full set of models as well as unlimited tokens you can order it here.",,ℹ️,,10,2026-10-13 10:04:22,,
