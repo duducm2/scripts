@@ -1179,25 +1179,46 @@ def set_clipboard(text: str) -> bool:
     if os.name != "nt":
         return False
     import ctypes
+    import time
 
+    CF_UNICODETEXT = 13
+    GMEM_MOVEABLE = 0x0002
     user32 = ctypes.windll.user32
     kernel32 = ctypes.windll.kernel32
-    if not user32.OpenClipboard(0):
+    kernel32.GlobalAlloc.restype = ctypes.c_void_p
+    kernel32.GlobalLock.argtypes = [ctypes.c_void_p]
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    kernel32.GlobalUnlock.argtypes = [ctypes.c_void_p]
+    kernel32.GlobalFree.argtypes = [ctypes.c_void_p]
+    user32.SetClipboardData.argtypes = [ctypes.c_uint, ctypes.c_void_p]
+    user32.SetClipboardData.restype = ctypes.c_void_p
+    raw = ctypes.create_unicode_buffer(text)
+    size = ctypes.sizeof(raw)
+    opened = False
+    for _ in range(8):
+        if user32.OpenClipboard(0):
+            opened = True
+            break
+        time.sleep(0.05)
+    if not opened:
         return False
     try:
-        user32.EmptyClipboard()
-        data = ctypes.create_unicode_buffer(text)
-        size = ctypes.sizeof(data)
-        handle = kernel32.GlobalAlloc(0x0002, size)
+        if not user32.EmptyClipboard():
+            return False
+        handle = kernel32.GlobalAlloc(GMEM_MOVEABLE, size)
         if not handle:
             return False
+        bits = ctypes.sizeof(ctypes.c_void_p) * 8
+        handle = ctypes.c_void_p(int(handle) & ((1 << bits) - 1))
         locked = kernel32.GlobalLock(handle)
         if not locked:
             kernel32.GlobalFree(handle)
             return False
-        ctypes.memmove(locked, ctypes.addressof(data), size)
-        kernel32.GlobalUnlock(handle)
-        if not user32.SetClipboardData(13, handle):
+        try:
+            ctypes.memmove(locked, raw, size)
+        finally:
+            kernel32.GlobalUnlock(handle)
+        if not user32.SetClipboardData(CF_UNICODETEXT, handle):
             kernel32.GlobalFree(handle)
             return False
         return True
@@ -1211,13 +1232,18 @@ def prepare_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
         return built
     prompt = str(built["prompt"])
     copied = set_clipboard(prompt)
-    open_gemini = gemini_is_open()
-    if open_gemini:
+    queued = False
+    try:
         queue_prompt(data_dir, prompt)
+        queued = True
+    except OSError:
+        queued = False
     return {
         "ok": True,
         "copied": copied,
-        "gemini_open": open_gemini,
+        "queued": queued,
+        # Older pages treat this as "hand the prompt to the companion".
+        "gemini_open": queued,
         "title": built.get("title") or "",
         "slot": built.get("slot") or "",
         "anchor": built.get("anchor") or "",

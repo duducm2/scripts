@@ -133,7 +133,7 @@ Collectible_ImportFromDesktop(*) {
     return true
 }
 
-; The palace page writes this file when Gemini is open. Send it once.
+; The palace page writes this file. Paste it into the open AI companion and send.
 Collectible_SendPendingPrompt() {
     path := Palace_DataDir() . "\collectible_prompt_pending.txt"
     if (!FileExist(path))
@@ -144,29 +144,16 @@ Collectible_SendPendingPrompt() {
     }
     if (text = "")
         return false
-    try A_Clipboard := text
+    global g_lastExpansion
+    g_lastExpansion := 0
+    label := "the AI companion"
+    try label := GetGlobalAIProviderLabel()
     catch {
     }
-    hwnd := 0
-    try hwnd := FindGeminiChromeHwnd()
-    catch {
-        hwnd := 0
-    }
-    if (!hwnd) {
-        Palace_Notify("Gemini is not open — relic prompt is on the clipboard", 4000, BANNER_ACCENT_INFO)
-        return true
-    }
-    sent := false
     try {
-        hwnd := GeminiNavigateFocusAndPasteFirstSnippet(text, false)
-        if (hwnd)
-            sent := !!PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
+        UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send")
     } catch {
-        sent := false
+        Palace_Notify("Could not send the relic prompt to " . label . " — it is on the clipboard", 4000, BANNER_ACCENT_ERROR)
     }
-    if (!sent)
-        Palace_Notify("Could not send the relic prompt — it is on the clipboard", 4000, BANNER_ACCENT_ERROR)
-    else
-        Palace_Notify("Relic prompt sent to Gemini", 2200, BANNER_ACCENT_SUCCESS)
     return true
 }

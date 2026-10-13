@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=ask1" />
+    <link rel="stylesheet" href="/dashboard.css?v=gallery1" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -1036,32 +1036,32 @@
         />
         <div class="gallery-grid" id="imagesGrid"></div>
       </div>
-      <div id="imagesFs" class="images-fs" aria-hidden="true">
-        <div class="images-fs-bar">
-          <span id="imagesFsCaption"></span>
-          <div class="images-fs-actions">
-            <a
-              id="imagesFsDownload"
-              class="spa-btn"
-              data-ico="download"
-              href="#"
-              download
-              title="Download image"
-              >Download</a
-            >
-            <button
-              type="button"
-              class="spa-btn"
-              id="btnImagesFsClose"
-              data-ico="x"
-            >
-              Close (Esc)
-            </button>
-          </div>
+    </div>
+    <div id="imagesFs" class="images-fs" aria-hidden="true">
+      <div class="images-fs-bar">
+        <span id="imagesFsCaption"></span>
+        <div class="images-fs-actions">
+          <a
+            id="imagesFsDownload"
+            class="spa-btn"
+            data-ico="download"
+            href="#"
+            download
+            title="Download image"
+            >Download</a
+          >
+          <button
+            type="button"
+            class="spa-btn"
+            id="btnImagesFsClose"
+            data-ico="x"
+          >
+            Close (Esc)
+          </button>
         </div>
-        <div class="images-fs-body">
-          <img id="imagesFsImg" alt="" />
-        </div>
+      </div>
+      <div class="images-fs-body">
+        <img id="imagesFsImg" alt="" />
       </div>
     </div>
 
@@ -3636,14 +3636,21 @@
         grid.innerHTML = imgs
           .map((g) => {
             const src = mediaUrl(g.image_rel_path || g.rel_path);
+            const img = src
+              ? `<img src="${escAttr(src)}" alt="${escAttr(g.caption || "")}" data-gallery-view="${escAttr(g.id)}" title="Click to expand"/>`
+              : `<div class="gallery-missing">Missing</div>`;
             return `<div class="gallery-card">
-            ${src ? `<img src="${escAttr(src)}" alt=""/>` : `<div class="gallery-missing">Missing</div>`}
+            ${img}
             <div class="gallery-card-body">
               <input type="text" value="${escAttr(g.caption || "")}" data-gid="${escAttr(g.id)}" readonly />
             </div>
           </div>`;
           })
           .join("");
+        grid.querySelectorAll("img[data-gallery-view]").forEach((el) => {
+          el.onclick = () =>
+            openPalaceGalleryImage(el.getAttribute("data-gallery-view"));
+        });
       }
 
       /* ---------- Study image backlog ---------- */
@@ -3673,6 +3680,40 @@
         state.imagesFsId = "";
       }
 
+      function imageViewerOpen() {
+        return document.getElementById("imagesFs")?.classList.contains("open");
+      }
+
+      function showImageViewer(src, caption, downloadName) {
+        document.getElementById("imagesFsImg").src = src;
+        document.getElementById("imagesFsCaption").textContent = caption || "";
+        const dl = document.getElementById("imagesFsDownload");
+        dl.href = src;
+        dl.download = downloadName || "image.png";
+        const fs = document.getElementById("imagesFs");
+        fs.classList.add("open");
+        fs.setAttribute("aria-hidden", "false");
+      }
+
+      function openPalaceGalleryImage(imageId) {
+        const img = (state.data?.palace_images || []).find(
+          (g) => g.id === imageId,
+        );
+        if (!img) return;
+        const rel = img.image_rel_path || img.rel_path;
+        const src = mediaUrl(rel);
+        if (!src) {
+          toast("Image file missing");
+          return;
+        }
+        state.imagesFsId = "";
+        showImageViewer(
+          src,
+          img.caption || "",
+          downloadFileName(rel, img.caption, img.id),
+        );
+      }
+
       function openImagesFs(imageId) {
         const img = (state.data?.study_images || []).find(
           (g) => g.id === imageId,
@@ -3684,15 +3725,11 @@
           return;
         }
         state.imagesFsId = imageId;
-        document.getElementById("imagesFsImg").src = src;
-        document.getElementById("imagesFsCaption").textContent =
-          img.caption || img.id || "";
-        const dl = document.getElementById("imagesFsDownload");
-        dl.href = src;
-        dl.download = downloadFileName(img.image_rel_path, img.caption, img.id);
-        const fs = document.getElementById("imagesFs");
-        fs.classList.add("open");
-        fs.setAttribute("aria-hidden", "false");
+        showImageViewer(
+          src,
+          img.caption || img.id || "",
+          downloadFileName(img.image_rel_path, img.caption, img.id),
+        );
       }
 
       async function studyImagesApi(body) {
@@ -5842,9 +5879,9 @@
             body: JSON.stringify({ palace_id: palaceId }),
           });
           const slotLabel = res.slot ? ` (${res.slot})` : "";
-          if (res.gemini_open) toast("Relic prompt sent to Gemini" + slotLabel);
-          else if (res.copied)
-            toast("Gemini is not open — prompt copied" + slotLabel, 4000);
+          if (res.queued || res.gemini_open)
+            toast("Sending the relic prompt" + slotLabel);
+          else if (res.copied) toast("Prompt copied" + slotLabel, 4000);
           else toast("Could not copy the relic prompt", 4000);
         } catch (e) {
           toast(String(e.message || e), 4000);
@@ -6831,6 +6868,11 @@
         }
         if (ovOpen) {
           if (e.key === "Escape") {
+            if (imageViewerOpen()) {
+              e.preventDefault();
+              closeImagesFs();
+              return;
+            }
             if (keywordPickerIsOpen()) {
               e.preventDefault();
               closeKeywordPicker();
@@ -6878,10 +6920,12 @@
             return;
           }
           if (e.key === "ArrowLeft") {
+            if (imageViewerOpen()) return;
             document.getElementById("btnPrevPalace").click();
             return;
           }
           if (e.key === "ArrowRight") {
+            if (imageViewerOpen()) return;
             document.getElementById("btnNextPalace").click();
             return;
           }

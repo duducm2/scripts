@@ -1748,6 +1748,9 @@ footer {
   display: block;
   background: #120f0c;
 }
+.overlay-gallery .gallery-card img {
+  cursor: zoom-in;
+}
 .gallery-card .gallery-missing {
   color: var(--muted);
   padding: 2.5rem 1rem;
