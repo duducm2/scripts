@@ -51,7 +51,15 @@ _No notes._
 
 #### Gallery
 
-_No gallery images._
+![Clip_1673.png](images/data-analyst/21-gallery-0006.png)
+
+![Clip_1674.png](images/data-analyst/21-gallery-0007.png)
+
+![Clip_1675.png](images/data-analyst/21-gallery-0008.png)
+
+![Clip_1676.png](images/data-analyst/21-gallery-0009.png)
+
+![Clip_1677.png](images/data-analyst/21-gallery-0010.png)
 
 </details>
 
