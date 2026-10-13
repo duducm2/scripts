@@ -1188,7 +1188,13 @@
               </button>
               <span class="gallery-status" id="ovGalleryStatus"></span>
             </div>
-            <input type="file" id="galleryFileInput" accept="image/*" />
+            <input
+              type="file"
+              id="galleryFileInput"
+              accept="image/*"
+              multiple
+              title="Add one or more images"
+            />
             <input
               type="file"
               id="palaceHeroFileInput"
@@ -5879,8 +5885,8 @@
             body: JSON.stringify({ palace_id: palaceId }),
           });
           const slotLabel = res.slot ? ` (${res.slot})` : "";
-          if (res.queued || res.gemini_open)
-            toast("Sending the relic prompt" + slotLabel);
+          if (res.message || res.queued || res.gemini_open)
+            toast((res.message || "Sending the relic prompt") + slotLabel);
           else if (res.copied) toast("Prompt copied" + slotLabel, 4000);
           else toast("Could not copy the relic prompt", 4000);
         } catch (e) {
@@ -6045,6 +6051,7 @@
         changePalaceImage(state.overlayPalaceId);
       document.getElementById("btnGalleryAdd").onclick = () =>
         document.getElementById("galleryFileInput").click();
+      document.getElementById("btnGalleryAdd").title = "Add one or more images";
       document.getElementById("palaceHeroFileInput").onchange = async (e) => {
         const file = e.target.files?.[0];
         e.target.value = "";
@@ -6073,38 +6080,69 @@
         };
         reader.readAsDataURL(file);
       };
+      function readImageFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () =>
+            reject(reader.error || new Error("Could not read " + file.name));
+          reader.readAsDataURL(file);
+        });
+      }
+
       document.getElementById("galleryFileInput").onchange = async (e) => {
-        const file = e.target.files?.[0];
+        const files = [...(e.target.files || [])];
         e.target.value = "";
-        if (!file || !state.overlayPalaceId) return;
-        const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const r = await api("/api/palace/images", {
-              method: "POST",
-              body: JSON.stringify({
-                palace_id: state.overlayPalaceId,
-                action: "add",
-                data_b64: reader.result,
-                mime: file.type,
-                caption: file.name,
-              }),
-            });
-            if (!r.ok) throw new Error(r.error || "fail");
-            document.getElementById("ovGalleryStatus").textContent = "Added";
-            document.getElementById("ovGalleryStatus").className =
-              "gallery-status ok";
+        const palaceId = state.overlayPalaceId;
+        if (!files.length || !palaceId) return;
+        const status = document.getElementById("ovGalleryStatus");
+        const setStatus = (msg, kind) => {
+          status.textContent = msg;
+          status.className = "gallery-status" + (kind ? " " + kind : "");
+        };
+        const addBtn = document.getElementById("btnGalleryAdd");
+        if (addBtn) addBtn.disabled = true;
+        let added = 0;
+        const errors = [];
+        try {
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            setStatus(
+              files.length === 1
+                ? "Adding…"
+                : `Adding ${i + 1} of ${files.length}…`,
+            );
+            try {
+              const dataUrl = await readImageFile(file);
+              const r = await api("/api/palace/images", {
+                method: "POST",
+                body: JSON.stringify({
+                  palace_id: palaceId,
+                  action: "add",
+                  data_b64: dataUrl,
+                  mime: file.type,
+                  caption: file.name,
+                }),
+              });
+              if (!r.ok) throw new Error(r.error || "fail");
+              added += 1;
+            } catch (err) {
+              errors.push(`${file.name}: ${err.message || err}`);
+            }
+          }
+          if (added) {
             await refresh();
             if (state.overlayPalaceId) renderGalleryGrid(state.overlayPalaceId);
-          } catch (err) {
-            document.getElementById("ovGalleryStatus").textContent = String(
-              err.message || err,
-            );
-            document.getElementById("ovGalleryStatus").className =
-              "gallery-status err";
           }
-        };
-        reader.readAsDataURL(file);
+          if (errors.length)
+            setStatus(
+              (added ? `Added ${added}. ` : "") + errors.join("; "),
+              "err",
+            );
+          else setStatus(added === 1 ? "Added" : `Added ${added}`, "ok");
+        } finally {
+          if (addBtn) addBtn.disabled = false;
+        }
       };
 
       document.querySelectorAll("#appMore [data-view]").forEach((b) => {

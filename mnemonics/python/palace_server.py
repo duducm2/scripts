@@ -333,8 +333,12 @@ def _companion_owner_hwnd() -> int:
     return 0
 
 
-def send_ask_prompt(text: str) -> dict[str, Any]:
-    """Copy the Ask prompt and ask Utils to paste it into the open AI companion and send."""
+def send_ask_prompt(
+    text: str,
+    *,
+    failure_message: str = "Reload AppLaunchers, then generate again",
+) -> dict[str, Any]:
+    """Copy the prompt and ask Utils to paste it into the open AI companion and send."""
     body = (text or "").strip()
     if not body:
         return {"ok": False, "error": "Prompt is empty"}
@@ -365,7 +369,7 @@ def send_ask_prompt(text: str) -> dict[str, Any]:
             }
     return {
         "ok": False,
-        "error": "Reload AppLaunchers, then generate again",
+        "error": failure_message,
         "copied": copied,
     }
 
@@ -1148,6 +1152,22 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 result = prepare_prompt(
                     self.data_dir, str(payload.get("palace_id") or "")
                 )
+                prompt = str(result.pop("prompt", "") or "")
+                if result.get("ok") and prompt:
+                    sent = send_ask_prompt(
+                        prompt,
+                        failure_message="Reload AppLaunchers, then find the relic again",
+                    )
+                    result["copied"] = bool(sent.get("copied"))
+                    if sent.get("ok"):
+                        result["queued"] = True
+                        result["gemini_open"] = True
+                        result["message"] = "Sending the relic prompt"
+                    else:
+                        result["ok"] = False
+                        result["error"] = (
+                            sent.get("error") or "Could not send the relic prompt"
+                        )
                 self._json(200 if result.get("ok") else 400, result)
                 return
 

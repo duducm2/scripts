@@ -1231,19 +1231,12 @@ def prepare_prompt(data_dir: Path, palace_id: str) -> dict[str, Any]:
     if not built.get("ok"):
         return built
     prompt = str(built["prompt"])
-    copied = set_clipboard(prompt)
-    queued = False
-    try:
-        queue_prompt(data_dir, prompt)
-        queued = True
-    except OSError:
-        queued = False
     return {
         "ok": True,
-        "copied": copied,
-        "queued": queued,
-        # Older pages treat this as "hand the prompt to the companion".
-        "gemini_open": queued,
+        "prompt": prompt,
+        "copied": False,
+        "queued": False,
+        "gemini_open": False,
         "title": built.get("title") or "",
         "slot": built.get("slot") or "",
         "anchor": built.get("anchor") or "",

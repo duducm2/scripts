@@ -133,7 +133,8 @@ Collectible_ImportFromDesktop(*) {
     return true
 }
 
-; The palace page writes this file. Paste it into the open AI companion and send.
+; Leftover queue. Find relic now uses the same companion send as Ask.
+; This still delivers a file that was written before that change.
 Collectible_SendPendingPrompt() {
     path := Palace_DataDir() . "\collectible_prompt_pending.txt"
     if (!FileExist(path))
