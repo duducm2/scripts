@@ -1,0 +1,30 @@
+﻿===PREVIEW===
+0 project(s) · 3 task(s) · 12 info · Created 2 important tasks and 1 meeting notes task containing all general notes and doubts.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+UX Super,work,Personalizar e-mail e usar idioma local,important,punctual,,,,
+UX Super,work,Alinhar direção com Mark e migração BISB,important,punctual,,,,
+UX Super,work,Anotações da Reunião,none,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Personalizar e-mail e usar idioma local,UX Super,work,Detalhe,"Menos colocar a proposta no e-mail, mas mais conhecer a pessoa. Tem que ter uma tradução na língua local. Nunca teremos uma segunda chance. Tem que ser convdiativo e não nandar isso.",
+task,Alinhar direção com Mark e migração BISB,UX Super,work,Detalhe,"Guilherme: sao 2 ondas na minha visão: Alinhar com o Mark a direção que vamos JUNTOS e o que da pra entregar já nas proximas semanas. 2. Como a gente passa tudo isso pra BISB pra migrar pra plataforma (sem que eles queiram nos matar )",
+task,Anotações da Reunião,UX Super,work,Dúvida,"Como fica o modelo de negócio de Tokens de IA desta plataforma?",
+task,Anotações da Reunião,UX Super,work,Dúvida,"Por que optamos em cascata se, normalmente, os devs usam Agile (DevOps)?",
+task,Anotações da Reunião,UX Super,work,Dúvida,"Acho que a plataforma precisa ser mais flexível",
+task,Anotações da Reunião,UX Super,work,Dúvida,"Pra mim, precisaria ser mais Quick and Dirty, focado em entrega",
+task,Anotações da Reunião,UX Super,work,Nota,"Juntar com o que está rlanhdo com a ganhadora de BDO. Tem essa menina que ela ganhou alguma coisa em Budapeste. Ela é de BDO e ela está fazendo algum projeto. E eu não entendi muito bem quem ela é.",
+task,Anotações da Reunião,UX Super,work,Nota,Unir com a ideia do Mark,
+task,Anotações da Reunião,UX Super,work,Nota,"Não libera para todo mundo. Ainda não vamos liberar a solução para todo mundo.",
+task,Anotações da Reunião,UX Super,work,Nota,"O radar de Leeds entra antes da plataforma que a BISB está construindo para adquirir os Leeds.",
+task,Anotações da Reunião,UX Super,work,Nota,"BISBI já está trabalhando. Então temos que entender o fluxo de trabalho",
+task,Anotações da Reunião,UX Super,work,Nota,"Amanda mandará uma mensagem pro Mark e compartilhar comigo, também. Tem disponibilidade hj às 16 horas. Entrar como ouvinte e entender. Para conectar tudo."
+===END_FILE===
