@@ -710,11 +710,11 @@ PITEM_0917,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDif
 PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
 PITEM_0919,PLAN_0007,Backlog,schema,1,3
 PITEM_0920,PLAN_0007,Backlog,Visual Information Class PDFs,1,4
-PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,0,5
+PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,1,5
 PITEM_0923,PLAN_0007,Backlog,snow flake,0,6
 PITEM_0924,PLAN_0007,Backlog,"Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)",0,7
 PITEM_0921,PLAN_0007,Backlog,data bricks project,0,8
-PITEM_0925,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",0,49
+PITEM_0925,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",1,49
 PITEM_0926,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,0,50
 PITEM_0927,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,0,51
 PITEM_0928,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,0,52
