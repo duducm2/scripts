@@ -114,8 +114,8 @@ PITEM_0112,PLAN_0001,Goals (End of Year 1),Comfortable interpreting complex feat
 PITEM_0113,PLAN_0001,Goals (End of Year 1),Deployed portfolio documentation (monthly snapshots),0,113
 PITEM_0114,PLAN_0001,Goals (End of Year 1),Consistent 5-6 session/week analytical discipline,0,114
 PITEM_0115,PLAN_0001,Goals (End of Year 1),Zero unmanaged technical debt in primary repositories,0,115
-PITEM_0116,PLAN_0007,Backlog,Data lake,1,1
-PITEM_0117,PLAN_0007,Backlog,"ETL (Extract, Transform, Load)",1,2
+PITEM_0116,PLAN_0007,Backlog,Data lake,0,1
+PITEM_0117,PLAN_0007,Backlog,"ETL (Extract, Transform, Load)",0,2
 PITEM_0118,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Master Excel keyboard shortcuts for navigation without relying on the mouse,1,13
 PITEM_0119,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Apply tabular best practices for large dataset management,1,14
 PITEM_0120,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,1,15
@@ -708,9 +708,9 @@ PITEM_0915,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Revea
 PITEM_0916,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),Jobs-to-be-Done (JTBD) and competitive context as WTP constraints,0,89
 PITEM_0917,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDiff (maximum difference scaling),0,90
 PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
-PITEM_0919,PLAN_0007,Backlog,schema,1,3
-PITEM_0920,PLAN_0007,Backlog,Visual Information Class PDFs,1,4
-PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,1,5
+PITEM_0919,PLAN_0007,Backlog,schema,0,3
+PITEM_0920,PLAN_0007,Backlog,Visual Information Class PDFs,0,4
+PITEM_0922,PLAN_0007,Backlog,Fact tables and dimension tables,0,5
 PITEM_0923,PLAN_0007,Backlog,snow flake,0,6
 PITEM_0924,PLAN_0007,Backlog,"Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)",0,7
 PITEM_0921,PLAN_0007,Backlog,data bricks project,0,8
@@ -767,3 +767,4 @@ PITEM_0140,PLAN_0007,Backlog,Delta Lake,0,10
 PITEM_0143,PLAN_0007,Backlog,Spark,0,11
 PITEM_0973,PLAN_0007,Backlog,Database view,0,12
 PITEM_0204,PLAN_0007,Backlog,lineage graph,0,13
+PITEM_0205,PLAN_0007,Backlog,What is a data engineering,0,14

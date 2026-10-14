@@ -965,14 +965,6 @@
               </button>
               <button
                 type="button"
-                id="btnPlansSave"
-                class="btn-plans-save"
-                data-ico="check"
-              >
-                Save
-              </button>
-              <button
-                type="button"
                 id="btnPlansReset"
                 class="btn-plans-reset"
                 data-ico="undo"
@@ -4130,6 +4122,9 @@
       const PLANS_STORAGE_KEY = "mnemonics_plans_v1";
       let plansScrollApplyGen = 0;
       let planCheckMemory = null;
+      let plansAutosaveTimer = 0;
+      let plansSaveInFlight = false;
+      let plansSaveQueued = false;
 
       function loadPlanCheckStore() {
         if (planCheckMemory) return planCheckMemory;
@@ -4318,11 +4313,12 @@
         if (!todos || !todos.length) return backlog ? "" : "";
         const rows = todos
           .map((t) => {
-            const checked = planTodoChecked(t);
+            const checked = backlog ? false : planTodoChecked(t);
             const doneCls = checked ? " done" : "";
             let row =
               `<li class="plan-todo${doneCls}">` +
               `<input type="checkbox" id="${escAttr(t.id)}" data-todo-id="${escAttr(t.id)}" data-iid="${escAttr(t.id)}"` +
+              (backlog ? ' data-backlog="1"' : "") +
               (checked ? " checked" : "") +
               "/>" +
               `<label for="${escAttr(t.id)}">${esc(stripPlanTopicEmoji(t.text))}</label>`;
@@ -4525,28 +4521,23 @@
           .forEach((box) => {
             box.addEventListener("change", () => {
               const id = box.dataset.todoId || box.dataset.iid;
+              if (box.dataset.backlog === "1") {
+                if (!box.checked) return;
+                box.closest(".plan-todo")?.remove();
+                removeBacklogItem(id);
+                return;
+              }
               setPlanTodoChecked(id, box.checked);
               box.closest(".plan-todo")?.classList.toggle("done", box.checked);
               updatePlansProgressFromPlan(plan);
+              schedulePlanAutosave();
             });
           });
         content.querySelectorAll("[data-backlog-remove]").forEach((btn) => {
-          btn.addEventListener("click", async () => {
+          btn.addEventListener("click", () => {
             const todoId = btn.getAttribute("data-backlog-remove");
-            setPlansSaveStatus("Removing backlog item…", "");
-            try {
-              const r = await plansSaveAction({
-                action: "remove_backlog",
-                study_id: sid,
-                todo_id: todoId,
-              });
-              if (!r.ok) throw new Error(r.error || "remove failed");
-              setPlansSaveStatus("Backlog item removed.", "ok");
-              state.plansViewSig = "";
-              await renderPlans();
-            } catch (e) {
-              setPlansSaveStatus(String(e.message || e), "err");
-            }
+            btn.closest(".plan-todo")?.remove();
+            removeBacklogItem(todoId);
           });
         });
         const addBtn = document.getElementById("btnPlansBacklogAdd");
@@ -4699,7 +4690,41 @@
         });
       }
 
+      async function removeBacklogItem(todoId) {
+        setPlansSaveStatus("Removing backlog item…", "");
+        try {
+          const r = await plansSaveAction({
+            action: "remove_backlog",
+            study_id: state.studyId,
+            todo_id: todoId,
+          });
+          if (!r.ok) throw new Error(r.error || "remove failed");
+          setPlansSaveStatus("Backlog item removed.", "ok");
+          toast("Backlog item removed");
+          state.plansViewSig = "";
+          await renderPlans();
+        } catch (e) {
+          const msg = String(e.message || e);
+          setPlansSaveStatus(msg, "err");
+          toast(msg, 4000);
+          state.plansViewSig = "";
+          await renderPlans();
+        }
+      }
+
+      function schedulePlanAutosave() {
+        clearTimeout(plansAutosaveTimer);
+        setPlansSaveStatus("Saving…", "");
+        plansAutosaveTimer = setTimeout(() => {
+          savePlanProgress();
+        }, 500);
+      }
+
       async function savePlanProgress() {
+        if (plansSaveInFlight) {
+          plansSaveQueued = true;
+          return;
+        }
         const sid = state.studyId;
         const todos = [
           ...document.querySelectorAll("#plansContent input[data-todo-id]"),
@@ -4707,19 +4732,27 @@
           id: cb.dataset.todoId || cb.dataset.iid,
           checked: !!cb.checked,
         }));
+        if (!sid || !todos.length) return;
+        plansSaveInFlight = true;
         setPlansSaveStatus("Saving…", "");
-        document.getElementById("btnPlansSave").disabled = true;
         try {
           const r = await plansSaveAction({ study_id: sid, todos });
           if (!r.ok) throw new Error(r.error || "fail");
-          setPlansSaveStatus("Progress saved.", "ok");
           if (r.plan) state.currentPlanView = r.plan;
-          state.plansViewSig = "";
-          await renderPlans();
+          if (!plansSaveQueued) {
+            setPlansSaveStatus("Saved automatically", "ok");
+            toast("Saved automatically");
+          }
         } catch (e) {
-          setPlansSaveStatus(String(e.message || e), "err");
+          const msg = String(e.message || e);
+          setPlansSaveStatus(msg, "err");
+          toast(msg, 4000);
         } finally {
-          document.getElementById("btnPlansSave").disabled = false;
+          plansSaveInFlight = false;
+          if (plansSaveQueued) {
+            plansSaveQueued = false;
+            savePlanProgress();
+          }
         }
       }
 
@@ -6039,8 +6072,6 @@
       };
       document.getElementById("btnPlansNext").onclick = () =>
         goToNextPhaseTask();
-      document.getElementById("btnPlansSave").onclick = () =>
-        savePlanProgress();
       document.getElementById("btnPlansReset").onclick = () =>
         resetPlanCheckboxes();
       document.getElementById("btnPlansTocToggle").onclick = () => {

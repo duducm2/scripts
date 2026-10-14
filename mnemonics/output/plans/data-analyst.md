@@ -4,15 +4,15 @@
 
 ## 📃 Backlog
 
-- [✅] Data lake
+- [ ] Data lake
 
-- [✅] ETL (Extract, Transform, Load)
+- [ ] ETL (Extract, Transform, Load)
 
-- [✅] schema
+- [ ] schema
 
-- [✅] Visual Information Class PDFs
+- [ ] Visual Information Class PDFs
 
-- [✅] Fact tables and dimension tables
+- [ ] Fact tables and dimension tables
 
 - [ ] snow flake
 
@@ -29,6 +29,8 @@
 - [ ] Database view
 
 - [ ] lineage graph
+
+- [ ] What is a data engineering
 
 ## Phase 1: Advanced Tabular Modeling and Automation
 
