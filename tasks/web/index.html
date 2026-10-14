@@ -68,16 +68,6 @@
       .search-bar.is-open {
         display: flex;
       }
-      .top-prompt-btn {
-        position: fixed;
-        top: 8px;
-        left: 16px;
-        z-index: 1200;
-        max-width: min(420px, 46vw);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
       .sub {
         color: var(--muted);
         font-size: 13px;
@@ -143,7 +133,7 @@
         max-width: 360px;
       }
       #view {
-        padding: 44px 16px 36px;
+        padding: 8px 16px 36px;
       }
       .panel {
         background: var(--panel);
@@ -1411,15 +1401,6 @@
     </style>
   </head>
   <body>
-    <button
-      type="button"
-      id="copyTaskPrompt"
-      class="btn top-prompt-btn"
-      data-act="copy-task-prompt"
-      title="Select a project, then copy the Convert to Task prompt (Shift+K)"
-    >
-      ✅ Prompt
-    </button>
     <div id="searchBar" class="search-bar" aria-hidden="true">
       <input
         type="search"
@@ -2360,8 +2341,8 @@
           return "";
         }
 
-        function taskPromptTarget() {
-          const pid = projectIdForExport();
+        function taskPromptTarget(explicitPid) {
+          const pid = projectIdForExport(explicitPid);
           if (!pid) return null;
           const p = (state.data?.projects || []).find((x) => x.id === pid);
           if (!p || p.active === "0") return null;
@@ -2379,28 +2360,8 @@
           };
         }
 
-        function syncTopPromptButton() {
-          const btn = $("#copyTaskPrompt");
-          if (!btn) return;
-          const target = taskPromptTarget();
-          if (!target) {
-            btn.textContent = "✅ Prompt";
-            btn.title =
-              "Select a project, then copy the Convert to Task prompt (Shift+K)";
-            return;
-          }
-          const where = target.section
-            ? target.title + " / " + target.section
-            : target.title;
-          btn.textContent = "✅ " + where;
-          btn.title =
-            "Copy the Convert to Task prompt for " +
-            where +
-            " (Shift+K). Paste it into the AI companion, then import the pack with Import Management [T].";
-        }
-
-        async function copyConvertToTaskPrompt() {
-          const target = taskPromptTarget();
+        async function copyConvertToTaskPrompt(explicitPid) {
+          const target = taskPromptTarget(explicitPid);
           if (!target) {
             toast("Select a project first");
             return;
@@ -3018,6 +2979,7 @@
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
           <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON (Shift+X when a project or section is selected)">JSON</button>
+          <button class="btn" data-act="copy-task-prompt" data-pid="${esc(p.id)}" title="Copy the Convert to Task prompt for this project (Shift+K)">Prompt</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -3074,6 +3036,7 @@
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
           <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON (Shift+X when a project or section is selected)">JSON</button>
+          <button class="btn" data-act="copy-task-prompt" data-pid="${esc(p.id)}" title="Copy the Convert to Task prompt for this project (Shift+K)">Prompt</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -3123,6 +3086,7 @@
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
           <button class="btn" data-act="export-project" data-pid="${esc(p.id)}" title="Copy this project as JSON (Shift+X when a project or section is selected)">JSON</button>
+          <button class="btn" data-act="copy-task-prompt" data-pid="${esc(p.id)}" title="Copy the Convert to Task prompt for this project (Shift+K)">Prompt</button>
           <button class="btn" data-act="icon-project" title="Project icon (Shift+H)">Icon</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
@@ -3170,7 +3134,6 @@
           syncInlineCreateUi();
           bindInlineCreateInput();
           syncDocumentTitle();
-          syncTopPromptButton();
         }
 
         function countNewImportTasks() {
@@ -3737,12 +3700,10 @@
           if (!kind || !id) {
             state.sel = null;
             applySelection(false);
-            syncTopPromptButton();
             return;
           }
           state.sel = { kind, id };
           applySelection(scroll !== false);
-          syncTopPromptButton();
         }
 
         function flashAdded(kind, id) {
@@ -4462,28 +4423,28 @@
             toast("Deleted");
             if (TASK_SPA_FULL_REFRESH) await refresh();
             else if (pid && state.data) {
-                const taskIds = new Set(
-                  (state.data.tasks || [])
-                    .filter((t) => t.project_id === pid)
-                    .map((t) => t.id),
-                );
-                state.data.projects = (state.data.projects || []).filter(
-                  (p) => p.id !== pid,
-                );
-                state.data.sections = (state.data.sections || []).filter(
-                  (s) => s.project_id !== pid,
-                );
-                state.data.tasks = (state.data.tasks || []).filter(
-                  (t) => t.project_id !== pid,
-                );
-                state.data.info_points = (state.data.info_points || []).filter(
-                  (i) =>
-                    !(i.parent_type === "project" && i.parent_id === pid) &&
-                    !(i.parent_type === "task" && taskIds.has(i.parent_id)),
-                );
-                invalidateDataIndex();
-                recomputeCounts();
-                render();
+              const taskIds = new Set(
+                (state.data.tasks || [])
+                  .filter((t) => t.project_id === pid)
+                  .map((t) => t.id),
+              );
+              state.data.projects = (state.data.projects || []).filter(
+                (p) => p.id !== pid,
+              );
+              state.data.sections = (state.data.sections || []).filter(
+                (s) => s.project_id !== pid,
+              );
+              state.data.tasks = (state.data.tasks || []).filter(
+                (t) => t.project_id !== pid,
+              );
+              state.data.info_points = (state.data.info_points || []).filter(
+                (i) =>
+                  !(i.parent_type === "project" && i.parent_id === pid) &&
+                  !(i.parent_type === "task" && taskIds.has(i.parent_id)),
+              );
+              invalidateDataIndex();
+              recomputeCounts();
+              render();
             }
             return;
           }
@@ -6713,7 +6674,9 @@
 
           try {
             if (act === "copy-task-prompt") {
-              await copyConvertToTaskPrompt();
+              await copyConvertToTaskPrompt(
+                actEl.getAttribute("data-pid") || id,
+              );
               return;
             }
             if (act === "goto-dash") {
