@@ -510,6 +510,70 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
     }
 
 
+def exclude_tasks(pack: dict[str, Any], indexes: set[int]) -> dict[str, Any]:
+    """Drop preview tasks by index, and info points that belong only to those tasks."""
+    tasks = list(pack.get("tasks") or [])
+    if not indexes:
+        return pack
+    dropped: list[dict] = []
+    kept: list[dict] = []
+    for i, row in enumerate(tasks):
+        if i in indexes:
+            dropped.append(row)
+        else:
+            kept.append(row)
+    if not dropped:
+        return pack
+
+    def norm(value: object) -> str:
+        return str(value or "").strip().lower()
+
+    def is_parent(task: dict, info: dict) -> bool:
+        if norm(task.get("title")) != norm(info.get("parent_title")):
+            return False
+        filt = norm(info.get("filter"))
+        if filt and norm(task.get("filter")) != filt:
+            return False
+        proj = norm(info.get("project_title"))
+        task_proj = norm(task.get("project_title"))
+        if proj and task_proj and proj != task_proj:
+            return False
+        return True
+
+    infos: list[dict] = []
+    for info in pack.get("info") or []:
+        if norm(info.get("attach_to") or "task") != "task":
+            infos.append(info)
+            continue
+        if any(is_parent(task, info) for task in dropped) and not any(
+            is_parent(task, info) for task in kept
+        ):
+            continue
+        infos.append(info)
+
+    out = dict(pack)
+    out["tasks"] = kept
+    out["info"] = infos
+    counts = dict(out.get("counts") or {})
+    counts["tasks"] = len(kept)
+    counts["info"] = len(infos)
+    out["counts"] = counts
+    return out
+
+
+def parse_exclude_indexes(raw: str) -> set[int]:
+    indexes: set[int] = set()
+    for part in (raw or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            indexes.add(int(part))
+        except ValueError:
+            continue
+    return indexes
+
+
 def preview_labels(pack: dict[str, Any]) -> list[str]:
     """Palace-style one-line labels for AHK confirm ListView."""
     labels: list[str] = []
@@ -588,6 +652,11 @@ def _cli_main(argv: list[str] | None = None) -> int:
     p_commit.add_argument(
         "--pack-json", required=True, help="Preview JSON from preview --json-out"
     )
+    p_commit.add_argument(
+        "--exclude",
+        default="",
+        help="Comma-separated task indexes to skip, from the confirm list",
+    )
 
     args = parser.parse_args(argv)
     store = TaskStore(Path(args.data_dir))
@@ -624,6 +693,7 @@ def _cli_main(argv: list[str] | None = None) -> int:
         if not pack.get("ok"):
             print(pack.get("error") or "invalid pack json", file=sys.stderr)
             return 1
+        pack = exclude_tasks(pack, parse_exclude_indexes(args.exclude))
         result = commit_pack(store, pack)
         Path(args.pack_json).with_suffix(".commit.json").write_text(
             json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"

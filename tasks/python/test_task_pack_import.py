@@ -7,7 +7,13 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from task_pack_import import commit_pack, pack_echoes_catalog, preview_labels
+from task_pack_import import (
+    commit_pack,
+    exclude_tasks,
+    pack_echoes_catalog,
+    parse_exclude_indexes,
+    preview_labels,
+)
 from task_store import TaskStore
 
 
@@ -180,6 +186,38 @@ class InfoParentDisambiguationTest(unittest.TestCase):
         text = "\n".join(labels)
         self.assertIn("catalog clone", text)
         self.assertIn("[INFO] → Reuniões (task) · PSO/BDO @ X-Tower", text)
+
+    def test_exclude_tasks_drops_that_task_and_its_info(self) -> None:
+        pack = {
+            "ok": True,
+            "counts": {"projects": 0, "tasks": 2, "info": 2},
+            "projects": [],
+            "tasks": [
+                {"title": "Keep me", "filter": "work", "project_title": "X-Tower"},
+                {"title": "Skip me", "filter": "work", "project_title": "X-Tower"},
+            ],
+            "info": [
+                {
+                    "attach_to": "task",
+                    "parent_title": "Keep me",
+                    "project_title": "X-Tower",
+                    "filter": "work",
+                    "title": "stays",
+                },
+                {
+                    "attach_to": "task",
+                    "parent_title": "Skip me",
+                    "project_title": "X-Tower",
+                    "filter": "work",
+                    "title": "goes",
+                },
+            ],
+        }
+        out = exclude_tasks(pack, parse_exclude_indexes("1, no"))
+        self.assertEqual([t["title"] for t in out["tasks"]], ["Keep me"])
+        self.assertEqual([i["title"] for i in out["info"]], ["stays"])
+        self.assertEqual(out["counts"]["tasks"], 1)
+        self.assertEqual(out["counts"]["info"], 1)
 
 
 if __name__ == "__main__":

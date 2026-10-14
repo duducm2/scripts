@@ -448,7 +448,7 @@ ImportMgmt_HelpText() {
     . "Prompt: Utility Prompts [k] Convert to Task (convert-to-task.txt); dictation menu [T] same pack`r`n"
     . "Filters: work | personal | habits only (not freeform categories)`r`n"
     . "Writes: tasks/data projects / tasks / info via Python task_pack_import.py (tasks append-only)`r`n"
-    . "Confirm: Palace-style preview ListView before save`r`n"
+    . "Confirm: preview ListView before save. Ctrl+click a task to exclude it and its info points.`r`n"
     . "Success: archive → tasks/data/imported/; hub closes`r`n"
     . "AI fix: Desktop TASK_AI_FIX.txt (copied to clipboard, ≥5s banner, hub closes)`r`n"
     . "Re-run: #!+X → [T]`r`n`r`n"

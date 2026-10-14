@@ -13,8 +13,11 @@ Task_ImportAiFixPath() {
 }
 
 ; Palace-style confirm: label ListView + Import / Cancel.
-Task_ImportConfirmPreview(title, labels) {
+; Ctrl+click a [TASK] row to exclude it (and its info points) from the import.
+Task_ImportConfirmPreview(title, labels, &excludeCsv) {
     global g_ImportMgmtGui
+    excludeCsv := ""
+    chosen := { csv: "" }
     owner := ""
     try {
         if (IsObject(g_ImportMgmtGui))
@@ -29,12 +32,30 @@ Task_ImportConfirmPreview(title, labels) {
     }
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
     g.SetFont("s10", "Segoe UI")
-    lv := g.Add("ListView", "w720 h420 Grid", ["Row"])
-    for lab in labels
+    g.Add("Text", "w720", "Ctrl+click a task to exclude it and its info points. Ctrl+click again to put it back.")
+    lv := g.Add("ListView", "w720 h400 Grid", ["Row"])
+    taskRowToIndex := Map()
+    excluded := Map()
+    originals := Map()
+    taskN := 0
+    rowN := 0
+    for lab in labels {
+        rowN += 1
         lv.Add("", lab)
+        originals[rowN] := lab
+        if (SubStr(lab, 1, 6) = "[TASK]") {
+            taskRowToIndex[rowN] := taskN
+            taskN += 1
+        }
+    }
     lv.ModifyCol(1, "AutoHdr")
+    lv.OnEvent("Click", (ctrl, row, *) => Task_ImportToggleTaskExclude(ctrl, row, taskRowToIndex, excluded, originals))
     ok := false
-    g.Add("Button", "y+8 w120 Default", "Import").OnEvent("Click", (*) => (ok := true, g.Destroy()))
+    g.Add("Button", "y+8 w120 Default", "Import").OnEvent("Click", (*) => (
+        chosen.csv := Task_ImportExcludedCsv(taskRowToIndex, excluded),
+        ok := true,
+        g.Destroy()
+    ))
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
     g.OnEvent("Escape", (*) => g.Destroy())
     g.Show()
@@ -46,7 +67,31 @@ Task_ImportConfirmPreview(title, labels) {
             g_ImportMgmtGui.Opt("+AlwaysOnTop")
     } catch {
     }
+    if (ok)
+        excludeCsv := chosen.csv
     return ok
+}
+
+Task_ImportToggleTaskExclude(lv, row, taskRowToIndex, excluded, originals) {
+    if (!GetKeyState("Ctrl") || row < 1 || !taskRowToIndex.Has(row))
+        return
+    if (excluded.Has(row)) {
+        excluded.Delete(row)
+        lv.Modify(row, "", originals[row])
+        return
+    }
+    excluded[row] := true
+    lv.Modify(row, "", "EXCLUDED " . originals[row])
+}
+
+Task_ImportExcludedCsv(taskRowToIndex, excluded) {
+    out := ""
+    for row, idx in taskRowToIndex {
+        if (!excluded.Has(row))
+            continue
+        out .= (out = "" ? "" : ",") . idx
+    }
+    return out
 }
 
 Task_ImportReadLabels(path) {
@@ -134,11 +179,14 @@ Task_ImportPackFromDesktop(*) {
     if (!labels.Length)
         labels.Push("(No preview rows — pack may be empty)")
     title := "Import TASK_PACK?"
-    if (!Task_ImportConfirmPreview(title, labels))
+    excludeCsv := ""
+    if (!Task_ImportConfirmPreview(title, labels, &excludeCsv))
         return false
 
     cmdCommit := pyCmd . ' "' . script . '" --data-dir "' . dataDir
         . '" commit --pack-json "' . jsonOut . '"'
+    if (excludeCsv != "")
+        cmdCommit .= ' --exclude "' . excludeCsv . '"'
     try StandardLoadingBar_Show("⏳ Importing TASK_PACK…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }

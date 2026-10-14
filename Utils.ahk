@@ -284,7 +284,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\square_selector_mouse_jump_02.ahk
 
 ; [Utils module] Win+Alt+Shift+Arrow five-step hotkeys -> Utils\mouse_jump_hotkeys.ahk
-#include %A_ScriptDir%\Utils\mouse_jump_hotkeys.ahk
+#include %A_ScriptDir%\Utils\mouse_jump_hotkeys.ahk[´piy0-76cx,]
 
 ; [Utils module] Cross-process AutoSlot place request (Study Topic QuickLook) -> Utils\autoslot_place_ipc.ahk
 #include %A_ScriptDir%\Utils\autoslot_place_ipc.ahk
