@@ -22,6 +22,109 @@ import icon_commons  # noqa: E402
 DEFAULT_PORT = 8766
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 _STORE: TaskStore | None = None
+_CONVERT_TO_TASK_NAME = "convert-to-task.txt"
+_TASK_FILTERS = ("work", "personal", "habits")
+# Same preamble Prompt Manager prepends when ExpectsDataOutput=1 and DataOutputFormat=file.
+_DATA_OUTPUT_CONTRACT_FILE = (
+    "DATA OUTPUT CONTRACT (mandatory — from prompt manager):\n"
+    "This prompt expects structured data. Deliver as a downloadable .txt file "
+    "(preferred name from the prompt body; gemini-code-….txt with the same markers is OK). "
+    "Do not claim a disk/Desktop/Downloads save. Do not use a chat code fence as the primary deliverable.\n\n"
+)
+
+
+def _one_line(value: str) -> str:
+    return " ".join((value or "").split())
+
+
+def convert_to_task_prompt_path(scripts_root: Path) -> Path:
+    root = Path(scripts_root)
+    candidates = [
+        root / "assets" / "prompt" / _CONVERT_TO_TASK_NAME,
+        root.parent / "assets" / "prompt" / _CONVERT_TO_TASK_NAME,
+    ]
+    for path in candidates:
+        if path.is_file():
+            return path.resolve()
+    return candidates[0]
+
+
+def format_target_project(title: str, filt: str, section: str = "") -> str:
+    name = _one_line(title)
+    if not name:
+        raise ValueError("project title required")
+    kind = (filt or "").strip().lower()
+    if kind not in _TASK_FILTERS:
+        kind = "work"
+    lines = [
+        "TARGET PROJECT (from the Tasks app — mandatory for this turn)",
+        "The human already chose the existing project. Use the Convert to Task pack as usual, and put the new rows there.",
+        f"- project_title: {name}",
+        f"- filter: {kind}",
+    ]
+    sec = _one_line(section)
+    if sec and sec.lower() != "general":
+        lines.append(f"- section_path: {sec}")
+        lines.append(
+            "Every TASK_TASKS row uses that project_title, filter, and section_path "
+            "unless the notes explicitly name a different section."
+        )
+    else:
+        lines.append(
+            "Every TASK_TASKS row uses that project_title and filter. "
+            "If the notes name a section, use that section_path; otherwise leave section_path empty."
+        )
+    lines.append(
+        "Every TASK_INFO row on a task repeats the same project_title and filter."
+    )
+    lines.append(
+        "Do not add a TASK_PROJECTS row for this project. "
+        "Do not leave project_title empty. Do not pick a different project from the catalog."
+    )
+    lines.append(
+        "WHAT TO INSERT: the human pastes the material after this prompt and says how it should land in this project. Follow that. Do not invent a different shape."
+    )
+    lines.append(
+        "- Several tasks: one TASK_TASKS row per action they want tracked. If they name no status, emoji is general."
+    )
+    lines.append(
+        "- One activity full of info points: a meeting note, or they say one task, info points, don't split, or no emoji. "
+        "Emit exactly one TASK_TASKS row. When they want it clear of emoji (no emoji, no status glyph, a plain note), "
+        "the emoji cell is the word none — not general, not 🔲, and not an empty cell. "
+        "The importer stores none as no emoji. Every bullet, decision, fact, and quote is a TASK_INFO row on that single parent. "
+        "Do not create a task per bullet."
+    )
+    lines.append(
+        "- Notes on a task they already name: no new TASK_TASKS row. TASK_INFO rows only, "
+        "parent_title = that task, project_title = this project."
+    )
+    return "\n".join(lines)
+
+
+def resolve_target_section(store: TaskStore, project_id: str, section: str) -> str:
+    want = _one_line(section).lower()
+    if not want or want == "general":
+        return ""
+    for row in store.load("sections"):
+        if (row.get("project_id") or "") != project_id:
+            continue
+        title = _one_line(row.get("title") or "")
+        if title.lower() == want and title.lower() != "general":
+            return title
+    return ""
+
+
+def build_convert_to_task_clipboard(
+    scripts_root: Path, *, title: str, filt: str, section: str = ""
+) -> str:
+    path = convert_to_task_prompt_path(scripts_root)
+    if not path.is_file():
+        raise FileNotFoundError(str(path))
+    body = path.read_text(encoding="utf-8-sig").strip()
+    if not body:
+        raise FileNotFoundError(str(path))
+    target = format_target_project(title, filt, section)
+    return _DATA_OUTPUT_CONTRACT_FILE + target + "\n\n" + body + "\n\n" + target
 
 
 def get_store(data_dir: Path) -> TaskStore:
@@ -141,6 +244,7 @@ class TaskHandler(BaseHTTPRequestHandler):
                         "icons",
                         "project-export",
                         "task-export",
+                        "convert-to-task-prompt",
                     ],
                 },
             )
@@ -190,6 +294,46 @@ class TaskHandler(BaseHTTPRequestHandler):
                 icon_commons.suggest_for_project(
                     project, sections, infos, tasks, limit=limit
                 ),
+            )
+            return
+
+        if path == "/api/prompts/convert-to-task":
+            qs = parse_qs(parsed.query or "")
+            project_id = (qs.get("project_id") or [""])[0].strip()
+            section = (qs.get("section") or [""])[0].strip()
+            store = get_store(self.data_dir)
+            project = store.find("projects", project_id)
+            if not project or (project.get("active") or "") == "0":
+                self._json(404, {"ok": False, "error": "project not found"})
+                return
+            title = _one_line(project.get("title") or "")
+            filt = (project.get("filter") or "").strip().lower()
+            section_title = resolve_target_section(store, project_id, section)
+            try:
+                text = build_convert_to_task_clipboard(
+                    self.scripts_root,
+                    title=title,
+                    filt=filt,
+                    section=section_title,
+                )
+            except FileNotFoundError:
+                self._json(
+                    500,
+                    {"ok": False, "error": "Convert to Task prompt not found"},
+                )
+                return
+            except ValueError as e:
+                self._json(400, {"ok": False, "error": str(e)})
+                return
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "text": text,
+                    "project_title": title,
+                    "filter": filt if filt in _TASK_FILTERS else "work",
+                    "section": section_title,
+                },
             )
             return
 
@@ -530,9 +674,7 @@ def main(argv: list[str] | None = None) -> int:
     store = get_store(data_dir)
     store.migrate_sections()
     folder = store.project_json_dir()
-    has_project_json = any(
-        p.name != "projects.json" for p in folder.glob("*.json")
-    )
+    has_project_json = any(p.name != "projects.json" for p in folder.glob("*.json"))
     if not has_project_json:
         store.sync_project_json_files()
     server = ThreadingHTTPServer((args.host, args.port), handler)

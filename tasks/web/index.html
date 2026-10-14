@@ -68,6 +68,16 @@
       .search-bar.is-open {
         display: flex;
       }
+      .top-prompt-btn {
+        position: fixed;
+        top: 8px;
+        left: 16px;
+        z-index: 1200;
+        max-width: min(420px, 46vw);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       .sub {
         color: var(--muted);
         font-size: 13px;
@@ -133,7 +143,7 @@
         max-width: 360px;
       }
       #view {
-        padding: 8px 16px 36px;
+        padding: 44px 16px 36px;
       }
       .panel {
         background: var(--panel);
@@ -1401,6 +1411,15 @@
     </style>
   </head>
   <body>
+    <button
+      type="button"
+      id="copyTaskPrompt"
+      class="btn top-prompt-btn"
+      data-act="copy-task-prompt"
+      title="Select a project, then copy the Convert to Task prompt (Shift+K)"
+    >
+      ✅ Prompt
+    </button>
     <div id="searchBar" class="search-bar" aria-hidden="true">
       <input
         type="search"
@@ -2341,6 +2360,65 @@
           return "";
         }
 
+        function taskPromptTarget() {
+          const pid = projectIdForExport();
+          if (!pid) return null;
+          const p = (state.data?.projects || []).find((x) => x.id === pid);
+          if (!p || p.active === "0") return null;
+          let section = "";
+          if (state.sel?.kind === "section") {
+            const sec = findSection(state.sel.id);
+            if (sec && sec.project_id === pid && !isGeneralSection(sec))
+              section = (sec.title || "").trim();
+          }
+          return {
+            id: pid,
+            title: (p.title || "").trim(),
+            filter: p.filter || "work",
+            section,
+          };
+        }
+
+        function syncTopPromptButton() {
+          const btn = $("#copyTaskPrompt");
+          if (!btn) return;
+          const target = taskPromptTarget();
+          if (!target) {
+            btn.textContent = "✅ Prompt";
+            btn.title =
+              "Select a project, then copy the Convert to Task prompt (Shift+K)";
+            return;
+          }
+          const where = target.section
+            ? target.title + " / " + target.section
+            : target.title;
+          btn.textContent = "✅ " + where;
+          btn.title =
+            "Copy the Convert to Task prompt for " +
+            where +
+            " (Shift+K). Paste it into the AI companion, then import the pack with Import Management [T].";
+        }
+
+        async function copyConvertToTaskPrompt() {
+          const target = taskPromptTarget();
+          if (!target) {
+            toast("Select a project first");
+            return;
+          }
+          const qs = new URLSearchParams({ project_id: target.id });
+          if (target.section) qs.set("section", target.section);
+          const res = await api(
+            "/api/prompts/convert-to-task?" + qs.toString(),
+          );
+          const text = String(res.text || "");
+          if (!text.trim()) throw new Error("Convert to Task prompt is empty");
+          await copyProjectJsonText(text);
+          const where = target.section
+            ? target.title + " / " + target.section
+            : target.title;
+          toast("Copied Convert to Task prompt · " + where);
+        }
+
         async function copyProjectJsonText(text) {
           const value = String(text || "");
           if (navigator.clipboard?.writeText) {
@@ -3092,6 +3170,7 @@
           syncInlineCreateUi();
           bindInlineCreateInput();
           syncDocumentTitle();
+          syncTopPromptButton();
         }
 
         function countNewImportTasks() {
@@ -3658,10 +3737,12 @@
           if (!kind || !id) {
             state.sel = null;
             applySelection(false);
+            syncTopPromptButton();
             return;
           }
           state.sel = { kind, id };
           applySelection(scroll !== false);
+          syncTopPromptButton();
         }
 
         function flashAdded(kind, id) {
@@ -4258,6 +4339,10 @@
               return;
             }
             projectIconModal(pid);
+            return;
+          }
+          if (k === "k") {
+            await copyConvertToTaskPrompt();
             return;
           }
           if (k === "x") {
@@ -6627,6 +6712,10 @@
             row?.getAttribute("data-id") || actEl.getAttribute("data-id") || "";
 
           try {
+            if (act === "copy-task-prompt") {
+              await copyConvertToTaskPrompt();
+              return;
+            }
             if (act === "goto-dash") {
               goHome();
               return;
