@@ -1200,6 +1200,48 @@ ClipAngelExport_ClipboardAsPackText(&errMsg := "") {
     return body
 }
 
+ClipAngelExport_DesktopSearchDirs() {
+    dirs := []
+    seen := Map()
+    rawDirs := []
+    try rawDirs.Push(AiQuickDownload_ResolveDesktopPath())
+    catch {
+    }
+    rawDirs.Push(A_Desktop)
+    for raw in rawDirs {
+        dir := RTrim(Trim(raw), "\")
+        if (dir = "" || !DirExist(dir))
+            continue
+        key := StrLower(dir)
+        if (seen.Has(key))
+            continue
+        seen[key] := true
+        dirs.Push(dir)
+    }
+    return dirs
+}
+
+; Exact filename matches on the Desktop folders this script uses. Not name-2 variants.
+ClipAngelExport_SameNameDesktopPaths(fileName) {
+    found := []
+    if (fileName = "")
+        return found
+    for dir in ClipAngelExport_DesktopSearchDirs() {
+        path := dir . "\" . fileName
+        if (FileExist(path) && !DirExist(path))
+            found.Push(path)
+    }
+    return found
+}
+
+ClipAngelExport_OverwriteUtf8(path, content) {
+    f := FileOpen(path, "w", "UTF-8")
+    if (!f)
+        throw Error("Could not open " . path)
+    f.Write(content)
+    f.Close()
+}
+
 ; Put a known pack on A_Desktop under its canonical name so the domain importer can discover it.
 ClipAngelExport_PlaceCanonicalPack(outPath, fileName) {
     canon := ""
@@ -1271,10 +1313,16 @@ ClipAngelExport_SaveSelectedClipboardTxt(*) {
         }
         return
     }
-    outPath := desktopPath "\" base ".txt"
-    try WriteUtf8File(outPath, body)
+    fileName := base . ".txt"
+    matches := ClipAngelExport_SameNameDesktopPaths(fileName)
+    ; One existing file with this name: replace that file. Do not add a second copy.
+    if (matches.Length = 1)
+        outPath := matches[1]
+    else
+        outPath := desktopPath "\" fileName
+    try ClipAngelExport_OverwriteUtf8(outPath, body)
     catch {
-        try ShowCenteredOverlay_Utils("Could not write " . base . ".txt", 2000, BANNER_ACCENT_ERROR)
+        try ShowCenteredOverlay_Utils("Could not write " . fileName, 2000, BANNER_ACCENT_ERROR)
         catch {
         }
         return
@@ -1285,7 +1333,6 @@ ClipAngelExport_SaveSelectedClipboardTxt(*) {
         }
         return
     }
-    fileName := base . ".txt"
     runFn := ""
     try runFn := ImportMgmt_RunnerForFileName(fileName)
     catch {
