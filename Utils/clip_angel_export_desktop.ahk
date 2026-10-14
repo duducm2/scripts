@@ -1121,12 +1121,22 @@ ClipAngelExport_CopySelected(*) {
         try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
         catch {
         }
-        return
+        return false
     }
     A_Clipboard := sel["name"]
     try ShowCenteredOverlay_Utils("Copied: " . sel["name"], 1200, BANNER_ACCENT_SUCCESS)
     catch {
     }
+    return true
+}
+
+; Shift+C: name is on the clipboard, so dismiss this list and skip the return-to-hub callback.
+ClipAngelExport_CopySelectedAndClose(*) {
+    if (!ClipAngelExport_CopySelected())
+        return
+    global g_ClipAngelNameOnClose
+    g_ClipAngelNameOnClose := unset
+    ClipAngelExport_CloseGui()
 }
 
 ClipAngelExport_ManagerClose(*) {
@@ -1147,8 +1157,8 @@ ClipAngelExport_UpdateManagerHint() {
         return
     g_ClipAngelNameHint.Value :=
         "Letter  jump in list`n"
-        . "Enter / Shift+C  copy name     Shift+A  add     Shift+E  edit     Delete  remove`n"
-        . "Esc / Backspace  back"
+        . "Enter  copy name     Shift+C  copy and close`n"
+        . "Shift+A  add     Shift+E  edit     Delete  remove     Esc / Backspace  back"
 }
 
 ; Standalone CRUD + copy for clipangel_desktop_names.csv (Import Management [N]; same list as #!+9 rename picker).
@@ -1173,7 +1183,7 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
     ClipAngelExport_Refresh()
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_CopySelected()],
-        ["+c", (*) => ClipAngelExport_CopySelected()],
+        ["+c", (*) => ClipAngelExport_CopySelectedAndClose()],
         ["+a", (*) => ClipAngelExport_Add()],
         ["Insert", (*) => ClipAngelExport_Add()],
         ["+e", (*) => ClipAngelExport_Edit()],

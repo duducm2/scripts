@@ -1,4 +1,4 @@
-"""Export tasks CSV data to notes Markdown for phone (personal + habits).
+"""Export tasks CSV data to Markdown (personal + habits).
 
 punctual.md = personal filter; habits.md = habits filter.
 Work is never written unless --work is passed explicitly (push path does not).
@@ -206,7 +206,7 @@ def write_area(
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Export tasks CSV to notes Markdown")
+    ap = argparse.ArgumentParser(description="Export tasks CSV to Markdown")
     ap.add_argument("--data-dir", required=True, type=Path)
     ap.add_argument("--punctual", required=True, type=Path)
     ap.add_argument("--work", type=Path, default=None)

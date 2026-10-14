@@ -1,7 +1,7 @@
 ; =============================================================================
 ; WindowManagement module: audio_bt_menu.ahk
 ; Win+Alt+Shift+9 tap-dance:
-;   1× Push scripts+notes (Utility Shortcuts [G])
+;   1× Push scripts (Utility Shortcuts [G]); task markdown stays in tasks\output
 ;   2× Bluetooth audio / Windows sound devices menu
 ;   hold 700ms+ AI Quick Download (name pick → click sequences → Desktop wait → rename → cut)
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
@@ -1661,7 +1661,7 @@ AudioBt_Show() {
 }
 
 ; Win+Alt+Shift+9 tap / double-tap / hold (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
-;   1× = Utility_GitSyncPush scripts + notes + personal (Utility Shortcuts [G]), and refresh mnemonics\output\entertainment.md
+;   1× = Utility_GitSyncPush scripts + personal (Utility Shortcuts [G]); task markdown → tasks\output; refresh mnemonics\output\entertainment.md
 ;   2× = Audio / Bluetooth quick selector (toggle)
 ;   hold 700ms+ = AI Companion Quick Download (#!+P name list first → click sequences → Desktop wait → rename → cut)
 AUDIO_BT_HOLD_MS := 700

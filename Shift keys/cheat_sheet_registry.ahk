@@ -1142,7 +1142,7 @@ cheatSheets["Tasks"] := "
     
     === Alt ===
     🔍 [S] Show search field (toggle; Esc closes when empty)
-    📄 [G] Open personal tasks on GitHub (main/punctual.md); habits at main/habits.md (#!+9 1× push exports both; never work)
+    📄 [G] Open personal tasks on GitHub (main/punctual.md); habits at main/habits.md (#!+9 1× writes both under tasks/output in scripts; never work)
     ⚡ [Shift+T] Important (⚡) from Personal, Work, and Habits together (toggle; restores the previous column)
 )"
 
@@ -1531,7 +1531,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
-    [Win+Alt+Shift+9] > 1× Push scripts+notes (Utility [G]) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; letter jump; Enter default; Shift+D/E disable/enable; Shift+C/X connect/disconnect; Shift+I isolate; Shift+N ignore; Esc back) · hold 700ms+ AI Quick Download (name Desktop file first, then configured click sequences → Desktop → rename → cut; manage via Win+Alt+Shift+U → Sequences)
+    [Win+Alt+Shift+9] > 1× Push scripts (Utility [G]; task markdown stays in tasks/output) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; letter jump; Enter default; Shift+D/E disable/enable; Shift+C/X connect/disconnect; Shift+I isolate; Shift+N ignore; Esc back) · hold 700ms+ AI Quick Download (name Desktop file first, then configured click sequences → Desktop → rename → cut; manage via Win+Alt+Shift+U → Sequences)
     [Win+Alt+Shift+M] > Maximizes the current window
     [Win+Alt+Shift+Y] > 1× Focus Mode (black out other monitors) · 2× Main Repos (scripts + notes dirty files; [G]/[P] push like Utility [G] / #!+9 tap; [D] discard via reset --hard + clean -fd after MsgBox; [R] refresh; Esc close)
     [Ctrl+Alt+Shift+B] > Switch to previous window (Alt+Tab once; MEH+B; WindowManagement.ahk)

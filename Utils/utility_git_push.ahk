@@ -1,7 +1,8 @@
 ; =============================================================================
 ; Utils module: utility_git_push.ahk
-; Commit and push scripts + notes (+ personal when present) from Utility [G]
-; Exports personal → main/punctual.md and habits → main/habits.md (never work);
+; Commit and push scripts (+ personal when present) from Utility [G] / #!+9 tap.
+; Exports personal → tasks/output/punctual.md and habits → tasks/output/habits.md
+; in this scripts repo (never work, never the notes repo);
 ; syncs Palace MD when mnemonics/data is dirty.
 ; Runs in the background; no mid-run loading bar — final 3s banner on all monitors.
 ; =============================================================================
@@ -109,8 +110,8 @@ Utility_GitStatusHasPathPrefix(porcelain, prefixFwd) {
     return false
 }
 
-Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot) {
-    ; Phone mirror: personal + habits only (work stays local CSV).
+Utility_GitExportPhoneTasksMd(scriptsRoot) {
+    ; Phone mirror lives in this repo: personal + habits only (work stays local CSV).
     py := scriptsRoot . "\tasks\python\export_to_md.py"
     if (!FileExist(py))
         return "error:export_to_md.py not found"
@@ -122,8 +123,8 @@ Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot) {
     if (pyCmd = "")
         return "error:Python not found for Tasks MD export"
     dataDir := scriptsRoot . "\tasks\data"
-    punctual := notesRoot . "\main\punctual.md"
-    habits := notesRoot . "\main\habits.md"
+    punctual := scriptsRoot . "\tasks\output\punctual.md"
+    habits := scriptsRoot . "\tasks\output\habits.md"
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir
         . '" --punctual "' . punctual . '" --habits "' . habits . '"'
     ; Temp .cmd avoids RunWaitWithTimeout PowerShell -Command breaking on quoted
@@ -197,16 +198,16 @@ Utility_GitExportEntertainmentMd(scriptsRoot) {
 }
 
 ; Backward-compatible alias (#!+9 / Utility [G] path).
-Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
-    return Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
+Utility_GitExportPunctualMd(scriptsRoot) {
+    return Utility_GitExportPhoneTasksMd(scriptsRoot)
 }
 
-Utility_GitPrepareExports(scriptsRoot, notesRoot) {
+Utility_GitPrepareExports(scriptsRoot) {
     status := GitCli_Run(scriptsRoot, "status --porcelain", 30000)
     if (status.exitCode != 0)
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
 
-    export := Utility_GitExportPhoneTasksMd(scriptsRoot, notesRoot)
+    export := Utility_GitExportPhoneTasksMd(scriptsRoot)
     if (SubStr(export, 1, 6) = "error:")
         return export
 
@@ -218,7 +219,7 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     needPalace := Utility_GitStatusHasPathPrefix(porcelain, "mnemonics/data/")
 
     if (needPalace) {
-        ; Soft-fail: Drive-locked prune must not abort scripts/notes push
+        ; Soft-fail: Drive-locked prune must not abort the scripts push
         try Palace_SyncAllPracticeMd(false)
         catch {
         }
@@ -370,18 +371,7 @@ Utility_GitSyncPushWorker() {
             return
         }
 
-        notesRoot := ""
-        try notesRoot := GetNotesRepoPath()
-        catch {
-            notesRoot := ""
-        }
-        if (notesRoot = "" || !DirExist(notesRoot)) {
-            resultMsg := "❌ Notes repo folder not found"
-            resultAccent := BANNER_ACCENT_ERROR
-            return
-        }
-
-        prep := Utility_GitPrepareExports(scriptsRoot, notesRoot)
+        prep := Utility_GitPrepareExports(scriptsRoot)
         if (SubStr(prep, 1, 6) = "error:") {
             resultMsg := "❌ " . SubStr(prep, 7)
             resultAccent := BANNER_ACCENT_ERROR
@@ -391,13 +381,6 @@ Utility_GitSyncPushWorker() {
         scriptsResult := Utility_GitSyncPushOne(scriptsRoot, "Scripts", commitMsg)
         if (SubStr(scriptsResult, 1, 6) = "error:") {
             resultMsg := "❌ " . SubStr(scriptsResult, 7)
-            resultAccent := BANNER_ACCENT_ERROR
-            return
-        }
-
-        notesResult := Utility_GitSyncPushOne(notesRoot, "Notes", commitMsg)
-        if (SubStr(notesResult, 1, 6) = "error:") {
-            resultMsg := "❌ " . SubStr(notesResult, 7)
             resultAccent := BANNER_ACCENT_ERROR
             return
         }
@@ -414,7 +397,7 @@ Utility_GitSyncPushWorker() {
             }
         }
 
-        if (scriptsResult = "noop" && notesResult = "noop" && personalResult = "noop") {
+        if (scriptsResult = "noop" && personalResult = "noop") {
             resultMsg := "ℹ Nothing to commit"
             resultAccent := BANNER_ACCENT_INFO
             return
@@ -423,16 +406,12 @@ Utility_GitSyncPushWorker() {
         parts := []
         if (scriptsResult = "pushed")
             parts.Push("Scripts")
-        if (notesResult = "pushed")
-            parts.Push("Notes")
         if (personalResult = "pushed")
             parts.Push("Personal")
         if (parts.Length = 1)
             resultMsg := "✅ " . parts[1] . " pushed"
-        else if (parts.Length = 2)
-            resultMsg := "✅ " . parts[1] . " + " . parts[2] . " pushed"
         else
-            resultMsg := "✅ " . parts[1] . " + " . parts[2] . " + " . parts[3] . " pushed"
+            resultMsg := "✅ " . parts[1] . " + " . parts[2] . " pushed"
         resultAccent := BANNER_ACCENT_SUCCESS
     } catch as e {
         resultMsg := "❌ Push failed: " . e.Message

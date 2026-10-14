@@ -448,7 +448,8 @@ ImportMgmt_HelpText() {
     "Rename picker: letter jumps list; Enter = apply with current/auto ext; Shift+T = save as .txt;`r`n"
     .
     "Shift+X = change extension (then Enter); Shift+N = type a one-off name; clipboard-first when image/text on clipboard`r`n"
-    . "Names manager: Enter / Shift+C copy bare name; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
+    .
+    "Names manager: Enter copies bare name; Shift+C copies and closes every open window; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"
