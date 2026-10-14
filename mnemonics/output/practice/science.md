@@ -82,8 +82,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Avoid causal testing]
-Concept: Qualitative questions avoid count-based or causal-test questions.
-Quote: Does SSL increase trust?
 
 #### Notes
 

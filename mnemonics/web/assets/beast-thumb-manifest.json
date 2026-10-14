@@ -14,7 +14,7 @@
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "525 beasts / 171 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 55 beasts with adj"
+    "catalog_scope": "524 beasts / 171 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 54 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -5076,16 +5076,6 @@
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
-    },
-    "BEAST_DATAANALYST_22_Cm": {
-      "label": "Cold marmoset",
-      "peg_code": "Cm",
-      "filename": "marmoset.png",
-      "url": "/assets/beast-thumbs/marmoset.png",
-      "source_slug": "marmoset",
-      "adjective": "cold",
-      "adj_filename": "adj_cold.png",
-      "adj_url": "/assets/beast-thumbs/adj_cold.png"
     }
   }
 }

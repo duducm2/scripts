@@ -207,9 +207,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Z2 Forelimbs | Section]
-Concept: she stacks huge, glowing concrete highway segments together like children's blocks using her hands
-Quote: A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.
-Story: An aerialist swings upside down from a streetlamp, leaving a thick trail of burnt ozone smoke in the air. With her head, she catches a heavy, rough-textured punctuation mark in her teeth, biting down to physically carve out the rule: "A phrase is a single musical thought or "sentence". It is the smallest structural unit that gives a sense of completion, typically ending with a musical resting point called a cadence." Simultaneously, with her forelimbs, she grabs huge, glowing concrete highway segments and stacks them together like children's blocks, projecting blinding neon words from her palms: "A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together."
 
 ### [Ad] adder
 
@@ -262,9 +259,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Z2 Forelimbs | Dissonant tension]
-Concept: violently scratching sheet metal to shoot burning sparks
-Quote: Composers use dissonance intentionally to create emotional tension, which typically drives the music forward
-Story: Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass, sighing: "Consonant chords provide a sense of rest and anchor the musical piece." Suddenly, he grips two pieces of sheet metal with his hands and violently scratches them together, shooting burning, loud sparks while roaring: "Composers use dissonance intentionally to create emotional tension, which typically drives the music forward".
 
 ### [Y] yak
 
@@ -278,8 +272,6 @@ Story: Zeus rests his cheek heavily against a massive iron ship anchor that inst
 
 **Notes**
 [Z2 · Z2 Forelimbs | Triad unit]
-Concept: stamping three distinct lightning bolts into the pavement
-Story: stamping three distinct lightning bolts into the pavement · sensory: tactile ✋
 
 ### [X] Xena, warrior woman
 
@@ -421,9 +413,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Triad]
-Concept: Quetzalcoatl stacks three piano stones labeled by position: root, skip, next, skip, next.
-Quote: A three-note chord built from a root note with alternating scale tones above it.
-Story: Quetzalcoatl coils around the piano while a figure stands nearby holding a third key card. With a wide part of its body, Quetzalcoatl presses two keys at the same time so more than one sound becomes harmony. Then it stacks three piano stones into a simple tower: root, skip one, next, skip one, next.
 
 ### [P] panther
 
@@ -437,14 +426,6 @@ Story: Quetzalcoatl coils around the piano while a figure stands nearby holding 
 
 **Notes**
 [Z2 · Flat lowers]
-Concept: The panther carries a drooping key charm pushed down and left.
-Quote: Accidental that raises a note by one half step.
-Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right, showing a sharp raising the note by one half step.
-
-[Z3 · Sharp raises]
-Concept: The panther carries a bright spike charm lifting a key upward and right.
-Quote: Accidental that raises a note by one half step.
-Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right, showing a sharp raising the note by one half step.
 
 #### Notes
 
@@ -477,9 +458,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Any starting key]
-Concept: The owl carries a golden start flag that moves between black and white keys while the same gap path appears.
-Quote: Any note can be the tonic of a major scale when the correct interval formula is applied.
-Story: An owl spreads its wings above the street piano and lands on eight sung step markers while a figure watches the familiar rise and fall. The owl then moves a golden start flag from a white key to a black key. Each time, the same gap path appears under its claws, showing that any note can begin the major scale if the pattern is correct.
 
 ### [N] Neanderthal
 
@@ -503,9 +481,6 @@ Story: An owl spreads its wings above the street piano and lands on eight sung s
 
 **Notes**
 [Z2 · Whole step]
-Concept: The marmoset leaps over exactly one glowing skipped key and lands on the next key.
-Quote: A distance equal to two half steps.
-Story: A marmoset crouches between two side-by-side piano keys and finds no space at all, its nose bumping both keys at once. Then it springs away and leaps over exactly one glowing middle key before landing on the next key. The tight squeeze shows the half step, and the one-key leap shows the whole step.
 
 ### [L] lion
 
@@ -519,9 +494,6 @@ Story: A marmoset crouches between two side-by-side piano keys and finds no spac
 
 **Notes**
 [Z2 · C-major resolution]
-Concept: The lion places a bright C finish stone at the end of a C-major path.
-Quote: Finish C-major exercises on C to reinforce tonal resolution.
-Story: A lion pulls a tiny piano house along the street and parks it on one note, making that note feel like home. Beside the house, a figure walks a short C-major path and stops at a bright C finish stone. The whole road feels settled when the path ends on C.
 
 ### [K] kitten
 
@@ -564,9 +536,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Elbows away]
-Concept: The jester opens wing-like sleeves slightly away from the body.
-Quote: Allow the elbows to remain slightly away from the body.
-Story: A jester sits at the piano while a figure places soft cushions under the jester’s wrists. The wrists stay slightly raised and flexible, not stiff. The jester also opens wing-like sleeves a little away from the body, leaving visible space at both elbows instead of clamping them inward.
 
 ### [I] imp
 
@@ -580,9 +549,6 @@ Story: A jester sits at the piano while a figure places soft cushions under the 
 
 **Notes**
 [Z2 · Weight transfer]
-Concept: The imp wears a heavy cloth sleeve from shoulder to fingertip, letting weight flow into the key.
-Quote: Transfer the arm's weight efficiently into the fingertips.
-Story: An imp sits at the street piano wearing a heavy cloth sleeve that hangs from shoulder to fingertip. The sleeve shows the arm’s weight flowing down into the key while the finger stays calm. With the same hand, the imp lowers a wet sponge onto a piano key so water slowly squeezes out without any sharp stab.
 
 ### [H] Hydra
 
@@ -596,14 +562,6 @@ Story: An imp sits at the street piano wearing a heavy cloth sleeve that hangs f
 
 **Notes**
 [Z2 · Fingertip pads]
-Concept: Its glowing soft fingertip pads press the keys instead of sharp claws.
-Quote: Keep the thumb relaxed and naturally positioned.
-Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely, reminding the thumb not to push or grip.
-
-[Z3 · Loose thumb]
-Concept: A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.
-Quote: Keep the thumb relaxed and naturally positioned.
-Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely, reminding the thumb not to push or grip.
 
 ### [G] goat
 
@@ -627,14 +585,6 @@ Story: A Hydra places one playing hand over the piano keys while a figure watche
 
 **Notes**
 [Z2 · Half note]
-Concept: The frog carries a note with a stem and takes exactly two steps.
-Quote: Note lasting one beat in common time.
-Story: A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands, and the note is done.
-
-[Z3 · Quarter note]
-Concept: The frog presses one black note shape into wet clay with one loud footstep.
-Quote: Note lasting one beat in common time.
-Story: A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands, and the note is done.
 
 #### Notes
 
@@ -677,9 +627,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Tempo speed]
-Concept: The dragon turns a speed dial beside the piano, making the pulse faster or slower.
-Quote: The speed at which the beat is played.
-Story: A dragon stands over the street piano and stamps one claw on the road in a steady pulse. Each stamp makes the street lamps blink like a heart inside the music. With its other claw, the dragon turns a speed dial: when the dial rises, the stamps come faster; when it falls, the stamps slow into heavy steps.
 
 ### [C] cat
 
@@ -693,9 +640,6 @@ Story: A dragon stands over the street piano and stamps one claw on the road in 
 
 **Notes**
 [Z2 · Bass F landmark]
-Concept: The cat wears a soft tooth-shaped ring gently locked around a low F key.
-Quote: F note landmark used for reading notes in the bass clef.
-Story: A cat walks low across the bass staff with two clear landmarks attached to its body. On one side, it plants a small flag on a painted C key, saying without words, “Find me first when reading low notes.” On the other side, it wears a harmless tooth-shaped ring around a low F key, making F feel like a second easy street marker instead of a random note.
 
 ### [B] bird of paradise
 
@@ -709,14 +653,6 @@ Story: A cat walks low across the bass staff with two clear landmarks attached t
 
 **Notes**
 [Z2 · Bass clef low notes]
-Concept: Its folded wings form a heavy bass clef shape low on the lines.
-Quote: Combination of treble and bass staves connected by a brace.
-Story: The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. A figure locks a metal brace from the bird’s beak around two staffs, joining treble and bass into one bigger reading system.
-
-[Z3 · Grand staff brace]
-Concept: A large metal brace hangs from its beak, joining two music staffs into one system.
-Quote: Combination of treble and bass staves connected by a brace.
-Story: The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. A figure locks a metal brace from the bird’s beak around two staffs, joining treble and bass into one bigger reading system.
 
 ### [A] Arachne
 
@@ -730,14 +666,6 @@ Story: The bird of paradise lands beside the piano and drags one claw across the
 
 **Notes**
 [Z2 · Repeating note names]
-Concept: Seven bright feathers form a C D E F G A B loop across the piano keys.
-Quote: The distance between one note and the next note with the same name.
-Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house, showing the same note name in a farther place.
-
-[Z3 · Octave jump]
-Concept: Arachne springs from one C-key house to the next C-key house with the same letter farther away.
-Quote: The distance between one note and the next note with the same name.
-Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house, showing the same note name in a farther place.
 
 #### Notes
 

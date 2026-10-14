@@ -3030,6 +3030,36 @@
       "version": 1,
       "empty": false,
       "style": "illustration"
+    },
+    "ice cube": {
+      "key": "ice cube",
+      "slug": "ice_cube",
+      "file": "ice_cube.jpg",
+      "openverse_id": "596c5c90-87f3-4171-983a-0eeef818be09",
+      "source_page": "https://www.rawpixel.com/image/7371787/png-sticker-public-domain-blue",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "string": {
+      "key": "string",
+      "slug": "string",
+      "file": "string.png",
+      "openverse_id": "7ae6d12b-015e-40e8-bd68-6e2be65d1c43",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=4282226",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "recipe": {
+      "key": "recipe",
+      "slug": "recipe",
+      "file": "recipe.png",
+      "openverse_id": "26672f79-808d-44ad-892a-415e0a8a654d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=98682165",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

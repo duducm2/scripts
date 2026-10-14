@@ -1,6 +1,73 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 22: Apache Spark Architecture</strong> · Character: — · 4 beasts · 4 atoms</summary>
+
+_No image_
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Cl] clown
+
+<img src="../../web/assets/beast-thumbs/clown.png" alt="clown" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Resilient Distributed Datasets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BResilient%20Distributed%20Datasets%5D&color=9fd4ff" />(shield) to track] [the exact <img alt="[sequence]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsequence%5D&color=ffd966" />(recipe) of transformations from the original source.] — Note: This lineage provides fault tolerance by allowing Spark to recompute lost data deterministically.
+
+<img src="../../web/assets/keyword-images/shield.jpg" alt="shield" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/recipe.png" alt="recipe" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Resilient Distributed Datasets (RDDs) do not physically store data; they store the lineage - the exact sequence of transformations required to build the dataset from its original source”
+
+### [Ck] Cold kitten
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Cold kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use a <img alt="[Directed Acyclic Graph]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDirected%20Acyclic%20Graph%5D&color=9fd4ff" />(blueprint) to map] [my <img alt="[sequence]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsequence%5D&color=ffd966" />(string) of data transformations without any loops.]
+
+<img src="../../web/assets/keyword-images/blueprint.jpg" alt="blueprint" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/string.png" alt="string" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“When you write code, Spark builds a DAG - a logical graph of operations. It represents a sequence of computations (transformations) applied to the data without any loops.”
+
+### [Cj] Cold jester
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Cold jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[In-Memory Computing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BIn-Memory%20Computing%5D&color=9fd4ff" />(brain) to retain] [active datasets directly in <img alt="[RAM]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRAM%5D&color=ffd966" />(ice cube).] — Note: This drastically reduces slow disk I/O operations.
+
+<img src="../../web/assets/keyword-images/brain.jpg" alt="brain" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/ice_cube.jpg" alt="ice cube" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Spark's primary performance advantage is its ability to process data in memory (RAM), minimizing slow disk I/O operations.”
+
+### [Ci] cicada
+
+<img src="../../web/assets/beast-thumbs/cicada.png" alt="cicada" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use a <img alt="[Master-Worker Architecture]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMaster-Worker%20Architecture%5D&color=9fd4ff" />(crown) to distribute] [massive data workloads across multiple <img alt="[machines]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmachines%5D&color=ffd966" />(forklift).]
+
+<img src="../../web/assets/keyword-images/crown.png" alt="crown" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/forklift.png" alt="forklift" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Apache Spark operates on a master-worker architecture, designed to process massive datasets by dividing the workload across multiple machines.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 21](images/data-analyst/21.jpg)

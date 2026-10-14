@@ -21,14 +21,6 @@
 
 **Notes**
 [Z2 · Z2 Forelimbs | Hypnagogic Composition]
-Concept: wings aggressively flapping a thick, pungent cloud of heavy dream-sand that melts the pavement
-Quote: Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.
-Story: The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing holographic toys like a loud machine gun until the letter is exhausted. As it fires, its wings aggressively flap a thick, pungent cloud of heavy dream-sand that physically melts the concrete into a sinking micro-dream. Meanwhile, its heavy torso vigorously lifts a massive barbell made of solid cheese, sweating and building immense physical strength through relentless repetition.
-
-[Z3 · Z3 Torso | Sleep Strategy Practice]
-Concept: heavy torso vigorously lifting a massive barbell made of solid cheese, sweating under the physical pressure
-Quote: Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.
-Story: The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing holographic toys like a loud machine gun until the letter is exhausted. As it fires, its wings aggressively flap a thick, pungent cloud of heavy dream-sand that physically melts the concrete into a sinking micro-dream. Meanwhile, its heavy torso vigorously lifts a massive barbell made of solid cheese, sweating and building immense physical strength through relentless repetition.
 
 ### [N] Neanderthal
 
@@ -42,14 +34,6 @@ Story: The owl's sharp beak rips a giant, screaming letter "B" out of a cake, fi
 
 **Notes**
 [Z2 · Z2 Forelimbs | Insomnia Cause]
-Concept: thick, hairy hands violently crushing a sharp, freezing-cold holographic calendar of worries
-Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.
-Story: The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland, sugary calm.
-
-[Z3 · Z3 Torso | Cognitive Refocusing]
-Concept: chest cavity bursting open to vomit a stream of sweet, pastel-colored marshmallows that drown out buzzing hornets
-Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.
-Story: The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland, sugary calm.
 
 #### Notes
 
@@ -141,9 +125,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Z2 Forelimbs | Normal range]
-Concept: arms violently vibrating and shooting electric shocks
-Quote: For a healthy, resting adult, the normal range is 60 to 100 BPM.
-Story: Down the street at a parked car, the air smells intensely of burning ozone as a demonic imp lands. Its head violently swallows a giant glowing stopwatch that illuminates its throat from the inside, pulsing bright light as it squawks: "The speed at which the heart beats, quantified by the number of times the heart muscle contracts (beats) within a 60-second window." The imp's front arms violently vibrate against a figure's chest, delivering intense electric shocks that forcefully rattle the vampire's fangs to dictate: "For a healthy, resting adult, the normal range is 60 to 100 BPM."
 
 ### [H] Hydra
 
@@ -157,14 +138,6 @@ Story: Down the street at a parked car, the air smells intensely of burning ozon
 
 **Notes**
 [Z2 · Z2 Forelimbs | Normal range]
-Concept: front claws frantically splashing boiling, glowing red blood that scorches the ground
-Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.
-Story: A figure stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries, popping them loudly as it screams the exact definition: "The force exerted by circulating blood against the inner walls of blood vessels, primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)." Simultaneously, its front claws splash a puddle of boiling blood, scorching the bright red numbers into the concrete as it hisses: "For a healthy, resting adult, a normal reading is strictly less than 120/80 mmHg (read as "120 over 80")." The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools, spewing acrid smoke as the beast groans: "The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom."
-
-[Z3 · Z3 Torso | Mean Arterial Pressure]
-Concept: a giant, heavy iron scale violently branded into its chest, physically balancing the top and bottom blood pools while emitting burning smoke
-Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.
-Story: A figure stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries, popping them loudly as it screams the exact definition: "The force exerted by circulating blood against the inner walls of blood vessels, primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)." Simultaneously, its front claws splash a puddle of boiling blood, scorching the bright red numbers into the concrete as it hisses: "For a healthy, resting adult, a normal reading is strictly less than 120/80 mmHg (read as "120 over 80")." The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools, spewing acrid smoke as the beast groans: "The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom."
 
 #### Notes
 
