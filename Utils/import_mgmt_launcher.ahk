@@ -449,7 +449,7 @@ ImportMgmt_HelpText() {
     .
     "Shift+X = change extension (then Enter); Shift+N = type a one-off name; clipboard-first when image/text on clipboard`r`n"
     .
-    "Names manager: Enter copies bare name; Shift+C copies and closes every open window; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
+    "Names manager: Enter copies bare name; Shift+C copies and closes every open window; Shift+T writes the clipboard as Desktop\{name}.txt (overwrite; a markdown code fence around a pack is unwrapped); Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"

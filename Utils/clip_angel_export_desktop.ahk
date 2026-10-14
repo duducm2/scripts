@@ -1130,6 +1130,127 @@ ClipAngelExport_CopySelected(*) {
     return true
 }
 
+ClipAngelExport_MdFence() {
+    bt := Chr(96)
+    return bt . bt . bt
+}
+
+; True when text is a pack body the importers accept (===FILE: / ===PREVIEW=== or --- variants).
+ClipAngelExport_LooksLikePack(text) {
+    lower := StrLower(text)
+    return InStr(lower, "===file:") || InStr(lower, "---file:")
+    || InStr(lower, "===preview===") || InStr(lower, "---preview---")
+}
+
+; Drop a leading ```lang line and a closing fence. text is already newline-normalized.
+ClipAngelExport_UnwrapOneFence(text) {
+    fence := ClipAngelExport_MdFence()
+    nl := InStr(text, "`n")
+    inner := nl ? SubStr(text, nl + 1) : ""
+    inner := Trim(inner, "`n `t")
+    if (StrLen(inner) >= 3 && SubStr(inner, -3) = fence)
+        inner := Trim(SubStr(inner, 1, StrLen(inner) - 3), "`n `t")
+    return inner
+}
+
+; Plain clipboard text, or the inner pack when the clip is a markdown code fence.
+ClipAngelExport_ExtractPackBody(text) {
+    fence := ClipAngelExport_MdFence()
+    text := StrReplace(text, "`r`n", "`n")
+    text := StrReplace(text, "`r", "`n")
+    trimmed := Trim(text, "`n `t")
+    if (!InStr(trimmed, fence))
+        return trimmed
+    pos := 1
+    while (pos := InStr(trimmed, fence, false, pos)) {
+        afterOpen := pos + 3
+        nl := InStr(trimmed, "`n", false, afterOpen)
+        contentStart := nl ? nl + 1 : afterOpen
+        closePos := InStr(trimmed, fence, false, contentStart)
+        if (!closePos)
+            break
+        inner := Trim(SubStr(trimmed, contentStart, closePos - contentStart), "`n `t")
+        if (ClipAngelExport_LooksLikePack(inner))
+            return inner
+        pos := closePos + 3
+    }
+    if (SubStr(trimmed, 1, 3) = fence) {
+        inner := ClipAngelExport_UnwrapOneFence(trimmed)
+        if (inner != "")
+            return inner
+    }
+    return trimmed
+}
+
+ClipAngelExport_ClipboardAsPackText(&errMsg := "") {
+    errMsg := ""
+    text := ""
+    try text := A_Clipboard
+    catch {
+        errMsg := "Clipboard unavailable"
+        return ""
+    }
+    if (SubStr(text, 1, 1) = Chr(0xFEFF))
+        text := SubStr(text, 2)
+    body := ClipAngelExport_ExtractPackBody(text)
+    if (body = "") {
+        errMsg := "Clipboard empty"
+        return ""
+    }
+    return body
+}
+
+; Shift+T (names manager): clipboard → Desktop\{selected name}.txt, overwrite.
+; A markdown fence around a pack is unwrapped; plain text is written as-is.
+ClipAngelExport_SaveSelectedClipboardTxt(*) {
+    sel := ClipAngelExport_Selected()
+    if (!sel) {
+        try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    base := ClipAngelExport_SanitizeFileName(ClipAngelExport_ListBaseName(sel["name"]))
+    if (base = "") {
+        try ShowCenteredOverlay_Utils("Name is empty", 1200, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    errMsg := ""
+    body := ClipAngelExport_ClipboardAsPackText(&errMsg)
+    if (body = "") {
+        try ShowCenteredOverlay_Utils(errMsg != "" ? errMsg : "Clipboard empty", 1600, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    desktopPath := AiQuickDownload_ResolveDesktopPath()
+    if (desktopPath = "" || !DirExist(desktopPath)) {
+        try ShowCenteredOverlay_Utils("Desktop folder not found", 1600, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    outPath := desktopPath "\" base ".txt"
+    try WriteUtf8File(outPath, body)
+    catch {
+        try ShowCenteredOverlay_Utils("Could not write " . base . ".txt", 2000, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    if !FileExist(outPath) {
+        try ShowCenteredOverlay_Utils("Could not write " . base . ".txt", 2000, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    try ShowCenteredOverlay_Utils("Desktop " . base . ".txt", 1600, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
+
 ; Shift+C: name is on the clipboard, so dismiss this list and skip the return-to-hub callback.
 ClipAngelExport_CopySelectedAndClose(*) {
     if (!ClipAngelExport_CopySelected())
@@ -1158,6 +1279,7 @@ ClipAngelExport_UpdateManagerHint() {
     g_ClipAngelNameHint.Value :=
         "Letter  jump in list`n"
         . "Enter  copy name     Shift+C  copy and close`n"
+        . "Shift+T  clipboard → Desktop name.txt (overwrite)`n"
         . "Shift+A  add     Shift+E  edit     Delete  remove     Esc / Backspace  back"
 }
 
@@ -1174,9 +1296,9 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
     g_ClipAngelNameOnClose := onClose
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Quick Download — file names")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
-    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w420 h54")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w420 h72")
     ClipAngelExport_UpdateManagerHint()
-    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y72 w420 h310 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y90 w420 h292 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_CopySelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_ManagerClose())
     g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_ManagerClose())
@@ -1184,6 +1306,7 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_CopySelected()],
         ["+c", (*) => ClipAngelExport_CopySelectedAndClose()],
+        ["+t", (*) => ClipAngelExport_SaveSelectedClipboardTxt()],
         ["+a", (*) => ClipAngelExport_Add()],
         ["Insert", (*) => ClipAngelExport_Add()],
         ["+e", (*) => ClipAngelExport_Edit()],
