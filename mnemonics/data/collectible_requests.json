@@ -1,12 +1,10 @@
 {
-  "pending_slot": "",
-  "pending_palace_id": "",
+  "pending_slot": "trophy",
+  "pending_palace_id": "PALACE_ENGLISH_01",
   "cycle": [
     "trophy"
   ],
   "recent_looks": [
-    "a tile mosaic",
-    "a ballpoint doodle",
     "a linocut",
     "a tin toy",
     "a cardboard model",
@@ -16,6 +14,8 @@
     "an origami model",
     "a lacquer ornament",
     "a porcelain figurine",
-    "a batik motif"
+    "a batik motif",
+    "a watercolor study",
+    "a cast bronze miniature"
   ]
 }
