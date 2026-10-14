@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+0 project(s) · 2 task(s) · 7 info · Successfully converted the professional profile revision tasks (One Page and Pitch preparation) into the TAR project under the work filter.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+TAR,work,Revisar e atualizar seu profile profissional: Elaborar um One Page,general,punctual,,,,
+TAR,work,Preparar um pitch de até 5 minutos (formato Shark Tank),general,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Revisar e atualizar seu profile profissional: Elaborar um One Page,TAR,work,Nome e área de atuação,Informação obrigatória sobre nome e área de atuação no One Page.,
+task,Revisar e atualizar seu profile profissional: Elaborar um One Page,TAR,work,Breve histórico profissional,Informação obrigatória sobre breve histórico profissional no One Page.,
+task,Revisar e atualizar seu profile profissional: Elaborar um One Page,TAR,work,Âncora de carreira,Informação obrigatória sobre âncora de carreira no One Page.,
+task,Revisar e atualizar seu profile profissional: Elaborar um One Page,TAR,work,Skills do futuro,Informação obrigatória sobre skills do futuro no One Page.,
+task,Revisar e atualizar seu profile profissional: Elaborar um One Page,TAR,work,Destaque no pilar Leading Myself,Informação obrigatória sobre destaque no pilar Leading Myself no One Page.,
+task,Revisar e atualizar seu profile profissional: Elaborar um One Page,TAR,work,Frase-lema,Frase-lema que sintetiza a sua visão de futuro.,
+task,Preparar um pitch de até 5 minutos (formato Shark Tank),TAR,work,Apresentação da banca,Apresentar o One Page e trajetória diante de banca avaliadora composta por Gestores SO e Clientes.,
+===END_FILE===
