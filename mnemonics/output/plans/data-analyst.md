@@ -12,7 +12,7 @@
 
 - [✅] Visual Information Class PDFs
 
-- [ ] Fact tables and dimension tables
+- [✅] Fact tables and dimension tables
 
 - [ ] snow flake
 
@@ -162,7 +162,7 @@
 
 ### 1. Must
 
-- [ ] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
+- [✅] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
 - [ ] Query lakehouse tables with Spark SQL
 - [ ] Transform data with PySpark DataFrames
 - [ ] Create Delta tables and use time travel to inspect earlier versions
