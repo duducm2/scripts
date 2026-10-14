@@ -1249,6 +1249,13 @@ ClipAngelExport_SaveSelectedClipboardTxt(*) {
     try ShowCenteredOverlay_Utils("Desktop " . base . ".txt", 1600, BANNER_ACCENT_SUCCESS)
     catch {
     }
+    ; File is on the Desktop — dismiss the names list and do not reopen Import Management.
+    global g_ClipAngelNameOnClose
+    g_ClipAngelNameOnClose := unset
+    ClipAngelExport_CloseGui()
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
 }
 
 ; Shift+C: name is on the clipboard, so dismiss this list and skip the return-to-hub callback.
@@ -1279,7 +1286,7 @@ ClipAngelExport_UpdateManagerHint() {
     g_ClipAngelNameHint.Value :=
         "Letter  jump in list`n"
         . "Enter  copy name     Shift+C  copy and close`n"
-        . "Shift+T  clipboard → Desktop name.txt (overwrite)`n"
+        . "Shift+T  clipboard → Desktop name.txt, then close`n"
         . "Shift+A  add     Shift+E  edit     Delete  remove     Esc / Backspace  back"
 }
 
