@@ -217,6 +217,50 @@ ImportWatcher_MarkSeen(key, stamp) {
         g_ImportWatcherPending.Delete(key)
 }
 
+; Shared across AHK processes. Shift+T import claims a path so AppLaunchers does not import it again.
+ImportWatcher_ClaimFilePath() {
+    return A_Temp . "\scripts_import_watcher_claim.txt"
+}
+
+ImportWatcher_ClaimPath(path) {
+    if (path = "" || !FileExist(path))
+        return
+    stamp := ImportWatcher_FileStamp(path)
+    if (stamp = "")
+        return
+    key := ImportWatcher_LowerPath(path)
+    try ImportWatcher_MarkSeen(key, stamp)
+    catch {
+    }
+    try FileAppend(key . "|" . stamp . "`n", ImportWatcher_ClaimFilePath(), "UTF-8")
+    catch {
+    }
+}
+
+ImportWatcher_ApplyClaims() {
+    path := ImportWatcher_ClaimFilePath()
+    if (!FileExist(path))
+        return
+    body := ""
+    try body := FileRead(path, "UTF-8")
+    catch {
+        return
+    }
+    try FileDelete(path)
+    catch {
+    }
+    for line in StrSplit(body, "`n", "`r") {
+        line := Trim(line)
+        if (line = "")
+            continue
+        parts := StrSplit(line, "|", , 2)
+        key := parts.Length >= 1 ? Trim(parts[1]) : ""
+        stamp := parts.Length >= 2 ? Trim(parts[2]) : ""
+        if (key != "" && stamp != "")
+            ImportWatcher_MarkSeen(key, stamp)
+    }
+}
+
 ImportWatcher_ShowDetected(label) {
     try StandardLoadingBar_Show("📥 Detected " . label . " pack on Desktop…", BANNER_ACCENT_INFO, {
         passive: false
@@ -307,9 +351,14 @@ ImportWatcher_ProcessCandidate(cand) {
 
 ImportWatcher_Poll(*) {
     global g_ImportWatcherEnabled, g_ImportWatcherBusy
-    if (!g_ImportWatcherEnabled || g_ImportWatcherBusy)
+    if (!g_ImportWatcherEnabled)
         return
     if (!ImportWatcher_IsOwnerProcess())
+        return
+    try ImportWatcher_ApplyClaims()
+    catch {
+    }
+    if (g_ImportWatcherBusy)
         return
     try {
         if (Collectible_SendPendingPrompt())

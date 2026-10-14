@@ -284,6 +284,29 @@ ImportMgmt_CopySelectedFileName(*) {
     }
 }
 
+; Catalog run callback when fileName is a pack this hub imports (exact name, e.g. FINANCE_DAILY.txt).
+ImportMgmt_RunnerForFileName(fileName) {
+    want := StrLower(Trim(fileName))
+    if (want = "")
+        return ""
+    for item in ImportMgmt_Catalog() {
+        if (!item.Has("fileName") || !item.Has("run"))
+            continue
+        if (StrLower(Trim(item["fileName"])) != want)
+            continue
+        runFn := item["run"]
+        name := ""
+        try name := runFn.Name
+        catch {
+            name := ""
+        }
+        if (name = "ImportMgmt_RunDesktopNames" || name = "ImportMgmt_OnHelp")
+            continue
+        return runFn
+    }
+    return ""
+}
+
 ; --- Thin public runners (hub API; domain parsers stay in *_import modules) ---
 
 ImportMgmt_RunFinanceDaily(*) {
@@ -449,7 +472,7 @@ ImportMgmt_HelpText() {
     .
     "Shift+X = change extension (then Enter); Shift+N = type a one-off name; clipboard-first when image/text on clipboard`r`n"
     .
-    "Names manager: Enter copies bare name; Shift+C copies and closes every open window; Shift+T writes the clipboard as Desktop\{name}.txt (overwrite; a markdown code fence around a pack is unwrapped) and closes this list without returning here; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
+    "Names manager: Enter copies bare name; Shift+C copies and closes every open window; Shift+T writes the clipboard as Desktop\{name}.txt (overwrite; a markdown code fence around a pack is unwrapped), runs that pack's import when the name matches one (FINANCE_DAILY, PALACE_PACK, …), and closes this list without returning here; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"

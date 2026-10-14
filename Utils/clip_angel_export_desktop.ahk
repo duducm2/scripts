@@ -1200,8 +1200,47 @@ ClipAngelExport_ClipboardAsPackText(&errMsg := "") {
     return body
 }
 
+; Put a known pack on A_Desktop under its canonical name so the domain importer can discover it.
+ClipAngelExport_PlaceCanonicalPack(outPath, fileName) {
+    canon := ""
+    try canon := PackImport_CanonicalDesktopPath(fileName)
+    catch {
+        canon := A_Desktop . "\" . fileName
+    }
+    if (canon = "" || StrLower(RTrim(outPath, "\")) = StrLower(RTrim(canon, "\")))
+        return outPath
+    try {
+        FileMove(outPath, canon, 1)
+        return canon
+    } catch {
+        try {
+            FileCopy(outPath, canon, 1)
+            return canon
+        } catch {
+            return outPath
+        }
+    }
+}
+
+global g_ClipAngelExportPendingImport := ""
+
+ClipAngelExport_RunPendingImport(*) {
+    global g_ClipAngelExportPendingImport
+    runFn := g_ClipAngelExportPendingImport
+    g_ClipAngelExportPendingImport := ""
+    if (!HasMethod(runFn, "Call"))
+        return
+    try runFn.Call()
+    catch as e {
+        try ShowCenteredOverlay_Utils("Import failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        catch {
+        }
+    }
+}
+
 ; Shift+T (names manager): clipboard → Desktop\{selected name}.txt, overwrite.
 ; A markdown fence around a pack is unwrapped; plain text is written as-is.
+; A catalog pack name (FINANCE_DAILY.txt, …) then runs that import and closes.
 ClipAngelExport_SaveSelectedClipboardTxt(*) {
     sel := ClipAngelExport_Selected()
     if (!sel) {
@@ -1246,15 +1285,32 @@ ClipAngelExport_SaveSelectedClipboardTxt(*) {
         }
         return
     }
-    try ShowCenteredOverlay_Utils("Desktop " . base . ".txt", 1600, BANNER_ACCENT_SUCCESS)
+    fileName := base . ".txt"
+    runFn := ""
+    try runFn := ImportMgmt_RunnerForFileName(fileName)
+    catch {
+        runFn := ""
+    }
+    if (HasMethod(runFn, "Call")) {
+        outPath := ClipAngelExport_PlaceCanonicalPack(outPath, fileName)
+        try ImportWatcher_ClaimPath(outPath)
+        catch {
+        }
+    }
+    toast := HasMethod(runFn, "Call") ? ("Importing " . fileName) : ("Desktop " . fileName)
+    try ShowCenteredOverlay_Utils(toast, 1600, BANNER_ACCENT_SUCCESS)
     catch {
     }
     ; File is on the Desktop — dismiss the names list and do not reopen Import Management.
-    global g_ClipAngelNameOnClose
+    global g_ClipAngelNameOnClose, g_ClipAngelExportPendingImport
     g_ClipAngelNameOnClose := unset
     ClipAngelExport_CloseGui()
     try ImportMgmt_CloseIfOpen()
     catch {
+    }
+    if (HasMethod(runFn, "Call")) {
+        g_ClipAngelExportPendingImport := runFn
+        SetTimer(ClipAngelExport_RunPendingImport, -150)
     }
 }
 
@@ -1286,7 +1342,7 @@ ClipAngelExport_UpdateManagerHint() {
     g_ClipAngelNameHint.Value :=
         "Letter  jump in list`n"
         . "Enter  copy name     Shift+C  copy and close`n"
-        . "Shift+T  clipboard → Desktop name.txt, then close`n"
+        . "Shift+T  clipboard → name.txt, import if known, close`n"
         . "Shift+A  add     Shift+E  edit     Delete  remove     Esc / Backspace  back"
 }
 
