@@ -1,5 +1,6 @@
 {
   "included_palace_ids": [
+    "PALACE_DATAANALYST_22",
     "PALACE_DATAANALYST_21",
     "PALACE_DATAANALYST_20",
     "PALACE_DATAANALYST_19",
@@ -157,6 +158,7 @@
     "In modern data warehousing (e.g.",
     "PALACE_DATAANALYST_19",
     "PALACE_DATAANALYST_20",
-    "PALACE_DATAANALYST_21"
+    "PALACE_DATAANALYST_21",
+    "PALACE_DATAANALYST_22"
   ]
 }

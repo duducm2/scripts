@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-10-11",
+    "generated_at": "2026-10-14",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "397 beasts / 64 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 52 beasts with adj"
+    "catalog_scope": "525 beasts / 171 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 55 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -43,6 +43,56 @@
       "filename": "cat.png",
       "url": "/assets/beast-thumbs/cat.png",
       "source_slug": "cat",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The cat's front paws violently slam a crystal sphere helmet onto its skull": {
+      "label": "Concept: The cat's front paws violently slam a crystal sphere helmet onto its sk",
+      "peg_code": " echoing _clack_.",
+      "filename": "concept_the_cat_s_front_paws_violently_slam_a_crystal_sphere_helmet_onto_its_sk.png",
+      "url": "/assets/beast-thumbs/concept_the_cat_s_front_paws_violently_slam_a_crystal_sphere_helmet_onto_its_sk.png",
+      "source_slug": "concept_the_cat_s_front_paws_violently_slam_a_crystal_sphere_helmet_onto_its_sk",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: In the era of Generative AI": {
+      "label": "Quote: In the era of Generative AI",
+      "peg_code": "",
+      "filename": "quote_in_the_era_of_generative_ai.png",
+      "url": "/assets/beast-thumbs/quote_in_the_era_of_generative_ai.png",
+      "source_slug": "quote_in_the_era_of_generative_ai",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A colossal house cat clings to the aerial street lamp": {
+      "label": "hallucination-free blueprint that the 1940s man feeds to a floating robot brain.",
+      "peg_code": " locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid",
+      "filename": "hallucination_free_blueprint_that_the_1940s_man_feeds_to_a_floating_robot_brain.png",
+      "url": "/assets/beast-thumbs/hallucination_free_blueprint_that_the_1940s_man_feeds_to_a_floating_robot_brain.png",
+      "source_slug": "hallucination_free_blueprint_that_the_1940s_man_feeds_to_a_floating_robot_brain",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Z3 Torso | Blueprint projector ribs]": {
+      "label": "Z3 · Z3 Torso | Blueprint projector ribs",
+      "peg_code": "",
+      "filename": "z3_z3_torso_blueprint_projector_ribs.png",
+      "url": "/assets/beast-thumbs/z3_z3_torso_blueprint_projector_ribs.png",
+      "source_slug": "z3_z3_torso_blueprint_projector_ribs",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The cat's ribs aggressively fire a solid": {
+      "label": "Concept: The cat's ribs aggressively fire a solid",
+      "peg_code": "",
+      "filename": "concept_the_cat_s_ribs_aggressively_fire_a_solid.png",
+      "url": "/assets/beast-thumbs/concept_the_cat_s_ribs_aggressively_fire_a_solid.png",
+      "source_slug": "concept_the_cat_s_ribs_aggressively_fire_a_solid",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -103,6 +153,36 @@
       "filename": "imp.png",
       "url": "/assets/beast-thumbs/imp.png",
       "source_slug": "imp",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: its claws violently vomit blistering hot golden coins that visibly melt the concrete": {
+      "label": "Concept: its claws violently vomit blistering hot golden coins that visibly melt",
+      "peg_code": "",
+      "filename": "concept_its_claws_violently_vomit_blistering_hot_golden_coins_that_visibly_melt.png",
+      "url": "/assets/beast-thumbs/concept_its_claws_violently_vomit_blistering_hot_golden_coins_that_visibly_melt.png",
+      "source_slug": "concept_its_claws_violently_vomit_blistering_hot_golden_coins_that_visibly_melt",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Generating new text takes significantly more computing power": {
+      "label": "Quote: Generating new text takes significantly more computing power",
+      "peg_code": "",
+      "filename": "quote_generating_new_text_takes_significantly_more_computing_power.png",
+      "url": "/assets/beast-thumbs/quote_generating_new_text_takes_significantly_more_computing_power.png",
+      "source_slug": "quote_generating_new_text_takes_significantly_more_computing_power",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A colossal": {
+      "label": "mutating its skull into a mechanical cash register that rings with a deafening c",
+      "peg_code": " reeking of burning sulfur. A giant glowing green price tag violently clamps over its face",
+      "filename": "mutating_its_skull_into_a_mechanical_cash_register_that_rings_with_a_deafening_c.png",
+      "url": "/assets/beast-thumbs/mutating_its_skull_into_a_mechanical_cash_register_that_rings_with_a_deafening_c.png",
+      "source_slug": "mutating_its_skull_into_a_mechanical_cash_register_that_rings_with_a_deafening_c",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1217,12 +1297,112 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: Seven bright feathers form a C D E F G A B loop across the piano keys.": {
+      "label": "Concept: Seven bright feathers form a C D E F G A B loop across the piano keys.",
+      "peg_code": "",
+      "filename": "concept_seven_bright_feathers_form_a_c_d_e_f_g_a_b_loop_across_the_piano_keys.png",
+      "url": "/assets/beast-thumbs/concept_seven_bright_feathers_form_a_c_d_e_f_g_a_b_loop_across_the_piano_keys.png",
+      "source_slug": "concept_seven_bright_feathers_form_a_c_d_e_f_g_a_b_loop_across_the_piano_keys",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: The distance between one note and the next note with the same name.": {
+      "label": "Quote: The distance between one note and the next note with the same name.",
+      "peg_code": "",
+      "filename": "quote_the_distance_between_one_note_and_the_next_note_with_the_same_name.png",
+      "url": "/assets/beast-thumbs/quote_the_distance_between_one_note_and_the_next_note_with_the_same_name.png",
+      "source_slug": "quote_the_distance_between_one_note_and_the_next_note_with_the_same_name",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist": {
+      "label": "showing the same note name in a farther place.\"",
+      "peg_code": " she leaps from one C-key house to the next C-key house",
+      "filename": "showing_the_same_note_name_in_a_farther_place.png",
+      "url": "/assets/beast-thumbs/showing_the_same_note_name_in_a_farther_place.png",
+      "source_slug": "showing_the_same_note_name_in_a_farther_place",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Octave jump]": {
+      "label": "Z3 · Octave jump",
+      "peg_code": "",
+      "filename": "z3_octave_jump.png",
+      "url": "/assets/beast-thumbs/z3_octave_jump.png",
+      "source_slug": "z3_octave_jump",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: Arachne springs from one C-key house to the next C-key house with the same letter farther away.": {
+      "label": "Concept: Arachne springs from one C-key house to the next C-key house with the s",
+      "peg_code": "",
+      "filename": "concept_arachne_springs_from_one_c_key_house_to_the_next_c_key_house_with_the_s.png",
+      "url": "/assets/beast-thumbs/concept_arachne_springs_from_one_c_key_house_to_the_next_c_key_house_with_the_s.png",
+      "source_slug": "concept_arachne_springs_from_one_c_key_house_to_the_next_c_key_house_with_the_s",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_01_B": {
       "label": "bird of paradise",
       "peg_code": "B",
       "filename": "bird_of_paradise.png",
       "url": "/assets/beast-thumbs/bird_of_paradise.png",
       "source_slug": "bird_of_paradise",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: Its folded wings form a heavy bass clef shape low on the lines.": {
+      "label": "Concept: Its folded wings form a heavy bass clef shape low on the lines.",
+      "peg_code": "",
+      "filename": "concept_its_folded_wings_form_a_heavy_bass_clef_shape_low_on_the_lines.png",
+      "url": "/assets/beast-thumbs/concept_its_folded_wings_form_a_heavy_bass_clef_shape_low_on_the_lines.png",
+      "source_slug": "concept_its_folded_wings_form_a_heavy_bass_clef_shape_low_on_the_lines",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Combination of treble and bass staves connected by a brace.": {
+      "label": "Quote: Combination of treble and bass staves connected by a brace.",
+      "peg_code": "",
+      "filename": "quote_combination_of_treble_and_bass_staves_connected_by_a_brace.png",
+      "url": "/assets/beast-thumbs/quote_combination_of_treble_and_bass_staves_connected_by_a_brace.png",
+      "source_slug": "quote_combination_of_treble_and_bass_staves_connected_by_a_brace",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: The bird of paradise lands beside the piano and drags one claw across the street": {
+      "label": "Story: The bird of paradise lands beside the piano and drags one claw across the",
+      "peg_code": " joining treble and bass into one bigger reading system.\"",
+      "filename": "story_the_bird_of_paradise_lands_beside_the_piano_and_drags_one_claw_across_the.png",
+      "url": "/assets/beast-thumbs/story_the_bird_of_paradise_lands_beside_the_piano_and_drags_one_claw_across_the.png",
+      "source_slug": "story_the_bird_of_paradise_lands_beside_the_piano_and_drags_one_claw_across_the",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Grand staff brace]": {
+      "label": "Z3 · Grand staff brace",
+      "peg_code": "",
+      "filename": "z3_grand_staff_brace.png",
+      "url": "/assets/beast-thumbs/z3_grand_staff_brace.png",
+      "source_slug": "z3_grand_staff_brace",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: A large metal brace hangs from its beak": {
+      "label": "Concept: A large metal brace hangs from its beak",
+      "peg_code": "",
+      "filename": "concept_a_large_metal_brace_hangs_from_its_beak.png",
+      "url": "/assets/beast-thumbs/concept_a_large_metal_brace_hangs_from_its_beak.png",
+      "source_slug": "concept_a_large_metal_brace_hangs_from_its_beak",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1237,12 +1417,72 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: The cat wears a soft tooth-shaped ring gently locked around a low F key.": {
+      "label": "Concept: The cat wears a soft tooth-shaped ring gently locked around a low F key",
+      "peg_code": "",
+      "filename": "concept_the_cat_wears_a_soft_tooth_shaped_ring_gently_locked_around_a_low_f_key.png",
+      "url": "/assets/beast-thumbs/concept_the_cat_wears_a_soft_tooth_shaped_ring_gently_locked_around_a_low_f_key.png",
+      "source_slug": "concept_the_cat_wears_a_soft_tooth_shaped_ring_gently_locked_around_a_low_f_key",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: F note landmark used for reading notes in the bass clef.": {
+      "label": "Quote: F note landmark used for reading notes in the bass clef.",
+      "peg_code": "",
+      "filename": "quote_f_note_landmark_used_for_reading_notes_in_the_bass_clef.png",
+      "url": "/assets/beast-thumbs/quote_f_note_landmark_used_for_reading_notes_in_the_bass_clef.png",
+      "source_slug": "quote_f_note_landmark_used_for_reading_notes_in_the_bass_clef",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A cat walks low across the bass staff with two clear landmarks attached to its body. On one side": {
+      "label": "“Find me first when reading low notes.” On the other side",
+      "peg_code": " saying without words",
+      "filename": "find_me_first_when_reading_low_notes_on_the_other_side.png",
+      "url": "/assets/beast-thumbs/find_me_first_when_reading_low_notes_on_the_other_side.png",
+      "source_slug": "find_me_first_when_reading_low_notes_on_the_other_side",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_01_D": {
       "label": "dragon",
       "peg_code": "D",
       "filename": "dragon.png",
       "url": "/assets/beast-thumbs/dragon.png",
       "source_slug": "dragon",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The dragon turns a speed dial beside the piano": {
+      "label": "Concept: The dragon turns a speed dial beside the piano",
+      "peg_code": "",
+      "filename": "concept_the_dragon_turns_a_speed_dial_beside_the_piano.png",
+      "url": "/assets/beast-thumbs/concept_the_dragon_turns_a_speed_dial_beside_the_piano.png",
+      "source_slug": "concept_the_dragon_turns_a_speed_dial_beside_the_piano",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: The speed at which the beat is played.": {
+      "label": "Quote: The speed at which the beat is played.",
+      "peg_code": "",
+      "filename": "quote_the_speed_at_which_the_beat_is_played.png",
+      "url": "/assets/beast-thumbs/quote_the_speed_at_which_the_beat_is_played.png",
+      "source_slug": "quote_the_speed_at_which_the_beat_is_played",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A dragon stands over the street piano and stamps one claw on the road in a steady pulse. Each stamp makes the street lamps blink like a heart inside the music. With its other claw": {
+      "label": "the stamps slow into heavy steps.\"",
+      "peg_code": " the stamps come faster; when it falls",
+      "filename": "the_stamps_slow_into_heavy_steps.png",
+      "url": "/assets/beast-thumbs/the_stamps_slow_into_heavy_steps.png",
+      "source_slug": "the_stamps_slow_into_heavy_steps",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1267,6 +1507,56 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: The frog carries a note with a stem and takes exactly two steps.": {
+      "label": "Concept: The frog carries a note with a stem and takes exactly two steps.",
+      "peg_code": "",
+      "filename": "concept_the_frog_carries_a_note_with_a_stem_and_takes_exactly_two_steps.png",
+      "url": "/assets/beast-thumbs/concept_the_frog_carries_a_note_with_a_stem_and_takes_exactly_two_steps.png",
+      "source_slug": "concept_the_frog_carries_a_note_with_a_stem_and_takes_exactly_two_steps",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Note lasting one beat in common time.": {
+      "label": "Quote: Note lasting one beat in common time.",
+      "peg_code": "",
+      "filename": "quote_note_lasting_one_beat_in_common_time.png",
+      "url": "/assets/beast-thumbs/quote_note_lasting_one_beat_in_common_time.png",
+      "source_slug": "quote_note_lasting_one_beat_in_common_time",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A frog stands inside a painted measure grid. First": {
+      "label": "it presses one black note shape into wet clay as a single loud footstep lands",
+      "peg_code": " and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally",
+      "filename": "it_presses_one_black_note_shape_into_wet_clay_as_a_single_loud_footstep_lands.png",
+      "url": "/assets/beast-thumbs/it_presses_one_black_note_shape_into_wet_clay_as_a_single_loud_footstep_lands.png",
+      "source_slug": "it_presses_one_black_note_shape_into_wet_clay_as_a_single_loud_footstep_lands",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Quarter note]": {
+      "label": "Z3 · Quarter note",
+      "peg_code": "",
+      "filename": "z3_quarter_note.png",
+      "url": "/assets/beast-thumbs/z3_quarter_note.png",
+      "source_slug": "z3_quarter_note",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The frog presses one black note shape into wet clay with one loud footstep.": {
+      "label": "Concept: The frog presses one black note shape into wet clay with one loud foots",
+      "peg_code": "",
+      "filename": "concept_the_frog_presses_one_black_note_shape_into_wet_clay_with_one_loud_foots.png",
+      "url": "/assets/beast-thumbs/concept_the_frog_presses_one_black_note_shape_into_wet_clay_with_one_loud_foots.png",
+      "source_slug": "concept_the_frog_presses_one_black_note_shape_into_wet_clay_with_one_loud_foots",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_02_G": {
       "label": "goat",
       "peg_code": "G",
@@ -1287,6 +1577,56 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: Its glowing soft fingertip pads press the keys instead of sharp claws.": {
+      "label": "Concept: Its glowing soft fingertip pads press the keys instead of sharp claws.",
+      "peg_code": "",
+      "filename": "concept_its_glowing_soft_fingertip_pads_press_the_keys_instead_of_sharp_claws.png",
+      "url": "/assets/beast-thumbs/concept_its_glowing_soft_fingertip_pads_press_the_keys_instead_of_sharp_claws.png",
+      "source_slug": "concept_its_glowing_soft_fingertip_pads_press_the_keys_instead_of_sharp_claws",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Keep the thumb relaxed and naturally positioned.": {
+      "label": "Quote: Keep the thumb relaxed and naturally positioned.",
+      "peg_code": "",
+      "filename": "quote_keep_the_thumb_relaxed_and_naturally_positioned.png",
+      "url": "/assets/beast-thumbs/quote_keep_the_thumb_relaxed_and_naturally_positioned.png",
+      "source_slug": "quote_keep_the_thumb_relaxed_and_naturally_positioned",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion": {
+      "label": "reminding the thumb not to push or grip.\"",
+      "peg_code": " a tiny thumb-shaped pillow rests loosely",
+      "filename": "reminding_the_thumb_not_to_push_or_grip.png",
+      "url": "/assets/beast-thumbs/reminding_the_thumb_not_to_push_or_grip.png",
+      "source_slug": "reminding_the_thumb_not_to_push_or_grip",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Loose thumb]": {
+      "label": "Z3 · Loose thumb",
+      "peg_code": "",
+      "filename": "z3_loose_thumb.png",
+      "url": "/assets/beast-thumbs/z3_loose_thumb.png",
+      "source_slug": "z3_loose_thumb",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.": {
+      "label": "Concept: A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.",
+      "peg_code": "",
+      "filename": "concept_a_tiny_thumb_shaped_pillow_rests_beside_the_hydra_s_relaxed_hand.png",
+      "url": "/assets/beast-thumbs/concept_a_tiny_thumb_shaped_pillow_rests_beside_the_hydra_s_relaxed_hand.png",
+      "source_slug": "concept_a_tiny_thumb_shaped_pillow_rests_beside_the_hydra_s_relaxed_hand",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_02_I": {
       "label": "imp",
       "peg_code": "I",
@@ -1297,12 +1637,72 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: The imp wears a heavy cloth sleeve from shoulder to fingertip": {
+      "label": "Concept: The imp wears a heavy cloth sleeve from shoulder to fingertip",
+      "peg_code": "",
+      "filename": "concept_the_imp_wears_a_heavy_cloth_sleeve_from_shoulder_to_fingertip.png",
+      "url": "/assets/beast-thumbs/concept_the_imp_wears_a_heavy_cloth_sleeve_from_shoulder_to_fingertip.png",
+      "source_slug": "concept_the_imp_wears_a_heavy_cloth_sleeve_from_shoulder_to_fingertip",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Transfer the arm's weight efficiently into the fingertips.": {
+      "label": "Quote: Transfer the arm's weight efficiently into the fingertips.",
+      "peg_code": "",
+      "filename": "quote_transfer_the_arm_s_weight_efficiently_into_the_fingertips.png",
+      "url": "/assets/beast-thumbs/quote_transfer_the_arm_s_weight_efficiently_into_the_fingertips.png",
+      "source_slug": "quote_transfer_the_arm_s_weight_efficiently_into_the_fingertips",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: An imp sits at the street piano wearing a heavy cloth sleeve that hangs from shoulder to fingertip. The sleeve shows the arm’s weight flowing down into the key while the finger stays calm. With the same hand": {
+      "label": "Story: An imp sits at the street piano wearing a heavy cloth sleeve that hangs f",
+      "peg_code": "",
+      "filename": "story_an_imp_sits_at_the_street_piano_wearing_a_heavy_cloth_sleeve_that_hangs_f.png",
+      "url": "/assets/beast-thumbs/story_an_imp_sits_at_the_street_piano_wearing_a_heavy_cloth_sleeve_that_hangs_f.png",
+      "source_slug": "story_an_imp_sits_at_the_street_piano_wearing_a_heavy_cloth_sleeve_that_hangs_f",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_02_J": {
       "label": "jester",
       "peg_code": "J",
       "filename": "jester.png",
       "url": "/assets/beast-thumbs/jester.png",
       "source_slug": "jester",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The jester opens wing-like sleeves slightly away from the body.": {
+      "label": "Concept: The jester opens wing-like sleeves slightly away from the body.",
+      "peg_code": "",
+      "filename": "concept_the_jester_opens_wing_like_sleeves_slightly_away_from_the_body.png",
+      "url": "/assets/beast-thumbs/concept_the_jester_opens_wing_like_sleeves_slightly_away_from_the_body.png",
+      "source_slug": "concept_the_jester_opens_wing_like_sleeves_slightly_away_from_the_body",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Allow the elbows to remain slightly away from the body.": {
+      "label": "Quote: Allow the elbows to remain slightly away from the body.",
+      "peg_code": "",
+      "filename": "quote_allow_the_elbows_to_remain_slightly_away_from_the_body.png",
+      "url": "/assets/beast-thumbs/quote_allow_the_elbows_to_remain_slightly_away_from_the_body.png",
+      "source_slug": "quote_allow_the_elbows_to_remain_slightly_away_from_the_body",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A jester sits at the piano while a figure places soft cushions under the jester’s wrists. The wrists stay slightly raised and flexible": {
+      "label": "Story: A jester sits at the piano while a figure places soft cushions under the ",
+      "peg_code": " leaving visible space at both elbows instead of clamping them inward.\"",
+      "filename": "story_a_jester_sits_at_the_piano_while_a_figure_places_soft_cushions_under_the.png",
+      "url": "/assets/beast-thumbs/story_a_jester_sits_at_the_piano_while_a_figure_places_soft_cushions_under_the.png",
+      "source_slug": "story_a_jester_sits_at_the_piano_while_a_figure_places_soft_cushions_under_the",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1327,12 +1727,72 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: The lion places a bright C finish stone at the end of a C-major path.": {
+      "label": "Concept: The lion places a bright C finish stone at the end of a C-major path.",
+      "peg_code": "",
+      "filename": "concept_the_lion_places_a_bright_c_finish_stone_at_the_end_of_a_c_major_path.png",
+      "url": "/assets/beast-thumbs/concept_the_lion_places_a_bright_c_finish_stone_at_the_end_of_a_c_major_path.png",
+      "source_slug": "concept_the_lion_places_a_bright_c_finish_stone_at_the_end_of_a_c_major_path",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Finish C-major exercises on C to reinforce tonal resolution.": {
+      "label": "Quote: Finish C-major exercises on C to reinforce tonal resolution.",
+      "peg_code": "",
+      "filename": "quote_finish_c_major_exercises_on_c_to_reinforce_tonal_resolution.png",
+      "url": "/assets/beast-thumbs/quote_finish_c_major_exercises_on_c_to_reinforce_tonal_resolution.png",
+      "source_slug": "quote_finish_c_major_exercises_on_c_to_reinforce_tonal_resolution",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A lion pulls a tiny piano house along the street and parks it on one note": {
+      "label": "Story: A lion pulls a tiny piano house along the street and parks it on one note",
+      "peg_code": " a figure walks a short C-major path and stops at a bright C finish stone. The whole road feels settled when the path ends on C.\"",
+      "filename": "story_a_lion_pulls_a_tiny_piano_house_along_the_street_and_parks_it_on_one_note.png",
+      "url": "/assets/beast-thumbs/story_a_lion_pulls_a_tiny_piano_house_along_the_street_and_parks_it_on_one_note.png",
+      "source_slug": "story_a_lion_pulls_a_tiny_piano_house_along_the_street_and_parks_it_on_one_note",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_03_M": {
       "label": "marmoset",
       "peg_code": "M",
       "filename": "marmoset.png",
       "url": "/assets/beast-thumbs/marmoset.png",
       "source_slug": "marmoset",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The marmoset leaps over exactly one glowing skipped key and lands on the next key.": {
+      "label": "Concept: The marmoset leaps over exactly one glowing skipped key and lands on th",
+      "peg_code": "",
+      "filename": "concept_the_marmoset_leaps_over_exactly_one_glowing_skipped_key_and_lands_on_th.png",
+      "url": "/assets/beast-thumbs/concept_the_marmoset_leaps_over_exactly_one_glowing_skipped_key_and_lands_on_th.png",
+      "source_slug": "concept_the_marmoset_leaps_over_exactly_one_glowing_skipped_key_and_lands_on_th",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: A distance equal to two half steps.": {
+      "label": "Quote: A distance equal to two half steps.",
+      "peg_code": "",
+      "filename": "quote_a_distance_equal_to_two_half_steps.png",
+      "url": "/assets/beast-thumbs/quote_a_distance_equal_to_two_half_steps.png",
+      "source_slug": "quote_a_distance_equal_to_two_half_steps",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A marmoset crouches between two side-by-side piano keys and finds no space at all": {
+      "label": "Story: A marmoset crouches between two side-by-side piano keys and finds no spac",
+      "peg_code": " and the one-key leap shows the whole step.\"",
+      "filename": "story_a_marmoset_crouches_between_two_side_by_side_piano_keys_and_finds_no_spac.png",
+      "url": "/assets/beast-thumbs/story_a_marmoset_crouches_between_two_side_by_side_piano_keys_and_finds_no_spac.png",
+      "source_slug": "story_a_marmoset_crouches_between_two_side_by_side_piano_keys_and_finds_no_spac",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1357,6 +1817,36 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: The owl carries a golden start flag that moves between black and white keys while the same gap path appears.": {
+      "label": "Concept: The owl carries a golden start flag that moves between black and white ",
+      "peg_code": "",
+      "filename": "concept_the_owl_carries_a_golden_start_flag_that_moves_between_black_and_white.png",
+      "url": "/assets/beast-thumbs/concept_the_owl_carries_a_golden_start_flag_that_moves_between_black_and_white.png",
+      "source_slug": "concept_the_owl_carries_a_golden_start_flag_that_moves_between_black_and_white",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Any note can be the tonic of a major scale when the correct interval formula is applied.": {
+      "label": "Quote: Any note can be the tonic of a major scale when the correct interval form",
+      "peg_code": "",
+      "filename": "quote_any_note_can_be_the_tonic_of_a_major_scale_when_the_correct_interval_form.png",
+      "url": "/assets/beast-thumbs/quote_any_note_can_be_the_tonic_of_a_major_scale_when_the_correct_interval_form.png",
+      "source_slug": "quote_any_note_can_be_the_tonic_of_a_major_scale_when_the_correct_interval_form",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: An owl spreads its wings above the street piano and lands on eight sung step markers while a figure watches the familiar rise and fall. The owl then moves a golden start flag from a white key to a black key. Each time": {
+      "label": "Story: An owl spreads its wings above the street piano and lands on eight sung s",
+      "peg_code": " showing that any note can begin the major scale if the pattern is correct.\"",
+      "filename": "story_an_owl_spreads_its_wings_above_the_street_piano_and_lands_on_eight_sung_s.png",
+      "url": "/assets/beast-thumbs/story_an_owl_spreads_its_wings_above_the_street_piano_and_lands_on_eight_sung_s.png",
+      "source_slug": "story_an_owl_spreads_its_wings_above_the_street_piano_and_lands_on_eight_sung_s",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_04_P": {
       "label": "panther",
       "peg_code": "P",
@@ -1367,12 +1857,92 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: The panther carries a drooping key charm pushed down and left.": {
+      "label": "Concept: The panther carries a drooping key charm pushed down and left.",
+      "peg_code": "",
+      "filename": "concept_the_panther_carries_a_drooping_key_charm_pushed_down_and_left.png",
+      "url": "/assets/beast-thumbs/concept_the_panther_carries_a_drooping_key_charm_pushed_down_and_left.png",
+      "source_slug": "concept_the_panther_carries_a_drooping_key_charm_pushed_down_and_left",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Accidental that raises a note by one half step.": {
+      "label": "Quote: Accidental that raises a note by one half step.",
+      "peg_code": "",
+      "filename": "quote_accidental_that_raises_a_note_by_one_half_step.png",
+      "url": "/assets/beast-thumbs/quote_accidental_that_raises_a_note_by_one_half_step.png",
+      "source_slug": "quote_accidental_that_raises_a_note_by_one_half_step",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar": {
+      "label": "showing a flat lowering the note by one half step. On the other side",
+      "peg_code": " it carries a drooping key charm pushed gently down and left",
+      "filename": "showing_a_flat_lowering_the_note_by_one_half_step_on_the_other_side.png",
+      "url": "/assets/beast-thumbs/showing_a_flat_lowering_the_note_by_one_half_step_on_the_other_side.png",
+      "source_slug": "showing_a_flat_lowering_the_note_by_one_half_step_on_the_other_side",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Sharp raises]": {
+      "label": "Z3 · Sharp raises",
+      "peg_code": "",
+      "filename": "z3_sharp_raises.png",
+      "url": "/assets/beast-thumbs/z3_sharp_raises.png",
+      "source_slug": "z3_sharp_raises",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: The panther carries a bright spike charm lifting a key upward and right.": {
+      "label": "Concept: The panther carries a bright spike charm lifting a key upward and right",
+      "peg_code": "",
+      "filename": "concept_the_panther_carries_a_bright_spike_charm_lifting_a_key_upward_and_right.png",
+      "url": "/assets/beast-thumbs/concept_the_panther_carries_a_bright_spike_charm_lifting_a_key_upward_and_right.png",
+      "source_slug": "concept_the_panther_carries_a_bright_spike_charm_lifting_a_key_upward_and_right",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_04_Q": {
       "label": "Quetzalcoatl",
       "peg_code": "Q",
       "filename": "quetzalcoatl.png",
       "url": "/assets/beast-thumbs/quetzalcoatl.png",
       "source_slug": "quetzalcoatl",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: Quetzalcoatl stacks three piano stones labeled by position: root": {
+      "label": "skip",
+      "peg_code": " next",
+      "filename": "skip.png",
+      "url": "/assets/beast-thumbs/skip.png",
+      "source_slug": "skip",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: A three-note chord built from a root note with alternating scale tones above it.": {
+      "label": "Quote: A three-note chord built from a root note with alternating scale tones ab",
+      "peg_code": "",
+      "filename": "quote_a_three_note_chord_built_from_a_root_note_with_alternating_scale_tones_ab.png",
+      "url": "/assets/beast-thumbs/quote_a_three_note_chord_built_from_a_root_note_with_alternating_scale_tones_ab.png",
+      "source_slug": "quote_a_three_note_chord_built_from_a_root_note_with_alternating_scale_tones_ab",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: Quetzalcoatl coils around the piano while a figure stands nearby holding a third key card. With a wide part of its body": {
+      "label": "next",
+      "peg_code": " skip one",
+      "filename": "next.png",
+      "url": "/assets/beast-thumbs/next.png",
+      "source_slug": "next",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1457,12 +2027,62 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: stamping three distinct lightning bolts into the pavement": {
+      "label": "Concept: stamping three distinct lightning bolts into the pavement",
+      "peg_code": "",
+      "filename": "concept_stamping_three_distinct_lightning_bolts_into_the_pavement.png",
+      "url": "/assets/beast-thumbs/concept_stamping_three_distinct_lightning_bolts_into_the_pavement.png",
+      "source_slug": "concept_stamping_three_distinct_lightning_bolts_into_the_pavement",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: stamping three distinct lightning bolts into the pavement · sensory: tactile ✋\"": {
+      "label": "Story: stamping three distinct lightning bolts into the pavement · sensory: tact",
+      "peg_code": "",
+      "filename": "story_stamping_three_distinct_lightning_bolts_into_the_pavement_sensory_tact.png",
+      "url": "/assets/beast-thumbs/story_stamping_three_distinct_lightning_bolts_into_the_pavement_sensory_tact.png",
+      "source_slug": "story_stamping_three_distinct_lightning_bolts_into_the_pavement_sensory_tact",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_PIANO_06_Z": {
       "label": "Zeus",
       "peg_code": "Z",
       "filename": "zeus.png",
       "url": "/assets/beast-thumbs/zeus.png",
       "source_slug": "zeus",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: violently scratching sheet metal to shoot burning sparks": {
+      "label": "Concept: violently scratching sheet metal to shoot burning sparks",
+      "peg_code": "",
+      "filename": "concept_violently_scratching_sheet_metal_to_shoot_burning_sparks.png",
+      "url": "/assets/beast-thumbs/concept_violently_scratching_sheet_metal_to_shoot_burning_sparks.png",
+      "source_slug": "concept_violently_scratching_sheet_metal_to_shoot_burning_sparks",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Composers use dissonance intentionally to create emotional tension": {
+      "label": "Quote: Composers use dissonance intentionally to create emotional tension",
+      "peg_code": "",
+      "filename": "quote_composers_use_dissonance_intentionally_to_create_emotional_tension.png",
+      "url": "/assets/beast-thumbs/quote_composers_use_dissonance_intentionally_to_create_emotional_tension.png",
+      "source_slug": "quote_composers_use_dissonance_intentionally_to_create_emotional_tension",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass": {
+      "label": "shooting burning",
+      "peg_code": " he grips two pieces of sheet metal with his hands and violently scratches them together",
+      "filename": "shooting_burning.png",
+      "url": "/assets/beast-thumbs/shooting_burning.png",
+      "source_slug": "shooting_burning",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -1513,6 +2133,36 @@
       "filename": "aerialist.png",
       "url": "/assets/beast-thumbs/aerialist.png",
       "source_slug": "aerialist",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: she stacks huge": {
+      "label": "Concept: she stacks huge",
+      "peg_code": "",
+      "filename": "concept_she_stacks_huge.png",
+      "url": "/assets/beast-thumbs/concept_she_stacks_huge.png",
+      "source_slug": "concept_she_stacks_huge",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: A section is a larger": {
+      "label": "or bridge). A section is made up of multiple phrases combined together.",
+      "peg_code": " chorus",
+      "filename": "or_bridge_a_section_is_made_up_of_multiple_phrases_combined_together.png",
+      "url": "/assets/beast-thumbs/or_bridge_a_section_is_made_up_of_multiple_phrases_combined_together.png",
+      "source_slug": "or_bridge_a_section_is_made_up_of_multiple_phrases_combined_together",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: An aerialist swings upside down from a streetlamp": {
+      "label": "rough-textured punctuation mark in her teeth",
+      "peg_code": " she catches a heavy",
+      "filename": "rough_textured_punctuation_mark_in_her_teeth.png",
+      "url": "/assets/beast-thumbs/rough_textured_punctuation_mark_in_her_teeth.png",
+      "source_slug": "rough_textured_punctuation_mark_in_her_teeth",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -2307,6 +2957,26 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: Qualitative questions avoid count-based or causal-test questions.": {
+      "label": "Concept: Qualitative questions avoid count-based or causal-test questions.",
+      "peg_code": "",
+      "filename": "concept_qualitative_questions_avoid_count_based_or_causal_test_questions.png",
+      "url": "/assets/beast-thumbs/concept_qualitative_questions_avoid_count_based_or_causal_test_questions.png",
+      "source_slug": "concept_qualitative_questions_avoid_count_based_or_causal_test_questions",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Does SSL increase trust?\"": {
+      "label": "Quote: Does SSL increase trust?\"",
+      "peg_code": "",
+      "filename": "quote_does_ssl_increase_trust.png",
+      "url": "/assets/beast-thumbs/quote_does_ssl_increase_trust.png",
+      "source_slug": "quote_does_ssl_increase_trust",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_SCIENCE_19_BV": {
       "label": "Bone vulture",
       "peg_code": "Bv",
@@ -2417,12 +3087,92 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: front claws frantically splashing boiling": {
+      "label": "Concept: front claws frantically splashing boiling",
+      "peg_code": "",
+      "filename": "concept_front_claws_frantically_splashing_boiling.png",
+      "url": "/assets/beast-thumbs/concept_front_claws_frantically_splashing_boiling.png",
+      "source_slug": "concept_front_claws_frantically_splashing_boiling",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.": {
+      "label": "Quote: The mean arterial pressure is the average of the blood pressure on top an",
+      "peg_code": "",
+      "filename": "quote_the_mean_arterial_pressure_is_the_average_of_the_blood_pressure_on_top_an.png",
+      "url": "/assets/beast-thumbs/quote_the_mean_arterial_pressure_is_the_average_of_the_blood_pressure_on_top_an.png",
+      "source_slug": "quote_the_mean_arterial_pressure_is_the_average_of_the_blood_pressure_on_top_an",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A figure stands by a stone gate": {
+      "label": "popping them loudly as it screams the exact definition: \"\"The force exerted by c",
+      "peg_code": " thick rubbery arteries",
+      "filename": "popping_them_loudly_as_it_screams_the_exact_definition_the_force_exerted_by_c.png",
+      "url": "/assets/beast-thumbs/popping_them_loudly_as_it_screams_the_exact_definition_the_force_exerted_by_c.png",
+      "source_slug": "popping_them_loudly_as_it_screams_the_exact_definition_the_force_exerted_by_c",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Z3 Torso | Mean Arterial Pressure]": {
+      "label": "Z3 · Z3 Torso | Mean Arterial Pressure",
+      "peg_code": "",
+      "filename": "z3_z3_torso_mean_arterial_pressure.png",
+      "url": "/assets/beast-thumbs/z3_z3_torso_mean_arterial_pressure.png",
+      "source_slug": "z3_z3_torso_mean_arterial_pressure",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: a giant": {
+      "label": "Concept: a giant",
+      "peg_code": " physically balancing the top and bottom blood pools while emitting burning smoke",
+      "filename": "concept_a_giant.png",
+      "url": "/assets/beast-thumbs/concept_a_giant.png",
+      "source_slug": "concept_a_giant",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_SKILLS_03_I": {
       "label": "imp",
       "peg_code": "I",
       "filename": "imp.png",
       "url": "/assets/beast-thumbs/imp.png",
       "source_slug": "imp",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: arms violently vibrating and shooting electric shocks": {
+      "label": "Concept: arms violently vibrating and shooting electric shocks",
+      "peg_code": "",
+      "filename": "concept_arms_violently_vibrating_and_shooting_electric_shocks.png",
+      "url": "/assets/beast-thumbs/concept_arms_violently_vibrating_and_shooting_electric_shocks.png",
+      "source_slug": "concept_arms_violently_vibrating_and_shooting_electric_shocks",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: For a healthy": {
+      "label": "Quote: For a healthy",
+      "peg_code": " the normal range is 60 to 100 BPM.",
+      "filename": "quote_for_a_healthy.png",
+      "url": "/assets/beast-thumbs/quote_for_a_healthy.png",
+      "source_slug": "quote_for_a_healthy",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: Down the street at a parked car": {
+      "label": "quantified by the number of times the heart muscle contracts (beats) within a 60",
+      "peg_code": " pulsing bright light as it squawks: \"\"The speed at which the heart beats",
+      "filename": "quantified_by_the_number_of_times_the_heart_muscle_contracts_beats_within_a_60.png",
+      "url": "/assets/beast-thumbs/quantified_by_the_number_of_times_the_heart_muscle_contracts_beats_within_a_60.png",
+      "source_slug": "quantified_by_the_number_of_times_the_heart_muscle_contracts_beats_within_a_60",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -2477,12 +3227,112 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: thick": {
+      "label": "Concept: thick",
+      "peg_code": " freezing-cold holographic calendar of worries",
+      "filename": "concept_thick.png",
+      "url": "/assets/beast-thumbs/concept_thick.png",
+      "source_slug": "concept_thick",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.": {
+      "label": "Quote: Ela envolve a substituição intencional de pensamentos indesejados que ind",
+      "peg_code": "",
+      "filename": "quote_ela_envolve_a_substituição_intencional_de_pensamentos_indesejados_que_ind.png",
+      "url": "/assets/beast-thumbs/quote_ela_envolve_a_substituição_intencional_de_pensamentos_indesejados_que_ind.png",
+      "source_slug": "quote_ela_envolve_a_substituição_intencional_de_pensamentos_indesejados_que_ind",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: The Neanderthal's massive jaw aggressively chews a glowing": {
+      "label": "his thick hands violently crush a sharp",
+      "peg_code": " emotionally neutral letters to block out thoughts. Simultaneously",
+      "filename": "his_thick_hands_violently_crush_a_sharp.png",
+      "url": "/assets/beast-thumbs/his_thick_hands_violently_crush_a_sharp.png",
+      "source_slug": "his_thick_hands_violently_crush_a_sharp",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Z3 Torso | Cognitive Refocusing]": {
+      "label": "Z3 · Z3 Torso | Cognitive Refocusing",
+      "peg_code": "",
+      "filename": "z3_z3_torso_cognitive_refocusing.png",
+      "url": "/assets/beast-thumbs/z3_z3_torso_cognitive_refocusing.png",
+      "source_slug": "z3_z3_torso_cognitive_refocusing",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: chest cavity bursting open to vomit a stream of sweet": {
+      "label": "Concept: chest cavity bursting open to vomit a stream of sweet",
+      "peg_code": "",
+      "filename": "concept_chest_cavity_bursting_open_to_vomit_a_stream_of_sweet.png",
+      "url": "/assets/beast-thumbs/concept_chest_cavity_bursting_open_to_vomit_a_stream_of_sweet.png",
+      "source_slug": "concept_chest_cavity_bursting_open_to_vomit_a_stream_of_sweet",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_SKILLS_05_O": {
       "label": "owl",
       "peg_code": "O",
       "filename": "owl.png",
       "url": "/assets/beast-thumbs/owl.png",
       "source_slug": "owl",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: wings aggressively flapping a thick": {
+      "label": "Concept: wings aggressively flapping a thick",
+      "peg_code": "",
+      "filename": "concept_wings_aggressively_flapping_a_thick.png",
+      "url": "/assets/beast-thumbs/concept_wings_aggressively_flapping_a_thick.png",
+      "source_slug": "concept_wings_aggressively_flapping_a_thick",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Quanto mais você praticar": {
+      "label": "Quote: Quanto mais você praticar",
+      "peg_code": " segundo ela.",
+      "filename": "quote_quanto_mais_você_praticar.png",
+      "url": "/assets/beast-thumbs/quote_quanto_mais_você_praticar.png",
+      "source_slug": "quote_quanto_mais_você_praticar",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: The owl's sharp beak rips a giant": {
+      "label": "its wings aggressively flap a thick",
+      "peg_code": " firing holographic toys like a loud machine gun until the letter is exhausted. As it fires",
+      "filename": "its_wings_aggressively_flap_a_thick.png",
+      "url": "/assets/beast-thumbs/its_wings_aggressively_flap_a_thick.png",
+      "source_slug": "its_wings_aggressively_flap_a_thick",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · Z3 Torso | Sleep Strategy Practice]": {
+      "label": "Z3 · Z3 Torso | Sleep Strategy Practice",
+      "peg_code": "",
+      "filename": "z3_z3_torso_sleep_strategy_practice.png",
+      "url": "/assets/beast-thumbs/z3_z3_torso_sleep_strategy_practice.png",
+      "source_slug": "z3_z3_torso_sleep_strategy_practice",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: heavy torso vigorously lifting a massive barbell made of solid cheese": {
+      "label": "Concept: heavy torso vigorously lifting a massive barbell made of solid cheese",
+      "peg_code": "",
+      "filename": "concept_heavy_torso_vigorously_lifting_a_massive_barbell_made_of_solid_cheese.png",
+      "url": "/assets/beast-thumbs/concept_heavy_torso_vigorously_lifting_a_massive_barbell_made_of_solid_cheese.png",
+      "source_slug": "concept_heavy_torso_vigorously_lifting_a_massive_barbell_made_of_solid_cheese",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -3017,6 +3867,36 @@
       "adj_filename": null,
       "adj_url": null
     },
+    "Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).": {
+      "label": "Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs pred",
+      "peg_code": "",
+      "filename": "concept_primary_focus_descriptive_and_diagnostic_what_happened_why_vs_pred.png",
+      "url": "/assets/beast-thumbs/concept_primary_focus_descriptive_and_diagnostic_what_happened_why_vs_pred.png",
+      "source_slug": "concept_primary_focus_descriptive_and_diagnostic_what_happened_why_vs_pred",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: Descriptive and diagnostic analysis (answering \"\"What happened?\"\" and \"\"Why?\"\")": {
+      "label": "Quote: Descriptive and diagnostic analysis (answering \"\"What happened?\"\" and \"\"W",
+      "peg_code": "",
+      "filename": "quote_descriptive_and_diagnostic_analysis_answering_what_happened_and_w.png",
+      "url": "/assets/beast-thumbs/quote_descriptive_and_diagnostic_analysis_answering_what_happened_and_w.png",
+      "source_slug": "quote_descriptive_and_diagnostic_analysis_answering_what_happened_and_w",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.\"": {
+      "label": "Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches ",
+      "peg_code": "",
+      "filename": "story_an_oversized_megaphone_headpiece_clamped_to_arachne_s_forelegs_screeches.png",
+      "url": "/assets/beast-thumbs/story_an_oversized_megaphone_headpiece_clamped_to_arachne_s_forelegs_screeches.png",
+      "source_slug": "story_an_oversized_megaphone_headpiece_clamped_to_arachne_s_forelegs_screeches",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_DATAANALYST_01_B": {
       "label": "bird of paradise",
       "peg_code": "B",
@@ -3123,6 +4003,96 @@
       "filename": "owl.png",
       "url": "/assets/beast-thumbs/owl.png",
       "source_slug": "owl",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.": {
+      "label": "Concept: 💡 **Context:** I build a Harness or Tack as the engineering layer to st",
+      "peg_code": "",
+      "filename": "concept_context_i_build_a_harness_or_tack_as_the_engineering_layer_to_st.png",
+      "url": "/assets/beast-thumbs/concept_context_i_build_a_harness_or_tack_as_the_engineering_layer_to_st.png",
+      "source_slug": "concept_context_i_build_a_harness_or_tack_as_the_engineering_layer_to_st",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Keywords: iron harness | Harness || leather tack | Tack || steering wheel | steer || plug | connect": {
+      "label": "Keywords: iron harness | Harness || leather tack | Tack || steering wheel | stee",
+      "peg_code": "",
+      "filename": "keywords_iron_harness_harness_leather_tack_tack_steering_wheel_stee.png",
+      "url": "/assets/beast-thumbs/keywords_iron_harness_harness_leather_tack_tack_steering_wheel_stee.png",
+      "source_slug": "keywords_iron_harness_harness_leather_tack_tack_steering_wheel_stee",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: The Harness/Tack acts as the engineering layer that interacts with the model.": {
+      "label": "Quote: The Harness/Tack acts as the engineering layer that interacts with the mo",
+      "peg_code": "",
+      "filename": "quote_the_harness_tack_acts_as_the_engineering_layer_that_interacts_with_the_mo.png",
+      "url": "/assets/beast-thumbs/quote_the_harness_tack_acts_as_the_engineering_layer_that_interacts_with_the_mo.png",
+      "source_slug": "quote_the_harness_tack_acts_as_the_engineering_layer_that_interacts_with_the_mo",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A heavy": {
+      "label": "Story: A heavy",
+      "peg_code": " snapping thick leather tack securely to physically contain and steer its thrashing electricity.",
+      "filename": "story_a_heavy.png",
+      "url": "/assets/beast-thumbs/story_a_heavy.png",
+      "source_slug": "story_a_heavy",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "[Z3 · The Cart Task]": {
+      "label": "Z3 · The Cart Task",
+      "peg_code": "",
+      "filename": "z3_the_cart_task.png",
+      "url": "/assets/beast-thumbs/z3_the_cart_task.png",
+      "source_slug": "z3_the_cart_task",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.": {
+      "label": "Concept: 💡 **Context:** I view the Cart as the ultimate task or destination that",
+      "peg_code": "",
+      "filename": "concept_context_i_view_the_cart_as_the_ultimate_task_or_destination_that.png",
+      "url": "/assets/beast-thumbs/concept_context_i_view_the_cart_as_the_ultimate_task_or_destination_that.png",
+      "source_slug": "concept_context_i_view_the_cart_as_the_ultimate_task_or_destination_that",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Keywords: wooden cart | Cart || neon sign | destination || trophy | task": {
+      "label": "Keywords: wooden cart | Cart || neon sign | destination || trophy | task",
+      "peg_code": "",
+      "filename": "keywords_wooden_cart_cart_neon_sign_destination_trophy_task.png",
+      "url": "/assets/beast-thumbs/keywords_wooden_cart_cart_neon_sign_destination_trophy_task.png",
+      "source_slug": "keywords_wooden_cart_cart_neon_sign_destination_trophy_task",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: The Cart represents the ultimate Task that needs to be accomplished.": {
+      "label": "Quote: The Cart represents the ultimate Task that needs to be accomplished.",
+      "peg_code": "",
+      "filename": "quote_the_cart_represents_the_ultimate_task_that_needs_to_be_accomplished.png",
+      "url": "/assets/beast-thumbs/quote_the_cart_represents_the_ultimate_task_that_needs_to_be_accomplished.png",
+      "source_slug": "quote_the_cart_represents_the_ultimate_task_that_needs_to_be_accomplished",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: A massive wooden cart is bolted straight through the owl's spine": {
+      "label": "Story: A massive wooden cart is bolted straight through the owl's spine",
+      "peg_code": "",
+      "filename": "story_a_massive_wooden_cart_is_bolted_straight_through_the_owl_s_spine.png",
+      "url": "/assets/beast-thumbs/story_a_massive_wooden_cart_is_bolted_straight_through_the_owl_s_spine.png",
+      "source_slug": "story_a_massive_wooden_cart_is_bolted_straight_through_the_owl_s_spine",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -3323,6 +4293,46 @@
       "filename": "abyssinian_cat.png",
       "url": "/assets/beast-thumbs/abyssinian_cat.png",
       "source_slug": "abyssinian_cat",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Concept: [I copy all transformation steps] [below the initial source line] [from the Advanced Editor] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.": {
+      "label": "Concept: [I copy all transformation steps] [below the initial source line] [from",
+      "peg_code": "",
+      "filename": "concept_i_copy_all_transformation_steps_below_the_initial_source_line_from.png",
+      "url": "/assets/beast-thumbs/concept_i_copy_all_transformation_steps_below_the_initial_source_line_from.png",
+      "source_slug": "concept_i_copy_all_transformation_steps_below_the_initial_source_line_from",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Keywords: scissors | copy || anchor | source || scroll | editor": {
+      "label": "Keywords: scissors | copy || anchor | source || scroll | editor",
+      "peg_code": "",
+      "filename": "keywords_scissors_copy_anchor_source_scroll_editor.png",
+      "url": "/assets/beast-thumbs/keywords_scissors_copy_anchor_source_scroll_editor.png",
+      "source_slug": "keywords_scissors_copy_anchor_source_scroll_editor",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy": {
+      "label": "Quote: the First Line Imports the CSV files so we don't want this step we want t",
+      "peg_code": "",
+      "filename": "quote_the_first_line_imports_the_csv_files_so_we_don_t_want_this_step_we_want_t.png",
+      "url": "/assets/beast-thumbs/quote_the_first_line_imports_the_csv_files_so_we_don_t_want_this_step_we_want_t.png",
+      "source_slug": "quote_the_first_line_imports_the_csv_files_so_we_don_t_want_this_step_we_want_t",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched.\"": {
+      "label": "Story: Its front paws sprout white-hot glowing claws that slice and copy rows of",
+      "peg_code": "",
+      "filename": "story_its_front_paws_sprout_white_hot_glowing_claws_that_slice_and_copy_rows_of.png",
+      "url": "/assets/beast-thumbs/story_its_front_paws_sprout_white_hot_glowing_claws_that_slice_and_copy_rows_of.png",
+      "source_slug": "story_its_front_paws_sprout_white_hot_glowing_claws_that_slice_and_copy_rows_of",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
@@ -3646,6 +4656,46 @@
       "adjective": "bone",
       "adj_filename": "adj_bone.png",
       "adj_url": "/assets/beast-thumbs/adj_bone.png"
+    },
+    "Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists.": {
+      "label": "Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the ",
+      "peg_code": "",
+      "filename": "concept_lead_function_i_query_data_from_subsequent_rows_relative_to_the.png",
+      "url": "/assets/beast-thumbs/concept_lead_function_i_query_data_from_subsequent_rows_relative_to_the.png",
+      "source_slug": "concept_lead_function_i_query_data_from_subsequent_rows_relative_to_the",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Keywords: leash | LEAD Function || binoculars | query data || stepping stone | subsequent rows || compass | current evaluation row": {
+      "label": "Keywords: leash | LEAD Function || binoculars | query data || stepping stone | s",
+      "peg_code": "",
+      "filename": "keywords_leash_lead_function_binoculars_query_data_stepping_stone_s.png",
+      "url": "/assets/beast-thumbs/keywords_leash_lead_function_binoculars_query_data_stepping_stone_s.png",
+      "source_slug": "keywords_leash_lead_function_binoculars_query_data_stepping_stone_s",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Quote: notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead": {
+      "label": "Quote: notice how in the last row there's no next day so you see null at the end",
+      "peg_code": "",
+      "filename": "quote_notice_how_in_the_last_row_there_s_no_next_day_so_you_see_null_at_the_end.png",
+      "url": "/assets/beast-thumbs/quote_notice_how_in_the_last_row_there_s_no_next_day_so_you_see_null_at_the_end.png",
+      "source_slug": "quote_notice_how_in_the_last_row_there_s_no_next_day_so_you_see_null_at_the_end",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "Story: The Bone Hydra's front claws grip a glowing neon leash attached to a golden compass": {
+      "label": "Story: The Bone Hydra's front claws grip a glowing neon leash attached to a gold",
+      "peg_code": "",
+      "filename": "story_the_bone_hydra_s_front_claws_grip_a_glowing_neon_leash_attached_to_a_gold.png",
+      "url": "/assets/beast-thumbs/story_the_bone_hydra_s_front_claws_grip_a_glowing_neon_leash_attached_to_a_gold.png",
+      "source_slug": "story_the_bone_hydra_s_front_claws_grip_a_glowing_neon_leash_attached_to_a_gold",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
     },
     "BEAST_DATAANALYST_15_Bi": {
       "label": "bison",
@@ -3983,6 +5033,56 @@
       "filename": "frog.png",
       "url": "/assets/beast-thumbs/frog.png",
       "source_slug": "frog",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_22_Ci": {
+      "label": "cicada",
+      "peg_code": "Ci",
+      "filename": "cicada.png",
+      "url": "/assets/beast-thumbs/cicada.png",
+      "source_slug": "cicada",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_22_Cj": {
+      "label": "Cold jester",
+      "peg_code": "Cj",
+      "filename": "jester.png",
+      "url": "/assets/beast-thumbs/jester.png",
+      "source_slug": "jester",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_22_Ck": {
+      "label": "Cold kitten",
+      "peg_code": "Ck",
+      "filename": "kitten.png",
+      "url": "/assets/beast-thumbs/kitten.png",
+      "source_slug": "kitten",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_22_Cl": {
+      "label": "clown",
+      "peg_code": "Cl",
+      "filename": "clown.png",
+      "url": "/assets/beast-thumbs/clown.png",
+      "source_slug": "clown",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_22_Cm": {
+      "label": "Cold marmoset",
+      "peg_code": "Cm",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset",
       "adjective": "cold",
       "adj_filename": "adj_cold.png",
       "adj_url": "/assets/beast-thumbs/adj_cold.png"

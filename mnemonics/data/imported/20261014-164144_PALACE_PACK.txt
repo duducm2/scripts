@@ -1,0 +1,33 @@
+﻿===PREVIEW===
+STUDY_DATAANALYST · 1 palaces · 5 beasts · 5 atoms
+Packing: 5
+
+PALACE 22 — Spark SQL Operations () [PALACE_STUDY_DATAANALYST_22]
+[Ci] cicada — Concept: [I use spark.read.csv to construct] [a DataFrame from files.] | Quote: "DataFrame can be constructed from files"
+[Cj] Cold jester — Concept: [I use createOrReplaceTempView to create] [a temporary view for SQL queries.] | Quote: "Create a temporary view for referring"
+[Ck] Cold kitten — Concept: [I use spark.sql to execute] [SQL queries directly on temporary views.] | Quote: "Using SQL queries instead of SparkSQL APIs"
+[Cl] clown — Concept: [I use hybrid execution to mix] [DataFrame API methods with SQL queries.] | Quote: "Can even mix DataFrame API with SQL"
+[Cm] Cold marmoset — Concept: [I use Apache Spark to process] [massive datasets across distributed clusters.] | Quote: "Apache Spark is not a database itself; rather, it is a highly popular, open-source distributed cluster-computing and processing framework"
+
+Discard candidates: none
+===END_PREVIEW===
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_STUDY_DATAANALYST_22,STUDY_DATAANALYST,22,Spark SQL Operations,,,5,"A realistic street view. Depth slot: ForegroundLeft. A cicada perches on a concrete barrier while manipulating a massive glowing file cabinet. Depth slot: MidgroundRight. A Cold jester stands beside a brick storefront holding an ornate theater mask that freezes the air around it. Depth slot: BackgroundCenter. A Cold kitten sits in the middle of the roadway balancing a heavy brass gavel twice its size. Depth slot: Aerial. A clown clings to an overhead lamppost operating a giant floating kitchen blender. Depth slot: ForegroundRight. A Cold marmoset perches on a parked car hood inspecting a roaring mechanical engine. Each beast occupies a distinct structure with clear open space between them."
+===END_FILE===
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_STUDY_DATAANALYST_22_Ci,PALACE_STUDY_DATAANALYST_22,Ci,cicada,Lynne Kelly,,0,1,
+BEAST_STUDY_DATAANALYST_22_Cj,PALACE_STUDY_DATAANALYST_22,Cj,Cold jester,Custom,,0,2,
+BEAST_STUDY_DATAANALYST_22_Ck,PALACE_STUDY_DATAANALYST_22,Ck,Cold kitten,Custom,,0,3,
+BEAST_STUDY_DATAANALYST_22_Cl,PALACE_STUDY_DATAANALYST_22,Cl,clown,Lynne Kelly,,0,4,
+BEAST_STUDY_DATAANALYST_22_Cm,PALACE_STUDY_DATAANALYST_22,Cm,Cold marmoset,Custom,,0,5,
+===END_FILE===
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+ATOM_1,BEAST_STUDY_DATAANALYST_22_Ci,single,,,"[I use spark.read.csv to construct] [a DataFrame from files.]",cabinet | spark.read.csv || folder | files,DataFrame can be constructed from files,,1
+ATOM_2,BEAST_STUDY_DATAANALYST_22_Cj,single,,,"[I use createOrReplaceTempView to create] [a temporary view for SQL queries.]",mask | createOrReplaceTempView || glass | temporary view,Create a temporary view for referring,,1
+ATOM_3,BEAST_STUDY_DATAANALYST_22_Ck,single,,,"[I use spark.sql to execute] [SQL queries directly on temporary views.]",gavel | spark.sql || scroll | SQL queries,Using SQL queries instead of SparkSQL APIs,,1
+ATOM_4,BEAST_STUDY_DATAANALYST_22_Cl,single,,,"[I use hybrid execution to mix] [DataFrame API methods with SQL queries.]",blender | hybrid execution || bridge | DataFrame API,Can even mix DataFrame API with SQL,,1
+ATOM_5,BEAST_STUDY_DATAANALYST_22_Cm,single,,,"[I use Apache Spark to process] [massive datasets across distributed clusters.]",engine | Apache Spark || warehouse | datasets,"Apache Spark is not a database itself; rather, it is a highly popular, open-source distributed cluster-computing and processing framework",,1
+===END_FILE===

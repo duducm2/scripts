@@ -2990,6 +2990,46 @@
       "version": 2,
       "empty": false,
       "style": "illustration"
+    },
+    "mask": {
+      "key": "mask",
+      "slug": "mask",
+      "file": "mask.png",
+      "openverse_id": "f60e60af-fd5c-4bee-b624-cf7538585f8a",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=64967793",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "glass": {
+      "key": "glass",
+      "slug": "glass",
+      "file": "glass.png",
+      "openverse_id": "4324ff30-2c53-4783-8202-93de48d445ed",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=873566",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "engine": {
+      "key": "engine",
+      "slug": "engine",
+      "file": "engine.png",
+      "openverse_id": "4b2ccc06-1e9c-473e-ade5-4a1664d95944",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=3235265",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "warehouse": {
+      "key": "warehouse",
+      "slug": "warehouse",
+      "file": "warehouse.png",
+      "openverse_id": "798c0565-97dd-480a-9472-d05d4dcf3c78",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=175828575",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

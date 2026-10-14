@@ -1,24 +1,23 @@
-id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+﻿id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
 BEAST_AI_01_A,PALACE_AI_01,A,Arachne,,,0,1,
 BEAST_AI_01_B,PALACE_AI_01,B,bird of paradise,,,0,2,
-BEAST_AI_01_C,PALACE_AI_01,C,cat,,,0,3,"[Z2 · Z2 Forelimbs | Crystal sphere helmet]
-Concept: The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_.
-Quote: In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .
-Story: A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.
-
-[Z3 · Z3 Torso | Blueprint projector ribs]
-Concept: The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating.
-Quote: In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .
-Story: A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain."
+BEAST_AI_01_C,PALACE_AI_01,C,cat,,,0,3,[Z2 · Z2 Forelimbs | Crystal sphere helmet]
+Concept: The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_.,,,,,,
+Quote: In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .,,,,,,,
+Story: A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.,,,,,
+[Z3 · Z3 Torso | Blueprint projector ribs],,,,,,,,
+Concept: The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating.,,,,,,,
+Quote: In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .,,,,,,,
+Story: A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid," hallucination-free blueprint that the 1940s man feeds to a floating robot brain.""",,,,,
 BEAST_AI_02_D,PALACE_AI_02,D,dragon,,,0,1,
 BEAST_AI_02_E,PALACE_AI_02,E,eagle,,,0,2,
 BEAST_AI_02_F,PALACE_AI_02,F,frog,,,0,3,
 BEAST_AI_02_G,PALACE_AI_02,G,goat,,,0,4,
 BEAST_AI_02_H,PALACE_AI_02,H,Hydra,,,0,5,
-BEAST_AI_03_I,PALACE_AI_03,I,imp,,,0,1,"[Z2 · Z2 Forelimbs | Output Cost]
-Concept: its claws violently vomit blistering hot golden coins that visibly melt the concrete
-Quote: Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.
-Story: A colossal, skyscraper-sized imp phases through the solid iron front gate, reeking of burning sulfur. A giant glowing green price tag violently clamps over its face, mutating its skull into a mechanical cash register that rings with a deafening crash. As a figure watches in awe, the imp's front claws violently vomit blistering hot golden coins that melt the concrete, demonstrating the heavy, expensive computing power needed for output generation."
+BEAST_AI_03_I,PALACE_AI_03,I,imp,,,0,1,[Z2 · Z2 Forelimbs | Output Cost]
+Concept: its claws violently vomit blistering hot golden coins that visibly melt the concrete,,,,,,,,
+Quote: Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.,,,,,,,
+Story: A colossal, skyscraper-sized imp phases through the solid iron front gate, reeking of burning sulfur. A giant glowing green price tag violently clamps over its face, mutating its skull into a mechanical cash register that rings with a deafening crash. As a figure watches in awe, the imp's front claws violently vomit blistering hot golden coins that melt the concrete, demonstrating the heavy," expensive computing power needed for output generation.""",,
 BEAST_COMMUNICATIO_01_A,PALACE_COMMUNICATIO_01,A,Arachne,,,0,1,
 BEAST_COMMUNICATIO_01_B,PALACE_COMMUNICATIO_01,B,bird of paradise,,,0,2,
 BEAST_COMMUNICATIO_01_C,PALACE_COMMUNICATIO_01,C,cat,,,0,3,
@@ -129,87 +128,82 @@ BEAST_GERMAN_07_AC,PALACE_GERMAN_07,Ac,acorn,,,0,5,
 BEAST_GERMAN_08_AD,PALACE_GERMAN_08,Ad,adder,,,0,1,
 BEAST_GERMAN_08_AE,PALACE_GERMAN_08,Ae,aerialqist,,,0,2,
 BEAST_GERMAN_08_AF,PALACE_GERMAN_08,Af,Afghan hound,,,0,3,
-BEAST_PIANO_01_A,PALACE_PIANO_01,A,Arachne,,,0,1,"[Z2 · Repeating note names]
-Concept: Seven bright feathers form a C D E F G A B loop across the piano keys.
-Quote: The distance between one note and the next note with the same name.
-Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house, showing the same note name in a farther place.
-
-[Z3 · Octave jump]
-Concept: Arachne springs from one C-key house to the next C-key house with the same letter farther away.
-Quote: The distance between one note and the next note with the same name.
-Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house, showing the same note name in a farther place."
-BEAST_PIANO_01_B,PALACE_PIANO_01,B,bird of paradise,,,0,2,"[Z2 · Bass clef low notes]
-Concept: Its folded wings form a heavy bass clef shape low on the lines.
-Quote: Combination of treble and bass staves connected by a brace.
-Story: The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. A figure locks a metal brace from the bird’s beak around two staffs, joining treble and bass into one bigger reading system.
-
-[Z3 · Grand staff brace]
-Concept: A large metal brace hangs from its beak, joining two music staffs into one system.
-Quote: Combination of treble and bass staves connected by a brace.
-Story: The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. A figure locks a metal brace from the bird’s beak around two staffs, joining treble and bass into one bigger reading system."
-BEAST_PIANO_01_C,PALACE_PIANO_01,C,cat,,,0,3,"[Z2 · Bass F landmark]
-Concept: The cat wears a soft tooth-shaped ring gently locked around a low F key.
-Quote: F note landmark used for reading notes in the bass clef.
-Story: A cat walks low across the bass staff with two clear landmarks attached to its body. On one side, it plants a small flag on a painted C key, saying without words, “Find me first when reading low notes.” On the other side, it wears a harmless tooth-shaped ring around a low F key, making F feel like a second easy street marker instead of a random note."
-BEAST_PIANO_01_D,PALACE_PIANO_01,D,dragon,,,0,4,"[Z2 · Tempo speed]
-Concept: The dragon turns a speed dial beside the piano, making the pulse faster or slower.
-Quote: The speed at which the beat is played.
-Story: A dragon stands over the street piano and stamps one claw on the road in a steady pulse. Each stamp makes the street lamps blink like a heart inside the music. With its other claw, the dragon turns a speed dial: when the dial rises, the stamps come faster; when it falls, the stamps slow into heavy steps."
+BEAST_PIANO_01_A,PALACE_PIANO_01,A,Arachne,,,0,1,[Z2 · Repeating note names]
+Concept: Seven bright feathers form a C D E F G A B loop across the piano keys.,,,,,,,,
+Quote: The distance between one note and the next note with the same name.,,,,,,,,
+Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house, showing the same note name in a farther place.,,,,,
+[Z3 · Octave jump],,,,,,,,
+Concept: Arachne springs from one C-key house to the next C-key house with the same letter farther away.,,,,,,,,
+Quote: The distance between one note and the next note with the same name.,,,,,,,,
+Story: Arachne sits at a street piano as a figure points to one wrapped middle key. Her thick white web ties that key upward to a high staff sign and downward to a low staff sign. Around her waist, seven bright feathers circle in the order C D E F G A B and then loop back to C. With her long legs, she leaps from one C-key house to the next C-key house," showing the same note name in a farther place.""",,,,,
+BEAST_PIANO_01_B,PALACE_PIANO_01,B,bird of paradise,,,0,2,[Z2 · Bass clef low notes]
+Concept: Its folded wings form a heavy bass clef shape low on the lines.,,,,,,,,
+Quote: Combination of treble and bass staves connected by a brace.,,,,,,,,
+Story: The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. A figure locks a metal brace from the bird’s beak around two staffs, joining treble and bass into one bigger reading system.,,,,,,
+[Z3 · Grand staff brace],,,,,,,,
+Concept: A large metal brace hangs from its beak, joining two music staffs into one system.,,,,,,,
+Quote: Combination of treble and bass staves connected by a brace.,,,,,,,,
+Story: The bird of paradise lands beside the piano and drags one claw across the street, scratching five long black lines like a music page laid flat on the road. Its wings fold into a huge bass clef shape that sinks low on the staff. A figure locks a metal brace from the bird’s beak around two staffs," joining treble and bass into one bigger reading system.""",,,,,,
+BEAST_PIANO_01_C,PALACE_PIANO_01,C,cat,,,0,3,[Z2 · Bass F landmark]
+Concept: The cat wears a soft tooth-shaped ring gently locked around a low F key.,,,,,,,,
+Quote: F note landmark used for reading notes in the bass clef.,,,,,,,,
+Story: A cat walks low across the bass staff with two clear landmarks attached to its body. On one side, it plants a small flag on a painted C key, saying without words, “Find me first when reading low notes.” On the other side, it wears a harmless tooth-shaped ring around a low F key," making F feel like a second easy street marker instead of a random note.""",,,
+BEAST_PIANO_01_D,PALACE_PIANO_01,D,dragon,,,0,4,[Z2 · Tempo speed]
+Concept: The dragon turns a speed dial beside the piano, making the pulse faster or slower.,,,,,,,
+Quote: The speed at which the beat is played.,,,,,,,,
+Story: A dragon stands over the street piano and stamps one claw on the road in a steady pulse. Each stamp makes the street lamps blink like a heart inside the music. With its other claw, the dragon turns a speed dial: when the dial rises, the stamps come faster; when it falls," the stamps slow into heavy steps.""",,,,,
 BEAST_PIANO_01_E,PALACE_PIANO_01,E,eagle,,,0,5,
-BEAST_PIANO_02_F,PALACE_PIANO_02,F,frog,,,0,1,"[Z2 · Half note]
-Concept: The frog carries a note with a stem and takes exactly two steps.
-Quote: Note lasting one beat in common time.
-Story: A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands, and the note is done.
-
-[Z3 · Quarter note]
-Concept: The frog presses one black note shape into wet clay with one loud footstep.
-Quote: Note lasting one beat in common time.
-Story: A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands, and the note is done."
+BEAST_PIANO_02_F,PALACE_PIANO_02,F,frog,,,0,1,[Z2 · Half note]
+Concept: The frog carries a note with a stem and takes exactly two steps.,,,,,,,,
+Quote: Note lasting one beat in common time.,,,,,,,,
+Story: A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands, and the note is done.,,,,
+[Z3 · Quarter note],,,,,,,,
+Concept: The frog presses one black note shape into wet clay with one loud footstep.,,,,,,,,
+Quote: Note lasting one beat in common time.,,,,,,,,
+Story: A frog stands inside a painted measure grid. First, it lifts a big hollow note like a round shield, and four heavy drum hits shake the street before the shield lowers. Then it carries a note with a stem and takes exactly two steps across the measure. Finally, it presses one black note shape into wet clay as a single loud footstep lands," and the note is done.""",,,,
 BEAST_PIANO_02_G,PALACE_PIANO_02,G,goat,,,0,2,
-BEAST_PIANO_02_H,PALACE_PIANO_02,H,Hydra,,,0,3,"[Z2 · Fingertip pads]
-Concept: Its glowing soft fingertip pads press the keys instead of sharp claws.
-Quote: Keep the thumb relaxed and naturally positioned.
-Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely, reminding the thumb not to push or grip.
-
-[Z3 · Loose thumb]
-Concept: A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.
-Quote: Keep the thumb relaxed and naturally positioned.
-Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely, reminding the thumb not to push or grip."
-BEAST_PIANO_02_I,PALACE_PIANO_02,I,imp,,,0,4,"[Z2 · Weight transfer]
-Concept: The imp wears a heavy cloth sleeve from shoulder to fingertip, letting weight flow into the key.
-Quote: Transfer the arm's weight efficiently into the fingertips.
-Story: An imp sits at the street piano wearing a heavy cloth sleeve that hangs from shoulder to fingertip. The sleeve shows the arm’s weight flowing down into the key while the finger stays calm. With the same hand, the imp lowers a wet sponge onto a piano key so water slowly squeezes out without any sharp stab."
-BEAST_PIANO_02_J,PALACE_PIANO_02,J,jester,,,0,5,"[Z2 · Elbows away]
-Concept: The jester opens wing-like sleeves slightly away from the body.
-Quote: Allow the elbows to remain slightly away from the body.
-Story: A jester sits at the piano while a figure places soft cushions under the jester’s wrists. The wrists stay slightly raised and flexible, not stiff. The jester also opens wing-like sleeves a little away from the body, leaving visible space at both elbows instead of clamping them inward."
+BEAST_PIANO_02_H,PALACE_PIANO_02,H,Hydra,,,0,3,[Z2 · Fingertip pads]
+Concept: Its glowing soft fingertip pads press the keys instead of sharp claws.,,,,,,,,
+Quote: Keep the thumb relaxed and naturally positioned.,,,,,,,,
+Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely, reminding the thumb not to push or grip.,,,,,
+[Z3 · Loose thumb],,,,,,,,
+Concept: A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.,,,,,,,,
+Quote: Keep the thumb relaxed and naturally positioned.,,,,,,,,
+Story: A Hydra places one playing hand over the piano keys while a figure watches the hand shape. A small orange under the hand keeps the fingers naturally rounded and prevents collapse. Each glowing fingertip pad presses the keys like a cushion, not a claw. Beside the hand, a tiny thumb-shaped pillow rests loosely," reminding the thumb not to push or grip.""",,,,,
+BEAST_PIANO_02_I,PALACE_PIANO_02,I,imp,,,0,4,[Z2 · Weight transfer]
+Concept: The imp wears a heavy cloth sleeve from shoulder to fingertip, letting weight flow into the key.,,,,,,,
+Quote: Transfer the arm's weight efficiently into the fingertips.,,,,,,,,
+Story: An imp sits at the street piano wearing a heavy cloth sleeve that hangs from shoulder to fingertip. The sleeve shows the arm’s weight flowing down into the key while the finger stays calm. With the same hand," the imp lowers a wet sponge onto a piano key so water slowly squeezes out without any sharp stab.""",,,,,,,
+BEAST_PIANO_02_J,PALACE_PIANO_02,J,jester,,,0,5,[Z2 · Elbows away]
+Concept: The jester opens wing-like sleeves slightly away from the body.,,,,,,,,
+Quote: Allow the elbows to remain slightly away from the body.,,,,,,,,
+Story: A jester sits at the piano while a figure places soft cushions under the jester’s wrists. The wrists stay slightly raised and flexible, not stiff. The jester also opens wing-like sleeves a little away from the body," leaving visible space at both elbows instead of clamping them inward.""",,,,,,
 BEAST_PIANO_03_K,PALACE_PIANO_03,K,kitten,,,0,1,
-BEAST_PIANO_03_L,PALACE_PIANO_03,L,lion,,,0,2,"[Z2 · C-major resolution]
-Concept: The lion places a bright C finish stone at the end of a C-major path.
-Quote: Finish C-major exercises on C to reinforce tonal resolution.
-Story: A lion pulls a tiny piano house along the street and parks it on one note, making that note feel like home. Beside the house, a figure walks a short C-major path and stops at a bright C finish stone. The whole road feels settled when the path ends on C."
-BEAST_PIANO_03_M,PALACE_PIANO_03,M,marmoset,,,0,3,"[Z2 · Whole step]
-Concept: The marmoset leaps over exactly one glowing skipped key and lands on the next key.
-Quote: A distance equal to two half steps.
-Story: A marmoset crouches between two side-by-side piano keys and finds no space at all, its nose bumping both keys at once. Then it springs away and leaps over exactly one glowing middle key before landing on the next key. The tight squeeze shows the half step, and the one-key leap shows the whole step."
+BEAST_PIANO_03_L,PALACE_PIANO_03,L,lion,,,0,2,[Z2 · C-major resolution]
+Concept: The lion places a bright C finish stone at the end of a C-major path.,,,,,,,,
+Quote: Finish C-major exercises on C to reinforce tonal resolution.,,,,,,,,
+Story: A lion pulls a tiny piano house along the street and parks it on one note, making that note feel like home. Beside the house," a figure walks a short C-major path and stops at a bright C finish stone. The whole road feels settled when the path ends on C.""",,,,,,
+BEAST_PIANO_03_M,PALACE_PIANO_03,M,marmoset,,,0,3,[Z2 · Whole step]
+Concept: The marmoset leaps over exactly one glowing skipped key and lands on the next key.,,,,,,,,
+Quote: A distance equal to two half steps.,,,,,,,,
+Story: A marmoset crouches between two side-by-side piano keys and finds no space at all, its nose bumping both keys at once. Then it springs away and leaps over exactly one glowing middle key before landing on the next key. The tight squeeze shows the half step," and the one-key leap shows the whole step.""",,,,,,
 BEAST_PIANO_03_N,PALACE_PIANO_03,N,Neanderthal,,,0,4,
-BEAST_PIANO_03_O,PALACE_PIANO_03,O,owl,,,0,5,"[Z2 · Any starting key]
-Concept: The owl carries a golden start flag that moves between black and white keys while the same gap path appears.
-Quote: Any note can be the tonic of a major scale when the correct interval formula is applied.
-Story: An owl spreads its wings above the street piano and lands on eight sung step markers while a figure watches the familiar rise and fall. The owl then moves a golden start flag from a white key to a black key. Each time, the same gap path appears under its claws, showing that any note can begin the major scale if the pattern is correct."
-BEAST_PIANO_04_P,PALACE_PIANO_04,P,panther,,,0,1,"[Z2 · Flat lowers]
-Concept: The panther carries a drooping key charm pushed down and left.
-Quote: Accidental that raises a note by one half step.
-Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right, showing a sharp raising the note by one half step.
-
-[Z3 · Sharp raises]
-Concept: The panther carries a bright spike charm lifting a key upward and right.
-Quote: Accidental that raises a note by one half step.
-Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right, showing a sharp raising the note by one half step."
-BEAST_PIANO_04_Q,PALACE_PIANO_04,Q,Quetzalcoatl,,,0,2,"[Z2 · Triad]
-Concept: Quetzalcoatl stacks three piano stones labeled by position: root, skip, next, skip, next.
-Quote: A three-note chord built from a root note with alternating scale tones above it.
-Story: Quetzalcoatl coils around the piano while a figure stands nearby holding a third key card. With a wide part of its body, Quetzalcoatl presses two keys at the same time so more than one sound becomes harmony. Then it stacks three piano stones into a simple tower: root, skip one, next, skip one, next."
+BEAST_PIANO_03_O,PALACE_PIANO_03,O,owl,,,0,5,[Z2 · Any starting key]
+Concept: The owl carries a golden start flag that moves between black and white keys while the same gap path appears.,,,,,,,,
+Quote: Any note can be the tonic of a major scale when the correct interval formula is applied.,,,,,,,,
+Story: An owl spreads its wings above the street piano and lands on eight sung step markers while a figure watches the familiar rise and fall. The owl then moves a golden start flag from a white key to a black key. Each time, the same gap path appears under its claws," showing that any note can begin the major scale if the pattern is correct.""",,,,,,
+BEAST_PIANO_04_P,PALACE_PIANO_04,P,panther,,,0,1,[Z2 · Flat lowers]
+Concept: The panther carries a drooping key charm pushed down and left.,,,,,,,,
+Quote: Accidental that raises a note by one half step.,,,,,,,,
+Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right, showing a sharp raising the note by one half step.,,,
+[Z3 · Sharp raises],,,,,,,,
+Concept: The panther carries a bright spike charm lifting a key upward and right.,,,,,,,,
+Quote: Accidental that raises a note by one half step.,,,,,,,,
+Story: A panther crouches across the street piano with white mushrooms growing only along a white-key collar, while the black keys stay bare like dark rocks. On one side, it carries a drooping key charm pushed gently down and left, showing a flat lowering the note by one half step. On the other side, it carries a bright spike charm that lifts a key upward and right," showing a sharp raising the note by one half step.""",,,
+BEAST_PIANO_04_Q,PALACE_PIANO_04,Q,Quetzalcoatl,,,0,2,[Z2 · Triad]
+Concept: Quetzalcoatl stacks three piano stones labeled by position: root, skip, next, skip, next.,,,,
+Quote: A three-note chord built from a root note with alternating scale tones above it.,,,,,,,,
+Story: Quetzalcoatl coils around the piano while a figure stands nearby holding a third key card. With a wide part of its body, Quetzalcoatl presses two keys at the same time so more than one sound becomes harmony. Then it stacks three piano stones into a simple tower: root, skip one, next, skip one," next.""",,,
 BEAST_PIANO_04_R,PALACE_PIANO_04,R,rat,,,0,3,
 BEAST_PIANO_05_S,PALACE_PIANO_05,S,skull,,,0,1,
 BEAST_PIANO_05_T,PALACE_PIANO_05,T,toucan,,,0,2,
@@ -217,21 +211,21 @@ BEAST_PIANO_05_U,PALACE_PIANO_05,U,unicorn,,,0,3,
 BEAST_PIANO_05_V,PALACE_PIANO_05,V,vulture,,,0,4,
 BEAST_PIANO_05_W,PALACE_PIANO_05,W,wombat,,,0,5,
 BEAST_PIANO_06_X,PALACE_PIANO_06,X,"Xena, warrior woman",,,0,1,
-BEAST_PIANO_06_Y,PALACE_PIANO_06,Y,yak,,,0,2,"[Z2 · Z2 Forelimbs | Triad unit]
-Concept: stamping three distinct lightning bolts into the pavement
-Story: stamping three distinct lightning bolts into the pavement · sensory: tactile ✋"
-BEAST_PIANO_06_Z,PALACE_PIANO_06,Z,Zeus,,,0,3,"[Z2 · Z2 Forelimbs | Dissonant tension]
-Concept: violently scratching sheet metal to shoot burning sparks
-Quote: Composers use dissonance intentionally to create emotional tension, which typically drives the music forward
-Story: Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass, sighing: ""Consonant chords provide a sense of rest and anchor the musical piece."" Suddenly, he grips two pieces of sheet metal with his hands and violently scratches them together, shooting burning, loud sparks while roaring: ""Composers use dissonance intentionally to create emotional tension, which typically drives the music forward""."
+BEAST_PIANO_06_Y,PALACE_PIANO_06,Y,yak,,,0,2,[Z2 · Z2 Forelimbs | Triad unit]
+Concept: stamping three distinct lightning bolts into the pavement,,,,,,,,
+"Story: stamping three distinct lightning bolts into the pavement · sensory: tactile ✋""",,,,,,,,
+BEAST_PIANO_06_Z,PALACE_PIANO_06,Z,Zeus,,,0,3,[Z2 · Z2 Forelimbs | Dissonant tension]
+Concept: violently scratching sheet metal to shoot burning sparks,,,,,,,,
+Quote: Composers use dissonance intentionally to create emotional tension, which typically drives the music forward,,,,,,,
+Story: Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass," sighing: """"Consonant chords provide a sense of rest and anchor the musical piece."""" Suddenly", he grips two pieces of sheet metal with his hands and violently scratches them together, shooting burning," loud sparks while roaring: """"Composers use dissonance intentionally to create emotional tension"," which typically drives the music forward"""".""",,,
 BEAST_PIANO_06_AA,PALACE_PIANO_06,Aa,aardvark,,,0,4,
 BEAST_PIANO_06_AB,PALACE_PIANO_06,Ab,Abyssinian cat,,,0,5,
 BEAST_PIANO_07_AC,PALACE_PIANO_07,Ac,acorn,,,0,1,
 BEAST_PIANO_07_AD,PALACE_PIANO_07,Ad,adder,,,0,2,
-BEAST_PIANO_07_AE,PALACE_PIANO_07,Ae,aerialist,,,0,3,"[Z2 · Z2 Forelimbs | Section]
-Concept: she stacks huge, glowing concrete highway segments together like children's blocks using her hands
-Quote: A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.
-Story: An aerialist swings upside down from a streetlamp, leaving a thick trail of burnt ozone smoke in the air. With her head, she catches a heavy, rough-textured punctuation mark in her teeth, biting down to physically carve out the rule: ""A phrase is a single musical thought or ""sentence"". It is the smallest structural unit that gives a sense of completion, typically ending with a musical resting point called a cadence."" Simultaneously, with her forelimbs, she grabs huge, glowing concrete highway segments and stacks them together like children's blocks, projecting blinding neon words from her palms: ""A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together."""
+BEAST_PIANO_07_AE,PALACE_PIANO_07,Ae,aerialist,,,0,3,[Z2 · Z2 Forelimbs | Section]
+Concept: she stacks huge, glowing concrete highway segments together like children's blocks using her hands,,,,,,,
+Quote: A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.,,,,,
+Story: An aerialist swings upside down from a streetlamp, leaving a thick trail of burnt ozone smoke in the air. With her head, she catches a heavy, rough-textured punctuation mark in her teeth," biting down to physically carve out the rule: """"A phrase is a single musical thought or """"sentence"""". It is the smallest structural unit that gives a sense of completion"," typically ending with a musical resting point called a cadence."""" Simultaneously", with her forelimbs, she grabs huge, glowing concrete highway segments and stacks them together like children's blocks
 BEAST_PIANO_08_AF,PALACE_PIANO_08,Af,Afghan hound,,,0,1,
 BEAST_PIANO_08_AG,PALACE_PIANO_08,Ag,Agaric fungi,,,0,2,
 BEAST_PIANO_08_AH,PALACE_PIANO_08,Ah,Ah!—a sigh,,,0,3,
@@ -310,9 +304,9 @@ BEAST_SCIENCE_18_BQ,PALACE_SCIENCE_18,Bq,Bone Quetzalcoatl,,,0,1,
 BEAST_SCIENCE_18_BR,PALACE_SCIENCE_18,Br,brontosaurus,,,0,2,
 BEAST_SCIENCE_18_BS,PALACE_SCIENCE_18,Bs,Bone skull,,,0,3,
 BEAST_SCIENCE_18_BT,PALACE_SCIENCE_18,Bt,Bone toucan,,,0,4,
-BEAST_SCIENCE_19_BU,PALACE_SCIENCE_19,Bu,butterfly,,,0,1,"[Z2 · Avoid causal testing]
-Concept: Qualitative questions avoid count-based or causal-test questions.
-Quote: Does SSL increase trust?"
+BEAST_SCIENCE_19_BU,PALACE_SCIENCE_19,Bu,butterfly,,,0,1,[Z2 · Avoid causal testing]
+Concept: Qualitative questions avoid count-based or causal-test questions.,,,,,,,,
+"Quote: Does SSL increase trust?""",,,,,,,,
 BEAST_SCIENCE_19_BV,PALACE_SCIENCE_19,Bv,Bone vulture,,,0,2,
 BEAST_SCIENCE_19_BW,PALACE_SCIENCE_19,Bw,Bone wombat,,,0,3,
 BEAST_SCIENCE_19_BX,PALACE_SCIENCE_19,Bx,"Bone Xena, warrior woman",,,0,4,
@@ -323,41 +317,38 @@ BEAST_SKILLS_01_D,PALACE_SKILLS_01,D,dragon,,,0,4,
 BEAST_SKILLS_01_E,PALACE_SKILLS_01,E,eagle,,,0,5,
 BEAST_SKILLS_02_F,PALACE_SKILLS_02,F,frog,,,0,1,
 BEAST_SKILLS_02_G,PALACE_SKILLS_02,G,goat,,,0,2,
-BEAST_SKILLS_03_H,PALACE_SKILLS_03,H,Hydra,,,0,1,"[Z2 · Z2 Forelimbs | Normal range]
-Concept: front claws frantically splashing boiling, glowing red blood that scorches the ground
-Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.
-Story: A figure stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries, popping them loudly as it screams the exact definition: ""The force exerted by circulating blood against the inner walls of blood vessels, primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)."" Simultaneously, its front claws splash a puddle of boiling blood, scorching the bright red numbers into the concrete as it hisses: ""For a healthy, resting adult, a normal reading is strictly less than 120/80 mmHg (read as ""120 over 80"")."" The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools, spewing acrid smoke as the beast groans: ""The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.""
-
-[Z3 · Z3 Torso | Mean Arterial Pressure]
-Concept: a giant, heavy iron scale violently branded into its chest, physically balancing the top and bottom blood pools while emitting burning smoke
-Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.
-Story: A figure stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries, popping them loudly as it screams the exact definition: ""The force exerted by circulating blood against the inner walls of blood vessels, primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)."" Simultaneously, its front claws splash a puddle of boiling blood, scorching the bright red numbers into the concrete as it hisses: ""For a healthy, resting adult, a normal reading is strictly less than 120/80 mmHg (read as ""120 over 80"")."" The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools, spewing acrid smoke as the beast groans: ""The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom."""
-BEAST_SKILLS_03_I,PALACE_SKILLS_03,I,imp,,,0,2,"[Z2 · Z2 Forelimbs | Normal range]
-Concept: arms violently vibrating and shooting electric shocks
-Quote: For a healthy, resting adult, the normal range is 60 to 100 BPM.
-Story: Down the street at a parked car, the air smells intensely of burning ozone as a demonic imp lands. Its head violently swallows a giant glowing stopwatch that illuminates its throat from the inside, pulsing bright light as it squawks: ""The speed at which the heart beats, quantified by the number of times the heart muscle contracts (beats) within a 60-second window."" The imp's front arms violently vibrate against a figure's chest, delivering intense electric shocks that forcefully rattle the vampire's fangs to dictate: ""For a healthy, resting adult, the normal range is 60 to 100 BPM."""
+BEAST_SKILLS_03_H,PALACE_SKILLS_03,H,Hydra,,,0,1,[Z2 · Z2 Forelimbs | Normal range]
+Concept: front claws frantically splashing boiling, glowing red blood that scorches the ground,,,,,,,
+Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.,,,,,,,,
+Story: A figure stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries," popping them loudly as it screams the exact definition: """"The force exerted by circulating blood against the inner walls of blood vessels"," primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)."""" Simultaneously", its front claws splash a puddle of boiling blood," scorching the bright red numbers into the concrete as it hisses: """"For a healthy", resting adult," a normal reading is strictly less than 120/80 mmHg (read as """"120 over 80"""")."""" The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools"
+[Z3 · Z3 Torso | Mean Arterial Pressure],,,,,,,,
+Concept: a giant, heavy iron scale violently branded into its chest, physically balancing the top and bottom blood pools while emitting burning smoke,,,,,,
+Quote: The mean arterial pressure is the average of the blood pressure on top and the blood pressure on the bottom.,,,,,,,,
+Story: A figure stands by a stone gate, commanding a monstrous Hydra to attack the pavement. The beast's massive heads crunch down on exposed, thick rubbery arteries," popping them loudly as it screams the exact definition: """"The force exerted by circulating blood against the inner walls of blood vessels"," primarily the arteries. It is measured in millimeters of mercury (mmHg) and recorded as two distinct numbers: the systolic pressure (the force when the heart contracts and pushes blood out) over the diastolic pressure (the force when the heart rests and fills with blood between beats)."""" Simultaneously", its front claws splash a puddle of boiling blood," scorching the bright red numbers into the concrete as it hisses: """"For a healthy", resting adult," a normal reading is strictly less than 120/80 mmHg (read as """"120 over 80"""")."""" The heavy iron scale branded into the beast's chest violently balances the sizzling blood pools"
+BEAST_SKILLS_03_I,PALACE_SKILLS_03,I,imp,,,0,2,[Z2 · Z2 Forelimbs | Normal range]
+Concept: arms violently vibrating and shooting electric shocks,,,,,,,,
+Quote: For a healthy, resting adult, the normal range is 60 to 100 BPM.,,,,,,
+Story: Down the street at a parked car, the air smells intensely of burning ozone as a demonic imp lands. Its head violently swallows a giant glowing stopwatch that illuminates its throat from the inside," pulsing bright light as it squawks: """"The speed at which the heart beats"," quantified by the number of times the heart muscle contracts (beats) within a 60-second window."""" The imp's front arms violently vibrate against a figure's chest"," delivering intense electric shocks that forcefully rattle the vampire's fangs to dictate: """"For a healthy", resting adult," the normal range is 60 to 100 BPM.""""""",,
 BEAST_SKILLS_04_J,PALACE_SKILLS_04,J,jester,,,0,1,
 BEAST_SKILLS_04_K,PALACE_SKILLS_04,K,kitten,,,0,2,
 BEAST_SKILLS_04_L,PALACE_SKILLS_04,L,lion,,,0,3,
 BEAST_SKILLS_04_M,PALACE_SKILLS_04,M,marmoset,,,0,4,
-BEAST_SKILLS_05_N,PALACE_SKILLS_05,N,Neanderthal,,,0,1,"[Z2 · Z2 Forelimbs | Insomnia Cause]
-Concept: thick, hairy hands violently crushing a sharp, freezing-cold holographic calendar of worries
-Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.
-Story: The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland, sugary calm.
-
-[Z3 · Z3 Torso | Cognitive Refocusing]
-Concept: chest cavity bursting open to vomit a stream of sweet, pastel-colored marshmallows that drown out buzzing hornets
-Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.
-Story: The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland, sugary calm."
-BEAST_SKILLS_05_O,PALACE_SKILLS_05,O,owl,,,0,2,"[Z2 · Z2 Forelimbs | Hypnagogic Composition]
-Concept: wings aggressively flapping a thick, pungent cloud of heavy dream-sand that melts the pavement
-Quote: Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.
-Story: The owl's sharp beak rips a giant, screaming letter ""B"" out of a cake, firing holographic toys like a loud machine gun until the letter is exhausted. As it fires, its wings aggressively flap a thick, pungent cloud of heavy dream-sand that physically melts the concrete into a sinking micro-dream. Meanwhile, its heavy torso vigorously lifts a massive barbell made of solid cheese, sweating and building immense physical strength through relentless repetition.
-
-[Z3 · Z3 Torso | Sleep Strategy Practice]
-Concept: heavy torso vigorously lifting a massive barbell made of solid cheese, sweating under the physical pressure
-Quote: Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.
-Story: The owl's sharp beak rips a giant, screaming letter ""B"" out of a cake, firing holographic toys like a loud machine gun until the letter is exhausted. As it fires, its wings aggressively flap a thick, pungent cloud of heavy dream-sand that physically melts the concrete into a sinking micro-dream. Meanwhile, its heavy torso vigorously lifts a massive barbell made of solid cheese, sweating and building immense physical strength through relentless repetition."
+BEAST_SKILLS_05_N,PALACE_SKILLS_05,N,Neanderthal,,,0,1,[Z2 · Z2 Forelimbs | Insomnia Cause]
+Concept: thick, hairy hands violently crushing a sharp, freezing-cold holographic calendar of worries,,,,,,
+Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.,,,,,,,,
+Story: The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland
+[Z3 · Z3 Torso | Cognitive Refocusing],,,,,,,,
+Concept: chest cavity bursting open to vomit a stream of sweet, pastel-colored marshmallows that drown out buzzing hornets,,,,,,,
+Quote: Ela envolve a substituição intencional de pensamentos indesejados que induzem a ansiedade por outros mais agradáveis e não estimulantes.,,,,,,,,
+Story: The Neanderthal's massive jaw aggressively chews a glowing, random word generator that shoots out floating, emotionally neutral letters to block out thoughts. Simultaneously, his thick hands violently crush a sharp, freezing-cold holographic calendar of worries, physically stopping the brain's high-alert planning. Finally, his chest cavity bursts open to vomit a stream of sweet, pastel-colored marshmallows, intentionally substituting the sharp tension with a bland
+BEAST_SKILLS_05_O,PALACE_SKILLS_05,O,owl,,,0,2,[Z2 · Z2 Forelimbs | Hypnagogic Composition]
+Concept: wings aggressively flapping a thick, pungent cloud of heavy dream-sand that melts the pavement,,,,,,,
+Quote: Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.,,,,,,
+Story: The owl's sharp beak rips a giant," screaming letter """"B"""" out of a cake", firing holographic toys like a loud machine gun until the letter is exhausted. As it fires, its wings aggressively flap a thick, pungent cloud of heavy dream-sand that physically melts the concrete into a sinking micro-dream. Meanwhile, its heavy torso vigorously lifts a massive barbell made of solid cheese, sweating and building immense physical strength through relentless repetition.,,
+[Z3 · Z3 Torso | Sleep Strategy Practice],,,,,,,,
+Concept: heavy torso vigorously lifting a massive barbell made of solid cheese, sweating under the physical pressure,,,,,,,
+Quote: Quanto mais você praticar, mais forte você fica e mais fácil pode ser o seu uso, segundo ela.,,,,,,
+Story: The owl's sharp beak rips a giant," screaming letter """"B"""" out of a cake", firing holographic toys like a loud machine gun until the letter is exhausted. As it fires, its wings aggressively flap a thick, pungent cloud of heavy dream-sand that physically melts the concrete into a sinking micro-dream. Meanwhile, its heavy torso vigorously lifts a massive barbell made of solid cheese," sweating and building immense physical strength through relentless repetition.""",,
 BEAST_TAOISM_01_A,PALACE_TAOISM_01,A,Arachne,,,0,1,
 BEAST_TAOISM_01_B,PALACE_TAOISM_01,B,bird of paradise,,,0,2,
 BEAST_TAOISM_01_C,PALACE_TAOISM_01,C,cat,,,0,3,
@@ -410,10 +401,10 @@ BEAST_COMMUNICATIO_05_Z,PALACE_COMMUNICATIO_05,Z,Zeus,Lynne Kelly,,0,4,
 BEAST_COMMUNICATIO_05_Aa,PALACE_COMMUNICATIO_05,Aa,aardvark,Lynne Kelly,,0,5,
 BEAST_COMMUNICATIO_06_Ab,PALACE_COMMUNICATIO_06,Ab,Abyssinian cat,Lynne Kelly,,0,1,
 BEAST_COMMUNICATIO_06_Ac,PALACE_COMMUNICATIO_06,Ac,acorn,Lynne Kelly,,0,2,
-BEAST_DATAANALYST_01_A,PALACE_DATAANALYST_01,A,Arachne,Lynne Kelly,,0,1,"[Z2 · Forelimbs]
-Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).
-Quote: Descriptive and diagnostic analysis (answering ""What happened?"" and ""Why?"")
-Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars."
+BEAST_DATAANALYST_01_A,PALACE_DATAANALYST_01,A,Arachne,Lynne Kelly,,0,1,[Z2 · Forelimbs]
+Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).,,,,,,,,
+"Quote: Descriptive and diagnostic analysis (answering """"What happened?"""" and """"Why?"""")",,,,,,,,
+"Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.""",,,,,,,,
 BEAST_DATAANALYST_01_B,PALACE_DATAANALYST_01,B,bird of paradise,Lynne Kelly,,0,2,
 BEAST_DATAANALYST_01_C,PALACE_DATAANALYST_01,C,cat,Lynne Kelly,,0,3,
 BEAST_DATAANALYST_01_D,PALACE_DATAANALYST_01,D,dragon,Lynne Kelly,,0,4,
@@ -424,17 +415,16 @@ BEAST_DATAANALYST_02_H,PALACE_DATAANALYST_02,H,Hydra,Lynne Kelly,,0,4,
 BEAST_DATAANALYST_02_I,PALACE_DATAANALYST_02,I,imp,Lynne Kelly,,0,5,
 BEAST_AI_05_M,PALACE_AI_05,M,marmoset,Lynne Kelly,,0,1,
 BEAST_AI_05_N,PALACE_AI_05,N,Neanderthal,Lynne Kelly,,0,2,
-BEAST_AI_05_O,PALACE_AI_05,O,owl,Lynne Kelly,,0,3,"[Z2 · Harness Layer]
-Concept: 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.
-Keywords: iron harness | Harness || leather tack | Tack || steering wheel | steer || plug | connect
-Quote: The Harness/Tack acts as the engineering layer that interacts with the model.
-Story: A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snapping thick leather tack securely to physically contain and steer its thrashing electricity.
-
-[Z3 · The Cart Task]
-Concept: 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.
-Keywords: wooden cart | Cart || neon sign | destination || trophy | task
-Quote: The Cart represents the ultimate Task that needs to be accomplished.
-Story: A massive wooden cart is bolted straight through the owl's spine, glowing with bright neon destination coordinates as the restrained bird perfectly pulls the heavy load."
+BEAST_AI_05_O,PALACE_AI_05,O,owl,Lynne Kelly,,0,3,[Z2 · Harness Layer]
+Concept: 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.,,,,,,,,
+Keywords: iron harness | Harness || leather tack | Tack || steering wheel | steer || plug | connect,,,,,,,,
+Quote: The Harness/Tack acts as the engineering layer that interacts with the model.,,,,,,,,
+Story: A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snapping thick leather tack securely to physically contain and steer its thrashing electricity.,,,,,,
+[Z3 · The Cart Task],,,,,,,,
+Concept: 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.,,,,,,,,
+Keywords: wooden cart | Cart || neon sign | destination || trophy | task,,,,,,,,
+Quote: The Cart represents the ultimate Task that needs to be accomplished.,,,,,,,,
+Story: A massive wooden cart is bolted straight through the owl's spine," glowing with bright neon destination coordinates as the restrained bird perfectly pulls the heavy load.""",,,,,,,
 BEAST_DATAANALYST_03_J,PALACE_DATAANALYST_03,J,jester,Lynne Kelly,,0,1,
 BEAST_DATAANALYST_03_K,PALACE_DATAANALYST_03,K,kitten,Lynne Kelly,,0,2,
 BEAST_DATAANALYST_03_L,PALACE_DATAANALYST_03,L,lion,Lynne Kelly,,0,3,
@@ -454,11 +444,11 @@ BEAST_DATAANALYST_05_X,PALACE_DATAANALYST_05,X,"Xena, warrior woman",Lynne Kelly
 BEAST_DATAANALYST_06_Y,PALACE_DATAANALYST_06,Y,yak,Lynne Kelly,,0,1,
 BEAST_DATAANALYST_06_Z,PALACE_DATAANALYST_06,Z,Zeus,Lynne Kelly,,0,2,
 BEAST_DATAANALYST_06_Aa,PALACE_DATAANALYST_06,Aa,aardvark,Lynne Kelly,,0,3,
-BEAST_DATAANALYST_06_Ab,PALACE_DATAANALYST_06,Ab,Abyssinian cat,Lynne Kelly,,0,4,"[Z2 · Copying transformation steps]
-Concept: [I copy all transformation steps] [below the initial source line] [from the Advanced Editor] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
-Keywords: scissors | copy || anchor | source || scroll | editor
-Quote: the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy
-Story: Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched."
+BEAST_DATAANALYST_06_Ab,PALACE_DATAANALYST_06,Ab,Abyssinian cat,Lynne Kelly,,0,4,[Z2 · Copying transformation steps]
+Concept: [I copy all transformation steps] [below the initial source line] [from the Advanced Editor] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.,,,,,,,,
+Keywords: scissors | copy || anchor | source || scroll | editor,,,,,,,,
+Quote: the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy,,,,,,,,
+"Story: Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched.""",,,,,,,,
 BEAST_DATAANALYST_06_Ac,PALACE_DATAANALYST_06,Ac,acorn,Lynne Kelly,,0,5,
 BEAST_DATAANALYST_07_Ad,PALACE_DATAANALYST_07,Ad,adder,Lynne Kelly,,0,1,
 BEAST_DATAANALYST_08_Ae,PALACE_DATAANALYST_08,Ae,aerialist,Lynne Kelly,,0,1,
@@ -490,11 +480,11 @@ BEAST_DATAANALYST_13_Bd,PALACE_DATAANALYST_13,Bd,Bone dragon,Custom,,0,4,
 BEAST_DATAANALYST_14_Be,PALACE_DATAANALYST_14,Be,bee,Lynne Kelly,,0,1,
 BEAST_DATAANALYST_14_Bf,PALACE_DATAANALYST_14,Bf,Bone frog,Custom,,0,2,
 BEAST_DATAANALYST_14_Bg,PALACE_DATAANALYST_14,Bg,Bone goat,Custom,,0,3,
-BEAST_DATAANALYST_15_Bh,PALACE_DATAANALYST_15,Bh,Bone Hydra,Custom,,0,1,"[Z2 · LEAD Function]
-Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists.
-Keywords: leash | LEAD Function || binoculars | query data || stepping stone | subsequent rows || compass | current evaluation row
-Quote: notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead
-Story: The Bone Hydra's front claws grip a glowing neon leash attached to a golden compass, tearing stepping stones out of the empty air ahead of it."
+BEAST_DATAANALYST_15_Bh,PALACE_DATAANALYST_15,Bh,Bone Hydra,Custom,,0,1,[Z2 · LEAD Function]
+Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists.,,,,,,,,
+Keywords: leash | LEAD Function || binoculars | query data || stepping stone | subsequent rows || compass | current evaluation row,,,,,,,,
+Quote: notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead,,,,,,,,
+Story: The Bone Hydra's front claws grip a glowing neon leash attached to a golden compass," tearing stepping stones out of the empty air ahead of it.""",,,,,,,
 BEAST_DATAANALYST_15_Bi,PALACE_DATAANALYST_15,Bi,bison,Lynne Kelly,,0,2,
 BEAST_DATAANALYST_15_Bj,PALACE_DATAANALYST_15,Bj,Bone jester,Custom,,0,3,
 BEAST_DATAANALYST_15_Bk,PALACE_DATAANALYST_15,Bk,Bone kitten,Custom,,0,4,
@@ -529,3 +519,8 @@ BEAST_DATAANALYST_20_Cc,PALACE_DATAANALYST_20,Cc,Cold cat,,,0,81,
 BEAST_DATAANALYST_20_Cd,PALACE_DATAANALYST_20,Cd,Cold dragon,,,0,82,
 BEAST_DATAANALYST_20_Ce,PALACE_DATAANALYST_20,Ce,cenotaur,,,0,83,
 BEAST_DATAANALYST_21_Cf,PALACE_DATAANALYST_21,Cf,Cold frog,,,0,84,
+BEAST_DATAANALYST_22_Ci,PALACE_DATAANALYST_22,Ci,cicada,Lynne Kelly,,0,1,
+BEAST_DATAANALYST_22_Cj,PALACE_DATAANALYST_22,Cj,Cold jester,Custom,,0,2,
+BEAST_DATAANALYST_22_Ck,PALACE_DATAANALYST_22,Ck,Cold kitten,Custom,,0,3,
+BEAST_DATAANALYST_22_Cl,PALACE_DATAANALYST_22,Cl,clown,Lynne Kelly,,0,4,
+BEAST_DATAANALYST_22_Cm,PALACE_DATAANALYST_22,Cm,Cold marmoset,Custom,,0,5,

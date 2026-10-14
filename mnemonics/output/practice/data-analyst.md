@@ -1,6 +1,85 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 22: Spark SQL Operations</strong> · Character: — · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Cm] Cold marmoset
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Cold marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Apache Spark]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BApache%20Spark%5D&color=9fd4ff" />(engine) to process] [massive <img alt="[datasets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdatasets%5D&color=ffd966" />(warehouse) across distributed clusters.]
+
+<img src="../../web/assets/keyword-images/engine.png" alt="engine" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/warehouse.png" alt="warehouse" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Apache Spark is not a database itself; rather, it is a highly popular, open-source distributed cluster-computing and processing framework”
+
+### [Cl] clown
+
+<img src="../../web/assets/beast-thumbs/clown.png" alt="clown" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[hybrid execution]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhybrid%20execution%5D&color=9fd4ff" />(blender) to mix] [<img alt="[DataFrame API]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%20API%5D&color=ffd966" />(bridge) methods with SQL queries.]
+
+<img src="../../web/assets/keyword-images/blender.jpg" alt="blender" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/bridge.jpg" alt="bridge" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Can even mix DataFrame API with SQL”
+
+### [Ck] Cold kitten
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Cold kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[spark.sql]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspark.sql%5D&color=9fd4ff" />(gavel) to execute] [<img alt="[SQL queries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSQL%20queries%5D&color=ffd966" />(scroll) directly on temporary views.]
+
+<img src="../../web/assets/keyword-images/gavel.png" alt="gavel" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/scroll.jpg" alt="scroll" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Using SQL queries instead of SparkSQL APIs”
+
+### [Cj] Cold jester
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Cold jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[createOrReplaceTempView]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BcreateOrReplaceTempView%5D&color=9fd4ff" />(mask) to create] [a <img alt="[temporary view]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btemporary%20view%5D&color=ffd966" />(glass) for SQL queries.]
+
+<img src="../../web/assets/keyword-images/mask.png" alt="mask" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/glass.png" alt="glass" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Create a temporary view for referring”
+
+### [Ci] cicada
+
+<img src="../../web/assets/beast-thumbs/cicada.png" alt="cicada" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[spark.read.csv]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspark.read.csv%5D&color=9fd4ff" />(cabinet) to construct] [a DataFrame from <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(folder).]
+
+<img src="../../web/assets/keyword-images/cabinet.png" alt="cabinet" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/folder.png" alt="folder" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“DataFrame can be constructed from files”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 21: Unity Catalog Architecture</strong> · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 21](images/data-analyst/21.jpg)
@@ -463,10 +542,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · LEAD Function]
-Concept: [LEAD Function] [I query data] [from subsequent rows] [relative to the current evaluation row] — Note: It returns a null value at the final dataset record where no subsequent row exists.
-Keywords: leash | LEAD Function || binoculars | query data || stepping stone | subsequent rows || compass | current evaluation row
-Quote: notice how in the last row there's no next day so you see null at the end and all I'm going to do is change lag to lead
-Story: The Bone Hydra's front claws grip a glowing neon leash attached to a golden compass, tearing stepping stones out of the empty air ahead of it.
 
 #### Notes
 
@@ -1049,10 +1124,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Copying transformation steps]
-Concept: [I copy all transformation steps] [below the initial source line] [from the Advanced Editor] — Note: The first line contains the specific file source path that must not overwrite the new table's connection.
-Keywords: scissors | copy || anchor | source || scroll | editor
-Quote: the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy
-Story: Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched.
 
 ### [Aa] aardvark
 
@@ -1423,9 +1494,6 @@ _No gallery images._
 
 **Notes**
 [Z2 · Forelimbs]
-Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).
-Quote: Descriptive and diagnostic analysis (answering "What happened?" and "Why?")
-Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.
 
 #### Notes
 
