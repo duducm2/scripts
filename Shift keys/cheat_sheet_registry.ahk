@@ -1164,6 +1164,7 @@ cheatSheets["Memory Palace"] := "
     📖 [Shift+M] Method
     👕 [Shift+W] Wardrobe (equip or unequip relics)
     🗂 [Shift+B] Browse
+    ▶ [Shift+Y] YouTube playlists (letter jumps to a title; Enter opens a new window)
     🔗 [Shift+1] Links (study video / article / favorite)
     ❓ [Shift+H] Help (glossary · Practice / Plans GitHub)
     

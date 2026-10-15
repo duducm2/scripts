@@ -168,8 +168,11 @@ class PalaceStore:
 
     def _csv_stamp(self) -> float:
         mx = 0.0
-        for kind in CACHE_KINDS:
-            path = self.data_dir / f"{kind}.csv"
+        paths = [self.data_dir / f"{kind}.csv" for kind in CACHE_KINDS]
+        # Membership lives here, not in the CSVs. A Quick Recall rewrite must
+        # change the version the page uses to decide whether to reload.
+        paths.append(self.data_dir / "quick_recall.json")
+        for path in paths:
             if path.is_file():
                 mx = max(mx, path.stat().st_mtime)
         return mx

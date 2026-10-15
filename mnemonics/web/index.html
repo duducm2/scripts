@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=gallery1" />
+    <link rel="stylesheet" href="/dashboard.css?v=playlists1" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -916,6 +916,14 @@
       >
         Help
       </button>
+      <button
+        type="button"
+        data-view="playlists"
+        data-ico="film"
+        title="YouTube playlists (Shift+Y)"
+      >
+        Playlists
+      </button>
     </div>
 
     <main id="practicePanel"></main>
@@ -1066,6 +1074,22 @@
     <div id="wardrobePanel" class="hidden" aria-hidden="true"></div>
 
     <div id="appExtra" class="hidden" aria-hidden="true"></div>
+
+    <div id="playlistsPanel" class="hidden" aria-hidden="true">
+      <div class="playlist-head">
+        <h2>Playlists</h2>
+        <p>
+          A letter jumps to that title. S moves between Science and Skills.
+          Enter opens a new window.
+        </p>
+      </div>
+      <div
+        class="playlist-bento"
+        id="playlistBento"
+        role="group"
+        aria-label="YouTube playlists"
+      ></div>
+    </div>
 
     <div id="overlay" aria-hidden="true">
       <div class="overlay-bar">
@@ -2804,6 +2828,7 @@
           method: document.getElementById("methodPanel"),
           entertainment: document.getElementById("entertainmentPanel"),
           wardrobe: document.getElementById("wardrobePanel"),
+          playlists: document.getElementById("playlistsPanel"),
           extra: document.getElementById("appExtra"),
         };
         Object.entries(panels).forEach(([k, el]) => {
@@ -2814,6 +2839,7 @@
             (name === "method" && k === "method") ||
             (name === "entertainment" && k === "entertainment") ||
             (name === "wardrobe" && k === "wardrobe") ||
+            (name === "playlists" && k === "playlists") ||
             (["browse", "links", "help"].includes(name) && k === "extra");
           el.classList.toggle("hidden", !on);
           el.setAttribute("aria-hidden", on ? "false" : "true");
@@ -2833,7 +2859,9 @@
         if (state.view === "plans" && v !== "plans") snapshotPlansScroll();
         if (v === "plans" && state.view !== "plans")
           state.plansScrollRestorePending = true;
+        const prevView = state.view;
         state.view = v;
+        document.body.classList.toggle("view-playlists", v === "playlists");
         setChromeActive();
         showPanel(v);
         if (v === "entertainment") {
@@ -2843,6 +2871,11 @@
           return;
         }
         render();
+        if (v === "playlists" && prevView !== "playlists") {
+          document
+            .querySelector("#playlistBento .playlist-tile")
+            ?.focus({ preventScroll: true });
+        }
         if (v === "links") refreshLinkStatus().catch(() => {});
       }
 
@@ -2884,6 +2917,7 @@
         else if (state.view === "method") renderMethod();
         else if (state.view === "entertainment") renderEntertainment();
         else if (state.view === "wardrobe") renderWardrobe();
+        else if (state.view === "playlists") renderPlaylists();
         else if (state.view === "browse")
           renderBrowse(document.getElementById("appExtra"));
         else if (state.view === "links")
@@ -5935,12 +5969,111 @@
         }
       }
 
+      const PLAYLISTS = [
+        {
+          id: "science",
+          title: "Science",
+          letter: "S",
+          image: "/assets/playlists/science.png",
+          url: "https://www.youtube.com/playlist?list=PLxyuwwc9jxqhtxQNXuwFUG-ZEnyLsoHe2",
+        },
+        {
+          id: "data",
+          title: "Data analysis",
+          letter: "D",
+          image: "/assets/playlists/data-analysis.png",
+          url: "https://www.youtube.com/playlist?list=PLVoWfo64oqG8",
+        },
+        {
+          id: "skills",
+          title: "Skills",
+          letter: "S",
+          image: "/assets/playlists/skills.png",
+          url: "https://www.youtube.com/playlist?list=PLxyuwwc9jxqjwZ5WqQK0JwL7w68M6aOgc",
+        },
+        {
+          id: "piano",
+          title: "Piano",
+          letter: "P",
+          image: "/assets/playlists/piano.png",
+          url: "https://www.youtube.com/playlist?list=PLxyuwwc9jxqhDJRTYZ5JpAXBASE9qD2U7",
+        },
+        {
+          id: "communication",
+          title: "Communication",
+          letter: "C",
+          image: "/assets/playlists/communication.png",
+          url: "https://www.youtube.com/playlist?list=PLxyuwwc9jxqhPF7xLSip38ueJimYq56My",
+        },
+        {
+          id: "german",
+          title: "German",
+          letter: "G",
+          image: "/assets/playlists/german.png",
+          url: "https://www.youtube.com/playlist?list=PLxyuwwc9jxqhauvyPd2Iy3IaEa8G0q8_V",
+        },
+        {
+          id: "english",
+          title: "English",
+          letter: "E",
+          image: "/assets/playlists/english.png",
+          url: "https://www.youtube.com/playlist?list=PLxyuwwc9jxqhBiLVau5-VNf9-Zgp_WRek",
+        },
+      ];
+
+      function openPlaylistWindow(url) {
+        const opened = window.open(
+          url,
+          "_blank",
+          "noopener,noreferrer,width=1280,height=800",
+        );
+        if (opened) opened.opener = null;
+        else toast("Allow pop-up windows to open the playlist", 4000);
+      }
+
+      function renderPlaylists() {
+        const host = document.getElementById("playlistBento");
+        if (!host) return;
+        const focusedId = document.activeElement?.dataset?.playlist || "";
+        host.innerHTML = PLAYLISTS.map(
+          (p) =>
+            `<button type="button" class="playlist-tile" data-playlist="${escAttr(p.id)}" data-letter="${escAttr(p.letter)}" aria-label="${escAttr(p.title + ", opens in a new window")}">` +
+            `<img src="${escAttr(p.image)}" alt="" />` +
+            `<span class="playlist-key">${esc(p.letter)}</span>` +
+            `<span class="playlist-caption">${esc(p.title)}</span>` +
+            `</button>`,
+        ).join("");
+        host.querySelectorAll(".playlist-tile").forEach((btn) => {
+          btn.onclick = () => {
+            const item = PLAYLISTS.find((p) => p.id === btn.dataset.playlist);
+            if (item) openPlaylistWindow(item.url);
+          };
+        });
+        if (focusedId) {
+          host
+            .querySelector(`[data-playlist="${CSS.escape(focusedId)}"]`)
+            ?.focus({ preventScroll: true });
+        }
+      }
+
+      function focusPlaylistByLetter(letter) {
+        const want = String(letter || "").toUpperCase();
+        const matches = [
+          ...document.querySelectorAll("#playlistBento .playlist-tile"),
+        ].filter((btn) => (btn.dataset.letter || "").toUpperCase() === want);
+        if (!matches.length) return false;
+        const current = matches.indexOf(document.activeElement);
+        const next = matches[(current + 1) % matches.length];
+        next.focus({ preventScroll: true });
+        return true;
+      }
+
       function renderHelp(root) {
         const practiceGh = state.data.meta?.practice_github || "#";
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -6853,7 +6986,36 @@
           withFullData(() => setView("browse"));
           return;
         }
+        if (
+          (e.key === "y" || e.key === "Y") &&
+          e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
+          if (studyModalIsOpen()) closeStudyModal({ focusLatest: false });
+          if (imageViewerOpen()) closeImagesFs();
+          if (document.getElementById("overlay").classList.contains("open"))
+            closeOverlay();
+          withFullData(() => setView("playlists"));
+          return;
+        }
         if (handleStudyModalKey(e)) return;
+        if (
+          state.view === "playlists" &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          !e.shiftKey &&
+          e.key.length === 1 &&
+          /[a-z]/i.test(e.key)
+        ) {
+          if (focusPlaylistByLetter(e.key)) {
+            e.preventDefault();
+            return;
+          }
+        }
         const ovOpen = document
           .getElementById("overlay")
           .classList.contains("open");

@@ -24,6 +24,7 @@ SEED_STUDIES: list[tuple[str, int]] = [
 ]
 
 _WS_RE = re.compile(r"\s+")
+_PALACE_ID_RE = re.compile(r"^PALACE_[A-Z0-9_]+$")
 
 
 def state_path(data_dir: Path) -> Path:
@@ -168,18 +169,25 @@ def seed_included(palaces: dict[str, dict[str, str]]) -> list[str]:
     return included
 
 
+def _is_palace_id(palace_id: str) -> bool:
+    return bool(_PALACE_ID_RE.match(palace_id))
+
+
 def update_membership(
     state: dict[str, Any],
     palaces: dict[str, dict[str, str]],
     beasts_by_palace: dict[str, list[dict[str, str]]],
     atoms_by_beast: dict[str, list[dict[str, str]]],
+    force_include: list[str] | None = None,
 ) -> dict[str, Any]:
-    csv_ids = list(palaces.keys())
+    csv_ids = [pid for pid in palaces.keys() if _is_palace_id(pid)]
     csv_set = set(csv_ids)
     included = [
-        pid for pid in (state.get("included_palace_ids") or []) if pid in csv_set
+        pid
+        for pid in (state.get("included_palace_ids") or [])
+        if pid in csv_set and _is_palace_id(pid)
     ]
-    known = list(state.get("known_palace_ids") or [])
+    known = [pid for pid in (state.get("known_palace_ids") or []) if _is_palace_id(pid)]
     known_set = set(known)
 
     first_run = not included and not known_set
@@ -188,7 +196,9 @@ def update_membership(
         known = list(csv_ids)
         known_set = set(known)
     else:
-        # Newly imported = present in CSV but never seen before
+        # Newly imported = present in CSV but never seen before.
+        # Ids that are not PALACE_* (for example a markdown line parsed as a
+        # row) are ignored so they cannot join the list.
         new_ids = [pid for pid in csv_ids if pid not in known_set]
         new_ids.sort(
             key=lambda pid: (_palace_num(palaces[pid]), pid),
@@ -202,8 +212,29 @@ def update_membership(
                 known.append(pid)
                 known_set.add(pid)
 
+    # Import always puts the palaces it just wrote at the front, including
+    # ones this list has already seen and then dropped.
+    forced: list[str] = []
+    forced_set: set[str] = set()
+    for pid in force_include or []:
+        pid = str(pid).strip()
+        if pid in forced_set or pid not in csv_set or not _is_palace_id(pid):
+            continue
+        forced_set.add(pid)
+        if pid not in known_set:
+            known.append(pid)
+            known_set.add(pid)
+        forced.append(pid)
+    forced.sort(
+        key=lambda pid: (_palace_num(palaces[pid]), pid),
+        reverse=True,
+    )
+    if forced_set:
+        included = [pid for pid in included if pid not in forced_set]
+        included = forced + included
+
     # Drop deleted-from-CSV ids already filtered; also drop orphans from known
-    known = [pid for pid in known if pid in csv_set]
+    known = [pid for pid in known if pid in csv_set and _is_palace_id(pid)]
 
     def total_atoms(ids: list[str]) -> int:
         return sum(
@@ -302,12 +333,23 @@ def render_markdown(
     return "\n".join(lines).rstrip() + "\n"
 
 
-def sync_quick_recall(data_dir: Path, output_dir: Path, dry_run: bool = False) -> Path:
+def sync_quick_recall(
+    data_dir: Path,
+    output_dir: Path,
+    dry_run: bool = False,
+    force_include: list[str] | None = None,
+) -> Path:
     data = load_all(data_dir)
     studies, palaces, beasts_by_palace, atoms_by_beast = build_indexes(data)
     st_path = state_path(data_dir)
     state = load_state(st_path)
-    state = update_membership(state, palaces, beasts_by_palace, atoms_by_beast)
+    state = update_membership(
+        state,
+        palaces,
+        beasts_by_palace,
+        atoms_by_beast,
+        force_include=force_include,
+    )
     md = render_markdown(
         state["included_palace_ids"],
         studies,
@@ -346,11 +388,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--data-dir", type=Path, required=True)
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument(
+        "--include",
+        action="append",
+        default=[],
+        help="Palace id this import wrote. Repeated. Always placed on the list.",
+    )
     args = p.parse_args(argv)
     sync_quick_recall(
         args.data_dir.resolve(),
         args.output_dir.resolve(),
         dry_run=args.dry_run,
+        force_include=list(args.include or []),
     )
     return 0
 

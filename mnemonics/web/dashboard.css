@@ -2445,7 +2445,8 @@ a.btn-gallery {
 #plansPanel.hidden,
 #imagesPanel.hidden,
 #entertainmentPanel.hidden,
-#wardrobePanel.hidden {
+#wardrobePanel.hidden,
+#playlistsPanel.hidden {
   display: none !important;
 }
 #plansPanel {
@@ -3584,4 +3585,143 @@ button.plan-source-add[data-ico]::before {
   padding: 0 0.72rem;
   line-height: 1;
   font-size: 0.95rem;
+}
+
+body.view-playlists {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+body.view-playlists #playlistsPanel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem 1rem 0.85rem;
+  overflow: hidden;
+}
+.playlist-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 0 0 auto;
+}
+.playlist-head h2 {
+  margin: 0;
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  color: var(--rpg-ink);
+}
+.playlist-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.playlist-bento {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr 1fr;
+  grid-template-rows: 1.15fr 1fr 0.92fr;
+  gap: 0.65rem;
+}
+.playlist-tile {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--rpg-edge);
+  border-radius: 2px;
+  background: #120f0c center / cover no-repeat;
+  box-shadow:
+    var(--rpg-inset),
+    0 8px 18px rgba(0, 0, 0, 0.35);
+  color: var(--rpg-ink);
+  cursor: pointer;
+}
+.playlist-tile[data-playlist="science"] {
+  grid-column: 1 / span 2;
+  grid-row: 1 / span 2;
+}
+.playlist-tile[data-playlist="data"] {
+  grid-column: 3 / span 2;
+  grid-row: 1;
+}
+.playlist-tile[data-playlist="skills"] {
+  grid-column: 3;
+  grid-row: 2;
+}
+.playlist-tile[data-playlist="piano"] {
+  grid-column: 4;
+  grid-row: 2;
+}
+.playlist-tile[data-playlist="english"] {
+  grid-column: 1 / span 2;
+  grid-row: 3;
+}
+.playlist-tile[data-playlist="communication"] {
+  grid-column: 3;
+  grid-row: 3;
+}
+.playlist-tile[data-playlist="german"] {
+  grid-column: 4;
+  grid-row: 3;
+}
+.playlist-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+.playlist-tile .playlist-key {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  z-index: 1;
+  min-width: 1.55rem;
+  height: 1.55rem;
+  display: grid;
+  place-items: center;
+  padding: 0 0.35rem;
+  background: var(--rpg-brass);
+  color: #1c1408;
+  border: 1px solid #e6cc8a;
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.playlist-tile .playlist-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 1.4rem 0.75rem 0.5rem;
+  background: linear-gradient(180deg, transparent, rgba(18, 12, 6, 0.9));
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-shadow: 0 1px 2px #000;
+}
+.playlist-tile:hover {
+  border-color: #e6cc8a;
+}
+.playlist-tile:focus-visible {
+  outline: none;
+  border-color: #e6cc8a;
+  box-shadow:
+    inset 0 0 0 3px var(--gold),
+    0 8px 18px rgba(0, 0, 0, 0.35);
+  z-index: 1;
 }

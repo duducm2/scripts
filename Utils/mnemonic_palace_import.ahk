@@ -1922,8 +1922,28 @@ Palace_ImportMnemonicsFromDesktop(*) {
         Palace_Notify("Fetching a picture for each new keyword", 2500, BANNER_ACCENT_SUCCESS)
         Palace_BackfillKeywordImages()
     }
+    ; Practice export used to be the only Quick Recall trigger, and only after
+    ; that export succeeded. Import always refreshes Quick Recall itself.
     if (syncIds.Length)
-        Palace_SyncPracticeMd(syncIds)
+        Palace_SyncPracticeMd(syncIds, "", false)
+    qrIds := []
+    qrSeen := Map()
+    for _, canonId in palaceIdRemap {
+        id := Trim(String(canonId))
+        if (id != "" && !qrSeen.Has(id) && IsObject(Palace_FindById(palaces, id))) {
+            qrSeen[id] := true
+            qrIds.Push(id)
+        }
+    }
+    for palaceId, _ in replacePalaceIds {
+        id := Trim(String(palaceId))
+        if (id != "" && !qrSeen.Has(id) && IsObject(Palace_FindById(palaces, id))) {
+            qrSeen[id] := true
+            qrIds.Push(id)
+        }
+    }
+    if (!Palace_SyncQuickRecallMd(false, qrIds))
+        Palace_Notify("Quick Recall was not updated", 2800, BANNER_ACCENT_ERROR)
     ; SPA thumbs are keyed by beast id — rebuild before {F5} so new Custom beasts get icons.
     if (nBeasts || nExcluded)
         Palace_RebuildBeastThumbManifest()

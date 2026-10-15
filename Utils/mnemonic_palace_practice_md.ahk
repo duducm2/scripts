@@ -1,11 +1,15 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_practice_md.ahk
 ; Practice Markdown sync (Python study_practice_md.py)
-; Quick Recall sync (Python study_quick_recall_md.py) after successful practice sync
+; Quick Recall sync (Python study_quick_recall_md.py) after successful practice sync.
+; Palace import also calls this on its own, with the imported palace ids, so a
+; failed practice export cannot leave Quick Recall stale.
 ; =============================================================================
 
 ; Soft-fail: Drive/Python issues must not abort practice sync or git push.
-Palace_SyncQuickRecallMd(showUi := false) {
+; includeIds: palace ids this import wrote. They are placed on the list even
+; when quick_recall.json has already marked them as seen.
+Palace_SyncQuickRecallMd(showUi := false, includeIds := "") {
     py := Palace_PythonDir() . "\study_quick_recall_md.py"
     if (!FileExist(py)) {
         if (showUi)
@@ -21,6 +25,13 @@ Palace_SyncQuickRecallMd(showUi := false) {
     dataDir := Palace_DataDir()
     outDir := Palace_OutputDir()
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    if (IsObject(includeIds)) {
+        for palaceId in includeIds {
+            pid := Trim(String(palaceId))
+            if (pid != "")
+                cmd .= ' --include "' . pid . '"'
+        }
+    }
     exitCode := 0
     try {
         exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
@@ -62,7 +73,7 @@ Palace_StudyIdForAtom(atomId) {
     return Palace_StudyIdForBeast(a["beast_id"])
 }
 
-Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "") {
+Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "", syncQuickRecall := true) {
     py := Palace_PythonDir() . "\study_practice_md.py"
     if (!FileExist(py)) {
         Palace_Notify("study_practice_md.py not found", 2200, BANNER_ACCENT_ERROR)
@@ -134,8 +145,10 @@ Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "") {
         Palace_Notify("Practice sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
         return false
     }
-    try Palace_SyncQuickRecallMd(false)
-    catch {
+    if (syncQuickRecall) {
+        try Palace_SyncQuickRecallMd(false)
+        catch {
+        }
     }
     try StandardLoadingBar_Hide(0)
     catch {
