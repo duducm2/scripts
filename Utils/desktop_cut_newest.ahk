@@ -42,6 +42,41 @@ DesktopCutNewest_ResolveNewestPath(desktopPath) {
     return newestPath
 }
 
+DesktopCutNewest_IsImageExt(ext) {
+    switch StrLower(ext) {
+        case "jpg", "jpeg", "png", "webp", "gif", "bmp", "tif", "tiff", "heic", "heif", "avif":
+            return true
+    }
+    return false
+}
+
+; Newest image on the desktop (same stamp as the newest-file cut: later of created vs modified).
+DesktopCutNewest_ResolveNewestImagePath(desktopPath) {
+    if (!desktopPath || !DirExist(desktopPath))
+        return ""
+    newestPath := ""
+    newestStamp := ""
+    loop files desktopPath "\*", "F" {
+        if (StrLower(A_LoopFileName) = "desktop.ini")
+            continue
+        SplitPath A_LoopFileFullPath, , , &ext
+        if !DesktopCutNewest_IsImageExt(ext)
+            continue
+        try {
+            tC := FileGetTime(A_LoopFileFullPath, "C")
+            tM := FileGetTime(A_LoopFileFullPath, "M")
+        } catch {
+            continue
+        }
+        stamp := (tC >= tM) ? tC : tM
+        if (newestStamp = "" || stamp > newestStamp) {
+            newestStamp := stamp
+            newestPath := A_LoopFileFullPath
+        }
+    }
+    return newestPath
+}
+
 DesktopCutNewest_ResolveDesktopPath() {
     desktopPath := ""
     try desktopPath := GetDesktopToRecyclePath()

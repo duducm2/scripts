@@ -715,9 +715,9 @@
       "key": "lightning bolt",
       "slug": "lightning_bolt",
       "file": "lightning_bolt.png",
-      "openverse_id": "4def65c1-0d99-477c-81cb-67ddd4e69fec",
-      "source_page": "https://svgsilh.com/image/28003.html",
-      "version": 2,
+      "openverse_id": "8a8625af-f84a-4ecc-91bb-eebdb2084a7b",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=189338934",
+      "version": 3,
       "empty": false,
       "style": "illustration"
     },
@@ -2174,10 +2174,10 @@
     "scale": {
       "key": "scale",
       "slug": "scale",
-      "file": "scale.jpg",
-      "openverse_id": "66e3018a-c1ca-49a0-9763-7e09bc045750",
-      "source_page": "https://www.rawpixel.com/image/6538342/png-sticker-public-domain",
-      "version": 2,
+      "file": "scale.png",
+      "openverse_id": "64f38d47-66ac-46c6-a9c5-03f63c3e9d14",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=59996747",
+      "version": 3,
       "empty": false,
       "style": "illustration"
     },
@@ -2734,10 +2734,10 @@
     "factory": {
       "key": "factory",
       "slug": "factory",
-      "file": "factory.jpg",
-      "openverse_id": "8395d86f-d761-446b-b86f-18ae852ba179",
-      "source_page": "https://www.rawpixel.com/image/6484348/png-sticker-public-domain",
-      "version": 2,
+      "file": "factory.png",
+      "openverse_id": "fac3527b-4842-4f0a-8d2a-de2d818fea65",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=3594534",
+      "version": 3,
       "empty": false,
       "style": "illustration"
     },
@@ -3114,12 +3114,12 @@
     "hologram": {
       "key": "hologram",
       "slug": "hologram",
-      "file": "hologram.png",
-      "openverse_id": "ad0ce4e8-cf84-46a7-bb25-a9dd7bed2d5d",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1192596",
-      "version": 1,
+      "file": "hologram.jpg",
+      "openverse_id": "a35005ff-6a07-446a-8013-f9160fb20df8",
+      "source_page": "https://www.flickr.com/photos/14691188@N02/14248238683",
+      "version": 2,
       "empty": false,
-      "style": "illustration"
+      "style": "any"
     },
     "floppy disk": {
       "key": "floppy disk",
@@ -3135,9 +3135,9 @@
       "key": "plant",
       "slug": "plant",
       "file": "plant.png",
-      "openverse_id": "e45be950-0753-463a-99c1-cfd7adbc7339",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1637321",
-      "version": 1,
+      "openverse_id": "5bf5ebb4-d7f2-42fe-898f-e805651829a9",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=69702532",
+      "version": 2,
       "empty": false,
       "style": "illustration"
     },
@@ -3145,9 +3145,9 @@
       "key": "pipeline",
       "slug": "pipeline",
       "file": "pipeline.png",
-      "openverse_id": "c4af910c-855d-4123-b1bb-5946f069a069",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=4536714",
-      "version": 1,
+      "openverse_id": "cd9a8e45-cd29-4c54-9153-e3e7e842570f",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=116949015",
+      "version": 2,
       "empty": false,
       "style": "illustration"
     },
@@ -3155,19 +3155,19 @@
       "key": "pipes",
       "slug": "pipes",
       "file": "pipes.png",
-      "openverse_id": "dbc5c313-f83e-40cb-b406-3deaf2387e3c",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=124586092",
-      "version": 1,
+      "openverse_id": "75ef3843-bb2d-4b71-bdcf-a29fe1fcb2a8",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=42825096",
+      "version": 2,
       "empty": false,
       "style": "illustration"
     },
     "lemon": {
       "key": "lemon",
       "slug": "lemon",
-      "file": "lemon.png",
-      "openverse_id": "d7f541ca-22c8-4548-8748-77142deb1f95",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2486566",
-      "version": 1,
+      "file": "lemon.jpg",
+      "openverse_id": "77c3a7ab-594d-427e-8e68-3f24a624b142",
+      "source_page": "https://www.rawpixel.com/image/6755598/png-sticker-public-domain",
+      "version": 2,
       "empty": false,
       "style": "illustration"
     }

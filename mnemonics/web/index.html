@@ -1135,7 +1135,7 @@
             type="button"
             id="btnCopyPrompt"
             data-ico="copy"
-            title="Copy preserve-background + README + street image prompt (Shift+C)"
+            title="Send the compose prompt and the newest Desktop image to the AI companion (Shift+C)"
             disabled
           >
             Copy prompt
@@ -3116,41 +3116,65 @@
         }
       }
 
-      /** Clipboard: technique README + preserve-background prompt + palace image_prompt. */
+      /** README + preserve-background with this palace's image prompt filled in, plus the newest Desktop image. */
       async function copyImageComposePrompt(imagePrompt, btn) {
         const street = String(imagePrompt || "").trim();
         if (!street) {
           toast("No image prompt for this palace");
           return;
         }
+        let full = "";
         try {
           const bundle = await api("/api/image-compose/bundle");
           const preserve = String(bundle.preserve_prompt || "").trim();
           const readme = String(bundle.readme || "").trim();
           if (!preserve) throw new Error("Empty preserve-background prompt");
           if (!readme) throw new Error("Empty technique README");
-          const full = [
+          // The companion send keeps text only through the last standalone "---".
+          // The palace beasts must sit in the template, before that final divider.
+          const marker = "[PASTE THE MATCHING PALACE";
+          let replaced = false;
+          const filled = preserve.split(/\r?\n/).map((line) => {
+            if (!replaced && line.trim().startsWith(marker)) {
+              replaced = true;
+              return street;
+            }
+            return line;
+          });
+          if (!replaced) filled.push("", street);
+          filled.push("", "---");
+          full = [
             "=== CONTEXT (technique README) ===",
             readme,
             "=== END CONTEXT ===",
             "",
-            preserve,
-            "",
-            "---",
-            "📎 Mnemonic image prompt for this street",
-            "",
-            street,
+            filled.join("\n"),
           ].join("\n");
-          await navigator.clipboard.writeText(full);
-          const kb = Math.round(full.length / 1024);
+          const result = await api("/api/ask/send", {
+            method: "POST",
+            body: JSON.stringify({ text: full, attachDesktopImage: true }),
+          });
           if (btn) {
             const o = btn.textContent;
-            btn.textContent = "Copied";
+            btn.textContent = "Sent";
             setTimeout(() => (btn.textContent = o), 1200);
           }
-          toast(`Compose prompt copied (~${kb} KB)`);
+          toast(result.message || "Sending to the AI companion");
         } catch (e) {
-          toast(String(e.message || e || "Copy failed"));
+          if (!full) {
+            toast(
+              String(e.message || e || "Could not send the compose prompt"),
+            );
+            return;
+          }
+          try {
+            await navigator.clipboard.writeText(full);
+            toast("Prompt copied. " + String(e.message || e));
+          } catch {
+            toast(
+              String(e.message || e || "Could not send the compose prompt"),
+            );
+          }
         }
       }
 
@@ -6073,7 +6097,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> copy compose prompt · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>

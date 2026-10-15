@@ -1503,8 +1503,47 @@ Palace_OnStudyLinkOpenFavorite(*) {
 #HotIf
 
 ; Ask (Shift+Q) — page posts the prompt; Utils pastes it into the resolved AI companion and sends.
+; Shift+C also sets the image flag so the newest Desktop snapshot is attached first.
 Palace_AskPromptPath() {
     return A_Temp "\memory_palace_ask_prompt.txt"
+}
+
+Palace_AskImageFlagPath() {
+    return A_Temp "\memory_palace_ask_attach_image.flag"
+}
+
+Palace_StageSnapshot(src) {
+    if (!src || !FileExist(src))
+        return ""
+    SplitPath src, &name
+    dst := A_Temp "\palace-snapshot-" A_TickCount "-" name
+    try FileCopy(src, dst, 1)
+    catch {
+        return ""
+    }
+    return FileExist(dst) ? dst : ""
+}
+
+Palace_TakeDesktopSnapshot() {
+    desktopPath := ""
+    try desktopPath := DesktopCutNewest_ResolveDesktopPath()
+    catch
+        desktopPath := ""
+    if (desktopPath = "")
+        return ""
+    imagePath := ""
+    try imagePath := DesktopCutNewest_ResolveNewestImagePath(desktopPath)
+    catch
+        imagePath := ""
+    if (imagePath = "")
+        return ""
+    staged := Palace_StageSnapshot(imagePath)
+    if (staged = "")
+        return imagePath
+    try PromptContext_ScheduleTempCleanup([staged])
+    catch {
+    }
+    return staged
 }
 
 Palace_AskSendDeferred() {
@@ -1534,11 +1573,32 @@ Palace_AskSendDeferred() {
         }
         return
     }
+    attachSnapshot := false
+    try attachSnapshot := !!FileExist(Palace_AskImageFlagPath())
+    catch
+        attachSnapshot := false
+    try FileDelete(Palace_AskImageFlagPath())
+    catch {
+    }
+    ; Compose prompt from Shift+C. The flag is set by the palace server; the header covers a server that has not restarted.
+    if (!attachSnapshot && InStr(text, "=== CONTEXT (technique README) ===") = 1)
+        attachSnapshot := true
+    snapshotPaths := []
+    if (attachSnapshot) {
+        snapshot := Palace_TakeDesktopSnapshot()
+        if (snapshot = "") {
+            try ShowCenteredOverlay_Utils("⚠ No JPG or PNG on the Desktop", 2200, BANNER_ACCENT_ERROR)
+            catch {
+            }
+        } else {
+            snapshotPaths.Push(snapshot)
+        }
+    }
     global g_lastExpansion
     g_lastExpansion := 0
     try {
-        ; prompt false, no file attach, paste the body, send. Companion comes from ResolveGlobalAICompanion.
-        UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send")
+        ; prompt false, paste the body, send. Shift+C also passes the newest Desktop image.
+        UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send", snapshotPaths)
     } catch as err {
         try ShowCenteredOverlay_Utils("⚠ Ask prompt was not sent: " err.Message, 2800, BANNER_ACCENT_ERROR)
         catch {

@@ -1481,7 +1481,7 @@ UtilitySelector_RestoreConsumerGeminiFocus(*) {
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
-    contextEntries := "", pasteChoice := "") {
+    contextEntries := "", pasteChoice := "", extraAttachPaths := "") {
     global g_lastExpansion, g_PromptPasteBusyActive, g_UtilitySelectorRestoreHwnd
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
@@ -1505,6 +1505,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
     restoreFocus := ""
     playGeminiChime := false
     companionHwnd := 0
+    extraCount := 0
     try {
         if (companion = "enterprise") {
             GeminiEnterprise_OpenOrFocus()
@@ -1536,11 +1537,27 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
                 PromptPaste_BusyEnsure("⏳ Attaching context…")
             UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
         }
+        if (IsObject(extraAttachPaths) && extraAttachPaths.Length) {
+            if (usedBusyBar)
+                PromptPaste_BusyEnsure("⏳ Attaching palace snapshot…")
+            if InsertFiles(extraAttachPaths) {
+                extraCount := extraAttachPaths.Length
+                if (usedBusyBar)
+                    PromptPaste_BusyUpdate("⏳ Waiting for the snapshot…")
+                PromptContext_WaitForAttachUploadIdle(extraCount)
+            } else {
+                try ShowCenteredOverlay_Utils("⚠ Could not attach the palace snapshot", 2200, BANNER_ACCENT_ERROR)
+                catch {
+                }
+            }
+            ; InsertFiles arms the paste debounce. The prompt body must still paste.
+            g_lastExpansion := 0
+        }
     } finally {
         if (!usedBusyBar)
             HotstringGeminiBanner_Hide()
     }
-    attachCount := IsObject(contextEntries) ? contextEntries.Length : 0
+    attachCount := (IsObject(contextEntries) ? contextEntries.Length : 0) + extraCount
     submitOpts := { hwnd: companionHwnd, companionId: companion, attachCount: attachCount }
     if (doPasteBody) {
         onAfter := ""

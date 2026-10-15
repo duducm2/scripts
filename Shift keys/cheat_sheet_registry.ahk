@@ -1214,7 +1214,7 @@ cheatSheets["Memory Palace"] := "
     === Palace overlay ===
     🖼 [F] Toggle snapshot full-screen
     📝 [Shift+D] Toggle Quote & Story (default = Concept only)
-    📋 [Shift+C] Copy compose prompt (README + preserve-background + street)
+    📋 [Shift+C] Send compose prompt plus the newest Desktop image (README + preserve-background + street)
     🎁 [Shift+G] Find a relic themed to this palace
     ⬅️ [←] Older palace
     ➡️ [→] Newer palace
@@ -1612,7 +1612,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
     Practice grid: [Ctrl+Click] toggle selection (does not open) · [Delete] delete selected palace(s)
     Story Reduction: [Shift+R] toggle (Practice overview or palace overlay) · drag beasts to Delete/Merge (max 4/group) · Generate Prompt (context + filled prompt)
-    Overlay: [F] full-screen snapshot · [Shift+D] toggle Quote/Story (default Concept-only) · [Shift+C] copy compose prompt (README + preserve-background + street) · [Shift+G] find a relic themed to this palace · ← older · → newer
+    Overlay: [F] full-screen snapshot · [Shift+D] toggle Quote/Story (default Concept-only) · [Shift+C] send compose prompt plus the newest Desktop image · [Shift+G] find a relic themed to this palace · ← older · → newer
     Overlay Esc: exit full-screen first, then close overlay; Esc elsewhere returns toward Practice
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)

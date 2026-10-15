@@ -221,12 +221,17 @@ def _is_valid_http_url(raw: str) -> bool:
 
 ASK_SEND_MESSAGE = "MEMORY_PALACE_ASK_SEND"
 ASK_PROMPT_NAME = "memory_palace_ask_prompt.txt"
+ASK_IMAGE_FLAG_NAME = "memory_palace_ask_attach_image.flag"
 
 
 def _ask_prompt_path() -> Path:
     return (
         Path(os.environ.get("TEMP") or os.environ.get("TMP") or ".") / ASK_PROMPT_NAME
     )
+
+
+def _ask_image_flag_path() -> Path:
+    return _ask_prompt_path().with_name(ASK_IMAGE_FLAG_NAME)
 
 
 def _win_ptr(value: int):
@@ -337,13 +342,20 @@ def send_ask_prompt(
     text: str,
     *,
     failure_message: str = "Reload AppLaunchers, then generate again",
+    attach_desktop_image: bool = False,
 ) -> dict[str, Any]:
     """Copy the prompt and ask Utils to paste it into the open AI companion and send."""
     body = (text or "").strip()
+    flag = _ask_image_flag_path()
     if not body:
+        flag.unlink(missing_ok=True)
         return {"ok": False, "error": "Prompt is empty"}
     path = _ask_prompt_path()
     path.write_text(body, encoding="utf-8")
+    if attach_desktop_image:
+        flag.write_text("1", encoding="utf-8")
+    else:
+        flag.unlink(missing_ok=True)
     copied = _clipboard_set(body)
     if os.name != "nt":
         return {
@@ -1135,7 +1147,10 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 return
 
             if path == "/api/ask/send":
-                result = send_ask_prompt(str(payload.get("text") or ""))
+                result = send_ask_prompt(
+                    str(payload.get("text") or ""),
+                    attach_desktop_image=bool(payload.get("attachDesktopImage")),
+                )
                 self._json(200 if result.get("ok") else 400, result)
                 return
 
