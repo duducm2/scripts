@@ -2445,9 +2445,9 @@
       "key": "forklift",
       "slug": "forklift",
       "file": "forklift.png",
-      "openverse_id": "6760e486-16ce-40b6-9433-77f1e9cb40af",
-      "source_page": "https://svgsilh.com/3f51b5/image/24069.html",
-      "version": 2,
+      "openverse_id": "d64a36f5-6a5a-4735-8ec8-6bd6040eed9d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=6942248",
+      "version": 3,
       "empty": false,
       "style": "illustration"
     },
@@ -3045,9 +3045,9 @@
       "key": "string",
       "slug": "string",
       "file": "string.png",
-      "openverse_id": "7ae6d12b-015e-40e8-bd68-6e2be65d1c43",
-      "source_page": "https://commons.wikimedia.org/w/index.php?curid=4282226",
-      "version": 1,
+      "openverse_id": "2e9f4a2a-ccdf-4d82-910e-8ebb07e4d9cd",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2943094",
+      "version": 2,
       "empty": false,
       "style": "illustration"
     },
@@ -3057,6 +3057,116 @@
       "file": "recipe.png",
       "openverse_id": "26672f79-808d-44ad-892a-415e0a8a654d",
       "source_page": "https://commons.wikimedia.org/w/index.php?curid=98682165",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "recycling bin": {
+      "key": "recycling bin",
+      "slug": "recycling_bin",
+      "file": "recycling_bin.jpg",
+      "openverse_id": "21dcf19d-1ed6-4a7a-9cdf-83d69f81892c",
+      "source_page": "https://www.rawpixel.com/image/6755578/png-sticker-public-domain",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "file cabinet": {
+      "key": "file cabinet",
+      "slug": "file_cabinet",
+      "file": "file_cabinet.png",
+      "openverse_id": "dbe8466f-d5dd-466b-b9e6-5f9454c7f45f",
+      "source_page": "https://www.rawpixel.com/image/6314984/vector-paper-vintage-public-domain",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "hard hat": {
+      "key": "hard hat",
+      "slug": "hard_hat",
+      "file": "hard_hat.png",
+      "openverse_id": "0ac08908-dd80-49bc-b6e5-70fec593946d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=89022489",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "scaffolding": {
+      "key": "scaffolding",
+      "slug": "scaffolding",
+      "file": "scaffolding.png",
+      "openverse_id": "022fc3c8-e0b3-480b-8921-0464db7c82fe",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=107287199",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "pipe": {
+      "key": "pipe",
+      "slug": "pipe",
+      "file": "pipe.png",
+      "openverse_id": "dbc5c313-f83e-40cb-b406-3deaf2387e3c",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=124586092",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "hologram": {
+      "key": "hologram",
+      "slug": "hologram",
+      "file": "hologram.png",
+      "openverse_id": "ad0ce4e8-cf84-46a7-bb25-a9dd7bed2d5d",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1192596",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "floppy disk": {
+      "key": "floppy disk",
+      "slug": "floppy_disk",
+      "file": "floppy_disk.png",
+      "openverse_id": "adbb573c-d3c1-4ab8-8c06-703690744797",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=67122981",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "plant": {
+      "key": "plant",
+      "slug": "plant",
+      "file": "plant.png",
+      "openverse_id": "e45be950-0753-463a-99c1-cfd7adbc7339",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=1637321",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "pipeline": {
+      "key": "pipeline",
+      "slug": "pipeline",
+      "file": "pipeline.png",
+      "openverse_id": "c4af910c-855d-4123-b1bb-5946f069a069",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=4536714",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "pipes": {
+      "key": "pipes",
+      "slug": "pipes",
+      "file": "pipes.png",
+      "openverse_id": "dbc5c313-f83e-40cb-b406-3deaf2387e3c",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=124586092",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "lemon": {
+      "key": "lemon",
+      "slug": "lemon",
+      "file": "lemon.png",
+      "openverse_id": "d7f541ca-22c8-4548-8748-77142deb1f95",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=2486566",
       "version": 1,
       "empty": false,
       "style": "illustration"

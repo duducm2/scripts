@@ -576,7 +576,7 @@ Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
     return false
 }
 
-; After import from hub: keep Import Manager; from Palace app: return to main menu.
+; While Import Manager is still open, leave the Palace menu closed. The hub closes itself when the run ends.
 ; Skip launch when PackPipeline is active (AI-fix loop owns the next step).
 Palace_ReturnAfterImport(hubClosed := false) {
     if (hubClosed || ImportMgmt_IsOpen())

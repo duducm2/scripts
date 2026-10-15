@@ -254,8 +254,38 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
 ;   2× within that window replaces the banner with the code-snippet destination menu.
 ; Copy starts only after P/D/Y/F/R/W/O; N/Esc/timeout dismisses without copying.
 ; Armed / timer / block live in Utils\clip_angel_export_desktop.ahk (HotkeyCopy_DisarmDoubleTap).
+; The destination banner registers $*P at input level 10, which swallows the second #!+p.
+; That press is delivered to HotkeyCopy_OnBannerChordKey instead.
 global g_HotkeyCopy_LastPressTick := 0
 global g_HotkeyCopy_BannerGen := 0
+global g_StandardLoadingBarChordKeyCb := HotkeyCopy_OnBannerChordKey
+
+; Second #!+p within the window: replace the message menu with the code-copy menu.
+; Returns true when this press was accepted as the upgrade.
+HotkeyCopy_TryUpgradeToCode() {
+    global g_HotkeyCopy_DoubleTapArmed, g_HotkeyCopy_LastPressTick, g_HotkeyCopy_DoubleTapTimer
+    global g_HotkeyCopy_BannerGen, g_HotkeyCopy_BlockCodeUpgrade
+    if (!g_HotkeyCopy_DoubleTapArmed || g_HotkeyCopy_BlockCodeUpgrade)
+        return false
+    g_HotkeyCopy_DoubleTapArmed := false
+    g_HotkeyCopy_LastPressTick := 0
+    if (g_HotkeyCopy_DoubleTapTimer) {
+        SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
+        g_HotkeyCopy_DoubleTapTimer := 0
+    }
+    ; Supersede the in-flight message banner (it may still be resolving the companion).
+    g_HotkeyCopy_BannerGen += 1
+    codeGen := g_HotkeyCopy_BannerGen
+    SetTimer((*) => HotkeyCopy_RunIntentFlow(true, codeGen), -1)
+    return true
+}
+
+; Called from the destination banner when P is pressed while Win/Alt/Shift are still down.
+HotkeyCopy_OnBannerChordKey(key) {
+    if (StrLower(key) != "p")
+        return
+    HotkeyCopy_TryUpgradeToCode()
+}
 
 class HotkeyCopy_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
@@ -281,19 +311,8 @@ class HotkeyCopy_DoubleTapTimerObj {
     now := A_TickCount
     elapsed := (g_HotkeyCopy_LastPressTick > 0) ? (now - g_HotkeyCopy_LastPressTick) : 9999
 
-    if (g_HotkeyCopy_DoubleTapArmed && !g_HotkeyCopy_BlockCodeUpgrade && elapsed >= 0 && elapsed < thresholdMs) {
-        g_HotkeyCopy_DoubleTapArmed := false
-        g_HotkeyCopy_LastPressTick := 0
-        if (g_HotkeyCopy_DoubleTapTimer) {
-            SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
-            g_HotkeyCopy_DoubleTapTimer := 0
-        }
-        ; Supersede the in-flight message banner (it may still be resolving the companion).
-        g_HotkeyCopy_BannerGen += 1
-        codeGen := g_HotkeyCopy_BannerGen
-        SetTimer((*) => HotkeyCopy_RunIntentFlow(true, codeGen), -1)
+    if (elapsed >= 0 && elapsed < thresholdMs && HotkeyCopy_TryUpgradeToCode())
         return
-    }
 
     g_HotkeyCopy_LastPressTick := now
     g_HotkeyCopy_DoubleTapArmed := true

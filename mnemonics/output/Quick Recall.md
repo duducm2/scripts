@@ -1,7 +1,15 @@
 # Quick Recall
 
 <details open>
-<summary><strong>Data Analyst</strong> · 17 palaces · 66 atoms</summary>
+<summary><strong>Data Analyst</strong> · 19 palaces · 72 atoms</summary>
+
+<img src="../web/assets/beast-thumbs/crab_hermit.png" alt="crab (hermit)" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Cr] crab (hermit) [I use <img alt="[ACID Properties]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BACID%20Properties%5D&color=9fd4ff" />(lemon) to guarantee] [that database transactions are processed <img alt="[reliably]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breliably%5D&color=ffd966" />(shield) during system failures.]
+
+<img src="../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/quetzalcoatl.png" alt="Cold Quetzalcoatl" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Cq] Cold Quetzalcoatl [I use a <img alt="[Database View]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDatabase%20View%5D&color=9fd4ff" />(window) to generate] [a <img alt="[virtual table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvirtual%20table%5D&color=ffd966" />(hologram) from a saved SQL query.]
+<img src="../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/panther.png" alt="Cold panther" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Cp] Cold panther [I use <img alt="[Data Engineering vs. Data Analysis]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BData%20Engineering%20vs.%20Data%20Analysis%5D&color=9fd4ff" />(scale) to contrast] [building the <img alt="[plumbing system]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplumbing%20system%5D&color=ffd966" />(pipes) against inspecting the water.]
+<img src="../web/assets/beast-thumbs/cow.png" alt="cow" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Co] cow [I use <img alt="[Data Engineering]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BData%20Engineering%5D&color=9fd4ff" />(hard hat) to build] [the <img alt="[infrastructure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binfrastructure%5D&color=ffd966" />(pipeline) necessary to collect and process data at scale.]
+<img src="../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/neanderthal.png" alt="Cold Neanderthal" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Cn] Cold Neanderthal [I use <img alt="[Apache Spark]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BApache%20Spark%5D&color=9fd4ff" />(lightning bolt) to process] [large-scale data across a <img alt="[distributed computing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdistributed%20computing%5D&color=ffd966" />(factory) framework.]
+<img src="../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/marmoset.png" alt="Cold marmoset" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Cm] Cold marmoset [I use a <img alt="[Data Lineage Graph]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BData%20Lineage%20Graph%5D&color=9fd4ff" />(map) to trace] [the <img alt="[lifecycle]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blifecycle%5D&color=ffd966" />(plant) of data across different systems.]
 
 <img src="../web/assets/beast-thumbs/clown.png" alt="clown" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Cl] clown [I use <img alt="[Resilient Distributed Datasets]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BResilient%20Distributed%20Datasets%5D&color=9fd4ff" />(shield) to track] [the exact <img alt="[sequence]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsequence%5D&color=ffd966" />(recipe) of transformations from the original source.] — Note: This lineage provides fault tolerance by allowing Spark to recompute lost data deterministically.
 <img src="../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /><img src="../web/assets/beast-thumbs/kitten.png" alt="Cold kitten" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ck] Cold kitten [I use a <img alt="[Directed Acyclic Graph]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDirected%20Acyclic%20Graph%5D&color=9fd4ff" />(blueprint) to map] [my <img alt="[sequence]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsequence%5D&color=ffd966" />(string) of data transformations without any loops.]
@@ -85,42 +93,6 @@
 <img src="../web/assets/beast-thumbs/acorn.png" alt="acorn" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ac] acorn [I <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=9fd4ff" />(chest) data] [in rigid <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=ffd966" />(grid) of rows and columns] [linked by predefined <img alt="[relationships]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brelationships%5D&color=ffd966" />(chain)] — Note: Enforces schemas and data integrity using SQL validation rules.
 <img src="../web/assets/beast-thumbs/abyssinian_cat.png" alt="Abyssinian cat" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ab] Abyssinian cat [I <img alt="[reuse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breuse%5D&color=9fd4ff" />(stamp) my query steps] [across different <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(binder)] [sharing the exact same table <img alt="[structure]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstructure%5D&color=ffd966" />(twin)] — Note: Identical column headers and data formats are required so the query steps run without error.
 <img src="../web/assets/beast-thumbs/aardvark.png" alt="aardvark" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Aa] aardvark [I replace nulls with a temporary <img alt="[placeholder]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplaceholder%5D&color=9fd4ff" />(scarecrow)] [before <img alt="[unpivoting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunpivoting%5D&color=ffd966" />(jack)] [to <img alt="[swap]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bswap%5D&color=ffd966" />(boomerang) them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
-
-</details>
-
-<details open>
-<summary><strong>intuitive analytical queries (OLAP) and aggregations. | Eliminating update/insert/delete anomalies and write redundancy (OLTP). |</strong> · 1 palace · 0 atoms</summary>
-
-
-</details>
-
-<details open>
-<summary><strong>subcategory</strong> · 1 palace · 0 atoms</summary>
-
-
-</details>
-
-<details open>
-<summary><strong>their rules</strong> · 1 palace · 0 atoms</summary>
-
-
-</details>
-
-<details open>
-<summary><strong>Power BI</strong> · 1 palace · 0 atoms</summary>
-
-
-</details>
-
-<details open>
-<summary><strong>splitting `dim_product` into separate tables for `product`</strong> · 1 palace · 0 atoms</summary>
-
-
-</details>
-
-<details open>
-<summary><strong>`product_name`) out of a transaction table resembles decomposing a flat sheet into relational entities.</strong> · 1 palace · 0 atoms</summary>
-
 
 </details>
 

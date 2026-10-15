@@ -63,9 +63,100 @@ IsGeminiCopyCodeButton(name) {
     return false
 }
 
-; Code copy must be a code-fence name and must not be the whole-answer control.
-; Invoke only: a coordinate click can land on the response Copy button below the fence.
-Gemini_InvokeAcceptedCodeCopyButton(el) {
+Gemini_ClassHasToken(className, token) {
+    if (!className || !token)
+        return false
+    normalized := StrReplace(StrReplace(StrReplace(className, "`n", " "), "`r", " "), "`t", " ")
+    for part in StrSplit(normalized, " ", " `t") {
+        if (part = token)
+            return true
+    }
+    return false
+}
+
+; Active gemini.google.com document. A second Chrome tab in the same window must not
+; contribute Copy / Copy code buttons (its bounds can sit on top of the visible footer Copy).
+Gemini_ActivePageRoot(uia) {
+    if (!IsObject(uia))
+        return uia
+    docs := []
+    try docs := uia.FindAll({ Type: "Document" })
+    catch
+        docs := []
+    geminiDocs := []
+    for doc in docs {
+        name := ""
+        val := ""
+        try name := doc.Name
+        try val := doc.Value
+        if (InStr(val, "gemini.google.com", false) || InStr(name, "Gemini", false))
+            geminiDocs.Push(doc)
+    }
+    if (geminiDocs.Length = 0)
+        return uia
+    if (geminiDocs.Length = 1)
+        return geminiDocs[1]
+    title := ""
+    try {
+        hwnd := 0
+        try hwnd := uia.BrowserId
+        if (hwnd)
+            title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        title := ""
+    }
+    if (!title) {
+        try title := WinGetTitle("A")
+        catch
+            title := ""
+    }
+    best := 0
+    bestLen := 0
+    for doc in geminiDocs {
+        name := ""
+        try name := doc.Name
+        if (name && title && InStr(title, name, false) = 1 && StrLen(name) > bestLen) {
+            best := doc
+            bestLen := StrLen(name)
+        }
+    }
+    if (best)
+        return best
+    for doc in geminiDocs {
+        off := true
+        try off := doc.GetPropertyValue(UIA.Property.IsOffscreen)
+        if (!off)
+            return doc
+    }
+    return geminiDocs[geminiDocs.Length]
+}
+
+; Footer "Copy" lives on response-container, outside presented-response-container.
+; The fence control lives in group.copy-button inside the presented body (or legacy code-block).
+Gemini_IsResponseFooterControl(el) {
+    if (!IsObject(el))
+        return false
+    inBody := false
+    node := el
+    loop 8 {
+        if (!IsObject(node))
+            return false
+        cls := ""
+        try cls := node.ClassName
+        if (Gemini_ClassHasToken(cls, "presented-response-container") || Gemini_ClassHasToken(cls, "code-block"))
+            inBody := true
+        if (Gemini_ClassHasToken(cls, "response-container"))
+            return !inBody
+        parent := 0
+        try parent := node.Parent
+        catch
+            return false
+        node := parent
+    }
+    return false
+}
+
+Gemini_IsFenceCopyButton(el) {
     if (!IsObject(el))
         return false
     name := ""
@@ -74,6 +165,114 @@ Gemini_InvokeAcceptedCodeCopyButton(el) {
         return false
     if (!IsGeminiCopyCodeButton(name) || IsGeminiCopyResponseButton(name))
         return false
+    if (Gemini_IsResponseFooterControl(el))
+        return false
+    hasHost := false
+    inBody := false
+    node := el
+    loop 8 {
+        if (!IsObject(node))
+            break
+        cls := ""
+        try cls := node.ClassName
+        if (Gemini_ClassHasToken(cls, "copy-button"))
+            hasHost := true
+        if (Gemini_ClassHasToken(cls, "presented-response-container") || Gemini_ClassHasToken(cls, "code-block"))
+            inBody := true
+        if (Gemini_ClassHasToken(cls, "response-container") && inBody)
+            break
+        parent := 0
+        try parent := node.Parent
+        catch
+            break
+        node := parent
+    }
+    return hasHost && inBody
+}
+
+Gemini_SameElement(a, b) {
+    if (!IsObject(a) || !IsObject(b))
+        return false
+    try {
+        return UIA.RuntimeIdToString(a.GetRuntimeId()) = UIA.RuntimeIdToString(b.GetRuntimeId())
+    } catch {
+        return false
+    }
+}
+
+Gemini_HasAncestor(el, ancestor) {
+    if (!IsObject(el) || !IsObject(ancestor))
+        return false
+    node := el
+    loop 12 {
+        if (!IsObject(node))
+            return false
+        if (Gemini_SameElement(node, ancestor))
+            return true
+        parent := 0
+        try parent := node.Parent
+        catch
+            return false
+        node := parent
+    }
+    return false
+}
+
+; Last response-container on the page (not presented-response-container).
+Gemini_LastResponseContainer(root) {
+    if (!IsObject(root))
+        return 0
+    containers := []
+    try {
+        groups := root.FindAll({ ClassName: "response-container", matchmode: "Substring" })
+        for g in groups {
+            cls := ""
+            try cls := g.ClassName
+            if (Gemini_ClassHasToken(cls, "response-container"))
+                containers.Push(g)
+        }
+    } catch {
+    }
+    if (containers.Length = 0)
+        return 0
+    return containers[containers.Length]
+}
+
+Gemini_ScrollElementIntoView(el) {
+    node := el
+    loop 4 {
+        if (!IsObject(node))
+            return
+        try {
+            if (node.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)) {
+                node.ScrollItemPattern.ScrollIntoView()
+                return
+            }
+        } catch {
+        }
+        parent := 0
+        try parent := node.Parent
+        catch
+            return
+        node := parent
+    }
+}
+
+; Code copy must be the fence control (group.copy-button inside the presented response).
+; The whole-answer "Copy" sits lower, on the response footer. Invoke only: a coordinate
+; click lands on that footer when the fence button's bounds overlap it.
+Gemini_InvokeAcceptedCodeCopyButton(el) {
+    if (!IsObject(el))
+        return false
+    name := ""
+    try name := el.Name
+    catch
+        return false
+    if (!Gemini_IsFenceCopyButton(el)) {
+        if (!IsGeminiCopyCodeButton(name) || IsGeminiCopyResponseButton(name) || Gemini_IsResponseFooterControl(el))
+            return false
+    }
+    Gemini_ScrollElementIntoView(el)
     try {
         if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
             el.InvokePattern.Invoke()

@@ -204,7 +204,7 @@ ImportMgmt_ShowMainMenu() {
     g_ImportMgmtGui := Gui("+AlwaysOnTop +ToolWindow", "Import Management")
     g_ImportMgmtGui.SetFont("s10", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "w" . contentW,
-        "Char = import   Shift+Enter / double-click = import   Shift+C = copy pack name   Shift+Backspace = utility shortcuts   Esc = close"
+        "Char = import clipboard, else Desktop file   Shift+Enter / double-click = same   Shift+C = copy pack name   Shift+Backspace = utility shortcuts   Esc = close"
     )
     g_ImportMgmtLv := g_ImportMgmtGui.Add("ListView", "w" . contentW . " h" . lvH . " -Multi",
         ["Char", "Workflow", "Pack / detail"])
@@ -307,34 +307,123 @@ ImportMgmt_RunnerForFileName(fileName) {
     return ""
 }
 
+; --- Clipboard first, then the existing Desktop file (same idea as Quick Download names Shift+T) ---
+
+; The chosen record is the destination, same as Quick Download names Shift+T.
+; A task pack says TASK_PROJECTS, not TASK_PACK; a finance pack says FINANCE_DAILY.csv.
+; Any pack body is accepted. Empty or non-pack clipboard leaves the Desktop file alone.
+ImportMgmt_ClipboardPackMatches(body, fileName) {
+    return fileName != "" && body != "" && ClipAngelExport_LooksLikePack(body)
+}
+
+; Write a matching clipboard pack to the canonical Desktop name. False leaves the Desktop file untouched.
+ImportMgmt_TryPlaceClipboardPack(fileName) {
+    if (fileName = "")
+        return false
+    errMsg := ""
+    body := ""
+    try body := ClipAngelExport_ClipboardAsPackText(&errMsg)
+    catch {
+        return false
+    }
+    if (!ImportMgmt_ClipboardPackMatches(body, fileName))
+        return false
+    desktopPath := ""
+    try desktopPath := AiQuickDownload_ResolveDesktopPath()
+    catch {
+        desktopPath := ""
+    }
+    if (desktopPath = "" || !DirExist(desktopPath))
+        desktopPath := A_Desktop
+    if (desktopPath = "" || !DirExist(desktopPath))
+        return false
+    matches := ClipAngelExport_SameNameDesktopPaths(fileName)
+    outPath := (matches.Length = 1) ? matches[1] : (desktopPath . "\" . fileName)
+    try ClipAngelExport_OverwriteUtf8(outPath, body)
+    catch {
+        return false
+    }
+    if !FileExist(outPath)
+        return false
+    try outPath := ClipAngelExport_PlaceCanonicalPack(outPath, fileName)
+    catch {
+    }
+    try ImportWatcher_ClaimPath(outPath)
+    catch {
+    }
+    return FileExist(outPath)
+}
+
+; Clipboard image → next PALACE_QUICK_IMAGE*.png. False keeps the current Desktop image.
+ImportMgmt_TryPlaceClipboardImage() {
+    hasImage := false
+    try hasImage := Task_ClipboardHasImage()
+    catch {
+        hasImage := false
+    }
+    if (!hasImage)
+        return false
+    dest := ""
+    try dest := Palace_DesktopNextQuickImagePath()
+    catch {
+        dest := ""
+    }
+    if (dest = "")
+        return false
+    ok := false
+    try ok := Task_SaveClipboardImage(dest)
+    catch {
+        ok := false
+    }
+    return ok && FileExist(dest)
+}
+
+; Place clipboard content when it is this record's output, then run the Desktop importer either way.
+; The hub closes after the attempt, whether the import saved, failed, or the confirm was cancelled.
+ImportMgmt_RunPreferClipboard(fileName, runFn) {
+    try ImportMgmt_TryPlaceClipboardPack(fileName)
+    catch {
+    }
+    result := false
+    try result := runFn.Call()
+    catch {
+        result := false
+    }
+    ImportMgmt_CloseIfOpen()
+    return result
+}
+
 ; --- Thin public runners (hub API; domain parsers stay in *_import modules) ---
 
 ImportMgmt_RunFinanceDaily(*) {
-    Finance_ImportDaily()
+    ImportMgmt_RunPreferClipboard("FINANCE_DAILY.txt", Finance_ImportDaily)
 }
 
 ImportMgmt_RunFinanceMonthly(*) {
-    Finance_ImportMonthly()
+    ImportMgmt_RunPreferClipboard("FINANCE_MONTHLY.txt", Finance_ImportMonthly)
 }
 
 ImportMgmt_RunPalacePack(*) {
-    Palace_ImportMnemonicsFromDesktop()
+    ImportMgmt_RunPreferClipboard("PALACE_PACK.txt", Palace_ImportMnemonicsFromDesktop)
 }
 
 ImportMgmt_RunCollectiblePack(*) {
-    Collectible_ImportFromDesktop()
+    ImportMgmt_RunPreferClipboard("COLLECTIBLE_PACK.txt", Collectible_ImportFromDesktop)
 }
 
 ImportMgmt_RunPlanPack(*) {
-    Palace_ImportPlanPackFromDesktop()
+    ImportMgmt_RunPreferClipboard("PLAN_PACK.txt", Palace_ImportPlanPackFromDesktop)
 }
 
 ImportMgmt_RunTaskPack(*) {
-    Task_ImportPackFromDesktop()
+    ImportMgmt_RunPreferClipboard("TASK_PACK.txt", Task_ImportPackFromDesktop)
 }
 
 ImportMgmt_RunQuickImage(*) {
     ImportMgmt_CloseGui()
+    try ImportMgmt_TryPlaceClipboardImage()
+    catch {
+    }
     try Palace_QuickAttachDesktopImage()
     catch as e {
         try ShowCenteredOverlay_Utils("Quick image failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
@@ -404,8 +493,10 @@ ImportMgmt_HelpText() {
     . "Importer consolidates variants (*_updated*, gemini-code-….txt) to the canonical name.`r`n`r`n"
     . "GENERAL WORKFLOW`r`n"
     . "1. Run the pack prompt (#!+U → Prompts, or dictation flow).`r`n"
-    . "2. Save the pack to Desktop (Quick Download or copy fence).`r`n"
-    . "3. Open Import Management → Char / Shift+Enter on the workflow.`r`n`r`n"
+    . "2. Copy the pack, or save it on Desktop under the canonical name.`r`n"
+    . "3. Open Import Management → Char / Shift+Enter on the workflow.`r`n"
+    .
+    "Clipboard is tried first (same unwrap as Quick Download names Shift+T). If it is not this pack, the Desktop file is used.`r`n`r`n"
     . "========== [D] FINANCE DAILY ==========`r`n"
     . "Pack: FINANCE_DAILY.txt`r`n"
     . "Writes: finances/data transactions (append)`r`n"
@@ -441,7 +532,7 @@ ImportMgmt_HelpText() {
     . "Writes: study plans / plan items / resources; syncs plans Markdown`r`n"
     . "Confirm: preview before save`r`n"
     . "Success: archive → mnemonics/data/imported/; hub closes`r`n"
-    . "Failure without fix file: toast; hub stays open if launched from here`r`n"
+    . "Failure or cancel: toast; hub closes`r`n"
     . "Re-run: #!+X → [L]`r`n`r`n"
     . "========== [T] TASK PACK ==========`r`n"
     . "Pack: TASK_PACK.txt (prefer named TASK_PACK* over gemini-code dumps)`r`n"
@@ -455,7 +546,8 @@ ImportMgmt_HelpText() {
     . "========== [Q] PALACE QUICK IMAGE ==========`r`n"
     . "Canonical: PALACE_QUICK_IMAGE.png (Shift+P Maps capture uses this name)`r`n"
     . "Batch captures: PALACE_QUICK_IMAGE_02.png, _03.png, … while earlier files remain on Desktop`r`n"
-    . "Source: newest PALACE_QUICK_IMAGE*.png/JPG on Desktop, else any newest image`r`n"
+    .
+    "Source: clipboard image if one is copied, else newest PALACE_QUICK_IMAGE*.png/JPG on Desktop, else any newest image`r`n"
     . "Purpose: attach that image to a Memory Palace that has no image_rel_path`r`n"
     . "Flow: pick palace from missing-image list → copy into practice/images/{study}/{n}.{ext}`r`n"
     . "Writes: mnemonics/data palaces.csv image_rel_path; syncs practice Markdown`r`n"

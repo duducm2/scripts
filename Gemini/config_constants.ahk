@@ -106,10 +106,14 @@ GetGeminiCopyButtonsArray(uia) {
     try prevBatch := A_BatchLines
     catch
         prevBatch := -1
+    root := uia
+    try root := Gemini_ActivePageRoot(uia)
+    if (!IsObject(root))
+        root := uia
     try {
         out := []
         A_BatchLines := -1
-        allButtons := uia.FindAll({ Type: "Button" })
+        allButtons := root.FindAll({ Type: "Button" })
         nameMatchCount := 0
         classMatchCount := 0
         sampleNames := ""
@@ -129,7 +133,7 @@ GetGeminiCopyButtonsArray(uia) {
             }
         }
         if (out.Length = 0) {
-            allButtons := uia.FindAll({ Type: "Button" })
+            allButtons := root.FindAll({ Type: "Button" })
             for button in allButtons {
                 if (IsGeminiCopyResponseButton(button.Name))
                     out.Push(button)
@@ -171,45 +175,63 @@ GetLastGeminiCopyButton(uia) {
     return lastEl ? lastEl : arr[arr.Length]
 }
 
-; Returns array of "Copy code" buttons in document order; empty array on error.
+; Fence "Copy code" buttons on the active Gemini tab, in document order.
+; Personal response chrome: group.copy-button inside presented-response-container.
+; The whole-answer "Copy" is a later sibling on response-container and must not match.
+; A second Chrome tab is ignored (Gemini_ActivePageRoot).
 GetGeminiCopyCodeButtonsArray(uia) {
     out := []
     if (!IsObject(uia))
         return out
+    root := uia
+    try root := Gemini_ActivePageRoot(uia)
+    if (!IsObject(root))
+        root := uia
     try {
-        allButtons := uia.FindAll({ Type: "Button" })
+        allButtons := root.FindAll({ Type: "Button" })
         for button in allButtons {
-            if (IsGeminiCopyCodeButton(button.Name))
+            if (Gemini_IsFenceCopyButton(button))
                 out.Push(button)
         }
     } catch {
     }
+    if (out.Length = 0) {
+        try {
+            allButtons := root.FindAll({ Type: "Button" })
+            for button in allButtons {
+                name := ""
+                try name := button.Name
+                if (IsGeminiCopyCodeButton(name) && !IsGeminiCopyResponseButton(name)
+                && !Gemini_IsResponseFooterControl(button))
+                    out.Push(button)
+            }
+        } catch {
+        }
+    }
     return out
 }
 
-; Returns the visually lowest "Copy code" button (most recent snippet) or 0.
+; Last snippet on the latest response of the active tab. Screen Y is not used:
+; the footer "Copy" sits lower than the fence button, and a background tab's
+; bounds can overlap that footer.
 GetLastGeminiCopyCodeButton(uia) {
     arr := GetGeminiCopyCodeButtonsArray(uia)
     if (arr.Length = 0)
         return 0
-    lastEl := 0
-    lastTop := ""
-    for btn in arr {
-        try {
-            br := btn.BoundingRectangle
-        } catch {
-            continue
+    root := uia
+    try root := Gemini_ActivePageRoot(uia)
+    lastResponse := 0
+    try lastResponse := Gemini_LastResponseContainer(root)
+    if (IsObject(lastResponse)) {
+        scoped := []
+        for btn in arr {
+            if (Gemini_HasAncestor(btn, lastResponse))
+                scoped.Push(btn)
         }
-        if (!IsObject(br))
-            continue
-        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
-            continue
-        if (lastEl = 0 || br.t >= lastTop) {
-            lastEl := btn
-            lastTop := br.t
-        }
+        if (scoped.Length)
+            arr := scoped
     }
-    return lastEl ? lastEl : arr[arr.Length]
+    return arr[arr.Length]
 }
 
 ; Copy last Gemini message with retry using exponential backoff (Phase 6). Returns true if clipboard changed.

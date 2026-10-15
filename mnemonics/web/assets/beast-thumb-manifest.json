@@ -14,7 +14,7 @@
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "524 beasts / 171 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 54 beasts with adj"
+    "catalog_scope": "530 beasts / 173 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 58 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -5073,6 +5073,66 @@
       "filename": "clown.png",
       "url": "/assets/beast-thumbs/clown.png",
       "source_slug": "clown",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_23_Cm": {
+      "label": "Cold marmoset",
+      "peg_code": "Cm",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_23_Cn": {
+      "label": "Cold Neanderthal",
+      "peg_code": "Cn",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_23_Co": {
+      "label": "cow",
+      "peg_code": "Co",
+      "filename": "cow.png",
+      "url": "/assets/beast-thumbs/cow.png",
+      "source_slug": "cow",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_23_Cp": {
+      "label": "Cold panther",
+      "peg_code": "Cp",
+      "filename": "panther.png",
+      "url": "/assets/beast-thumbs/panther.png",
+      "source_slug": "panther",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_23_Cq": {
+      "label": "Cold Quetzalcoatl",
+      "peg_code": "Cq",
+      "filename": "quetzalcoatl.png",
+      "url": "/assets/beast-thumbs/quetzalcoatl.png",
+      "source_slug": "quetzalcoatl",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_24_Cr": {
+      "label": "crab (hermit)",
+      "peg_code": "Cr",
+      "filename": "crab_hermit.png",
+      "url": "/assets/beast-thumbs/crab_hermit.png",
+      "source_slug": "crab_hermit",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null

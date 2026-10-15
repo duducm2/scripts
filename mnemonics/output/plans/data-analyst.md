@@ -4,21 +4,7 @@
 
 ## 📃 Backlog
 
-- [ ] Data lake
-
-- [ ] ETL (Extract, Transform, Load)
-
-- [ ] schema
-
-- [ ] Visual Information Class PDFs
-
-- [ ] Fact tables and dimension tables
-
 - [ ] snow flake
-
-- [ ] Experiência operacional de vários anos em processos logísticos e SAP (ERP - módulos SD / PP / MM, APO)
-
-- [ ] data bricks project
 
 - [ ] ACID
 

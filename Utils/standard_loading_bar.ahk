@@ -26,6 +26,8 @@ global BANNER_BLACKOUT_BORDER := "FF9800"    ; Orange border + progress strip
 global g_StandardLoadingBarGui := 0
 global g_StandardLoadingBarValue := 0
 global g_StandardLoadingBarIsKeysOverlay := false
+; Optional. Gemini sets this so Win+Alt+Shift+P during the copy menu upgrades to code copy.
+global g_StandardLoadingBarChordKeyCb := ""
 global g_StandardLoadingBarKeysHotkeys := []
 global g_StandardLoadingBarKeysTimeoutTimer := ""
 global g_StandardLoadingBarBorderGui := 0
@@ -1006,16 +1008,23 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
 }
 
 StandardLoadingBar_KeyWrapper(key, cb, *) {
-    global g_StandardLoadingBarIsKeysOverlay
+    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarChordKeyCb
     if (!g_StandardLoadingBarIsKeysOverlay)
         return
     ; A chord such as Win+Alt+Shift+P is the double-tap, not a menu choice.
     ; Do not release those modifiers and then accept the letter (that starts whole-message copy).
+    ; The banner's $*P is a higher input level than #!+p, so the second tap lands here.
+    ; Hand it back so that tap can upgrade to code copy instead of being dropped.
     chordDown := false
     try chordDown := GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Alt", "P") || GetKeyState(
         "Shift", "P")
-    if (chordDown)
+    if (chordDown) {
+        chordCb := g_StandardLoadingBarChordKeyCb
+        if (chordCb != "") {
+            try chordCb.Call(key)
+        }
         return
+    }
     ; Ignore while Ctrl is still physically down. A stuck modifier (not still held) is released
     ; so V is not delivered as Clip Angel's Ctrl+Alt+V.
     if (StandardLoadingBar_KeysSelectionModifiersDown()) {
