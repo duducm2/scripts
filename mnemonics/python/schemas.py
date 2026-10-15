@@ -59,9 +59,10 @@ ATOMS_HEADERS = [
     "sort_order",
 ]
 
-# Legacy read cap. New or rewritten atoms use exactly two bracket groups.
+# Legacy read cap. New or rewritten atoms use 3–6 bracket groups, one keyword each.
 ATOM_KEYWORDS_MAX_PAIRS = 10
-ATOM_KEYWORDS_NEW_PAIRS = 2
+ATOM_KEYWORDS_MIN_NEW = 3
+ATOM_KEYWORDS_MAX_NEW = 6
 
 
 _CONCEPT_NOTE_SEPS = (" — Note:", " – Note:", " - Note:")
@@ -201,10 +202,12 @@ def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | 
             "concept core must contain only square-bracket groups followed by an "
             "optional unbracketed ` — Note:`"
         )
-    if len(groups) != ATOM_KEYWORDS_NEW_PAIRS:
+    if not (ATOM_KEYWORDS_MIN_NEW <= len(groups) <= ATOM_KEYWORDS_MAX_NEW):
         return (
-            f"concept must contain exactly {ATOM_KEYWORDS_NEW_PAIRS} bracket groups "
-            "([I use {Name} to {verb}] [continuation])"
+            f"concept must contain {ATOM_KEYWORDS_MIN_NEW}–{ATOM_KEYWORDS_MAX_NEW} "
+            "bracket groups so the atom has at least "
+            f"{ATOM_KEYWORDS_MIN_NEW} keywords, one pair per group "
+            "([I use {Name} to {verb}] [continuation] [continuation])"
         )
     if not _opening_clause_ok(groups[0]):
         return "concept opening must be `I use … to …` without a closing period"
@@ -212,10 +215,10 @@ def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | 
     pairs, error = _strict_keyword_pairs(keywords)
     if error:
         return error
+    if len(pairs) < ATOM_KEYWORDS_MIN_NEW:
+        return f"keywords must contain at least {ATOM_KEYWORDS_MIN_NEW} pairs"
     if len(pairs) != len(groups):
         return "exactly one keyword pair is required per concept bracket group"
-    if len(pairs) != ATOM_KEYWORDS_NEW_PAIRS:
-        return f"keywords must contain exactly {ATOM_KEYWORDS_NEW_PAIRS} pairs"
     if not _pairs_match_groups_one_to_one(groups, pairs):
         return (
             "each keyword RecognizableWord must appear in its matching bracket group "

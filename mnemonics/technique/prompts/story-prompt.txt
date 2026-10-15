@@ -201,23 +201,23 @@ Rules:
 - `kind` — `single`. One atom row per beast.
 - Leave `zone` and `zone_label` empty. Do not use `zoned` or body zones as extra atoms.
 - Field mapping from technique prose (`README §Knowledge Atom Structure`):
-  - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>` (Note stays **impersonal**—not first person). Otherwise omit the Note. After compression, apply **Two-part sentence (square brackets)** to the compressed core (see below).
-  - **Two-part sentence (HARD)** — new atoms only (`README §Knowledge Atom Structure`). The compressed `concept` core is exactly two square-bracket groups that read as one grammatical sentence:
+  - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>` (Note stays **impersonal**—not first person). Otherwise omit the Note. After compression, apply **Keyword sentence (square brackets)** to the compressed core (see below).
+  - **Keyword sentence (HARD)** — new atoms only (`README §Knowledge Atom Structure`). The compressed `concept` core is 3–6 square-bracket groups that read as one grammatical sentence, so the atom has at least three keywords:
     - **Group 1:** `[I use {formal concept name} to {bare verb}]`. Use the source’s standard label. First person singular. No period at the end of this group. The name sits inside the clause. NEVER give the name its own brackets, NEVER write `[Name: definition]`, and NEVER emit a description-only core when a clear name exists.
-    - **Group 2:** `[{continuation}]` — the object and complements of that same sentence. It does not start a new subject and does not start a second “I …”. One space between the groups.
-    - **Output:** `[I use Databricks Jobs to convert] [my interactive notebooks into scheduled production pipelines.]`. Exactly two groups (exactly one key per group). NEVER use `|` inside `concept` to mark thought groups.
-    - **Note suffix:** when present, append ` — Note: …` **after** the two groups; do **not** wrap the Note in brackets.
+    - **Later groups:** `[{continuation}]` — the object and complements of that same sentence, split across at least two groups. None of them starts a new subject or a second “I …”. One space between the groups.
+    - **Output:** `[I use Databricks Jobs to convert] [my interactive notebooks] [into scheduled production pipelines.]`. At least three groups and at most six (exactly one key per group). NEVER use `|` inside `concept` to mark thought groups.
+    - **Note suffix:** when present, append ` — Note: …` **after** the groups; do **not** wrap the Note in brackets.
     - **Scope (strict):** these brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `zone_label`, PREVIEW structural labels, or image prompts.
-    - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is the two-part sentence only.
-    - **Example (core):** `I use the Extract Phase to retrieve raw data from origin systems` → `[I use the Extract Phase to retrieve] [raw data from origin systems.]`
-    - **Example (with Note):** `[I use an ETL Pipeline to move] [raw data into a centralized target.] — Note: The target is typically a Data Warehouse or Data Mart.`
-  - **Keyword pairs HARD MANDATE** — fill `keywords` from the two concept groups:
+    - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is the keyword sentence only.
+    - **Example (core):** `I use the Extract Phase to retrieve raw data from origin systems` → `[I use the Extract Phase to retrieve] [raw data] [from origin systems.]`
+    - **Example (with Note):** `[I use an ETL Pipeline to move] [raw data] [into a centralized target.] — Note: The target is typically a Data Warehouse or Data Mart.`
+  - **Keyword pairs HARD MANDATE** — fill `keywords` from every concept group:
     - Each `[…]` group of the compressed **core** (never the Note) MUST receive **exactly one** key pair — never zero, never two.
-    - Generate **exactly two pairs** per new atom, one per group. Do not add a third group or a third pair.
-    - Pair 1’s RecognizableWord is the formal concept name from group 1. Pair 2’s RecognizableWord is a prominent word or short term from group 2.
+    - Generate **at least three pairs** and at most six per new atom, one per group. Do not stop at two.
+    - Pair 1’s RecognizableWord is the formal concept name from group 1. Each later pair’s RecognizableWord is a prominent word or short term from that group.
     - Pair each word with a tangible **Keyword** memory anchor: a physical object, action, actor, or cartoon character (highly recognizable and concrete).
-    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes), in exact left-to-right group order. Visible Markdown and web output must preserve this sequence. The first phrase renders blue; the second renders orange.
-    - Example: `[I use Databricks Jobs to convert] [my interactive notebooks into scheduled production pipelines.]` → `calendar | Databricks Jobs || notebook | notebooks`.
+    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes), in exact left-to-right group order. Visible Markdown and web output must preserve this sequence. The first phrase renders blue; the rest render orange.
+    - Example: `[I use Databricks Jobs to convert] [my interactive notebooks] [into scheduled production pipelines.]` → `calendar | Databricks Jobs || notebook | notebooks || factory | pipelines`.
     - Never invent pairs for Note text. `keywords` MUST NOT be empty for a generated atom.
     - Do **not** put Keywords into PREVIEW lines (CSV `keywords` column is SSOT for import).
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
@@ -255,7 +255,7 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 
 - Map each concept to one beast — one Knowledge Atom per beast by default.
 - Peg letters only; independent beast beats; **PLAIN ENGLISH HARD MANDATE** / `README §Language & IPA` on every authored field.
-- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning) in plain everyday words. NEVER drop essential conceptual logic. Apply **Two-part sentence (HARD)** (`README §Knowledge Atom Structure`): `[I use {Name} to {verb}] [{continuation}]`, one sentence, no period at the end of group 1. If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal and plain). NEVER put the Note on `quote`. After the compressed core is final, wrap the two groups before any optional Note suffix.
+- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning) in plain everyday words. NEVER drop essential conceptual logic. Apply **Keyword sentence (HARD)** (`README §Knowledge Atom Structure`): `[I use {Name} to {verb}]` plus at least two continuation groups, one sentence, 3–6 groups, no period at the end of group 1. If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal and plain). NEVER put the Note on `quote`. After the compressed core is final, wrap the groups before any optional Note suffix.
 - Quote is verbatim only; optional Note lives on `concept`. Keywords are the recall cue. Do **not** write a mnemonic story or bizarre-action narrative. The user writes that later from the keywords.
 - Dual-access recall for this pack: peg → compressed concept (+ optional Note) → keywords → quote.
 
@@ -301,10 +301,10 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 | Peg letters only | Yes |
 | Plain everyday English on concept (+ Note) / image_prompt / PREVIEW Concept; no archaic/old-fashioned/literary diction; quotes untouched | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
-| Compressed `concept` core is `[I use {Name} to {verb}]` plus a continuation that completes the same sentence | Yes |
+| Compressed `concept` core is `[I use {Name} to {verb}]` plus at least two continuation groups that complete the same sentence | Yes |
 | ` — Note:` on `concept` only when nuance was stripped from the compressed core; Note impersonal; `quote` verbatim only | Yes |
-| Each new `concept` core is exactly two square-bracket groups; Note unchunked; quote never wrapped as concept groups | Yes |
-| Exactly two keyword pairs: formal name from group 1, then one word from group 2 | Yes |
+| Each new `concept` core is 3–6 square-bracket groups; Note unchunked; quote never wrapped as concept groups | Yes |
+| At least three keyword pairs and at most six: formal name from group 1, then one word from each later group | Yes |
 | image_prompt filled per new palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 

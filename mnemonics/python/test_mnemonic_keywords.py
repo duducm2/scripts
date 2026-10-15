@@ -16,9 +16,12 @@ from schemas import (
 
 JOBS_CONCEPT = (
     "[I use Databricks Jobs to convert] "
-    "[my interactive notebooks into scheduled production pipelines.]"
+    "[my interactive notebooks] "
+    "[into scheduled production pipelines.]"
 )
-JOBS_KEYWORDS = "calendar | Databricks Jobs || notebook | notebooks"
+JOBS_KEYWORDS = (
+    "calendar | Databricks Jobs || notebook | notebooks || factory | pipelines"
+)
 
 
 def _chip(phrase: str, mnemonic: str, *, lead: bool = False) -> str:
@@ -43,9 +46,8 @@ def test_two_part_contract_and_render_order() -> None:
     )
     assert embed_keyword_mnemonics(JOBS_CONCEPT, JOBS_KEYWORDS) == (
         f"[I use {_chip('Databricks Jobs', 'calendar', lead=True)} to convert] "
-        "[my interactive "
-        f"{_chip('notebooks', 'notebook')} "
-        "into scheduled production pipelines.]"
+        f"[my interactive {_chip('notebooks', 'notebook')}] "
+        f"[into scheduled production {_chip('pipelines', 'factory')}.]"
     )
 
 
@@ -343,15 +345,16 @@ def test_atom_block_omits_keywords_section() -> None:
 
 
 def test_repeated_term_stays_separate_across_groups() -> None:
-    concept = "[I use Parallel Coordinates to draw] [a parallel axis]"
-    keywords = "fence | Parallel Coordinates || rails | parallel"
+    concept = "[I use Parallel Coordinates to draw] [a parallel axis] [as one line]"
+    keywords = "fence | Parallel Coordinates || rails | parallel || pen | line"
     assert validate_atom_mnemonics(concept, keywords) is None
-    assert len(iter_keyword_pairs(keywords)) == 2
+    assert len(iter_keyword_pairs(keywords)) == 3
 
 
 def test_second_pair_on_one_group_fails() -> None:
     extra_pair = (
-        "calendar | Databricks Jobs || notebook | notebooks || bead | pipelines"
+        "calendar | Databricks Jobs || notebook | notebooks || "
+        "factory | pipelines || bead | pipelines"
     )
     assert "exactly one keyword pair" in (
         validate_atom_mnemonics(JOBS_CONCEPT, extra_pair) or ""
@@ -359,20 +362,32 @@ def test_second_pair_on_one_group_fails() -> None:
 
 
 def test_pair_count_must_equal_group_count() -> None:
-    missing_group = "calendar | Databricks Jobs"
-    assert "exactly one keyword pair" in (
+    missing_group = "calendar | Databricks Jobs || notebook | notebooks"
+    assert "at least 3 pairs" in (
         validate_atom_mnemonics(JOBS_CONCEPT, missing_group) or ""
     )
 
-    wrong_order = "notebook | notebooks || calendar | Databricks Jobs"
+    wrong_order = (
+        "notebook | notebooks || calendar | Databricks Jobs || factory | pipelines"
+    )
     assert "matching bracket group" in (
         validate_atom_mnemonics(JOBS_CONCEPT, wrong_order) or ""
     )
 
 
 def test_pair_and_group_limits_are_enforced() -> None:
+    two_groups = (
+        "[I use Databricks Jobs to convert] "
+        "[my interactive notebooks into scheduled production pipelines.]"
+    )
+    assert "at least 3 keywords" in (
+        validate_atom_mnemonics(
+            two_groups, "calendar | Databricks Jobs || notebook | notebooks"
+        )
+        or ""
+    )
     bare_name = "[Name] [I define it] [clearly]"
-    assert "exactly 2 bracket groups" in (
+    assert "I use" in (
         validate_atom_mnemonics(
             bare_name, "tag | Name || die | define || net | clearly"
         )
@@ -383,20 +398,18 @@ def test_pair_and_group_limits_are_enforced() -> None:
         "tag | Name || 1 | one || 2 | two || 3 | three || "
         "4 | four || 5 | five || 6 | six"
     )
-    assert "exactly 2 bracket groups" in (
-        validate_atom_mnemonics(seven_groups, seven_pairs) or ""
-    )
+    assert "3–6" in (validate_atom_mnemonics(seven_groups, seven_pairs) or "")
     assert "I use" in (
         validate_atom_mnemonics(
-            "[Databricks Jobs] [I convert notebooks]",
-            "calendar | Databricks Jobs || pen | convert",
+            "[Databricks Jobs] [I convert notebooks] [into pipelines]",
+            "calendar | Databricks Jobs || pen | convert || factory | pipelines",
         )
         or ""
     )
     assert "closing period" in (
         validate_atom_mnemonics(
-            "[I use Databricks Jobs to convert.] [my notebooks]",
-            "calendar | Databricks Jobs || notebook | notebooks",
+            "[I use Databricks Jobs to convert.] [my notebooks] [into pipelines]",
+            "calendar | Databricks Jobs || notebook | notebooks || factory | pipelines",
         )
         or ""
     )
@@ -405,10 +418,11 @@ def test_pair_and_group_limits_are_enforced() -> None:
 def test_note_is_not_a_keyword_source() -> None:
     concept = (
         "[I use Databricks Jobs to convert] "
-        "[my interactive notebooks into scheduled production pipelines.] "
+        "[my interactive notebooks] "
+        "[into scheduled production pipelines.] "
         "— Note: supplemental nuance"
     )
-    keywords = "calendar | Databricks Jobs || net | nuance"
+    keywords = "calendar | Databricks Jobs || notebook | notebooks || net | nuance"
     assert "matching bracket group" in (
         validate_atom_mnemonics(concept, keywords) or ""
     )

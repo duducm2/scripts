@@ -419,8 +419,8 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         out["error"] := "concept core must contain complete square-bracket groups"
         return out
     }
-    if (groups.Length != 2) {
-        out["error"] := "concept must contain exactly 2 bracket groups ([I use {Name} to {verb}] [continuation])"
+    if (groups.Length < 3 || groups.Length > 6) {
+        out["error"] := "concept must contain 3–6 bracket groups so the atom has at least 3 keywords, one pair per group ([I use {Name} to {verb}] [continuation] [continuation])"
         return out
     }
     opening := groups[1]
@@ -451,12 +451,12 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         }
         pairs.Push(Map("left", left, "right", right))
     }
-    if (pairs.Length != groups.Length) {
-        out["error"] := "exactly one keyword pair is required per concept bracket group"
+    if (pairs.Length < 3) {
+        out["error"] := "keywords must contain at least 3 pairs"
         return out
     }
-    if (pairs.Length != 2) {
-        out["error"] := "keywords must contain exactly 2 pairs"
+    if (pairs.Length != groups.Length) {
+        out["error"] := "exactly one keyword pair is required per concept bracket group"
         return out
     }
     if (!Palace_KeywordGroupsMatch(groups, pairs)) {
