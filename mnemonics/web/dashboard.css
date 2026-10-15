@@ -965,7 +965,8 @@ input[type="search"] {
   outline-offset: 2px;
   filter: brightness(1.1);
 }
-#btnStoryReduction {
+#btnStoryReduction,
+#btnAtomQuestion {
   background: var(--rpg-fill);
   color: var(--rpg-ink);
   border: 1px solid var(--rpg-edge);
@@ -979,11 +980,13 @@ input[type="search"] {
   cursor: pointer;
   height: 2.35rem;
 }
-#btnStoryReduction:hover {
+#btnStoryReduction:hover,
+#btnAtomQuestion:hover {
   color: #fff6df;
   border-color: #d4b36a;
 }
-#btnStoryReduction.active {
+#btnStoryReduction.active,
+#btnAtomQuestion.active {
   background: #3a3224;
   color: #fff6df;
   border-color: #e6cc8a;
@@ -3540,6 +3543,7 @@ button:active:not(:disabled),
 }
 #btnLatest,
 #btnStoryReduction,
+#btnAtomQuestion,
 #btnPractice,
 #btnPlans,
 #btnImages,
