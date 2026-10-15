@@ -3622,18 +3622,19 @@ body.view-playlists #playlistsPanel {
   font-size: 0.88rem;
 }
 .playlist-bento {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1.35fr 1fr 1fr 1fr;
-  grid-template-rows: 1.15fr 1fr 0.92fr;
-  gap: 0.65rem;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-content: flex-start;
+  gap: 0.7rem;
 }
 .playlist-tile {
   position: relative;
   display: block;
-  min-width: 0;
-  min-height: 0;
+  width: 148px;
+  height: 104px;
+  flex: 0 0 148px;
   overflow: hidden;
   padding: 0;
   border: 1px solid var(--rpg-edge);
@@ -3644,34 +3645,6 @@ body.view-playlists #playlistsPanel {
     0 8px 18px rgba(0, 0, 0, 0.35);
   color: var(--rpg-ink);
   cursor: pointer;
-}
-.playlist-tile[data-playlist="science"] {
-  grid-column: 1 / span 2;
-  grid-row: 1 / span 2;
-}
-.playlist-tile[data-playlist="data"] {
-  grid-column: 3 / span 2;
-  grid-row: 1;
-}
-.playlist-tile[data-playlist="skills"] {
-  grid-column: 3;
-  grid-row: 2;
-}
-.playlist-tile[data-playlist="piano"] {
-  grid-column: 4;
-  grid-row: 2;
-}
-.playlist-tile[data-playlist="english"] {
-  grid-column: 1 / span 2;
-  grid-row: 3;
-}
-.playlist-tile[data-playlist="communication"] {
-  grid-column: 3;
-  grid-row: 3;
-}
-.playlist-tile[data-playlist="german"] {
-  grid-column: 4;
-  grid-row: 3;
 }
 .playlist-tile img {
   position: absolute;
@@ -3684,11 +3657,11 @@ body.view-playlists #playlistsPanel {
 }
 .playlist-tile .playlist-key {
   position: absolute;
-  top: 0.45rem;
-  left: 0.45rem;
+  top: 0.32rem;
+  left: 0.32rem;
   z-index: 1;
-  min-width: 1.55rem;
-  height: 1.55rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
   display: grid;
   place-items: center;
   padding: 0 0.35rem;
@@ -3705,10 +3678,10 @@ body.view-playlists #playlistsPanel {
   right: 0;
   bottom: 0;
   z-index: 1;
-  padding: 1.4rem 0.75rem 0.5rem;
+  padding: 0.85rem 0.45rem 0.32rem;
   background: linear-gradient(180deg, transparent, rgba(18, 12, 6, 0.9));
   font-family: Georgia, "Palatino Linotype", serif;
-  font-size: 1.02rem;
+  font-size: 0.82rem;
   font-weight: 650;
   letter-spacing: 0.04em;
   text-align: left;
