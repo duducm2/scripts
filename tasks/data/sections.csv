@@ -48,17 +48,15 @@ SEC_0149,PROJ_0034,General,0,
 SEC_0150,PROJ_0035,General,0,
 SEC_0152,PROJ_0036,General,0,
 SEC_0153,PROJ_0036,Features,10,
-SEC_0154,PROJ_0035,Stakeholders,50,waiting
-SEC_0155,PROJ_0035,Backlog,20,
-SEC_0156,PROJ_0035,Files and Links,40,waiting
-SEC_0157,PROJ_0035,Meetings,60,waiting
+SEC_0154,PROJ_0035,Stakeholders,100,waiting
+SEC_0156,PROJ_0035,Files and Links,90,waiting
+SEC_0157,PROJ_0035,Meetings,110,waiting
 SEC_0159,PROJ_0037,General,0,
 SEC_0160,PROJ_0037,Links,10,waiting
 SEC_0161,PROJ_0036,UX AI Platform BISB,20,
 SEC_0162,PROJ_0036,Meeetings,30,
 SEC_0163,PROJ_0038,General,0,
-SEC_0164,PROJ_0035,Phase 1: Plan Activities,70,
-SEC_0165,PROJ_0035,Phase 2: Understand context of use,80,
-SEC_0166,PROJ_0035,Phase 3: Synthesize Insights,90,
-SEC_0167,PROJ_0035,Phase 4: Ideate & Realize,100,
-SEC_0168,PROJ_0035,Phase 5: Test & Gather Feedback,110,
+SEC_0165,PROJ_0035,Phase 2: Understand context of use,20,
+SEC_0166,PROJ_0035,Phase 3: Synthesize Insights,40,waiting
+SEC_0167,PROJ_0035,Phase 4: Ideate & Realize,50,waiting
+SEC_0168,PROJ_0035,Phase 5: Test & Gather Feedback,60,waiting
