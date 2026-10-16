@@ -1534,7 +1534,7 @@
           arr.sort(
             (a, b) =>
               Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
-              String(a.title || "").localeCompare(String(b.title || "")),
+              String(a.id || "").localeCompare(String(b.id || "")),
           );
         }
 
@@ -1711,19 +1711,66 @@
           recomputeCounts();
         }
 
-        function applyLocalMove(entityKey, movedRow) {
+        function moveSiblingPredicate(entityKey, movedRow) {
+          if (entityKey === "sections") {
+            const pid = movedRow.project_id || "";
+            return (r) =>
+              r.project_id === pid &&
+              (r.title || "").trim().toLowerCase() !== "general";
+          }
+          if (entityKey === "projects") {
+            const filt = movedRow.filter || "";
+            return (r) => r.filter === filt && r.active !== "0";
+          }
+          if (entityKey === "tasks") {
+            const pid = movedRow.project_id || "";
+            const sid = movedRow.section_id || "";
+            const kind = (movedRow.kind || "punctual").trim().toLowerCase();
+            return (r) => {
+              if (r.project_id !== pid) return false;
+              if ((r.section_id || "") !== sid) return false;
+              if (r.active === "0") return false;
+              const rk = (r.kind || "punctual").trim().toLowerCase();
+              if (kind === "habitual") return rk === "habitual";
+              return rk === "punctual" && (r.emoji || "").trim() !== "✅";
+            };
+          }
+          if (entityKey === "info_points") {
+            const parentType = movedRow.parent_type || "";
+            const parentId = movedRow.parent_id || "";
+            return (r) =>
+              r.parent_type === parentType && r.parent_id === parentId;
+          }
+          return null;
+        }
+
+        function applyLocalMove(entityKey, movedRow, swappedRow) {
           if (!state.data || !movedRow?.id) return;
           const list = state.data[entityKey];
           if (!Array.isArray(list)) return;
           const idx = list.findIndex((r) => r.id === movedRow.id);
           if (idx < 0) {
             mergeApiRow(entityKey, movedRow);
+            if (swappedRow?.id) mergeApiRow(entityKey, swappedRow);
+            return;
+          }
+          if (swappedRow?.id) {
+            const swapIdx = list.findIndex((r) => r.id === swappedRow.id);
+            if (swapIdx >= 0) list[swapIdx] = { ...swappedRow };
+            else list.push({ ...swappedRow });
+            list[idx] = { ...movedRow };
+            invalidateDataIndex();
+            recomputeCounts();
             return;
           }
           const oldOrder = Number(list[idx].sort_order || 0);
           const newOrder = Number(movedRow.sort_order || 0);
+          const pred = moveSiblingPredicate(entityKey, list[idx]);
           const swapIdx = list.findIndex(
-            (r, i) => i !== idx && Number(r.sort_order || 0) === newOrder,
+            (r, i) =>
+              i !== idx &&
+              Number(r.sort_order || 0) === newOrder &&
+              (!pred || pred(r)),
           );
           if (swapIdx >= 0) {
             list[swapIdx] = {
@@ -1734,6 +1781,22 @@
           list[idx] = { ...movedRow };
           invalidateDataIndex();
           recomputeCounts();
+        }
+
+        function applyInfoMoveSiblings(infos) {
+          if (!state.data || !Array.isArray(infos) || !infos.length)
+            return false;
+          const parentType = infos[0].parent_type || "";
+          const parentId = infos[0].parent_id || "";
+          const list = state.data.info_points;
+          if (!Array.isArray(list)) return false;
+          const keep = list.filter(
+            (r) => !(r.parent_type === parentType && r.parent_id === parentId),
+          );
+          state.data.info_points = keep.concat(infos.map((r) => ({ ...r })));
+          invalidateDataIndex();
+          recomputeCounts();
+          return true;
         }
 
         async function afterEntitySave(apiKey, r, onDone) {
@@ -1758,8 +1821,15 @@
           }
           const entityKey = TASK_API_ENTITY_MAP[apiKey];
           const row = r?.[apiKey];
-          if (entityKey && row) applyLocalMove(entityKey, row);
-          else recomputeCounts();
+          if (
+            apiKey === "info" &&
+            Array.isArray(r.infos) &&
+            applyInfoMoveSiblings(r.infos)
+          ) {
+            /* sibling list from server — authoritative */
+          } else if (entityKey && row) {
+            applyLocalMove(entityKey, row, r.swapped || null);
+          } else recomputeCounts();
           render();
           if (onDone) onDone();
         }

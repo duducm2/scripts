@@ -385,21 +385,24 @@ def swap_sort_order(
     row_id: str,
     direction: int,
     sibling_predicate,
-) -> tuple[list[dict], dict | None, bool]:
-    """Swap sort_order with adjacent sibling. Returns (rows, target, moved)."""
+) -> tuple[list[dict], dict | None, dict | None, bool]:
+    """Swap sort_order with adjacent sibling.
+
+    Returns (rows, moved_row, swapped_row, moved).
+    """
     target = next((r for r in rows if r.get("id") == row_id), None)
     if not target:
-        return rows, None, False
+        return rows, None, None, False
     siblings = sorted(
         [r for r in rows if sibling_predicate(r, target)],
         key=sort_key_row,
     )
     idx = next((i for i, r in enumerate(siblings) if r.get("id") == row_id), -1)
     if idx < 0:
-        return rows, target, False
+        return rows, target, None, False
     j = idx + direction
     if j < 0 or j >= len(siblings):
-        return rows, target, False
+        return rows, target, None, False
     a, b = siblings[idx], siblings[j]
     a_so, b_so = a.get("sort_order") or "0", b.get("sort_order") or "0"
     a["sort_order"], b["sort_order"] = b_so, a_so
@@ -407,7 +410,7 @@ def swap_sort_order(
     by_id[a["id"]] = a
     by_id[b["id"]] = b
     out = [by_id.get(r["id"], r) for r in rows]
-    return out, by_id[row_id], True
+    return out, by_id[row_id], by_id[b["id"]], True
 
 
 class TaskStore:
@@ -1346,10 +1349,15 @@ class TaskStore:
         def pred(r: dict, _t: dict) -> bool:
             return r.get("filter") == filt and r.get("active", "1") != "0"
 
-        out, row, moved = swap_sort_order(rows, project_id, direction, pred)
+        out, row, swapped, moved = swap_sort_order(rows, project_id, direction, pred)
         if moved:
             self.save("projects", out)
-        return {"ok": True, "project": row or target, "moved": moved}
+        return {
+            "ok": True,
+            "project": row or target,
+            "swapped": swapped,
+            "moved": moved,
+        }
 
     def move_section(self, section_id: str, direction: int) -> dict:
         try:
@@ -1368,10 +1376,15 @@ class TaskStore:
             title = (r.get("title") or "").strip().lower()
             return r.get("project_id") == pid and title != GENERAL_SECTION.lower()
 
-        out, row, moved = swap_sort_order(rows, section_id, direction, pred)
+        out, row, swapped, moved = swap_sort_order(rows, section_id, direction, pred)
         if moved:
             self.save("sections", out)
-        return {"ok": True, "section": row or target, "moved": moved}
+        return {
+            "ok": True,
+            "section": row or target,
+            "swapped": swapped,
+            "moved": moved,
+        }
 
     def move_task(self, task_id: str, direction: int) -> dict:
         try:
@@ -1400,10 +1413,15 @@ class TaskStore:
                 return rk == "habitual"
             return rk == "punctual" and (r.get("emoji") or "").strip() != "✅"
 
-        out, row, moved = swap_sort_order(rows, task_id, direction, pred)
+        out, row, swapped, moved = swap_sort_order(rows, task_id, direction, pred)
         if moved:
             self.save("tasks", out)
-        return {"ok": True, "task": row or target, "moved": moved}
+        return {
+            "ok": True,
+            "task": row or target,
+            "swapped": swapped,
+            "moved": moved,
+        }
 
     def move_info(self, info_id: str, direction: int) -> dict:
         """Swap sort_order with adjacent sibling (same parent). direction: -1 up, +1 down."""
@@ -1424,7 +1442,7 @@ class TaskStore:
                 r.get("parent_type") == parent_type and r.get("parent_id") == parent_id
             )
 
-        out, row, moved = swap_sort_order(rows, rid, direction, pred)
+        out, row, swapped, moved = swap_sort_order(rows, rid, direction, pred)
         if moved:
             self.save("info_points", out)
         siblings = sorted(
@@ -1439,6 +1457,7 @@ class TaskStore:
         return {
             "ok": True,
             "info": row or target,
+            "swapped": swapped,
             "moved": moved,
             "infos": siblings,
         }
