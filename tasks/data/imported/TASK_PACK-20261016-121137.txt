@@ -1,0 +1,43 @@
+﻿===PREVIEW===
+0 project(s) · 16 task(s) · 15 info · All activities from the timeline have been converted.
+===END_PREVIEW===
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+X-Tower,work,Kick off,done,punctual,,,,Phase 1: Plan Activities
+X-Tower,work,Exploração livre da ferramenta + Feature inventory / Capability mapping,waiting,punctual,,,,Phase 2: Understand context of use
+X-Tower,work,Briefing,done,punctual,,,,Phase 1: Plan Activities
+X-Tower,work,Competitive / Comparative benchmark,general,punctual,,,,Phase 2: Understand context of use
+X-Tower,work,Preparação para Entrevistas,waiting,punctual,,,,Phase 2: Understand context of use
+X-Tower,work,Entrevistas + Process mapping,general,punctual,,,,Phase 2: Understand context of use
+X-Tower,work,Affinity mapping / thematic analysis,general,punctual,,,,Phase 3: Synthesize Insights
+X-Tower,work,Journey / Task Flow / Process Map (AS IS),general,punctual,,,,Phase 3: Synthesize Insights
+X-Tower,work,Problem framing + matriz impacto x frequência x criticidade,general,punctual,,,,Phase 3: Synthesize Insights
+X-Tower,work,Opportunity mapping / How Might We,general,punctual,,,,Phase 3: Synthesize Insights
+X-Tower,work,Workshop de Priorização,general,punctual,,,,Phase 3: Synthesize Insights
+X-Tower,work,User Journey (TO BE),general,punctual,,,,Phase 4: Ideate & Realize
+X-Tower,work,Information Architecture,general,punctual,,,,Phase 4: Ideate & Realize
+X-Tower,work,Prototyping (Low Fidelity),general,punctual,,,,Phase 4: Ideate & Realize
+X-Tower,work,User testing,general,punctual,,,,Phase 5: Test & Gather Feedback
+X-Tower,work,Consolidation of the overall report.,general,punctual,,,,Phase 5: Test & Gather Feedback
+===END_FILE===
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Kick off,X-Tower,work,Notes,"Alinhamento inicial com os responsáveis pelo projeto para compreender o contexto atual da ferramenta, principais grupos de usuários envolvidos e expectativas de negócio.",
+task,Exploração livre da ferramenta + Feature inventory / Capability mapping,X-Tower,work,Notes,"Explorar a aplicação como ela existe hoje, entendendo funcionalidades, áreas, tipos de informação, permissões e principais fluxos",
+task,Competitive / Comparative benchmark,X-Tower,work,Notes,"Investigar ferramentas de mercado e internas que façam gestão de capacidade, workforce planning, resource allocation ou atividades semelhantes",
+task,Preparação para Entrevistas,X-Tower,work,Notes,"Recrutamento, roteiro e agendamento",
+task,Entrevistas + Process mapping,X-Tower,work,Notes,"Entender como acontece hoje o planejamento e gerenciamento dos recursos, inclusive o que acontece fora da ferramenta. Meta: 16–20 participantes distribuídos entre os quatro grupos: core leadership, regional leader, cluster leader, e colaborador do cluster.",
+task,Affinity mapping / thematic analysis,X-Tower,work,Notes,"Consolidar evidências das entrevistas, observações, benchmark e análise da ferramenta. Identificar padrões, diferenças por perfil/região, necessidades, dores e hipóteses.",
+task,Journey / Task Flow / Process Map (AS IS),X-Tower,work,Notes,"Representar o processo atual end-to-end, mostrando atores, tarefas, decisões, entradas de dados, sistemas envolvidos, handoffs e participação da ferramenta.",
+task,Problem framing + matriz impacto x frequência x criticidade,X-Tower,work,Notes,"Organizar problemas encontrados e diferenciá-los entre UX, processo, qualidade de dados, tecnologia, governança, operação etc. Avaliar impacto, frequência e criticidade.",
+task,Opportunity mapping / How Might We,X-Tower,work,Notes,Transformar os principais problemas em áreas de oportunidade e perguntas de design que possam orientar a definição da experiência futura.,
+task,Workshop de Priorização,X-Tower,work,Notes,Workshop com stakeholders-chave para alinhar prioridades e definir quais oportunidades entram no escopo de solução.,
+task,User Journey (TO BE),X-Tower,work,Notes,"Construir o fluxo futuro priorizado, definindo como usuários, processo e ferramenta deveriam funcionar após as melhorias.",
+task,Information Architecture,X-Tower,work,Notes,"Definir organização de informações, hierarquia, agrupamentos, relacionamento entre dados e necessidades de visualização dos diferentes perfis.",
+task,Prototyping (Low Fidelity),X-Tower,work,Notes,"Criar os fluxos/telas necessários para materializar as principais hipóteses. Foco nos fluxos críticos priorizados, não em redesenhar a aplicação inteira.",
+task,User testing,X-Tower,work,Notes,"Testar os fluxos prioritários com representantes dos principais grupos. Meta: 5 participantes, priorizando quem executa diretamente os fluxos redesenhados.",
+task,Consolidation of the overall report.,X-Tower,work,Notes,"Consolidar diagnóstico, mapas, problemas priorizados, oportunidades, conceitos/protótipos, resultados dos testes e recomendações para próximos passos.",
+===END_FILE===

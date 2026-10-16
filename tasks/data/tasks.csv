@@ -144,22 +144,15 @@ TASK_0385,PROJ_0015,SEC_0015,You need to transfer your voting place to Nova Odes
 TASK_0386,PROJ_0034,SEC_0149,Take care of for your cursor subscription not to automatically renew,⚡,punctual,,,,,personal,5590,,2026-10-03 11:58:03,1,
 TASK_0396,PROJ_0026,SEC_0129,"Quando a biblioteca entregar o PDF da ficha catalográfica, coloque o arquivo em latex/ e, em tese.tex, troque \fichacatalografica{branco.pdf} pelo nome desse PDF.",⚡,punctual,,,,,personal,5690,,2026-10-05 22:27:16,1,
 TASK_0397,PROJ_0035,SEC_0157,Meeting October 5th,🔲,punctual,,,,Meetings,work,5670,,2026-10-06 09:51:01,1,
-TASK_0400,PROJ_0035,SEC_0151,Schedule meetings with the team,❓,punctual,,,,Kickoff meeting,work,5730,,2026-10-06 09:51:01,1,IMP-20261006-095101
-TASK_0401,PROJ_0035,SEC_0155,Perform a detailed discovery to understand limitations and scope,🔲,punctual,,,,Backlog,work,5740,,2026-10-06 09:51:01,1,
-TASK_0404,PROJ_0035,SEC_0155,Organize a face-to-face workshop with Amanda in the week of the 27th,🔲,punctual,,,,Backlog,work,5770,,2026-10-06 09:51:01,1,
-TASK_0407,PROJ_0035,SEC_0155,Define and track KPIs to measure UX improvements,🔲,punctual,,,,Backlog,work,5800,,2026-10-06 09:51:01,1,
-TASK_0408,PROJ_0035,SEC_0155,Present the initial process mapping and identify areas for deepening,🔲,punctual,,,,Backlog,work,5810,,2026-10-06 09:51:01,1,
+TASK_0404,PROJ_0035,SEC_0150,Organize a face-to-face workshop with Amanda in the week of the 27th,🔲,punctual,,,,,work,5770,,2026-10-06 09:51:01,1,
+TASK_0407,PROJ_0035,SEC_0150,Track KPIs to measure UX improvements,🔲,punctual,,,,,work,5800,,2026-10-06 09:51:01,1,
 TASK_0412,PROJ_0035,SEC_0154,Willian Yakabi: PO,,punctual,,,,Stakeholders,work,5850,,2026-10-06 11:00:27,1,
 TASK_0413,PROJ_0035,SEC_0154,Conte  Rodrigo: gerente de projetos,,punctual,,,,Stakeholders,work,5860,,2026-10-06 11:00:36,1,
 TASK_0415,PROJ_0035,SEC_0156,Timeline,,punctual,,,,Files and Links,work,5880,,2026-10-06 12:16:21,1,
-TASK_0417,PROJ_0035,SEC_0155,I can already start doing some heuristics evaluations based on the print screens of the tool on Docupedia,🔲,punctual,,,,Backlog,work,5900,,2026-10-06 16:11:10,1,
-TASK_0418,PROJ_0035,SEC_0151,I need a list of people to be interviewed,❓,punctual,,,,Kickoff meeting,work,5910,,2026-10-06 16:34:35,1,
-TASK_0419,PROJ_0035,SEC_0151,"If possible, a list of people to be surveyed",❓,punctual,,,,Kickoff meeting,work,5920,,2026-10-06 16:34:44,1,
+TASK_0419,PROJ_0035,SEC_0165,"If possible, a list of people to be surveyed",⚡,punctual,,,,Phase 2: Understand context of use,work,5920,,2026-10-06 16:34:44,1,
 TASK_0420,PROJ_0035,SEC_0156,Docupedia,,punctual,,,,Files and Links,work,5930,,2026-10-07 16:02:43,1,
 TASK_0421,PROJ_0035,SEC_0150,O Gemini Code Assist custa R$ 28.15 por mês. Check with Gidiarmi if you can add this to yourself as your cursor subscription is gonna be ending soon,⏳,punctual,,,,,work,5940,,2026-10-07 16:19:36,1,
 TASK_0424,PROJ_0035,SEC_0157,08.10,🔲,punctual,,,,Meetings,work,5970,,2026-10-08 13:12:47,1,
-TASK_0426,PROJ_0035,SEC_0158,Create the ontology and controlled vocabulary for your database,⏳,punctual,,,,Portal,work,5990,,2026-10-09 08:33:40,1,
-TASK_0427,PROJ_0035,SEC_0150,Create Felipe's environment map,🔲,punctual,,,,,work,6000,,2026-10-09 10:14:33,1,
 TASK_0429,PROJ_0029,SEC_0137,Comprar uma coleira,🔲,punctual,,,,,personal,6020,,2026-10-09 15:31:44,1,
 TASK_0430,PROJ_0019,SEC_0081,Moka has to sunbath every day,⚡,habitual,,,2026-10-10,Daily,habits,6030,,2026-10-10 14:57:45,1,
 TASK_0431,PROJ_0029,SEC_0137,By vitamins to moka,⚡,punctual,,,,,personal,6040,,2026-10-10 14:59:55,1,
@@ -182,7 +175,6 @@ TASK_0460,PROJ_0036,SEC_0161,Meeting 10.14,🔲,punctual,,,,UX AI Platform BISB,
 TASK_0469,PROJ_0036,SEC_0152,Alinhar direção com Mark e migração BISB,⚡,punctual,,,,,work,6420,,2026-10-14 17:35:51,1,IMP-20261014-173551
 TASK_0470,PROJ_0036,SEC_0162,Anotações da Reunião 10.14,🔲,punctual,,,,Meeetings,work,6430,,2026-10-14 17:35:51,1,
 TASK_0471,PROJ_0034,SEC_0149,Cancel your overleaf subscription as soon as Hegina finishes to use it,🔲,punctual,,,,,personal,6440,,2026-10-15 14:52:09,1,
-TASK_0473,PROJ_0019,SEC_0086,Clinics,🔲,habitual,yearly,,,Yearly,habits,6460,,2026-10-15 16:02:29,1,
 TASK_0474,PROJ_0003,SEC_0003,Subscribe to this one,⚡,punctual,,,,,work,6470,,2026-10-16 09:15:59,1,
 TASK_0475,PROJ_0038,SEC_0163,Possibility to be taken care of that UVAX portal in the future,🔲,punctual,,,,,work,6480,,2026-10-16 09:16:42,1,
 TASK_0476,PROJ_0038,SEC_0163,Still checking for some job positions here at Bosch,🔲,punctual,,,,,work,6490,,2026-10-16 09:16:54,1,
@@ -192,3 +184,23 @@ TASK_0479,PROJ_0038,SEC_0163,"Contribution, já ir preenchendo. Estamos discutin
 TASK_0480,PROJ_0038,SEC_0163,Alinhar quando precisa da licença.,🔲,punctual,,,,,work,6530,,2026-10-16 09:37:21,1,
 TASK_0482,PROJ_0036,SEC_0152,Qual a meta do KPIs? Conseguimos mostrar isso?,🔲,punctual,,,,,work,6550,,2026-10-16 09:51:01,1,
 TASK_0483,PROJ_0003,SEC_0003,Subscribe to all PO job openings,⚡,punctual,,,,,work,6560,,2026-10-16 10:33:13,1,
+TASK_0484,PROJ_0035,SEC_0165,Interview script,⚡,punctual,,,,Phase 2: Understand context of use,work,6570,,2026-10-16 11:13:57,1,
+TASK_0485,PROJ_0035,SEC_0165,Schedule the interview meetings,⚡,punctual,,,,Phase 2: Understand context of use,work,6580,,2026-10-16 11:14:05,1,
+TASK_0486,PROJ_0035,SEC_0165,pesquisa por survey,🔲,punctual,,,,Phase 2: Understand context of use,work,6590,,2026-10-16 11:48:02,1,
+TASK_0487,PROJ_0034,SEC_0149,Find a new general clinical doctor / clinic,⚡,punctual,,,,,personal,6600,,2026-10-16 12:05:27,1,IMP-20261016-120527
+TASK_0488,PROJ_0035,SEC_0150,Kick off,✅,punctual,,,,,work,6610,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0489,PROJ_0035,SEC_0165,Exploração livre da ferramenta + Feature inventory / Capability mapping,⚡,punctual,,,,Phase 2: Understand context of use,work,6620,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0490,PROJ_0035,SEC_0150,Briefing,✅,punctual,,,,,work,6630,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0491,PROJ_0035,SEC_0165,Competitive / Comparative benchmark,⚡,punctual,,,,Phase 2: Understand context of use,work,6640,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0492,PROJ_0035,SEC_0165,Preparação para Entrevistas,⚡,punctual,,,,Phase 2: Understand context of use,work,6650,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0493,PROJ_0035,SEC_0165,Entrevistas + Process mapping,⚡,punctual,,,,Phase 2: Understand context of use,work,6660,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0494,PROJ_0035,SEC_0166,Affinity mapping / thematic analysis,🔲,punctual,,,,Phase 3: Synthesize Insights,work,6670,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0495,PROJ_0035,SEC_0166,Journey / Task Flow / Process Map (AS IS),🔲,punctual,,,,Phase 3: Synthesize Insights,work,6680,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0496,PROJ_0035,SEC_0166,Problem framing + matriz impacto x frequência x criticidade,🔲,punctual,,,,Phase 3: Synthesize Insights,work,6690,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0497,PROJ_0035,SEC_0166,Opportunity mapping / How Might We,🔲,punctual,,,,Phase 3: Synthesize Insights,work,6700,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0498,PROJ_0035,SEC_0166,Workshop de Priorização,🔲,punctual,,,,Phase 3: Synthesize Insights,work,6710,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0499,PROJ_0035,SEC_0167,User Journey (TO BE),🔲,punctual,,,,Phase 4: Ideate & Realize,work,6720,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0500,PROJ_0035,SEC_0167,Information Architecture,🔲,punctual,,,,Phase 4: Ideate & Realize,work,6730,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0501,PROJ_0035,SEC_0167,Prototyping (Low Fidelity),🔲,punctual,,,,Phase 4: Ideate & Realize,work,6740,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0502,PROJ_0035,SEC_0168,User testing,🔲,punctual,,,,Phase 5: Test & Gather Feedback,work,6750,,2026-10-16 12:11:37,1,IMP-20261016-121137
+TASK_0503,PROJ_0035,SEC_0168,Consolidation of the overall report.,🔲,punctual,,,,Phase 5: Test & Gather Feedback,work,6760,,2026-10-16 12:11:37,1,IMP-20261016-121137
