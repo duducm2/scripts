@@ -10,7 +10,9 @@
 
 ⏳ I need to have a new cell phone plan
 
-⚡ Comprehensive physical exam (primary care) (september)
+⚡ Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home
+
+🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
 
 ## General
 

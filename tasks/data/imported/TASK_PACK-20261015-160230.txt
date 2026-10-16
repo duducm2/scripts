@@ -1,0 +1,26 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 10 info · Re-created the parent health task and bound all clinic info rows to it.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+"Habits & Health",habits,"Take care of my health",none,habitual,yearly,,,Yearly
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,"Take care of my health","Habits & Health",habits,"Centro de Medicina Americana","Endereço: Av. Thomas Edison 463. Avaliação Google: 4.6 (130+ reviews) / Doctoralia: 720 opiniões. Convênio: Unimed. Especialidades: Ortopedia, Traumatologia, Fisioterapia, Cirurgia Geral, Quiropraxia.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Cincor - Centro Integrado do Coração","Endereço: Av. Brasil 1170. Avaliação Google: 4.1 (89 reviews) / Doctoralia: 649 opiniões. Convênio: Unimed. Especialidades: Cardiologia, Cirurgia Plástica, Endocrinologia, Gastro, Urologia.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Clinica Da Vinci","Endereço: Rua Fortunato Faraone 49. Avaliação Google: 4.5 (38 reviews) / Doctoralia: 369 opiniões. Convênio: Unimed. Especialidades: Clínica Médica, Dermatologia, Neurologia, Ortopedia, Reumatologia.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"CETAM (Tomografia de Americana)","Endereço: Rua Presidente Vargas 469. Convênio: Unimed confirmado (todos os planos de Americana/SBO e Essencial). Especialidades: Ressonância, Tomografia, Ultrassom, Mamografia, Raio-X. Tel: (19) 3475-3111.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Centro de Terapia Renal Americana","Endereço: Praça Francisco Matarazzo 60. Convênio: Unimed confirmado. Especialidades: Terapia Renal e Nefrologia. Tel: (19) 3407-1568.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Dimaze Diagnóstico por Imagem","Endereço: Rua Sete de Setembro 1296. Avaliação Google: 4.9 (320+ reviews). Convênio: Não menciona Unimed no site (requer confirmação direta). Especialidades: Ressonância, Tomografia, Ultrassom, Mamografia. Tel: (19) 2660-5519.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Clínica Rossetti","Endereço: Av. Brasil 268. Convênio: Indicado na Doctoralia (requer confirmação direta). Especialidades: Ressonância, Tomografia, Mamografia, Ultrassonografia, Raio-X. Tel: (19) 3475-8090.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Visium Oftalmologia","Endereço: Rua Sete de Setembro 1345. Avaliação Google: 4.8 (124 reviews). Convênio: Unimed confirmado. Especialidades: Oftalmologia completa, Catarata, Cirurgia Refrativa, Lentes. Tel: (19) 3461-8582.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Instituto Pró Visão","Endereço: Rua Fortunato Faraone 205 / Rua Igaratá 555. Avaliação Google: 4.6 (407 reviews). Convênio: Unimed confirmado. Especialidades: Diagnósticos e cirurgias oftalmológicas (Retina, Catarata). Tel: (19) 3471-1550.","Yearly"
+task,"Take care of my health","Habits & Health",habits,"Clínica Nobre","Endereço: Rua Sete de Setembro 1499. Avaliação Google: 4.9 (211 reviews). Convênio: Unimed confirmado. Especialidades: Ultrassonografias e Biópsias (Dr. Auro Nobre), Psicologia (Selma Nobre). Tel: (19) 3621-7276.","Yearly"
+===END_FILE===
