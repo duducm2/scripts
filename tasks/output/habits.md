@@ -50,7 +50,6 @@
 🔲 Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas)
 🔲 Imprimir as fotos do último ano
 🔲 Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail
-🔲 Clinics
 
 ## Every 2 years
 

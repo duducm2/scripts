@@ -1,0 +1,32 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 16 info · Created one main task with info points for each highly evaluated doctor and clinic in Americana.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+"Personal inbox",personal,"Find a new general clinical doctor / clinic",general,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Íkaro Breder (Endoclinic)","Endoclinic - Rua Ângelo Orlando, 53, Americana. 5 estrelas (884 avaliações). Especialidades: Clínico Geral, Endocrinologista.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dra. Elisa Ferraz","Consultório Americana - Rua Tuiuti, 620, Americana. 5 estrelas (78 avaliações). Especialidades: Clínica Geral, Gastroenterologista.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Leonardo Rozinelli","Avenida da Saúde, 415, Americana (oferece teleconsulta). 70 avaliações. Médico Clínico Geral.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Lucas Bento S. Isepon","Atende em Nova Odessa. 70 avaliações. Médico Clínico Geral e Cirurgião Vascular.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dra. Júlia Höfling","Consultório Americana/SP - Av. Brasil, 1170, Americana. Médica Clínica Geral e Psiquiatra.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Carlos Roberto Martins","Rua Domingos Nardini, 73, Americana.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Artemis Kilaris","Rua Presidente Vargas, 779, Americana.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Marcel Moreschi Rossi","Av. Brasil, 2525, Americana.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dr. Jairo De Oliveira Assumpcao","Rua Uruguai, 44, Americana.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Dra. Elaine Cunha Döring Estigaribia","Rua Fonte da Saudade, 418, Americana.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Hospital Unimed Americana (HUA)","Av. Brasil, 815 - Jd. São Paulo, Americana. Unidade própria com pronto-socorro.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Hospital São Francisco de Americana","Praça Francisco Matarazzo, 60, Americana. (Atenção: histórico de reclamações sobre demora).",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Espaço Unimed","Rua dos Diamantes, 751 - Vila Biasi, Americana. Consultas e bem-estar.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Clinica Da Vinci","Rua Fortunato Faraone, 49, Americana. Clínica multiespecialidades.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Clínica da Cidade","Rua Rui Barbosa, 77, Americana.",
+task,"Find a new general clinical doctor / clinic","Personal inbox",personal,"Cincor - Centro Integrado Do Coracao","Avenida Brasil, 1170, Americana."
+===END_FILE===
