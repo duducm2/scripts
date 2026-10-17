@@ -203,6 +203,9 @@ PickChromeAppSheetKey(chromeTitle) {
     ; Finance cockpit (:8765). The AHK Finance window is matched in CheatSheet_ResolveActiveKey.
     if (chromeTitle = "Finance cockpit" || InStr(chromeTitle, "Finance cockpit") = 1)
         key := "Finance"
+    ; Career cockpit (:8770) — job openings, portals, companies, profile, advice, help.
+    if (IsCareerCockpitChromeTitle(chromeTitle))
+        key := "Career"
     if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
         key := "Wikipedia"
     if IsMercadoLivreActive()
@@ -229,10 +232,32 @@ PickChromeAppSheetKey(chromeTitle) {
                 key := "Memory Palace"
             else if (InStr(url, ":8765") || InStr(url, "localhost:8765") || InStr(url, "127.0.0.1:8765"))
                 key := "Finance"
+            else if (InStr(url, ":8770") || InStr(url, "localhost:8770") || InStr(url, "127.0.0.1:8770"))
+                key := "Career"
         } catch {
         }
     }
     return key
+}
+
+; Career cockpit tabs (:8770). Titles from my-personal-repo/web/*.html.
+IsCareerCockpitChromeTitle(chromeTitle) {
+    t := Trim(chromeTitle)
+    if (t = "")
+        return false
+    if (InStr(t, "Job openings") = 1)
+        return true
+    if (InStr(t, "Target companies") = 1)
+        return true
+    if (t = "Job portals" || InStr(t, "Job portals") = 1)
+        return true
+    if (InStr(t, "Career profile"))
+        return true
+    if (t = "Career advice" || InStr(t, "Career advice") = 1)
+        return true
+    if (InStr(t, "Keyboard shortcuts") = 1)
+        return true
+    return false
 }
 
 ; AHK Finance windows (menu and modules). Chrome cockpit is matched by title/port above.

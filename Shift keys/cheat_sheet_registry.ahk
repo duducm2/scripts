@@ -1290,6 +1290,67 @@ cheatSheets["Finance"] := "
     ⬅️ [Backspace] Leave a category chart and return to the dashboard
 )"
 
+; --- Career cockpit (localhost :8770; Chrome titles below) --------------------
+cheatSheets["Career"] := "
+(
+    Career cockpit
+    Overlay Win+Alt+Shift+A. Local server :8770 (jobs · portals · companies · profile · advice · help).
+    
+    === Navigation (not typing) ===
+    🏠 [Shift+G] Job openings (home)
+    🌐 [Shift+J] Job portals
+    🏢 [Shift+C] Target companies (on openings: open selected company careers portal instead)
+    👤 [Shift+P] Career profile
+    💡 [Shift+A] Career advice
+    ❔ [Shift+H] Keyboard shortcuts help
+    🏠 [Esc] Close modal → clear search → clear filters → openings home (openings stop after filters)
+    
+    === Search & filters ===
+    🔍 [Alt+S] Show / hide search (profile map filters; closing search focuses first card)
+    🎛️ [Alt+F] Filters ↔ cards / fields (portals · companies · profile)
+    🎛️ [Alt+Shift+F] Filters ↔ cards (openings; Alt+F is form prompt in a job modal)
+    🗂️ [Alt+Shift+B] Collapse / expand filter bar
+    ⬅️➡️⬆️⬇️ Move between cards, or filter chips when a filter is focused
+    🔤 [A–Z] [0–9] Jump by first letter (cards or filter chips)
+    
+    === Language & profile display ===
+    🇧🇷 [Shift+1] Portuguese field values
+    🇺🇸 [Shift+2] English field values
+    🔀 [Shift+0] Show both languages
+    📝 [Shift+D] Summary / detail (profile)
+    📦 [Shift+E] Collapse / expand all profile sections (accordion; also field panels)
+    🏠 [Home] First card / record in the list (openings · portals · companies · profile)
+    🎓 [Alt+Shift+U] Jump to first Education field
+    💼 [Alt+Shift+X] Jump to first Experience field
+    
+    === Openings ===
+    ➕ [Alt+N] Add opening
+    📋 [Alt+R] Generate openings prompt (board, open opening, or company)
+    📥 [Alt+I] Import openings (board or company)
+    🔖 [Shift+S] Filter saved (toggle)
+    📌 [Shift+R] Filter subscribed (toggle)
+    📝 [Alt+F] Form-fill prompt (job modal · ATS)
+    📥 [Alt+A] Import form result (job modal)
+    ✉️ [Alt+C] Cover letter prompt (job modal)
+    📄 [Alt+L] Import cover letter & PDF (job modal)
+    🏢 [Shift+C] Open company careers portal (focused / open / one bulk-selected)
+    🔗 [Ctrl+Enter] Open focused job URL (no modal) · Done / close modal when open
+    ⏎ [Ctrl+Enter] or [Shift+Enter] Copy prompt or run import (any prompt/import modal)
+    ☑️ [Ctrl+click] Bulk select
+    📌 [Alt+M] Pin / unpin in status group
+    🗑️ [Alt+Delete] Delete open dossier (confirms)
+    
+    === Companies & portals ===
+    📋 [Alt+R] Generate openings prompt for focused company card (no need to open dossier)
+    📥 [Alt+I] Import openings for focused company card or open dossier
+    🔗 [Ctrl+Enter] Open careers / portal URL (focused card)
+    🖱️ [Ctrl+click] Open company careers (companies)
+    ➕ [Shift+N] Add company or portal
+    🗑️ [Shift+Delete] Delete open dossier (companies · portals)
+    📌 [Alt+M] Pin / unpin
+    ⬆️⬇️ [Alt+↑] [Alt+↓] Move recommendation rank (ranked company)
+)"
+
 ; --- Wikipedia ---------------------------------------------------------------
 cheatSheets["Wikipedia"] := "
 (
