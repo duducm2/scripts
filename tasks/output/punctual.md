@@ -10,43 +10,9 @@
 
 ⏳ I need to have a new cell phone plan
 
-⚡ Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home
+⏳ Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home
 
 🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
-
-⚡ Find a new general clinical doctor / clinic
-ℹ️ Dr. Íkaro Breder (Endoclinic)
-Endoclinic - Rua Ângelo Orlando, 53, Americana. 5 estrelas (884 avaliações). Especialidades: Clínico Geral, Endocrinologista.
-ℹ️ Dra. Elisa Ferraz
-Consultório Americana - Rua Tuiuti, 620, Americana. 5 estrelas (78 avaliações). Especialidades: Clínica Geral, Gastroenterologista.
-ℹ️ Dr. Leonardo Rozinelli
-Avenida da Saúde, 415, Americana (oferece teleconsulta). 70 avaliações. Médico Clínico Geral.
-ℹ️ Dr. Lucas Bento S. Isepon
-Atende em Nova Odessa. 70 avaliações. Médico Clínico Geral e Cirurgião Vascular.
-ℹ️ Dra. Júlia Höfling
-Consultório Americana/SP - Av. Brasil, 1170, Americana. Médica Clínica Geral e Psiquiatra.
-ℹ️ Dr. Carlos Roberto Martins
-Rua Domingos Nardini, 73, Americana.
-ℹ️ Dr. Artemis Kilaris
-Rua Presidente Vargas, 779, Americana.
-ℹ️ Dr. Marcel Moreschi Rossi
-Av. Brasil, 2525, Americana.
-ℹ️ Dr. Jairo De Oliveira Assumpcao
-Rua Uruguai, 44, Americana.
-ℹ️ Dra. Elaine Cunha Döring Estigaribia
-Rua Fonte da Saudade, 418, Americana.
-ℹ️ Hospital Unimed Americana (HUA)
-Av. Brasil, 815 - Jd. São Paulo, Americana. Unidade própria com pronto-socorro.
-ℹ️ Hospital São Francisco de Americana
-Praça Francisco Matarazzo, 60, Americana. (Atenção: histórico de reclamações sobre demora).
-ℹ️ Espaço Unimed
-Rua dos Diamantes, 751 - Vila Biasi, Americana. Consultas e bem-estar.
-ℹ️ Clinica Da Vinci
-Rua Fortunato Faraone, 49, Americana. Clínica multiespecialidades.
-ℹ️ Clínica da Cidade
-Rua Rui Barbosa, 77, Americana.
-ℹ️ Cincor - Centro Integrado Do Coracao
-Avenida Brasil, 1170, Americana.
 
 ## General
 
@@ -123,8 +89,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 ⏳ Print the articles you published
 ℹ️ Update the "agradecimentos", removing Márcia and Creusa. Add CLeuza.
 ℹ️ Minoxidil: 6/6, Revoc: 2/2 (60 pills)
-
-⚡ Quando a biblioteca entregar o PDF da ficha catalográfica, coloque o arquivo em latex/ e, em tese.tex, troque \fichacatalografica{branco.pdf} pelo nome desse PDF.
 
 🔲 Ficha catalogágrica
 ℹ️ https://ficha.sbu.unicamp.br/usuario/minhas-solicitacoes
