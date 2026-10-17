@@ -1318,8 +1318,8 @@ cheatSheets["Career"] := "
     🇺🇸 [Shift+2] English field values
     🔀 [Shift+0] Show both languages
     📝 [Shift+D] Summary / detail (profile)
-    📦 [Shift+E] Collapse / expand panels (profile)
-    🏠 [Home] Scroll to top of profile
+    📦 [Shift+E] Collapse / expand all profile sections (accordion; also field panels)
+    🏠 [Home] First card / record in the list (openings · portals · companies · profile)
     🎓 [Alt+Shift+U] Jump to first Education field
     💼 [Alt+Shift+X] Jump to first Experience field
     
