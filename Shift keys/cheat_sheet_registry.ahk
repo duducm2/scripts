@@ -333,7 +333,7 @@ cheatSheets["chrome.exe"] := "
 (
     Chrome (Shift)
     🪟 [W]Pop current tab to new [W]indow
-    📑 [Ctrl+Alt+D] [D]uplicate URL to new tab (keep current / history)
+    📑 [Ctrl+Alt+D] [D]uplicate URL to new tab and jump to it (original keeps history)
     🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
     ❌ [Ctrl+Alt+C] [C]ancel "Restore pages?" (bubble X if no Cancel); Ctrl+W only if a new tab opened
 )"  ; end Chrome
