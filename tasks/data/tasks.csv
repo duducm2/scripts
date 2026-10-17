@@ -142,7 +142,6 @@ TASK_0371,PROJ_0015,SEC_0015,Comprar vermífugo para todos nós.,⚡,punctual,,,
 TASK_0381,PROJ_0015,SEC_0015,Check Google anti-gravity,🔲,punctual,,,,,personal,5540,,2026-10-01 14:53:01,1,
 TASK_0385,PROJ_0015,SEC_0015,You need to transfer your voting place to Nova Odessa,🔲,punctual,,,,,personal,5580,,2026-10-03 11:43:28,1,
 TASK_0386,PROJ_0034,SEC_0149,Take care of for your cursor subscription not to automatically renew,⚡,punctual,,,,,personal,5590,,2026-10-03 11:58:03,1,
-TASK_0396,PROJ_0026,SEC_0129,"Quando a biblioteca entregar o PDF da ficha catalográfica, coloque o arquivo em latex/ e, em tese.tex, troque \fichacatalografica{branco.pdf} pelo nome desse PDF.",⚡,punctual,,,,,personal,5690,,2026-10-05 22:27:16,1,
 TASK_0397,PROJ_0035,SEC_0157,Meeting October 5th,🔲,punctual,,,,Meetings,work,5670,,2026-10-06 09:51:01,1,
 TASK_0404,PROJ_0035,SEC_0150,Organize a face-to-face workshop with Amanda in the week of the 27th,🔲,punctual,,,,,work,5770,,2026-10-06 09:51:01,1,
 TASK_0407,PROJ_0035,SEC_0150,Track KPIs to measure UX improvements,🔲,punctual,,,,,work,5800,,2026-10-06 09:51:01,1,
@@ -163,7 +162,7 @@ TASK_0437,PROJ_0036,SEC_0153,The user should be able to add an API key or use fr
 TASK_0438,PROJ_0036,SEC_0152,Bosch Model Farm,,punctual,,,,,work,6110,,2026-10-13 10:04:15,1,
 TASK_0439,PROJ_0027,SEC_0131,"You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more",⏳,punctual,,,,,personal,6120,,2026-10-13 10:24:48,1,
 TASK_0440,PROJ_0019,SEC_0085,Tomar vermífugo,🩺,habitual,,,,Bi-yearly (Every 6 months),habits,2100,,2026-10-13 10:56:56,1,
-TASK_0441,PROJ_0034,SEC_0149,Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home,⚡,punctual,,,,,personal,6140,,2026-10-13 10:58:30,1,
+TASK_0441,PROJ_0034,SEC_0149,Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home,⏳,punctual,,,,,personal,6140,,2026-10-13 10:58:30,1,
 TASK_0443,PROJ_0026,SEC_0129,Ficha catalogágrica,🔲,punctual,,,,,personal,6160,,2026-10-13 15:40:37,1,
 TASK_0444,PROJ_0026,SEC_0129,Follow your protocol on your requirement,🔲,punctual,,,,,personal,6170,,2026-10-13 19:37:56,1,
 TASK_0455,PROJ_0037,SEC_0160,Pasta,🔲,punctual,,,,Links,work,6280,,2026-10-14 15:10:17,1,
@@ -187,7 +186,6 @@ TASK_0483,PROJ_0003,SEC_0003,Subscribe to all PO job openings,⚡,punctual,,,,,w
 TASK_0484,PROJ_0035,SEC_0165,Interview script,⚡,punctual,,,,Phase 2: Understand context of use,work,6570,,2026-10-16 11:13:57,1,
 TASK_0485,PROJ_0035,SEC_0165,Schedule the interview meetings,⚡,punctual,,,,Phase 2: Understand context of use,work,6580,,2026-10-16 11:14:05,1,
 TASK_0486,PROJ_0035,SEC_0165,pesquisa por survey,🔲,punctual,,,,Phase 2: Understand context of use,work,6590,,2026-10-16 11:48:02,1,
-TASK_0487,PROJ_0034,SEC_0149,Find a new general clinical doctor / clinic,⚡,punctual,,,,,personal,6600,,2026-10-16 12:05:27,1,IMP-20261016-120527
 TASK_0488,PROJ_0035,SEC_0150,Kick off,✅,punctual,,,,,work,6610,,2026-10-16 12:11:37,1,IMP-20261016-121137
 TASK_0489,PROJ_0035,SEC_0165,Exploração livre da ferramenta + Feature inventory / Capability mapping,⚡,punctual,,,,Phase 2: Understand context of use,work,6620,,2026-10-16 12:11:37,1,IMP-20261016-121137
 TASK_0490,PROJ_0035,SEC_0150,Briefing,✅,punctual,,,,,work,6630,,2026-10-16 12:11:37,1,IMP-20261016-121137
