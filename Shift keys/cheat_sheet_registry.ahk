@@ -1308,7 +1308,7 @@ cheatSheets["Career"] := "
     === Search & filters ===
     🔍 [Alt+S] Show / hide search (profile map filters; closing search focuses first card)
     🎛️ [Alt+F] Filters ↔ cards / fields (portals · companies · profile)
-    🎛️ [Alt+Shift+F] Filters ↔ cards (openings; Alt+F is form prompt in a job modal)
+    🎛️ [Alt+Shift+F] Filters ↔ cards (openings; Alt+F is form prompt on focused card / modal)
     🗂️ [Alt+Shift+B] Collapse / expand filter bar
     ⬅️➡️⬆️⬇️ Move between cards, or filter chips when a filter is focused
     🔤 [A–Z] [0–9] Jump by first letter (cards or filter chips)
@@ -1329,16 +1329,16 @@ cheatSheets["Career"] := "
     📥 [Alt+I] Import openings (board or company)
     🔖 [Shift+S] Filter saved (toggle)
     📌 [Shift+R] Filter subscribed (toggle)
-    📝 [Alt+F] Form-fill prompt (job modal · ATS)
-    📥 [Alt+A] Import form result (job modal)
-    ✉️ [Alt+C] Cover letter prompt (job modal)
-    📄 [Alt+L] Import cover letter & PDF (job modal)
+    📝 [Alt+F] Form-fill prompt (focused card or open dossier · ATS)
+    📥 [Alt+A] Import form result (focused card or open dossier)
+    ✉️ [Alt+C] Cover letter prompt (focused card or open dossier)
+    📄 [Alt+L] Import cover letter & PDF (focused card or open dossier)
     🏢 [Shift+C] Open company careers portal (focused / open / one bulk-selected)
     🔗 [Ctrl+Enter] Open focused job URL (no modal) · Done / close modal when open
     ⏎ [Ctrl+Enter] or [Shift+Enter] Copy prompt or run import (any prompt/import modal)
     ☑️ [Ctrl+click] Bulk select
     📌 [Alt+M] Pin / unpin in status group
-    🗑️ [Alt+Delete] Delete open dossier (confirms)
+    🗑️ [Alt+Delete] Delete focused card or open dossier (confirms)
     
     === Companies & portals ===
     📋 [Alt+R] Generate openings prompt for focused company card (no need to open dossier)
