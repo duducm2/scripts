@@ -16,6 +16,8 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 ⚡ Change your TIM plan
 
+⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
+
 ## General
 
 ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">
