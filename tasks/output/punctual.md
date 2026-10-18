@@ -2,13 +2,7 @@
 
 ## Personal inbox
 
-🔲 🐕 Flea and Tick Prevention: Administered monthly or every 12 weeks (e.g., Simparica, NexGard, Bravecto).
-
-🔲 🐈 Flea and Tick Prevention: Administered topically on the back of the neck on a strict schedule. Depending on the brand, such as Bravecto or Revolution, this is given every 30 days or up to 12 weeks. Never use dog flea medications on cats, as permethrin is highly toxic to felines.
-
 ⚡ Take care of for your cursor subscription not to automatically renew
-
-⏳ I need to have a new cell phone plan
 
 ⏳ Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home
 
@@ -75,7 +69,7 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ---
 
-🔲 Check Google anti-gravity
+⚡ Check Google anti-gravity
 ℹ️ Check Google anti-gravity
 ℹ️ https://antigravity.google/
 
@@ -91,12 +85,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 ⏳ Print the articles you published
 ℹ️ Update the "agradecimentos", removing Márcia and Creusa. Add CLeuza.
 ℹ️ Minoxidil: 6/6, Revoc: 2/2 (60 pills)
-
-🔲 Ficha catalogágrica
-ℹ️ https://ficha.sbu.unicamp.br/usuario/minhas-solicitacoes
-
-🔲 Follow your protocol on your requirement
-ℹ️ https://ficha.sbu.unicamp.br/usuario/minhas-solicitacoes
 
 ## Job Search
 
@@ -256,13 +244,13 @@ Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou 
 
 ⚡ By vitamins to moka
 
-🔲 Cartão de vacina
+⏳ Cartão de vacina
 ℹ️ IMG_20261010_125211.jpg
 ℹ️ IMG_20261010_125128.jpg
 
 ### Vaccination Timetable
 
-🔲 We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.
+⏳ We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.
 
 ⏳ 1st Dose V10 (2026-09-19)
 ℹ️ Isolation Warning
@@ -280,7 +268,7 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 ### Essential Shopping List
 
-⏳ Buy Deshedding Brush (slicker, metal comb)
+⏳ Buy a metal comb
 
 ⏳ Buy Collar, ID Tag, and Leash
 
@@ -294,18 +282,6 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 🔲 Play the songs that are highlighted with stars from one to six
 
-## Father
-
-⏳ You need to understand this whole situation with the lawyer
-
 ## Tarefas para Submissão do Artigo (Revista JIS)
 
 ⏳ Waiting analysis
-
-## PHD
-
-⏳ Assess potential scholarship options and funding support for Australian and British PhD programs.
-ℹ️ Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.
-ℹ️ ⏳ Analyze the additional costs associated with Australian and British PhD programs.
-
-⏳ Candidate to open PhD positions

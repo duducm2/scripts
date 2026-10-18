@@ -1,0 +1,19 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 3 info · Created monthly habit under Habits & Health with cost details for Seresto, Bravecto, and Fipronil
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Habits & Health,habits,Apply tick and flea prevention to cats,general,habitual,monthly,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Apply tick and flea prevention to cats,Habits & Health,habits,Seresto collar for cats,"Lasts up to 8 months for around R$ 180 - R$ 220. Average cost: R$ 22 - R$ 27 per month.",
+task,Apply tick and flea prevention to cats,Habits & Health,habits,Bravecto transdermal,"Lasts for 12 weeks (84 days) for around R$ 160 - R$ 190. Average cost: R$ 53 - R$ 63 per month.",
+task,Apply tick and flea prevention to cats,Habits & Health,habits,Fipronil-based drops,"3-pack box costs around R$ 80 - R$ 100. Each pipette lasts 30 days. Average cost: R$ 26 - R$ 33 per month.",
+===END_FILE===

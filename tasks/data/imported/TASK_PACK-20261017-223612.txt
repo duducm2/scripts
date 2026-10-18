@@ -1,0 +1,19 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 3 info · Created heartworm prevention reminder for coastal trips under Habits & Health
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Habits & Health,habits,Prevent heartworm when traveling to coast with pets,general,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Prevent heartworm when traveling to coast with pets,Habits & Health,habits,Heartworm risk at the coast,Coastal areas have a high prevalence of mosquitoes that transmit heartworm (dirofilariose) to both dogs and cats.,
+task,Prevent heartworm when traveling to coast with pets,Habits & Health,habits,Dog prevention,Ensure the German Shepherd receives specific heartworm prevention medication before the trip.,
+task,Prevent heartworm when traveling to coast with pets,Habits & Health,habits,Cat prevention,Ensure the cats also receive proper heartworm prevention (such as specific transdermal drops) before visiting the coast.,
+===END_FILE===

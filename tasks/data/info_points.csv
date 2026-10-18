@@ -8,8 +8,6 @@ INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Cr
 INFO_0079,task,TASK_0045,"Minoxidil: 6/6, Revoc: 2/2 (60 pills)","Minoxidil: 6/6, Revoc: 2/2 (60 pills)",ℹ️,,1620,2026-08-29 15:48:39,,
 INFO_0080,task,TASK_0047,Presentation: 30m,Presentation: 30m,ℹ️,,1650,2026-08-29 15:48:39,,
 INFO_0081,task,TASK_0048,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,ℹ️,,1670,2026-08-29 15:48:39,,
-INFO_0084,task,TASK_0056,Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.,Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.,ℹ️,,1820,2026-08-29 15:48:39,,
-INFO_0085,task,TASK_0056,⏳ Analyze the additional costs associated with Australian and British PhD programs.,⏳ Analyze the additional costs associated with Australian and British PhD programs.,ℹ️,,1830,2026-08-29 15:48:39,,
 INFO_0089,project,PROJ_0019,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39,,
 INFO_0090,project,PROJ_0019,Maintain ongoing literature review,"Maintain ongoing literature review
 Confirm if committee members may ask about courses near defense
@@ -422,8 +420,6 @@ You will be granted fresh tokens at the 1st day of every month. Tokens that you 
 
 Enterprise Subscription
 In case you decide to switch to the paid plan with access to the full set of models as well as unlimited tokens you can order it here.",,ℹ️,,10,2026-10-13 10:04:22,,
-INFO_0358,task,TASK_0443,https://ficha.sbu.unicamp.br/usuario/minhas-solicitacoes,,ℹ️,,10,2026-10-13 15:40:44,,
-INFO_0359,task,TASK_0444,https://ficha.sbu.unicamp.br/usuario/minhas-solicitacoes,,ℹ️,,10,2026-10-13 19:38:06,,
 INFO_0361,task,TASK_0455,"""C:\Users\fie7ca\OneDrive - Bosch Group\02 - Atividades\58 - TAR""",,ℹ️,,10,2026-10-14 15:10:19,,
 INFO_0362,task,TASK_0456,"""C:\Users\fie7ca\OneDrive - Bosch Group\02 - Atividades\58 - TAR\03. PowerPoint""",,ℹ️,,10,2026-10-14 15:10:34,,
 INFO_0363,task,TASK_0457,Nome e área de atuação,Informação obrigatória sobre nome e área de atuação no One Page.,ℹ️,,4460,2026-10-14 15:47:01,,
@@ -466,3 +462,11 @@ INFO_0427,task,TASK_0501,Notes,"Criar os fluxos/telas necessários para material
 INFO_0428,task,TASK_0502,Notes,"Testar os fluxos prioritários com representantes dos principais grupos. Meta: 5 participantes, priorizando quem executa diretamente os fluxos redesenhados.",ℹ️,,4940,2026-10-16 12:11:37,,
 INFO_0429,task,TASK_0503,Notes,"Consolidar diagnóstico, mapas, problemas priorizados, oportunidades, conceitos/protótipos, resultados dos testes e recomendações para próximos passos.",ℹ️,,4950,2026-10-16 12:11:37,,
 INFO_0430,task,TASK_0084,Dr Luiz Fernando Clínica Cicor ( Centro Integrado do Coração Endereço: Av. Brasil 1170.),,ℹ️,,10,2026-10-17 14:48:51,,
+INFO_0431,task,TASK_0506,Simparic pill option,Simparic (20 to 40 kg): Box of 3 pills covers 105 days (35 days per pill) for around R$ 200 - R$ 250. Average cost: R$ 55 - R$ 70 per month.,ℹ️,Prevention Options,4960,2026-10-17 22:17:37,,
+INFO_0432,task,TASK_0506,Leevre collar option,Leevre collar (Ourofino): Large dog collar lasts up to 6 months for around R$ 120 - R$ 150. Average cost: R$ 20 - R$ 25 per month.,ℹ️,Prevention Options,4970,2026-10-17 22:17:37,,
+INFO_0439,task,TASK_0509,Seresto collar for cats,Lasts up to 8 months for around R$ 180 - R$ 220. Average cost: R$ 22 - R$ 27 per month.,ℹ️,,5040,2026-10-17 22:35:49,,
+INFO_0440,task,TASK_0509,Bravecto transdermal,Lasts for 12 weeks (84 days) for around R$ 160 - R$ 190. Average cost: R$ 53 - R$ 63 per month.,ℹ️,,5050,2026-10-17 22:35:49,,
+INFO_0441,task,TASK_0509,Fipronil-based drops,3-pack box costs around R$ 80 - R$ 100. Each pipette lasts 30 days. Average cost: R$ 26 - R$ 33 per month.,ℹ️,,5060,2026-10-17 22:35:49,,
+INFO_0442,task,TASK_0510,Heartworm risk at the coast,Coastal areas have a high prevalence of mosquitoes that transmit heartworm (dirofilariose) to both dogs and cats.,ℹ️,,5070,2026-10-17 22:36:12,,
+INFO_0443,task,TASK_0510,Dog prevention,Ensure the German Shepherd receives specific heartworm prevention medication before the trip.,ℹ️,,5080,2026-10-17 22:36:12,,
+INFO_0444,task,TASK_0510,Cat prevention,Ensure the cats also receive proper heartworm prevention (such as specific transdermal drops) before visiting the coast.,ℹ️,,5090,2026-10-17 22:36:12,,

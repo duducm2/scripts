@@ -1,0 +1,14 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 2 info · Created monthly habit under Habits & Health with cost details for Simparic and Leevre collar
+===END_PREVIEW===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Habits & Health,habits,Apply tick and flea prevention to German Shepherd,general,habitual,monthly,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Apply tick and flea prevention to German Shepherd,Habits & Health,habits,Simparic pill option,"Simparic (20 to 40 kg): Box of 3 pills covers 105 days (35 days per pill) for around R$ 200 - R$ 250. Average cost: R$ 55 - R$ 70 per month.",Prevention Options
+task,Apply tick and flea prevention to German Shepherd,Habits & Health,habits,Leevre collar option,"Leevre collar (Ourofino): Large dog collar lasts up to 6 months for around R$ 120 - R$ 150. Average cost: R$ 20 - R$ 25 per month.",Prevention Options
+===END_FILE===
