@@ -608,6 +608,7 @@ cheatSheets["explorer.exe"] := "
     📦 [X] WinRAR e[X]tract here (personal); work: 7-Zip extract
     📦 [W] WinRAR add to archive / compact (personal); work: 7-Zip add to archive / compress
     🖼️ [B] Set as desktop [B]ackground (PT/EN locale-flexible)
+    🚀 [G] Open folder in Anti[G]ravity IDE (personal only)
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------

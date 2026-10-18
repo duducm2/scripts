@@ -902,6 +902,102 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     }
 }
 
+; Shift + G : Open folder in Antigravity IDE (personal only — not installed on work PC)
++g::
+{
+    Explorer_OpenFolderInAntigravity()
+}
+
+Explorer_ResolveAntigravityExe() {
+    ; Personal install path (user-confirmed). Work PC has no Antigravity.
+    candidate := A_LocalAppData "\Programs\antigravity\Antigravity.exe"
+    if FileExist(candidate)
+        return candidate
+    ; Legacy / alternate install folder name after product rename.
+    candidate := A_LocalAppData "\Programs\Antigravity IDE\Antigravity IDE.exe"
+    if FileExist(candidate)
+        return candidate
+    return ""
+}
+
+; Prefer selected folder; if a file is selected, open its parent; else current Explorer folder.
+Explorer_GetFolderPathForAntigravity() {
+    explorerHwnd := WinExist("A")
+    if !explorerHwnd
+        return ""
+
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (!window || Integer(window.hwnd) != explorerHwnd)
+                    continue
+                selected := window.Document.SelectedItems
+                if (selected && Integer(selected.Count) > 0) {
+                    loop Integer(selected.Count) {
+                        try {
+                            item := selected.Item(A_Index - 1)
+                            path := item.Path
+                            if (path = "")
+                                continue
+                            if DirExist(path)
+                                return path
+                            if FileExist(path) {
+                                SplitPath(path, , &parent)
+                                if (parent != "" && DirExist(parent))
+                                    return parent
+                            }
+                        } catch {
+                        }
+                    }
+                }
+                try {
+                    folderPath := window.Document.Folder.Self.Path
+                    if (folderPath != "" && DirExist(folderPath))
+                        return folderPath
+                } catch {
+                }
+                break
+            } catch {
+            }
+        }
+    } catch {
+    }
+
+    return Explorer_GetActiveFolderPath()
+}
+
+Explorer_OpenFolderInAntigravity() {
+    global IS_WORK_ENVIRONMENT
+
+    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) {
+        ShowCenteredOverlay_Utils("❌ Antigravity is personal-only", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    exe := Explorer_ResolveAntigravityExe()
+    if (exe = "") {
+        ShowCenteredOverlay_Utils("❌ Antigravity.exe not found", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    folder := Explorer_GetFolderPathForAntigravity()
+    if (folder = "" || !DirExist(folder)) {
+        ShowCenteredOverlay_Utils("❌ No folder to open in Antigravity", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    StandardLoadingBar_Show("⏳ Opening in Antigravity...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try {
+        Run('"' exe '" "' folder '"')
+        StandardLoadingBar_Update("✅ Opened in Antigravity", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(500)
+    } catch as e {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ Antigravity open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    }
+}
+
 ; Shift + B : Set selected image as desktop background (locale-flexible)
 +b::
 {
