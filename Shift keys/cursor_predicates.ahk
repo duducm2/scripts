@@ -622,12 +622,13 @@ Antigravity_OpenHistory(hwnd := 0) {
             return false
 
         ; Collect clickable header icons above the conversation region (Links + icon Buttons).
+        ; BoundingRectangle is {l,t,r,b} — use .b, not .h (Location has w/h).
         icons := []
         try {
             for el in panel.FindAll({ Type: 50005 }) {
                 try {
                     br := el.BoundingRectangle
-                    if (convTop > 0 && Integer(br.t + br.h) > convTop)
+                    if (convTop > 0 && Integer(br.b) > convTop)
                         continue
                     icons.Push({ el: el, l: Integer(br.l) })
                 } catch {
@@ -644,7 +645,7 @@ Antigravity_OpenHistory(hwnd := 0) {
                     if (nm != "")
                         continue
                     br := el.BoundingRectangle
-                    if (convTop > 0 && Integer(br.t + br.h) > convTop)
+                    if (convTop > 0 && Integer(br.b) > convTop)
                         continue
                     icons.Push({ el: el, l: Integer(br.l) })
                 } catch {
