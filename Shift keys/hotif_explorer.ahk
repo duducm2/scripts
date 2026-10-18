@@ -908,6 +908,12 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     Explorer_OpenFolderInIde()
 }
 
+; Shift + T : Open Windows Terminal in focused/selected folder (new window)
++t::
+{
+    Explorer_OpenFolderInWindowsTerminal()
+}
+
 Explorer_ResolveAntigravityExe() {
     ; Personal install path (user-confirmed). Work PC has no Antigravity.
     localAppData := EnvGet("LOCALAPPDATA")
@@ -1010,6 +1016,37 @@ Explorer_OpenFolderInIde() {
     } catch as e {
         StandardLoadingBar_Hide(0)
         ShowCenteredOverlay_Utils("❌ " . ideName . " open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    }
+}
+
+Explorer_ResolveWindowsTerminalExe() {
+    ; Per-user WindowsApps stub (Store install); else bare `wt.exe` from PATH.
+    localAppData := EnvGet("LOCALAPPDATA")
+    if (localAppData != "") {
+        candidate := localAppData "\Microsoft\WindowsApps\wt.exe"
+        if FileExist(candidate)
+            return candidate
+    }
+    return "wt.exe"
+}
+
+Explorer_OpenFolderInWindowsTerminal() {
+    folder := Explorer_GetFolderPathForIde()
+    if (folder = "" || !DirExist(folder)) {
+        ShowCenteredOverlay_Utils("❌ No folder to open in Terminal", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    wt := Explorer_ResolveWindowsTerminalExe()
+    StandardLoadingBar_Show("⏳ Opening Windows Terminal...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try {
+        ; -w new: always a new Terminal window; -d: start in folder.
+        Run('"' wt '" -w new -d "' folder '"')
+        StandardLoadingBar_Update("✅ Opened Windows Terminal", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(500)
+    } catch as e {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ Terminal open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 

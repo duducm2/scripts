@@ -728,6 +728,7 @@ cheatSheets["explorer.exe"] := "
     📦 [W] WinRAR add to archive / compact (personal); work: 7-Zip add to archive / compress
     🖼️ [B] Set as desktop [B]ackground (PT/EN locale-flexible)
     🚀 [G] Open folder — Anti[G]ravity (personal) / VS Code (work); new window each time
+    💻 [T] Open Windows [T]erminal here — new window (selected folder / parent / current)
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
