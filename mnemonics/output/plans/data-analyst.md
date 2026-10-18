@@ -6,18 +6,6 @@
 
 - [ ] snow flake
 
-- [ ] ACID
-
-- [ ] Delta Lake
-
-- [ ] Spark
-
-- [ ] Database view
-
-- [ ] lineage graph
-
-- [ ] What is a data engineering
-
 ## Phase 1: Advanced Tabular Modeling and Automation
 
 ### 1. Interface and Navigation
