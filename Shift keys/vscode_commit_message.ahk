@@ -7,7 +7,7 @@
 
 VSCode_TriggerGenerateCommitMessage(hwnd := 0) {
     if (!hwnd)
-        hwnd := WinExist("ahk_exe Code.exe")
+        hwnd := Editor_GetCodeFamilyHwnd()
     if (!hwnd)
         return false
 

@@ -415,7 +415,8 @@ ClipAngelExport_IsPasteFileTarget(hwnd) {
         if (cls = "CabinetWClass" || cls = "ExploreWClass" || cls = "Progman" || cls = "WorkerW")
             return true
         exe := WinGetProcessName("ahk_id " hwnd)
-        if (exe = "Cursor.exe" || exe = "Code.exe")
+        if (exe = "Cursor.exe" || exe = "Code.exe"
+            || exe = "Antigravity IDE.exe" || exe = "Antigravity.exe")
             return true
     } catch {
     }
@@ -464,6 +465,8 @@ ClipAngelExport_DescribePasteTarget(hwnd) {
             return "Cursor Explorer"
         if (exe = "Code.exe")
             return "VS Code Explorer"
+        if (exe = "Antigravity IDE.exe" || exe = "Antigravity.exe")
+            return "Antigravity Explorer"
     } catch {
     }
     return "folder"
@@ -485,7 +488,8 @@ ClipAngelExport_PreparePasteTarget(hwnd) {
     }
     try {
         exe := WinGetProcessName("ahk_id " hwnd)
-        if (exe = "Cursor.exe" || exe = "Code.exe") {
+        if (exe = "Cursor.exe" || exe = "Code.exe"
+            || exe = "Antigravity IDE.exe" || exe = "Antigravity.exe") {
             if !DesktopCutNewest_EnsureFilesExplorerSidebarFocused(hwnd)
                 return 0
         }

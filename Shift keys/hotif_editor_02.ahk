@@ -638,8 +638,11 @@ Editor_UiElementAppKey() {
     try exe := WinGetProcessName("A")
     catch
         exe := ""
-    if (StrLower(exe) = "code.exe")
+    exeLower := StrLower(exe)
+    if (exeLower = "code.exe")
         return "Code.exe"
+    if (exeLower = "antigravity ide.exe" || exeLower = "antigravity.exe")
+        return "Antigravity IDE.exe"
     return "Cursor.exe"
 }
 
@@ -1200,7 +1203,7 @@ ExecuteAIModelSelection(choice) {
 
 ; Shift + A : Switch AI models - AI
 +a:: {
-    if (IsCodeActive()) {
+    if (IsCodeFamilyActive()) {
         if (ClickVSCodeCopilotModelButton())
             return
     }

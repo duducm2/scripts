@@ -464,7 +464,8 @@ Mousemaster_ExecuteDoubleTapSearch() {
         local isMonacoEditor := false
         try {
             local procName := WinGetProcessName("ahk_id " ActiveWinID)
-            if (procName = "Cursor.exe" || procName = "Code.exe")
+            if (procName = "Cursor.exe" || procName = "Code.exe"
+                || procName = "Antigravity IDE.exe" || procName = "Antigravity.exe")
                 isMonacoEditor := true
         }
 

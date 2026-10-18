@@ -84,7 +84,7 @@ MacroWipeHeavyApps_Run(*) {
         catch {
         }
         for name in [
-            "chrome.exe", "Cursor.exe", "Code.exe",
+            "chrome.exe", "Cursor.exe", "Code.exe", "Antigravity IDE.exe", "Antigravity.exe",
             "ms-teams.exe", "Teams.exe", "MSTeams.exe",
             "OUTLOOK.EXE", "olk.exe",
             "msedge.exe", "ONENOTE.EXE", "WhatsApp.exe", "Spotify.exe"

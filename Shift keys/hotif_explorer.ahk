@@ -902,10 +902,10 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     }
 }
 
-; Shift + G : Open folder in Antigravity IDE (personal only — not installed on work PC)
+; Shift + G : Open folder in IDE — Antigravity (personal) / VS Code (work); always new window
 +g::
 {
-    Explorer_OpenFolderInAntigravity()
+    Explorer_OpenFolderInIde()
 }
 
 Explorer_ResolveAntigravityExe() {
@@ -913,18 +913,32 @@ Explorer_ResolveAntigravityExe() {
     localAppData := EnvGet("LOCALAPPDATA")
     if (localAppData = "")
         return ""
+    ; Current product name after rename.
+    candidate := localAppData "\Programs\Antigravity IDE\Antigravity IDE.exe"
+    if FileExist(candidate)
+        return candidate
+    ; Legacy install folder / exe name.
     candidate := localAppData "\Programs\antigravity\Antigravity.exe"
     if FileExist(candidate)
         return candidate
-    ; Legacy / alternate install folder name after product rename.
-    candidate := localAppData "\Programs\Antigravity IDE\Antigravity IDE.exe"
+    return ""
+}
+
+Explorer_ResolveVSCodeExe() {
+    global VS_CODE_EXE_WORK
+    if (IsSet(VS_CODE_EXE_WORK) && VS_CODE_EXE_WORK != "" && FileExist(VS_CODE_EXE_WORK))
+        return VS_CODE_EXE_WORK
+    localAppData := EnvGet("LOCALAPPDATA")
+    if (localAppData = "")
+        return ""
+    candidate := localAppData "\Programs\Microsoft VS Code\Code.exe"
     if FileExist(candidate)
         return candidate
     return ""
 }
 
 ; Prefer selected folder; if a file is selected, open its parent; else current Explorer folder.
-Explorer_GetFolderPathForAntigravity() {
+Explorer_GetFolderPathForIde() {
     explorerHwnd := WinExist("A")
     if !explorerHwnd
         return ""
@@ -970,35 +984,32 @@ Explorer_GetFolderPathForAntigravity() {
     return Explorer_GetActiveFolderPath()
 }
 
-Explorer_OpenFolderInAntigravity() {
+Explorer_OpenFolderInIde() {
     global IS_WORK_ENVIRONMENT
 
-    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) {
-        ShowCenteredOverlay_Utils("❌ Antigravity is personal-only", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    exe := Explorer_ResolveAntigravityExe()
+    isWork := IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
+    ideName := isWork ? "VS Code" : "Antigravity"
+    exe := isWork ? Explorer_ResolveVSCodeExe() : Explorer_ResolveAntigravityExe()
     if (exe = "") {
-        ShowCenteredOverlay_Utils("❌ Antigravity.exe not found", 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ " . ideName . " not found", 2500, BANNER_ACCENT_ERROR)
         return
     }
 
-    folder := Explorer_GetFolderPathForAntigravity()
+    folder := Explorer_GetFolderPathForIde()
     if (folder = "" || !DirExist(folder)) {
-        ShowCenteredOverlay_Utils("❌ No folder to open in Antigravity", 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ No folder to open in " . ideName, 2500, BANNER_ACCENT_ERROR)
         return
     }
 
-    StandardLoadingBar_Show("⏳ Opening in Antigravity...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    StandardLoadingBar_Show("⏳ Opening in " . ideName . "...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     try {
         ; --new-window: always spawn another window (default reuses the single instance).
         Run('"' exe '" --new-window "' folder '"')
-        StandardLoadingBar_Update("✅ Opened in Antigravity", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Update("✅ Opened in " . ideName, BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(500)
     } catch as e {
         StandardLoadingBar_Hide(0)
-        ShowCenteredOverlay_Utils("❌ Antigravity open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ " . ideName . " open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 

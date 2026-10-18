@@ -34,7 +34,8 @@
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }
-        if (proc = "code.exe") {
+        ; VS Code family (Code + Antigravity): Copilot/chat list scroll before Cursor composer path.
+        if (Editor_IsCodeFamilyProcessName(proc)) {
             if (VSCodeScrollCopilotFeedToBottom(hwnd))
                 return
         }
@@ -42,24 +43,27 @@
         root := UIA.ElementFromHandle(hwnd)
 
         ; FindFirst throws if missing — normal for Chrome (no composer-messages-container).
-        chatContainer := 0
-        try chatContainer := root.FindFirst({ ClassName: "composer-messages-container" })
-        catch
+        ; Skip Cursor composer path for Code-family (Antigravity must not fall into Composer UIA).
+        if (!Editor_IsCodeFamilyProcessName(proc)) {
             chatContainer := 0
-        if (chatContainer) {
-            try {
-                if (chatContainer.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
-                    chatContainer.ScrollPattern.SetScrollPercent(-1, 100)
-                    return
+            try chatContainer := root.FindFirst({ ClassName: "composer-messages-container" })
+            catch
+                chatContainer := 0
+            if (chatContainer) {
+                try {
+                    if (chatContainer.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+                        chatContainer.ScrollPattern.SetScrollPercent(-1, 100)
+                        return
+                    }
+                } catch {
                 }
-            } catch {
-            }
 
-            messages := chatContainer.FindAll({ ClassName: "composer-rendered-message", matchmode: "Substring" })
-            if (messages && messages.Length > 0) {
-                messages[messages.Length].ScrollIntoView()
+                messages := chatContainer.FindAll({ ClassName: "composer-rendered-message", matchmode: "Substring" })
+                if (messages && messages.Length > 0) {
+                    messages[messages.Length].ScrollIntoView()
+                }
+                return
             }
-            return
         }
     } catch {
     } finally {
@@ -147,8 +151,8 @@ VSCode_AddFileToAIContext() {
     StandardLoadingBar_Show("⏳ Add file to VS Code chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
-        if (!IsCodeActive()) {
-            StandardLoadingBar_Update("❌ Failed: VS Code is not active")
+        if (!IsCodeFamilyActive()) {
+            StandardLoadingBar_Update("❌ Failed: VS Code / Antigravity is not active")
             return
         }
 
@@ -236,9 +240,9 @@ VSCode_ContextMenuGetHighlightedElement() {
     } catch {
     }
 
-    ; Strategy B: selected MenuItem in VS Code window
+    ; Strategy B: selected MenuItem in VS Code / Antigravity window
     try {
-        hwnd := WinExist("ahk_exe Code.exe")
+        hwnd := Editor_GetCodeFamilyHwnd()
         if (!hwnd)
             return 0
         root := UIA.ElementFromHandle(hwnd)
@@ -255,7 +259,7 @@ VSCode_ContextMenuGetHighlightedElement() {
 
     ; Strategy C: menu item with keyboard focus
     try {
-        hwnd := WinExist("ahk_exe Code.exe")
+        hwnd := Editor_GetCodeFamilyHwnd()
         if (!hwnd)
             return 0
         root := UIA.ElementFromHandle(hwnd)

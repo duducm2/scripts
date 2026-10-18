@@ -49,6 +49,7 @@ EvidenceSearch_PdfPhraseNotFound() {
 
 EvidenceSearch_IsEditorActive() {
     return WinActive("ahk_exe Code.exe") || WinActive("ahk_exe Cursor.exe")
+    || WinActive("ahk_exe Antigravity IDE.exe") || WinActive("ahk_exe Antigravity.exe")
 }
 
 EvidenceSearch_NotifyUser(msg, durationMs := 2200, isError := false) {
@@ -192,11 +193,11 @@ EvidenceSearch_WriteNotFoundFile() {
         content := "session_time,csv_tab,pdf_tab,row,search_term,line`n"
         for entry in g_EvidenceSearchNotFoundRows {
             content .= EvidenceSearch_CsvEscapeField(sessionTime) . ","
-                . EvidenceSearch_CsvEscapeField(csvTab) . ","
-                . EvidenceSearch_CsvEscapeField(pdfTab) . ","
-                . entry.row . ","
-                . EvidenceSearch_CsvEscapeField(entry.term) . ","
-                . EvidenceSearch_CsvEscapeField(entry.line) . "`n"
+            . EvidenceSearch_CsvEscapeField(csvTab) . ","
+            . EvidenceSearch_CsvEscapeField(pdfTab) . ","
+            . entry.row . ","
+            . EvidenceSearch_CsvEscapeField(entry.term) . ","
+            . EvidenceSearch_CsvEscapeField(entry.line) . "`n"
         }
         try FileDelete(outPath)
         FileAppend(content, outPath, "UTF-8")

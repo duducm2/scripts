@@ -246,7 +246,7 @@ EditorFileSearch_FindHwndBySavedTitle(savedTitle) {
     if (savedTitle = "")
         return 0
     savedLower := StrLower(savedTitle)
-    for exe in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
+    for exe in ["ahk_exe Cursor.exe", "ahk_exe Code.exe", "ahk_exe Antigravity IDE.exe", "ahk_exe Antigravity.exe"] {
         try {
             for hwnd in WinGetList(exe) {
                 if !EditorFileSearch_IsEligibleEditorHwnd(hwnd)
@@ -333,7 +333,7 @@ EditorFileSearch_CollectEditorHwnds(query := "") {
     } catch {
     }
 
-    for exe in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
+    for exe in ["ahk_exe Cursor.exe", "ahk_exe Code.exe", "ahk_exe Antigravity IDE.exe", "ahk_exe Antigravity.exe"] {
         try {
             for hwnd in WinGetList(exe) {
                 if (seen.Has(hwnd))
@@ -352,7 +352,8 @@ EditorFileSearch_CollectEditorHwnds(query := "") {
 EditorFileSearch_IsEditorProcessHwnd(hwnd) {
     try {
         proc := WinGetProcessName("ahk_id " hwnd)
-        return (proc = "Cursor.exe" || proc = "Code.exe")
+        return (proc = "Cursor.exe" || proc = "Code.exe"
+            || proc = "Antigravity IDE.exe" || proc = "Antigravity.exe")
     } catch {
         return false
     }

@@ -591,6 +591,125 @@ cheatSheets["Code.exe"] := "
     🗑️ [Shift+Delete] [D]elete line
 )"  ; end VS Code
 
+; Antigravity IDE — VS Code family (same AHK gates as Code; AI chords use Code-family handlers)
+cheatSheets["Antigravity IDE.exe"] := "
+(
+    Antigravity IDE
+    
+    === Ctrl (no other modifiers) ===
+    🎯 [1] Remove clustering and focus on the code (ahk)
+    📁 [2] Copy path — Explorer then Ctrl+2 (ahk)
+    📊 [3] CSV: Edit CSV
+    💾 [4] CSV: Apply changes to source file and save
+    📋 [5] MarkDown Enhanced: Export in PDF format. 
+    📽️ [6] Marp export (PDF)
+    🔨 [7] Build LaTeX project
+    📄 [8] View LaTeX PDF file
+    📄 [9] Markdown Preview Enhanced: Insert Page Break
+    🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
+    ⚡ [G]Kill terminal ([G]o away)
+    📉 [Y]Fold all (tuck awa[Y])
+    📈 [U] [U]nfold all
+    📋 [O]Open Paste As... ([O]pen)
+    📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
+    🔲 [J]Select to Bracket (ad[J]acent)
+    📉 [,] Fold all directories
+    📈 [Q] Unfold all directories
+    💬 [.] Agent modes / chat (VS Code–family)
+    🤖 [E] Default editor behavior
+    📂 [R]File open [R]ecent
+    🔍 [T]Go to [T]ype symbol in workspace
+    💬 [N] Chat session workflow
+    ➕ [Enter] [I]nsert line below
+    🔍 [P]Quick open / project search
+    💬 [;] Insert comment
+    📝 [D]Duplicate selection to next find match
+    🔍 [F] [F]ind
+    ↩️ [Z]Undo (common [Z])
+    📊 [B]Toggle [B]ar (primary sidebar)
+    
+    === Shift ===
+    📉 [F][F]old (ahk)
+    📈 [U][U]nfold (ahk)
+    📄 [M][M]arkdown preview
+    🪟 [W][W]indow (move editor)
+    💻 [T][T]erminal (ahk)
+    💻 [N][N]ew Terminal (ahk)
+    📁 [E][E]xplorer (ahk)
+    📄🪟 [K] Mar[K]down + window (ahk)
+    ⌨️ [C][C]ommand palette (ahk)
+    📈 [X] E[X]pand selection (ahk)
+    ⚡ [S][S]ymbol in access view
+    💬 [H][H]istory (chat) (ahk)
+    🖼️ [I][I]mage (paste)
+    📁 [G][G]it repos fold (SCM) (ahk)
+    🔍 [Q][Q]uery Search (ahk)
+    🍞 [R]B[R]eadcrumbs menu (ahk)
+    😀 [O]Emoji selector (em[O]ji) (ahk)
+    🌿 [D]Git section ([D]iff) (ahk)
+    ❌ [Z]Close all editors (end [Z]one) (ahk)
+    🤖 [A][A]I models switch (ahk — Code-family)
+    🧘 [Y]Zen mode (tranquilit[Y])
+    ⬇️ [P][P]ull or Sync (Git) (ahk)
+    ✅ [V]Commit (Git)
+    ⬆️ [B]Push (Git)
+    ✅ [J] Quick commit — generic timestamp, commit + push (ahk)
+    
+    === Alt (ahk = AutoHotkey) ===
+    📉 [x] Shri[X]nk selection (ahk)
+    📉 [,] Classical Markdown Preview
+    📉 [Y] Paste image to Markdown
+    ⬇️ [U] Scroll AI feed to bottom (ahk-based — Code-family)
+    📋 [M] Quick shortcut menu (ahk — Code-family)
+    ➕ [C] Add Context picker (chat) (ahk — Code-family)
+    🤖 [A] Add file to AI Context (chat) (ahk — Code-family)
+    📌 [Q] Unpin current tab
+    📌 [P] [P]in current tab
+    📋 [I] Reveal in Explorer + copy file (ahk)
+    📂 [H] Reveal in Explorer + open file (ahk)
+    📤 [6] Share in OneDrive — Reveal + share link (ahk)
+    📄 [R] Refresh preview
+    📄 [E] File: Op[E]n File (ahk)
+    📄 [F] File: New [F]ile
+    📂 [O] File: New F[O]lder
+    🔀 [W] Focus other side (compare editor)
+    💾 [S][S]tash and Pull (Git) (ahk)
+    
+    === Ctrl+Shift ===
+    📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
+    🐛 [Ctrl+Shift+D] [D]ebugging
+    
+    === Ctrl+Alt ===
+    📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
+    📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
+    ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
+    ⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
+    ➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
+    ⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+    ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
+    
+    === Alt+Shift ===
+    ⬆️ [Shift+Alt+↑] [C]opy line Up
+    ⬇️ [Shift+Alt+↓] [C]opy line Down
+    
+    === Alt (other chords) ===
+    👁️ [Alt+F12] [P]eek Definition
+    ⬆️ [Alt+↑] [M]ove line Up
+    ⬇️ [Alt+↓] [M]ove line Down
+    👆 [Alt+Click] [M]ulti-cursor by click
+    🔄 [Alt+Z] Toggle word [W]rap
+    ⬇️ [Alt+J] Jump to [N]ext review
+    ⬆️ [Alt+K] [P]revious review (bac[K])
+    
+    === Function keys & misc ===
+    ✏️ [F2] [R]ename symbol
+    🔍 [F8] [N]avigate problems
+    🗑️ [Shift+Delete] [D]elete line
+)"  ; end Antigravity IDE
+
+; Legacy Antigravity.exe process name → same sheet as Antigravity IDE.exe
+cheatSheets["Antigravity.exe"] := cheatSheets["Antigravity IDE.exe"]
+
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
@@ -608,7 +727,7 @@ cheatSheets["explorer.exe"] := "
     📦 [X] WinRAR e[X]tract here (personal); work: 7-Zip extract
     📦 [W] WinRAR add to archive / compact (personal); work: 7-Zip add to archive / compress
     🖼️ [B] Set as desktop [B]ackground (PT/EN locale-flexible)
-    🚀 [G] Open folder in Anti[G]ravity IDE — new window each time (personal only)
+    🚀 [G] Open folder — Anti[G]ravity (personal) / VS Code (work); new window each time
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------

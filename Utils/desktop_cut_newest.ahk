@@ -572,7 +572,8 @@ DesktopCutNewest_UniqueDestPath(desktopPath, srcPath) {
 }
 
 DesktopCutNewest_IsEditorActive() {
-    return !!(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+    return !!(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")
+    || WinActive("ahk_exe Antigravity IDE.exe") || WinActive("ahk_exe Antigravity.exe"))
 }
 
 DesktopCutNewest_NormalizeRevealBasename(raw) {

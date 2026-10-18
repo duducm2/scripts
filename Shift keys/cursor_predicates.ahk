@@ -16,8 +16,39 @@ IsCodeActive() {
     return WinActive("ahk_exe Code.exe")
 }
 
+; Antigravity IDE (VS Code fork). Primary rename + legacy install exe.
+IsAntigravityActive() {
+    return WinActive("ahk_exe Antigravity IDE.exe") || WinActive("ahk_exe Antigravity.exe")
+}
+
+; VS Code + Antigravity (shared AI/commit chords; not Cursor-only).
+IsCodeFamilyActive() {
+    return IsCodeActive() || IsAntigravityActive()
+}
+
+; Active Code-family HWND (VS Code or Antigravity), preferring the foreground window.
+Editor_GetCodeFamilyHwnd() {
+    if IsCodeFamilyActive() {
+        hwnd := WinExist("A")
+        if hwnd
+            return hwnd
+    }
+    hwnd := WinExist("ahk_exe Code.exe")
+    if hwnd
+        return hwnd
+    hwnd := WinExist("ahk_exe Antigravity IDE.exe")
+    if hwnd
+        return hwnd
+    return WinExist("ahk_exe Antigravity.exe")
+}
+
+Editor_IsCodeFamilyProcessName(procName) {
+    p := StrLower(procName)
+    return (p = "code.exe" || p = "antigravity ide.exe" || p = "antigravity.exe")
+}
+
 IsEditorActive() {
-    return IsCursorActive() || IsCodeActive()
+    return IsCursorActive() || IsCodeActive() || IsAntigravityActive()
 }
 
 ;-----------------------------------------
@@ -27,7 +58,7 @@ IsEditorActive() {
 ;-----------------------------------------
 IsCursorMainEditorFocused() {
     try {
-        if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+        if !IsEditorActive()
             return false
 
         winHandle := WinExist("A")
@@ -58,7 +89,7 @@ Editor_EnsureCursorWindowActive(editorHwnd) {
     if !(editorHwnd is Integer) || editorHwnd <= 0
         return false
     try {
-        if (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+        if IsEditorActive()
             return true
         WinActivate("ahk_id " editorHwnd)
         return WinActive("ahk_id " editorHwnd)
@@ -70,7 +101,7 @@ Editor_EnsureCursorWindowActive(editorHwnd) {
 ; Focus the Cursor "Files Explorer" tree using UIA
 FocusCursorFilesExplorer() {
     try {
-        if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+        if !IsEditorActive()
             return false
 
         hwnd := WinExist("A")
@@ -145,7 +176,7 @@ Editor_UiaElementHasAncestor(el, ancestor) {
 ; True when keyboard focus is in the sidebar Files Explorer tree (safe for Ctrl+2 Copy Path).
 Editor_FocusIsInFilesExplorer(editorHwnd := 0) {
     try {
-        if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+        if !IsEditorActive()
             return false
         if !editorHwnd
             editorHwnd := WinExist("A")
@@ -666,7 +697,7 @@ Editor_OpenNewEditorTerminal(editorHwnd) {
     Editor_EnsureCursorWindowActive(editorHwnd)
     Send '^+"'
     Sleep EDITOR_GIT_TERMINAL_READY_MS
-    return (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+    return IsEditorActive()
 }
 
 Editor_GitQuotePs(s) {
@@ -771,8 +802,8 @@ Editor_GitStashAndPull() {
     hwnd := WinExist("A")
     if !hwnd
         return
-    if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")) {
-        Editor_GitFlowFail("Git", "active window is not Cursor or VS Code")
+    if !IsEditorActive() {
+        Editor_GitFlowFail("Git", "active window is not Cursor, VS Code, or Antigravity")
         return
     }
     repoDir := Editor_ResolveGitRepoDir(hwnd)
@@ -985,8 +1016,8 @@ Editor_GitPullOrSync() {
     hwnd := WinExist("A")
     if !hwnd
         return
-    if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")) {
-        Editor_GitFlowFail("Git", "active window is not Cursor or VS Code")
+    if !IsEditorActive() {
+        Editor_GitFlowFail("Git", "active window is not Cursor, VS Code, or Antigravity")
         return
     }
 
