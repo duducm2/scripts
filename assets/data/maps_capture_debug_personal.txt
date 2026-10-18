@@ -1,24 +1,26 @@
-﻿{"session":"20261014231809","seq":1,"t":279902312,"step":"machine","data":{"computer":"EDUARDO","log":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\assets\\data\\maps_capture_debug_personal.txt","scriptDir":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts","user":"eduev","work":"no"}}
-{"session":"20261014231809","seq":2,"t":279902312,"step":"enter","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","title":"3990 Av. Lix da Cunha - Google Maps - Google Chrome"}}
-{"session":"20261014231809","seq":3,"t":279902390,"step":"attach","data":{"hwnd":"18679716","ok":"1"}}
-{"session":"20261014231809","seq":4,"t":279903015,"step":"maximize","data":{"hwnd":"18679716","ok":"1"}}
-{"session":"20261014231809","seq":5,"t":279903031,"step":"document","data":{"ok":"1"}}
-{"session":"20261014231809","seq":6,"t":279903046,"step":"collapse_panel","data":{"ok":"0"}}
-{"session":"20261014231809","seq":7,"t":279903734,"step":"hide_chrome","data":{"ok":"1"}}
-{"session":"20261014231809","seq":8,"t":279904953,"step":"session_start","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","isWork":"0","methods":"print,screen,canvas","outPath":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png"}}
-{"session":"20261014231809","seq":9,"t":279905078,"step":"pane","data":{"attempt":"1","b":"2159","h":"2028","l":"0","name":"Street View","ok":"1","r":"3840","t":"131","w":"3840"}}
-{"session":"20261014231809","seq":10,"t":279905078,"step":"rect_fit","data":{"attempt":"1","clientB":"2158","clientL":"0","clientR":"3840","clientT":"0","h":"2027","l":"0","ok":"1","paneH":"2028","paneL":"0","paneT":"131","paneW":"3840","rule":"intersect","t":"131","w":"3840"}}
-{"session":"20261014231809","seq":11,"t":279905078,"step":"method_start","data":{"attempt":"1","method":"print"}}
-{"session":"20261014231809","seq":12,"t":279905312,"step":"print_window","data":{"err":"","exists":"1","h":"2027","hwnd":"18679716","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"131"}}
-{"session":"20261014231809","seq":13,"t":279905312,"step":"method_file","data":{"attempt":"1","bytes":"33887","h":"2027","headerErr":"","method":"print","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
-{"session":"20261014231809","seq":14,"t":279905343,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1621","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261014231809","seq":15,"t":279905609,"step":"commit_header","data":{"bytes":"33887","err":"","h":"2027","ok":"1","w":"3840"}}
-{"session":"20261014231809","seq":16,"t":279905625,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
-{"session":"20261014231809","seq":17,"t":279905625,"step":"keep_png","data":{"bytes":"33887","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261014-231812-print-a1.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261014231809","seq":18,"t":279905640,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
-{"session":"20261014231809","seq":19,"t":279905656,"step":"method_start","data":{"attempt":"1","method":"screen"}}
-{"session":"20261014231809","seq":20,"t":279906390,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"2027","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"131"}}
-{"session":"20261014231809","seq":23,"t":279906640,"step":"commit_header","data":{"bytes":"8101622","err":"","h":"2027","ok":"1","w":"3840"}}
-{"session":"20261014231809","seq":24,"t":279906781,"step":"pixel_gate","data":{"code":"0","err":"","reason":"ok"}}
-{"session":"20261014231809","seq":25,"t":279907031,"step":"commit_ok","data":{"bytes":"8101622","dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","h":"2027","w":"3840"}}
-{"session":"20261014231809","seq":26,"t":279907250,"step":"saved","data":{"name":"PALACE_QUICK_IMAGE.png","path":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png"}}
+﻿{"session":"20261018182929","seq":1,"t":5018062,"step":"machine","data":{"computer":"EDUARDO","log":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\assets\\data\\maps_capture_debug_personal.txt","scriptDir":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts","user":"eduev","work":"no"}}
+{"session":"20261018182929","seq":2,"t":5018062,"step":"enter","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","title":"3990 Av. Lix da Cunha - Google Maps - Google Chrome"}}
+{"session":"20261018182929","seq":3,"t":5018125,"step":"attach","data":{"hwnd":"853970","ok":"1"}}
+{"session":"20261018182929","seq":4,"t":5018125,"step":"maximize","data":{"hwnd":"853970","ok":"1"}}
+{"session":"20261018182929","seq":5,"t":5018156,"step":"document","data":{"ok":"1"}}
+{"session":"20261018182929","seq":6,"t":5018156,"step":"collapse_panel","data":{"ok":"0"}}
+{"session":"20261018182929","seq":7,"t":5018859,"step":"hide_chrome","data":{"ok":"1"}}
+{"session":"20261018182929","seq":8,"t":5020062,"step":"session_start","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","isWork":"0","methods":"print,screen,canvas","outPath":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png"}}
+{"session":"20261018182929","seq":9,"t":5020187,"step":"pane","data":{"attempt":"1","b":"2161","h":"2030","l":"0","name":"Street View","ok":"1","r":"3840","t":"131","w":"3840"}}
+{"session":"20261018182929","seq":10,"t":5020187,"step":"rect_fit","data":{"attempt":"1","clientB":"2160","clientL":"0","clientR":"3840","clientT":"0","h":"2029","l":"0","ok":"1","paneH":"2030","paneL":"0","paneT":"131","paneW":"3840","rule":"intersect","t":"131","w":"3840"}}
+{"session":"20261018182929","seq":11,"t":5020203,"step":"method_start","data":{"attempt":"1","method":"print"}}
+{"session":"20261018182929","seq":12,"t":5020375,"step":"print_window","data":{"err":"","exists":"1","h":"2029","hwnd":"853970","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"131"}}
+{"session":"20261018182929","seq":13,"t":5020375,"step":"method_file","data":{"attempt":"1","bytes":"33920","h":"2029","headerErr":"","method":"print","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261018182929","seq":14,"t":5020390,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1623","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261018182929","seq":15,"t":5020640,"step":"commit_header","data":{"bytes":"33920","err":"","h":"2029","ok":"1","w":"3840"}}
+{"session":"20261018182929","seq":16,"t":5020656,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261018182929","seq":17,"t":5020671,"step":"keep_png","data":{"bytes":"33920","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261018-182932-print-a1.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261018182929","seq":18,"t":5020671,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
+{"session":"20261018182929","seq":19,"t":5020687,"step":"method_start","data":{"attempt":"1","method":"screen"}}
+{"session":"20261018182929","seq":20,"t":5021343,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"2029","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"131"}}
+{"session":"20261018182929","seq":21,"t":5021359,"step":"method_file","data":{"attempt":"1","bytes":"9450041","h":"2029","headerErr":"","method":"screen","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261018182929","seq":22,"t":5021359,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1623","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261018182929","seq":23,"t":5021625,"step":"commit_header","data":{"bytes":"9450041","err":"","h":"2029","ok":"1","w":"3840"}}
+{"session":"20261018182929","seq":24,"t":5021703,"step":"pixel_gate","data":{"code":"0","err":"","reason":"ok"}}
+{"session":"20261018182929","seq":25,"t":5021968,"step":"commit_ok","data":{"bytes":"9450041","dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","h":"2029","w":"3840"}}
+{"session":"20261018182929","seq":26,"t":5022109,"step":"saved","data":{"name":"PALACE_QUICK_IMAGE.png","path":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png"}}

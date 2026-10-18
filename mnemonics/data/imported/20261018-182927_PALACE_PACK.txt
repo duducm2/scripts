@@ -1,0 +1,48 @@
+﻿===PREVIEW===
+STUDY_DATAANALYST · 2 palaces · 8 beasts · 8 atoms
+Packing: 5+3 (remainder only on last new palace in this pack)
+
+PALACE 25 — Snowflake Schema Normalization () [PALACE_DATAANALYST_25]
+  [Cs] Cold skull — Concept: [I use a Snowflake Schema to normalize] [my data warehouse dimensions] [into multi-level hierarchy tables.] | Quote: "A snowflake schema is a normalized database design for a data warehouse."
+  [Ct] Cold toucan — Concept: [I use Sub-Dimension Tables to decompose] [broad categorical attributes] [into normalized lookup levels.] | Quote: "In a snowflake schema, dimensions are normalized to eliminate redundancy."
+  [Cu] cupid — Concept: [I use High Normalization to eliminate] [repeated categorical values] [by isolating each item into its own table.] | Quote: "Data redundancy is minimized. A single categorical value (like a brand name) is stored exactly once in its own lookup table."
+  [Cv] Cold vulture — Concept: [I use Storage Efficiency to reduce] [overall disk footprint] [by swapping duplicate strings for keys.] | Quote: "By reducing duplicate text strings, the schema consumes less disk space."
+  [Cw] Cold wombat — Concept: [I use Data Integrity to prevent] [update anomalies across historical records] [by modifying a single lookup entry.] | Quote: "Normalization reduces the risk of data anomalies during updates."
+PALACE 26 — Snowflake Query Complexity and Costs () [PALACE_DATAANALYST_26]
+  [Cx] Cold Xena, warrior woman — Concept: [I use Query Complexity to describe] [the extra relational joins needed] [to reconstruct full records across normalized levels.] | Quote: "Because the data is spread across multiple levels of hierarchy, retrieving a complete record requires multiple SQL `JOIN` operations."
+  [Cy] cyborg — Concept: [I use Performance Trade-off to assess] [the slower query speeds] [caused by navigating multiple relational joins.] | Quote: "The increased number of joins generally results in slower query performance compared to a star schema (where dimensions are denormalized into single, wide tables)."
+  [Cz] Cold Zeus — Concept: [I use Dimension Tables to store] [descriptive context and categorical attributes] [that filter quantitative facts.] | Quote: "Tables describing the attributes of the fact data (e.g., Time, Product, Store, Customer)."
+
+Discard candidates:
+- Fact Table: already palace 17 / peg Bq (near-duplicate rehearsal concept on central quantitative metrics and foreign key links)
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_25,STUDY_DATAANALYST,25,Snowflake Schema Normalization,,,5,"In a quiet town street corner with an old brick bakery, five strange beasts occupy separate structural spots with wide empty ground between them. ForegroundLeft: on the front hood of a parked blue sedan, a life-sized skull carved of pale blue ice (Cold skull) bites a glowing white snowflake, crunching frost onto the warm metal. MidgroundRight: perched on the wooden railing of a bakery porch, a frozen bright toucan (Cold toucan) tears apart a miniature wooden pyramid with its chilled beak. BackgroundCenter: hovering in front of the far brick doorway at the street end, a small winged cherub with icy wings (cupid) balances a giant glowing padlock on one hand while floating upside down. Aerial: gripping the telephone wire above the sidewalk, a frosty bald vulture (Cold vulture) drops heavy bronze keys that shatter into smoke upon hitting the ground. ForegroundRight: next to a green mailbox near the right curb, a shaggy wombat covered in hoarfrost (Cold wombat) presses a massive rubber stamp against a cracked stone pedestal, leaving glowing cyan marks."
+PALACE_DATAANALYST_26,STUDY_DATAANALYST,26,Snowflake Query Complexity and Costs,,,3,"Along an open residential street bordered by low stone garden walls, three beasts stand in separate locations with clear open distance between them. ForegroundLeft: near the low garden stone wall on the left, an athletic female warrior clad in frost-coated armor (Cold Xena, warrior woman) pulls a tangled web of heavy iron chain links through an open stone gap. MidgroundRight: standing beside a silver fire hydrant near the right driveway, a half-human metal automaton with glowing wires (cyborg) tries to push a massive rusted snail shell across the dry concrete. BackgroundCenter: hovering high above the distant asphalt crossroad at the end of the road, a towering elder figure wrapped in frosty cloud vapor (Cold Zeus) clutches a glowing purple clipboard that emits sharp crackling sparks into the daylight."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_DATAANALYST_25_Cs,PALACE_DATAANALYST_25,Cs,Cold skull,Custom,,0,1,
+BEAST_DATAANALYST_25_Ct,PALACE_DATAANALYST_25,Ct,Cold toucan,Custom,,0,2,
+BEAST_DATAANALYST_25_Cu,PALACE_DATAANALYST_25,Cu,cupid,Lynne Kelly,,0,3,
+BEAST_DATAANALYST_25_Cv,PALACE_DATAANALYST_25,Cv,Cold vulture,Custom,,0,4,
+BEAST_DATAANALYST_25_Cw,PALACE_DATAANALYST_25,Cw,Cold wombat,Custom,,0,5,
+BEAST_DATAANALYST_26_Cx,PALACE_DATAANALYST_26,Cx,"Cold Xena, warrior woman",Custom,,0,1,
+BEAST_DATAANALYST_26_Cy,PALACE_DATAANALYST_26,Cy,cyborg,Lynne Kelly,,0,2,
+BEAST_DATAANALYST_26_Cz,PALACE_DATAANALYST_26,Cz,Cold Zeus,Custom,,0,3,
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+,BEAST_DATAANALYST_25_Cs,single,,,"[I use a Snowflake Schema to normalize] [my data warehouse dimensions] [into multi-level hierarchy tables.]","snowflake | Snowflake Schema || warehouse | dimensions || stairs | hierarchy","A snowflake schema is a normalized database design for a data warehouse.",,1
+,BEAST_DATAANALYST_25_Ct,single,,,"[I use Sub-Dimension Tables to decompose] [broad categorical attributes] [into normalized lookup levels.]","pyramid | Sub-Dimension Tables || category | attributes || ladder | lookup levels","In a snowflake schema, dimensions are normalized to eliminate redundancy.",,2
+,BEAST_DATAANALYST_25_Cu,single,,,"[I use High Normalization to eliminate] [repeated categorical values] [by isolating each item into its own table.]","padlock | High Normalization || repeat | values || island | table","Data redundancy is minimized. A single categorical value (like a brand name) is stored exactly once in its own lookup table.",,3
+,BEAST_DATAANALYST_25_Cv,single,,,"[I use Storage Efficiency to reduce] [overall disk footprint] [by swapping duplicate strings for keys.]","key | Storage Efficiency || hard drive | disk footprint || swap | keys","By reducing duplicate text strings, the schema consumes less disk space.",,4
+,BEAST_DATAANALYST_25_Cw,single,,,"[I use Data Integrity to prevent] [update anomalies across historical records] [by modifying a single lookup entry.]","shield | Data Integrity || anomaly | update anomalies || pen | lookup entry","Normalization reduces the risk of data anomalies during updates.",,5
+,BEAST_DATAANALYST_26_Cx,single,,,"[I use Query Complexity to describe] [the extra relational joins needed] [to reconstruct full records across normalized levels.]","chain | Query Complexity || bridge | joins || jigsaw | records","Because the data is spread across multiple levels of hierarchy, retrieving a complete record requires multiple SQL `JOIN` operations.",,1
+,BEAST_DATAANALYST_26_Cy,single,,,"[I use Performance Trade-off to assess] [the slower query speeds] [caused by navigating multiple relational joins.]","snail | Performance Trade-off || hourglass | query speeds || maze | joins","The increased number of joins generally results in slower query performance compared to a star schema (where dimensions are denormalized into single, wide tables).",,2
+,BEAST_DATAANALYST_26_Cz,single,,,"[I use Dimension Tables to store] [descriptive context and categorical attributes] [that filter quantitative facts.]","clipboard | Dimension Tables || lens | context || funnel | facts","Tables describing the attributes of the fact data (e.g., Time, Product, Store, Customer).",,3
+===END_FILE===

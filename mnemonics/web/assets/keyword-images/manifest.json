@@ -3170,6 +3170,136 @@
       "version": 2,
       "empty": false,
       "style": "illustration"
+    },
+    "snowflake": {
+      "key": "snowflake",
+      "slug": "snowflake",
+      "file": "snowflake.png",
+      "openverse_id": "70aaadfc-abe3-4759-9578-a335e0c1c32b",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=148764196",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "stairs": {
+      "key": "stairs",
+      "slug": "stairs",
+      "file": "stairs.png",
+      "openverse_id": "bbd0380b-d98b-41b8-81ec-3b7da36e8870",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=99301309",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "pyramid": {
+      "key": "pyramid",
+      "slug": "pyramid",
+      "file": "pyramid.png",
+      "openverse_id": "f41cfd9e-5abf-4b5f-92e6-695b59ac9bde",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=44041806",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "category": {
+      "key": "category",
+      "slug": "category",
+      "file": "category.png",
+      "openverse_id": "2b4fed1d-f18f-4955-bd1d-66ae2d2f01fc",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=108917364",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "ladder": {
+      "key": "ladder",
+      "slug": "ladder",
+      "file": "ladder.png",
+      "openverse_id": "b40b35cf-1b4e-4e83-b179-72c671381756",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=45857044",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "repeat": {
+      "key": "repeat",
+      "slug": "repeat",
+      "file": "repeat.png",
+      "openverse_id": "8870014c-58c0-40bd-84aa-829af0ba7629",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=797515",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "key": {
+      "key": "key",
+      "slug": "key",
+      "file": "key.png",
+      "openverse_id": "af16e14c-f063-4f2e-81fe-6078e70908e4",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=89418320",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "hard drive": {
+      "key": "hard drive",
+      "slug": "hard_drive",
+      "file": "hard_drive.png",
+      "openverse_id": "fe99b440-9000-405c-970c-d150b3b2052b",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=4275514",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "swap": {
+      "key": "swap",
+      "slug": "swap",
+      "file": "swap.png",
+      "openverse_id": "68257a1d-18b9-4a9c-8da1-cba763cd433a",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=68785167",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "anomaly": {
+      "key": "anomaly",
+      "slug": "anomaly",
+      "file": "anomaly.png",
+      "openverse_id": "77f1fd4c-0e77-40e9-a2c8-e39bce49c83e",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=3579851",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "jigsaw": {
+      "key": "jigsaw",
+      "slug": "jigsaw",
+      "file": "jigsaw.png",
+      "openverse_id": "6a8c6a01-2910-4319-8dd2-bd8644f9aecf",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=856082",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "snail": {
+      "key": "snail",
+      "slug": "snail",
+      "file": "snail.png",
+      "openverse_id": "61d739dd-91b9-4230-af25-3da47b3751f7",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=34544040",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
+    },
+    "maze": {
+      "key": "maze",
+      "slug": "maze",
+      "file": "maze.png",
+      "openverse_id": "44756b1b-3e03-4acb-8bae-4e77f223f5e0",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=43747713",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

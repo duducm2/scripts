@@ -14,7 +14,7 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
 
-⚡ Change your TIM plan
+⏳ Change your TIM plan
 
 ⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
 
@@ -76,10 +76,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 * **Consulte o veterinário:** Sempre confirme o princípio ativo e a marca com o veterinário que acompanha o calendário de vacinas dela, para adequar a dosagem exata ao peso atual.
 
 ---
-
-⚡ Check Google anti-gravity
-ℹ️ Check Google anti-gravity
-ℹ️ https://antigravity.google/
 
 🔲 You need to transfer your voting place to Nova Odessa
 

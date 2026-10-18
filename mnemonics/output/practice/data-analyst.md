@@ -1,6 +1,49 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 25: Snowflake Schema Core</strong> · Character: — · 2 beasts · 2 atoms</summary>
+
+![Memory Palace 25](images/data-analyst/25.jpg)
+
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Ct] Cold toucan
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/toucan.png" alt="Cold toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use this <img alt="[high normalization]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhigh%20normalization%5D&color=9fd4ff" />(padlock) to prevent] <img alt="[update anomalies]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bupdate%20anomalies%5D&color=ffd966" />(shield) [at the cost of <img alt="[complex query joins]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcomplex%20query%20joins%5D&color=ffd966" />(maze).] — Note: Retrieving a complete record is slower than a star schema because it requires multiple SQL JOIN operations.
+
+<img src="../../web/assets/keyword-images/padlock.png" alt="padlock" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/shield.jpg" alt="shield" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/maze.png" alt="maze" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Normalization reduces the risk of data anomalies during updates. Because the data is spread across multiple levels of hierarchy, retrieving a complete record requires multiple SQL `JOIN` operations.”
+
+### [Cs] Cold skull
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/skull.png" alt="Cold skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use a <img alt="[Snowflake Schema]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSnowflake%20Schema%5D&color=9fd4ff" />(snowflake) to center] [my <img alt="[quantitative facts]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bquantitative%20facts%5D&color=ffd966" />(abacus)] [inside highly <img alt="[normalized dimension hierarchies]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnormalized%20dimension%20hierarchies%5D&color=ffd966" />(stairs).] — Note: This eliminates data redundancy and saves storage by storing each category exactly once.
+
+<img src="../../web/assets/keyword-images/snowflake.png" alt="snowflake" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/abacus.png" alt="abacus" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/stairs.png" alt="stairs" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“A snowflake schema is a normalized database design for a data warehouse. In a snowflake schema, dimensions are normalized to eliminate redundancy.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 24: Database Views and ACID</strong> · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 24](images/data-analyst/24.jpg)

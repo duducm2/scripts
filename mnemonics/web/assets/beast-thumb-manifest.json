@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-10-14",
+    "generated_at": "2026-10-18",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "530 beasts / 173 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 58 beasts with adj"
+    "catalog_scope": "532 beasts / 173 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 60 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -5136,6 +5136,26 @@
       "adjective": null,
       "adj_filename": null,
       "adj_url": null
+    },
+    "BEAST_DATAANALYST_25_Cs": {
+      "label": "Cold skull",
+      "peg_code": "Cs",
+      "filename": "skull.png",
+      "url": "/assets/beast-thumbs/skull.png",
+      "source_slug": "skull",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_25_Ct": {
+      "label": "Cold toucan",
+      "peg_code": "Ct",
+      "filename": "toucan.png",
+      "url": "/assets/beast-thumbs/toucan.png",
+      "source_slug": "toucan",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
     }
   }
 }
