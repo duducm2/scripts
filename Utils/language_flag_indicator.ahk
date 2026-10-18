@@ -293,14 +293,13 @@ Handy_AiModelRequestMsgId() {
 }
 
 Handy_OnAiModelRequest(wParam, lParam, *) {
+    global g_HandyAiModels, g_HandyAiPersistedSlot
     raw := Integer(wParam)
     slot := raw & 0xFF
     ; Slot only: another process already switched Handy. Do not run model UIA again.
     if (raw & 0x200) {
-        if (slot >= 1 && slot <= 3) {
-            global g_HandyAiPersistedSlot
+        if (g_HandyAiModels.Has(slot))
             g_HandyAiPersistedSlot := slot
-        }
         return
     }
     restartDictationIfStopped := (raw & 0x100) != 0

@@ -820,20 +820,20 @@ Handy_ClickAiModel(hwnd, modelName) {
     }
 
     ; Model buttons have class containing "w-full px-3 py-2 text-left"
-    ; and names starting with the model name (e.g., "Whisper Large Good accuracy...")
-    ; Try to find by partial name match
+    ; and names containing the model match string (e.g., "Whisper Large Good accuracy...")
+    ; Try to find by substring name match
     modelBtn := 0
     buttonCount := 0
     nameMatchNoClass := ""
 
-    ; Strategy 1: Find button whose Name starts with modelName
+    ; Strategy 1: Find button whose Name contains modelName (substring match)
     try {
         buttons := el.FindAll({ Type: 50000 })
         for btn in buttons {
             buttonCount++
             btnName := ""
             try btnName := btn.Name
-            if (btnName != "" && InStr(btnName, modelName) = 1) {
+            if (btnName != "" && InStr(btnName, modelName)) {
                 btnClass := ""
                 try btnClass := btn.ClassName
                 ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2

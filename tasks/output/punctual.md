@@ -14,6 +14,8 @@
 
 🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
 
+⚡ Change your TIM plan
+
 ## General
 
 ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">
