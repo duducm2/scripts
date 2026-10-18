@@ -24,7 +24,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;   WindowManagement\hotkeys.ahk              - global hotkey bindings (minimize/maximize/move/close/cycle)
 ;   WindowManagement\move_monitor.ahk         - move window to ordered monitor; MEH Alt+Tab
 ;   WindowManagement\window_cycle.ahk         - cycle/minimize/close visible windows on a monitor by order
-;   WindowManagement\project_selector_01.ahk  - project quick selector GUI (#!+L), part 1
+;   WindowManagement\project_selector_01.ahk  - project quick selector GUI (#!+L); personal→Antigravity, work→VS Code
 ; Optional (deletable): AutoSlot\AutoSlot.ahk — auto-position new windows (see AutoSlot\README.md)
 ;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
 ;   WindowManagement\project_selector_02.ahk  - project selector preview / Copy-from-Gemini handlers

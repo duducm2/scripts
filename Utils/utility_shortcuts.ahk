@@ -108,10 +108,11 @@ MacroWipeHeavyApps_Run(*) {
 
 ; taskkill /T so Electron/Chrome children (renderers, language servers) die with the parent.
 ; ProcessClose leaves those holding RAM. Skip images that are not running.
+; Quote /IM — names with spaces (Antigravity IDE.exe) otherwise never match.
 WipeKillProcessTree(imageName) {
     if !ProcessExist(imageName)
         return
-    try RunWait(A_ComSpec . " /c taskkill /F /T /IM " . imageName . " >nul 2>&1", , "Hide")
+    try RunWait(A_ComSpec . ' /c taskkill /F /T /IM "' . imageName . '" >nul 2>&1', , "Hide")
     catch {
     }
 }

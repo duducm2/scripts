@@ -9,7 +9,8 @@
 ; Project Quick Selector
 ; Hotkey: Ctrl+Alt+Win+0 (see WindowManagement\cursor_window_select.ahk)
 ; ListView of projects (char, name, paths) with add/edit/delete; opens the selected folder.
-; A (and Insert) adds a project; A is reserved and not assignable as a quick-open char.
+; Open: personal → Antigravity IDE; work → VS Code. A (and Insert) adds a project;
+; A is reserved and not assignable as a quick-open char.
 ; Shift+E (and F2) edits the selected record, including personal and work folder paths.
 ; =============================================================================
 
@@ -1008,6 +1009,139 @@ VSCode_TryActivateAfterLaunch() {
     }
 }
 
+; Personal IDE — same install paths as Explorer Shift+G (Antigravity IDE, then legacy).
+ProjectSelector_ResolveAntigravityExe() {
+    localAppData := EnvGet("LOCALAPPDATA")
+    if (localAppData = "")
+        return ""
+    candidate := localAppData "\Programs\Antigravity IDE\Antigravity IDE.exe"
+    if FileExist(candidate)
+        return candidate
+    candidate := localAppData "\Programs\antigravity\Antigravity.exe"
+    if FileExist(candidate)
+        return candidate
+    return ""
+}
+
+ProjectSelector_AntigravityExeList() {
+    return ["ahk_exe Antigravity IDE.exe", "ahk_exe Antigravity.exe"]
+}
+
+; Return the hwnd of an Antigravity window whose title matches the project path, or 0.
+GetAntigravityHwndForProject(projectPath) {
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+    try {
+        for ahkExe in ProjectSelector_AntigravityExeList() {
+            for hwnd in WinGetList(ahkExe) {
+                try {
+                    winTitle := WinGetTitle("ahk_id " hwnd)
+                    if (InStr(StrLower(winTitle), "preview"))
+                        continue
+                    for segment in matchSegments {
+                        if (InStr(winTitle, segment))
+                            return hwnd
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Find and activate the last used Antigravity window for a project path.
+FindAndActivateAntigravityWindow(projectPath) {
+    matchSegments := ExtractProjectMatchSegments(projectPath)
+    ideWindows := []
+
+    try {
+        for ahkExe in ProjectSelector_AntigravityExeList() {
+            for hwnd in WinGetList(ahkExe) {
+                try {
+                    winTitle := WinGetTitle("ahk_id " hwnd)
+                    winTitleLower := StrLower(winTitle)
+                    if (InStr(winTitleLower, "preview"))
+                        continue
+                    for segment in matchSegments {
+                        if (InStr(winTitle, segment)) {
+                            ideWindows.Push({ hwnd: hwnd, title: winTitle })
+                            break
+                        }
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    } catch {
+    }
+
+    if (ideWindows.Length = 0)
+        return 0
+
+    try {
+        activeHwnd := WinGetID("A")
+        for window in ideWindows {
+            if (window.hwnd = activeHwnd) {
+                WMAutomation_SuppressCursorCentering("antigravity_activate_existing", 1600)
+                WinActivate("ahk_id " window.hwnd)
+                WM_MaybeCenterMouse(window.hwnd, "antigravity_activate_existing", true)
+                return window.hwnd
+            }
+        }
+    } catch {
+    }
+
+    targetWindow := ideWindows[1]
+    try {
+        WMAutomation_SuppressCursorCentering("antigravity_activate_target", 1600)
+        WinActivate("ahk_id " targetWindow.hwnd)
+        WinWaitActive("ahk_id " targetWindow.hwnd, , 2)
+        WM_MaybeCenterMouse(targetWindow.hwnd, "antigravity_activate_target", true)
+        return targetWindow.hwnd
+    } catch {
+        return 0
+    }
+}
+
+global g_AntigravityLaunchActivate := { active: false, projectPath: "", startedAt: 0, timeoutMs: 0 }
+
+Antigravity_ScheduleActivateAfterLaunch(projectPath, timeoutMs := 9000) {
+    global g_AntigravityLaunchActivate
+    g_AntigravityLaunchActivate.active := true
+    g_AntigravityLaunchActivate.projectPath := projectPath
+    g_AntigravityLaunchActivate.startedAt := A_TickCount
+    g_AntigravityLaunchActivate.timeoutMs := timeoutMs
+    SetTimer(Antigravity_TryActivateAfterLaunch, 150)
+}
+
+Antigravity_TryActivateAfterLaunch() {
+    global g_AntigravityLaunchActivate
+    if (!g_AntigravityLaunchActivate.active) {
+        SetTimer(Antigravity_TryActivateAfterLaunch, 0)
+        return
+    }
+    if ((A_TickCount - g_AntigravityLaunchActivate.startedAt) > g_AntigravityLaunchActivate.timeoutMs) {
+        g_AntigravityLaunchActivate.active := false
+        SetTimer(Antigravity_TryActivateAfterLaunch, 0)
+        return
+    }
+    try {
+        hwnd := GetAntigravityHwndForProject(g_AntigravityLaunchActivate.projectPath)
+        if (hwnd && Integer(hwnd) != 0) {
+            WMAutomation_SuppressCursorCentering("antigravity_activate_after_launch", 1600)
+            WinActivate("ahk_id " hwnd)
+            WM_MaybeCenterMouse(hwnd, "antigravity_activate_after_launch", true)
+            g_AntigravityLaunchActivate.active := false
+            SetTimer(Antigravity_TryActivateAfterLaunch, 0)
+            return
+        }
+    } catch {
+    }
+}
+
 ; Find and activate the last used Cursor window for a project path.
 ; Returns the activated window's hwnd, or 0 if not found / activation failed.
 FindAndActivateCursorWindow(projectPath) {
@@ -1081,7 +1215,7 @@ FindAndActivateCursorWindow(projectPath) {
     }
 }
 
-; Handle project selection - activates existing Cursor window or launches new one
+; Handle project selection — work: VS Code; personal: Antigravity (activate existing or launch).
 HandleProjectSelection(index) {
     global g_ProjectSelectorActive, g_Projects
     global IS_WORK_ENVIRONMENT, VS_CODE_EXE_WORK
@@ -1140,15 +1274,20 @@ HandleProjectSelection(index) {
         return
     }
 
-    ; Personal: keep Cursor behavior
-    if (FindAndActivateCursorWindow(projectPath)) {
+    ; Personal: Antigravity IDE
+    if (FindAndActivateAntigravityWindow(projectPath)) {
         return
     }
-    cursorPath := "C:\Users\eduev\AppData\Local\Programs\cursor\Cursor.exe"
+    antigravityPath := ProjectSelector_ResolveAntigravityExe()
+    if (antigravityPath = "") {
+        ShowNotification_WM("Antigravity not found")
+        return
+    }
     try {
-        Run cursorPath . ' "' . projectPath . '"'
+        Run '"' . antigravityPath . '" "' . projectPath . '"'
+        Antigravity_ScheduleActivateAfterLaunch(projectPath, 9000)
     } catch Error as e {
-        ShowNotification_WM("Failed to launch Cursor: " . e.Message)
+        ShowNotification_WM("Failed to launch Antigravity: " . e.Message)
     }
 }
 ; Factory function to create a handler that properly captures the index
