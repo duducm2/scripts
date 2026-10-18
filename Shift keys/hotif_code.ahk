@@ -17,24 +17,12 @@
     Send "^;"
 }
 
-; Alt + A : Add file to AI Context (VS Code Copilot chat)
-!a:: {
-    VSCode_AddFileToAIContext()
-}
+; Alt+A / Ctrl+Alt+. / Ctrl+M freed (unused — chords available for future use).
+; !a:: VSCode_AddFileToAIContext()
+; ^!.:: VSCode_TriggerGenerateCommitMessage(...)
+; Ctrl+M commit/push flow kept as unbound helper:
+VSCode_CommitPushFlow_Unused(*) {
 
-; Ctrl + Alt + . : Generate commit message in Source Control (explicit remap for reliability)
-^!.:: {
-    hwnd := WinExist("A")
-    if (!hwnd)
-        return
-    if (!VSCode_TriggerGenerateCommitMessage(hwnd)) {
-        ShowCenteredOverlay_Utils("Generate Commit Message button not found.", 2000, BANNER_ACCENT_ERROR)
-    }
-}
-
-; Ctrl + M : Trigger commit message generation + commit/push flow (VS Code: native button + Shift+V/+B)
-; Mirrors Cursor workflow: generate → wait with banner → commit → push (if user allows) → return
-^M:: {
     global gCommitPushTargetWin
     global gCommitPushDecision
     hwnd := WinExist("A")
@@ -101,3 +89,16 @@
         }
     }
 }
+
+#HotIf IsAntigravityActive() && SafeWinGetClass() != "#32770"
+
+; Ctrl+Shift+L — select all identical words. Ctrl+L stays agent line-reference (like Cursor Ctrl+I).
+$^+l:: {
+    Send "^+l"
+}
+
+; Ctrl+I — same as native Antigravity Ctrl+L (Cursor Ctrl+I equivalent).
+; Leave Ctrl+L unbound so the IDE owns agent line-ref / focus.
+$^i:: Send "^l"
+
+#HotIf

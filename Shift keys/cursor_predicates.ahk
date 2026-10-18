@@ -427,20 +427,34 @@ Editor_FindWorkbenchToggleButton(root, nameSubstring) {
         if (saved)
             return saved
     }
+    if (InStr(nameSubstring, "Toggle Agent")) {
+        saved := UiElements_TrySaved(root, Editor_UiElementAppKey(), "ToggleAgent")
+        if (saved)
+            return saved
+    }
     toggleBtn := 0
-    try toggleBtn := root.FindFirst({ Name: nameSubstring, Type: UIA.Type.Button })
-    catch
-        toggleBtn := 0
-    if toggleBtn
-        return toggleBtn
+    ; Antigravity title-bar toggles are CheckBoxes; Cursor/VS Code often use Buttons.
+    for ctrlType in [UIA.Type.CheckBox, UIA.Type.Button] {
+        try toggleBtn := root.FindFirst({ Name: nameSubstring, Type: ctrlType })
+        catch
+            toggleBtn := 0
+        if toggleBtn
+            return toggleBtn
+        try toggleBtn := root.FindFirst({ Name: nameSubstring, Type: ctrlType, matchmode: "Substring" })
+        catch
+            toggleBtn := 0
+        if toggleBtn
+            return toggleBtn
+    }
     try {
-        allButtons := root.FindAll({ Type: UIA.Type.Button })
-        if allButtons {
-            for btn in allButtons {
+        for ctrlType in [UIA.Type.CheckBox, UIA.Type.Button] {
+            allBtns := root.FindAll({ Type: ctrlType })
+            if !allBtns
+                continue
+            for btn in allBtns {
                 try {
                     if InStr(btn.Name, nameSubstring) {
-                        toggleBtn := btn
-                        break
+                        return btn
                     }
                 } catch {
                 }
@@ -448,7 +462,245 @@ Editor_FindWorkbenchToggleButton(root, nameSubstring) {
         }
     } catch {
     }
-    return toggleBtn
+    return 0
+}
+
+; Click / toggle the Antigravity title-bar "Toggle Agent" control. wantOn: true=open, false=close.
+Antigravity_SetAgentSidebar(wantOn, hwnd := 0) {
+    try {
+        if (!hwnd)
+            hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        isOn := Editor_IsWorkbenchToggleOn(root, "Toggle Agent")
+        if (wantOn ? isOn : !isOn)
+            return true
+        btn := Editor_FindWorkbenchToggleButton(root, "Toggle Agent")
+        clicked := false
+        if (btn) {
+            try {
+                if btn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                    btn.TogglePattern.Toggle()
+                    clicked := true
+                }
+            } catch {
+            }
+            if (!clicked) {
+                try {
+                    if btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                        btn.Invoke()
+                        clicked := true
+                    }
+                } catch {
+                }
+            }
+            if (!clicked) {
+                try {
+                    btn.Click()
+                    clicked := true
+                } catch {
+                }
+            }
+        }
+        if (!clicked)
+            Send "^!b"
+        Sleep 280
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Open Agent sidebar if collapsed; return fresh UIA root (or 0).
+Antigravity_EnsureAgentOpen(hwnd := 0) {
+    try {
+        if (!hwnd)
+            hwnd := WinExist("A")
+        if (!hwnd)
+            return 0
+        Antigravity_SetAgentSidebar(true, hwnd)
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return 0
+        ; Wait briefly for Agent Conversation / Message input to appear.
+        loop 8 {
+            try {
+                if root.FindFirst({ Name: "Message input", matchmode: "Substring" })
+                    return root
+            } catch {
+            }
+            try {
+                if root.FindFirst({ Name: "Agent Conversation", matchmode: "Substring" })
+                    return root
+            } catch {
+            }
+            Sleep 80
+            root := UIA.ElementFromHandle(hwnd)
+            if (!root)
+                return 0
+        }
+        return root
+    } catch {
+        return 0
+    }
+}
+
+; Focus the Agent composer ("Message input" ComboBox). Opens sidebar if needed.
+Antigravity_FocusMessageInput(hwnd := 0) {
+    try {
+        if (!hwnd)
+            hwnd := WinExist("A")
+        root := Antigravity_EnsureAgentOpen(hwnd)
+        if (!root)
+            return false
+        inp := 0
+        try inp := root.FindFirst({ Name: "Message input", ControlType: "ComboBox" })
+        catch
+            inp := 0
+        if (!inp) {
+            try inp := root.FindFirst({ Name: "Message input", matchmode: "Substring" })
+            catch
+                inp := 0
+        }
+        if (!inp)
+            return false
+        try {
+            if inp.GetPropertyValue(UIA.Property.IsSetFocusAvailable) {
+                inp.SetFocus()
+                return true
+            }
+        } catch {
+        }
+        try {
+            inp.Click()
+            return true
+        } catch {
+        }
+        try {
+            if inp.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                inp.Invoke()
+                return true
+            }
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+; Open Agent conversation history UI (icon links in agent header, then palette fallback).
+; Header icons above Agent Conversation are nameless. History is the 2nd icon
+; left-to-right after the conversation title (antigravity.md …,24,2 / 24,3).
+Antigravity_OpenHistory(hwnd := 0) {
+    try {
+        if (!hwnd)
+            hwnd := WinExist("A")
+        root := Antigravity_EnsureAgentOpen(hwnd)
+        if (!root)
+            return false
+
+        conv := 0
+        try conv := root.FindFirst({ Name: "Agent Conversation", matchmode: "Substring" })
+        catch
+            conv := 0
+        if (!conv)
+            return false
+
+        convTop := 0
+        try convTop := Integer(conv.BoundingRectangle.t)
+        catch
+            convTop := 0
+
+        panel := 0
+        try panel := conv.Parent
+        catch
+            panel := 0
+        if (!panel)
+            return false
+
+        ; Collect clickable header icons above the conversation region (Links + icon Buttons).
+        icons := []
+        try {
+            for el in panel.FindAll({ Type: 50005 }) {
+                try {
+                    br := el.BoundingRectangle
+                    if (convTop > 0 && Integer(br.t + br.h) > convTop)
+                        continue
+                    icons.Push({ el: el, l: Integer(br.l) })
+                } catch {
+                }
+            }
+        } catch {
+        }
+        try {
+            for el in panel.FindAll({ Type: 50000 }) {
+                try {
+                    nm := ""
+                    try nm := el.Name
+                    ; Skip named action buttons; keep unnamed icon / popover triggers.
+                    if (nm != "")
+                        continue
+                    br := el.BoundingRectangle
+                    if (convTop > 0 && Integer(br.t + br.h) > convTop)
+                        continue
+                    icons.Push({ el: el, l: Integer(br.l) })
+                } catch {
+                }
+            }
+        } catch {
+        }
+
+        if (icons.Length = 0)
+            return false
+
+        ; Sort left → right by BoundingRectangle.l (simple insertion).
+        loop icons.Length - 1 {
+            i := A_Index
+            loop icons.Length - i {
+                j := A_Index
+                if (icons[j].l > icons[j + 1].l) {
+                    tmp := icons[j]
+                    icons[j] := icons[j + 1]
+                    icons[j + 1] := tmp
+                }
+            }
+        }
+
+        ; Index 2 = two components to the right of the title text.
+        pick := (icons.Length >= 2) ? icons[2].el : icons[1].el
+        try {
+            pick.Click()
+            return true
+        } catch {
+        }
+        try {
+            if pick.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                pick.Invoke()
+                return true
+            }
+        } catch {
+        }
+
+        ; Last resort: command palette.
+        Send "+c"
+        Sleep 160
+        SendText("History")
+        Sleep 100
+        Send "{Enter}"
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Turn off Antigravity Agent right sidebar when it is open (Ctrl+1 declutter).
+ClickHideAgentSidebar() {
+    if (!IsAntigravityActive())
+        return false
+    return Antigravity_SetAgentSidebar(false)
 }
 
 ; True when a workbench title-bar toggle (e.g. primary/secondary sidebar) is in the "on" state.

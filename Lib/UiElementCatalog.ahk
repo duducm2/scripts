@@ -335,6 +335,7 @@ UiElementCatalog_All() {
         e.Call("Code.exe", "Send", "Send", "Utils/cursor_composer_focus.ahk", "button"),
         ; Antigravity IDE — clone Code.exe shared set (VS Code family; no Cursor Composer/permission IDs).
         e.Call("Antigravity IDE.exe", "HidePanel", "Hide panel", "Shift keys/hotif_editor_02.ahk", "button"),
+        e.Call("Antigravity IDE.exe", "ToggleAgent", "Toggle Agent", "Shift keys/cursor_predicates.ahk", "checkbox"),
         e.Call("Antigravity IDE.exe", "ReviewNext", "Review next file", "Shift keys/hotif_editor_02.ahk", "any"),
         e.Call("Antigravity IDE.exe", "CommitInput", "Commit message", "Shift keys/hotif_editor_02.ahk", "edit"),
         e.Call("Antigravity IDE.exe", "Pull", "Pull", "Shift keys/cursor_predicates.ahk", "button"),

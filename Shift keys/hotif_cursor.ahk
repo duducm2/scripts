@@ -20,13 +20,11 @@ global g_CursorShortcutMenuPrevHwnd := 0
     ShowCursorShortcutMenu()
 }
 
-; Alt + A : Add File to AI Context (Add File to Cursor Chat)
-!a::
-{
+; Alt+A freed (add file to AI context unused). Body kept for possible reuse.
+Cursor_AddFileToAIContext_Unused(*) {
     StandardLoadingBar_Show("⏳ Add file to Cursor Chat...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
-        ; Always move to Cursor primary sidebar Explorer, regardless of current focus/caret.
         StandardLoadingBar_Update("⏳ Focusing Explorer...")
         Send "^+e"
         Sleep 350
@@ -51,7 +49,6 @@ global g_CursorShortcutMenuPrevHwnd := 0
             return
         }
 
-        ; Open context menu for the selected file in Explorer, then navigate to the target item.
         StandardLoadingBar_Update("⏳ Opening context menu...")
         result := Cursor_ContextMenuSelectByDownAndVerifyAny(
             ["Add file to Gemini context", "Add File to Cursor Chat"],
@@ -64,8 +61,6 @@ global g_CursorShortcutMenuPrevHwnd := 0
             return
         }
 
-        ; Deterministic fallback for Cursor menu ID issues:
-        ; copy selected file name via rename mode and insert @filename in AI field.
         StandardLoadingBar_Update("⏳ Fallback: @filename from Explorer selection...")
         fallbackResult := Cursor_FallbackAddFileByAtMention(expectedFileName)
         if (fallbackResult.ok) {
@@ -86,8 +81,8 @@ global g_CursorShortcutMenuPrevHwnd := 0
     }
 }
 
-; Ctrl + M : Trigger commit message generation (Cursor-specific: Ctrl+Alt+. flow + commit/push banner)
-^M:: {
+; Ctrl+M freed (commit/push flow unused). Body kept for possible reuse.
+Cursor_CommitPushFlow_Unused(*) {
     global gCommitPushTargetWin
     global gCommitPushDecision
     hwnd := WinExist("A")

@@ -369,22 +369,12 @@ cheatSheets["Cursor.exe"] := "
     === Ctrl (no other modifiers) ===
     🎯 [1] Remove clustering and focus on the code (ahk)
     📁 [2] Copy path — Explorer then Ctrl+2 (ahk)
-    📊 [3] CSV: Edit CSV
-    💾 [4] CSV: Apply changes to source file and save
-    📋 [5] MarkDown Enhanced: Export in PDF format. 
-    📽️ [6] Marp export (PDF)
-    🔨 [7] Build LaTeX project
-    📄 [8] View LaTeX PDF file
-    📄 [9] Markdown Preview Enhanced: Insert Page Break
-    🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
     ⚡ [G]Kill terminal ([G]o away)
     📉 [Y]Fold all (tuck awa[Y])
     📈 [U] [U]nfold all
     📋 [O]Open Paste As... ([O]pen)
     📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
     🔲 [J]Select to Bracket (ad[J]acent)
-    📉 [,] Fold all directories
-    📈 [Q] Unfold all directories
     💬 [.] Toggle chat or agent
     🤖 [E] Maximize chat size — native Cursor (`workbench.action.maximizeChatSize`; user keybinding)
     📂 [R]File open [R]ecent
@@ -412,10 +402,8 @@ cheatSheets["Cursor.exe"] := "
     ⚡ [S][S]ymbol in access view (cursor)
     💬 [H][H]istory (chat) (ahk)
     🖼️ [I][I]mage (paste) (cursor)
-    📁 [G][G]it repos fold (SCM) (ahk)
     🔍 [Q][Q]uery Search (ahk)
     🍞 [R]B[R]eadcrumbs menu (ahk)
-    😀 [O]Emoji selector (em[O]ji) (ahk)
     🌿 [D]Git section ([D]iff) (ahk)
     ❌ [Z]Close all editors (end [Z]one) (ahk)
     🤖 [A][A]I models switch (ahk)
@@ -431,9 +419,8 @@ cheatSheets["Cursor.exe"] := "
     📉 [Y] Paste image to Markdown
     ⬇️ [U] Scroll AI feed to bottom (ahk-based)
     📋 [M] Quick shortcut menu (ahk)
-    🤖 [A] Add file to AI Context (Cursor Chat) (ahk)
     📌 [Q] Unpin current tab
-    📌 [P] [P]in current tab
+    📌 [.] [P]in current tab
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
     📤 [6] Share in OneDrive — Reveal + share link (ahk)
@@ -483,22 +470,12 @@ cheatSheets["Code.exe"] := "
     === Ctrl (no other modifiers) ===
     🎯 [1] Remove clustering and focus on the code (ahk)
     📁 [2] Copy path — Explorer then Ctrl+2 (ahk)
-    📊 [3] CSV: Edit CSV
-    💾 [4] CSV: Apply changes to source file and save
-    📋 [5] MarkDown Enhanced: Export in PDF format. 
-    📽️ [6] Marp export (PDF)
-    🔨 [7] Build LaTeX project
-    📄 [8] View LaTeX PDF file
-    📄 [9] Markdown Preview Enhanced: Insert Page Break
-    🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
     ⚡ [G]Kill terminal ([G]o away)
     📉 [Y]Fold all (tuck awa[Y])
     📈 [U] [U]nfold all
     📋 [O]Open Paste As... ([O]pen)
     📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
     🔲 [J]Select to Bracket (ad[J]acent)
-    📉 [,] Fold all directories
-    📈 [Q] Unfold all directories
     💬 [.] Copilot Agent Modes
     🤖 [E] VS Code default behavior (Cursor custom maximize removed)
     📂 [R]File open [R]ecent
@@ -526,10 +503,8 @@ cheatSheets["Code.exe"] := "
     ⚡ [S][S]ymbol in access view (VS Code migration pending)
     💬 [H][H]istory (chat) (ahk)
     🖼️ [I][I]mage (paste) (VS Code migration pending)
-    📁 [G][G]it repos fold (SCM) (ahk)
     🔍 [Q][Q]uery Search (ahk)
     🍞 [R]B[R]eadcrumbs menu (ahk)
-    😀 [O]Emoji selector (em[O]ji) (ahk)
     🌿 [D]Git section ([D]iff) (ahk)
     ❌ [Z]Close all editors (end [Z]one) (ahk)
     🤖 [A][A]I models switch (ahk)
@@ -546,9 +521,8 @@ cheatSheets["Code.exe"] := "
     ⬇️ [U] Scroll AI feed to bottom (ahk-based)
     📋 [M] Quick shortcut menu (ahk)
     ➕ [C] Add Context picker (VS Code chat) (ahk)
-    🤖 [A] Add file to AI Context (VS Code chat) (ahk)
     📌 [Q] Unpin current tab
-    📌 [P] [P]in current tab
+    📌 [.] [P]in current tab
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
     📤 [6] Share in OneDrive — Reveal + share link (ahk)
@@ -599,27 +573,14 @@ cheatSheets["Antigravity IDE.exe"] := "
     === Ctrl (no other modifiers) ===
     🎯 [1] Remove clustering and focus on the code (ahk)
     📁 [2] Copy path — Explorer then Ctrl+2 (ahk)
-    📊 [3] CSV: Edit CSV
-    💾 [4] CSV: Apply changes to source file and save
-    📋 [5] MarkDown Enhanced: Export in PDF format. 
-    📽️ [6] Marp export (PDF)
-    🔨 [7] Build LaTeX project
-    📄 [8] View LaTeX PDF file
-    📄 [9] Markdown Preview Enhanced: Insert Page Break
-    🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
     ⚡ [G]Kill terminal ([G]o away)
     📉 [Y]Fold all (tuck awa[Y])
     📈 [U] [U]nfold all
     📋 [O]Open Paste As... ([O]pen)
     📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
     🔲 [J]Select to Bracket (ad[J]acent)
-    📉 [,] Fold all directories
-    📈 [Q] Unfold all directories
-    💬 [.] Agent modes / chat (VS Code–family)
-    🤖 [E] Default editor behavior
     📂 [R]File open [R]ecent
     🔍 [T]Go to [T]ype symbol in workspace
-    💬 [N] Chat session workflow
     ➕ [Enter] [I]nsert line below
     🔍 [P]Quick open / project search
     💬 [;] Insert comment
@@ -640,12 +601,10 @@ cheatSheets["Antigravity IDE.exe"] := "
     ⌨️ [C][C]ommand palette (ahk)
     📈 [X] E[X]pand selection (ahk)
     ⚡ [S][S]ymbol in access view
-    💬 [H][H]istory (chat) (ahk)
+    💬 [H][H]istory (Agent) (ahk)
     🖼️ [I][I]mage (paste)
-    📁 [G][G]it repos fold (SCM) (ahk)
     🔍 [Q][Q]uery Search (ahk)
     🍞 [R]B[R]eadcrumbs menu (ahk)
-    😀 [O]Emoji selector (em[O]ji) (ahk)
     🌿 [D]Git section ([D]iff) (ahk)
     ❌ [Z]Close all editors (end [Z]one) (ahk)
     🤖 [A][A]I models switch (ahk — Code-family)
@@ -659,12 +618,11 @@ cheatSheets["Antigravity IDE.exe"] := "
     📉 [x] Shri[X]nk selection (ahk)
     📉 [,] Classical Markdown Preview
     📉 [Y] Paste image to Markdown
-    ⬇️ [U] Scroll AI feed to bottom (ahk-based — Code-family)
+    ⬇️ [U] Scroll Agent feed to bottom (ahk)
     📋 [M] Quick shortcut menu (ahk — Code-family)
     ➕ [C] Add Context picker (chat) (ahk — Code-family)
-    🤖 [A] Add file to AI Context (chat) (ahk — Code-family)
     📌 [Q] Unpin current tab
-    📌 [P] [P]in current tab
+    📌 [.] [P]in current tab
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
     📤 [6] Share in OneDrive — Reveal + share link (ahk)
@@ -676,7 +634,7 @@ cheatSheets["Antigravity IDE.exe"] := "
     💾 [S][S]tash and Pull (Git) (ahk)
     
     === Ctrl+Shift ===
-    📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
+    📝 [Ctrl+Shift+L] Select all identical words ([L]ines) — Ctrl+L is agent line-ref
     🐛 [Ctrl+Shift+D] [D]ebugging
     
     === Ctrl+Alt ===

@@ -34,6 +34,11 @@
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }
+        ; Antigravity Agent Conversation / Message history first.
+        if (Editor_IsCodeFamilyProcessName(proc) && (proc = "antigravity ide.exe" || proc = "antigravity.exe")) {
+            if (AntigravityScrollAgentFeedToBottom(hwnd))
+                return
+        }
         ; VS Code family (Code + Antigravity): Copilot/chat list scroll before Cursor composer path.
         if (Editor_IsCodeFamilyProcessName(proc)) {
             if (VSCodeScrollCopilotFeedToBottom(hwnd))
@@ -71,6 +76,114 @@
             try StandardLoadingBar_Hide(0)
         }
     }
+}
+
+; Antigravity: open Agent if needed, then actually scroll Message history to the bottom.
+AntigravityScrollAgentFeedToBottom(hwnd) {
+    didScroll := false
+    try {
+        if (!hwnd)
+            return false
+        try WinActivate("ahk_id " hwnd)
+        catch {
+        }
+        try WinWaitActive("ahk_id " hwnd, , 1)
+        catch {
+        }
+
+        root := Antigravity_EnsureAgentOpen(hwnd)
+        if (!root)
+            return false
+
+        history := 0
+        try history := root.FindFirst({ Name: "Message history", matchmode: "Substring" })
+        catch
+            history := 0
+        if (!history) {
+            try history := root.FindFirst({ Name: "Agent Conversation", matchmode: "Substring" })
+            catch
+                history := 0
+        }
+        if (!history)
+            return false
+
+        ; Click history center so the overflow container has focus before wheel / Ctrl+End.
+        cx := 0, cy := 0
+        try {
+            rect := history.BoundingRectangle
+            cx := Integer(rect.l + rect.w / 2)
+            cy := Integer(rect.t + rect.h / 2)
+            if (cx > 0 && cy > 0 && rect.w > 20 && rect.h > 20) {
+                CoordMode "Mouse", "Screen"
+                MouseGetPos(&mx, &my)
+                Click cx " " cy
+                Sleep 40
+
+                ; ScrollPattern on history or ancestors.
+                el := history
+                loop 6 {
+                    if (!el)
+                        break
+                    try {
+                        if (el.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+                            el.ScrollPattern.SetScrollPercent(-1, 100)
+                            didScroll := true
+                            break
+                        }
+                    } catch {
+                    }
+                    try el := el.Parent
+                    catch {
+                        break
+                    }
+                }
+
+                MouseMove cx, cy, 0
+                loop 40
+                    Send "{WheelDown}"
+                didScroll := true
+                Send "^{End}"
+                MouseMove mx, my, 0
+            }
+        } catch {
+        }
+
+        ; Refresh tree after scroll; anchor to true bottom controls.
+        try root := UIA.ElementFromHandle(hwnd)
+        catch {
+        }
+        try {
+            inp := root.FindFirst({ Name: "Message input", matchmode: "Substring" })
+            if (inp) {
+                try inp.ScrollIntoView()
+                catch {
+                }
+                try {
+                    if inp.GetPropertyValue(UIA.Property.IsSetFocusAvailable)
+                        inp.SetFocus()
+                    else
+                        inp.Click()
+                } catch {
+                    try inp.Click()
+                }
+                didScroll := true
+            }
+        } catch {
+        }
+        for name in ["Send message", "Bad response", "Good response"] {
+            try {
+                nodes := history.FindAll({ Name: name, matchmode: "Substring" })
+                if (nodes && nodes.Length > 0) {
+                    nodes[nodes.Length].ScrollIntoView()
+                    didScroll := true
+                    break
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return didScroll
 }
 
 ; VS Code (Code.exe): scroll Copilot chat feed to bottom using Chat list container.

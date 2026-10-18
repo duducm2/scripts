@@ -899,6 +899,10 @@ CursorShortcutMenu_ActionFetch(*) {
     Send "^!,"
     Sleep 150
     ClickHidePanelButton()
+    ; Antigravity: also close the Agent right sidebar (Toggle Agent / Ctrl+Alt+B).
+    try ClickHideAgentSidebar()
+    catch {
+    }
 }
 
 ; Ctrl + 2 : Ensure Files Explorer focus, then native Copy Path
@@ -910,21 +914,20 @@ $^2:: {
     ShowCenteredOverlay_Utils("✅ Path copied", 1400, BANNER_ACCENT_SUCCESS)
 }
 
-; Ctrl + 5 : Context menu navigation sequence
-^5::
-{
-    Click "Right"         ; 1. Right mouse click
+; Ctrl+5 freed (Markdown Enhanced export unused). Body kept for possible reuse.
+Editor_MarkdownExportContextMenu_Unused(*) {
+    Click "Right"
     Sleep 100
-    Send "{Down}"         ; 2. Press Down Arrow twice
+    Send "{Down}"
     Send "{Down}"
     Sleep 50
-    Send "{Right}"        ; 3. Press Right Arrow once
+    Send "{Right}"
     Sleep 50
-    Send "{Down}"         ; 4. Press Down Arrow once
+    Send "{Down}"
     Sleep 50
-    Send "{Right}"        ; 5. Press Right Arrow once
+    Send "{Right}"
     Sleep 50
-    Send "{Enter}"        ; 6. Press Enter
+    Send "{Enter}"
 }
 
 ; Ensure only one Chrome window shows the given PDF: close any Chrome window whose title matches the filename, then open a fresh Chrome window.

@@ -87,9 +87,9 @@ ClickHidePanelButton() {
     return false
 }
 
-; Ctrl + 6 : Marp export - trigger export, handle Save As and Replace dialogs
-^6::
-{
+; Ctrl+6 freed (Marp export unused). Body kept for possible reuse.
+Editor_MarpExport_Unused(*) {
+
     ; Show persistent banner for the entire export flow
     ShowSmallLoadingIndicator_ChatGPT("Exporting with Marp...")
     slowStepMs := 300  ; used throughout this hotkey flow
@@ -384,10 +384,20 @@ ClickHidePanelButton() {
 ; Shift + S : Go to symbol in access view - Symbol
 +s:: Send "+m"
 
-; Shift + H : Navigate to GitHub Copilot chat history - History
+; Shift + H : Chat / Agent history
 +h::
 {
-    OpenCopilotChatHistory()
+    if (IsAntigravityActive())
+        OpenAntigravityAgentHistory()
+    else
+        OpenCopilotChatHistory()
+}
+
+; Antigravity: open Agent sidebar if collapsed, then History UI.
+OpenAntigravityAgentHistory() {
+    try Antigravity_OpenHistory()
+    catch {
+    }
 }
 
 ; Helper: Detect if the secondary sidebar (Copilot chat panel) is visible in VS Code
@@ -1033,37 +1043,23 @@ CancelEmoji(ctrl, *) {
     ctrl.Gui.Destroy()
 }
 
-; Shift + O : Emoji selector (Auto-submit version) - Emoji
-+o::
-{
+; Shift+O freed (emoji selector unused). Helpers above kept for possible reuse.
+Editor_EmojiSelector_Unused(*) {
     try {
-        ; Remember current target window before showing GUI
         gEmojiTargetWin := WinGetID("A")
-        ; Create GUI for emoji selection with auto-submit
         emojiGui := Gui("+AlwaysOnTop +ToolWindow", "Emoji Selector")
         if (gEmojiTargetWin)
             emojiGui.Opt("+Owner" gEmojiTargetWin)
         emojiGui.SetFont("s10", "Segoe UI")
-
-        ; Add instruction text
         emojiGui.AddText("w350 Center",
             "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. ✅ Check`n5. ❓ Questions/Uncertain items`n6. ℹ️ Info/Notes`n7. 🟦 Blue`n8. 🟧 Orange`n`nType a number (1-8):"
         )
-
-        ; Add input field with auto-submit functionality
         emojiGui.AddEdit("w50 Center vEmojiInput Limit1 Number")
-
-        ; Add OK and Cancel buttons (as backup)
         emojiGui.AddButton("w80 xp-40 y+10", "OK").OnEvent("Click", SubmitEmoji)
         emojiGui.AddButton("w80 xp+90", "Cancel").OnEvent("Click", CancelEmoji)
-
-        ; Set up auto-submit on text change
         emojiGui["EmojiInput"].OnEvent("Change", AutoSubmitEmoji)
-
-        ; Show GUI and focus input
         emojiGui.Show("w350 h240")
         emojiGui["EmojiInput"].Focus()
-
     } catch Error as e {
         MsgBox "Error in emoji selector: " e.Message, "Emoji Selector Error", "IconX"
     }
@@ -1210,8 +1206,8 @@ ExecuteAIModelSelection(choice) {
     Send "^;"
 }
 
-; Shift + G : Fold all Git directories in Source Control (Cursor) - Git Fold
-+g:: FoldAllGitDirectoriesInCursor()
+; Shift+G freed (Git repos fold unused). Helper kept in hotif_scroll_ai.ahk.
+; +g:: FoldAllGitDirectoriesInCursor()
 
 ; Global variable for commit selector target window
 global gCommitTargetWin := 0
@@ -1296,10 +1292,9 @@ CancelCommit(ctrl, *) {
 ; Ctrl+, / Ctrl+Q : Fold/Unfold all directories — disabled (UIA breaks VS Code/Cursor).
 ; Functions kept in hotif_scroll_ai.ahk for possible reuse. Documented on cheat sheet only.
 
-; Alt + N : Review next file - Click the button that contains "Review next file" (Type 50020 Text)
-; Path from UIA tree: workbench.parts.editor -> editor-instance -> ... -> Group (anysphere-text-button) -> Text "Review next file"
-!n::
-{
+; Alt+N freed (review next file unused). Body kept for possible reuse.
+Editor_ReviewNextFile_Unused(*) {
+
     try {
         win := WinExist("A")
         if (!win) {
