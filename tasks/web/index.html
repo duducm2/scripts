@@ -2637,11 +2637,12 @@
           return data;
         }
 
-        async function refresh() {
+        async function refresh(opts = {}) {
           state.data = await api("/api/state");
           invalidateDataIndex();
           applyEnvDefaultFromState(state.data);
           render();
+          if (opts.focusNew) focusFirstNewImportTask();
         }
 
         function projectsFor(filt) {
@@ -3206,10 +3207,84 @@
           syncDocumentTitle();
         }
 
-        function countNewImportTasks() {
+        function listNewImportTasks() {
           return (state.data?.tasks || []).filter(
             (t) => t.active !== "0" && (t.import_batch || "").trim(),
-          ).length;
+          );
+        }
+
+        function countNewImportTasks() {
+          return listNewImportTasks().length;
+        }
+
+        // Newest IMP-… batch first; within a batch, pack order (sort_order / id).
+        function pickFirstNewImportTask() {
+          const news = listNewImportTasks();
+          if (!news.length) return null;
+          let bestBatch = "";
+          for (const t of news) {
+            const b = (t.import_batch || "").trim();
+            if (b > bestBatch) bestBatch = b;
+          }
+          const inBatch = news.filter(
+            (t) => (t.import_batch || "").trim() === bestBatch,
+          );
+          inBatch.sort(
+            (a, b) =>
+              Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+              String(a.id || "").localeCompare(String(b.id || "")),
+          );
+          return inBatch[0] || null;
+        }
+
+        // After import / page reload: jump to the first NEW task so it can be tracked.
+        function focusFirstNewImportTask() {
+          if (state.infoUi || state.inlineCreate) return false;
+          if (searchNeedle()) return false;
+          const t = pickFirstNewImportTask();
+          if (!t) return false;
+          const curId = selectedTaskId();
+          if (curId) {
+            const cur = taskRowById(curId);
+            if (cur && (cur.import_batch || "").trim()) return false;
+          }
+          if (state.projectFocusId) {
+            clearProjectFocus({
+              restoreFocus: false,
+              render: false,
+              selectScroll: false,
+            });
+          }
+          if (t.project_id) state.collapsedProjects.delete(t.project_id);
+          if (t.section_id) state.collapsedSections.delete(t.section_id);
+          else if (t.project_id)
+            state.collapsedSections.delete(`other:${t.project_id}`);
+          const clearedEmoji = state.emojiFilter != null;
+          if (clearedEmoji) state.emojiFilter = null;
+          const filt = (t.filter || "").trim();
+          let switchedFocus = false;
+          // Only leave the current column when a single-column focus would hide the task.
+          if (
+            (filt === "work" || filt === "personal" || filt === "habits") &&
+            state.sectionFocus &&
+            state.sectionFocus !== filt
+          ) {
+            applySectionFocus(filt, {
+              scrollHeader: true,
+              selectScroll: false,
+            });
+            switchedFocus = true;
+          }
+          if (!switchedFocus) {
+            if (clearedEmoji) applyEmojiFilter(null);
+            if (t.project_id) setProjectExpanded(t.project_id, true);
+            if (t.section_id) setSectionExpanded(t.section_id, true);
+            else if (t.project_id)
+              setSectionExpanded(`other:${t.project_id}`, true);
+          }
+          const sk = t.kind === "habitual" ? "habit" : "task";
+          flashAdded(sk, t.id);
+          return true;
         }
 
         function updateStatsLine() {
@@ -6857,7 +6932,7 @@
                 "/api/tasks/" + encodeURIComponent(id) + "/clear-import-batch",
                 { method: "POST", body: "{}" },
               );
-              await refresh();
+              await refresh({ focusNew: true });
               return;
             }
             if (act === "clear-all-new") {
@@ -7449,7 +7524,7 @@
               hideSearchBar();
           });
         }
-        refresh().catch((err) => {
+        refresh({ focusNew: true }).catch((err) => {
           const ftr = $("#ftrSub");
           if (ftr) ftr.textContent = err.message;
           toast(err.message);
