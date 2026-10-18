@@ -10,14 +10,23 @@ Collectible_DesktopPackPath() {
         return PackImport_NormalizeDesktopSource(path, "COLLECTIBLE_PACK.txt")
     newest := ""
     newestTime := 0
-    loop files A_Desktop . "\gemini-code*.txt", "F" {
-        text := Palace_ReadUtf8(A_LoopFileFullPath)
-        if (!InStr(text, "FILE: COLLECTIBLE", false))
-            continue
-        ts := Number(A_LoopFileTimeModified)
-        if (ts > newestTime) {
-            newestTime := ts
-            newest := A_LoopFileFullPath
+    dirs := []
+    try dirs := ClipAngelExport_DesktopSearchDirs()
+    catch {
+        dirs := []
+    }
+    if (!dirs.Length && DirExist(A_Desktop))
+        dirs := [A_Desktop]
+    for dir in dirs {
+        loop files dir . "\gemini-code*.txt", "F" {
+            text := Palace_ReadUtf8(A_LoopFileFullPath)
+            if (!InStr(text, "FILE: COLLECTIBLE", false))
+                continue
+            ts := Number(A_LoopFileTimeModified)
+            if (ts > newestTime) {
+                newestTime := ts
+                newest := A_LoopFileFullPath
+            }
         }
     }
     if (newest = "")
@@ -154,7 +163,8 @@ Collectible_SendPendingPrompt() {
     try {
         UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send")
     } catch {
-        Palace_Notify("Could not send the relic prompt to " . label . " — it is on the clipboard", 4000, BANNER_ACCENT_ERROR)
+        Palace_Notify("Could not send the relic prompt to " . label . " — it is on the clipboard", 4000,
+            BANNER_ACCENT_ERROR)
     }
     return true
 }

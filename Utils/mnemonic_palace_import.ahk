@@ -20,12 +20,21 @@ Palace_DesktopNewest(pattern) {
 Palace_DesktopNewestCsvOrTxt(baseName) {
     newest := ""
     newestTime := 0
-    for ext in ["csv", "txt"] {
-        loop files A_Desktop . "\" . baseName . "*." . ext, "F" {
-            ts := Number(A_LoopFileTimeModified)
-            if (ts > newestTime) {
-                newestTime := ts
-                newest := A_LoopFileFullPath
+    dirs := []
+    try dirs := ClipAngelExport_DesktopSearchDirs()
+    catch {
+        dirs := []
+    }
+    if (!dirs.Length && DirExist(A_Desktop))
+        dirs := [A_Desktop]
+    for dir in dirs {
+        for ext in ["csv", "txt"] {
+            loop files dir . "\" . baseName . "*." . ext, "F" {
+                ts := Number(A_LoopFileTimeModified)
+                if (ts > newestTime) {
+                    newestTime := ts
+                    newest := A_LoopFileFullPath
+                }
             }
         }
     }

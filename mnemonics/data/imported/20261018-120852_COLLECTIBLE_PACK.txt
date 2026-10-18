@@ -1,0 +1,19 @@
+﻿===FILE: COLLECTIBLE.json===
+
+{
+
+  "palace_id": "PALACE_DATAANALYST_23",
+
+  "slot": "trophy",
+
+  "name": "Pipeline Keystone Badge",
+
+  "blurb": "Forged for master builders who anchor robust distributed pipelines and turn chaotic data flow into foundational infrastructure.",
+
+  "anim": "float",
+
+  "anchor": "pedestal"
+
+}
+
+===END_FILE===

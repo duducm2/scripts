@@ -72,8 +72,9 @@ TROPHY_IMAGE_MAX = 512
 
 _FENCE = "```"
 _TRAILING_COMMA = re.compile(r",(\s*[}\]])")
+# ===FILE: / ---FILE: / =FILE: COLLECTIBLE.json= … matching END_FILE
 _FILE_BLOCK = re.compile(
-    r"(?:===|---)FILE:\s*COLLECTIBLE\.json\s*(?:===|---)\s*(.*?)\s*(?:===|---)END_FILE(?:===|---)",
+    r"(?:={1,3}|-{3})FILE:\s*COLLECTIBLE\.json\s*(?:={1,3}|-{3})\s*(.*?)\s*(?:={1,3}|-{3})END_FILE(?:={1,3}|-{3})",
     re.IGNORECASE | re.DOTALL,
 )
 _UNSAFE_BLOCK = re.compile(

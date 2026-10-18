@@ -316,18 +316,59 @@ ImportMgmt_ClipboardPackMatches(body, fileName) {
     return fileName != "" && body != "" && ClipAngelExport_LooksLikePack(body)
 }
 
-; Write a matching clipboard pack to the canonical Desktop name. False leaves the Desktop file untouched.
-ImportMgmt_TryPlaceClipboardPack(fileName) {
+; True when Desktop already has this pack (exact name or baseName*.txt|.csv) on search dirs.
+ImportMgmt_DesktopPackAvailable(fileName) {
     if (fileName = "")
         return false
+    try {
+        if (ClipAngelExport_SameNameDesktopPaths(fileName).Length)
+            return true
+    } catch {
+    }
+    baseName := fileName
+    if (RegExMatch(baseName, "i)\.(txt|csv)$"))
+        baseName := RegExReplace(baseName, "i)\.(txt|csv)$", "")
+    if (baseName = "")
+        return false
+    dirs := []
+    try dirs := ClipAngelExport_DesktopSearchDirs()
+    catch {
+        dirs := []
+    }
+    if (!dirs.Length && DirExist(A_Desktop))
+        dirs := [A_Desktop]
+    for dir in dirs {
+        for ext in ["csv", "txt"] {
+            loop files dir . "\" . baseName . "*." . ext, "F"
+                return true
+        }
+    }
+    return false
+}
+
+; Write a matching clipboard pack to the canonical Desktop name.
+; True = written. On false, reasonOut explains why (empty / not a pack / write failed).
+ImportMgmt_TryPlaceClipboardPack(fileName, &reasonOut := "") {
+    reasonOut := ""
+    if (fileName = "") {
+        reasonOut := "No pack file name"
+        return false
+    }
     errMsg := ""
     body := ""
     try body := ClipAngelExport_ClipboardAsPackText(&errMsg)
     catch {
+        reasonOut := "Clipboard unavailable"
         return false
     }
-    if (!ImportMgmt_ClipboardPackMatches(body, fileName))
+    if (body = "") {
+        reasonOut := (errMsg != "") ? errMsg : "Clipboard empty"
         return false
+    }
+    if (!ImportMgmt_ClipboardPackMatches(body, fileName)) {
+        reasonOut := "Clipboard is not a pack"
+        return false
+    }
     desktopPath := ""
     try desktopPath := AiQuickDownload_ResolveDesktopPath()
     catch {
@@ -335,23 +376,31 @@ ImportMgmt_TryPlaceClipboardPack(fileName) {
     }
     if (desktopPath = "" || !DirExist(desktopPath))
         desktopPath := A_Desktop
-    if (desktopPath = "" || !DirExist(desktopPath))
+    if (desktopPath = "" || !DirExist(desktopPath)) {
+        reasonOut := "Desktop folder not found"
         return false
+    }
     matches := ClipAngelExport_SameNameDesktopPaths(fileName)
     outPath := (matches.Length = 1) ? matches[1] : (desktopPath . "\" . fileName)
     try ClipAngelExport_OverwriteUtf8(outPath, body)
     catch {
+        reasonOut := "Could not write pack to Desktop"
         return false
     }
-    if !FileExist(outPath)
+    if !FileExist(outPath) {
+        reasonOut := "Could not write pack to Desktop"
         return false
+    }
     try outPath := ClipAngelExport_PlaceCanonicalPack(outPath, fileName)
     catch {
     }
     try ImportWatcher_ClaimPath(outPath)
     catch {
     }
-    return FileExist(outPath)
+    if (FileExist(outPath))
+        return true
+    reasonOut := "Could not write pack to Desktop"
+    return false
 }
 
 ; Clipboard image → next PALACE_QUICK_IMAGE*.png. False keeps the current Desktop image.
@@ -378,11 +427,25 @@ ImportMgmt_TryPlaceClipboardImage() {
     return ok && FileExist(dest)
 }
 
-; Place clipboard content when it is this record's output, then run the Desktop importer either way.
+; Place clipboard pack when present, else use existing Desktop file; toast if neither is available.
 ; The hub closes after the attempt, whether the import saved, failed, or the confirm was cancelled.
 ImportMgmt_RunPreferClipboard(fileName, runFn) {
-    try ImportMgmt_TryPlaceClipboardPack(fileName)
+    placed := false
+    placeReason := ""
+    try placed := ImportMgmt_TryPlaceClipboardPack(fileName, &placeReason)
     catch {
+        placed := false
+        if (placeReason = "")
+            placeReason := "Clipboard pack place failed"
+    }
+    if (!placed && !ImportMgmt_DesktopPackAvailable(fileName)) {
+        msg := (placeReason != "") ? placeReason : "Clipboard empty"
+        try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", msg)
+        }
+        ImportMgmt_CloseIfOpen()
+        return false
     }
     result := false
     try result := runFn.Call()

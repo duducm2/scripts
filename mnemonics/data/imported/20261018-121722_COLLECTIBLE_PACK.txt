@@ -1,0 +1,12 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_DATAANALYST_24",
+"slot": "trophy",
+"name": "The Shielded Hermit’s ACID View Shadow Puppet",
+"blurb": "This articulated shadow puppet honors the resilient data views of this palace, featuring a hermit crab sheltered by a protective transactional shield to ensure the ACID properties remain unbroken.",
+"anim": "sway",
+"anchor": "pedestal"
+}
+=END_FILE=
+=END_FILE=

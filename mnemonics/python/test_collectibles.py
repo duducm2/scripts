@@ -74,6 +74,28 @@ def test_trailing_comma_and_script_are_repaired() -> None:
     assert "<svg" in item["svg"].lower()
 
 
+def test_single_equals_file_markers_are_accepted() -> None:
+    payload = {
+        "palace_id": PALACE,
+        "slot": "trophy",
+        "name": "ACID View Shadow Puppet",
+        "blurb": "Hermit crab under a transactional shield.",
+        "anim": "sway",
+        "anchor": "pedestal",
+    }
+    raw = (
+        "=FILE: COLLECTIBLE_PACK.txt=\n"
+        "=FILE: COLLECTIBLE.json=\n"
+        + json.dumps(payload)
+        + "\n=END_FILE=\n=END_FILE=\n"
+    )
+    item, _notes, error = repair_item(raw, {PALACE}, check_art=False)
+    assert error == ""
+    assert item is not None
+    assert item["name"] == "ACID View Shadow Puppet"
+    assert item["anim"] == "sway"
+
+
 def test_missing_picture_is_an_error(tmp_path: Path) -> None:
     _library(tmp_path)
     result = import_text(

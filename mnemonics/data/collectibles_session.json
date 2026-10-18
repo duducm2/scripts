@@ -1,32 +1,6 @@
 {
   "items": [
     {
-      "id": "col_43a6e0acc270",
-      "palace_id": "PALACE_DATAANALYST_19",
-      "slot": "trophy",
-      "name": "Foundry of Databricks",
-      "blurb": "A handcrafted stop-motion puppet trophy representing the unified Delta triangle and Spark lightning of Databricks.",
-      "svg": "",
-      "image": "/assets/trophies/col_43a6e0acc270.png",
-      "anim": "bob",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-11T18:25:05Z"
-    },
-    {
-      "id": "col_7c529a1a057c",
-      "palace_id": "PALACE_DATAANALYST_01",
-      "slot": "trophy",
-      "name": "Foundations of Analysis and Science Seal",
-      "blurb": "This wax seal honors the dual mastery of analytical reporting and predictive data science foundations.",
-      "svg": "",
-      "image": "/assets/trophies/col_7c529a1a057c.png",
-      "anim": "float",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-11T18:36:17Z"
-    },
-    {
       "id": "col_f3ed3b264df5",
       "palace_id": "PALACE_PIANO_11",
       "slot": "trophy",
@@ -145,7 +119,6 @@
     },
     {
       "id": "col_e4db091e9346",
-      "created_at": "2026-10-13T14:37:04Z",
       "palace_id": "PALACE_DATAANALYST_21",
       "slot": "trophy",
       "name": "Unity Namespace Reliquary",
@@ -153,6 +126,33 @@
       "svg": "",
       "image": "/assets/trophies/col_e4db091e9346.png",
       "anim": "float",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-13T14:37:04Z"
+    },
+    {
+      "id": "col_6739252b3a01",
+      "palace_id": "PALACE_DATAANALYST_23",
+      "slot": "trophy",
+      "name": "Pipeline Keystone Badge",
+      "blurb": "Forged for master builders who anchor robust distributed pipelines and turn chaotic data flow into foundational infrastructure.",
+      "svg": "",
+      "image": "/assets/trophies/col_6739252b3a01.png",
+      "anim": "float",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-18T15:08:52Z"
+    },
+    {
+      "id": "col_45281f2a0f13",
+      "created_at": "2026-10-18T15:17:22Z",
+      "palace_id": "PALACE_DATAANALYST_24",
+      "slot": "trophy",
+      "name": "The Shielded Hermit’s ACID View Shadow Puppet",
+      "blurb": "This articulated shadow puppet honors the resilient data views of this palace, featuring a hermit crab sheltered by a protective transactional shield to ensure the ACID properties remain unbroken.",
+      "svg": "",
+      "image": "/assets/trophies/col_45281f2a0f13.png",
+      "anim": "sway",
       "anchor": "pedestal",
       "equipped": true
     }

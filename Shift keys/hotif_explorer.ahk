@@ -910,11 +910,14 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
 
 Explorer_ResolveAntigravityExe() {
     ; Personal install path (user-confirmed). Work PC has no Antigravity.
-    candidate := A_LocalAppData "\Programs\antigravity\Antigravity.exe"
+    localAppData := EnvGet("LOCALAPPDATA")
+    if (localAppData = "")
+        return ""
+    candidate := localAppData "\Programs\antigravity\Antigravity.exe"
     if FileExist(candidate)
         return candidate
     ; Legacy / alternate install folder name after product rename.
-    candidate := A_LocalAppData "\Programs\Antigravity IDE\Antigravity IDE.exe"
+    candidate := localAppData "\Programs\Antigravity IDE\Antigravity IDE.exe"
     if FileExist(candidate)
         return candidate
     return ""
@@ -989,7 +992,8 @@ Explorer_OpenFolderInAntigravity() {
 
     StandardLoadingBar_Show("⏳ Opening in Antigravity...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     try {
-        Run('"' exe '" "' folder '"')
+        ; --new-window: always spawn another window (default reuses the single instance).
+        Run('"' exe '" --new-window "' folder '"')
         StandardLoadingBar_Update("✅ Opened in Antigravity", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(500)
     } catch as e {

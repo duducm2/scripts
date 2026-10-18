@@ -42,7 +42,7 @@ Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóvei
 
 🔲 I took one month of iFood coupons that will probably finish October 24th
 
-⚡ Comprar vermífugo para todos nós.
+⏳ Comprar vermífugo para todos nós.
 ℹ️ **Filhotes de cachorro podem começar a tomar vermífago a partir de 2 semanas de vida (15 dias).** Como a sua pastora alemã já tem **cerca de 75 dias (aproximadamente 2 meses e meio)**, ela já está em idade perfeitamente adequada — e é essencial que o protocolo de vermifugação esteja em dia.
 
 ---
@@ -242,7 +242,7 @@ Comprimento do Dorso (para modelos X-Back): Da cernelha (base do pescoço) até 
 
 Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou GG em exemplares de estrutura mais larga). Sempre consulte a tabela de medidas do fabricante antes da compra.
 
-⚡ By vitamins to moka
+⏳ By vitamins to moka
 
 ⏳ Cartão de vacina
 ℹ️ IMG_20261010_125211.jpg

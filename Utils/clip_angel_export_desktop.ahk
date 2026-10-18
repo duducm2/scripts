@@ -1135,11 +1135,18 @@ ClipAngelExport_MdFence() {
     return bt . bt . bt
 }
 
-; True when text is a pack body the importers accept (===FILE: / ===PREVIEW=== or --- variants).
+; True when text is a pack body the importers accept.
+; Canonical: ===FILE: / ===PREVIEW=== or --- variants. Also =FILE: name= / =END_FILE= (single =).
 ClipAngelExport_LooksLikePack(text) {
     lower := StrLower(text)
-    return InStr(lower, "===file:") || InStr(lower, "---file:")
-    || InStr(lower, "===preview===") || InStr(lower, "---preview---")
+    if (InStr(lower, "===file:") || InStr(lower, "---file:")
+    || InStr(lower, "===preview===") || InStr(lower, "---preview---"))
+        return true
+    ; Line-start single-equals markers (AI sometimes emits =FILE: …= … =END_FILE=)
+    if (RegExMatch(lower, "m)^\s*=file:\s*") || RegExMatch(lower, "m)^\s*=preview\s*=")
+    || RegExMatch(lower, "m)^\s*=end_file\s*="))
+        return true
+    return false
 }
 
 ; Drop a leading ```lang line and a closing fence. text is already newline-normalized.
