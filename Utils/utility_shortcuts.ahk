@@ -204,9 +204,11 @@ MacroStudyLink_OpenFavorite(*) {
 RegisterMacro(MacroStudyLink_SetVideo, "📹 Set video from clipboard", "1")
 RegisterMacro(MacroStudyLink_SetArticle, "📖 Set article from clipboard", "2")
 RegisterMacro(MacroStudyLink_SetFavorite, "❤️ Set favorite from clipboard", "3")
+RegisterMacro(PinnedQuickLink_SetFromClipboardOrInput, "📌 Set pinned link (clipboard / edit / clear)", "4")
 RegisterMacro(MacroStudyLink_OpenVideo, "📹 Open video", "v")
 RegisterMacro(MacroStudyLink_OpenArticle, "📖 Open article", "a")
 RegisterMacro(MacroStudyLink_OpenFavorite, "❤️ Open favorite", "f")
+RegisterMacro(PinnedQuickLink_Open, "📌 Open pinned link", "o")
 
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
 ; After pick: [Y] paste+Enter, [N] paste only, [Esc] abort, 3s timeout = paste only.

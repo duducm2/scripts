@@ -100,6 +100,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\prompt_strip_reminders.ahk
 ; [Utils module] Files and links quick-open (InitQuickOpenFiles) -> Utils\files_links.ahk
 #include %A_ScriptDir%\Utils\files_links.ahk
+; [Utils module] Pinned quick-open link (Macros [o]/[4]) -> Utils\pinned_quick_link.ahk
+#include %A_ScriptDir%\Utils\pinned_quick_link.ahk
 ; [Utils module] Macros system RegisterMacro and assignments -> Utils\macros_system.ahk
 #include %A_ScriptDir%\Utils\macros_system.ahk
 ; [Utils module] Clip Angel SQLite read helper (ClipAngelDb.exe) -> Utils\clip_angel_db.ahk
