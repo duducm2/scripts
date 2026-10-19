@@ -1,5 +1,4 @@
 id,project_id,title,sort_order,status
-SEC_0002,PROJ_0002,General,0,
 SEC_0003,PROJ_0003,General,0,
 SEC_0005,PROJ_0005,General,0,
 SEC_0006,PROJ_0006,General,0,
@@ -27,7 +26,6 @@ SEC_0091,PROJ_0021,Medication Monitoring (Fluvoxamina),10,
 SEC_0092,PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",10,
 SEC_0093,PROJ_0023,Notes from Your Records (Prior Vaccines),10,
 SEC_0126,PROJ_0059,General,0,
-SEC_0128,PROJ_0025,General,0,
 SEC_0129,PROJ_0026,General,0,
 SEC_0131,PROJ_0027,General,0,
 SEC_0132,PROJ_0027,Alumni Unicamp,10,
@@ -50,9 +48,10 @@ SEC_0156,PROJ_0035,Files and Links,90,waiting
 SEC_0157,PROJ_0035,Meetings,110,waiting
 SEC_0159,PROJ_0037,General,0,
 SEC_0160,PROJ_0037,Links,10,waiting
-SEC_0161,PROJ_0036,UX AI Platform BISB,20,
-SEC_0162,PROJ_0036,Meeetings,30,
+SEC_0161,PROJ_0036,UX AI Platform BISB,20,waiting
+SEC_0162,PROJ_0036,Meeetings,30,waiting
 SEC_0165,PROJ_0035,Phase 2: Understand context of use,20,
 SEC_0166,PROJ_0035,Phase 3: Synthesize Insights,40,waiting
 SEC_0167,PROJ_0035,Phase 4: Ideate & Realize,50,waiting
 SEC_0168,PROJ_0035,Phase 5: Test & Gather Feedback,60,waiting
+SEC_0169,PROJ_0038,General,0,
