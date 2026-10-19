@@ -442,7 +442,6 @@ INFO_0383,task,TASK_0470,Nota,Não libera para todo mundo. Ainda não vamos libe
 INFO_0384,task,TASK_0470,Nota,O radar de Leeds entra antes da plataforma que a BISB está construindo para adquirir os Leeds.,ℹ️,,4620,2026-10-14 17:35:51,,
 INFO_0385,task,TASK_0470,Nota,BISBI já está trabalhando. Então temos que entender o fluxo de trabalho,ℹ️,,4630,2026-10-14 17:35:51,,
 INFO_0386,task,TASK_0470,Nota,"Amanda mandará uma mensagem pro Mark e compartilhar comigo, também. Tem disponibilidade hj às 16 horas. Entrar como ouvinte e entender. Para conectar tudo.",ℹ️,,4640,2026-10-14 17:35:51,,
-INFO_0397,task,TASK_0474,https://www.smartrecruiters.com/app/employee-portal/58652035e4b04016904de9fe/jobs/d5f3d3f5-7531-4745-8872-65336c5c1a14,,ℹ️,,10,2026-10-16 09:16:01,,
 INFO_0398,task,TASK_0478,"Quando a gente se inscreve no BTC, é algo fácil, mas eles tem um processo gigantesco Ela deu essa introdução. A Dé questionou sobre como são estes dados. Ela agendou para mostrar como é a dinâmica desta. 27.10.",,ℹ️,,10,2026-10-16 09:34:31,,
 INFO_0415,task,TASK_0488,Notes,"Alinhamento inicial com os responsáveis pelo projeto para compreender o contexto atual da ferramenta, principais grupos de usuários envolvidos e expectativas de negócio.",ℹ️,,4810,2026-10-16 12:11:37,,
 INFO_0416,task,TASK_0489,Notes,"Explorar a aplicação como ela existe hoje, entendendo funcionalidades, áreas, tipos de informação, permissões e principais fluxos",ℹ️,,4820,2026-10-16 12:11:37,,
@@ -476,3 +475,4 @@ INFO_0449,task,TASK_0515,Objetivo da mudança,"O e-mail não deve ir direto para
 INFO_0451,task,TASK_0517,Contexto das plataformas,Diferenciar UX SUPER (Geração de Leads) de UX AI PLATFORM (Gestão de Projetos). O ROI e o Agente de KPI devem atuar na plataforma.,ℹ️,,5160,2026-10-19 09:22:38,,
 INFO_0452,task,TASK_0518,Idioma do convite,Identificar a região automaticamente para que o convite seja gerado nativamente em português (ou no idioma local apropriado).,ℹ️,,5170,2026-10-19 09:22:38,,
 INFO_0453,task,TASK_0519,Refatoração do texto,"Melhorar a redação atual do convite, que no momento é apenas uma tradução direta.",ℹ️,,5180,2026-10-19 09:22:38,,
+INFO_0454,task,TASK_0486,"Por mim esta ok, vou ver se tudo bem a gente mandar pra todos os cluster leader a survey",,ℹ️,,10,2026-10-19 11:31:33,,
