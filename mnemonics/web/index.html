@@ -5230,12 +5230,12 @@
       }
       function editAtom(a, beastId) {
         const concept = prompt(
-          "Concept ([Name] [definition group] […]; 3–6 groups)",
+          "Concept ([I use {Name} to {verb}] […]; 4–5 groups)",
           a?.concept || "",
         );
         if (concept == null) return;
         const keywordsRaw = prompt(
-          "Keywords (exactly 1 pair per [group], 3–6 total; Keyword | Word || …)",
+          "Keywords (5–6 pairs: name + infinitive from group 1, then 1 single word per later group; Keyword | Word || …)",
           a?.keywords || "",
         );
         if (keywordsRaw == null) return;

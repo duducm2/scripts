@@ -59,10 +59,14 @@ ATOMS_HEADERS = [
     "sort_order",
 ]
 
-# Legacy read cap. New or rewritten atoms use 3–6 bracket groups, one keyword each.
+# Legacy read cap. New atoms: 5–6 keyword pairs. Group 1 yields name + verb;
+# each later group yields one pair. RecognizableWord after the name is one word.
 ATOM_KEYWORDS_MAX_PAIRS = 10
-ATOM_KEYWORDS_MIN_NEW = 3
+ATOM_KEYWORDS_MIN_NEW = 5
 ATOM_KEYWORDS_MAX_NEW = 6
+# pairs = groups + 1 (extra pair for the infinitive in group 1)
+ATOM_CONCEPT_MIN_GROUPS = ATOM_KEYWORDS_MIN_NEW - 1
+ATOM_CONCEPT_MAX_GROUPS = ATOM_KEYWORDS_MAX_NEW - 1
 
 
 _CONCEPT_NOTE_SEPS = (" — Note:", " – Note:", " - Note:")
@@ -175,15 +179,9 @@ def _term_in_group(group: str, term: str) -> bool:
     return term.casefold() in group.casefold()
 
 
-def _pairs_match_groups_one_to_one(
-    groups: list[str], pairs: list[tuple[str, str]]
-) -> bool:
-    """Exactly one pair per group; RecognizableWord must appear in that group."""
-    if len(groups) != len(pairs):
-        return False
-    return all(
-        _term_in_group(group, right) for group, (_left, right) in zip(groups, pairs)
-    )
+def _is_single_word(term: str) -> bool:
+    """RecognizableWord after the formal name must be one concrete token."""
+    return bool(term) and not re.search(r"\s", term)
 
 
 def _opening_clause_ok(group: str) -> bool:
@@ -194,37 +192,81 @@ def _opening_clause_ok(group: str) -> bool:
     return re.fullmatch(r"I use .+ to \S.*", text) is not None
 
 
+def _opening_infinitive(group: str) -> str | None:
+    """Bare infinitive after `to` in `I use {name} to {verb}`."""
+    match = re.match(r"^I use .+ to (\S+)", (group or "").strip())
+    return match.group(1) if match else None
+
+
+def _pairs_match_groups(
+    groups: list[str], pairs: list[tuple[str, str]], verb: str
+) -> str | None:
+    """Group 1 → name pair + verb pair; each later group → one single-word pair."""
+    if len(pairs) != len(groups) + 1:
+        return (
+            "group 1 needs two keyword pairs (formal name, then infinitive verb); "
+            "each later group needs exactly one pair"
+        )
+    name_right = pairs[0][1]
+    verb_right = pairs[1][1]
+    if not _term_in_group(groups[0], name_right):
+        return (
+            "pair 1 RecognizableWord (formal name) must appear in the opening "
+            "bracket group"
+        )
+    if verb_right.casefold() != verb.casefold():
+        return (
+            "pair 2 RecognizableWord must be the bare infinitive after `to` "
+            f"in the opening group (expected `{verb}`)"
+        )
+    if not _is_single_word(verb_right):
+        return "the infinitive keyword RecognizableWord must be a single word"
+    for index, (( _left, right), group) in enumerate(
+        zip(pairs[2:], groups[1:], strict=True), start=3
+    ):
+        if not _is_single_word(right):
+            return (
+                f"keyword pair {index} RecognizableWord must be a single concrete "
+                "word (not a multi-word phrase)"
+            )
+        if not _term_in_group(group, right):
+            return (
+                "each keyword RecognizableWord must appear in its matching "
+                "bracket group in left-to-right source order"
+            )
+    return None
+
+
 def validate_atom_mnemonics(concept: str | None, keywords: str | None) -> str | None:
-    """Validate the two-part sentence contract for a new or rewritten atom."""
+    """Validate the keyword-sentence contract for a new or rewritten atom."""
     groups = concept_bracket_groups(concept)
     if groups is None:
         return (
             "concept core must contain only square-bracket groups followed by an "
             "optional unbracketed ` — Note:`"
         )
-    if not (ATOM_KEYWORDS_MIN_NEW <= len(groups) <= ATOM_KEYWORDS_MAX_NEW):
+    if not (ATOM_CONCEPT_MIN_GROUPS <= len(groups) <= ATOM_CONCEPT_MAX_GROUPS):
         return (
-            f"concept must contain {ATOM_KEYWORDS_MIN_NEW}–{ATOM_KEYWORDS_MAX_NEW} "
-            "bracket groups so the atom has at least "
-            f"{ATOM_KEYWORDS_MIN_NEW} keywords, one pair per group "
-            "([I use {Name} to {verb}] [continuation] [continuation])"
+            f"concept must contain {ATOM_CONCEPT_MIN_GROUPS}–"
+            f"{ATOM_CONCEPT_MAX_GROUPS} bracket groups so the atom has "
+            f"{ATOM_KEYWORDS_MIN_NEW}–{ATOM_KEYWORDS_MAX_NEW} keywords "
+            "(opening name+verb, then one concrete word per later group)"
         )
     if not _opening_clause_ok(groups[0]):
         return "concept opening must be `I use … to …` without a closing period"
+    verb = _opening_infinitive(groups[0])
+    if not verb:
+        return "concept opening must end with a bare infinitive after `to`"
 
     pairs, error = _strict_keyword_pairs(keywords)
     if error:
         return error
-    if len(pairs) < ATOM_KEYWORDS_MIN_NEW:
-        return f"keywords must contain at least {ATOM_KEYWORDS_MIN_NEW} pairs"
-    if len(pairs) != len(groups):
-        return "exactly one keyword pair is required per concept bracket group"
-    if not _pairs_match_groups_one_to_one(groups, pairs):
+    if not (ATOM_KEYWORDS_MIN_NEW <= len(pairs) <= ATOM_KEYWORDS_MAX_NEW):
         return (
-            "each keyword RecognizableWord must appear in its matching bracket group "
-            "in left-to-right source order"
+            f"keywords must contain {ATOM_KEYWORDS_MIN_NEW}–"
+            f"{ATOM_KEYWORDS_MAX_NEW} pairs"
         )
-    return None
+    return _pairs_match_groups(groups, pairs, verb)
 
 
 def iter_keyword_pairs(raw: str | None) -> list[tuple[str, str]]:

@@ -419,15 +419,17 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         out["error"] := "concept core must contain complete square-bracket groups"
         return out
     }
-    if (groups.Length < 3 || groups.Length > 6) {
-        out["error"] := "concept must contain 3–6 bracket groups so the atom has at least 3 keywords, one pair per group ([I use {Name} to {verb}] [continuation] [continuation])"
+    ; 4–5 groups → 5–6 keyword pairs (group 1 yields name + infinitive).
+    if (groups.Length < 4 || groups.Length > 5) {
+        out["error"] := "concept must contain 4–5 bracket groups so the atom has 5–6 keywords (opening name+verb, then one concrete word per later group)"
         return out
     }
     opening := groups[1]
-    if (SubStr(opening, -1) = "." || !RegExMatch(opening, "^I use .+ to \S")) {
+    if (SubStr(opening, -1) = "." || !RegExMatch(opening, "^I use .+ to (\S+)", &verbMatch)) {
         out["error"] := "concept opening must be ``I use … to …`` without a closing period"
         return out
     }
+    verb := verbMatch[1]
 
     text := Trim(String(keywords))
     if (text = "") {
@@ -451,31 +453,43 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         }
         pairs.Push(Map("left", left, "right", right))
     }
-    if (pairs.Length < 3) {
-        out["error"] := "keywords must contain at least 3 pairs"
+    if (pairs.Length < 5 || pairs.Length > 6) {
+        out["error"] := "keywords must contain 5–6 pairs"
         return out
     }
-    if (pairs.Length != groups.Length) {
-        out["error"] := "exactly one keyword pair is required per concept bracket group"
+    if (pairs.Length != groups.Length + 1) {
+        out["error"] := "group 1 needs two keyword pairs (formal name, then infinitive verb); each later group needs exactly one pair"
         return out
     }
-    if (!Palace_KeywordGroupsMatch(groups, pairs)) {
-        out["error"] := "each keyword RecognizableWord must appear in its matching bracket group in source order"
+    if (!InStr(groups[1], pairs[1]["right"], false)) {
+        out["error"] := "pair 1 RecognizableWord (formal name) must appear in the opening bracket group"
         return out
+    }
+    if (StrLower(pairs[2]["right"]) != StrLower(verb)) {
+        out["error"] := "pair 2 RecognizableWord must be the bare infinitive after ``to`` in the opening group (expected ``" . verb . "``)"
+        return out
+    }
+    if (RegExMatch(pairs[2]["right"], "\s")) {
+        out["error"] := "the infinitive keyword RecognizableWord must be a single word"
+        return out
+    }
+    gi := 2
+    pi := 3
+    while (gi <= groups.Length) {
+        term := pairs[pi]["right"]
+        if (RegExMatch(term, "\s")) {
+            out["error"] := "keyword pair " . pi . " RecognizableWord must be a single concrete word (not a multi-word phrase)"
+            return out
+        }
+        if (!InStr(groups[gi], term, false)) {
+            out["error"] := "each keyword RecognizableWord must appear in its matching bracket group in source order"
+            return out
+        }
+        gi += 1
+        pi += 1
     }
     out["ok"] := true
     return out
-}
-
-Palace_KeywordGroupsMatch(groups, pairs) {
-    if (groups.Length != pairs.Length)
-        return false
-    for i, group in groups {
-        term := pairs[i]["right"]
-        if (!InStr(group, term, false))
-            return false
-    }
-    return true
 }
 
 Palace_ReadCsvFromText(text, strict := false, skipNotes := 0) {
