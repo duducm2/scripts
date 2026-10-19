@@ -1109,7 +1109,8 @@ FileDialog_CaptureOpenPath(root) {
     return folder "\" name
 }
 
-; Bypass PQ UI entirely: open delimited CSV via Excel COM (UTF-8).
+; Bypass PQ UI: import into the *current* workbook/sheet (no new Excel window), then Table.
+; Single-column CSVs (no commas) often open as PQ binary File.Contents — this path handles them.
 FileDialog_ImportCsvViaCom(path) {
     if (path = "" || !FileExist(path))
         return false
@@ -1118,25 +1119,82 @@ FileDialog_ImportCsvViaCom(path) {
     } catch {
         return false
     }
-    try {
-        ; Origin 65001=UTF-8, DataType 1=xlDelimited, TextQualifier 1=double quote, Comma=true
-        xl.Workbooks.OpenText(path, 65001, 1, 1, 1, false, false, false, true)
-        return true
-    } catch {
+    try xl.Visible := true
+    catch {
     }
-    ; Fallback: QueryTables into active sheet.
+    try xl.DisplayAlerts := false
+    catch {
+    }
+
+    ws := 0
     try {
+        if !xl.ActiveWorkbook
+            xl.Workbooks.Add()
         ws := xl.ActiveSheet
-        dest := ws.Range("A1")
-        qt := ws.QueryTables.Add("TEXT;" path, dest)
-        qt.TextFileParseType := 1
+    } catch {
+        ws := 0
+    }
+    if !ws
+        return false
+
+    ; Prefer QueryTables into the active sheet (same window the user already has).
+    try {
+        try {
+            while (ws.QueryTables.Count > 0)
+                ws.QueryTables(1).Delete()
+        } catch {
+        }
+        try {
+            while (ws.ListObjects.Count > 0)
+                ws.ListObjects(1).Delete()
+        } catch {
+        }
+        try ws.Cells.Clear()
+        catch {
+        }
+        qt := ws.QueryTables.Add("TEXT;" path, ws.Range("A1"))
+        qt.TextFileParseType := 1  ; xlDelimited
         qt.TextFileCommaDelimiter := true
-        try qt.TextFilePlatform := 65001
+        ; Also treat tab/semicolon so odd single-column exports still land in col A.
+        try qt.TextFileTabDelimiter := false
+        catch {
+        }
+        try qt.TextFileSemicolonDelimiter := false
+        catch {
+        }
+        try qt.TextFilePlatform := 65001  ; UTF-8
         catch {
         }
         qt.Refresh(false)
+        try qt.Delete()  ; leave values only; formatting creates a real Table next
+        catch {
+        }
+        Excel_EnsureImportedListObject(ws)
+        try WinActivate("ahk_exe EXCEL.EXE")
+        catch {
+        }
+        try xl.DisplayAlerts := true
+        catch {
+        }
         return true
     } catch {
+    }
+
+    ; Fallback: OpenText (new workbook) — still convert to Table afterward.
+    try {
+        xl.Workbooks.OpenText(path, 65001, 1, 1, 1, false, false, false, true)
+        Excel_EnsureImportedListObject(xl.ActiveSheet)
+        try WinActivate("ahk_exe EXCEL.EXE")
+        catch {
+        }
+        try xl.DisplayAlerts := true
+        catch {
+        }
+        return true
+    } catch {
+    }
+    try xl.DisplayAlerts := true
+    catch {
     }
     return false
 }
@@ -1447,6 +1505,8 @@ FileDialog_ImportCsvLoad() {
         catch {
         }
         Sleep 300
+        ; COM recovery / odd CSVs may leave a plain range — promote to Table first.
+        Excel_EnsureImportedListObject()
         ; Promote Column1/Column2/… → real header row (no-op if already real names)
         Excel_PromoteGenericHeaders()
         ; Autofit, cap widths >20 → 20, wrap text, center H/V

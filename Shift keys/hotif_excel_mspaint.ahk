@@ -812,6 +812,48 @@ Excel_Layout_CyclePillar() {
     return true
 }
 
+; Ensure UsedRange is an Excel Table (ListObject). Load/PQ does this; COM OpenText does not.
+Excel_EnsureImportedListObject(ws := 0) {
+    try {
+        if !ws {
+            xl := ComObjActive("Excel.Application")
+            ws := xl.ActiveSheet
+        }
+    } catch {
+        return false
+    }
+    try {
+        loCount := 0
+        try loCount := ws.ListObjects.Count
+        catch {
+        }
+        if (loCount >= 1)
+            return true
+        ur := 0
+        try ur := ws.UsedRange
+        catch {
+            return false
+        }
+        if !ur
+            return false
+        rows := 0
+        cols := 0
+        try rows := ur.Rows.Count
+        catch {
+        }
+        try cols := ur.Columns.Count
+        catch {
+        }
+        if (rows < 1 || cols < 1)
+            return false
+        ; SourceType xlSrcRange=1, HasHeaders xlYes=1
+        ws.ListObjects.Add(1, ur, , 1)
+        return true
+    } catch {
+        return false
+    }
+}
+
 ; After CSV Load: autofit, cap widths >20 → 20, wrap text, center H/V on imported table.
 ; Soft no-op on COM failure so a successful import is not undone.
 Excel_FormatImportedTable(maxWidth := 20) {
@@ -822,6 +864,7 @@ Excel_FormatImportedTable(maxWidth := 20) {
         return
     }
     try {
+        Excel_EnsureImportedListObject(ws)
         tableRange := 0
         loCount := 0
         try loCount := ws.ListObjects.Count
@@ -867,6 +910,7 @@ Excel_ShadeOutsideImportedTable(color := 0x505050) {
         return
     }
     try {
+        Excel_EnsureImportedListObject(ws)
         tableRange := 0
         loCount := 0
         try loCount := ws.ListObjects.Count
