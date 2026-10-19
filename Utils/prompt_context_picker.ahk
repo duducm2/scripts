@@ -215,17 +215,28 @@ PromptContext_MergeEntries(staticEntries, pickedEntries) {
     return out
 }
 
+; Default-check grammar preserve-tone (and LastStudy mnemonic practice when present).
+PromptContextPicker_ShouldPreCheck(it, lastStudy := "") {
+    if (!IsObject(it))
+        return false
+    if (lastStudy != "" && it.HasProp("studyId") && it.studyId = lastStudy)
+        return true
+    pathLower := StrLower(it.HasProp("path") ? it.path : "")
+    if (pathLower != "" && InStr(pathLower, "\tone-preserve.txt"))
+        return true
+    return false
+}
+
 ; Returns array of context entries, or false if user cancelled.
 PromptContextPicker_ShowPool(items) {
     if (!IsObject(items) || items.Length = 0)
         return []
     lastStudy := Trim(Palace_Setting("General", "LastStudyId", ""))
     preCheck := Map()
-    if (lastStudy != "") {
-        for it in items {
-            if (it.studyId = lastStudy)
-                preCheck[it.path] := true
-        }
+    preFocusRow := 0
+    for it in items {
+        if PromptContextPicker_ShouldPreCheck(it, lastStudy)
+            preCheck[it.path] := true
     }
     result := false
     g := Gui("+AlwaysOnTop +ToolWindow", "Attach context files")
@@ -243,6 +254,8 @@ PromptContextPicker_ShowPool(items) {
         opts := preCheck.Has(it.path) ? "Check" : ""
         lv.Add(opts, it.studyTitle, it.tail, it.fileLabel)
         rowPaths.Push(it.path)
+        if (preFocusRow = 0 && preCheck.Has(it.path))
+            preFocusRow := rowPaths.Length
     }
     lv.ModifyCol(1, 140)
     lv.ModifyCol(2, 240)
@@ -298,8 +311,9 @@ PromptContextPicker_ShowPool(items) {
     g.Show()
     try {
         lv.Focus()
+        focusRow := preFocusRow > 0 ? preFocusRow : 1
         if (rowPaths.Length > 0)
-            lv.Modify(1, "Select Focus Vis")
+            lv.Modify(focusRow, "Select Focus Vis")
     } catch {
     }
     try WinWaitClose("ahk_id " g.Hwnd)
