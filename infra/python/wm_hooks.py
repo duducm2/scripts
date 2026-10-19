@@ -312,6 +312,8 @@ def _get_visible_windows_on_monitor(mon_index: int) -> list:
                     "top": top,
                     "right": right,
                     "bottom": bottom,
+                    "cx": center_x,
+                    "cy": center_y,
                     "z": 0,
                 }
             )
@@ -323,13 +325,13 @@ def _get_visible_windows_on_monitor(mon_index: int) -> list:
         user32.EnumWindows(EnumWindowsProc(enum_cb), 0)
     except Exception:
         pass
-    # Sort by Y then X (same as AHK)
+    # Sort by center Y then X (same as AHK; centers ignore frame asymmetries)
     n = len(visible)
     for i in range(n - 1):
         for j in range(n - 1 - i):
             a, b = visible[j], visible[j + 1]
-            row_diff = a["top"] - b["top"]
-            if row_diff > TOL or (abs(row_diff) <= TOL and a["left"] > b["left"]):
+            row_diff = a["cy"] - b["cy"]
+            if row_diff > TOL or (abs(row_diff) <= TOL and a["cx"] > b["cx"]):
                 visible[j], visible[j + 1] = b, a
     return visible
 

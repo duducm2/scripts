@@ -134,8 +134,10 @@ GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {
                     h := Integer(w["hwnd"])
                     if (WM_IsExcludedIndicatorWindow(h))
                         continue
-                    visible.Push({ hwnd: h, left: Integer(w["left"]), top: Integer(w["top"]), right: Integer(
-                        w["right"]), bottom: Integer(w["bottom"]), z: Integer(w["z"]) })
+                    wl := Integer(w["left"]), wt := Integer(w["top"])
+                    wr := Integer(w["right"]), wb := Integer(w["bottom"])
+                    visible.Push({ hwnd: h, left: wl, top: wt, right: wr, bottom: wb,
+                        cx: (wl + wr) // 2, cy: (wt + wb) // 2, z: Integer(w["z"]) })
                 }
                 ; Daemon uses EnumDisplayMonitors slot (mon); AHK uses MonitorGet(mon). If they diverge,
                 ; every HWND can sit on a different HMONITOR than the work area center expects — fall back to legacy.
@@ -160,8 +162,9 @@ GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {
                             i := A_Index
                             loop nSort - i {
                                 j := A_Index
-                                rowDiff := onMonitor[j].top - onMonitor[j + 1].top
-                                if (rowDiff > 40 || (Abs(rowDiff) <= 40 && onMonitor[j].left > onMonitor[j + 1].left)) {
+                                ; Center-based: frame/border asymmetries won't flip 50/50 left↔right.
+                                rowDiff := onMonitor[j].cy - onMonitor[j + 1].cy
+                                if (rowDiff > 40 || (Abs(rowDiff) <= 40 && onMonitor[j].cx > onMonitor[j + 1].cx)) {
                                     tmp := onMonitor[j]
                                     onMonitor[j] := onMonitor[j + 1]
                                     onMonitor[j + 1] := tmp
@@ -243,16 +246,17 @@ GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {
             if (covered)
                 continue            ; fully inside a higher window
 
-            ; Otherwise, accept it as visible
+            ; Otherwise, accept it as visible (cx/cy for center-based spatial sort)
             visible.Push({ hwnd: hwnd, left: left, top: top, right: right,
-                bottom: bottom, z: zIdx })
+                bottom: bottom, cx: (left + right) // 2, cy: (top + bottom) // 2, z: zIdx })
         } catch {
             continue                ; ignore windows that throw on inspection
         }
     }
 
     ; ──────────────────────────────────────────────────────────────
-    ; Re-order accepted windows: by Y (top→bottom), then X (left→right)
+    ; Re-order by center: Y (top→bottom), then X (left→right).
+    ; Centers ignore frame/border asymmetries that can flip 50/50 order.
     ; ──────────────────────────────────────────────────────────────
     n := visible.Length
     if (n > 1) {
@@ -260,10 +264,10 @@ GetVisibleWindowsOnMonitor(mon, skipDaemon := false) {
             i := A_Index
             loop n - i {
                 j := A_Index
-                rowDiff := visible[j].top - visible[j + 1].top
+                rowDiff := visible[j].cy - visible[j + 1].cy
                 if (rowDiff > TOL)                         ; lower row → move down
                 || (Abs(rowDiff) <= TOL                  ; same “row”
-                && visible[j].left > visible[j + 1].left) {
+                && visible[j].cx > visible[j + 1].cx) {
                     temp := visible[j]
                     visible[j] := visible[j + 1]
                     visible[j + 1] := temp
