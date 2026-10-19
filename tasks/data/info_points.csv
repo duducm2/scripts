@@ -40,7 +40,6 @@ BPM
 
 AI Roleplay
 - Waiting",,ℹ️,,4000,2026-08-30 15:11:07,,
-INFO_0129,task,TASK_0241,https://opencode.ai/docs/,,ℹ️,,10,2026-09-03 20:08:43,,
 INFO_0135,task,TASK_0248,"Perguntar no cartório
 
 Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)",,ℹ️,,10,2026-09-12 16:25:28,,
@@ -476,3 +475,6 @@ INFO_0451,task,TASK_0517,Contexto das plataformas,Diferenciar UX SUPER (Geraçã
 INFO_0452,task,TASK_0518,Idioma do convite,Identificar a região automaticamente para que o convite seja gerado nativamente em português (ou no idioma local apropriado).,ℹ️,,5170,2026-10-19 09:22:38,,
 INFO_0453,task,TASK_0519,Refatoração do texto,"Melhorar a redação atual do convite, que no momento é apenas uma tradução direta.",ℹ️,,5180,2026-10-19 09:22:38,,
 INFO_0454,task,TASK_0486,"Por mim esta ok, vou ver se tudo bem a gente mandar pra todos os cluster leader a survey",,ℹ️,,10,2026-10-19 11:31:33,,
+INFO_0455,task,TASK_0520,"Perguntar no cartório
+
+Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)",,ℹ️,,10,2026-10-19 19:57:08,,

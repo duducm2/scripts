@@ -6,6 +6,46 @@
 ; failed practice export cannot leave Quick Recall stale.
 ; =============================================================================
 
+; GitHub blob URL for a study's practice Markdown (notes_rel_path → practice/{slug}.md).
+Palace_PracticeMdGithubUrl(studyId) {
+    sid := Trim(String(studyId))
+    if (sid = "")
+        return ""
+    study := Palace_FindById(Palace_Load("studies"), sid)
+    if (!IsObject(study))
+        return ""
+    slug := Trim(study.Has("notes_rel_path") ? study["notes_rel_path"] : "")
+    slug := StrReplace(slug, "\", "/")
+    while (SubStr(slug, 1, 1) = "/")
+        slug := SubStr(slug, 2)
+    if (slug = "" || InStr(slug, "..") || InStr(slug, ":"))
+        return ""
+    return "https://github.com/duducm2/scripts/blob/main/mnemonics/output/practice/" . slug . ".md"
+}
+
+; After palace import: POST practice GitHub URL to StudyLink favorite (A3 / subtopic_favorite).
+; Soft-fail — API blips must not abort import. studyIds: array; first valid study wins
+; (one favorite cell). Same timing as Quick Recall refresh.
+Palace_PushPracticeMdFavoriteLink(studyIds := "") {
+    if (!IsObject(studyIds) || !studyIds.Length)
+        return false
+    url := ""
+    for sid in studyIds {
+        url := Palace_PracticeMdGithubUrl(sid)
+        if (url != "")
+            break
+    }
+    if (url = "")
+        return false
+    try {
+        if !StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
 ; Soft-fail: Drive/Python issues must not abort practice sync or git push.
 ; includeIds: palace ids this import wrote. They are placed on the list even
 ; when quick_recall.json has already marked them as seen.

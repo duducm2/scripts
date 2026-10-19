@@ -1953,6 +1953,12 @@ Palace_ImportMnemonicsFromDesktop(*) {
     }
     if (!Palace_SyncQuickRecallMd(false, qrIds))
         Palace_Notify("Quick Recall was not updated", 2800, BANNER_ACCENT_ERROR)
+    ; Point StudyLink favorite (A3) at this study's practice MD on GitHub so
+    ; Shift+F / MacroDroid Get Favorite opens the latest imported palace file.
+    if (syncIds.Length) {
+        if (!Palace_PushPracticeMdFavoriteLink(syncIds))
+            Palace_Notify("Favorite study link was not updated", 2800, BANNER_ACCENT_ERROR)
+    }
     ; SPA thumbs are keyed by beast id — rebuild before {F5} so new Custom beasts get icons.
     if (nBeasts || nExcluded)
         Palace_RebuildBeastThumbManifest()
