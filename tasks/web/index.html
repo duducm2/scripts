@@ -2867,7 +2867,7 @@
             : "";
           const isNew = !!(t.import_batch || "").trim();
           const newTag = isNew
-            ? `<span class="new-tag" data-act="clear-new" title="Newly imported — click to clear">NEW</span>`
+            ? `<span class="new-tag" data-act="clear-new" title="Newly imported — hover, focus, or click to clear">NEW</span>`
             : "";
           const em = taskEmoji(t);
           const waiting = em === "⏳";
@@ -3774,7 +3774,7 @@
               }
               const next = targets[idx + 1];
               if (next && next.el.closest("details.project") === hit.el)
-                setSelection(next.kind, next.id, true);
+                setSelection(next.kind, next.id, true, { fromUser: true });
               return;
             }
             if (hit.el.open) {
@@ -3793,7 +3793,7 @@
               }
               const next = targets[idx + 1];
               if (next && next.el.closest(".task-section") === hit.el)
-                setSelection(next.kind, next.id, true);
+                setSelection(next.kind, next.id, true, { fromUser: true });
               return;
             }
             if (!hit.el.classList.contains("collapsed")) {
@@ -3841,7 +3841,7 @@
             next.scrollIntoView({ block: "nearest", behavior: "instant" });
         }
 
-        function setSelection(kind, id, scroll) {
+        function setSelection(kind, id, scroll, opts = {}) {
           if (!kind || !id) {
             state.sel = null;
             applySelection(false);
@@ -3849,6 +3849,8 @@
           }
           state.sel = { kind, id };
           applySelection(scroll !== false);
+          // User hover/keyboard/click focus only — not flashAdded / auto-focus after import.
+          if (opts.fromUser) maybeMarkNewReadFromUserSelection(kind, id);
         }
 
         function flashAdded(kind, id) {
@@ -3891,7 +3893,9 @@
           } else {
             idx = (idx + delta + targets.length) % targets.length;
           }
-          setSelection(targets[idx].kind, targets[idx].id, true);
+          setSelection(targets[idx].kind, targets[idx].id, true, {
+            fromUser: true,
+          });
         }
 
         function letterJump(ch) {
@@ -3907,7 +3911,9 @@
           for (let i = 0; i < n; i++) {
             const idx = (from + i) % n;
             if (all[idx].ch === ch) {
-              setSelection(all[idx].kind, all[idx].id, true);
+              setSelection(all[idx].kind, all[idx].id, true, {
+                fromUser: true,
+              });
               return;
             }
           }
@@ -3938,7 +3944,9 @@
               toast("No matches");
               return;
             }
-            setSelection(targets[0].kind, targets[0].id, false);
+            setSelection(targets[0].kind, targets[0].id, false, {
+              fromUser: true,
+            });
             scrollToPageHeader();
             return;
           }
@@ -3960,7 +3968,7 @@
             return;
           }
           state.pwSide = next;
-          setSelection(hit.kind, hit.id, false);
+          setSelection(hit.kind, hit.id, false, { fromUser: true });
           scrollToPageHeader();
         }
 
@@ -3980,6 +3988,50 @@
         function taskRowById(id) {
           if (!id) return null;
           return dataIndex().tasksById.get(id) || null;
+        }
+
+        // In-flight NEW clears (hover/focus/click) — avoid duplicate POSTs.
+        const markingNewReadIds = new Set();
+
+        function paintTaskNewCleared(taskId) {
+          const el = document.querySelector(
+            `.task[data-id="${CSS.escape(taskId)}"]`,
+          );
+          if (!el) return;
+          el.removeAttribute("data-new");
+          el.querySelector(".new-tag")?.remove();
+        }
+
+        // Drop import_batch / NEW badge. focusNext: after explicit badge click, jump to next NEW.
+        async function markNewTaskRead(taskId, opts = {}) {
+          if (!taskId || markingNewReadIds.has(taskId)) return false;
+          const t = taskRowById(taskId);
+          if (!t || !(t.import_batch || "").trim()) return false;
+          markingNewReadIds.add(taskId);
+          t.import_batch = "";
+          paintTaskNewCleared(taskId);
+          updateStatsLine();
+          try {
+            await api(
+              "/api/tasks/" +
+                encodeURIComponent(taskId) +
+                "/clear-import-batch",
+              { method: "POST", body: "{}" },
+            );
+            if (opts.focusNext) await refresh({ focusNew: true });
+            return true;
+          } catch (err) {
+            toast(err.message || String(err));
+            await refresh(opts.focusNext ? { focusNew: true } : {});
+            return false;
+          } finally {
+            markingNewReadIds.delete(taskId);
+          }
+        }
+
+        function maybeMarkNewReadFromUserSelection(kind, id) {
+          if (kind !== "task" && kind !== "habit") return;
+          markNewTaskRead(id);
         }
 
         function hoveredTaskId() {
@@ -6775,6 +6827,27 @@
           await uploadImage(target.ptype, target.pid, file);
         }
 
+        // Only clear NEW on real mouse movement — not when auto-focus scrolls a row under a still cursor.
+        let lastPointerMoveAt = 0;
+        document.addEventListener(
+          "pointermove",
+          () => {
+            lastPointerMoveAt = performance.now();
+          },
+          { passive: true },
+        );
+        document.addEventListener("pointerover", (e) => {
+          if (performance.now() - lastPointerMoveAt > 80) return;
+          if (e.target.closest?.("#modalHost")) return;
+          const row = e.target.closest?.(".task[data-new='1'][data-id]");
+          if (!row) return;
+          const from = e.relatedTarget;
+          if (from && typeof from.closest === "function" && row.contains(from))
+            return;
+          const id = row.getAttribute("data-id");
+          if (id) markNewTaskRead(id);
+        });
+
         document.addEventListener("click", async (e) => {
           const thumb = e.target.closest(".thumb");
           if (thumb) {
@@ -6797,10 +6870,15 @@
           const taskRow = e.target.closest(".task[data-id]");
           const secRow = e.target.closest(".task-section[data-id]");
           const projRow = e.target.closest("details.project[data-id]");
+          const clickingClearNew = !!e.target.closest('[data-act="clear-new"]');
           if (habitRow) {
-            setSelection("habit", habitRow.getAttribute("data-id"), false);
+            setSelection("habit", habitRow.getAttribute("data-id"), false, {
+              fromUser: !clickingClearNew,
+            });
           } else if (taskRow) {
-            setSelection("task", taskRow.getAttribute("data-id"), false);
+            setSelection("task", taskRow.getAttribute("data-id"), false, {
+              fromUser: !clickingClearNew,
+            });
           } else if (secRow && e.target.closest(".task-section-label")) {
             const sid = secRow.getAttribute("data-id");
             setSelection("section", sid, false);
@@ -6928,11 +7006,7 @@
               e.preventDefault();
               e.stopPropagation();
               if (!id) return;
-              await api(
-                "/api/tasks/" + encodeURIComponent(id) + "/clear-import-batch",
-                { method: "POST", body: "{}" },
-              );
-              await refresh({ focusNew: true });
+              await markNewTaskRead(id, { focusNext: true });
               return;
             }
             if (act === "clear-all-new") {
@@ -7458,7 +7532,9 @@
             e.preventDefault();
             const targets = navTargets();
             if (targets.length)
-              setSelection(targets[0].kind, targets[0].id, false);
+              setSelection(targets[0].kind, targets[0].id, false, {
+                fromUser: true,
+              });
             scrollToPageHeader();
             return;
           }
@@ -7470,6 +7546,7 @@
                 targets[targets.length - 1].kind,
                 targets[targets.length - 1].id,
                 true,
+                { fromUser: true },
               );
             return;
           }
