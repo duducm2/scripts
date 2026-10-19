@@ -2,7 +2,7 @@
 ; Utils module: pinned_quick_link.ahk
 ; One Macros-scoped pinned target (URL, file path, or other Run-able link).
 ; Persist: assets/data/pinned_quick_link.ini  [Pinned] Target=
-; Macros: [o] open  [4] set / clear
+; Macros: [4] open · select that row + Shift+E = set from clipboard
 ; =============================================================================
 
 PinnedQuickLink_Path() {
@@ -73,10 +73,24 @@ PinnedQuickLink_IsHttpUrl(target) {
     }
 }
 
+PinnedQuickLink_TruncateLabel(s, maxLen := 64) {
+    t := Trim(s)
+    if (t = "")
+        return "(none)"
+    if (StrLen(t) <= maxLen)
+        return t
+    return SubStr(t, 1, maxLen - 1) . "…"
+}
+
+PinnedQuickLink_MacroTitle() {
+    return "📌 Open pinned link — " . PinnedQuickLink_TruncateLabel(PinnedQuickLink_Get())
+}
+
 PinnedQuickLink_Open(*) {
     target := PinnedQuickLink_Get()
     if (target = "") {
-        ShowCenteredOverlay_Utils("⚠ No pinned link. Set with Macros [4] first.", 2500,
+        ShowCenteredOverlay_Utils(
+            "⚠ No pinned link. In Macros, select [4] and press Shift+E (clipboard).", 3000,
             BANNER_ACCENT_INTERMEDIATE)
         return false
     }
@@ -98,52 +112,25 @@ PinnedQuickLink_Open(*) {
     }
 }
 
-PinnedQuickLink_SetFromClipboardOrInput(*) {
+; Used by Utility Shortcuts Macros Shift+E on the pinned-link row.
+PinnedQuickLink_SetFromClipboard(*) {
     clip := ""
     try clip := Trim(A_Clipboard)
     catch {
         clip := ""
     }
     fromClip := PinnedQuickLink_NormalizeTarget(clip)
-    if (fromClip != "") {
-        if PinnedQuickLink_Set(fromClip) {
-            label := PinnedQuickLink_IsHttpUrl(fromClip) ? "URL" : "target"
-            ShowCenteredOverlay_Utils("✅ Pinned " . label . " saved from clipboard.", 2500,
-                BANNER_ACCENT_SUCCESS)
-            return true
-        }
+    if (fromClip = "") {
+        ShowCenteredOverlay_Utils("❌ Clipboard has no URL, path, or link to pin.", 3000,
+            BANNER_ACCENT_ERROR)
+        return false
+    }
+    if !PinnedQuickLink_Set(fromClip) {
         ShowCenteredOverlay_Utils("❌ Could not save pinned link.", 2500, BANNER_ACCENT_ERROR)
         return false
     }
-
-    current := PinnedQuickLink_Get()
-    ib := InputBox(
-        "Paste a URL, file path, or other link.`nLeave empty and OK to clear.",
-        "Set pinned quick link",
-        "w520 h140",
-        current
-    )
-    if (ib.Result != "OK") {
-        ShowCenteredOverlay_Utils("⚠ Set pinned link cancelled.", 1800, BANNER_ACCENT_INTERMEDIATE)
-        return false
-    }
-    target := PinnedQuickLink_NormalizeTarget(ib.Value)
-    if (target = "") {
-        if (current = "") {
-            ShowCenteredOverlay_Utils("⚠ Nothing to clear.", 1800, BANNER_ACCENT_INTERMEDIATE)
-            return false
-        }
-        if !PinnedQuickLink_Clear() {
-            ShowCenteredOverlay_Utils("❌ Could not clear pinned link.", 2500, BANNER_ACCENT_ERROR)
-            return false
-        }
-        ShowCenteredOverlay_Utils("✅ Pinned link cleared.", 2000, BANNER_ACCENT_SUCCESS)
-        return true
-    }
-    if PinnedQuickLink_Set(target) {
-        ShowCenteredOverlay_Utils("✅ Pinned link saved.", 2000, BANNER_ACCENT_SUCCESS)
-        return true
-    }
-    ShowCenteredOverlay_Utils("❌ Could not save pinned link.", 2500, BANNER_ACCENT_ERROR)
-    return false
+    label := PinnedQuickLink_IsHttpUrl(fromClip) ? "URL" : "target"
+    ShowCenteredOverlay_Utils("✅ Pinned " . label . " saved from clipboard.", 2500,
+        BANNER_ACCENT_SUCCESS)
+    return true
 }

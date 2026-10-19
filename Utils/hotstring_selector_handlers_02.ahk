@@ -184,6 +184,13 @@ UtilitySelector_BindModalHotkeys() {
             } catch {
             }
         }
+        if (g_UtilitySelectorCategory = "Macros") {
+            try {
+                Hotkey("+e", UtilitySelector_OnEdit, "On")
+                g_HotstringHotkeyHandlers.Push({ char: "+e", key: "+e", handler: UtilitySelector_OnEdit })
+            } catch {
+            }
+        }
     }
 
     try {
@@ -360,6 +367,8 @@ UtilitySelector_HintText() {
         return "Char = paste   Enter/double-click = paste   Insert = add   E = edit   Delete = remove   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Projects")
         return "Char = paste name   Enter/double-click = paste name   Backspace = back   Esc = close"
+    if (g_UtilitySelectorCategory = "Macros")
+        return "Char = run   Enter/double-click = run   Shift+E = set pinned link from clipboard (select [4])   Backspace = back   Esc = close"
     return "Char = run   Enter/double-click = run   Backspace = back   Esc = close"
 }
 
@@ -637,6 +646,34 @@ UtilitySelector_OnEdit(*) {
         UtilitySelector_PromptsEdit()
     else if (g_UtilitySelectorCategory = "Hotstrings")
         UtilitySelector_HotstringsEdit()
+    else if (g_UtilitySelectorCategory = "Macros")
+        UtilitySelector_MacrosEditPinned()
+}
+
+; Shift+E on Macros: selected [4] pinned-link row → save clipboard as the pin.
+UtilitySelector_MacrosEditPinned() {
+    global g_UtilitySelectorRows
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1 || idx > g_UtilitySelectorRows.Length) {
+        UtilitySelector_Notify("Select the pinned link row ([4]), then Shift+E.")
+        return
+    }
+    row := g_UtilitySelectorRows[idx]
+    isPinned := false
+    if (row.HasProp("char") && row.char = "4")
+        isPinned := true
+    else if (row.HasProp("func") && row.func = PinnedQuickLink_Open)
+        isPinned := true
+    if (!isPinned) {
+        UtilitySelector_Notify("Shift+E edits the pinned link only. Select row [4].")
+        return
+    }
+    if !PinnedQuickLink_SetFromClipboard() {
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_PopulateLv()
+    UtilitySelector_RefocusGui()
 }
 
 UtilitySelector_OnDelete(*) {
