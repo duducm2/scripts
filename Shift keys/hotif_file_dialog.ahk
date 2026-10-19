@@ -847,7 +847,8 @@ FileDialog_SaveAsCsvUtf8() {
 
 ; --- File Dialog helpers (Import CSV → Load → close Queries → format → shade) -
 ; Some Excel builds skip ImportFromTextDialog and open Power Query Editor on
-; binary File.Contents (Convert / Open As). Handle that path too.
+; binary File.Contents (Convert tab). UIA into that editor hangs (IE web pane),
+; so we detect it via WinGet title, close it, and re-import the CSV via COM.
 
 FileDialog_ClickOpenButton(root) {
     actionBtn := UiElements_TrySaved(root, "FileDialog", "Open")
@@ -900,355 +901,296 @@ FileDialog_FindLoadButton(root) {
     return 0
 }
 
-FileDialog_FindPowerQueryEditor(excelRoot := 0) {
-    ; Prefer AutomationId EditorDialog (stable across locales).
-    scopes := []
-    if excelRoot
-        scopes.Push(excelRoot)
-    try {
-        excelHwnd := WinExist("ahk_exe EXCEL.EXE")
-        if excelHwnd {
-            er := UIA.ElementFromHandle(excelHwnd)
-            if er
-                scopes.Push(er)
-        }
-    } catch {
-    }
-    try {
-        activeHwnd := WinExist("A")
-        if activeHwnd {
-            ar := UIA.ElementFromHandle(activeHwnd)
-            if ar
-                scopes.Push(ar)
-        }
-    } catch {
-    }
-    for scope in scopes {
-        if !scope
-            continue
-        try {
-            pq := scope.FindFirst({ AutomationId: "EditorDialog" })
-            if pq
-                return pq
-        } catch {
-        }
-        try {
-            pq := scope.FindFirst({ Type: "Window", Name: "Power Query Editor", matchmode: "Substring" })
-            if pq
-                return pq
-        } catch {
-        }
-        try {
-            pq := scope.FindFirst({ Type: "Window", Name: "Editor do Power Query", matchmode: "Substring" })
-            if pq
-                return pq
-        } catch {
-        }
-    }
-    return 0
+FileDialog_TitleLooksLikePowerQuery(title) {
+    return InStr(title, "Power Query Editor") || InStr(title, "Editor do Power Query")
 }
 
-FileDialog_PqFindFormulaEdit(pqRoot) {
-    if !pqRoot
+global FileDialog_EnumPqFoundHwnd := 0
+
+FileDialog_EnumChildPqCallback(h, *) {
+    global FileDialog_EnumPqFoundHwnd
+    t := ""
+    try t := WinGetTitle("ahk_id " h)
+    catch {
+        return 1
+    }
+    if FileDialog_TitleLooksLikePowerQuery(t) {
+        FileDialog_EnumPqFoundHwnd := h
+        return 0  ; stop
+    }
+    return 1
+}
+
+; Enum child/owned HWNDs — PQ Editor is often not a top-level WinGetList entry.
+FileDialog_FindPowerQueryChildHwnd(parentHwnd) {
+    global FileDialog_EnumPqFoundHwnd
+    if !parentHwnd
         return 0
-    ; Prefer the formula-bar edit (avoid FindAll over the IE/PQ web pane — it can hang).
-    for needle in ["Editor content", "conteúdo do Editor", "conteudo do Editor"] {
-        try {
-            edit := pqRoot.FindFirst({ Type: "Edit", Name: needle, matchmode: "Substring" })
-            if edit
-                return edit
-        } catch {
+    FileDialog_EnumPqFoundHwnd := 0
+    cb := CallbackCreate(FileDialog_EnumChildPqCallback, "Fast", 2)
+    try DllCall("EnumChildWindows", "ptr", parentHwnd, "ptr", cb, "ptr", 0)
+    catch {
+    }
+    CallbackFree(cb)
+    if FileDialog_EnumPqFoundHwnd
+        return FileDialog_EnumPqFoundHwnd
+    ; Owned popup (GetLastActivePopup).
+    try {
+        popup := DllCall("GetLastActivePopup", "ptr", parentHwnd, "ptr")
+        if popup && popup != parentHwnd {
+            t := ""
+            try t := WinGetTitle("ahk_id " popup)
+            if FileDialog_TitleLooksLikePowerQuery(t)
+                return popup
         }
+    } catch {
     }
     return 0
 }
 
-FileDialog_PqGetFormulaValue(pqRoot) {
-    edit := FileDialog_PqFindFormulaEdit(pqRoot)
-    if !edit
-        return ""
+; Win32 title/hwnd only — never UIA-walk Power Query (IE web pane hangs FindFirst).
+FileDialog_FindPowerQueryHwnd() {
+    prevTMM := A_TitleMatchMode
+    SetTitleMatchMode 2
     try {
-        return edit.Value
+        hwnd := WinExist("Power Query Editor ahk_exe EXCEL.EXE")
+        if hwnd
+            return hwnd
+        hwnd := WinExist("Editor do Power Query ahk_exe EXCEL.EXE")
+        if hwnd
+            return hwnd
+    } finally {
+        SetTitleMatchMode prevTMM
+    }
+    try {
+        for hwnd in WinGetList("ahk_exe EXCEL.EXE") {
+            title := ""
+            try title := WinGetTitle("ahk_id " hwnd)
+            catch {
+                continue
+            }
+            if FileDialog_TitleLooksLikePowerQuery(title)
+                return hwnd
+            child := FileDialog_FindPowerQueryChildHwnd(hwnd)
+            if child
+                return child
+        }
     } catch {
+    }
+    try {
+        for hwnd in WinGetList("ahk_class XLMAIN") {
+            child := FileDialog_FindPowerQueryChildHwnd(hwnd)
+            if child
+                return child
+        }
+    } catch {
+    }
+    return 0
+}
+
+FileDialog_DismissPqKeepChangesPrompt() {
+    ; Closing unsaved PQ may show Keep/Discard. Prefer discard.
+    deadline := A_TickCount + 2500
+    while (A_TickCount < deadline) {
+        for hwnd in WinGetList("ahk_exe EXCEL.EXE") {
+            title := ""
+            try title := WinGetTitle("ahk_id " hwnd)
+            catch {
+                continue
+            }
+            if !(InStr(title, "Microsoft Excel") || InStr(title, "Power Query") || title = "")
+                continue
+            try {
+                root := UIA.ElementFromHandle(hwnd)
+                for name in ["Discard", "Descartar", "Don't Save", "Nao salvar", "Não salvar", "No", "Nao", "Não"] {
+                    btn := 0
+                    try btn := root.FindFirst({ Type: "Button", Name: name })
+                    catch {
+                        btn := 0
+                    }
+                    if btn && FileDialog_InvokeButton(btn)
+                        return true
+                }
+            } catch {
+            }
+        }
+        Sleep 150
+    }
+    return false
+}
+
+FileDialog_ClosePowerQueryEditor(timeoutMs := 6000) {
+    hwnd := FileDialog_FindPowerQueryHwnd()
+    if !hwnd
+        return true
+    try WinActivate("ahk_id " hwnd)
+    catch {
+    }
+    Sleep 80
+    try WinClose("ahk_id " hwnd)
+    catch {
+        Send "{Esc}"
+        Sleep 80
+        Send "!{F4}"
+    }
+    Sleep 200
+    FileDialog_DismissPqKeepChangesPrompt()
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if !FileDialog_FindPowerQueryHwnd()
+            return true
+        FileDialog_DismissPqKeepChangesPrompt()
+        Sleep 150
+    }
+    try WinKill("ahk_id " hwnd)
+    catch {
+    }
+    return !FileDialog_FindPowerQueryHwnd()
+}
+
+FileDialog_ReadCurrentFolder(root) {
+    if !root
+        return ""
+    ; Address / breadcrumb on the file dialog (safe — dialog only, no PQ web pane).
+    for spec in [{ Type: "Edit", Name: "Address:", matchmode: "Substring" }, { Type: "Edit", Name: "Endereço:",
+        matchmode: "Substring" }, { Type: "Edit", Name: "Endereco:", matchmode: "Substring" }, { Type: "ToolBar", Name: "Address",
+            matchmode: "Substring" }, { Type: "ToolBar", Name: "Endereço", matchmode: "Substring" }
+    ] {
+        try {
+            el := root.FindFirst(spec)
+            if el {
+                val := ""
+                try val := el.Value
+                catch {
+                }
+                if (val = "") {
+                    try val := el.Name
+                    catch {
+                    }
+                }
+                val := Trim(val)
+                val := RegExReplace(val, "i)^Address:\s*", "")
+                val := RegExReplace(val, "i)^Endere[cç]o:\s*", "")
+                if (val != "" && (InStr(val, ":\") || SubStr(val, 1, 2) = "\\"))
+                    return RTrim(val, "\")
+            }
+        } catch {
+        }
+    }
+    ; Clipboard fallback: Alt+D selects the path box on modern common dialogs.
+    clipSaved := ClipboardAll()
+    try {
+        Send "!d"
+        Sleep 80
+        Send "^c"
+        Sleep 100
+        folder := Trim(A_Clipboard)
+        if (folder != "" && (InStr(folder, ":\") || SubStr(folder, 1, 2) = "\\"))
+            return RTrim(folder, "\")
+    } finally {
+        try A_Clipboard := clipSaved
+        catch {
+        }
     }
     return ""
 }
 
-FileDialog_PqIsBinaryContentsView(pqRoot) {
-    if !pqRoot
+FileDialog_CaptureOpenPath(root) {
+    name := FileDialog_ReadFileNameField(root)
+    name := Trim(name, ' `"')
+    if (name = "")
+        return ""
+    ; Already a full path (paste-into-filename workflows).
+    if (RegExMatch(name, "i)^[a-z]:\\") || SubStr(name, 1, 2) = "\\")
+        return name
+    folder := FileDialog_ReadCurrentFolder(root)
+    if (folder = "")
+        return ""
+    return folder "\" name
+}
+
+; Bypass PQ UI entirely: open delimited CSV via Excel COM (UTF-8).
+FileDialog_ImportCsvViaCom(path) {
+    if (path = "" || !FileExist(path))
         return false
-    val := FileDialog_PqGetFormulaValue(pqRoot)
-    ; Still raw binary if File.Contents is present and not already wrapped in Csv.Document.
-    if val != "" {
-        if InStr(val, "File.Contents", false) && !InStr(val, "Csv.Document", false)
-            return true
-        if InStr(val, "Csv.Document", false)
-            return false
+    try {
+        xl := ComObjActive("Excel.Application")
+    } catch {
+        return false
     }
-    ; Binary preview tile before Open As / double-click.
-    for needle in ["Double click to open", "Clique duas vezes"] {
-        try {
-            dbl := pqRoot.FindFirst({ Name: needle, matchmode: "Substring" })
-            if dbl
-                return true
-        } catch {
+    try {
+        ; Origin 65001=UTF-8, DataType 1=xlDelimited, TextQualifier 1=double quote, Comma=true
+        xl.Workbooks.OpenText(path, 65001, 1, 1, 1, false, false, false, true)
+        return true
+    } catch {
+    }
+    ; Fallback: QueryTables into active sheet.
+    try {
+        ws := xl.ActiveSheet
+        dest := ws.Range("A1")
+        qt := ws.QueryTables.Add("TEXT;" path, dest)
+        qt.TextFileParseType := 1
+        qt.TextFileCommaDelimiter := true
+        try qt.TextFilePlatform := 65001
+        catch {
         }
+        qt.Refresh(false)
+        return true
+    } catch {
     }
     return false
 }
 
-FileDialog_PqActivate(pqRoot) {
-    if !pqRoot
-        return
-    try {
-        winId := pqRoot.WinId
-        if winId
-            WinActivate("ahk_id " winId)
-        else if WinExist("ahk_exe EXCEL.EXE")
-            WinActivate("ahk_exe EXCEL.EXE")
-    } catch {
-        try {
-            if WinExist("ahk_exe EXCEL.EXE")
-                WinActivate("ahk_exe EXCEL.EXE")
-        } catch {
-        }
-    }
-}
-
-; Most reliable for Convert/binary view: wrap File.Contents(...) as Csv.Document(...).
-FileDialog_PqWrapFileContentsAsCsv(pqRoot) {
-    if !pqRoot
-        return false
-    edit := FileDialog_PqFindFormulaEdit(pqRoot)
-    if !edit
-        return false
-    val := ""
-    try val := edit.Value
-    catch {
-        return false
-    }
-    if (val = "") || !InStr(val, "File.Contents", false)
-        return false
-    if InStr(val, "Csv.Document", false)
-        return true
-
-    ; "= File.Contents(...)" → "= Csv.Document(File.Contents(...))"
-    newVal := val
-    if RegExMatch(val, "i)^\s*=\s*File\.Contents\s*\(") {
-        newVal := RegExReplace(val, "i)^\s*=\s*", "= Csv.Document(")
-        if !RegExMatch(newVal, "\)\s*$")
-            newVal .= ")"
-        else
-            newVal := RegExReplace(newVal, "\)\s*$", "))")
-    } else {
-        newVal := "= Csv.Document(" . Trim(val, " `t=") . ")"
-        if !InStr(newVal, "File.Contents")
-            return false
-    }
-
-    FileDialog_PqActivate(pqRoot)
-    Sleep 100
-    try edit.SetFocus()
+; When Excel opens PQ Convert/binary instead of Load: close editor, COM-import path.
+FileDialog_RecoverFromPowerQueryBinary(csvPath) {
+    try StandardLoadingBar_Update("⏳ Power Query stuck — closing editor…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
-    Sleep 80
-    setOk := false
-    try {
-        edit.Value := newVal
-        setOk := true
-    } catch {
-    }
-    if !setOk {
-        try {
-            edit.ValuePattern.SetValue(newVal)
-            setOk := true
-        } catch {
+    FileDialog_ClosePowerQueryEditor()
+    Sleep 300
+    if (csvPath = "" || !FileExist(csvPath)) {
+        try StandardLoadingBar_Update("❌ CSV path lost after Power Query", BANNER_ACCENT_ERROR)
+        catch {
         }
-    }
-    if !setOk {
-        ; Keyboard: select all in formula bar and paste wrapped formula.
-        clipSaved := ClipboardAll()
-        try {
-            try edit.Click("left")
-            catch {
-            }
-            Sleep 80
-            Send "^a"
-            Sleep 40
-            A_Clipboard := newVal
-            Sleep 40
-            Send "^v"
-            setOk := true
-        } finally {
-            Sleep 80
-            try A_Clipboard := clipSaved
-            catch {
-            }
-        }
-    }
-    Sleep 80
-    Send "{Enter}"
-    Sleep 600
-    ; Confirm wrap applied (or at least left binary-only formula).
-    val2 := FileDialog_PqGetFormulaValue(pqRoot)
-    return InStr(val2, "Csv.Document", false) || (val2 != "" && !InStr(val2, "File.Contents", false))
-}
-
-FileDialog_PqClickOpenAsCsv(pqRoot) {
-    if !pqRoot
         return false
-
-    ; 1) Formula wrap — works even when Convert ribbon clicks are ignored.
-    if FileDialog_PqWrapFileContentsAsCsv(pqRoot)
+    }
+    try StandardLoadingBar_Update("⏳ Re-importing CSV via Excel…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    if FileDialog_ImportCsvViaCom(csvPath)
         return true
-
-    FileDialog_PqActivate(pqRoot)
-    Sleep 80
-
-    ; 2) Physical double-click on the binary preview tile / .csv caption.
-    for needle in ["Double click to open", "Clique duas vezes"] {
-        try {
-            tile := pqRoot.FindFirst({ Name: needle, matchmode: "Substring" })
-            if tile {
-                try {
-                    tile.Click("left", 2)
-                    Sleep 500
-                    if !FileDialog_PqIsBinaryContentsView(pqRoot)
-                        return true
-                } catch {
+    ; Last resort: From Text/CSV dialog (known-good Load path).
+    try {
+        if Excel_OpenFromTextCsv() {
+            Sleep 400
+            dlgHwnd := Excel_WaitForFileDialog(8000)
+            if dlgHwnd {
+                try WinActivate("ahk_id " dlgHwnd)
+                catch {
                 }
+                Sleep 150
+                FileDialog_FocusFileNameField()
+                Sleep 50
+                clipSaved := ClipboardAll()
+                try {
+                    A_Clipboard := csvPath
+                    Sleep 40
+                    Send "^v"
+                    Sleep 200
+                    root := UIA.ElementFromHandle(dlgHwnd)
+                    FileDialog_ClickOpenButton(root)
+                } finally {
+                    try A_Clipboard := clipSaved
+                    catch {
+                    }
+                }
+                ; Wait only for classic Load (PQ should not appear for From Text/CSV).
+                return FileDialog_WaitAndClickLoadClassic(12000)
             }
-        } catch {
         }
-    }
-
-    ; 3) Convert ribbon: Open As dropdown → CSV
-    openAs := 0
-    for name in ["Open As", "Abrir como"] {
-        try openAs := pqRoot.FindFirst({ Type: "SplitButton", Name: name, matchmode: "Substring" })
-        catch {
-            openAs := 0
-        }
-        if openAs
-            break
-    }
-    if !openAs
-        return false
-
-    ; Prefer a real mouse click on the split button (Invoke often no-ops on NetUI/WinForms).
-    try openAs.Click("left")
-    catch {
-        try openAs.Click()
-        catch {
-            return false
-        }
-    }
-    Sleep 250
-
-    menuRoot := pqRoot
-    try {
-        desktop := UIA.GetRootElement()
-        if desktop
-            menuRoot := desktop
     } catch {
-    }
-    for optName in ["CSV", "Text", "Texto"] {
-        item := 0
-        for typeName in ["MenuItem", "ListItem", "Button"] {
-            try item := menuRoot.FindFirst({ Type: typeName, Name: optName })
-            catch {
-                item := 0
-            }
-            if item
-                break
-        }
-        if item {
-            try item.Click("left")
-            catch {
-                if !FileDialog_InvokeButton(item)
-                    continue
-            }
-            Sleep 500
-            return !FileDialog_PqIsBinaryContentsView(pqRoot)
-        }
     }
     return false
-}
-
-FileDialog_FindCloseAndLoad(root) {
-    if !root
-        return 0
-    ; Exact names first (avoid matching "Close & Load To..." when possible).
-    for name in ["Close & Load", "Fechar e carregar", "Close and Load"] {
-        for typeName in ["SplitButton", "Button", "MenuItem"] {
-            try {
-                btn := root.FindFirst({ Type: typeName, Name: name })
-                if btn
-                    return btn
-            } catch {
-            }
-        }
-    }
-    for name in ["Close & Load", "Fechar e carregar", "Close and Load"] {
-        for typeName in ["SplitButton", "Button", "MenuItem"] {
-            try {
-                btn := root.FindFirst({ Type: typeName, Name: name, matchmode: "Substring" })
-                if btn
-                    return btn
-            } catch {
-            }
-        }
-    }
-    return 0
-}
-
-FileDialog_PqEnsureHomeTab(pqRoot) {
-    if !pqRoot
-        return
-    try {
-        homeTab := pqRoot.FindFirst({ Type: "TabItem", Name: "Home" })
-        if !homeTab
-            homeTab := pqRoot.FindFirst({ Type: "TabItem", Name: "Início" })
-        if !homeTab
-            homeTab := pqRoot.FindFirst({ Type: "TabItem", Name: "Inicio" })
-        if homeTab
-            FileDialog_InvokeButton(homeTab)
-    } catch {
-    }
-}
-
-FileDialog_PqCloseAndLoad(pqRoot, allowKeyboard := false) {
-    if !pqRoot
-        return false
-    FileDialog_PqEnsureHomeTab(pqRoot)
-    Sleep 150
-    btn := FileDialog_FindCloseAndLoad(pqRoot)
-    if btn && FileDialog_InvokeButton(btn)
-        return true
-    if !allowKeyboard
-        return false
-    ; Last resort: Home → Close & Load accelerators (locale-dependent).
-    try {
-        winId := pqRoot.WinId
-        if winId
-            WinActivate("ahk_id " winId)
-        else if WinExist("ahk_exe EXCEL.EXE")
-            WinActivate("ahk_exe EXCEL.EXE")
-    } catch {
-        try {
-            if WinExist("ahk_exe EXCEL.EXE")
-                WinActivate("ahk_exe EXCEL.EXE")
-        } catch {
-        }
-    }
-    Send "!h"
-    Sleep 80
-    Send "c"
-    Sleep 80
-    Send "l"
-    Sleep 500
-    ; Only treat as success if the editor actually closed.
-    return !FileDialog_FindPowerQueryEditor()
 }
 
 FileDialog_TryClickImportLoad(root) {
@@ -1270,46 +1212,12 @@ FileDialog_TryClickImportLoad(root) {
     return false
 }
 
-FileDialog_WaitAndClickLoad(timeoutMs := 25000) {
+; Classic ImportFromTextDialog only (safe when Power Query Editor is not open).
+FileDialog_WaitAndClickLoadClassic(timeoutMs := 15000) {
     deadline := A_TickCount + timeoutMs
-    lastPqOpenAsTick := 0
-    lastPqCloseKbTick := 0
     while (A_TickCount < deadline) {
-        ; If Power Query Editor is up, skip scanning Excel for Load (avoids slow UIA walks).
-        pq := 0
-        try pq := FileDialog_FindPowerQueryEditor()
-        catch {
-            pq := 0
-        }
-
-        if pq {
-            try {
-                if FileDialog_PqIsBinaryContentsView(pq) {
-                    if (A_TickCount - lastPqOpenAsTick > 2000) {
-                        lastPqOpenAsTick := A_TickCount
-                        try StandardLoadingBar_Update("⏳ Power Query: open as CSV…", BANNER_ACCENT_INTERMEDIATE)
-                        catch {
-                        }
-                        FileDialog_PqClickOpenAsCsv(pq)
-                        Sleep 400
-                    }
-                } else if FileDialog_PqCloseAndLoad(pq, false) {
-                    return true
-                } else if (A_TickCount - lastPqCloseKbTick > 2000) {
-                    lastPqCloseKbTick := A_TickCount
-                    try StandardLoadingBar_Update("⏳ Power Query: Close & Load…", BANNER_ACCENT_INTERMEDIATE)
-                    catch {
-                    }
-                    if FileDialog_PqCloseAndLoad(pq, true)
-                        return true
-                }
-            } catch {
-            }
-            Sleep 250
-            continue
-        }
-
-        ; Classic path: ImportFromTextDialog Load / Carregar.
+        if FileDialog_FindPowerQueryHwnd()
+            return false
         try {
             excelHwnd := WinExist("ahk_exe EXCEL.EXE")
             if excelHwnd {
@@ -1321,15 +1229,41 @@ FileDialog_WaitAndClickLoad(timeoutMs := 25000) {
         }
         try {
             activeHwnd := WinExist("A")
-            if activeHwnd {
+            if activeHwnd && !FileDialog_FindPowerQueryHwnd() {
                 activeRoot := UIA.ElementFromHandle(activeHwnd)
                 if FileDialog_TryClickImportLoad(activeRoot)
                     return true
             }
         } catch {
         }
-
         Sleep 250
+    }
+    return false
+}
+
+FileDialog_WaitAndClickLoad(csvPath := "", timeoutMs := 12000) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        ; HWND/title only — never UIA into EditorDialog (IE pane hangs FindFirst).
+        if FileDialog_FindPowerQueryHwnd()
+            return FileDialog_RecoverFromPowerQueryBinary(csvPath)
+
+        if FileDialog_WaitAndClickLoadClassic(300)
+            return true
+
+        Sleep 100
+    }
+
+    if FileDialog_FindPowerQueryHwnd()
+        return FileDialog_RecoverFromPowerQueryBinary(csvPath)
+
+    ; Path captured before Open → COM import (covers missing Load / undetected PQ).
+    if (csvPath != "" && FileExist(csvPath)) {
+        try StandardLoadingBar_Update("⏳ No Load dialog — importing via Excel COM…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+        FileDialog_ClosePowerQueryEditor(3000)
+        return FileDialog_ImportCsvViaCom(csvPath)
     }
     return false
 }
@@ -1478,6 +1412,8 @@ FileDialog_ImportCsvLoad() {
     }
     try {
         root := UIA.ElementFromHandle(hwnd)
+        ; Capture full path before Open — needed if Excel lands in PQ Convert/binary.
+        csvPath := FileDialog_CaptureOpenPath(root)
         ; Import dialog uses Files of type (1136), not Save-as FileTypeControlHost.
         try StandardLoadingBar_Update("⏳ Opening file…", BANNER_ACCENT_INTERMEDIATE)
         catch {
@@ -1488,8 +1424,8 @@ FileDialog_ImportCsvLoad() {
         try StandardLoadingBar_Update("⏳ Waiting for Load / Power Query…", BANNER_ACCENT_INTERMEDIATE)
         catch {
         }
-        if !FileDialog_WaitAndClickLoad() {
-            try StandardLoadingBar_Update("❌ Load / Power Query Close & Load not found", BANNER_ACCENT_ERROR)
+        if !FileDialog_WaitAndClickLoad(csvPath) {
+            try StandardLoadingBar_Update("❌ Load / Power Query recovery failed", BANNER_ACCENT_ERROR)
             catch {
             }
             try StandardLoadingBar_Hide(800)
