@@ -151,4 +151,4 @@ Nutritional notes:
 
 ℹ️ Birth date & age
 Birth date: July 19, 2026
-Age: 2 months
+Age: 3 months
