@@ -948,22 +948,42 @@ FileDialog_FindPowerQueryEditor(excelRoot := 0) {
     return 0
 }
 
+FileDialog_PqFindFormulaEdit(pqRoot) {
+    if !pqRoot
+        return 0
+    ; Prefer the formula-bar edit (avoid FindAll over the IE/PQ web pane — it can hang).
+    for needle in ["Editor content", "conteúdo do Editor", "conteudo do Editor"] {
+        try {
+            edit := pqRoot.FindFirst({ Type: "Edit", Name: needle, matchmode: "Substring" })
+            if edit
+                return edit
+        } catch {
+        }
+    }
+    return 0
+}
+
+FileDialog_PqGetFormulaValue(pqRoot) {
+    edit := FileDialog_PqFindFormulaEdit(pqRoot)
+    if !edit
+        return ""
+    try {
+        return edit.Value
+    } catch {
+    }
+    return ""
+}
+
 FileDialog_PqIsBinaryContentsView(pqRoot) {
     if !pqRoot
         return false
-    ; Definitive: formula bar still shows File.Contents(...) (not Csv.Document yet).
-    ; Do not key off "Open As" alone — Convert ribbon keeps that after CSV is opened.
-    try {
-        for edit in pqRoot.FindAll({ Type: "Edit" }) {
-            val := ""
-            try val := edit.Value
-            catch {
-                continue
-            }
-            if InStr(val, "File.Contents", false)
-                return true
-        }
-    } catch {
+    val := FileDialog_PqGetFormulaValue(pqRoot)
+    ; Still raw binary if File.Contents is present and not already wrapped in Csv.Document.
+    if val != "" {
+        if InStr(val, "File.Contents", false) && !InStr(val, "Csv.Document", false)
+            return true
+        if InStr(val, "Csv.Document", false)
+            return false
     }
     ; Binary preview tile before Open As / double-click.
     for needle in ["Double click to open", "Clique duas vezes"] {
@@ -977,44 +997,132 @@ FileDialog_PqIsBinaryContentsView(pqRoot) {
     return false
 }
 
+FileDialog_PqActivate(pqRoot) {
+    if !pqRoot
+        return
+    try {
+        winId := pqRoot.WinId
+        if winId
+            WinActivate("ahk_id " winId)
+        else if WinExist("ahk_exe EXCEL.EXE")
+            WinActivate("ahk_exe EXCEL.EXE")
+    } catch {
+        try {
+            if WinExist("ahk_exe EXCEL.EXE")
+                WinActivate("ahk_exe EXCEL.EXE")
+        } catch {
+        }
+    }
+}
+
+; Most reliable for Convert/binary view: wrap File.Contents(...) as Csv.Document(...).
+FileDialog_PqWrapFileContentsAsCsv(pqRoot) {
+    if !pqRoot
+        return false
+    edit := FileDialog_PqFindFormulaEdit(pqRoot)
+    if !edit
+        return false
+    val := ""
+    try val := edit.Value
+    catch {
+        return false
+    }
+    if (val = "") || !InStr(val, "File.Contents", false)
+        return false
+    if InStr(val, "Csv.Document", false)
+        return true
+
+    ; "= File.Contents(...)" → "= Csv.Document(File.Contents(...))"
+    newVal := val
+    if RegExMatch(val, "i)^\s*=\s*File\.Contents\s*\(") {
+        newVal := RegExReplace(val, "i)^\s*=\s*", "= Csv.Document(")
+        if !RegExMatch(newVal, "\)\s*$")
+            newVal .= ")"
+        else
+            newVal := RegExReplace(newVal, "\)\s*$", "))")
+    } else {
+        newVal := "= Csv.Document(" . Trim(val, " `t=") . ")"
+        if !InStr(newVal, "File.Contents")
+            return false
+    }
+
+    FileDialog_PqActivate(pqRoot)
+    Sleep 100
+    try edit.SetFocus()
+    catch {
+    }
+    Sleep 80
+    setOk := false
+    try {
+        edit.Value := newVal
+        setOk := true
+    } catch {
+    }
+    if !setOk {
+        try {
+            edit.ValuePattern.SetValue(newVal)
+            setOk := true
+        } catch {
+        }
+    }
+    if !setOk {
+        ; Keyboard: select all in formula bar and paste wrapped formula.
+        clipSaved := ClipboardAll()
+        try {
+            try edit.Click("left")
+            catch {
+            }
+            Sleep 80
+            Send "^a"
+            Sleep 40
+            A_Clipboard := newVal
+            Sleep 40
+            Send "^v"
+            setOk := true
+        } finally {
+            Sleep 80
+            try A_Clipboard := clipSaved
+            catch {
+            }
+        }
+    }
+    Sleep 80
+    Send "{Enter}"
+    Sleep 600
+    ; Confirm wrap applied (or at least left binary-only formula).
+    val2 := FileDialog_PqGetFormulaValue(pqRoot)
+    return InStr(val2, "Csv.Document", false) || (val2 != "" && !InStr(val2, "File.Contents", false))
+}
+
 FileDialog_PqClickOpenAsCsv(pqRoot) {
     if !pqRoot
         return false
 
-    ; Prefer double-clicking the binary file tile (UIA: "Double click to open").
+    ; 1) Formula wrap — works even when Convert ribbon clicks are ignored.
+    if FileDialog_PqWrapFileContentsAsCsv(pqRoot)
+        return true
+
+    FileDialog_PqActivate(pqRoot)
+    Sleep 80
+
+    ; 2) Physical double-click on the binary preview tile / .csv caption.
     for needle in ["Double click to open", "Clique duas vezes"] {
         try {
             tile := pqRoot.FindFirst({ Name: needle, matchmode: "Substring" })
             if tile {
                 try {
                     tile.Click("left", 2)
-                    return true
+                    Sleep 500
+                    if !FileDialog_PqIsBinaryContentsView(pqRoot)
+                        return true
                 } catch {
                 }
             }
         } catch {
         }
     }
-    ; Fallback: double-click the .csv label under the preview pane.
-    try {
-        for txt in pqRoot.FindAll({ Type: "Text" }) {
-            name := ""
-            try name := txt.Name
-            catch {
-                continue
-            }
-            if RegExMatch(name, "i)\.csv$") {
-                try {
-                    txt.Click("left", 2)
-                    return true
-                } catch {
-                }
-            }
-        }
-    } catch {
-    }
 
-    ; Ribbon: Convert → Open As → CSV / Text
+    ; 3) Convert ribbon: Open As dropdown → CSV
     openAs := 0
     for name in ["Open As", "Abrir como"] {
         try openAs := pqRoot.FindFirst({ Type: "SplitButton", Name: name, matchmode: "Substring" })
@@ -1027,22 +1135,15 @@ FileDialog_PqClickOpenAsCsv(pqRoot) {
     if !openAs
         return false
 
-    expanded := false
-    try {
-        openAs.ExpandCollapsePattern.Expand()
-        expanded := true
-    } catch {
-    }
-    if !expanded {
-        try {
-            openAs.Click()
-            expanded := true
-        } catch {
+    ; Prefer a real mouse click on the split button (Invoke often no-ops on NetUI/WinForms).
+    try openAs.Click("left")
+    catch {
+        try openAs.Click()
+        catch {
+            return false
         }
     }
-    if !expanded
-        return false
-    Sleep 200
+    Sleep 250
 
     menuRoot := pqRoot
     try {
@@ -1051,7 +1152,7 @@ FileDialog_PqClickOpenAsCsv(pqRoot) {
             menuRoot := desktop
     } catch {
     }
-    for optName in ["CSV", "Text", "Texto", "Csv"] {
+    for optName in ["CSV", "Text", "Texto"] {
         item := 0
         for typeName in ["MenuItem", "ListItem", "Button"] {
             try item := menuRoot.FindFirst({ Type: typeName, Name: optName })
@@ -1060,15 +1161,16 @@ FileDialog_PqClickOpenAsCsv(pqRoot) {
             }
             if item
                 break
-            try item := menuRoot.FindFirst({ Type: typeName, Name: optName, matchmode: "Substring" })
-            catch {
-                item := 0
-            }
-            if item
-                break
         }
-        if item && FileDialog_InvokeButton(item)
-            return true
+        if item {
+            try item.Click("left")
+            catch {
+                if !FileDialog_InvokeButton(item)
+                    continue
+            }
+            Sleep 500
+            return !FileDialog_PqIsBinaryContentsView(pqRoot)
+        }
     }
     return false
 }
@@ -1168,11 +1270,45 @@ FileDialog_TryClickImportLoad(root) {
     return false
 }
 
-FileDialog_WaitAndClickLoad(timeoutMs := 20000) {
+FileDialog_WaitAndClickLoad(timeoutMs := 25000) {
     deadline := A_TickCount + timeoutMs
     lastPqOpenAsTick := 0
     lastPqCloseKbTick := 0
     while (A_TickCount < deadline) {
+        ; If Power Query Editor is up, skip scanning Excel for Load (avoids slow UIA walks).
+        pq := 0
+        try pq := FileDialog_FindPowerQueryEditor()
+        catch {
+            pq := 0
+        }
+
+        if pq {
+            try {
+                if FileDialog_PqIsBinaryContentsView(pq) {
+                    if (A_TickCount - lastPqOpenAsTick > 2000) {
+                        lastPqOpenAsTick := A_TickCount
+                        try StandardLoadingBar_Update("⏳ Power Query: open as CSV…", BANNER_ACCENT_INTERMEDIATE)
+                        catch {
+                        }
+                        FileDialog_PqClickOpenAsCsv(pq)
+                        Sleep 400
+                    }
+                } else if FileDialog_PqCloseAndLoad(pq, false) {
+                    return true
+                } else if (A_TickCount - lastPqCloseKbTick > 2000) {
+                    lastPqCloseKbTick := A_TickCount
+                    try StandardLoadingBar_Update("⏳ Power Query: Close & Load…", BANNER_ACCENT_INTERMEDIATE)
+                    catch {
+                    }
+                    if FileDialog_PqCloseAndLoad(pq, true)
+                        return true
+                }
+            } catch {
+            }
+            Sleep 250
+            continue
+        }
+
         ; Classic path: ImportFromTextDialog Load / Carregar.
         try {
             excelHwnd := WinExist("ahk_exe EXCEL.EXE")
@@ -1189,28 +1325,6 @@ FileDialog_WaitAndClickLoad(timeoutMs := 20000) {
                 activeRoot := UIA.ElementFromHandle(activeHwnd)
                 if FileDialog_TryClickImportLoad(activeRoot)
                     return true
-            }
-        } catch {
-        }
-
-        ; Alternate path: Power Query Editor (binary File.Contents → Open As CSV → Close & Load).
-        try {
-            pq := FileDialog_FindPowerQueryEditor()
-            if pq {
-                if FileDialog_PqIsBinaryContentsView(pq) {
-                    ; Retry Open As every 1.5s while still on binary preview.
-                    if (A_TickCount - lastPqOpenAsTick > 1500) {
-                        lastPqOpenAsTick := A_TickCount
-                        FileDialog_PqClickOpenAsCsv(pq)
-                        Sleep 400
-                    }
-                } else if FileDialog_PqCloseAndLoad(pq, false) {
-                    return true
-                } else if (A_TickCount - lastPqCloseKbTick > 2000) {
-                    lastPqCloseKbTick := A_TickCount
-                    if FileDialog_PqCloseAndLoad(pq, true)
-                        return true
-                }
             }
         } catch {
         }
