@@ -18,6 +18,8 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 ⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
 
+🔲 Create a tiny API to when you hit Windows Alt Shift 9 to set the last memory palace you added. This way in MacroDroid you have only one drawer for a full memory palace that is this one instead of having many on your screen
+
 ## General
 
 ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">

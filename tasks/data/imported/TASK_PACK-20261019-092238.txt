@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+0 project(s) · 6 task(s) · 6 info · Tasks created from the recent meeting/feedback notes regarding KPI tracking, UX platforms, and invite features.
+===END_PREVIEW===
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+UX Super,work,Adicionar etiqueta de categoria nos KPIs,general,punctual,,,,
+UX Super,work,Alterar fluxo de e-mail automatizado para o Regional Lead,general,punctual,,,,
+UX Super,work,Acompanhar fechamento da PS,waiting,punctual,,,,
+UX Super,work,Adicionar métrica de ROI na plataforma,general,punctual,,,,
+UX Super,work,Implementar identificação automática de região no convite,general,punctual,,,,
+UX Super,work,Melhorar o texto do convite,general,punctual,,,,
+===END_FILE===
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Adicionar etiqueta de categoria nos KPIs,UX Super,work,Detalhes das camadas,"Dividir os KPIs em 3 camadas: Resultados para o Usuário / UX, Resultados do Produto / Serviço / Processo, e Valor para o Negócio.",
+task,Alterar fluxo de e-mail automatizado para o Regional Lead,UX Super,work,Objetivo da mudança,"O e-mail não deve ir direto para o Fábio Ferreira, mas sim para o Regional Lead usar como suporte e argumento para abrir conversas e gerar leads qualificados.",
+task,Acompanhar fechamento da PS,UX Super,work,Status,"Aguardando conversa na segunda-feira. Depende do Cesar, que estava em viagem.",
+task,Adicionar métrica de ROI na plataforma,UX Super,work,Contexto das plataformas,"Diferenciar UX SUPER (Geração de Leads) de UX AI PLATFORM (Gestão de Projetos). O ROI e o Agente de KPI devem atuar na plataforma.",
+task,Implementar identificação automática de região no convite,UX Super,work,Idioma do convite,"Identificar a região automaticamente para que o convite seja gerado nativamente em português (ou no idioma local apropriado).",
+task,Melhorar o texto do convite,UX Super,work,Refatoração do texto,"Melhorar a redação atual do convite, que no momento é apenas uma tradução direta.",
+===END_FILE===
