@@ -925,7 +925,7 @@ cheatSheets["FileDialog"] := "
     💻 [T][T]his PC (sidebar)
     📝 [M]File na[M]e field
     💾 [U]Save CSV [U]TF-8
-    📥 [I][I]mport CSV (Load → promote headers → format table → shade outside)
+    📥 [I][I]mport CSV (Load or PQ Close & Load → format → shade)
     ✅ [O][O]pen/Save button
     ❌ [C][C]ancel button
 )"
