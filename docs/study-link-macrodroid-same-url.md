@@ -1,4 +1,4 @@
-# MacroDroid — same web app URL for YouTube, article, and favorite
+# MacroDroid — same web app URL for YouTube, article, favorite, and practice
 
 One deployment URL for all link types. MacroDroid and the PC scripts use the **same** `/exec` address; only the **POST body** and **GET query** change.
 
@@ -10,7 +10,7 @@ One deployment URL for all link types. MacroDroid and the PC scripts use the **s
 
 ---
 
-## How the server picks YouTube vs article vs favorite
+## How the server picks YouTube vs article vs favorite vs practice
 
 After you deploy [`study-link-api/Code.gs`](study-link-api/Code.gs) (see [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md)):
 
@@ -18,12 +18,14 @@ After you deploy [`study-link-api/Code.gs`](study-link-api/Code.gs) (see [study-
 | ------------------------------------------ | ------------------ | ---------- |
 | POST body contains `subtopic_article`      | `doPostArticle`    | **A2**     |
 | POST body contains `subtopic_favorite`     | `doPostFavorite`   | **A3**     |
+| POST body contains `subtopic_practice`     | `doPostPractice`   | **A4**     |
 | Any other POST (e.g. `key=subtopic&url=…`) | `doPost` (YouTube) | **A1**     |
 | GET `?key=subtopic_article`                | `doGetArticle`     | **A2**     |
 | GET `?key=subtopic_favorite`               | `doGetFavorite`    | **A3**     |
+| GET `?key=subtopic_practice`               | `doGetPractice`    | **A4**     |
 | GET without that key (or `?key=subtopic`)  | `doGet` (YouTube)  | **A1**     |
 
-Router order in `doPost`: check `subtopic_article` first, then `subtopic_favorite`, then default YouTube.
+Router order in `doPost`: `subtopic_article` → `subtopic_favorite` → `subtopic_practice` → default YouTube.
 
 You do **not** need a second URL. Differentiate with the **key name in the POST body** (and `?key=` on GET).
 
@@ -39,8 +41,10 @@ You do **not** need a second URL. Differentiate with the **key name in the POST 
 - Article GET: [`macrodroid/Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>)
 - Favorite SET: [`macrodroid/Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>)
 - Favorite GET: [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>)
+- Practice SET: [`macrodroid/Set_Practice_(direct_link).macro`](<macrodroid/Set_Practice_(direct_link).macro>)
+- Practice GET: [`macrodroid/Get_Practice_(direct_link).macro`](<macrodroid/Get_Practice_(direct_link).macro>)
 
-Import all six in MacroDroid (replaces older Set_Video / manual duplicates).
+Import all eight in MacroDroid (replaces older Set_Video / manual duplicates).
 
 ### Android workflow (YouTube)
 
@@ -75,6 +79,14 @@ Same macro actions as YouTube Set; POST body is `key=subtopic_article&url={lv=cl
 
 **Get:** run **Get Favorite (direct link)** → GET `?key=subtopic_favorite&plain=1` → Open Web Page `{lv=resp}`.
 
+### Android workflow (Practice)
+
+Practice is written from the **PC** on palace import (`Palace_PushPracticeMdLink` → A4). On the phone you mainly need **Get**:
+
+**Get:** run **Get Practice (direct link)** → GET `?key=subtopic_practice&plain=1` → Open Web Page `{lv=resp}` (GitHub practice MD).
+
+**Set** (optional): same pattern as Favorite; POST `key=subtopic_practice&url=` → **A4**. Does not overwrite Favorite.
+
 | Macro                                   | HTTP | URL                      | Body / query                                                       |
 | --------------------------------------- | ---- | ------------------------ | ------------------------------------------------------------------ |
 | **YouTube** (Set Video direct link)     | POST | `/exec` (full URL above) | `key=subtopic&url=` + `{lv=clip}` after Clipboard Refresh          |
@@ -83,6 +95,8 @@ Same macro actions as YouTube Set; POST body is `key=subtopic_article&url={lv=cl
 | **Article** (Get Article direct link)   | GET  | **same** `/exec`         | GET `?key=subtopic_article&plain=1` → Open Web Page `{lv=resp}`    |
 | **Favorite** (Set Favorite direct link) | POST | **same** `/exec`         | `key=subtopic_favorite&url=` + `{lv=clip}` after Clipboard Refresh |
 | **Favorite** (Get Favorite direct link) | GET  | **same** `/exec`         | GET `?key=subtopic_favorite&plain=1` → Open Web Page `{lv=resp}`   |
+| **Practice** (Set Practice direct link) | POST | **same** `/exec`         | `key=subtopic_practice&url=` + `{lv=clip}` after Clipboard Refresh |
+| **Practice** (Get Practice direct link) | GET  | **same** `/exec`         | GET `?key=subtopic_practice&plain=1` → Open Web Page `{lv=resp}`   |
 
 MacroDroid settings (both macros):
 
@@ -92,7 +106,7 @@ MacroDroid settings (both macros):
 - Success response: `Saved`
 - Success toast: `{lv=resp}` then `{lv=clip}` — check the second line starts with `http`
 
-**Important:** The article body must include `subtopic_article`; the favorite body must include `subtopic_favorite`. That is what routes to A2 and A3.
+**Important:** Article → `subtopic_article` (A2); Favorite → `subtopic_favorite` (A3); Practice → `subtopic_practice` (A4).
 
 ### API contract (Apps Script is working as designed)
 
@@ -111,6 +125,8 @@ Live check: POST `key=subtopic&url=https://youtu.be/test` → GET `?key=subtopic
 Article POST: `key=subtopic_article&url=https://example.com/paper` → stored in **A2**; GET `?key=subtopic_article` returns that string.
 
 Favorite POST: `key=subtopic_favorite&url=https://gemini.google.com/` → stored in **A3**; GET `?key=subtopic_favorite` returns that string.
+
+Practice POST: `key=subtopic_practice&url=https://github.com/.../practice/data-analyst.md` → stored in **A4**; GET `?key=subtopic_practice` returns that string.
 
 ### Troubleshooting
 
@@ -134,6 +150,11 @@ Favorite POST: `key=subtopic_favorite&url=https://gemini.google.com/` → stored
 | Favorite saved to A1/A2 instead of A3                   | Favorite router **not in deployed web app** (editor save ≠ deploy) | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy; verify GET URLs differ |
 | A1 shows `key=subtopic_favorite&...` after Set Favorite | Same — default `doPost` wrote A1                                   | Redeploy; `GET ?key=subtopic_favorite` must not echo A1 when A3 empty                                    |
 
+| Symptom in Google Sheet cell A4                         | Cause                                                              | Fix                                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Practice saved to A1/A3 instead of A4                   | Practice router **not in deployed web app**                        | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy                         |
+| A3 overwritten after palace import                      | Old PC code still POSTed `subtopic_favorite`                       | Update AHK; import uses `STUDYLINK_KEY_PRACTICE` → A4 only                                               |
+
 | Get macro symptom                                             | Cause                                                | Fix                                                                |
 | ------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | Log: `Open Website ''` after HTTP 200                         | Text Manipulation dropped on import, or no `plain=1` | Redeploy [`Code.gs`](study-link-api/Code.gs); re-import Get macros |
@@ -151,6 +172,7 @@ Favorite POST: `key=subtopic_favorite&url=https://gemini.google.com/` → stored
 | YouTube  | `.../exec?key=subtopic`          |
 | Article  | `.../exec?key=subtopic_article`  |
 | Favorite | `.../exec?key=subtopic_favorite` |
+| Practice | `.../exec?key=subtopic_practice` |
 
 **MacroDroid Get macros** — append `&plain=1` (API returns URL only; Open Web Page uses `{lv=resp}`):
 
@@ -159,6 +181,7 @@ Favorite POST: `key=subtopic_favorite&url=https://gemini.google.com/` → stored
 | YouTube  | `.../exec?key=subtopic&plain=1`          |
 | Article  | `.../exec?key=subtopic_article&plain=1`  |
 | Favorite | `.../exec?key=subtopic_favorite&plain=1` |
+| Practice | `.../exec?key=subtopic_practice&plain=1` |
 
 Full base: `https://script.google.com/macros/s/AKfycbzKDLbmzGF8iduyNpaUymONEkERi089rBjW0jrYUX4a8K9ornfGwYIOsgQP1K_dfaj5/exec`
 
@@ -168,9 +191,9 @@ Optional desktop browser bookmark: append `&open=1` for an HTML redirect (not us
 
 ## Quick checklist
 
-1. Apps Script: paste [`study-link-api/Code.gs`](study-link-api/Code.gs) → **New version** deploy (must include `plain=1`).
-2. Import all six macros from `docs/macrodroid/`.
-3. Browser test: `?key=subtopic_favorite&plain=1` must return **only** `https://...` (not `key=subtopic_favorite&url=...`).
-4. Phone test: Get Favorite → log should show `Open Website 'https://...'`.
+1. Apps Script: paste [`study-link-api/Code.gs`](study-link-api/Code.gs) → **New version** deploy (must include A4 / `subtopic_practice` + `plain=1`).
+2. Import all eight macros from `docs/macrodroid/`.
+3. Browser test: `?key=subtopic_practice&plain=1` must return **only** `https://...` (not the full `key=…&url=…` body).
+4. Phone test: Get Practice → log should show `Open Website 'https://...'`. Favorite Get must still read A3 only.
 
-See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md), [`study-link-api/Code.gs`](study-link-api/Code.gs), [`Set_Video_(direct_link).macro`](<macrodroid/Set_Video_(direct_link).macro>), [`Get_Video_(direct_link).macro`](<macrodroid/Get_Video_(direct_link).macro>), [`Set_Article_(direct_link).macro`](<macrodroid/Set_Article_(direct_link).macro>), [`Get_Article_(direct_link).macro`](<macrodroid/Get_Article_(direct_link).macro>), [`Set_Favorite_(direct_link).macro`](<macrodroid/Set_Favorite_(direct_link).macro>), [`Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>).
+See also: [study-link-lightweight-api-setup.md](study-link-lightweight-api-setup.md), [`study-link-api/Code.gs`](study-link-api/Code.gs), and the Set/Get macros under `docs/macrodroid/` (Video, Article, Favorite, Practice).

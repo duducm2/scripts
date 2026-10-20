@@ -2,9 +2,10 @@
  * Study Link API — Google Apps Script for sheet "my-study-database"
  *
  * Sheet layout (active tab):
- *   A1 — YouTube  (key subtopic)
- *   A2 — Article  (key subtopic_article)
- *   A3 — Favorite (key subtopic_favorite)
+ *   A1 — YouTube   (key subtopic)
+ *   A2 — Article   (key subtopic_article)
+ *   A3 — Favorite  (key subtopic_favorite)
+ *   A4 — Practice  (key subtopic_practice) — GitHub practice MD after palace import
  *
  * Deploy: Deploy → Manage deployments → Edit → New version → Deploy
  * Web app: Execute as Me, Who has access: Anyone
@@ -26,6 +27,11 @@ function doPost(e) {
     contents.indexOf("subtopic_favorite") !== -1
   )
     return doPostFavorite(e);
+  if (
+    key === "subtopic_practice" ||
+    contents.indexOf("subtopic_practice") !== -1
+  )
+    return doPostPractice(e);
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   sheet.getRange("A1").setValue(contents);
@@ -37,6 +43,7 @@ function doGet(e) {
 
   if (key === "subtopic_article") return doGetArticle(e);
   if (key === "subtopic_favorite") return doGetFavorite(e);
+  if (key === "subtopic_practice") return doGetPractice(e);
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var link = sheet.getRange("A1").getValue();
@@ -76,6 +83,22 @@ function doGetFavorite(e) {
     e,
     link,
     "No favorite link stored. Run Set Favorite on your phone first.",
+  );
+}
+
+function doPostPractice(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  sheet.getRange("A4").setValue(e.postData.contents);
+  return ContentService.createTextOutput("Saved");
+}
+
+function doGetPractice(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var link = sheet.getRange("A4").getValue();
+  return formatGetOutput(
+    e,
+    link,
+    "No practice link stored. Import a palace pack on PC first.",
   );
 }
 

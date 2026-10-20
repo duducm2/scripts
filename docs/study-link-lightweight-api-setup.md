@@ -20,11 +20,12 @@ Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N), or hold *
 
 ## API keys (same web app URL)
 
-| Key                 | Module   | Sheet | PC entry                       |
-| ------------------- | -------- | ----- | ------------------------------ |
-| `subtopic`          | Video    | A1    | Memory Palace Links → video    |
-| `subtopic_article`  | Article  | A2    | Memory Palace Links → article  |
-| `subtopic_favorite` | Favorite | A3    | Memory Palace Links → favorite |
+| Key                 | Module   | Sheet | PC entry                               |
+| ------------------- | -------- | ----- | -------------------------------------- |
+| `subtopic`          | Video    | A1    | Memory Palace Links → video            |
+| `subtopic_article`  | Article  | A2    | Memory Palace Links → article          |
+| `subtopic_favorite` | Favorite | A3    | Memory Palace Links → favorite         |
+| `subtopic_practice` | Practice | A4    | Palace import → practice GitHub MD URL |
 
 **Endpoint** (`STUDY_LINKS_API_URL` in `StudyLinkHelpers.ahk`):
 
@@ -38,21 +39,18 @@ Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N), or hold *
 
 - **POST** `key=<encoded_key>&url=<full url>` — full body stored verbatim in the matching cell
 
-**MacroDroid:** [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — same `/exec` URL; POST body key selects A1 / A2 / A3.
+**MacroDroid:** [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md) — same `/exec` URL; POST body key selects A1 / A2 / A3 / A4.
 
 ## Apps Script
 
 **Source:** [`study-link-api/Code.gs`](study-link-api/Code.gs) — paste into the Apps Script project bound to **my-study-database** (replace entire `Code.gs`; one `doPost` / one `doGet` only).
 
-| Cell | Key | Handlers |
-
+| Cell | Key                 | Handlers                            |
 | ---- | ------------------- | ----------------------------------- |
-
-| A1 | `subtopic` | `doPost` / `doGet` (default branch) |
-
-| A2 | `subtopic_article` | `doPostArticle` / `doGetArticle` |
-
-| A3 | `subtopic_favorite` | `doPostFavorite` / `doGetFavorite` |
+| A1   | `subtopic`          | `doPost` / `doGet` (default branch) |
+| A2   | `subtopic_article`  | `doPostArticle` / `doGetArticle`    |
+| A3   | `subtopic_favorite` | `doPostFavorite` / `doGetFavorite`  |
+| A4   | `subtopic_practice` | `doPostPractice` / `doGetPractice`  |
 
 **Deploy checklist**
 
@@ -60,11 +58,11 @@ Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N), or hold *
 
 2. **Deploy → Manage deployments → Edit → Version: New version → Deploy** (editor save alone does not update the live URL).
 
-3. Browser: `?key=subtopic_favorite&plain=1` returns **only** the URL (e.g. `https://youtu.be/...`) — required for Get macros.
+3. Browser: `?key=subtopic_favorite&plain=1` / `?key=subtopic_practice&plain=1` return **only** the URL — required for Get macros.
 
-4. Browser: `?key=subtopic`, `?key=subtopic_article`, `?key=subtopic_favorite` (no `plain=1`) return full stored body for PC/AHK.
+4. Browser: `?key=subtopic`, `?key=subtopic_article`, `?key=subtopic_favorite`, `?key=subtopic_practice` (no `plain=1`) return full stored body for PC/AHK.
 
-If Set Favorite writes **A1** instead of **A3**, the deployed web app is still on old code — redeploy step 2.
+If Set Favorite writes **A1** instead of **A3** (or Set Practice writes A1 instead of **A4**), the deployed web app is still on old code — redeploy step 2.
 
 ## Code map
 
@@ -77,7 +75,7 @@ If Set Favorite writes **A1** instead of **A3**, the deployed web app is still o
 | 4 Article | `StudyLinkHelpers.ahk`, `StudyArticleLink.ahk` (F6 + copy) | `StudyLink_GetResult(STUDYLINK_KEY_ARTICLE)`, `StudyLink_Set(STUDYLINK_KEY_ARTICLE, url)` |
 
 | 5 Favorite | `StudyLinkHelpers.ahk`, `StudyFavoriteLink.ahk` (F6 + copy) | `StudyLink_GetResult(STUDYLINK_KEY_FAVORITE)`, `StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)` |
-
+| 5b Practice | `StudyLinkHelpers.ahk`, `mnemonic_palace_practice_md.ahk` (palace import) | `StudyLink_Set(STUDYLINK_KEY_PRACTICE, url)` → A4 |
 | 6 Technique | `Utils.ahk` (`StudyTopicSelector_SelectTechnique`) | — (local repo markdown) |
 
 ---
@@ -206,6 +204,23 @@ if (url != "")
 
     StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)
 
+```
+
+---
+
+## Module 5b — Practice (`subtopic_practice`)
+
+Fourth slot in **A4**. Written automatically on **palace pack import** (`Palace_PushPracticeMdLink`); does **not** overwrite Favorite (A3).
+
+### MacroDroid
+
+- **Get:** [`macrodroid/Get_Practice_(direct_link).macro`](<macrodroid/Get_Practice_(direct_link).macro>) — GET `?key=subtopic_practice&plain=1` → Open Web Page `{lv=resp}`
+- **Set:** [`macrodroid/Set_Practice_(direct_link).macro`](<macrodroid/Set_Practice_(direct_link).macro>) — optional; PC import usually writes A4
+
+### AHK snippet
+
+```ahk
+StudyLink_Set(STUDYLINK_KEY_PRACTICE, "https://github.com/duducm2/scripts/blob/main/mnemonics/output/practice/data-analyst.md")
 ```
 
 ---

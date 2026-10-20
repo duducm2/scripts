@@ -10,13 +10,14 @@ Delete this file when you no longer need the refresher. Canonical docs stay in:
 
 ## What it is
 
-A tiny **Google Apps Script web app** bound to a spreadsheet (sheet name / file: **my-study-database**). Three cells hold three URLs:
+A tiny **Google Apps Script web app** bound to a spreadsheet (sheet name / file: **my-study-database**). Four cells hold four URLs:
 
-| Cell | API key             | Used for                                                                |
-| ---- | ------------------- | ----------------------------------------------------------------------- |
-| A1   | `subtopic`          | Video (YouTube)                                                         |
-| A2   | `subtopic_article`  | Article                                                                 |
-| A3   | `subtopic_favorite` | Favorite (any URL — now also practice MD on GitHub after palace import) |
+| Cell | API key             | Used for                                    |
+| ---- | ------------------- | ------------------------------------------- |
+| A1   | `subtopic`          | Video (YouTube)                             |
+| A2   | `subtopic_article`  | Article                                     |
+| A3   | `subtopic_favorite` | Favorite (any URL you set manually)         |
+| A4   | `subtopic_practice` | Practice MD on GitHub (after palace import) |
 
 PC (AHK) and phone (MacroDroid) share one `/exec` URL. Only the **key** in the POST body / GET query changes which cell is read or written.
 
@@ -31,7 +32,7 @@ Live endpoint (also `STUDY_LINKS_API_URL` in `Lib/study/StudyLinkHelpers.ahk`):
 ### 1. Spreadsheet
 
 1. In Google Drive, create a Google Sheet (or open the existing **my-study-database**).
-2. On the active tab, leave **A1 / A2 / A3** for the three link bodies (you can leave them empty at first).
+2. On the active tab, leave **A1 / A2 / A3 / A4** for the four link bodies (you can leave them empty at first).
 
 ### 2. Apps Script project
 
@@ -56,13 +57,14 @@ Live endpoint (also `STUDY_LINKS_API_URL` in `Lib/study/StudyLinkHelpers.ahk`):
 **Write (POST)** — body `application/x-www-form-urlencoded`, URL **not** percent-encoded after `url=` (literal, same as MacroDroid):
 
 ```text
-key=subtopic_favorite&url=https://github.com/duducm2/scripts/blob/main/mnemonics/output/practice/data-analyst.md
+key=subtopic_practice&url=https://github.com/duducm2/scripts/blob/main/mnemonics/output/practice/data-analyst.md
 ```
 
 | Body contains          | Goes to |
 | ---------------------- | ------- |
 | `subtopic_article`     | A2      |
 | `subtopic_favorite`    | A3      |
+| `subtopic_practice`    | A4      |
 | otherwise (`subtopic`) | A1      |
 
 Response on success: plain `Saved`.
@@ -71,47 +73,50 @@ Response on success: plain `Saved`.
 
 | Query                            | Returns                                    |
 | -------------------------------- | ------------------------------------------ |
-| `?key=subtopic_favorite`         | Full stored body (`key=…&url=…`) — for AHK |
-| `?key=subtopic_favorite&plain=1` | URL only — for MacroDroid Open Web Page    |
+| `?key=subtopic_practice`         | Full stored body (`key=…&url=…`) — for AHK |
+| `?key=subtopic_practice&plain=1` | URL only — for MacroDroid Open Web Page    |
 
-Same pattern for `subtopic` and `subtopic_article`.
+Same pattern for `subtopic`, `subtopic_article`, and `subtopic_favorite`.
 
 ### 5. Browser smoke test
 
-1. POST or Set Favorite with a known URL into A3.
+1. POST or Set Practice with a known URL into A4.
 2. Open in browser:  
-   `…/exec?key=subtopic_favorite&plain=1`  
+   `…/exec?key=subtopic_practice&plain=1`  
    → should show **only** the URL.
 3. Open without `plain=1` → full `key=…&url=…` body.
-4. If Set Favorite still writes **A1**, the deployment is stale — redeploy a **new version**.
+4. Confirm Favorite still works: `?key=subtopic_favorite&plain=1` reads **A3** only.
+5. If Set Practice still writes **A1**, the deployment is stale — redeploy a **new version**.
 
 ### 6. PC (AHK)
 
 - Shared HTTP: `StudyLinkHelpers.ahk` → `StudyLink_Get` / `StudyLink_Set`.
-- Favorite UI: `StudyFavoriteLink.ahk` + Memory Palace **Links** / cheat sheet **Alt+F** (set) / **Shift+F** (open).
+- Favorite UI: `StudyFavoriteLink.ahk` + Memory Palace **Links** / cheat sheet **Alt+F** (set) / **Shift+F** (open) — still **A3**.
+- Practice: palace import → `Palace_PushPracticeMdLink` → **A4** (not exposed in `#\!+W` / Links UI).
 - Smoke test script: `infra/tools/TestStudyLinkApi.ahk`.
 
 ### 7. Phone (MacroDroid)
 
-Import the six macros under `docs/macrodroid/` (Set/Get × Video, Article, Favorite). All use the **same** `/exec` URL; only the key differs. Details: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
+Import the macros under `docs/macrodroid/` (Set/Get × Video, Article, Favorite, Practice). All use the **same** `/exec` URL; only the key differs. Details: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
 Android 10+: Set macros must run **Clipboard Refresh** before reading `{clipboard}`.
 
 ---
 
-## Palace import → favorite (what we added)
+## Palace import → practice (what we added)
 
 On successful **memory palace pack import** (same place Quick Recall sync runs):
 
 1. Resolve the imported study’s `notes_rel_path` (e.g. `data-analyst`).
 2. Build:  
    `https://github.com/duducm2/scripts/blob/main/mnemonics/output/practice/{slug}.md`
-3. `StudyLink_Set(subtopic_favorite, thatUrl)` → cell **A3**.
+3. `StudyLink_Set(subtopic_practice, thatUrl)` → cell **A4** (does **not** touch Favorite / A3).
 
 Then:
 
-- **Shift+F** (PC) or **Get Favorite** (MacroDroid) opens that GitHub practice file.
-- **Win+Alt+Shift+9 tap** is still **Push scripts** (Utility `[G]`), not “open favorite”. Push so GitHub has the latest `practice/*.md` before you open the link on the phone.
+- **Get Practice** (MacroDroid) opens that GitHub practice file (A4).
+- **Shift+F** / **Get Favorite** still open whatever you set as Favorite on A3.
+- **Win+Alt+Shift+9 tap** is still **Push scripts** (Utility `[G]`), not “open practice”. Push so GitHub has the latest `practice/*.md` before you open the link on the phone.
 
 ---
 
@@ -121,7 +126,7 @@ Then:
 Clipboard / palace import
         │
         ▼
- POST key=…&url=…  ──►  Apps Script  ──►  Sheet A1/A2/A3
+ POST key=…&url=…  ──►  Apps Script  ──►  Sheet A1/A2/A3/A4
         ▲
  GET ?key=…[&plain=1] ◄────────────────────┘
         │

@@ -45,6 +45,7 @@ LINK_KEYS = {
     "video": "subtopic",
     "article": "subtopic_article",
     "favorite": "subtopic_favorite",
+    "practice": "subtopic_practice",
 }
 
 GLOSSARY = [

@@ -6,6 +6,7 @@ global STUDY_LINKS_API_URL :=
 global STUDYLINK_KEY_YOUTUBE := "subtopic"
 global STUDYLINK_KEY_ARTICLE := "subtopic_article"
 global STUDYLINK_KEY_FAVORITE := "subtopic_favorite"
+global STUDYLINK_KEY_PRACTICE := "subtopic_practice"
 global STUDYLINK_SENTINEL_NAME := "manage, study, set, top, link"
 
 ; ────────────────────────────────────────────────────────────────────────────
@@ -218,7 +219,7 @@ StudyLink_NormalizeApiError(response) {
     return "Could not read link from API"
 }
 
-; Friendly label for loading banners (video / article / favorite).
+; Friendly label for loading banners (video / article / favorite / practice).
 StudyLink_LoadingLabel(studyKey) {
     if (studyKey = STUDYLINK_KEY_YOUTUBE)
         return "study video"
@@ -226,6 +227,8 @@ StudyLink_LoadingLabel(studyKey) {
         return "study article"
     if (studyKey = STUDYLINK_KEY_FAVORITE)
         return "favorite"
+    if (studyKey = STUDYLINK_KEY_PRACTICE)
+        return "practice"
     return "link"
 }
 

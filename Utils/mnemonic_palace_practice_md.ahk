@@ -23,10 +23,10 @@ Palace_PracticeMdGithubUrl(studyId) {
     return "https://github.com/duducm2/scripts/blob/main/mnemonics/output/practice/" . slug . ".md"
 }
 
-; After palace import: POST practice GitHub URL to StudyLink favorite (A3 / subtopic_favorite).
+; After palace import: POST practice GitHub URL to StudyLink practice (A4 / subtopic_practice).
 ; Soft-fail — API blips must not abort import. studyIds: array; first valid study wins
-; (one favorite cell). Same timing as Quick Recall refresh.
-Palace_PushPracticeMdFavoriteLink(studyIds := "") {
+; (one practice cell). Favorite (A3) is separate. Same timing as Quick Recall refresh.
+Palace_PushPracticeMdLink(studyIds := "") {
     if (!IsObject(studyIds) || !studyIds.Length)
         return false
     url := ""
@@ -38,12 +38,17 @@ Palace_PushPracticeMdFavoriteLink(studyIds := "") {
     if (url = "")
         return false
     try {
-        if !StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)
+        if !StudyLink_Set(STUDYLINK_KEY_PRACTICE, url)
             return false
     } catch {
         return false
     }
     return true
+}
+
+; Legacy alias — palace import used the old name when practice shared Favorite (A3).
+Palace_PushPracticeMdFavoriteLink(studyIds := "") {
+    return Palace_PushPracticeMdLink(studyIds)
 }
 
 ; Soft-fail: Drive/Python issues must not abort practice sync or git push.
