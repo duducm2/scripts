@@ -120,15 +120,26 @@ UtilitySelector_MacroRows() {
     funcToChar := Map()
     for c, fn in g_MacroCharMap
         funcToChar[fn] := c
+    ; One title-only companion resolve for Q/M/N — never N× full Chrome UIA scans on #!+W.
+    companionId := ""
+    providerLabel := ""
+    try companionId := GlobalAICompanionModelsIdForUi()
+    catch {
+        companionId := AI_COMPANION_GEMINI
+    }
+    try providerLabel := AiCompanionModels_DisplayName(companionId)
+    catch {
+        providerLabel := "Gemini"
+    }
     for macro in g_Macros {
         ch := funcToChar.Has(macro.func) ? funcToChar[macro.func] : ""
         title := macro.title
         if (ch = "q")
-            title := AICompanionRoleMacroTitle("fast")
+            title := AICompanionRoleMacroTitle("fast", companionId)
         else if (ch = "m")
-            title := AICompanionRoleMacroTitle("deep")
+            title := AICompanionRoleMacroTitle("deep", companionId)
         else if (ch = "n")
-            title := AICompanionNewChatMacroTitle()
+            title := AICompanionNewChatMacroTitle(providerLabel)
         else if (ch = "4")
             title := PinnedQuickLink_MacroTitle()
 

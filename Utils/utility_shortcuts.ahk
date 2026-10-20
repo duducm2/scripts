@@ -288,6 +288,66 @@ GlobalAICompanionModelsId() {
     }
 }
 
+; Title/cache only — for Macros list paint. Never walks Chrome with full UIA (that stalled #!+W).
+ResolveGlobalAICompanionForUi() {
+    global IS_WORK_ENVIRONMENT
+    global g_GeminiEnterpriseCachedHwnd, g_GeminiEnterpriseHotkeyActive
+    global g_CopilotWebCachedHwnd, g_CopilotWebHotkeyActive
+    if (!IS_WORK_ENVIRONMENT)
+        return "gemini"
+    try {
+        if (g_GeminiEnterpriseHotkeyActive && g_GeminiEnterpriseCachedHwnd && WinExist("ahk_id " g_GeminiEnterpriseCachedHwnd
+        ))
+            return "enterprise"
+    } catch {
+    }
+    sawCopilot := false
+    try {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            title := ""
+            try title := WinGetTitle("ahk_id " h)
+            catch {
+                continue
+            }
+            if (GeminiEnterprise_TitleMatches(title))
+                return "enterprise"
+            if (!sawCopilot && CopilotWeb_TitleMatchesCopilot(title))
+                sawCopilot := true
+        }
+    } catch {
+    }
+    if (sawCopilot)
+        return "copilot"
+    try {
+        if (g_CopilotWebHotkeyActive && g_CopilotWebCachedHwnd && WinExist("ahk_id " g_CopilotWebCachedHwnd))
+            return "copilot"
+    } catch {
+    }
+    return "enterprise"
+}
+
+GlobalAICompanionModelsIdForUi() {
+    switch ResolveGlobalAICompanionForUi() {
+        case "enterprise":
+            return AI_COMPANION_ENTERPRISE
+        case "copilot":
+            return AI_COMPANION_COPILOT
+        default:
+            return AI_COMPANION_GEMINI
+    }
+}
+
+GetGlobalAIProviderLabelForUi() {
+    switch ResolveGlobalAICompanionForUi() {
+        case "enterprise":
+            return "Gemini Enterprise"
+        case "copilot":
+            return "Copilot"
+        default:
+            return "Gemini"
+    }
+}
+
 ; Resolve companion hwnd + label (same pattern as ToggleAICompanionChromeTab).
 GlobalAICompanionHwndAndLabel(&hwnd, &label) {
     hwnd := 0
@@ -366,9 +426,9 @@ GlobalAICompanionSelectRole(role) {
     return ok
 }
 
-; Macros list Q/M — live Shift+L Fast/Deep name for the resolved companion.
-AICompanionRoleMacroTitle(role) {
-    id := GlobalAICompanionModelsId()
+; Macros list Q/M — live Shift+L Fast/Deep name. Pass companionId to avoid re-resolve on open.
+AICompanionRoleMacroTitle(role, companionId := "") {
+    id := (companionId != "") ? companionId : GlobalAICompanionModelsIdForUi()
     name := (role = "fast") ? AiCompanionModels_GetFast(id) : AiCompanionModels_GetDeep(id)
     if (Trim(name) = "")
         name := "(not set — Shift+L)"
@@ -378,8 +438,10 @@ AICompanionRoleMacroTitle(role) {
     return "🔄 Deep — " . label . ": " . name
 }
 
-AICompanionNewChatMacroTitle() {
-    return "💬 New chat — " . GetGlobalAIProviderLabel() . " (Shift+N)"
+AICompanionNewChatMacroTitle(providerLabel := "") {
+    if (providerLabel = "")
+        providerLabel := GetGlobalAIProviderLabelForUi()
+    return "💬 New chat — " . providerLabel . " (Shift+N)"
 }
 
 MacroAICompanionQuickModel(*) {
