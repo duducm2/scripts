@@ -131,22 +131,22 @@
 Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds)
 
 ℹ️ Maintain ongoing literature review
-Maintain ongoing literature review
-Confirm if committee members may ask about courses near defense
-Add DOI to your research and PPT presentation base (if applicable)
-Check if your student subscription is generating any cost
+Maintain ongoing literature review
+Confirm if committee members may ask about courses near defense
+Add DOI to your research and PPT presentation base (if applicable)
+Check if your student subscription is generating any cost
 Monitor storage usage (keep under 5 GB)
 
 ℹ️ German Shepherd Feeding Breakdown by Life Stage
-Life stage feeding guidelines:
-- 60-Day-Old Puppy (6-9 kg): 150g - 200g per day divided into 4 meals (40g - 50g per meal).
-- Current 15 kg Puppy (~4 months): 250g - 350g per day divided into 3 meals (85g - 115g per meal) to support rapid growth.
+Life stage feeding guidelines:
+- 60-Day-Old Puppy (6-9 kg): 150g - 200g per day divided into 4 meals (40g - 50g per meal).
+- Current 15 kg Puppy (~4 months): 250g - 350g per day divided into 3 meals (85g - 115g per meal) to support rapid growth.
 - Grown Adult (30-40 kg): 350g - 500g per day divided into 2 meals (175g - 250g per meal).
 
 ℹ️ Puppy Food Timeline and Calorie Density Notes
-Nutritional notes:
-- Puppy Food Timeline: Large breeds like German Shepherds should continue eating puppy food until they are 12 to 15 months old to ensure proper bone and joint growth.
-- Food Density: High-quality foods are calorie-dense; fewer grams per meal are required compared to standard foods.
+Nutritional notes:
+- Puppy Food Timeline: Large breeds like German Shepherds should continue eating puppy food until they are 12 to 15 months old to ensure proper bone and joint growth.
+- Food Density: High-quality foods are calorie-dense; fewer grams per meal are required compared to standard foods.
 - Calorie Calculation: Daily grams can be calculated precisely based on the specific brand's calorie content once brand details are known.
 
 ℹ️ Birth date & age
