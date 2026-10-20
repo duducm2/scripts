@@ -453,7 +453,23 @@ MacroAICompanionDeepModel(*) {
 }
 
 ; Macros [N] / #!+W → N: open resolved companion, then same New Chat as in-app Shift+N.
+; After new chat, reactivate the window that was focused when #!+W opened Macros.
 MacroAICompanionNewChat(*) {
+    global g_UtilitySelectorRestoreHwnd
+    ; Prefer the hwnd captured at #!+W open — not whatever is foreground after menu teardown.
+    prevHwnd := 0
+    try {
+        if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+            prevHwnd := g_UtilitySelectorRestoreHwnd
+    } catch {
+        prevHwnd := 0
+    }
+    if (!prevHwnd) {
+        try prevHwnd := WinGetID("A")
+        catch {
+            prevHwnd := 0
+        }
+    }
     label := GetGlobalAIProviderLabel()
     StandardLoadingBar_Show("⏳ Opening " . label . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
@@ -465,10 +481,23 @@ MacroAICompanionNewChat(*) {
     StandardLoadingBar_Hide(0)
     if (!opened) {
         ShowCenteredOverlay_Utils("❌ Could not open " . label . ".", 2000, BANNER_ACCENT_ERROR)
+        Handy_RestorePrevWindow(prevHwnd)
         return false
     }
+    companionHwnd := 0
+    try companionHwnd := WinGetID("A")
+    catch {
+        companionHwnd := 0
+    }
     Sleep 120
-    return AiCompanion_StartNewChat(GlobalAICompanionModelsId())
+    ok := AiCompanion_StartNewChat(GlobalAICompanionModelsId())
+    ; Companion UIA (ReturnToComposer) can steal focus after click — settle, then restore origin.
+    Sleep 80
+    if (!Handy_RestorePrevWindow(prevHwnd, companionHwnd)) {
+        Sleep 120
+        Handy_RestorePrevWindow(prevHwnd, companionHwnd)
+    }
+    return ok
 }
 
 ; Win+Alt+Q / Win+Alt+M — OS-wide Quick / Deep model on the resolved AI companion
