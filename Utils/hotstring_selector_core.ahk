@@ -127,8 +127,11 @@ UtilitySelector_MacroRows() {
             title := AICompanionRoleMacroTitle("fast")
         else if (ch = "m")
             title := AICompanionRoleMacroTitle("deep")
+        else if (ch = "n")
+            title := AICompanionNewChatMacroTitle()
         else if (ch = "4")
             title := PinnedQuickLink_MacroTitle()
+
         rows.Push({ char: ch, title: title, func: macro.func })
     }
     return rows

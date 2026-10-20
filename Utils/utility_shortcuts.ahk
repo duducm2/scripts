@@ -305,6 +305,46 @@ GlobalAICompanionHwndAndLabel(&hwnd, &label) {
     }
 }
 
+; Open/focus the resolved companion (same peers as #!+I). Consumer Gemini may Send #!+i to Gemini.ahk.
+GlobalAICompanionOpenOrFocus() {
+    companion := ResolveGlobalAICompanion()
+    if (companion = "enterprise")
+        return !!GeminiEnterprise_OpenOrFocus()
+    if (companion = "copilot")
+        return !!CopilotWeb_OpenOrFocus()
+    hwnd := FindGeminiChromeHwnd()
+    if (hwnd) {
+        try {
+            if !WinActive("ahk_id " hwnd) {
+                WinActivate("ahk_id " hwnd)
+                if !WinWaitActive("ahk_id " hwnd, , 2)
+                    return false
+            }
+        } catch {
+            return false
+        }
+        return true
+    }
+    ; Gemini.ahk owns first-time open (#\!+I). Wait until consumer Gemini appears.
+    Send "#!+i"
+    deadline := A_TickCount + 12000
+    while (A_TickCount < deadline) {
+        hwnd := FindGeminiChromeHwnd()
+        if (hwnd) {
+            try {
+                if WinActive("ahk_id " hwnd)
+                    return true
+                WinActivate("ahk_id " hwnd)
+                if WinWaitActive("ahk_id " hwnd, , 2)
+                    return true
+            } catch {
+            }
+        }
+        Sleep 200
+    }
+    return false
+}
+
 ; Global Fast / Deep — same as in-app Shift+Q / Shift+M via AiCompanionModels_SelectRole.
 ; Captures the focused window first and reactivates it after the model switch
 ; (Macros menu restores the pre-selector window before calling us; #!q/#!m use the live foreground).
@@ -338,6 +378,10 @@ AICompanionRoleMacroTitle(role) {
     return "🔄 Deep — " . label . ": " . name
 }
 
+AICompanionNewChatMacroTitle() {
+    return "💬 New chat — " . GetGlobalAIProviderLabel() . " (Shift+N)"
+}
+
 MacroAICompanionQuickModel(*) {
     return GlobalAICompanionSelectRole("fast")
 }
@@ -346,12 +390,32 @@ MacroAICompanionDeepModel(*) {
     GlobalAICompanionSelectRole("deep")
 }
 
+; Macros [N] / #!+W → N: open resolved companion, then same New Chat as in-app Shift+N.
+MacroAICompanionNewChat(*) {
+    label := GetGlobalAIProviderLabel()
+    StandardLoadingBar_Show("⏳ Opening " . label . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
+    opened := false
+    try opened := GlobalAICompanionOpenOrFocus()
+    catch {
+        opened := false
+    }
+    StandardLoadingBar_Hide(0)
+    if (!opened) {
+        ShowCenteredOverlay_Utils("❌ Could not open " . label . ".", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    Sleep 120
+    return AiCompanion_StartNewChat(GlobalAICompanionModelsId())
+}
+
 ; Win+Alt+Q / Win+Alt+M — OS-wide Quick / Deep model on the resolved AI companion
 #!q:: MacroAICompanionQuickModel()
 #!m:: MacroAICompanionDeepModel()
 
 RegisterMacro(MacroAICompanionQuickModel, "⚡ AI companion Quick / Fast model", "q")
 RegisterMacro(MacroAICompanionDeepModel, "🔄 AI companion Deep model", "m")
+RegisterMacro(MacroAICompanionNewChat, "💬 New chat — AI companion (Shift+N)", "n")
 
 ; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()
