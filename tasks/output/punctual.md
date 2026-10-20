@@ -20,6 +20,8 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 ⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
 
+⚡ Check the prices for other phone companies like Claro and Vivo
+
 ## General
 
 ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">
