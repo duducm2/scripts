@@ -193,14 +193,6 @@ UtilitySelector_ResolveContextEntries(prompt) {
         return { entries: [], pickedCount: 0 }
     PromptPaste_BusyUpdate("⏳ Resolving context…")
     staticEntries := PromptData_ContextEntriesForCurrentEnv(prompt)
-    fp := StrLower(Trim(prompt.HasProp("filePath") ? prompt.filePath : ""))
-    if (InStr(fp, "mnemonic-atoms-import")) {
-        PromptPaste_BusyUpdate("⏳ Building study pack…")
-        studyId := Trim(Palace_Setting("General", "LastStudyId", ""))
-        pack := Palace_BuildPromptStudyPack(studyId)
-        if (pack.Length)
-            staticEntries := PromptContext_MergeEntries(staticEntries, pack)
-    }
     PromptPaste_BusyUpdate("⏳ Loading context pool…")
     pool := PromptContextPicker_BuildPool(prompt)
     if (pool.Length = 0)

@@ -43,8 +43,9 @@ You do **not** need a second URL. Differentiate with the **key name in the POST 
 - Favorite GET: [`macrodroid/Get_Favorite_(direct_link).macro`](<macrodroid/Get_Favorite_(direct_link).macro>)
 - Practice SET: [`macrodroid/Set_Practice_(direct_link).macro`](<macrodroid/Set_Practice_(direct_link).macro>)
 - Practice GET: [`macrodroid/Get_Practice_(direct_link).macro`](<macrodroid/Get_Practice_(direct_link).macro>)
+- Practice poll: [`macrodroid/Poll_Practice_link_(5_min).macro`](<macrodroid/Poll_Practice_link_(5_min).macro>) — every 5 min GET A4; if changed → global `{v=practice_url}` + toast
 
-Import all eight in MacroDroid (replaces older Set_Video / manual duplicates).
+Import the Set/Get macros (and the poll macro if you want background updates).
 
 ### Android workflow (YouTube)
 
@@ -150,10 +151,10 @@ Practice POST: `key=subtopic_practice&url=https://github.com/.../practice/data-a
 | Favorite saved to A1/A2 instead of A3                   | Favorite router **not in deployed web app** (editor save ≠ deploy) | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy; verify GET URLs differ |
 | A1 shows `key=subtopic_favorite&...` after Set Favorite | Same — default `doPost` wrote A1                                   | Redeploy; `GET ?key=subtopic_favorite` must not echo A1 when A3 empty                                    |
 
-| Symptom in Google Sheet cell A4                         | Cause                                                              | Fix                                                                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| Practice saved to A1/A3 instead of A4                   | Practice router **not in deployed web app**                        | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy                         |
-| A3 overwritten after palace import                      | Old PC code still POSTed `subtopic_favorite`                       | Update AHK; import uses `STUDYLINK_KEY_PRACTICE` → A4 only                                               |
+| Symptom in Google Sheet cell A4       | Cause                                        | Fix                                                                              |
+| ------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------- |
+| Practice saved to A1/A3 instead of A4 | Practice router **not in deployed web app**  | Paste [`study-link-api/Code.gs`](study-link-api/Code.gs); **New version** deploy |
+| A3 overwritten after palace import    | Old PC code still POSTed `subtopic_favorite` | Update AHK; import uses `STUDYLINK_KEY_PRACTICE` → A4 only                       |
 
 | Get macro symptom                                             | Cause                                                | Fix                                                                |
 | ------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |

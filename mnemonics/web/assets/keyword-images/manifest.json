@@ -3300,6 +3300,16 @@
       "version": 1,
       "empty": false,
       "style": "illustration"
+    },
+    "radar": {
+      "key": "radar",
+      "slug": "radar",
+      "file": "radar.png",
+      "openverse_id": "d8ba5052-df1c-45d3-b8a4-493d2f973d76",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=163902341",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }

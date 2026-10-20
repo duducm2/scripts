@@ -421,7 +421,8 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
     }
     ; 4–5 groups → 5–6 keyword pairs (group 1 yields name + infinitive).
     if (groups.Length < 4 || groups.Length > 5) {
-        out["error"] := "concept must contain 4–5 bracket groups so the atom has 5–6 keywords (opening name+verb, then one concrete word per later group)"
+        out["error"] :=
+        "concept must contain 4–5 bracket groups so the atom has 5–6 keywords (opening name+verb, then one concrete word per later group)"
         return out
     }
     opening := groups[1]
@@ -458,7 +459,8 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         return out
     }
     if (pairs.Length != groups.Length + 1) {
-        out["error"] := "group 1 needs two keyword pairs (formal name, then infinitive verb); each later group needs exactly one pair"
+        out["error"] :=
+        "group 1 needs two keyword pairs (formal name, then infinitive verb); each later group needs exactly one pair"
         return out
     }
     if (!InStr(groups[1], pairs[1]["right"], false)) {
@@ -466,7 +468,9 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
         return out
     }
     if (StrLower(pairs[2]["right"]) != StrLower(verb)) {
-        out["error"] := "pair 2 RecognizableWord must be the bare infinitive after ``to`` in the opening group (expected ``" . verb . "``)"
+        out["error"] :=
+        "pair 2 RecognizableWord must be the bare infinitive after ``to`` in the opening group (expected ``" . verb .
+            "``)"
         return out
     }
     if (RegExMatch(pairs[2]["right"], "\s")) {
@@ -478,7 +482,8 @@ Palace_ValidateAtomMnemonics(concept, keywords) {
     while (gi <= groups.Length) {
         term := pairs[pi]["right"]
         if (RegExMatch(term, "\s")) {
-            out["error"] := "keyword pair " . pi . " RecognizableWord must be a single concrete word (not a multi-word phrase)"
+            out["error"] := "keyword pair " . pi .
+                " RecognizableWord must be a single concrete word (not a multi-word phrase)"
             return out
         }
         if (!InStr(groups[gi], term, false)) {
@@ -553,32 +558,6 @@ Palace_LoadImportData() {
         "beasts", Palace_Load("beasts"),
         "atoms", Palace_Load("atoms")
     )
-}
-
-Palace_BuildPromptStudyPack(studyId) {
-    studyId := Trim(studyId)
-    if (studyId = "")
-        return []
-    py := Palace_PythonDir() . "\prompt_context_pack.py"
-    if (!FileExist(py))
-        return []
-    pyCmd := Palace_FindPythonCmd()
-    if (pyCmd = "")
-        return []
-    outDir := A_Temp . "\palace_prompt_" . studyId
-    cmd := pyCmd . ' "' . py . '" --data-dir "' . Palace_DataDir() . '" --study-id "' . studyId
-    . '" --out-dir "' . outDir . '"'
-    try RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
-    catch {
-        return []
-    }
-    entries := []
-    for name in ["beasts.csv", "atoms.csv", "palaces.csv"] {
-        p := outDir . "\" . name
-        if FileExist(p)
-            entries.Push(PromptData_NewContextEntry(p))
-    }
-    return entries
 }
 
 Palace_WriteCsv(fileName, rows, headers) {

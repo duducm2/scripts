@@ -795,30 +795,26 @@ PromptData_DefaultEntries() {
                                                 filePath: "assets\prompt\ppt-slides-to-elements-csv.txt", source: "file" }, { emoji: "📱",
                                                     name: "Prototype stage 1: content to screens CSV", char: "w",
                                                     category: "General", author: "",
-                                                        filePath: "assets\prompt\proto-content-to-screens-csv.txt",
-                                                        source: "file" }, { emoji: "🧱", name: "Prototype stage 2: screens to elements CSV",
-                                                            char: "f", category: "General", author: "",
-                                                            filePath: "assets\prompt\proto-screens-to-elements-csv.txt",
-                                                            source: "file" }, { emoji: "🎨", name: "Bosch brand-compliant image",
-                                                                char: "q", category: "General", author: "",
-                                                                filePath: "assets\prompt\bosch-brand-image.txt", source: "file" }, { emoji: "📥",
-                                                                    name: "Fill CSV from unstructured text", char: "t",
-                                                                    category: "General", author: "",
-                                                                    filePath: "assets\prompt\unstructured-to-csv.txt",
-                                                                    source: "file" }, { emoji: "✅", name: "Convert to Task",
-                                                                        char: "k", category: "Tasks", author: "",
-                                                                        filePath: "assets\prompt\convert-to-task.txt",
-                                                                        source: "file" }, { emoji: "📎", name: "ClipAngel .cac export",
-                                                                            char: "c", category: "General", author: "",
-                                                                            filePath: "assets\prompt\clipangel-cac.txt",
-                                                                            source: "file" }, { emoji: "🧭", name: "How-to steps CSV",
-                                                                                char: "h", category: "General", author: "",
-                                                                                filePath: "assets\prompt\howto-steps-csv.txt",
-                                                                                source: "file" }, { emoji: "🏰", name: "Memory Palace atoms CSV import",
-                                                                                    char: "u", category: "Mnemonic",
-                                                                                    author: "",
-                                                                                    filePath: "assets\prompt\mnemonic-atoms-import.txt",
-                                                                                    source: "file" }
+                                                    filePath: "assets\prompt\proto-content-to-screens-csv.txt",
+                                                    source: "file" }, { emoji: "🧱", name: "Prototype stage 2: screens to elements CSV",
+                                                        char: "f", category: "General", author: "",
+                                                        filePath: "assets\prompt\proto-screens-to-elements-csv.txt",
+                                                        source: "file" }, { emoji: "🎨", name: "Bosch brand-compliant image",
+                                                            char: "q", category: "General", author: "",
+                                                            filePath: "assets\prompt\bosch-brand-image.txt", source: "file" }, { emoji: "📥",
+                                                                name: "Fill CSV from unstructured text", char: "t",
+                                                                category: "General", author: "",
+                                                                filePath: "assets\prompt\unstructured-to-csv.txt",
+                                                                source: "file" }, { emoji: "✅", name: "Convert to Task",
+                                                                    char: "k", category: "Tasks", author: "",
+                                                                    filePath: "assets\prompt\convert-to-task.txt",
+                                                                    source: "file" }, { emoji: "📎", name: "ClipAngel .cac export",
+                                                                        char: "c", category: "General", author: "",
+                                                                        filePath: "assets\prompt\clipangel-cac.txt",
+                                                                        source: "file" }, { emoji: "🧭", name: "How-to steps CSV",
+                                                                            char: "h", category: "General", author: "",
+                                                                            filePath: "assets\prompt\howto-steps-csv.txt",
+                                                                            source: "file" }
     ]
     for item in list {
         item.personal_context_files := []
@@ -842,21 +838,6 @@ PromptData_DefaultEntries() {
             item.work_context_files := [
                 PromptData_NewContextEntry("tasks\data\projects.csv"),
                 PromptData_NewContextEntry("tasks\data\tasks.csv")
-            ]
-        }
-        if (InStr(StrLower(item.filePath), "mnemonic-atoms-import.txt")) {
-            item.attachAsTxt := 1
-            item.expectsDataOutput := 1
-            item.dataOutputFormat := "file"
-            item.personal_context_files := [
-                PromptData_NewContextEntry("mnemonics\technique\README.md"),
-                PromptData_NewContextEntry("mnemonics\technique\characters.json"),
-                PromptData_NewContextEntry("mnemonics\technique\bestiary.json")
-            ]
-            item.work_context_files := [
-                PromptData_NewContextEntry("mnemonics\technique\README.md"),
-                PromptData_NewContextEntry("mnemonics\technique\characters.json"),
-                PromptData_NewContextEntry("mnemonics\technique\bestiary.json")
             ]
         }
     }

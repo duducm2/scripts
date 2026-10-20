@@ -99,6 +99,8 @@ Same pattern for `subtopic`, `subtopic_article`, and `subtopic_favorite`.
 
 Import the macros under `docs/macrodroid/` (Set/Get × Video, Article, Favorite, Practice). All use the **same** `/exec` URL; only the key differs. Details: [study-link-macrodroid-same-url.md](study-link-macrodroid-same-url.md).
 
+**Poll Practice (phone test):** [`macrodroid/Poll_Practice_link_(5_min).macro`](<macrodroid/Poll_Practice_link_(5_min).macro>) — every 5 minutes GET A4; if the URL changed, store it in global `{v=practice_url}` and toast. Enable the macro after import (Variables → `practice_url`).
+
 Android 10+: Set macros must run **Clipboard Refresh** before reading `{clipboard}`.
 
 ---

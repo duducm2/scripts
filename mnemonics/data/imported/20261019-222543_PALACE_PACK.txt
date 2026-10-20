@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+STUDY_DOGS · 1 palaces · 1 beasts · 1 atoms
+Packing: 1 (remainder only on last new palace in this pack)
+
+PALACE 4 — Dog Biology and Senses () [PALACE_DOGS_04]
+  [I] imp — Concept: [I use Olfactory Receptors to detect] [chemical scents and pheromones] [with extreme sensitivity] [via specialized organs.] — Note: Dogs possess up to 300 million receptors and a vomeronasal organ. | Quote: "Olfaction: A dog’s sense of smell is roughly 10,000 to 100,000 times more sensitive than a human's. They possess up to 300 million olfactory receptors (compared to ~6 million in humans) and a specialized vomeronasal organ (Jacobson's organ) dedicated to detecting pheromones and chemical cues."
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DOGS_04,STUDY_DOGS,4,Dog Biology and Senses,,,1,"ForegroundLeft: In front of an iron gate on the left sidewalk, a tiny winged imp hovers above a glowing brass radar dish, sniffing large floating purple scent bubbles that drift out of a giant open nose sculpture. The rest of the street is clear."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_PALACE_DOGS_04_I,PALACE_DOGS_04,I,imp,Lynne Kelly,,0,1,
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+,BEAST_PALACE_DOGS_04_I,single,,,"[I use Olfactory Receptors to detect] [chemical scents and pheromones] [with extreme sensitivity] [via specialized organs.] — Note: Dogs possess up to 300 million receptors and a vomeronasal organ.","radar | Olfactory Receptors || magnifying glass | detect || perfume | scents || scale | sensitivity || heart | organs","Olfaction: A dog’s sense of smell is roughly 10,000 to 100,000 times more sensitive than a human's. They possess up to 300 million olfactory receptors (compared to ~6 million in humans) and a specialized vomeronasal organ (Jacobson's organ) dedicated to detecting pheromones and chemical cues.",,1
+===END_FILE===
