@@ -16,7 +16,7 @@ A tiny **Google Apps Script web app** bound to a spreadsheet (sheet name / file:
 | ---- | ------------------- | ------------------------------------------- |
 | A1   | `subtopic`          | Video (YouTube)                             |
 | A2   | `subtopic_article`  | Article                                     |
-| A3   | `subtopic_favorite` | Favorite (any URL you set manually)         |
+| A3   | `subtopic_favorite` | Favorite (any URL you set manually) ss      |
 | A4   | `subtopic_practice` | Practice MD on GitHub (after palace import) |
 
 PC (AHK) and phone (MacroDroid) share one `/exec` URL. Only the **key** in the POST body / GET query changes which cell is read or written.
