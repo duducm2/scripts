@@ -8,6 +8,7 @@
 ⏳ Sleep: target 7–9 hours; fixed wake time
 ⏳ Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)
 ⏳ Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)
+🔲 🐕 Brush Moka's fur (Wood Brush)
 🐕 Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal)
 
 ## Weekly
@@ -15,6 +16,7 @@
 ⏳ Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable
 ⏳ Exercise long session (≥60–90 minutes) or two shorter sessions
 🔲 Check your grocery list
+🔲 🐕 Deep brush Moka's undercoat
 🩺 Review body recomposition progress (photos, measurements, gym performance)
 
 ## Monthly
