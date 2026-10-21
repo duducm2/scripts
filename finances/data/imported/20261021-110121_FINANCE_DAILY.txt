@@ -1,0 +1,14 @@
+﻿===PREVIEW===
+5 row(s) · Extracted from voice dictation.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+groceries,"""36,93""",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+grocery,"""3,50""",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+dinner,"""50,37""",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1
+groceries,"""125,00""",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+Pedreiro (house construction),"""150,00""",expense,CAT_SERVICO,ACC_MERCADOP,,,1
+===END_FILE===
+Your daily finance report is ready. You can download the attached `FINANCE_DAILY.txt` file and import it.
+
+Is there anything else I can help you with?
