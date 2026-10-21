@@ -1,6 +1,5 @@
 id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active,import_batch
 TASK_0006,PROJ_0003,SEC_0003,Check for opportunities. Check for job openings inside Bosch in other locations to work remote,⚡,punctual,,,,,work,150,,2026-08-29 15:48:39,1,
-TASK_0010,PROJ_0005,SEC_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,,work,3850,,2026-08-29 15:48:39,1,
 TASK_0012,PROJ_0006,SEC_0006,"[Ca-IE-SSM-SEGMAADM-WBT] Health, Safety at Work and Environment-B (due to 29/Jul/2027)",,punctual,,,,,work,440,,2026-08-29 15:48:39,1,
 TASK_0014,PROJ_0012,SEC_0012,KPIs,⏳,punctual,,,,,work,640,,2026-08-29 15:48:39,1,
 TASK_0015,PROJ_0012,SEC_0067,Checar essa funcionalidade de interação com o chat? O Flarian usaria?,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,670,,2026-08-29 15:48:39,1,
@@ -281,5 +280,5 @@ TASK_0608,PROJ_0035,SEC_0171,eh util pra ele.,🔲,punctual,,,,Entrevista Fernan
 TASK_0609,PROJ_0035,SEC_0171,"top down ou distribuido? uma analise centralizado funciona. querendo ou nao, se",🔲,punctual,,,,Entrevista Fernanda,work,7780,,2026-10-20 11:44:21,1,
 TASK_0610,PROJ_0005,SEC_0005,Read about Gemini,⚡,punctual,,,,,work,7790,,2026-10-20 14:15:27,1,
 TASK_0611,PROJ_0005,SEC_0005,Check if anti-gravity is now available for your GB and not only for BD,🔲,punctual,,,,,work,7800,,2026-10-20 14:25:39,1,
-TASK_0612,PROJ_0005,SEC_0005,Check if you have PX installed in your computer,🔲,punctual,,,,,work,7810,,2026-10-20 14:50:27,1,
 TASK_0613,PROJ_0036,SEC_0152,Adicionar KPIs de projetos passados,⚡,punctual,,,,,work,7820,,2026-10-20 15:27:01,1,
+TASK_0614,PROJ_0035,SEC_0150,entrevistar POs,🔲,punctual,,,,,work,7830,,2026-10-20 16:54:41,1,
