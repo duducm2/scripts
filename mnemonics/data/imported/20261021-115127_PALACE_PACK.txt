@@ -1,0 +1,33 @@
+﻿===PREVIEW===
+STUDY_DATAANALYST · 1 palaces · 4 beasts · 4 atoms
+Packing: 4 (remainder only on last **new** palace in this pack)
+
+PALACE 26 — PySpark SQL Operations () [PALACE_DATAANALYST_26]
+  [Cu] cupid — Concept: [I use Spark SQL to integrate] [standard SQL queries] [with my PySpark DataFrame] [code.] | Quote: "Spark SQL allows us to seamlessly integrate SQL queries with our PySpark DataFrame code."
+  [Cv] Cold vulture — Concept: [I use the spark dot sql method to pass] [a standard SQL string] [into the Spark] [engine.] | Quote: "You can perform any SQL-like queries on your Spark DataFrames by passing a standard SQL string directly into the spark dot sql method."
+  [Cw] Cold wombat — Concept: [I use createOrReplaceTempView to create] [a temporary view] [that acts as a virtual] [table.] | Quote: "Before we can query a DataFrame using SQL, we have to create a temporary view using the createOrReplaceTempView method."
+  [Cx] Cold Xena, warrior woman — Concept: [I use advanced SQL operations to perform] [complex aggregations] [over a specific] [partition.] | Quote: "Using advanced SQL operations like window functions allows us to perform complex aggregations over a partition of our data."
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+"PALACE_DATAANALYST_26","STUDY_DATAANALYST",26,"PySpark SQL Operations","","",4,"Depth slot: brick wall (ForegroundLeft). A cupid dodging a massive sparkler shooting neon fireworks into a brick wall. Depth slot: iron gate (MidgroundRight). A shivering Cold vulture swinging a glowing magic wand to freeze an iron gate. Depth slot: fountain (BackgroundCenter). A freezing Cold wombat smashing a giant rubber stamp into a frozen fountain. Depth slot: roof (Aerial). A shivering Cold Xena, warrior woman balancing on a roof edge, furiously typing on an oversized calculator."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+"BEAST_DATAANALYST_26_Cu","PALACE_DATAANALYST_26","Cu","cupid","Lynne Kelly","",0,1,""
+"BEAST_DATAANALYST_26_Cv","PALACE_DATAANALYST_26","Cv","Cold vulture","Custom","",0,2,""
+"BEAST_DATAANALYST_26_Cw","PALACE_DATAANALYST_26","Cw","Cold wombat","Custom","",0,3,""
+"BEAST_DATAANALYST_26_Cx","PALACE_DATAANALYST_26","Cx","Cold Xena, warrior woman","Custom","",0,4,""
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+,"BEAST_DATAANALYST_26_Cu","single","","","[I use Spark SQL to integrate] [standard SQL queries] [with my PySpark DataFrame] [code.]","sparkler | Spark SQL || zipper | integrate || magnifying glass | queries || grid | DataFrame || keyboard | code","Spark SQL allows us to seamlessly integrate SQL queries with our PySpark DataFrame code.","",1
+,"BEAST_DATAANALYST_26_Cv","single","","","[I use the spark dot sql method to pass] [a standard SQL string] [into the Spark] [engine.]","magic wand | spark dot sql method || football | pass || yarn | string || lightning | Spark || engine block | engine","You can perform any SQL-like queries on your Spark DataFrames by passing a standard SQL string directly into the spark dot sql method.","",2
+,"BEAST_DATAANALYST_26_Cw","single","","","[I use createOrReplaceTempView to create] [a temporary view] [that acts as a virtual] [table.]","stamp | createOrReplaceTempView || hammer | create || window | view || hologram | virtual || desk | table","Before we can query a DataFrame using SQL, we have to create a temporary view using the createOrReplaceTempView method.","",3
+,"BEAST_DATAANALYST_26_Cx","single","","","[I use advanced SQL operations to perform] [complex aggregations] [over a specific] [partition.]","calculator | advanced SQL operations || baton | perform || blender | aggregations || tweezers | specific || glass divider | partition","Using advanced SQL operations like window functions allows us to perform complex aggregations over a partition of our data.","",4
+===END_FILE===

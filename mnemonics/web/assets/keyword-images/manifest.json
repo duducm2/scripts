@@ -3310,6 +3310,16 @@
       "version": 1,
       "empty": false,
       "style": "illustration"
+    },
+    "keyboard": {
+      "key": "keyboard",
+      "slug": "keyboard",
+      "file": "keyboard.png",
+      "openverse_id": "c36ca572-7cd7-40ef-ba63-480188535bc2",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=39379917",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }
