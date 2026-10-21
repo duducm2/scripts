@@ -1,6 +1,73 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 26: PySpark SQL Operations</strong> · Character: — · 4 beasts · 4 atoms</summary>
+
+![Memory Palace 26](images/data-analyst/26.png)
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Cx] Cold Xena, warrior woman
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Cold Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[advanced SQL operations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Badvanced%20SQL%20operations%5D&color=9fd4ff" />(calculator) to <img alt="[perform]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bperform%5D&color=ffd966" />(baton)] [complex <img alt="[aggregations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baggregations%5D&color=ffd966" />(blender)] [over a <img alt="[specific]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspecific%5D&color=ffd966" />(tweezers)] [<img alt="[partition]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpartition%5D&color=ffd966" />(glass divider).]
+
+<img src="../../web/assets/keyword-images/blender.jpg" alt="blender" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/tweezers.jpg" alt="tweezers" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/glass_divider.png" alt="glass divider" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Using advanced SQL operations like window functions allows us to perform complex aggregations over a partition of our data.”
+
+### [Cw] Cold wombat
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/wombat.png" alt="Cold wombat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[createOrReplaceTempView]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BcreateOrReplaceTempView%5D&color=9fd4ff" />(stamp) to <img alt="[create]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcreate%5D&color=ffd966" />(hammer)] [a temporary <img alt="[view]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bview%5D&color=ffd966" />(window)] [that acts as a <img alt="[virtual]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvirtual%5D&color=ffd966" />(hologram)] [<img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=ffd966" />(desk).]
+
+<img src="../../web/assets/keyword-images/stamp.jpg" alt="stamp" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/window.png" alt="window" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/hologram.jpg" alt="hologram" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/desk.jpg" alt="desk" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Before we can query a DataFrame using SQL, we have to create a temporary view using the createOrReplaceTempView method.”
+
+### [Cv] Cold vulture
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/vulture.png" alt="Cold vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[spark dot sql method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspark%20dot%20sql%20method%5D&color=9fd4ff" />(magic wand) to <img alt="[pass]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpass%5D&color=ffd966" />(football)] [a standard SQL <img alt="[string]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstring%5D&color=ffd966" />(yarn)] [into the <img alt="[Spark]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%5D&color=ffd966" />(lightning)] [<img alt="[engine]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bengine%5D&color=ffd966" />(engine block).]
+
+<img src="../../web/assets/keyword-images/magic_wand.png" alt="magic wand" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/lightning.png" alt="lightning" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/engine_block.png" alt="engine block" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“You can perform any SQL-like queries on your Spark DataFrames by passing a standard SQL string directly into the spark dot sql method.”
+
+### [Cu] cupid
+
+<img src="../../web/assets/beast-thumbs/cupid.png" alt="cupid" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Spark SQL]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%20SQL%5D&color=9fd4ff" />(sparkler) to <img alt="[integrate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bintegrate%5D&color=ffd966" />(zipper)] [standard SQL <img alt="[queries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bqueries%5D&color=ffd966" />(magnifying glass)] [with my PySpark <img alt="[DataFrame]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%5D&color=ffd966" />(grid)] [<img alt="[code]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcode%5D&color=ffd966" />(keyboard).]
+
+<img src="../../web/assets/keyword-images/magnifying_glass.jpg" alt="magnifying glass" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/grid.jpg" alt="grid" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" /> <img src="../../web/assets/keyword-images/keyboard.png" alt="keyboard" width="72" height="72" style="vertical-align:middle;height:72px;width:72px;" />
+
+**Quote**
+“Spark SQL allows us to seamlessly integrate SQL queries with our PySpark DataFrame code.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 25: Snowflake Schema Core</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 25](images/data-analyst/25.jpg)

@@ -3320,6 +3320,16 @@
       "version": 1,
       "empty": false,
       "style": "illustration"
+    },
+    "hammer": {
+      "key": "hammer",
+      "slug": "hammer",
+      "file": "hammer.png",
+      "openverse_id": "bbaeeac8-9338-4fe0-a51d-4675f4f2b102",
+      "source_page": "https://commons.wikimedia.org/w/index.php?curid=658501",
+      "version": 1,
+      "empty": false,
+      "style": "illustration"
     }
   }
 }
