@@ -30,27 +30,6 @@
       header {
         display: none;
       }
-      .hdr-stats,
-      .ftr-stats {
-        color: var(--muted);
-        font-size: 11px;
-        line-height: 1.2;
-        white-space: nowrap;
-      }
-      footer {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 100;
-        padding: 4px 16px;
-        background: rgba(18, 18, 18, 0.92);
-        border-top: 1px solid var(--line);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-      }
       .search-bar {
         position: fixed;
         top: 8px;
@@ -133,7 +112,7 @@
         max-width: 360px;
       }
       #view {
-        padding: 8px 16px 36px;
+        padding: 8px 16px 16px;
       }
       .panel {
         background: var(--panel);
@@ -417,24 +396,6 @@
       }
       .task .doubt-tag:hover {
         filter: brightness(1.08);
-      }
-      .ftr-stats {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .ftr-stats .btn-clear-new {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 4px;
-        border: 1px solid rgba(200, 168, 75, 0.55);
-        background: rgba(200, 168, 75, 0.18);
-        color: var(--gold, #c8a84b);
-        cursor: pointer;
-      }
-      .ftr-stats .btn-clear-new:hover {
-        background: rgba(200, 168, 75, 0.3);
       }
       .plain-row .title.is-link {
         color: var(--gold);
@@ -840,13 +801,6 @@
         --pf-muted: #8aa0b4;
         background: var(--pf-bg);
         color: #e8eef4;
-      }
-      body.project-focus-mode footer {
-        background: rgba(12, 18, 24, 0.94);
-        border-top-color: var(--pf-line);
-      }
-      body.project-focus-mode .ftr-stats {
-        color: var(--pf-muted);
       }
       body.project-focus-mode #toast {
         background: var(--pf-card);
@@ -1412,7 +1366,6 @@
       />
     </div>
     <div id="view"></div>
-    <footer><div class="ftr-stats" id="ftrSub">Loading…</div></footer>
     <div id="toast"></div>
     <div id="lightbox" hidden><img src="" alt="" /></div>
     <div id="modalHost"></div>
@@ -1459,10 +1412,17 @@
           return "work";
         }
 
+        function machineEnvironmentFocus(data) {
+          const env = (data?.default_focus || data?.environment || "").trim();
+          if (env === "work" || env === "personal" || env === "habits")
+            return env;
+          return "";
+        }
+
         let envDefaultApplied = false;
         function applyEnvDefaultFromState(data) {
-          const env = (data?.default_focus || data?.environment || "").trim();
-          if (env !== "work" && env !== "personal" && env !== "habits") return;
+          const env = machineEnvironmentFocus(data);
+          if (!env) return;
           let fromUrl = "";
           try {
             fromUrl = new URLSearchParams(location.search).get("focus") || "";
@@ -2642,7 +2602,19 @@
           invalidateDataIndex();
           applyEnvDefaultFromState(state.data);
           render();
-          if (opts.focusNew) focusFirstNewImportTask();
+          if (!opts.focusNew) return;
+          if (focusFirstNewImportTask()) return;
+          // No visible new tasks: stay on this computer's column (personal / work).
+          if (!opts.envIfQuiet) return;
+          const home = machineEnvironmentFocus(state.data);
+          if (!home) return;
+          state.envDefaultFocus = home;
+          state.pwSide = home === "work" ? "work" : "personal";
+          if (state.sectionFocus !== home)
+            applySectionFocus(home, {
+              scrollHeader: false,
+              selectScroll: false,
+            });
         }
 
         function projectsFor(filt) {
@@ -3208,13 +3180,14 @@
         }
 
         function listNewImportTasks() {
+          // Completed rows are not drawn, so a leftover import tag must not
+          // count as new or pull the dashboard onto that column.
           return (state.data?.tasks || []).filter(
-            (t) => t.active !== "0" && (t.import_batch || "").trim(),
+            (t) =>
+              t.active !== "0" &&
+              t.emoji !== "✅" &&
+              (t.import_batch || "").trim(),
           );
-        }
-
-        function countNewImportTasks() {
-          return listNewImportTasks().length;
         }
 
         // Newest IMP-… batch first; within a batch, pack order (sort_order / id).
@@ -3285,19 +3258,6 @@
           const sk = t.kind === "habitual" ? "habit" : "task";
           flashAdded(sk, t.id);
           return true;
-        }
-
-        function updateStatsLine() {
-          const c = state.data?.counts || {};
-          const newN = countNewImportTasks();
-          const text = `${c.projects || 0} projects · ${c.tasks || 0} tasks · ${c.info || 0} info · ${c.open || 0} open`;
-          const ftr = $("#ftrSub");
-          if (!ftr) return;
-          if (newN > 0) {
-            ftr.innerHTML = `${esc(text)} · <span>${newN} new</span> <button type="button" class="btn-clear-new" data-act="clear-all-new" title="Clear NEW tags on imported tasks">Clear NEW</button>`;
-          } else {
-            ftr.textContent = text;
-          }
         }
 
         function showSearchBar() {
@@ -3511,7 +3471,6 @@
 
         function render() {
           if (!state.data) return;
-          updateStatsLine();
           renderDashboard();
         }
 
@@ -4010,7 +3969,6 @@
           markingNewReadIds.add(taskId);
           t.import_batch = "";
           paintTaskNewCleared(taskId);
-          updateStatsLine();
           try {
             await api(
               "/api/tasks/" +
@@ -7009,20 +6967,6 @@
               await markNewTaskRead(id, { focusNext: true });
               return;
             }
-            if (act === "clear-all-new") {
-              e.preventDefault();
-              const r = await api("/api/tasks/clear-import-batches", {
-                method: "POST",
-                body: "{}",
-              });
-              toast(
-                r.cleared
-                  ? `Cleared NEW on ${r.cleared} task(s)`
-                  : "No NEW tags",
-              );
-              await refresh();
-              return;
-            }
             if (act === "copy-task") {
               copyTaskById(id);
               return;
@@ -7601,9 +7545,7 @@
               hideSearchBar();
           });
         }
-        refresh({ focusNew: true }).catch((err) => {
-          const ftr = $("#ftrSub");
-          if (ftr) ftr.textContent = err.message;
+        refresh({ focusNew: true, envIfQuiet: true }).catch((err) => {
           toast(err.message);
         });
       })();
