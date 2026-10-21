@@ -250,3 +250,11 @@ TX255,2026-10-20,grocery,"3,50",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
 TX256,2026-10-20,dinner,"50,37",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX257,2026-10-20,groceries,"125,00",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX258,2026-10-20,Pedreiro (house construction),"150,00",expense,CAT_SERVICO,ACC_MERCADOP,,,1,1,,0
+TX259,2026-10-21,"BoschLife: 14155,76 -> 14510,22 (+354,46 yield)","354,46",income,CAT_INVESTIM,ACC_BOSCHLIF,,,1,1,,0
+TX260,2026-10-21,"FGTS: 55978,74 -> 56211,59 (+232,85 yield)","232,85",income,CAT_INVESTIM,ACC_FGTS,,,1,1,,0
+TX261,2026-10-21,"Nubank (short-term): 5000,00 -> 5039,39 (+39,39 yield)","39,39",income,CAT_INVESTIM,ACC_TRANSITI,,,1,1,,0
+TX262,2026-10-21,"99 Pay (short-term): 5000,00 -> 5040,37 (+40,37 yield)","40,37",income,CAT_INVESTIM,ACC_99PAY,,,1,1,,0
+TX263,2026-10-21,"Mercado Pago (checking account): 4327,48 -> 4350,86 (+23,38 yield)","23,38",income,CAT_INVESTIM,ACC_MERCADOP,,,1,1,,0
+TX264,2026-10-21,"Mercado Pago (short-term): 12167,38 -> 12255,15 (+87,77 yield)","87,77",income,CAT_INVESTIM,ACC_MERCADOP2,,,1,1,,0
+TX265,2026-10-21,"Mercado Pago (long-term): 48489,10 -> 48700,49 (+211,39 yield)","211,39",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
+TX266,2026-10-21,"Meli dólares: 98,37 -> 119,51 (+21,14 yield)","21,14",income,CAT_INVESTIM,ACC_MELIDOLA,,,1,1,,0

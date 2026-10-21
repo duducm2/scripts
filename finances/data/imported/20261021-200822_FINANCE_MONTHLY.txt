@@ -1,0 +1,25 @@
+﻿===PREVIEW===
+8 row(s) emitted.
+BoschLife: 14155,76 -> 14510,22 (adjustment: +354,46)
+FGTS: 55978,74 -> 56211,59 (adjustment: +232,85)
+Nubank (checking account): 50,00 -> 50,00 (skipped, zero delta)
+Nubank (short-term): 5000,00 -> 5039,39 (adjustment: +39,39)
+99 Pay (short-term): 5000,00 -> 5040,37 (adjustment: +40,37)
+Mercado Pago (checking account): 4327,48 -> 4350,86 (adjustment: +23,38)
+Mercado Pago (short-term): 12167,38 -> 12255,15 (adjustment: +87,77)
+Mercado Pago (long-term): 48489,10 -> 48700,49 (adjustment: +211,39)
+Meli dólares: 98,37 -> 119,51 (adjustment: +21,14)
+No goals mentioned in dictation.
+===END_PREVIEW===
+
+===FILE: FINANCE_MONTHLY.csv===
+entity_type,entity_id,adjustment_amount,description
+account,ACC_BOSCHLIF,"+354,46","BoschLife: 14155,76 -> 14510,22 (+354,46 yield)"
+account,ACC_FGTS,"+232,85","FGTS: 55978,74 -> 56211,59 (+232,85 yield)"
+account,ACC_TRANSITI,"+39,39","Nubank (short-term): 5000,00 -> 5039,39 (+39,39 yield)"
+account,ACC_99PAY,"+40,37","99 Pay (short-term): 5000,00 -> 5040,37 (+40,37 yield)"
+account,ACC_MERCADOP,"+23,38","Mercado Pago (checking account): 4327,48 -> 4350,86 (+23,38 yield)"
+account,ACC_MERCADOP2,"+87,77","Mercado Pago (short-term): 12167,38 -> 12255,15 (+87,77 yield)"
+account,ACC_MERCADOP3,"+211,39","Mercado Pago (long-term): 48489,10 -> 48700,49 (+211,39 yield)"
+account,ACC_MELIDOLA,"+21,14","Meli dólares: 98,37 -> 119,51 (+21,14 yield)"
+===END_FILE===
