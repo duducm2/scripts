@@ -44,8 +44,8 @@ ImportMgmt_CloseIfOpen() {
 }
 
 ; Copy AI fix file to clipboard, show orientation toast, close Import Manager if open.
-; When PackPipeline is active: write/toast only (pipeline HandleInvalid owns paste+submit).
-; When inactive: also paste+submit into the companion once.
+; Sends the fix into the companion once. Automatic reply download/copy stays off,
+; so this is the send that follows a manual import attempt.
 ; Returns true when the hub was closed.
 ImportMgmt_OnAiFixReady(path, label) {
     if (path = "" || !FileExist(path))
@@ -565,8 +565,8 @@ ImportMgmt_HelpText() {
     . "Writes: finances/data transactions (append)`r`n"
     . "Confirm: editable preview before save`r`n"
     . "Success: archive pack → finances/data/imported/; opens transactions; hub closes`r`n"
-    . "AI fix: Desktop FINANCE_AI_FIX.txt (copied to clipboard, ≥5s banner, hub closes)`r`n"
-    . "Re-run: paste fix → AI re-delivers pack → save FINANCE_DAILY.txt → #!+X → [D]`r`n`r`n"
+    . "AI fix: Desktop FINANCE_AI_FIX.txt — sent to the companion; hub closes`r`n"
+    . "Re-run: save the corrected FINANCE_DAILY.txt yourself → #!+X → [D]`r`n`r`n"
     . "========== [M] FINANCE MONTHLY ==========`r`n"
     . "Pack: FINANCE_MONTHLY.txt`r`n"
     . "Writes: accounts / goals adjustments + related transactions`r`n"
@@ -633,8 +633,8 @@ ImportMgmt_HelpText() {
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"
     . "• Full success: local CSV saved; Desktop pack archived; Import Manager closes`r`n"
     . "  (Finance daily still opens the transactions page)`r`n"
-    . "• Failure with AI fix: fix text copied to clipboard; ≥5s banner; Import Manager closes`r`n"
-    . "  → paste into AI companion → re-deliver pack → reopen Import Manager`r`n`r`n"
+    . "• Failure with AI fix: fix is sent to the AI companion; Import Manager closes`r`n"
+    . "  → save the corrected pack yourself → reopen Import Manager`r`n`r`n"
     . "AI FIX FILES (always overwrite on Desktop)`r`n"
     . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt | TASK_AI_FIX.txt`r`n`r`n"
     . "PACK FORMAT`r`n"

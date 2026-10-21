@@ -137,7 +137,8 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             contextEntries := resolved.entries
             pickedCount := resolved.pickedCount
         }
-        ; Pack catalog + Send: always route through companion (no [L] required) so watch can arm.
+        ; Pack catalog + Send: always route through the companion (no [L] required).
+        ; Reply download/copy stays manual; import is Import Management.
         if (pasteChoice = "send" && PackPipeline_IsCatalogPrompt(prompt))
             useGemini := true
         PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
@@ -170,10 +171,6 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             companionId := (attachCount > 0 || InsertFiles_IsAiChatForeground()) ? ResolveGlobalAICompanion() : ""
             submitOpts := { hwnd: g_UtilitySelectorRestoreHwnd, companionId: companionId, attachCount: attachCount }
             PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd, submitOpts)
-            ; Non-companion path: still arm if somehow a catalog pack was sent without force-route.
-            try PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companionId, g_UtilitySelectorRestoreHwnd)
-            catch {
-            }
         } else if (doAppendClipboard && clip != "") {
             PromptPaste_BusyEnsure("⏳ Pasting clipboard…")
             g_lastExpansion := 0
@@ -1474,7 +1471,7 @@ UtilitySelector_RestoreConsumerGeminiFocus(*) {
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
     contextEntries := "", pasteChoice := "", extraAttachPaths := "") {
-    global g_lastExpansion, g_PromptPasteBusyActive, g_UtilitySelectorRestoreHwnd
+    global g_lastExpansion, g_PromptPasteBusyActive
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
     ; Keep Prompt Manager Loading Indication; do not wipe it with the passive Gemini banner.
@@ -1484,15 +1481,6 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         usedBusyBar := true
     } else {
         HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
-    }
-    ; Origin before companion focus — dictation-style restore target after pack send.
-    ; Prefer the hwnd captured when Prompt Manager opened (pre-selector), never the selector GUI.
-    originHwnd := 0
-    try {
-        if (g_UtilitySelectorRestoreHwnd && WinExist("ahk_id " g_UtilitySelectorRestoreHwnd))
-            originHwnd := g_UtilitySelectorRestoreHwnd
-    } catch {
-        originHwnd := 0
     }
     restoreFocus := ""
     playGeminiChime := false
@@ -1521,9 +1509,6 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             if (!companionHwnd)
                 companionHwnd := WinExist("A")
         }
-        ; If origin is companion / missing, pick another visible window (Z-order).
-        if (!originHwnd || (companionHwnd && originHwnd = companionHwnd))
-            originHwnd := PackPipeline_ResolveUserHwnd(companionHwnd, originHwnd)
         if (doAttach) {
             if (usedBusyBar)
                 PromptPaste_BusyEnsure("⏳ Attaching context…")
@@ -1565,19 +1550,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             onAfter := (*) => ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         }
         PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus, submitOpts)
-        ; Pack auto-pipeline: after send, wait for generation → Desktop → import confirm.
-        armed := false
-        try armed := PackPipeline_MaybeArmAfterSend(prompt, pasteChoice, companion, companionHwnd, originHwnd)
-        catch {
-            armed := false
-        }
-        ; Dictation-style: restore origin immediately so user can work during background wait.
-        if (armed && PackPipeline_IsActive()) {
-            if (originHwnd)
-                PackPipeline_SetUserHwnd(originHwnd)
-            restored := PackPipeline_RestoreUserHwnd()
-            PackPipeline_NotifyUserFree(restored)
-        }
+        ; Pack reply is not fetched here. Download or copy it, then import manually.
     } else if (appendClip != "") {
         g_lastExpansion := 0
         InsertText(appendClip)

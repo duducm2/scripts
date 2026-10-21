@@ -1257,20 +1257,12 @@ class D2C_FlowManager {
                 return
             }
             if (presetMode = "finance_daily" || presetMode = "task_pack") {
-                ; Pack pipeline owns completion → extract → Desktop → import confirm.
-                ; Drop the catalog-Send watch so only the pack Stop poll runs.
+                ; Send only. Download or copy the pack yourself, then import from
+                ; Import Management. A failed import still sends the AI fix.
+                ; Drop the response watch so it does not copy the reply.
                 AiCompanion_DisarmResponseWatch()
-                try PackPipeline_ArmFromPreset(presetMode, this.CompanionId, this.GeminiHwnd, this.OriginHwnd)
-                catch {
-                }
-                if (PackPipeline_IsActive()) {
-                    if (this.OriginHwnd)
-                        PackPipeline_SetUserHwnd(this.OriginHwnd)
-                    restored := PackPipeline_RestoreUserHwnd()
-                    PackPipeline_NotifyUserFree(restored)
-                } else if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
-                }
                 global g_D2C_DictationSubmitMenuCycleFinished
                 g_D2C_DictationSubmitMenuCycleFinished := true
                 this.Reset()

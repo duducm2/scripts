@@ -20,12 +20,12 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 
 1. **Prompt** (`.txt` + `prompts.ini` metadata) tells the AI what structured pack to emit.
 2. **Context CSVs** attached at send time give the AI existing rows/ids to match.
-3. **Pack auto-pipeline** (AppLaunchers — [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk)): after a catalog pack prompt is **sent**, wait for generation to finish, extract last **code block** (fallback: last message), write the canonical Desktop filename, then open the domain **import confirm** GUI. No manual naming/save.
+3. **Pack retrieval is manual** ([`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk), `PACK_PIPELINE_AUTO_RETRIEVE := false`). After a catalog pack prompt is **sent**, nothing enters the companion to download a chip or copy the reply. Save the pack yourself (Quick Download `#!+9` hold, or copy the fence) under the canonical Desktop name, then import from Import Management.
 4. **Importer** (`*_import.ahk`) reads the Desktop pack, extracts CSV, upserts local data (confirm still required).
-5. On **structure** failure before write **or import validation** failure (`*_AI_FIX.txt` written): pipeline **pastes + submits** the fix to the companion and re-watches generation (max 2 attempts). Confirm **Cancel** ends the session (no AI-fix loop, no app launch).
-6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs dropped manually; the pack pipeline marks its write as seen / sets busy so the watcher does not double-fire. After watcher-driven imports, a fresh AI-fix file is **sent once**. The watcher does not paste it into the composer again. Hub / manual `ImportMgmt_OnAiFixReady` **paste+submits** when the pack pipeline is inactive.
+5. On **import validation** failure (`*_AI_FIX.txt` written): `ImportMgmt_OnAiFixReady` **pastes + submits** the fix once. It does not watch the next reply or copy it. Save the corrected pack yourself and import again. Confirm **Cancel** does not send a fix.
+6. **Desktop watcher** ([`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk)): still auto-imports packs that land on the Desktop. After that import, a fresh AI-fix file is **sent once**. Hub / manual import uses the same one-shot send.
 
-### Pack auto-pipeline (arm → extract → Desktop → import)
+### Pack prompts (send only → you save → Import Management)
 
 | Trigger                                      | Canonical Desktop file |
 | -------------------------------------------- | ---------------------- |
@@ -35,9 +35,9 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 | Utility `[n]`                                | `PLAN_PACK.txt`        |
 | Utility `[k]` / Send dictation `[T]`         | `TASK_PACK.txt`        |
 
-- Arm: `PackPipeline_ArmFromPrompt` (after Prompt Manager send) / `PackPipeline_ArmFromPreset` (D2C). After pack send, focus restores to the pre-companion window (dictation-style) while generation is watched in the background.
-- Extract: code snippet first (`WM_COPY_LAST_GEMINI_CODE` / in-process Copilot/Enterprise), else last message; brief companion activate then restore.
-- Confirm GUIs stay; only file naming/save is automated. **Cancel** does not open Memory Palace / Finance menus (toast: no data written). Success paths still open the domain UI after commit.
+- Send still attaches context and submits. `PACK_PIPELINE_AUTO_RETRIEVE` is false, so nothing waits on generation, clicks Download, or copies the last code block / message.
+- You save the pack, then run Import Management (`#!+X` / Utility `[J]`). Clipboard pack text is tried first, then the Desktop file.
+- Confirm GUIs stay. **Cancel** does not open Memory Palace / Finance menus (toast: no data written). Success paths still open the domain UI after commit.
 - **No dedicated import-results window** — preview is the confirm ListView; success is a toast (+ optional domain main menu).
 - **Running SPA must reload after import** — Memory Palace (`:8767`) keeps `/api/state` in the browser; AHK post-success path invalidates the Python cache and `{F5}`-reloads any open Memory Palace Chrome tab (`Palace_RefreshRunningWebApp`).
 
@@ -65,7 +65,7 @@ Finance and Memory Palace add a **confirm UI** before save. Memory Palace upsert
 
 Fix files: `FINANCE_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `TASK_AI_FIX.txt`.
 
-Finance/Palace/Tasks AI-fix path: clipboard copy + orientation toast via `ImportMgmt_OnAiFixReady`. When PackPipeline is **active**, the pipeline owns paste+submit + re-watch (OnAiFixReady skips companion send to avoid double-submit). When inactive, OnAiFixReady **paste+submits** once. Watcher after-import sends only if that submit did not already happen, and never pastes the same fix a second time. Fix paths: `FINANCE_AI_FIX.txt`, `TASK_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `PACK_AI_FIX.txt`. Tasks pack import is AHK confirm + Python CLI (`task_pack_import.py preview|commit`).
+Finance/Palace/Tasks AI-fix path: clipboard copy + orientation toast via `ImportMgmt_OnAiFixReady`, which **paste+submits once**. Automatic reply retrieval stays off, so the fix is not followed by another download or copy. Watcher after-import sends only if that submit did not already happen, and never pastes the same fix a second time. Fix paths: `FINANCE_AI_FIX.txt`, `TASK_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `PACK_AI_FIX.txt`. Tasks pack import is AHK confirm + Python CLI (`task_pack_import.py preview|commit`).
 
 Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors when applicable) → **WHAT YOU MUST DO** (tailored via `*_AiCompanionFixGuidance`) → **DELIVERY RULES**.
 
@@ -81,7 +81,7 @@ Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors wh
 | Import Management | —                                                                                                                                                       | Hub UI + `ImportMgmt_Run*` → domain importers                                                                                       | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)                       | —                      |
 
 Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
-Pack auto-pipeline: [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk). Desktop watcher: [`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk).
+Pack retrieval switch: [`Utils/pack_pipeline.ahk`](../Utils/pack_pipeline.ahk) (`PACK_PIPELINE_AUTO_RETRIEVE`). Desktop watcher: [`Utils/import_watcher.ahk`](../Utils/import_watcher.ahk).
 
 Prompt wiring: [`assets/data/prompts.ini`](../assets/data/prompts.ini), [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). ClipAngel Desktop names: [`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv).
 
@@ -192,9 +192,8 @@ Each fix file contains: **IMPORT ERROR**, **EXTRA NOTES** (per-row failures when
 Recovery workflow:
 
 1. Importer writes fix file + toast; copies fix text to clipboard; closes Import Management when open.
-2. **Pack pipeline armed:** pipeline paste+submits the fix and re-watches generation (max 2). Confirm Cancel does **not** open Memory Palace.
-3. **Pipeline inactive (hub/manual):** `ImportMgmt_OnAiFixReady` paste+submits once into the companion.
-4. AI re-delivers a corrected pack → pipeline extract overwrites the **canonical** Desktop filename → confirm again.
+2. `ImportMgmt_OnAiFixReady` paste+submits the fix once. It does not download or copy the next reply. Confirm Cancel does **not** open Memory Palace and does **not** send a fix.
+3. Save the corrected pack yourself (Quick Download or copy) under the canonical Desktop name, then import again from Import Management.
 
 ---
 

@@ -1,11 +1,15 @@
 ; =============================================================================
 ; Utils module: pack_pipeline.ahk
-; Auto bridge: pack prompt sent → wait generation → extract (code then message)
-; → validate → write canonical Desktop file → domain import (confirm GUI kept)
-; → on structure fail: AI fix paste+submit and retry.
+; Pack retrieval is manual. After a catalog prompt is sent, this module does
+; not enter the companion, download a chip, or copy the reply.
+; Save the pack yourself (Quick Download or copy), then import from Import
+; Management. A failed import still sends the AI fix (ImportMgmt_OnAiFixReady).
 ; Owner: AppLaunchers.ahk only. Coordinates with import_watcher busy/seen.
 ; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
+
+; False: do not watch generation, copy/download the reply, or start import.
+global PACK_PIPELINE_AUTO_RETRIEVE := false
 
 global g_PackPipeline := false
 global g_PackPipelineMonitorTimer := ""
@@ -292,7 +296,10 @@ PackPipeline_SetUserHwnd(userHwnd) {
 
 PackPipeline_Arm(key, item, companionId := "", hwnd := 0, userHwnd := 0) {
     global g_PackPipeline, g_PackPipelineMaxAttempts, g_PackPipelineMonitorRetry,
-        g_PackPipelineMonitorButtonSeen
+        g_PackPipelineMonitorButtonSeen, PACK_PIPELINE_AUTO_RETRIEVE
+    ; Manual download/copy, then Import Management. Do not fetch the reply.
+    if (!PACK_PIPELINE_AUTO_RETRIEVE)
+        return false
     if (!IsObject(item))
         return false
     if (companionId = "") {

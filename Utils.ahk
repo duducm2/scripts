@@ -375,7 +375,7 @@ catch {
 #include %A_ScriptDir%\Utils\import_watcher_companion.ahk
 ; [Utils module] Always-on Desktop pack watcher (AppLaunchers only) -> Utils\import_watcher.ahk
 #include %A_ScriptDir%\Utils\import_watcher.ahk
-; [Utils module] Pack prompt auto pipeline (extract->Desktop->import) -> Utils\pack_pipeline.ahk
+; [Utils module] Pack pipeline (auto companion fetch off; manual save + import) -> Utils\pack_pipeline.ahk
 #include %A_ScriptDir%\Utils\pack_pipeline.ahk
 ; [Utils module] Utility Shortcuts [G] background push scripts+notes (+ Tasks/Palace MD export) -> Utils\utility_git_push.ahk
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
