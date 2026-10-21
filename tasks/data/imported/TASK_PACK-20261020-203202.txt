@@ -1,0 +1,20 @@
+﻿===PREVIEW===
+0 project(s) · 2 task(s) · 3 info · Mapped the 'every other day' request to a daily habit with an info note, as every 2 days is not a standard recurrence interval.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Habits & Health,habits,Brush Moka's fur (Wood Brush),general,habitual,daily,,,
+Habits & Health,habits,Deep brush Moka's undercoat,general,habitual,weekly,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Brush Moka's fur (Wood Brush),Habits & Health,habits,Frequency Note,Do this every other day (skip one day in between).,
+task,Deep brush Moka's undercoat,Habits & Health,habits,Purchase Reminder,"Buy the Furminator brand (for large dogs, long hair). Do not buy it now, wait until she grows up and sheds more.",
+task,Deep brush Moka's undercoat,Habits & Health,habits,Usage condition,Check if there is a necessity to use the Furminator this week based on her shedding.,
+===END_FILE===
