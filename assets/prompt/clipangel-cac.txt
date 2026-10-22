@@ -1,26 +1,58 @@
-You are an expert data processing assistant. Your task is to take the unstructured text, data, or requests provided at the end of this prompt (after the three dashes `---`) and convert them into a valid **ClipAngel `.cac` XML file format**.
+DELIVERY MANDATE (read first)
+Deliver one `clips.cac` file in this reply. Prefer a real download chip named `clips.cac`. If the companion can only attach a `.txt`, the file body is still the XML below and the human saves it as `clips.cac`. You cannot write to the human’s disk — never say you saved, wrote, or stored a file there.
 
-ClipAngel uses a .NET DataSet XML schema to import clipboard history. Every distinct item identified in my input must be mapped to its own `<ClipAngelClips>` node within the `<NewDataSet>` root.
+ClipAngel .cac — unstructured text → clipboard import file
 
-**Here are the strict rules for generating the XML:**
+ClipAngel imports this file with `DataTable.ReadXml`. That call fails, and ClipAngel reports a bad file, unless the bytes match the rules below. The human message after this prompt is the only source. Do not turn these instructions into a clip.
 
-1. **Root and Schema:** The document MUST start with `<?xml version="1.0" standalone="yes"?>` followed by the `<NewDataSet>` root node and the exact `<xs:schema>` definition required by ClipAngel.
-2. **Item Mapping:** For each distinct item/entry in my input, create a `<ClipAngelClips>` block.
-3. **Node Values for each `<ClipAngelClips>`:**
-   * `<Type>`: Set to `text`.
-   * `<Text>`: The full content of the item.
-   * `<Title>`: A concise title for the item (e.g., the first 50-80 characters of the text, or a logical header if one exists).
-   * `<Application>`: Set to `chrome` (or infer if obvious).
-   * `<Window>`: Set to `AI Export` (or something relevant to the data).
-   * `<Size>`: Estimate the byte size (approx. 2 * number of characters).
-   * `<Chars>`: The character count of the `<Text>`.
-   * `<Created>`: Use a valid ISO 8601 timestamp (e.g., `2026-08-05T12:00:00.0000000-03:00`). Increment the seconds for each subsequent item.
-   * `<Id>`: Generate a unique integer for each clip (e.g., start at 70001 and increment).
-   * `<Hash>`: Generate a random short string or base64 dummy value (e.g., `ZHVtbXk=`).
-   * `<Used>`, `<Favorite>`, `<Contain_time>`, `<Contain_email>`, `<Contain_number>`, `<Contain_phone>`, `<Contain_url>`, `<Contain_url_image>`, `<Contain_url_video>`, `<Contain_filename>`, `<Contain_1CLine>`: Set to `false`.
-   * `<AppPath>`, `<Binary>`, `<RichText>`, `<HtmlText>`, `<Url>`, `<ImageSample>`: Leave as empty self-closing tags (e.g., `<Binary />`) or empty nodes.
+FILE BODY (what ClipAngel opens)
+- The first characters of the file are `<?xml version="1.0" standalone="yes"?>`. No blank line, no title, no “here is the file”, no byte-order mark, no Markdown fence inside the file.
+- One `<NewDataSet>` document. The `<xs:schema>` block below is copied once, unchanged, immediately after `<NewDataSet>`. ClipAngel does not infer a schema. A file without this exact schema does not import.
+- Then one `<ClipAngelClips>` element per clip, still inside `<NewDataSet>`, then `</NewDataSet>`. Do not repeat the schema. Do not leave the sample comment in the file.
 
-**XML Structure Template:**
+HOW MANY CLIPS
+- One clip when the human gives one block, or says one clip, don’t split, or keep together. `<Text>` is that whole source.
+- Several clips when they give separate items (a list, several links, several notes) or say each item, separate clips, or one clip per entry. One `<ClipAngelClips>` per item, in the same order.
+- Skip an item you cannot read. Do not invent items that are not in the human message.
+
+EACH `<ClipAngelClips>` — element order and values
+Copy this element order. Fill only the text, the title, the counts, the time, and the id.
+
+1. `<Type>text</Type>`
+2. `<Text>`…`</Text>` — the clip body, unchanged. Keep line breaks inside the element.
+3. `<Title>`…`</Title>` — one line, at most 80 characters, taken from the first line of that text.
+4. `<Application>chrome</Application>`
+5. `<Window>AI Export</Window>`
+6. `<Size>` — an integer, two times the character count of the unescaped text.
+7. `<Chars>` — an integer, the character count of the unescaped text. Digits only. Never an empty tag.
+8. `<Created>` — `yyyy-MM-ddTHH:mm:ss-03:00` (the letter T between date and time). Start at the current time and add one second for each next clip.
+9. `<RichText></RichText>`
+10. `<Id>` — an integer, `1` for the first clip, then `2`, `3`, …
+11. `<HtmlText></HtmlText>`
+12. `<Used>false</Used>`
+13. `<Url></Url>`
+14. `<Hash></Hash>`
+15. `<Favorite>false</Favorite>`
+16. `<AppPath></AppPath>`
+17. `<Contain_time>false</Contain_time>`
+18. `<Contain_email>false</Contain_email>`
+19. `<Contain_number>false</Contain_number>`
+20. `<Contain_phone>false</Contain_phone>`
+21. `<Contain_url>false</Contain_url>`
+22. `<Contain_url_image>false</Contain_url_image>`
+23. `<Contain_url_video>false</Contain_url_video>`
+24. `<Contain_filename>false</Contain_filename>`
+25. `<Contain_1CLine>false</Contain_1CLine>`
+
+Do not emit `<Binary>` or `<ImageSample>`.
+
+XML TEXT RULES (these are why imports fail)
+- In `<Text>` and `<Title>`, write `&amp;` for every `&`, `&lt;` for every `<`, and `&gt;` for every `>`. A link query (`?a=1&b=2`) and a comparison (`a < b`) must be escaped. Leave the characters escaped in the file. Do not wrap the text in CDATA.
+- Booleans are the lowercase words `true` or `false`. Every flag in the list above is `false`.
+- `<Chars>`, `<Size>`, and `<Id>` contain digits only.
+- `<Created>` contains the letter T between the date and the time.
+
+SCHEMA (copy verbatim, once)
 ```xml
 <?xml version="1.0" standalone="yes"?>
 <NewDataSet>
@@ -65,15 +97,46 @@ ClipAngel uses a .NET DataSet XML schema to import clipboard history. Every dist
       </xs:complexType>
     </xs:element>
   </xs:schema>
-
-  <!-- INSERT IDENTIFIED ITEMS HERE USING THE <ClipAngelClips> STRUCTURE -->
-
 </NewDataSet>
 ```
 
-**Output Requirement:** 
-Do not include conversational filler. Output ONLY the valid XML code block containing the fully structured `.cac` file so I can copy and save it directly.
+The download file is that document with `<ClipAngelClips>` blocks inserted before `</NewDataSet>`. Example of one clip whose text is `a < b & c` (9 characters):
 
-Please process the unstructured information below and structure it accordingly:
+```xml
+  <ClipAngelClips>
+    <Type>text</Type>
+    <Text>a &lt; b &amp; c</Text>
+    <Title>a &lt; b &amp; c</Title>
+    <Application>chrome</Application>
+    <Window>AI Export</Window>
+    <Size>18</Size>
+    <Chars>9</Chars>
+    <Created>2026-10-22T15:00:00-03:00</Created>
+    <RichText></RichText>
+    <Id>1</Id>
+    <HtmlText></HtmlText>
+    <Used>false</Used>
+    <Url></Url>
+    <Hash></Hash>
+    <Favorite>false</Favorite>
+    <AppPath></AppPath>
+    <Contain_time>false</Contain_time>
+    <Contain_email>false</Contain_email>
+    <Contain_number>false</Contain_number>
+    <Contain_phone>false</Contain_phone>
+    <Contain_url>false</Contain_url>
+    <Contain_url_image>false</Contain_url_image>
+    <Contain_url_video>false</Contain_url_video>
+    <Contain_filename>false</Contain_filename>
+    <Contain_1CLine>false</Contain_1CLine>
+  </ClipAngelClips>
+```
 
----
+Pre-send check:
+1. The file starts with `<?xml version="1.0" standalone="yes"?>` and ends with `</NewDataSet>`.
+2. The schema appears once.
+3. Every `&`, `<`, and `>` inside `<Text>` and `<Title>` is escaped.
+4. Every boolean is `false`. Every `<Chars>`, `<Size>`, and `<Id>` is digits. Every `<Created>` contains `T`.
+5. There is no `<Binary>` and no `<ImageSample>`.
+
+After the file, one short line telling the human to import `clips.cac` in ClipAngel. Do not repeat the XML in the chat.
