@@ -4597,7 +4597,7 @@
             toast("General cannot be deleted");
             return false;
           }
-          if (!confirm("Delete section? Its tasks move to General."))
+          if (!confirm("Delete this section and the tasks inside it?"))
             return false;
           await api("/api/sections/" + encodeURIComponent(sec.id), {
             method: "DELETE",

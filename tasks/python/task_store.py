@@ -1051,16 +1051,25 @@ class TaskStore:
             return {"ok": False, "error": "section not found"}
         if (sec.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
             return {"ok": False, "error": "cannot delete General"}
-        gen = self.ensure_general_section(sec.get("project_id") or "")
         tasks = self.load("tasks")
-        changed = False
-        for t in tasks:
-            if t.get("section_id") == section_id:
-                t["section_id"] = gen["id"]
-                t["section_path"] = ""
-                changed = True
-        if changed:
-            self.save("tasks", tasks)
+        task_ids = {t["id"] for t in tasks if t.get("section_id") == section_id}
+        infos = self.load("info_points")
+        info_ids = set()
+        info_out = []
+        for i in infos:
+            if i.get("parent_type") == "task" and i.get("parent_id") in task_ids:
+                info_ids.add(i["id"])
+            else:
+                info_out.append(i)
+        if len(info_out) != len(infos):
+            self.save("info_points", info_out)
+        self._purge_attachments(
+            lambda a: (
+                a.get("parent_type") == "task" and a.get("parent_id") in task_ids
+            )
+            or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
+        )
+        self.save("tasks", [t for t in tasks if t.get("id") not in task_ids])
         self.save("sections", [s for s in rows if s.get("id") != section_id])
         return {"ok": True}
 

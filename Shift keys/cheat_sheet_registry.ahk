@@ -1153,7 +1153,7 @@ cheatSheets["Tasks"] := "
     🔚 [End] Last visible item
     🔤 [a-z 0-9] Jump to next title starting with that character
     ⏎ [Enter] Edit selected project, section, or task (not General)
-    🗑️ [Delete] Delete selected project, section, or task (not General)
+    🗑️ [Delete] Delete selected project, section, or task (not General). Deleting a section also deletes the tasks inside it
     🏠 [Esc] Close overlay first (inline field, image, Info, modal)
     🏠 [Esc] Exit project focus (Shift+Z), then clear selection
     🏠 [Esc] Clear selection — stay on Work/Personal/Habits focus (search + emoji filter stay)
