@@ -258,3 +258,4 @@ TX263,2026-10-21,"Mercado Pago (checking account): 4327,48 -> 4350,86 (+23,38 yi
 TX264,2026-10-21,"Mercado Pago (short-term): 12167,38 -> 12255,15 (+87,77 yield)","87,77",income,CAT_INVESTIM,ACC_MERCADOP2,,,1,1,,0
 TX265,2026-10-21,"Mercado Pago (long-term): 48489,10 -> 48700,49 (+211,39 yield)","211,39",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
 TX266,2026-10-21,"Meli dólares: 98,37 -> 119,51 (+21,14 yield)","21,14",income,CAT_INVESTIM,ACC_MELIDOLA,,,1,1,,0
+TX267,2026-10-22,Lunch,"18,49",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
