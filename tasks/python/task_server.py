@@ -425,6 +425,29 @@ class TaskHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
 
+        section_export_prefix = "/api/sections/"
+        if path.startswith(section_export_prefix) and path.endswith(export_suffix):
+            sid = path[len(section_export_prefix) : -len(export_suffix)].strip("/")
+            store = get_store(self.data_dir)
+            result = store.export_section(sid)
+            if not result.get("ok"):
+                self._json(404, result)
+                return
+            body = json.dumps(result["document"], ensure_ascii=False, indent=2).encode(
+                "utf-8"
+            )
+            filename = result.get("filename") or "section.json"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self._cors()
+            self.send_header(
+                "Content-Disposition", f'attachment; filename="{filename}"'
+            )
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if path == "/api/state":
             store = get_store(self.data_dir)
             payload = store.state()

@@ -1207,7 +1207,7 @@ cheatSheets["Tasks"] := "
     ✅ [C] Mark hovered or selected task done (not habits)
     ➡️ [D] Copy selected habit into Personal · General
     📝 [N] Open Info for the selected project or task
-    📄 [X] JSON — selected task (info points included), or the whole project when a project or section is selected
+    📄 [X] JSON — selected task (info points included), the selected section only, or the whole project when the project is selected
     ✅ [K] Convert to Task prompt — copy for the hovered or selected project (or section); pins TARGET PROJECT for TASK_PACK import
     🖼️ [H] Project icon — open Commons picker and auto-suggest top 5
     🖼️ [V] Paste clipboard image as an info point on the selected task or project, or in the Info window (not onto a section)

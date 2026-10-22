@@ -12,6 +12,7 @@ from task_store import (
     STATUS_EMOJIS,
     TaskStore,
     project_export_filename,
+    section_export_filename,
     task_export_filename,
 )
 
@@ -364,6 +365,158 @@ class ExportTaskTest(unittest.TestCase):
         self.assertNotIn("Project note", dumped)
         self.assertNotIn("Also stay out", dumped)
         self.assertNotIn("sections", doc)
+
+
+class ExportSectionTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.store = TaskStore(Path(self.tmp.name))
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_missing_section(self) -> None:
+        result = self.store.export_section("SEC_MISSING")
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "section not found")
+
+    def test_snapshot_is_one_section(self) -> None:
+        proj = self.store.upsert_project(
+            {"title": "Doctoral degree", "filter": "work"}
+        )["project"]
+        outreach = self.store.upsert_section(
+            {"project_id": proj["id"], "title": "Outreach"}
+        )["section"]
+        writing = self.store.upsert_section(
+            {"project_id": proj["id"], "title": "Writing"}
+        )["section"]
+        open_task = self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "section_id": outreach["id"],
+                "title": "Email universities",
+                "filter": "work",
+                "emoji": "waiting",
+                "kind": "punctual",
+            }
+        )["task"]
+        self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "section_id": outreach["id"],
+                "title": "Draft outline",
+                "filter": "work",
+                "emoji": "done",
+                "kind": "punctual",
+            }
+        )
+        self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "section_id": writing["id"],
+                "title": "Chapter one",
+                "filter": "work",
+                "kind": "punctual",
+            }
+        )
+        note = self.store.upsert_info(
+            {
+                "parent_type": "task",
+                "parent_id": open_task["id"],
+                "title": "Contacts",
+                "body": "List of labs",
+                "section_path": "People",
+            }
+        )["info"]
+        self.store.add_attachment(
+            "info",
+            note["id"],
+            "image",
+            r"attachments\labs.png",
+            "labs.png",
+        )
+        self.store.upsert_info(
+            {
+                "parent_type": "project",
+                "parent_id": proj["id"],
+                "title": "Project note",
+                "body": "Should stay out",
+            }
+        )
+        self.store.set_section_status(outreach["id"], "waiting")
+
+        result = self.store.export_section(outreach["id"], as_of=date(2026, 9, 28))
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["filename"], section_export_filename(outreach))
+        self.assertEqual(result["filename"], f"Outreach__{outreach['id']}.json")
+        doc = result["document"]
+        self.assertEqual(doc["schema"], "tasks.section")
+        self.assertEqual(
+            doc["project"],
+            {"id": proj["id"], "title": "Doctoral degree", "filter": "work"},
+        )
+        self.assertEqual(doc["section"]["id"], outreach["id"])
+        self.assertEqual(doc["section"]["title"], "Outreach")
+        self.assertEqual(doc["section"]["status"], "waiting")
+        by_title = {t["title"]: t for t in doc["section"]["tasks"]}
+        self.assertEqual(set(by_title), {"Email universities", "Draft outline"})
+        self.assertEqual(by_title["Email universities"]["status"], "waiting")
+        self.assertEqual(
+            by_title["Email universities"]["info"][0]["category"], "People"
+        )
+        self.assertEqual(
+            by_title["Email universities"]["info"][0]["attachments"][0]["file"],
+            "attachments/labs.png",
+        )
+        self.assertEqual(by_title["Draft outline"]["status"], "done")
+        self.assertEqual(doc["counts"]["tasks"], 2)
+        self.assertEqual(doc["counts"]["open_tasks"], 1)
+        self.assertEqual(doc["counts"]["completed_tasks"], 1)
+        self.assertEqual(doc["counts"]["info_points"], 1)
+        self.assertEqual(doc["counts"]["attachments"], 1)
+        dumped = str(doc)
+        self.assertNotIn("Chapter one", dumped)
+        self.assertNotIn("Writing", dumped)
+        self.assertNotIn("Project note", dumped)
+        self.assertNotIn("Should stay out", dumped)
+        self.assertNotIn("sections", doc)
+
+    def test_other_bucket_is_only_unsectioned_tasks(self) -> None:
+        proj = self.store.upsert_project({"title": "Inbox", "filter": "personal"})[
+            "project"
+        ]
+        sec = self.store.upsert_section({"project_id": proj["id"], "title": "Later"})[
+            "section"
+        ]
+        self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "section_id": sec["id"],
+                "title": "Parked",
+                "filter": "personal",
+                "kind": "punctual",
+            }
+        )
+        loose = self.store.upsert_task(
+            {
+                "project_id": proj["id"],
+                "title": "Loose task",
+                "filter": "personal",
+                "kind": "punctual",
+            }
+        )["task"]
+        rows = self.store.load("tasks")
+        for t in rows:
+            if t["id"] == loose["id"]:
+                t["section_id"] = ""
+        self.store.save("tasks", rows)
+
+        result = self.store.export_section(f"other:{proj['id']}")
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["filename"], f"Other__{proj['id']}.json")
+        titles = [t["title"] for t in result["document"]["section"]["tasks"]]
+        self.assertEqual(titles, ["Loose task"])
+        self.assertNotIn("Parked", str(result["document"]))
 
 
 if __name__ == "__main__":

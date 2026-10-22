@@ -215,6 +215,17 @@ def task_export_filename(task: dict) -> str:
     return f"{slug}__{tid}.json"
 
 
+def section_export_filename(section: dict) -> str:
+    title = (section.get("title") or "section").strip()
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-") or "section"
+    raw_id = (section.get("id") or "section").strip()
+    if raw_id.lower().startswith("other:"):
+        pid = re.sub(r"[^A-Za-z0-9_-]+", "", raw_id.split(":", 1)[1]) or "project"
+        return f"Other__{pid}.json"
+    sid = re.sub(r"[^A-Za-z0-9_-]+", "", raw_id) or "section"
+    return f"{slug}__{sid}.json"
+
+
 def _export_attachments(rows: list[dict]) -> list[dict]:
     out: list[dict] = []
     for a in sorted(rows, key=_export_sort_key):
@@ -1799,6 +1810,123 @@ class TaskStore:
         return {
             "ok": True,
             "filename": task_export_filename(task),
+            "document": document,
+        }
+
+    def export_section(self, section_id: str, *, as_of: date | None = None) -> dict:
+        """Nested snapshot of one section for an AI companion (no image bytes)."""
+        raw = (section_id or "").strip()
+        today = as_of or date.today()
+        if raw.lower().startswith("other:"):
+            pid = raw.split(":", 1)[1].strip()
+            project = self.find("projects", pid)
+            if not project:
+                return {"ok": False, "error": "project not found"}
+            known = {
+                s.get("id") or ""
+                for s in self.load("sections")
+                if s.get("project_id") == pid
+            }
+            tasks = [
+                t
+                for t in self.load("tasks")
+                if t.get("project_id") == pid
+                and (t.get("section_id") or "") not in known
+            ]
+            section = {"id": f"other:{pid}", "title": "Other", "status": ""}
+            return self._export_section_snapshot(project, section, tasks, today)
+
+        section = self.find("sections", raw)
+        if not section:
+            return {"ok": False, "error": "section not found"}
+        pid = (section.get("project_id") or "").strip()
+        project = self.find("projects", pid) or {"id": pid, "title": "", "filter": ""}
+        sid = section.get("id") or ""
+        tasks = [
+            t
+            for t in self.load("tasks")
+            if t.get("project_id") == pid and (t.get("section_id") or "") == sid
+        ]
+        return self._export_section_snapshot(project, section, tasks, today)
+
+    def _export_section_snapshot(
+        self, project: dict, section: dict, tasks: list[dict], today: date
+    ) -> dict:
+        task_ids = {t.get("id") or "" for t in tasks}
+        infos = [
+            i
+            for i in self.load("info_points")
+            if i.get("parent_type") == "task" and i.get("parent_id") in task_ids
+        ]
+        info_ids = {i.get("id") or "" for i in infos}
+        atts = [
+            a
+            for a in self.load("attachments")
+            if (a.get("parent_type") == "task" and a.get("parent_id") in task_ids)
+            or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
+        ]
+        infos_by_parent: dict[tuple[str, str], list[dict]] = {}
+        for i in infos:
+            infos_by_parent.setdefault(
+                ((i.get("parent_type") or ""), (i.get("parent_id") or "")), []
+            ).append(i)
+        atts_by_parent: dict[tuple[str, str], list[dict]] = {}
+        for a in atts:
+            atts_by_parent.setdefault(
+                ((a.get("parent_type") or ""), (a.get("parent_id") or "")), []
+            ).append(a)
+        task_docs = [
+            _export_task(t, infos_by_parent, atts_by_parent, today)
+            for t in sorted(tasks, key=_export_sort_key)
+        ]
+        sec_doc: dict[str, Any] = {
+            "id": section.get("id") or "",
+            "title": (section.get("title") or "").strip() or GENERAL_SECTION,
+            "tasks": task_docs,
+        }
+        if (section.get("status") or "").strip() == "waiting":
+            sec_doc["status"] = "waiting"
+        info_n = sum(len(t.get("info") or []) for t in task_docs)
+        att_n = sum(len(t.get("attachments") or []) for t in task_docs)
+        att_n += sum(
+            len(i.get("attachments") or [])
+            for t in task_docs
+            for i in (t.get("info") or [])
+        )
+        document: dict[str, Any] = {
+            "schema": "tasks.section",
+            "schema_version": 1,
+            "exported_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "about": (
+                "Snapshot of one section from the local Tasks app. "
+                "Use this file as the whole context for this section. "
+                "Other sections of the project are not included. "
+                "tasks includes open, waiting, important, doubtful, and completed tasks in this section. "
+                "info points are notes on those tasks. "
+                "attachments name image files; image bytes are not included."
+            ),
+            "status_legend": {
+                glyph: name for name, glyph in STATUS_EMOJIS.items() if glyph
+            },
+            "project": {
+                "id": project.get("id") or "",
+                "title": (project.get("title") or "").strip(),
+                "filter": (project.get("filter") or "").strip(),
+            },
+            "section": sec_doc,
+            "counts": {
+                "tasks": len(task_docs),
+                "open_tasks": sum(1 for t in task_docs if t.get("open")),
+                "completed_tasks": sum(
+                    1 for t in task_docs if t.get("status") == "done"
+                ),
+                "info_points": info_n,
+                "attachments": att_n,
+            },
+        }
+        return {
+            "ok": True,
+            "filename": section_export_filename(section),
             "document": document,
         }
 
