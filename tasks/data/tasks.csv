@@ -124,7 +124,6 @@ TASK_0346,PROJ_0005,SEC_0005,"16 de outubro, apresentar o resultado do seu mestr
 TASK_0371,PROJ_0015,SEC_0015,Comprar vermífugo para todos nós.,⏳,punctual,,,,,personal,5440,,2026-09-29 13:02:06,1,
 TASK_0385,PROJ_0015,SEC_0015,You need to transfer your voting place to Nova Odessa,⚡,punctual,,,,,personal,5580,,2026-10-03 11:43:28,1,
 TASK_0397,PROJ_0035,SEC_0157,Meeting October 5th,🔲,punctual,,,,Meetings,work,5670,,2026-10-06 09:51:01,1,
-TASK_0404,PROJ_0035,SEC_0150,Organize a face-to-face workshop with Amanda in the week of the 27th,🔲,punctual,,,,,work,6960,,2026-10-06 09:51:01,1,
 TASK_0407,PROJ_0035,SEC_0165,Track KPIs to measure UX improvements,⏳,punctual,,,,Phase 2: Understand context of use,work,5920,,2026-10-06 09:51:01,1,
 TASK_0412,PROJ_0035,SEC_0154,Willian Yakabi: PO,,punctual,,,,Stakeholders,work,5850,,2026-10-06 11:00:27,1,
 TASK_0413,PROJ_0035,SEC_0154,Conte  Rodrigo: gerente de projetos,,punctual,,,,Stakeholders,work,5860,,2026-10-06 11:00:36,1,
@@ -206,3 +205,6 @@ TASK_0640,PROJ_0035,SEC_0150,"Update the timeline so we can see the preparation 
 TASK_0641,PROJ_0035,SEC_0165,Take a look at the KPIs if they are correct or if there is any update needed,⚡,punctual,,,,Phase 2: Understand context of use,work,8090,,2026-10-22 10:34:28,1,
 TASK_0642,PROJ_0035,SEC_0165,Faça as anotações da entrevista com a Bruna e Fernanda do sistema,⚡,punctual,,,,Phase 2: Understand context of use,work,8100,,2026-10-22 10:36:49,1,
 TASK_0643,PROJ_0036,SEC_0173,Qual KPI ele ve como fundamental para provar o valor de UX pro projeto. Leading e Lagging,🔲,punctual,,,,Reunião com o Felipe,work,8110,,2026-10-22 12:24:38,1,
+TASK_0644,PROJ_0035,SEC_0150,Deliver them with something in this first sprint,⚡,punctual,,,,,work,8120,,2026-10-22 14:20:56,1,
+TASK_0645,PROJ_0035,SEC_0150,Add illustrations to hypotheses and questions,⚡,punctual,,,,,work,8130,,2026-10-22 14:22:39,1,
+TASK_0646,PROJ_0019,SEC_0019,Pharmacological regimen interactions,,punctual,,,,,habits,8140,,2026-10-22 14:54:29,1,IMP-20261022-145429

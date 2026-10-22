@@ -1,0 +1,26 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 10 info · All pharmacological interaction notes grouped under a single task.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Habits & Health,habits,Pharmacological regimen interactions,none,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Pharmacological regimen interactions,Habits & Health,habits,Overview,"The pharmacological regimen is biologically safe and highly synergistic, with no vitamin toxicity but specific bleeding and lab-test variables to monitor.",
+task,Pharmacological regimen interactions,Habits & Health,habits,Vitamin D3,"Vitamin D3 (4,000 IU): Matches the exact upper safety limit defined by the EFSA. It safely maintains calcium levels without causing toxic hypercalcemia.",Vitamin Safety
+task,Pharmacological regimen interactions,Habits & Health,habits,Vitamin K2 MK-7,"Vitamin K2 MK-7 (100 mcg): Highly safe, sitting at roughly 26% of the accepted maximum intake. It works perfectly with D3 to bind calcium to bones and keep it out of your arteries.",Vitamin Safety
+task,Pharmacological regimen interactions,Habits & Health,habits,Bleeding Risk,"Bleeding Risk (Moderate): Fluvoxamine depletes serotonin inside platelets, while high-dose Omega-3 alters the arachidonic acid cascade. Together, they create a synergistic anti-clotting effect. You should monitor for unusual bruising and explicitly report this combination to dentists or surgeons, as you may need to suspend them 5-7 days prior to procedures.",Primary Risks & Interactions
+task,Pharmacological regimen interactions,Habits & Health,habits,Cardiovascular,"Cardiovascular (Minor): Oral Minoxidil causes slight vasodilation (triggering reflex tachycardia), and very high doses of Omega-3 can slightly increase the risk of atrial fibrillation. Monitor for palpitations.",Primary Risks & Interactions
+task,Pharmacological regimen interactions,Habits & Health,habits,Liver Metabolism,"Liver Metabolism (Minor): Vitamin D3 slightly induces CYP3A4 enzymes, which breaks down Finasteride slightly faster. However, this does not negatively impact Finasteride's clinical success in stopping hair loss.",Primary Risks & Interactions
+task,Pharmacological regimen interactions,Habits & Health,habits,Mental Health Shield,"Mental Health Shield: Finasteride can lower neurosteroids in the brain, occasionally triggering depressive symptoms (Post-Finasteride Syndrome). Fluvoxamine acts as a prophylactic shield against this, protecting your neurological baseline.",Positive Synergies
+task,Pharmacological regimen interactions,Habits & Health,habits,Psychiatric Boost,"Psychiatric Boost: The anti-inflammatory properties of Omega-3 (specifically EPA) actively enhance the antidepressant and anti-anxiety effects of Fluvoxamine.",Positive Synergies
+task,Pharmacological regimen interactions,Habits & Health,habits,Hair Restoration,"Hair Restoration: Finasteride (stops DHT miniaturization) and Oral Minoxidil (stimulates blood flow and growth phases) do not compete metabolically, making them the gold standard combination for follicle regeneration.",Positive Synergies
+task,Pharmacological regimen interactions,Habits & Health,habits,Elevated LDL Cholesterol,"Elevated LDL Cholesterol: High-dose DHA will lower your triglycerides but can artificially raise your LDL (bad cholesterol) numbers by 7-10% on blood tests. Clinically, the DHA is actually converting small, dangerous LDL particles into larger, safer ones, so this numerical increase is not a cardiovascular threat.",Expected Lab Anomalies
+===END_FILE===
