@@ -1,0 +1,20 @@
+﻿===PREVIEW===
+0 project(s) · 4 task(s) · 4 info · Reorganized the unstructured note dump into 4 consolidated tasks with detailed info points.
+===END_PREVIEW===
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+"UX Super",work,"Preparar apresentação do caso DAF para Gaston",general,punctual,,,,"Conversa com gui"
+"UX Super",work,"Iniciar projeto do agente de KPI",general,punctual,,,,"Conversa com gui"
+"UX Super",work,"Revisar todas as ofertas para incluir expected reduction",general,punctual,,,,"Conversa com gui"
+"UX Super",work,"Alinhar requisitos e integrações com a equipe da BISB",general,punctual,,,,"Conversa com gui"
+===END_FILE===
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,"Preparar apresentação do caso DAF para Gaston","UX Super",work,"Materiais necessários","Pedir o PPT do DAF referente ao overtime management.",
+task,"Preparar apresentação do caso DAF para Gaston","UX Super",work,"Estrutura do pitch","Criar um 'slide bam bam bam' focado em C-level contendo: situação, o que foi feito, resultado esperado e situação atual (prova viva). O objetivo é prender a atenção do Gaston em apenas meio slide.",
+task,"Alinhar requisitos e integrações com a equipe da BISB","UX Super",work,"Demonstração","Mostrar para a BISB. Tem que ser estrategicamente integrado o que está sendo mostrado.",
+task,"Alinhar requisitos e integrações com a equipe da BISB","UX Super",work,"Desenvolvimento da ferramenta","Você precisa ser objetivo com o pessoal da Bisbee que está construindo a ferramenta para que eles adicionem os requisitos/adicionais necessários.",
+===END_FILE===

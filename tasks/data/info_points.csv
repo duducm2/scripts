@@ -14,7 +14,6 @@ Confirm if committee members may ask about courses near defense
 Add DOI to your research and PPT presentation base (if applicable)
 Check if your student subscription is generating any cost
 Monitor storage usage (keep under 5 GB)",ℹ️,Weekly,1990,2026-08-29 15:48:39,,
-INFO_0105,task,TASK_0029,20260817-165019.png,,ℹ️,,3870,2026-08-30 12:03:36,,
 INFO_0112,task,TASK_0042,20260301-203740.png,,ℹ️,,3940,2026-08-30 12:03:36,,
 INFO_0117,task,TASK_0212,"ℹ️ Check your PowerPoint confidenciality level
 
@@ -97,100 +96,6 @@ Se não for o caso e tiver alguém que você possa indicar para eu conversar, ta
 
 * Segue meu currículo",,ℹ️,mensagem,160,2026-09-28 12:13:17,,
 INFO_0214,task,TASK_0339,O Pedro do CIP,,ℹ️,person,170,2026-09-28 12:19:06,,
-INFO_0230,task,TASK_0362,"9.29
-
-*Note: the links and images in this document may point to external sources. Please review them before opening.*
-
-# Projeto: Centralização e Gestão de Automações SO
-
-## 1. Contexto e Objetivo
-O objetivo principal é realizar uma **atualização cadastral e levantamento contínuo de todas as automações da SO** (focando em automações desenvolvidas *da SO para a SO*). Busca-se substituir processos manuais e descentralizados por uma solução integrada que permita mensurar ganhos, identificar responsáveis e manter a base constantemente atualizada.
-
----
-
-## 2. Diagnóstico do Cenário Atual e Desafios
-
-| Desafio Identificado | Impacto Atual | Proposta de Mitigação |
-| :--- | :--- | :--- |
-| **Planilha de reporte em Excel** | Processo moroso e centralizado com o Paulo para o cálculo de ganhos. | Migração para uma aplicação web dinâmica que centraliza as regras e simplifica o reporte. |
-| **Falta de dados de proprietários** | A planilha atual não possui o nome dos donos das automações, dificultando o contato e a validação. | Tornar obrigatório o vínculo do proprietário no novo cadastro e planejar uma força-tarefa inicial de contato. |
-| **Múltiplos formulários isolados** | Criação pontual de Forms (ex.: projeto RISE) dispersa as informações. | Unificar a entrada de dados em uma plataforma única. |
-| **Engajamento e adesão** | Risco de baixa adesão espontânea ao preenchimento cadastral. | Estratégia combinada de comunicação, rotina com key-users e incentivos/reconhecimento. |
-
----
-
-## 3. Definição da Solução Técnica
-
-* **Tecnologia Selecionada:** **Microsoft PowerApps**.
-* **Modelo da Aplicação:** Plataforma web dinâmica com funcionalidade completa de **CRUD** (Create, Read, Update, Delete) para as automações.
-* **Autonomia e Desacoplamento:** A ferramenta permitirá que os próprios donos das automações atualizem seus dados diretamente na plataforma, eliminando a dependência operacional da equipe central.
-* **Requisitos Técnicos Pendentes:**
-  * Definição de regras de permissão e perfis de edição (quem pode editar o quê).
-  * Padronização de unidades de medida para o cálculo de ganhos (tempo economizado, financeiro, etc.).
-
----
-
-## 4. Divisão de Responsabilidades
-
-### Paulo (Responsável Global do Reporte)
-* Definir os campos mandatórios e opcionais para a coleta de dados e métricas de ganho.
-* Padronizar as fórmulas e a lógica de cálculo de ganhos que antes rodavam no Excel.
-* Validar a estrutura de dados a ser refletida na nova aplicação.
-
-### Eduardo (UX & Desenvolvimento PowerApps)
-* Mapear o fluxo de interação e navegação do usuário.
-* Elaborar protótipos/rascunhos das telas com base nos campos definidos pelo Paulo.
-* Construir a aplicação no PowerApps (telas de CRUD e regras de interface).
-* Utilizar como base de referência visual e funcional o Forms existente e a planilha histórica.
-
----
-
-## 5. Estratégia de Comunicação, Engajamento e Coleta
-
-1. **Abordagem de Cadastro Humanizada (Sugestão César):**
-   * Manter o formulário de entrada inicial o mais simples e direto possível.
-   * A equipe central entra em contato com o autor para realizar o detalhamento técnico e cadastramento conjunto, aumentando a qualidade e confiabilidade do registro.
-
-2. **Incentivo e Reconhecimento (Sugestão Débora):**
-   * Estudar modelo de premiação ou gamificação semelhante ao aplicado no *Cross Selling*.
-   * *Atenção/Risco:* Estabelecer mecanismos de controle para evitar duplicidade de submissões ou reportes sob nomes distintos apenas para concorrência ao prêmio.
-
-3. **Canais e Marcos de Divulgação:**
-   * **SO Day:** Espaço para reforço institucional da iniciativa e demonstração de valor.
-   * **Management Meeting (08 de outubro):** Alinhamento executivo com lideranças para suporte e endosso da atualização cadastral.
-   * **Newsletter Interna:** Divulgação destacando o posicionamento: *“Automações da SO para a SO”*.
-   * **Rotina com Key-Users:** Atuação dos próprios treinadores no contato direto com os key-users para coletar percepções e acompanhar a adesão prática.
-   * **Compartilhando Sucessos:** Aproveitar os eventos e sessões para capturar novas automações e direcioná-las ao repositório oficial.
-
----
-
-## 6. Próximos Passos Imediatos
-
-- [ ] **Paulo:** Finalizar e entregar a lista oficial de campos e fórmulas de ganhos (consultar post-its no Miro).
-- [ ] **Eduardo:** Mapear o fluxo de telas e prototipar a primeira versão do CRUD no PowerApps.
-- [ ] **Equipe:** Definir matriz de permissões e regras de edição no PowerApps.
-- [ ] **Comunicação:** Preparar material executivo para o *Management Meeting* de 08/10 e pauta para o *SO Day*.
-- [ ] **Treinadores:** Alinhar script de comunicação para a primeira rodada de contato com os key-users.
-
----
-
-## 7. Links e Materiais de Apoio
-
-* **Quadro no Miro (Larissa):** Mapeamento do uso dos dados e descrições dos campos em post-its:
-  [Acessar Miro Board de Automações SO](https://miro.com/app/board/uXjVHirUsSs=/)
-* **Iniciativas Correlatas:** Formulário do projeto RISE e repositório de histórias do *Compartilhando Sucessos*.",,ℹ️,,20,2026-09-29 11:30:13,,
-INFO_0231,task,TASK_0363,https://miro.com/app/board/uXjVHirUsSs=/,,ℹ️,,10,2026-09-29 11:32:36,,
-INFO_0232,task,TASK_0362,"## 🎯 Objetivos de Larissa Oliveira para o Programa RISE
-
-Com base nas notas enviadas, o que a Larissa deseja estruturar para o programa é:
-
-* 🔍 **Demonstrar o Processo Atual:** Ter o **Paulo Luz** demonstrando o método que utiliza hoje para compilar as horas de automação na SO.
-* 🚀 **Criar uma Solução Otimizada:** Idear um fluxo otimizado para o recebimento, compilação e envio desse report de horas economizadas para a **SO Global**.
-* 💡 **Avaliar Alternativas de Implementação:**
-  * **Via Forms:** Solução sem custos.
-  * **Via Outsystems:** Solução com custos (avaliando a possibilidade de transferir o custo para o centro de custo do ISC).
-* ⚙️ **Diferenciar Ganhos Pontuais e Recorrentes:** Implementar uma dinâmica onde o usuário indica se a automação é pontual ou recorrente. Se for recorrente, o sistema deve disparar e-mails periódicos para que o usuário confirme se o ganho de automação ainda se mantém.
-* 🔗 **Unificar as Horas do Programa (Outubro/2026):** Consolidar em uma única base as horas reportadas pelos key-users que foram treinados em **Gemini** e **N8N** para a próxima fase do programa.",,ℹ️,,10,2026-09-29 11:50:35,,
 INFO_0236,task,TASK_0371,"**Filhotes de cachorro podem começar a tomar vermífago a partir de 2 semanas de vida (15 dias).** Como a sua pastora alemã já tem **cerca de 75 dias (aproximadamente 2 meses e meio)**, ela já está em idade perfeitamente adequada — e é essencial que o protocolo de vermifugação esteja em dia.
 
 ---
@@ -445,7 +350,6 @@ INFO_0398,task,TASK_0478,"Quando a gente se inscreve no BTC, é algo fácil, mas
 INFO_0415,task,TASK_0488,Notes,"Alinhamento inicial com os responsáveis pelo projeto para compreender o contexto atual da ferramenta, principais grupos de usuários envolvidos e expectativas de negócio.",ℹ️,,4810,2026-10-16 12:11:37,,
 INFO_0416,task,TASK_0489,Notes,"Explorar a aplicação como ela existe hoje, entendendo funcionalidades, áreas, tipos de informação, permissões e principais fluxos",ℹ️,,4820,2026-10-16 12:11:37,,
 INFO_0417,task,TASK_0491,Notes,"Investigar ferramentas de mercado e internas que façam gestão de capacidade, workforce planning, resource allocation ou atividades semelhantes",ℹ️,,4830,2026-10-16 12:11:37,,
-INFO_0418,task,TASK_0492,Notes,"Recrutamento, roteiro e agendamento",ℹ️,,4840,2026-10-16 12:11:37,,
 INFO_0419,task,TASK_0493,Notes,"Entender como acontece hoje o planejamento e gerenciamento dos recursos, inclusive o que acontece fora da ferramenta. Meta: 16–20 participantes distribuídos entre os quatro grupos: core leadership, regional leader, cluster leader, e colaborador do cluster.",ℹ️,,4850,2026-10-16 12:11:37,,
 INFO_0420,task,TASK_0494,Notes,"Consolidar evidências das entrevistas, observações, benchmark e análise da ferramenta. Identificar padrões, diferenças por perfil/região, necessidades, dores e hipóteses.",ℹ️,,4860,2026-10-16 12:11:37,,
 INFO_0421,task,TASK_0495,Notes,"Representar o processo atual end-to-end, mostrando atores, tarefas, decisões, entradas de dados, sistemas envolvidos, handoffs e participação da ferramenta.",ℹ️,,4870,2026-10-16 12:11:37,,
@@ -469,11 +373,8 @@ INFO_0444,task,TASK_0510,Cat prevention,Ensure the cats also receive proper hear
 INFO_0445,task,TASK_0511,Decision Rule,"Only subscribe to OpenCode Go ($15-$20/mo flat) if Google Antigravity limits consistently run out by midweek and you need continuous access to frontier models (Claude 3.7 Sonnet, OpenAI o-series) without monitoring tokens. If spillover is infrequent, pay-as-you-go via Chinese models on OpenRouter is significantly cheaper.",ℹ️,Decision,5100,2026-10-18 15:36:09,,
 INFO_0446,task,TASK_0511,Chinese Providers via OpenRouter,Alternative overflow strategy: use models like DeepSeek-V3/R1 or Qwen 2.5 Coder 32B via OpenRouter. A $5 credit deposit can cover months of occasional spillover sessions at roughly $0.20 to $2.00/mo.,ℹ️,Alternatives,5110,2026-10-18 15:36:09,,
 INFO_0447,task,TASK_0511,OpenCode Setup Details,"OpenCode natively supports OpenRouter (via /connect command and OpenRouter API key) and includes out-of-the-box free Zen models (Big Pickle, GPT-5 Nano, Nemotron Super Free). Variant cycle (Ctrl+T) toggles reasoning effort or model presets.",ℹ️,Reference,5120,2026-10-18 15:36:09,,
-INFO_0448,task,TASK_0514,Detalhes das camadas,"Dividir os KPIs em 3 camadas: Resultados para o Usuário / UX, Resultados do Produto / Serviço / Processo, e Valor para o Negócio.",ℹ️,,5130,2026-10-19 09:22:38,,
 INFO_0449,task,TASK_0515,Objetivo da mudança,"O e-mail não deve ir direto para o Fábio Ferreira, mas sim para o Regional Lead usar como suporte e argumento para abrir conversas e gerar leads qualificados.",ℹ️,,5140,2026-10-19 09:22:38,,
-INFO_0451,task,TASK_0517,Contexto das plataformas,Diferenciar UX SUPER (Geração de Leads) de UX AI PLATFORM (Gestão de Projetos). O ROI e o Agente de KPI devem atuar na plataforma.,ℹ️,,5160,2026-10-19 09:22:38,,
 INFO_0452,task,TASK_0518,Idioma do convite,Identificar a região automaticamente para que o convite seja gerado nativamente em português (ou no idioma local apropriado).,ℹ️,,5170,2026-10-19 09:22:38,,
-INFO_0453,task,TASK_0519,Refatoração do texto,"Melhorar a redação atual do convite, que no momento é apenas uma tradução direta.",ℹ️,,5180,2026-10-19 09:22:38,,
 INFO_0454,task,TASK_0486,"Por mim esta ok, vou ver se tudo bem a gente mandar pra todos os cluster leader a survey",,ℹ️,,10,2026-10-19 11:31:33,,
 INFO_0455,task,TASK_0520,"Perguntar no cartório
 
@@ -484,7 +385,6 @@ INFO_0458,task,TASK_0530,"""C:\Users\fie7ca\Desktop\DAFUx 2.html""",,ℹ️,,10,
 INFO_0459,task,TASK_0530,"""C:\Users\fie7ca\OneDrive - Bosch Group\02 - Atividades\60 - Amanda's reference\DAFUx 2.html""",,ℹ️,,20,2026-10-20 10:28:28,,
 INFO_0464,task,TASK_0611,https://inside-docupedia.bosch.com/confluence2/spaces/AgenticAI/pages/1233448283/Antigravity,,ℹ️,,20,2026-10-20 14:25:48,,
 INFO_0466,task,TASK_0613,https://bosch-my.sharepoint.com/:x:/p/gru1ca/IQBJuyRsis4dQaSSLTSvzfcSARbUj5e-abyU1aGR6zH-h7k?e=FoAm0X,,ℹ️,,10,2026-10-20 15:27:03,,
-INFO_0467,task,TASK_0610,https://inside-docupedia.bosch.com/confluence/spaces/RCAT/pages/7307887176/Tool+Gemini,,ℹ️,,40,2026-10-20 16:27:38,,
 INFO_0468,task,TASK_0615,Frequency Note,Do this every other day (skip one day in between).,ℹ️,,5190,2026-10-20 20:32:02,,
 INFO_0469,task,TASK_0616,Purchase Reminder,"Buy the Furminator brand (for large dogs, long hair). Do not buy it now, wait until she grows up and sheds more.",ℹ️,,5200,2026-10-20 20:32:02,,
 INFO_0470,task,TASK_0616,Usage condition,Check if there is a necessity to use the Furminator this week based on her shedding.,ℹ️,,5210,2026-10-20 20:32:02,,
@@ -523,3 +423,11 @@ Raphael.Silva3@br.bosch.com
 Matheus Pimentel	
 Matheus.Pimentel@br.bosch.com",,ℹ️,,10,2026-10-21 12:09:07,,
 INFO_0473,task,TASK_0614,"Seria interessante que entrevistássemos POs de outras localidades e não só do Brasil, para que possamos responder a pergunta de pesquisa relacionada à maior utilização da ferramenta por parte dos brasileiros.",,ℹ️,,20,2026-10-21 12:09:39,,
+INFO_0474,task,TASK_0632,Gemini CLI Docupedia:,,ℹ️,,10,2026-10-22 09:36:05,,
+INFO_0475,task,TASK_0632,https://inside-docupedia.bosch.com/confluence/spaces/RCAT/pages/7307887176/Tool+Gemini,,ℹ️,,20,2026-10-22 09:36:06,,
+INFO_0476,task,TASK_0635,"$env:GOOGLE_CLOUD_PROJECT=""rbprj-100397""",,ℹ️,,10,2026-10-22 10:04:29,,
+INFO_0477,task,TASK_0636,Materiais necessários,Pedir o PPT do DAF referente ao overtime management.,ℹ️,,5220,2026-10-22 10:10:52,,
+INFO_0478,task,TASK_0636,Estrutura do pitch,"Criar um 'slide bam bam bam' focado em C-level contendo: situação, o que foi feito, resultado esperado e situação atual (prova viva). O objetivo é prender a atenção do Gaston em apenas meio slide.",ℹ️,,5230,2026-10-22 10:10:52,,
+INFO_0479,task,TASK_0639,Demonstração,Mostrar para a BISB. Tem que ser estrategicamente integrado o que está sendo mostrado.,ℹ️,,5240,2026-10-22 10:10:52,,
+INFO_0480,task,TASK_0639,Desenvolvimento da ferramenta,Você precisa ser objetivo com o pessoal da Bisbee que está construindo a ferramenta para que eles adicionem os requisitos/adicionais necessários.,ℹ️,,5250,2026-10-22 10:10:52,,
+INFO_0481,task,TASK_0636,Slide ban ban ban,,ℹ️,,5240,2026-10-22 10:11:34,,

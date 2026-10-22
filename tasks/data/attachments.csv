@@ -1,6 +1,5 @@
 id,parent_type,parent_id,kind,ref,description,sort_order
 ATT_0011,task,TASK_0017,file,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,700
-ATT_0013,info,INFO_0105,image,attachments\20260829-TASK_0029-20260817-165019.png,20260817-165019.png,990
 ATT_0023,info,INFO_0112,image,attachments\20260829-TASK_0042-20260301-203740.png,20260301-203740.png,1560
 ATT_0027,info,INFO_0138,image,attachments\20260914-181246-INFO_0138-image.png,image.png,1730
 ATT_0032,info,INFO_0318,image,attachments\20261006-101945-INFO_0318-image.png,image.png,1780
