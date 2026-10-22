@@ -150,6 +150,11 @@ if (IS_WORK_ENVIRONMENT) {
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {
+    ; Headset / other endpoints often are not connected yet. Fill a dead input or
+    ; output with this PC's Realtek mic and speakers (the devices marked in the
+    ; Audio / Bluetooth menu) so the session does not start silent.
+    StandardLoadingBar_Update("🔊 Checking audio…")
+    Act_EnsurePersonalAudio()
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Settle Up.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
@@ -284,6 +289,183 @@ Act_PersonalRepoPullError(resultPath) {
     if (err != "")
         return err
     return failed
+}
+
+; Personal PC endpoints from the Audio / Bluetooth menu (💻):
+;   In  Grupo de microfones (2- Realtek(R) Audio)
+;   Out Alto-falantes (2- Realtek(R) Audio)
+; Ids are the stable Core Audio ids; names still match if Windows recreates the id.
+Act_EnsurePersonalAudio() {
+    global IS_WORK_ENVIRONMENT
+    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        return
+    ps1 := A_ScriptDir "\infra\tools\AudioBt.ps1"
+    if !FileExist(ps1)
+        return
+    listed := Act_AudioBtRun(ps1, "list", "")
+    if (!listed.ok) {
+        StandardLoadingBar_Update("⚠ Could not read audio devices", BANNER_ACCENT_ERROR)
+        Sleep 800
+        return
+    }
+    rows := Act_AudioParseList(listed.text)
+    fixed := ""
+    missed := ""
+    for kind in ["In", "Out"] {
+        current := Act_AudioFindDefault(rows, kind)
+        if Act_AudioDefaultIsLive(rows, current)
+            continue
+        pc := Act_AudioFindComputerRealtek(rows, kind)
+        if !IsObject(pc) {
+            missed .= (missed = "" ? "" : " and ") . (kind = "In" ? "mic" : "speakers")
+            continue
+        }
+        if (pc.isDefault && !Act_AudioStateIsDead(pc.state))
+            continue
+        set := Act_AudioBtRun(ps1, "default", pc.id)
+        if (set.ok)
+            fixed .= (fixed = "" ? "" : " and ") . (kind = "In" ? "mic" : "speakers")
+        else
+            missed .= (missed = "" ? "" : " and ") . (kind = "In" ? "mic" : "speakers")
+    }
+    if (fixed != "")
+        StandardLoadingBar_Update("🔊 Computer " . fixed . " (Realtek)")
+    if (missed != "") {
+        StandardLoadingBar_Update("⚠ Could not set computer " . missed, BANNER_ACCENT_ERROR)
+        Sleep 800
+    }
+}
+
+Act_AudioBtRun(ps1, action, id) {
+    outFile := A_Temp "\act-audiobt-" A_TickCount "-" action ".txt"
+    try FileDelete(outFile)
+    catch {
+    }
+    cmd := 'powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "' ps1 '" -Action ' action
+    if (id != "")
+        cmd .= ' -Id "' id '"'
+    cmd .= ' -OutFile "' outFile '"'
+    timeout := (action = "list") ? 90000 : 30000
+    exitCode := RunWaitWithTimeout(cmd, A_ScriptDir, "Hide", timeout)
+    text := ""
+    try {
+        if FileExist(outFile)
+            text := Trim(FileRead(outFile, "UTF-8"), "`r`n")
+    } catch {
+    }
+    try FileDelete(outFile)
+    catch {
+    }
+    ok := (exitCode = 0 && text != "" && SubStr(text, 1, 4) != "ERR`t")
+    return { ok: ok, text: text }
+}
+
+Act_AudioParseList(text) {
+    rows := []
+    if (text = "" || SubStr(text, 1, 4) = "ERR`t")
+        return rows
+    for line in StrSplit(text, "`n", "`r") {
+        line := Trim(line)
+        if (line = "")
+            continue
+        parts := StrSplit(line, "`t")
+        if (parts.Length < 6)
+            continue
+        if (A_Index = 1 && StrLower(parts[1]) = "id")
+            continue
+        rows.Push({
+            id: parts[1],
+            kind: parts[2],
+            name: parts[3],
+            state: parts[4],
+            isDefault: parts[5] = "1",
+            canConnect: parts[6] = "1"
+        })
+    }
+    return rows
+}
+
+Act_AudioFindDefault(rows, kind) {
+    for row in rows {
+        if (row.kind = kind && row.isDefault)
+            return row
+    }
+    return ""
+}
+
+; A default that is still the Windows default while its radio is down counts as empty.
+Act_AudioDefaultIsLive(rows, row) {
+    if !IsObject(row) || !row.isDefault
+        return false
+    if Act_AudioStateIsDead(row.state)
+        return false
+    if (row.canConnect) {
+        bt := Act_AudioBtForEndpoint(rows, row)
+        if !IsObject(bt) || !Act_AudioBtIsConnected(bt.state)
+            return false
+    }
+    return true
+}
+
+Act_AudioStateIsDead(state) {
+    for dead in ["Disabled", "Unplugged", "Disconnected", "Not present"] {
+        if (state = dead || InStr(state, dead))
+            return true
+    }
+    return false
+}
+
+Act_AudioBtIsConnected(state) {
+    if InStr(state, "Disconnected")
+        return false
+    return InStr(state, "Connected")
+}
+
+Act_AudioBtForEndpoint(rows, ep) {
+    best := ""
+    bestLen := 0
+    for row in rows {
+        if (row.kind != "BT" || row.name = "")
+            continue
+        if InStr(ep.name, row.name) && StrLen(row.name) > bestLen {
+            best := row
+            bestLen := StrLen(row.name)
+        }
+    }
+    return best
+}
+
+Act_AudioFindComputerRealtek(rows, kind) {
+    wantId := (kind = "In")
+        ? "{0.0.1.00000000}.{9236f67f-79b6-4c55-a573-df6e0f8399c3}"
+        : "{0.0.0.00000000}.{d2cda8f3-6330-4d0b-b560-d788366b7240}"
+    idHit := ""
+    nameHit := ""
+    for row in rows {
+        if (row.kind != kind)
+            continue
+        if (StrLower(row.id) = StrLower(wantId))
+            idHit := row
+        else if Act_AudioNameIsComputerRealtek(row)
+            nameHit := row
+    }
+    if (IsObject(idHit) && !Act_AudioStateIsDead(idHit.state))
+        return idHit
+    if (IsObject(nameHit) && !Act_AudioStateIsDead(nameHit.state))
+        return nameHit
+    if IsObject(idHit)
+        return idHit
+    return nameHit
+}
+
+Act_AudioNameIsComputerRealtek(row) {
+    if !InStr(row.name, "Realtek")
+        return false
+    if (row.kind = "In")
+        return InStr(row.name, "Grupo de microfones")
+    if (row.kind = "Out")
+        return InStr(row.name, "Alto-falantes")
+    return false
 }
 
 Act_JsonStringField(raw, key) {

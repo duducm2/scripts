@@ -902,33 +902,8 @@ class PalaceHandler(BaseHTTPRequestHandler):
             self._json(200, self._store().state(include_all=include == "all"))
             return
 
-        if path == "/api/keyword-images":
-            from keyword_images import public_map  # noqa: E402
-
-            self._json(200, {"ok": True, "images": public_map()})
-            return
-
         if path == "/api/collectibles":
             self._json(200, {"ok": True, "items": load_items(self.data_dir)})
-            return
-
-        if path == "/api/keyword-images/search":
-            from keyword_images import OpenverseRateLimit, search_images  # noqa: E402
-
-            qs = urllib.parse.parse_qs(parsed.query)
-            query = (qs.get("q") or [""])[0].strip()
-            if not query:
-                self._json(400, {"ok": False, "error": "q required"})
-                return
-            try:
-                hits = search_images(query, 15)
-            except OpenverseRateLimit:
-                self._json(429, {"ok": False, "error": "Openverse rate limit"})
-                return
-            except Exception as exc:
-                self._json(502, {"ok": False, "error": str(exc)})
-                return
-            self._json(200, {"ok": True, "keyword": query, "results": hits})
             return
 
         if path == "/api/plans/view":
@@ -1213,26 +1188,6 @@ class PalaceHandler(BaseHTTPRequestHandler):
                     200,
                     store.quick_image(str(payload.get("palace_id") or ""), desktop),
                 )
-                return
-
-            if path == "/api/keyword-images/choose":
-                from keyword_images import (  # noqa: E402
-                    OpenverseRateLimit,
-                    choose_keyword_image,
-                )
-
-                try:
-                    result = choose_keyword_image(
-                        str(payload.get("keyword") or ""),
-                        str(payload.get("openverse_id") or ""),
-                    )
-                except OpenverseRateLimit:
-                    self._json(429, {"ok": False, "error": "Openverse rate limit"})
-                    return
-                except Exception as exc:
-                    self._json(502, {"ok": False, "error": str(exc)})
-                    return
-                self._json(200 if result.get("ok") else 400, result)
                 return
 
             if path in ("/api/plans/save", "/save"):
