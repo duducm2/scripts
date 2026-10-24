@@ -105,6 +105,10 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ⏳ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
 
+⚡ You look over, and the resumes that you have generated in Portuguese and English in your job sportal to see if there is anything purely AI-oriented
+
+⚡ O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
+
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings

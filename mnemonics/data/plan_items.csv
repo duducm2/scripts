@@ -706,7 +706,6 @@ PITEM_0915,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Revea
 PITEM_0916,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),Jobs-to-be-Done (JTBD) and competitive context as WTP constraints,0,89
 PITEM_0917,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDiff (maximum difference scaling),0,90
 PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
-PITEM_0923,PLAN_0007,Backlog,snow flake,0,6
 PITEM_0925,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",1,49
 PITEM_0926,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,0,50
 PITEM_0927,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,0,51
@@ -755,3 +754,4 @@ PITEM_0969,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,"Defer Snow
 PITEM_0970,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Use Snowpark DataFrames,0,141
 PITEM_0971,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Build a pipeline with dynamic tables,0,142
 PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex functions on warehouse data,0,143
+PITEM_0116,PLAN_0007,Backlog,Spark SQL with PySpark project - Add to your personal repo afterwards,0,1

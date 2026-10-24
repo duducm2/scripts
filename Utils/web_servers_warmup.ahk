@@ -151,11 +151,13 @@ WebWarmup_WriteTaskEnvFocus(dataDir) {
     }
     if (existing = focus)
         return
-    try FileDelete(path)
-    catch {
-    }
-    try FileAppend(focus, path, "UTF-8")
-    catch {
+    try {
+        f := FileOpen(path, "w", "UTF-8-RAW")
+        if (f) {
+            f.Write(focus)
+            f.Close()
+        }
+    } catch {
     }
 }
 

@@ -139,11 +139,14 @@ Task_EnsureSettings() {
 Task_WriteEnvDefaultFocus() {
     focus := Task_DefaultFilterForEnv()
     path := Task_DataDir() . "\environment.txt"
-    try FileDelete(path)
-    catch {
-    }
-    try FileAppend(focus, path, "UTF-8")
-    catch {
+    ; UTF-8-RAW: FileAppend UTF-8 writes a BOM, and a BOM made the server treat "personal" as work.
+    try {
+        f := FileOpen(path, "w", "UTF-8-RAW")
+        if (f) {
+            f.Write(focus)
+            f.Close()
+        }
+    } catch {
     }
     return focus
 }

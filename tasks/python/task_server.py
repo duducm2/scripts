@@ -37,6 +37,18 @@ def _one_line(value: str) -> str:
     return " ".join((value or "").split())
 
 
+def read_environment_focus(env_path: Path, default: str = "work") -> str:
+    """Column to open on this PC. AHK writes environment.txt as UTF-8 with a BOM."""
+    try:
+        raw = env_path.read_text(encoding="utf-8-sig")
+    except OSError:
+        return default
+    env = raw.strip().lower().lstrip("\ufeff")
+    if env in {"work", "personal", "habits"}:
+        return env
+    return default
+
+
 def convert_to_task_prompt_path(scripts_root: Path) -> Path:
     root = Path(scripts_root)
     candidates = [
@@ -451,14 +463,7 @@ class TaskHandler(BaseHTTPRequestHandler):
         if path == "/api/state":
             store = get_store(self.data_dir)
             payload = store.state()
-            env_path = self.data_dir / "environment.txt"
-            env = "work"
-            try:
-                raw = env_path.read_text(encoding="utf-8").strip().lower()
-                if raw in {"work", "personal", "habits"}:
-                    env = raw
-            except OSError:
-                pass
+            env = read_environment_focus(self.data_dir / "environment.txt")
             payload["environment"] = env
             payload["default_focus"] = env
             self._json(200, payload)

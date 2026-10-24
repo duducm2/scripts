@@ -4,7 +4,7 @@
 
 ## 📃 Backlog
 
-- [ ] snow flake
+- [ ] Spark SQL with PySpark project - Add to your personal repo afterwards
 
 ## Phase 1: Advanced Tabular Modeling and Automation
 
