@@ -22,6 +22,9 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 ⚡ Check the prices for other phone companies like Claro and Vivo
 
+🔲 Print your keybord manual
+ℹ️ "C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf"
+
 ## General
 
 ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">

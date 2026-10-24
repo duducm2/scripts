@@ -55,7 +55,25 @@ _No notes._
 
 #### Gallery
 
-_No gallery images._
+![Clip_6412.png](images/data-analyst/26-gallery-0011.png)
+
+![Clip_6414.png](images/data-analyst/26-gallery-0012.png)
+
+![Clip_6416.png](images/data-analyst/26-gallery-0013.png)
+
+![Clip_6418.png](images/data-analyst/26-gallery-0014.png)
+
+![Clip_6420.png](images/data-analyst/26-gallery-0015.png)
+
+![Clip_6422.png](images/data-analyst/26-gallery-0016.png)
+
+![Clip_6423.png](images/data-analyst/26-gallery-0017.png)
+
+![Clip_6424.png](images/data-analyst/26-gallery-0018.png)
+
+![Clip_6426.png](images/data-analyst/26-gallery-0019.png)
+
+![Clip_6428.png](images/data-analyst/26-gallery-0020.png)
 
 </details>
 

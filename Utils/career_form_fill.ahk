@@ -4,6 +4,7 @@
 ;
 ;   career_form_fill.ahk --action capture-window --result <json>
 ;   career_form_fill.ahk --action open-uia --result <json>
+;   career_form_fill.ahk --action dump-tree --title <tab title> --out <file> --result <json>
 ;   career_form_fill.ahk --action read-clipboard --out <file> --result <json>
 ;   career_form_fill.ahk --action send-prompt --file <prompt> --result <json>
 ;   career_form_fill.ahk --action fill-form --plan <plan> --result <json>
@@ -82,7 +83,7 @@ CareerForm_WriteResult(obj) {
         parts .= (parts = "" ? "" : ",") piece
     }
     try {
-        file := FileOpen(g_CareerFormResultPath, "w", "UTF-8")
+        file := FileOpen(g_CareerFormResultPath, "w", "UTF-8-RAW")
         if (file) {
             file.Write("{" parts "}")
             file.Close()
@@ -184,6 +185,133 @@ CareerForm_ClipboardUnicode() {
     }
     DllCall("CloseClipboard")
     return text
+}
+
+CareerForm_EnsureInspector() {
+    inspector := A_ScriptDir "\..\vendor\UIA-v2\UIATreeInspector.ahk"
+    if !FileExist(inspector)
+        CareerForm_Fail("UIA Tree Inspector was not found.")
+    hwnd := 0
+    try hwnd := WinExist("UIATreeInspector")
+    catch {
+        hwnd := 0
+    }
+    launched := false
+    if (!hwnd) {
+        try Run('"' A_AhkPath '" "' inspector '"')
+        catch as err {
+            CareerForm_Fail(err.Message)
+        }
+        launched := true
+        if !WinWait("UIATreeInspector", , 12)
+            CareerForm_Fail("UIA Tree Inspector did not open.")
+        hwnd := WinExist("UIATreeInspector")
+    }
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 3)
+    } catch as err {
+        CareerForm_Fail("Could not bring UIA Tree Inspector forward. " err.Message)
+    }
+    if (launched)
+        Sleep 1500
+    return hwnd
+}
+
+CareerForm_CloseInspector() {
+    hwnd := 0
+    try hwnd := WinExist("UIATreeInspector")
+    catch {
+        hwnd := 0
+    }
+    if (!hwnd)
+        return
+    try WinClose("ahk_id " hwnd)
+    catch {
+        try WinKill("ahk_id " hwnd)
+        catch {
+        }
+    }
+    try WinWaitClose("ahk_id " hwnd, , 2)
+    catch {
+    }
+}
+
+CareerForm_DumpTree(windowName, outPath) {
+    ; Use the inspector's Shift+C "Copy full UI tree" shortcut. It selects the
+    ; window by the name the user typed and copies that tree to the clipboard.
+    windowName := Trim(windowName)
+    if (windowName = "")
+        CareerForm_Fail("Window name is required.")
+    if (outPath = "")
+        CareerForm_Fail("Missing --out for the UI tree.")
+    before := CareerForm_ClipboardUnicode()
+    CareerForm_EnsureInspector()
+    SendLevel 1
+    Send "+c"
+    SendLevel 0
+    if !WinWait("Select Tree Item", , 8) {
+        CareerForm_CloseInspector()
+        CareerForm_Fail(
+            "UIA Tree Inspector did not ask for the window name. Leave its window available, then try again.")
+    }
+    try {
+        WinActivate("Select Tree Item")
+        WinWaitActive("Select Tree Item", , 2)
+    } catch {
+    }
+    SendText(windowName)
+    Sleep 80
+    Send "{Enter}"
+
+    tree := ""
+    seenClear := (before = "")
+    start := A_TickCount
+    loop {
+        if WinExist("UIA Tree Inspector") {
+            message := ""
+            try message := Trim(WinGetText("UIA Tree Inspector"))
+            catch {
+                message := ""
+            }
+            try WinClose("UIA Tree Inspector")
+            catch {
+            }
+            if (message = "")
+                message := "UIA Tree Inspector could not copy that window."
+            message := Trim(RegExReplace(message, "^OK\R+", ""))
+            CareerForm_CloseInspector()
+            CareerForm_Fail(message)
+        }
+        text := CareerForm_ClipboardUnicode()
+        if (text = "")
+            seenClear := true
+        if (text != "" && RegExMatch(text, "Type:\s*\d+\s*\(") && (seenClear || text != before)) {
+            tree := text
+            break
+        }
+        if ((A_TickCount - start) > 50000) {
+            CareerForm_CloseInspector()
+            CareerForm_Fail(
+                "The inspector did not copy a UI tree. The tab title has to match the start of a window in the UIA Tree Inspector list."
+            )
+        }
+        Sleep 250
+    }
+    try {
+        file := FileOpen(outPath, "w", "UTF-8")
+        if (!file) {
+            CareerForm_CloseInspector()
+            CareerForm_Fail("Could not write the UI tree.")
+        }
+        file.Write(tree)
+        file.Close()
+    } catch as err {
+        CareerForm_CloseInspector()
+        CareerForm_Fail(err.Message)
+    }
+    CareerForm_CloseInspector()
+    CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
 }
 
 CareerForm_ReadClipboard(outPath) {
@@ -631,6 +759,8 @@ try {
         CareerForm_CaptureWindow()
     else if (action = "open-uia")
         CareerForm_OpenUia()
+    else if (action = "dump-tree")
+        CareerForm_DumpTree(args.Has("title") ? args["title"] : "", args.Has("out") ? args["out"] : "")
     else if (action = "read-clipboard")
         CareerForm_ReadClipboard(args.Has("out") ? args["out"] : "")
     else if (action = "send-prompt")
@@ -638,7 +768,8 @@ try {
     else if (action = "fill-form")
         CareerForm_FillForm(args.Has("plan") ? args["plan"] : "")
     else
-        CareerForm_Fail("Unknown action. Use capture-window, open-uia, read-clipboard, send-prompt, or fill-form.")
+        CareerForm_Fail(
+            "Unknown action. Use capture-window, open-uia, dump-tree, read-clipboard, send-prompt, or fill-form.")
     ExitApp 0
 } catch Error as err {
     CareerForm_Fail(err.Message)
