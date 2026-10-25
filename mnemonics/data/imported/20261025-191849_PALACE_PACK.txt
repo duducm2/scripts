@@ -1,0 +1,40 @@
+﻿===PREVIEW===
+Mode UPDATE · STUDY_DATAANALYST · 1 palaces · 5 beasts · 5 atoms
+Scope: palaces 27–28 · pegs Cy–Dc
+Packing: 5 (Palace 28 excluded)
+Changes: Removed ATOM_0473 (Db) and ATOM_0474 (Dd). Pulled ATOM_0476 to Db and ATOM_0475 to Dc. Packed all 5 surviving beasts into Palace 27.
+
+PALACE 27 — PySpark DataFrame Ingestion & Filtering (none) [PALACE_DATAANALYST_27]
+  [Cy] cyborg — Concept: [I use the PySpark CSV reader to instantiate] [a distributed DataFrame] [from a remote file] [by explicitly assigning] [the architectural header.] — Note: This lazy operation builds the execution plan without pulling all data into driver memory. | Quote: "spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header"
+  [Cz] Cold Zeus — Concept: [I use the inference parameter to command] [the underlying engine] [to sample the dataset] [and intelligently assign] [appropriate structured types.] — Note: This prevents all columns from defaulting to generic string data types. | Quote: "except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer"
+  [Da] dalmatian — Concept: [I use standard SQL methods to query] [the distributed DataFrame] [using familiar commands] [like select] [and grouping.] — Note: This also includes the where method which acts as an alias for filter. | Quote: "select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df / titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there / so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class"
+  [Db] Dark bird of paradise — Concept: [I use a User Defined Function to execute] [proprietary Python logic] [uniformly across the cluster] [for highly specialized transformations.] — Note: This strictly demands explicitly importing and defining the exact target return type from the internal SQL types module. | Quote: "we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it"
+  [Dc] Dark cat — Concept: [I use a User Defined Function to execute] [proprietary Python logic] [uniformly across the cluster] [for highly specialized transformations.] — Note: This strictly demands explicitly importing and defining the exact target return type from the internal SQL types module. | Quote: "we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it"
+
+Exclude: 
+28 PALACE_DATAANALYST_28
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_27,STUDY_DATAANALYST,27,PySpark DataFrame Ingestion & Filtering,,,5,"Inside a massive data center with glowing server racks. Front left, a metallic cyborg reads a long paper scroll. Next to it, a freezing Cold Zeus turns a giant dial covered in frost. In the center, a spotted dalmatian digs into a glowing database terminal. To the right, a Dark bird of paradise holds a glowing blue blueprint. Far right, a Dark cat plays with a silver gear. Bright lighting, wide angle, clear empty space between each creature."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_DATAANALYST_27_Cy,PALACE_DATAANALYST_27,Cy,cyborg,,,0,103,
+BEAST_DATAANALYST_27_Cz,PALACE_DATAANALYST_27,Cz,Cold Zeus,,,0,104,
+BEAST_DATAANALYST_27_Da,PALACE_DATAANALYST_27,Da,dalmatian,,,0,105,
+BEAST_DATAANALYST_27_Db,PALACE_DATAANALYST_27,Db,Dark bird of paradise,,,0,106,
+BEAST_DATAANALYST_27_Dc,PALACE_DATAANALYST_27,Dc,Dark cat,,,0,107,
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+ATOM_0469,BEAST_DATAANALYST_27_Cy,single,,,"[I use the PySpark CSV reader to instantiate] [a distributed DataFrame] [from a remote file] [by explicitly assigning] [the architectural header.] — Note: This lazy operation builds the execution plan without pulling all data into driver memory.","reader | PySpark CSV reader || wand | instantiate || table | DataFrame || file | file || pen | assigning || header | header","spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header",,1
+ATOM_0470,BEAST_DATAANALYST_27_Cz,single,,,"[I use the inference parameter to command] [the underlying engine] [to sample the dataset] [and intelligently assign] [appropriate structured types.] — Note: This prevents all columns from defaulting to generic string data types.","dial | inference parameter || gear | command || engine | engine || pipette | dataset || brain | assign || block | types","except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer",,2
+ATOM_0471,BEAST_DATAANALYST_27_Da,single,,,"[I use standard SQL methods to query] [the distributed DataFrame] [using familiar commands] [like select] [and grouping.] — Note: This also includes the where method which acts as an alias for filter.","database | standard SQL methods || magnifier | query || table | DataFrame || brain | commands || button | select || box | grouping","select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df / titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there / so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class",,3
+ATOM_0476,BEAST_DATAANALYST_27_Db,single,,,"[I use a User Defined Function to execute] [proprietary Python logic] [uniformly across the cluster] [for highly specialized transformations.] — Note: This strictly demands explicitly importing and defining the exact target return type from the internal SQL types module.","blueprint | User Defined Function || gear | execute || snake | logic || cluster | cluster || wand | transformations","we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it",,4
+ATOM_0475,BEAST_DATAANALYST_27_Dc,single,,,"[I use a User Defined Function to execute] [proprietary Python logic] [uniformly across the cluster] [for highly specialized transformations.] — Note: This strictly demands explicitly importing and defining the exact target return type from the internal SQL types module.","gear | User Defined Function || wand | execute || snake | logic || cluster | cluster || star | transformations","we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it",,5
+===END_FILE===

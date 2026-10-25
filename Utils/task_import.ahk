@@ -123,6 +123,7 @@ Task_ImportFailAi(errorMsg := "") {
     path := Task_ImportAiFixPath()
     if (FileExist(path))
         return ImportMgmt_OnAiFixReady(path, "TASK_AI_FIX.txt")
+    ImportMgmt_PlayOutcomeChime(false)
     if (errorMsg != "")
         Task_Notify(errorMsg, 5000, BANNER_ACCENT_ERROR)
     return false
@@ -133,11 +134,13 @@ Task_ImportPackFromDesktop(*) {
     Task_EnsureData()
     pyCmd := Task_FindPythonCmd()
     if (pyCmd = "") {
+        ImportMgmt_PlayOutcomeChime(false)
         Task_Notify("Python not found for Task import", 2500, BANNER_ACCENT_ERROR)
         return false
     }
     script := Task_ImportPackScript()
     if (!FileExist(script)) {
+        ImportMgmt_PlayOutcomeChime(false)
         Task_Notify("task_pack_import.py not found", 2200, BANNER_ACCENT_ERROR)
         return false
     }
@@ -163,6 +166,7 @@ Task_ImportPackFromDesktop(*) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
+        ImportMgmt_PlayOutcomeChime(false)
         Task_Notify("Preview failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
     }
@@ -196,6 +200,7 @@ Task_ImportPackFromDesktop(*) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
+        ImportMgmt_PlayOutcomeChime(false)
         Task_Notify("Commit failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
     }

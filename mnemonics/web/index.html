@@ -1249,7 +1249,7 @@
       <textarea
         id="srInstruction"
         class="aq-question"
-        placeholder="What should change? Delete some and pull the next beasts, merge some, or replace a deprecated concept…"
+        placeholder="What should change? You can update some beasts and delete others in this same note, or merge or replace a concept…"
       ></textarea>
       <footer class="sr-panel-foot">
         <button
@@ -1977,8 +1977,9 @@
         return [
           "=== STAGED FROM MEMORY PALACE UI (authoritative — do not ignore) ===",
           "This is a story update. Carry out the instruction below. You decide the edits.",
-          "The instruction may delete atoms and pull the next beasts forward, merge some concepts into one atom, replace a deprecated concept, or ask for another change.",
-          "Do not assume a merge. Do not assume a deletion. If the instruction is ambiguous, ask one short question and do not emit a pack yet.",
+          "One instruction is one job. It may update some beasts and delete others at the same time, and it may also merge concepts or replace a deprecated concept.",
+          "Apply every part in this single pack. Do not ask for a second prompt to finish the rest.",
+          "Do not assume a merge. Do not assume a deletion. Do only what the instruction names. If the instruction is ambiguous, ask one short question and do not emit a pack yet.",
           `Focus: ${scope || "(derive from the beasts below)"}`,
           "",
           "BEASTS THIS CHANGE IS ABOUT:",
@@ -2048,7 +2049,7 @@
         return [
           "=== CONTEXT (Memory Palace dashboard) ===",
           "Inventory from the focus palace through the last street in this study.",
-          "Use it to carry out the instruction, including pulling the next beasts forward when a deletion or merge leaves a short street.",
+          "Use it to carry out every part of the instruction in one pack, including an update and a deletion together, then pull the next beasts forward when that leaves a short street.",
           "Do NOT re-emit the bridge palace. Do NOT walk the study from peg A / palace 1.",
           "Do NOT rewrite a later beast unless you pull it forward or the instruction names it.",
           "If the instruction is ambiguous, ask one short question and do not emit a pack yet.",
@@ -6058,7 +6059,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Update toggle · drag the beasts this change is about · write what should change · <b>Generate Prompt</b> sends that instruction plus palace context to the AI companion. <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Update toggle · drag the beasts this change is about · one note can update some and delete others · <b>Generate Prompt</b> sends that instruction plus palace context to the AI companion. <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>

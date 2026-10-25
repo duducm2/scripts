@@ -86,6 +86,7 @@ Collectible_Fail(errorMsg, extraNotes := "") {
     path := Collectible_WriteAiFix(errorMsg, extraNotes)
     if (path != "")
         return ImportMgmt_OnAiFixReady(path, "COLLECTIBLE_AI_FIX.txt")
+    ImportMgmt_PlayOutcomeChime(false)
     Palace_Notify(errorMsg, 5000, BANNER_ACCENT_ERROR)
     return false
 }
@@ -95,6 +96,7 @@ Collectible_ImportFromDesktop(*) {
     Palace_EnsureData()
     path := Collectible_DesktopPackPath()
     if (path = "") {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("No COLLECTIBLE_PACK.txt on Desktop", 2800, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -136,6 +138,7 @@ Collectible_ImportFromDesktop(*) {
     label := name != "" ? name : "Relic"
     if (slot != "")
         label .= " (" . slot . ")"
+    ImportMgmt_PlayOutcomeChime(true)
     Palace_Notify(label . " is in the trophy hall.", 3200, BANNER_ACCENT_SUCCESS)
     Palace_AfterDataWriteRefreshUi()
     Palace_ReturnAfterImport(hubClosed)

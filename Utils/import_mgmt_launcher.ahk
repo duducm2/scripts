@@ -43,11 +43,21 @@ ImportMgmt_CloseIfOpen() {
     return true
 }
 
+; Shared outcome tones for every Import Management workflow.
+; assets/sounds/import-success.wav and import-failure.wav exist only for this path.
+ImportMgmt_PlayOutcomeChime(ok) {
+    name := ok ? "import-success.wav" : "import-failure.wav"
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\" . name)
+    catch {
+    }
+}
+
 ; Copy AI fix file to clipboard, show orientation toast, close Import Manager if open.
 ; Sends the fix into the companion once. Automatic reply download/copy stays off,
 ; so this is the send that follows a manual import attempt.
 ; Returns true when the hub was closed.
 ImportMgmt_OnAiFixReady(path, label) {
+    ImportMgmt_PlayOutcomeChime(false)
     if (path = "" || !FileExist(path))
         return ImportMgmt_CloseIfOpen()
     body := ""
@@ -95,6 +105,7 @@ ImportMgmt_OnAiFixReady(path, label) {
 
 ; Close Import Manager after a successful import from the hub. Returns true when it closed.
 ImportMgmt_OnImportSuccess() {
+    ImportMgmt_PlayOutcomeChime(true)
     return ImportMgmt_CloseIfOpen()
 }
 
@@ -412,6 +423,7 @@ ImportMgmt_RunClassifiedClipboard() {
     }
     if (body = "") {
         msg := errMsg != "" ? errMsg : "Clipboard empty"
+        ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils("❌ " msg, 2500, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", msg)
@@ -420,6 +432,7 @@ ImportMgmt_RunClassifiedClipboard() {
     }
     hit := ImportMgmt_ClassifyPack(body)
     if (!IsObject(hit)) {
+        ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils("❌ No import matches this copy", 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", "No import matches this copy")
@@ -436,6 +449,7 @@ ImportMgmt_RunClassifiedClipboard() {
     }
     if (!placed) {
         msg := placeReason != "" ? placeReason : "Could not write pack to Desktop"
+        ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils("❌ " msg, 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", msg)
@@ -448,6 +462,7 @@ ImportMgmt_RunClassifiedClipboard() {
     result := false
     try result := hit["run"].Call()
     catch as e {
+        ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
         BANNER_ACCENT_ERROR)
         catch {
@@ -584,6 +599,7 @@ ImportMgmt_RunPreferClipboard(fileName, runFn) {
     }
     if (!placed && !ImportMgmt_DesktopPackAvailable(fileName)) {
         msg := (placeReason != "") ? placeReason : "Clipboard empty"
+        ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", msg)
@@ -594,6 +610,7 @@ ImportMgmt_RunPreferClipboard(fileName, runFn) {
     result := false
     try result := runFn.Call()
     catch {
+        ImportMgmt_PlayOutcomeChime(false)
         result := false
     }
     ImportMgmt_CloseIfOpen()
@@ -633,6 +650,9 @@ ImportMgmt_RunQuickImage(*) {
     }
     try Palace_QuickAttachDesktopImage()
     catch as e {
+        try ImportMgmt_PlayOutcomeChime(false)
+        catch {
+        }
         try ShowCenteredOverlay_Utils("Quick image failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", "Quick image failed")
@@ -704,7 +724,8 @@ ImportMgmt_HelpText() {
     . "2. Copy the pack, or save it on Desktop under the canonical name.`r`n"
     . "3. Open Import Management → Char / Shift+Enter on the workflow.`r`n"
     .
-    "Clipboard is tried first (same unwrap as Quick Download names Shift+T). If it is not this pack, the Desktop file is used.`r`n`r`n"
+    "Clipboard is tried first (same unwrap as Quick Download names Shift+T). If it is not this pack, the Desktop file is used.`r`n"
+    . "A successful import plays import-success.wav. A rejected import plays import-failure.wav. Cancelling the confirm dialog is silent.`r`n`r`n"
     . "========== [D] FINANCE DAILY ==========`r`n"
     . "Pack: FINANCE_DAILY.txt`r`n"
     . "Writes: finances/data transactions (append)`r`n"

@@ -523,7 +523,7 @@ Palace_AiCompanionFixGuidance(errorMsg) {
         "- If that last palace would stay at 1–4 and a later street still has beasts, pull those later beasts forward in peg order and re-peg them (no peg gaps; the new letter takes that letter's beast name).`r`n"
         . "- Do not pull beasts from earlier streets, and do not top up earlier palaces.`r`n"
         .
-        "- For each later palace left with zero beasts, add Exclude: <palace_number> <palace_id> to PREVIEW and omit its FILE rows.`r`n"
+        "- For each later palace left with zero beasts, list it under Exclude: as <palace_number> <palace_id> (same line or the next line) and omit its FILE rows. A BEAST_ or ATOM_ id under Exclude: deletes that beast and its knowledge atom; a palace left with no beasts is deleted too.`r`n"
         . "- Then re-emit the full pack (PREVIEW + all three FILE sections)."
     }
     if (InStr(e, "truncated") || InStr(e, "missing section") || InStr(e, "incomplete")
@@ -564,6 +564,7 @@ Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
     if (path != "")
         return ImportMgmt_OnAiFixReady(path, "PALACE_AI_FIX.txt")
     ms := notifyMs < 5000 ? 5000 : notifyMs
+    ImportMgmt_PlayOutcomeChime(false)
     Palace_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
     return false
 }
@@ -586,8 +587,10 @@ Palace_FinishImportSuccess() {
     Palace_RefreshRunningWebApp()
     if (ImportMgmt_IsOpen())
         ImportMgmt_OnImportSuccess()
-    else
+    else {
+        ImportMgmt_PlayOutcomeChime(true)
         Palace_ShowMainMenu()
+    }
 }
 
 ; Build beasts+atoms from PREVIEW outline when FILE CSV sections are truncated.
@@ -809,30 +812,82 @@ Palace_ExtractPackPreview(text) {
     return ""
 }
 
-; PREVIEW lines `Exclude: <palace_number> <palace_id>` (one palace per line).
+Palace_ExcludeLineStops(t) {
+    if (t = "")
+        return true
+    if (RegExMatch(t, "i)^(Discard|Changes|Scope|Packing|Mode|PALACE\s+\d+)\b"))
+        return true
+    if (InStr(t, "===") = 1 || InStr(t, "---") = 1)
+        return true
+    return false
+}
+
+; A palace, beast, or atom the companion asked to delete.
+; `28 PALACE_…` counts even when it sits on the line after `Exclude:`.
+Palace_PushExcludePayload(&found, &seen, payload) {
+    num := ""
+    for raw in StrSplit(payload, " ") {
+        tok := Trim(raw, " ,;")
+        if (tok = "")
+            continue
+        kind := ""
+        id := ""
+        if (RegExMatch(tok, "i)^PALACE_\S+$")) {
+            kind := "palace"
+            id := tok
+        } else if (RegExMatch(tok, "i)^BEAST_\S+$")) {
+            kind := "beast"
+            id := tok
+        } else if (RegExMatch(tok, "i)^ATOM_\S+$")) {
+            kind := "atom"
+            id := tok
+        } else if (RegExMatch(tok, "^\d+$")) {
+            num := tok
+            continue
+        } else {
+            num := ""
+            continue
+        }
+        key := kind . "|" . id
+        if (seen.Has(key)) {
+            num := ""
+            continue
+        }
+        seen[key] := true
+        useNum := kind = "palace" ? num : ""
+        found.Push(Map("kind", kind, "num", useNum, "id", id))
+        num := ""
+    }
+}
+
+; PREVIEW `Exclude:` block. A palace id, beast id, or atom id may share the
+; Exclude line or sit on the following lines. `N PALACE_ID` anywhere in the
+; preview is also a palace delete.
 Palace_ParsePreviewExcludes(preview) {
     found := []
+    seen := Map()
     if (Trim(preview) = "")
         return found
     text := StrReplace(StrReplace(preview, "`r`n", "`n"), "`r", "`n")
     text := StrReplace(text, "`t", " ")
+    inBlock := false
     for line in StrSplit(text, "`n") {
         t := Trim(line)
-        if !RegExMatch(t, "i)^Exclude:\s*(.+)$", &m)
+        if (RegExMatch(t, "i)^Exclude:\s*(.*)$", &m)) {
+            inBlock := true
+            Palace_PushExcludePayload(&found, &seen, Trim(m[1]))
             continue
-        num := ""
-        id := ""
-        for tok in StrSplit(Trim(m[1]), " ") {
-            tok := Trim(tok, " ,;")
-            if (tok = "")
-                continue
-            if (RegExMatch(tok, "i)^PALACE_"))
-                id := tok
-            else if (RegExMatch(tok, "^\d+$"))
-                num := tok
         }
-        if (num != "" || id != "")
-            found.Push(Map("num", num, "id", id))
+        if (inBlock) {
+            if (Palace_ExcludeLineStops(t) || !RegExMatch(t, "i)^(\d+\s+)?(PALACE_|BEAST_|ATOM_)\S+")) {
+                inBlock := false
+            } else {
+                Palace_PushExcludePayload(&found, &seen, t)
+                continue
+            }
+        }
+        if (RegExMatch(t, "i)^\d+\s+PALACE_\S+\s*$"))
+            Palace_PushExcludePayload(&found, &seen, t)
     }
     return found
 }
@@ -858,25 +913,34 @@ Palace_ResolveExcludePalaceId(ref, palaces, preferStudyIds) {
     return ""
 }
 
-; Remove excluded palaces and beasts/atoms still stored on them.
-; keepBeastIds: pack beast ids already sitting on a surviving palace (do not delete those rows).
-Palace_DropExcludedPalaces(&palaces, &beasts, &atoms, excludeIds, keepBeastIds) {
-    if (!excludeIds.Count)
+; Delete excluded palaces, and delete excluded beasts together with their knowledge atoms.
+; A palace that is not in this pack and loses its last beast is deleted too.
+; Returns how many palace rows were removed. Mutates excludePalaceIds with those emptied palaces.
+Palace_ApplyPreviewExcludes(&palaces, &beasts, &atoms, excludePalaceIds, excludeBeastIds, packPalaceIds) {
+    if (!IsObject(excludePalaceIds))
+        excludePalaceIds := Map()
+    if (!IsObject(excludeBeastIds))
+        excludeBeastIds := Map()
+    if (!IsObject(packPalaceIds))
+        packPalaceIds := Map()
+    if (!excludePalaceIds.Count && !excludeBeastIds.Count)
         return 0
     dropBeast := Map()
+    touchedPalaces := Map()
     for b in beasts {
-        pid := b.Has("palace_id") ? b["palace_id"] : ""
-        if (!excludeIds.Has(pid))
-            continue
-        bid := b.Has("id") ? b["id"] : ""
-        if (bid != "" && keepBeastIds.Has(bid))
+        bid := b.Has("id") ? Trim(b["id"]) : ""
+        pid := b.Has("palace_id") ? Trim(b["palace_id"]) : ""
+        drop := (pid != "" && excludePalaceIds.Has(pid)) || (bid != "" && excludeBeastIds.Has(bid))
+        if (!drop)
             continue
         if (bid != "")
             dropBeast[bid] := true
+        if (pid != "")
+            touchedPalaces[pid] := true
     }
     newBeasts := []
     for b in beasts {
-        bid := b.Has("id") ? b["id"] : ""
+        bid := b.Has("id") ? Trim(b["id"]) : ""
         if (bid != "" && dropBeast.Has(bid))
             continue
         newBeasts.Push(b)
@@ -884,17 +948,29 @@ Palace_DropExcludedPalaces(&palaces, &beasts, &atoms, excludeIds, keepBeastIds) 
     beasts := newBeasts
     newAtoms := []
     for a in atoms {
-        bid := a.Has("beast_id") ? a["beast_id"] : ""
+        bid := a.Has("beast_id") ? Trim(a["beast_id"]) : ""
         if (bid != "" && dropBeast.Has(bid))
             continue
         newAtoms.Push(a)
     }
     atoms := newAtoms
+    left := Map()
+    for b in beasts {
+        pid := b.Has("palace_id") ? Trim(b["palace_id"]) : ""
+        if (pid = "")
+            continue
+        left[pid] := (left.Has(pid) ? left[pid] : 0) + 1
+    }
+    for pid, _ in touchedPalaces {
+        nLeft := left.Has(pid) ? left[pid] : 0
+        if (nLeft = 0 && !packPalaceIds.Has(pid))
+            excludePalaceIds[pid] := true
+    }
     n := 0
     newPalaces := []
     for p in palaces {
-        pid := p.Has("id") ? p["id"] : ""
-        if (pid != "" && excludeIds.Has(pid)) {
+        pid := p.Has("id") ? Trim(p["id"]) : ""
+        if (pid != "" && excludePalaceIds.Has(pid)) {
             n += 1
             continue
         }
@@ -1345,6 +1421,7 @@ Palace_ImportPlanPackFromDesktop(*) {
     Palace_EnsureData()
     pathPlanPack := Palace_ResolveDesktopPlanPackPath()
     if (pathPlanPack = "") {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("No PLAN_PACK / gemini-code (PLANS.csv) on Desktop", 2800, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -1483,6 +1560,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
         pathPack := Palace_DesktopNewestPackPath()
         if (pathPack = "") {
+            ImportMgmt_PlayOutcomeChime(false)
             Palace_Notify("No PALACE_PACK / PALACE_*.txt|.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
             Palace_ReturnAfterImport()
             return false
@@ -1555,8 +1633,10 @@ Palace_ImportMnemonicsFromDesktop(*) {
     atoms := Palace_Load("atoms")
 
     excludeIds := Map()
+    excludeBeastIds := Map()
     preferStudy := Map()
     packPalaceIds := Map()
+    packBeastIds := Map()
     for r in palaceRows {
         sid := r.Has("study_id") ? Trim(r["study_id"]) : ""
         if (sid != "")
@@ -1565,13 +1645,62 @@ Palace_ImportMnemonicsFromDesktop(*) {
         if (pid != "")
             packPalaceIds[pid] := true
     }
+    for r in beastRows {
+        bid := r.Has("id") ? Trim(r["id"]) : ""
+        if (bid != "")
+            packBeastIds[bid] := true
+    }
     excludeLabels := []
+    excludeMiss := []
     for ref in Palace_ParsePreviewExcludes(packPreview) {
+        kind := ref.Has("kind") ? ref["kind"] : "palace"
+        if (kind = "beast") {
+            beast := Palace_FindById(beasts, ref["id"])
+            if (!IsObject(beast)) {
+                excludeMiss.Push("Beast " . ref["id"] . " is not in the library")
+                continue
+            }
+            if (packBeastIds.Has(ref["id"])) {
+                excludeLabels.Push("Skip exclude: " . ref["id"] . " is kept by this pack")
+                continue
+            }
+            if (excludeBeastIds.Has(ref["id"]))
+                continue
+            excludeBeastIds[ref["id"]] := true
+            peg := beast.Has("peg_code") ? beast["peg_code"] : "?"
+            name := beast.Has("beast_name") ? beast["beast_name"] : ""
+            excludeLabels.Push("Delete beast [" . peg . "] " . name . " and its knowledge atom [" . ref["id"] . "]")
+            continue
+        }
+        if (kind = "atom") {
+            atom := Palace_FindById(atoms, ref["id"])
+            if (!IsObject(atom)) {
+                excludeMiss.Push("Knowledge atom " . ref["id"] . " is not in the library")
+                continue
+            }
+            bid := atom.Has("beast_id") ? Trim(atom["beast_id"]) : ""
+            beast := bid != "" ? Palace_FindById(beasts, bid) : false
+            if (!IsObject(beast)) {
+                excludeMiss.Push("Knowledge atom " . ref["id"] . " has no beast")
+                continue
+            }
+            if (packBeastIds.Has(bid)) {
+                excludeLabels.Push("Skip exclude: " . ref["id"] . " stays on " . bid . ", which this pack keeps")
+                continue
+            }
+            if (!excludeBeastIds.Has(bid)) {
+                excludeBeastIds[bid] := true
+                peg := beast.Has("peg_code") ? beast["peg_code"] : "?"
+                name := beast.Has("beast_name") ? beast["beast_name"] : ""
+                excludeLabels.Push("Delete knowledge atom " . ref["id"] . " by removing beast [" . peg . "] " . name)
+            }
+            continue
+        }
         resolvedId := Palace_ResolveExcludePalaceId(ref, palaces, preferStudy)
         labelNum := ref["num"] != "" ? ref["num"] : "?"
         if (resolvedId = "") {
-            excludeLabels.Push("Skip exclude: palace " . labelNum
-                . (ref["id"] != "" ? " [" . ref["id"] . "]" : "") . " not found")
+            excludeMiss.Push("Memory Palace " . labelNum
+                . (ref["id"] != "" ? " [" . ref["id"] . "]" : "") . " is not in the library")
             continue
         }
         if (packPalaceIds.Has(resolvedId)) {
@@ -1585,6 +1714,42 @@ Palace_ImportMnemonicsFromDesktop(*) {
         titleP := IsObject(pObj) && pObj.Has("title") ? pObj["title"] : ""
         num := IsObject(pObj) && pObj.Has("palace_number") ? pObj["palace_number"] : labelNum
         excludeLabels.Push("Delete Memory Palace " . num . ": " . titleP . " [" . resolvedId . "]")
+    }
+    ; Beasts named above can empty a palace the pack did not list. That palace goes too.
+    if (excludeBeastIds.Count) {
+        left := Map()
+        seenPalace := Map()
+        for b in beasts {
+            pid := b.Has("palace_id") ? Trim(b["palace_id"]) : ""
+            bid := b.Has("id") ? Trim(b["id"]) : ""
+            if (pid = "")
+                continue
+            if (!seenPalace.Has(pid)) {
+                seenPalace[pid] := true
+                left[pid] := 0
+            }
+            if (bid != "" && excludeBeastIds.Has(bid))
+                continue
+            if (excludeIds.Has(pid))
+                continue
+            left[pid] += 1
+        }
+        for pid, nLeft in left {
+            if (nLeft > 0 || packPalaceIds.Has(pid) || excludeIds.Has(pid))
+                continue
+            excludeIds[pid] := true
+            pObj := Palace_FindById(palaces, pid)
+            titleP := IsObject(pObj) && pObj.Has("title") ? pObj["title"] : ""
+            num := IsObject(pObj) && pObj.Has("palace_number") ? pObj["palace_number"] : "?"
+            excludeLabels.Push("Delete Memory Palace " . num . ": " . titleP . " [" . pid . "] — no beasts left")
+        }
+    }
+    if (excludeMiss.Length) {
+        msg := "Exclude could not be applied"
+        for line in excludeMiss
+            msg .= "`n" . line
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 4500))
+        return false
     }
 
     forwardCheck := Palace_ValidateForwardPull(palaceRows, beastRows, palaces, beasts, excludeIds)
@@ -1658,7 +1823,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
         . beastRows.Length . " beast(s)  ·  "
         . atomRows.Length . " atom(s)"
     if (excludeIds.Count)
-        title .= "  ·  " . excludeIds.Count . " delete(s)"
+        title .= "  ·  delete " . excludeIds.Count . " palace(s)"
+    if (excludeBeastIds.Count)
+        title .= "  ·  delete " . excludeBeastIds.Count . " beast(s)"
     ; Every rejection that sends an AI fix happens before the confirm dialog.
     if (beastRows.Length) {
         linkPlan := Palace_PlanImportedBeasts(beastRows, palacesPreview, palaceIdRemapPreview, beasts)
@@ -1777,6 +1944,17 @@ Palace_ImportMnemonicsFromDesktop(*) {
     }
     palaces := cleanedPalaces
 
+    ; Delete excluded palaces and beasts before the pack rows are inserted,
+    ; so a moved knowledge atom keeps its id instead of being minted again.
+    if (excludeIds.Count || excludeBeastIds.Count) {
+        for pid, _ in excludeIds {
+            pObj := Palace_FindById(palaces, pid)
+            if (IsObject(pObj) && pObj.Has("study_id") && Trim(pObj["study_id"]) != "")
+                syncStudyIds[pObj["study_id"]] := true
+        }
+        nExcluded := Palace_ApplyPreviewExcludes(&palaces, &beasts, &atoms, excludeIds, excludeBeastIds, packPalaceIds)
+    }
+
     ; --- Beasts: wipe only palaces with at least one insertable row; remap colliding ids ---
     priorBeastNotes := Map()
     for b in beasts {
@@ -1787,6 +1965,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     if (beastRows.Length) {
         linkPlan := Palace_PlanImportedBeasts(beastRows, palaces, palaceIdRemap, beasts)
         if (!linkPlan["ok"]) {
+            ImportMgmt_PlayOutcomeChime(false)
             Palace_Notify(linkPlan["error"], 4500, BANNER_ACCENT_ERROR)
             Palace_ReturnAfterImport()
             return false
@@ -1944,31 +2123,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
         }
     }
 
-    ; Drop later palaces named in PREVIEW Exclude. A beast id the pack already
-    ; placed on a surviving palace stays; rows still stored on the excluded palace go.
-    if (excludeIds.Count) {
-        survivorIds := Map()
-        for b in beasts {
-            bid := b.Has("id") ? b["id"] : ""
-            pid := b.Has("palace_id") ? b["palace_id"] : ""
-            if (bid != "" && !excludeIds.Has(pid))
-                survivorIds[bid] := true
-        }
-        keepBeastIds := Map()
-        for packId, canonId in beastIdRemap {
-            if (survivorIds.Has(canonId))
-                keepBeastIds[canonId] := true
-            if (survivorIds.Has(packId))
-                keepBeastIds[packId] := true
-        }
-        for p in palaces {
-            pid := p.Has("id") ? p["id"] : ""
-            if (pid != "" && excludeIds.Has(pid) && p.Has("study_id") && Trim(p["study_id"]) != "")
-                syncStudyIds[p["study_id"]] := true
-        }
-        nExcluded := Palace_DropExcludedPalaces(&palaces, &beasts, &atoms, excludeIds, keepBeastIds)
-    }
-
     ; Reject before any save. The confirm dialog already required these checks;
     ; this is the same gate if a row still fails while applying.
     if (nPalaces + nBeasts + nAtoms + nExcluded = 0) {
@@ -1979,6 +2133,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         notes := ""
         for note in csvNotes
             notes .= (notes = "" ? "" : "`r`n") . note
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify(msg, 3500, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -1990,6 +2145,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             : "Partial atoms: " . nAtoms . " of " . nBeasts . " beasts — Desktop pack kept"
         if (summary != "")
             msg .= " — " . summary
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify(msg, 4000, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -1997,7 +2153,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
 
     if (nPalaces || nExcluded)
         Palace_Save("palaces", palaces)
-    if (nBeasts || nExcluded) {
+    if (nBeasts || nExcluded || excludeBeastIds.Count) {
         Palace_Save("beasts", beasts)
         Palace_Save("atoms", atoms)
     } else if (nAtoms) {
@@ -2021,6 +2177,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             . " B: " . beasts.Length . "→" . savedBeasts.Length
             . " A: " . atoms.Length . "→" . savedAtoms.Length
             . " — Desktop files kept"
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify(msg, 5000, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -2071,7 +2228,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     ; SPA thumbs are keyed by beast id in the JSON catalog, and also computed
     ; from peg + name on each /api/state read. Rebuild before {F5} so a reload
     ; still matches new ids if the page is on an older script.
-    if (nBeasts || nExcluded) {
+    if (nBeasts || nExcluded || excludeBeastIds.Count) {
         if (!Palace_RebuildBeastThumbManifest())
             Palace_Notify("Beast icon catalog was not rebuilt", 2800, BANNER_ACCENT_ERROR)
     }
@@ -2255,6 +2412,7 @@ Palace_AttachImageFileToPalace(palace, src) {
 Palace_QuickAttachDesktopImage(*) {
     Palace_EnsureData()
     if (!Palace_PalacesMissingImage().Length) {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("All Memory Palaces already have an image", 2500, BANNER_ACCENT_ERROR)
         return false
     }
@@ -2263,14 +2421,17 @@ Palace_QuickAttachDesktopImage(*) {
         return false
     src := Palace_DesktopNewestImage()
     if (src = "") {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("No PNG/JPG on Desktop", 2200, BANNER_ACCENT_ERROR)
         return false
     }
     result := Palace_AttachImageFileToPalace(palace, src)
     if (!result.ok) {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify(result.err, 2800, BANNER_ACCENT_ERROR)
         return false
     }
+    ImportMgmt_PlayOutcomeChime(true)
     Palace_Notify("Attached image → " . palace["title"] . " (" . result.rel . ")", 2800, BANNER_ACCENT_SUCCESS)
     return true
 }
@@ -2286,6 +2447,7 @@ Palace_WriteTempCsvFromSection(body) {
 Palace_ImportPlansFromDesktop(pathPack) {
     text := Palace_NormalizePackText(Palace_ReadUtf8(pathPack))
     if (text = "") {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("Empty PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -2294,6 +2456,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     itemsBody := Palace_ExtractPackFileSection(text, "PLAN_ITEMS.csv")
     resBody := Palace_ExtractPackFileSection(text, "PLAN_RESOURCES.csv")
     if (plansBody = "" || itemsBody = "") {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("PLAN_PACK needs PLANS.csv + PLAN_ITEMS.csv sections", 3000, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -2318,6 +2481,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     }
 
     if (!planRows.Length) {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("No plan rows in PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false
@@ -2461,6 +2625,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     }
 
     if (!nPlans) {
+        ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("Import produced no plans", 2500, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport()
         return false

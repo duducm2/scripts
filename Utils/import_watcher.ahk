@@ -305,6 +305,9 @@ ImportWatcher_RunItem(path, item) {
     ImportWatcher_HideBanner(0)
     try runFn.Call()
     catch as e {
+        try ImportMgmt_PlayOutcomeChime(false)
+        catch {
+        }
         try ShowCenteredOverlay_Utils("Import failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", "Import failed")

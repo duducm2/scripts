@@ -95,6 +95,7 @@ Finance_FailAiImport(errorMsg, kind := "daily", notifyMs := 2200, extraNotes := 
     if (path != "")
         return ImportMgmt_OnAiFixReady(path, "FINANCE_AI_FIX.txt")
     ms := notifyMs < 5000 ? 5000 : notifyMs
+    ImportMgmt_PlayOutcomeChime(false)
     Finance_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
     return false
 }
@@ -979,6 +980,7 @@ Finance_ImportMonthly(*) {
         }
     }
     if (!n) {
+        ImportMgmt_PlayOutcomeChime(false)
         Finance_Notify("0 monthly adjustments applied — no data written", 2800, BANNER_ACCENT_ERROR)
         return false
     }
