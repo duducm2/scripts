@@ -1,19 +1,6 @@
 {
   "items": [
     {
-      "id": "col_f3ed3b264df5",
-      "palace_id": "PALACE_PIANO_11",
-      "slot": "trophy",
-      "name": "The Great Clefs and Placement Felt Trophy",
-      "blurb": "A whimsical hand-stitched felt creation celebrating note placement and key clefs, flanked by an angel, alligator, and friends who have gathered to learn the staff.",
-      "svg": "",
-      "image": "/assets/trophies/col_f3ed3b264df5.png",
-      "anim": "bob",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-11T18:54:09Z"
-    },
-    {
       "id": "col_878df2835470",
       "palace_id": "PALACE_COMMUNICATIO_06",
       "slot": "trophy",
@@ -145,7 +132,6 @@
     },
     {
       "id": "col_45281f2a0f13",
-      "created_at": "2026-10-18T15:17:22Z",
       "palace_id": "PALACE_DATAANALYST_24",
       "slot": "trophy",
       "name": "The Shielded Hermit’s ACID View Shadow Puppet",
@@ -153,6 +139,20 @@
       "svg": "",
       "image": "/assets/trophies/col_45281f2a0f13.png",
       "anim": "sway",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-10-18T15:17:22Z"
+    },
+    {
+      "id": "col_df45ccc3e609",
+      "created_at": "2026-10-25T17:58:49Z",
+      "palace_id": "PALACE_DATAANALYST_26",
+      "slot": "trophy",
+      "name": "Seal of PySpark SQL Operations",
+      "blurb": "An intricate, giant wax-seal impression symbolizing the ultimate query orchestrations and DataFrame transformations within the hall.",
+      "svg": "",
+      "image": "/assets/trophies/col_df45ccc3e609.png",
+      "anim": "bob",
       "anchor": "pedestal",
       "equipped": true
     }

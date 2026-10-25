@@ -1,0 +1,12 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+=FILE: COLLECTIBLE.json=
+{
+"palace_id": "PALACE_DATAANALYST_26",
+"slot": "trophy",
+"name": "Seal of PySpark SQL Operations",
+"blurb": "An intricate, giant wax-seal impression symbolizing the ultimate query orchestrations and DataFrame transformations within the hall.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
+=END_FILE=
