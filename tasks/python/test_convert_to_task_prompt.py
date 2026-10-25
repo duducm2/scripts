@@ -38,7 +38,7 @@ class ConvertToTaskPromptTest(unittest.TestCase):
         self.assertIn("- project_title: X-Tower", text)
         self.assertIn("- filter: work", text)
         self.assertIn("- section_path: Outreach", text)
-        self.assertIn("the emoji cell is the word none", text)
+        self.assertIn("the emoji cell is general", text)
         self.assertIn("One activity full of info points", text)
         self.assertIn("Notes on a task they already name", text)
         self.assertNotIn("TASK_PROJECTS row for this project.\n- project_title: ", text)
@@ -60,8 +60,8 @@ class ConvertToTaskPromptTest(unittest.TestCase):
             self.assertEqual(resolve_target_section(store, proj["id"], "General"), "")
             self.assertEqual(resolve_target_section(store, proj["id"], "Other"), "")
 
-    def test_none_emoji_imports_blank(self) -> None:
-        self.assertEqual(resolve_status_emoji("none"), "")
+    def test_none_emoji_imports_as_general(self) -> None:
+        self.assertEqual(resolve_status_emoji("none"), "🔲")
         self.assertEqual(resolve_status_emoji(""), "🔲")
 
     def test_title_newlines_collapse(self) -> None:

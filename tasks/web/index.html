@@ -163,15 +163,6 @@
         display: none;
         content: none;
       }
-      .project summary::before {
-        content: "▸";
-        color: var(--gold);
-        margin-right: 8px;
-        font-size: 12px;
-      }
-      .project[open] summary::before {
-        content: "▾";
-      }
       .proj-icon {
         flex: 0 0 auto;
         display: inline-block;
@@ -680,16 +671,6 @@
         visibility: visible;
         pointer-events: auto;
       }
-      .task-section-label::before {
-        content: "▾";
-        font-size: 9px;
-        opacity: 0.7;
-        width: 10px;
-      }
-      .task-section.collapsed > .task-section-label::before {
-        content: "▸";
-      }
-      /* Default bucket — quieter label at the start; full frame around all General tasks */
       .task-section.is-general {
         margin: 4px 8px 10px;
         padding: 0 0 4px;
@@ -710,13 +691,6 @@
       .task-section.is-general > .task-list {
         padding-left: 12px;
         padding-right: 12px;
-      }
-      .task-section.is-general > .task-section-label::before {
-        content: "–";
-        opacity: 0.5;
-      }
-      .task-section.is-general.collapsed > .task-section-label::before {
-        content: "+";
       }
       .task-section.is-general.collapsed > .task-section-label {
         border-bottom: none;
@@ -789,13 +763,20 @@
       .top-row.section-solo {
         grid-template-columns: 1fr;
       }
-      /* Solo category: CSS grid stays stable when cards grow (multi-column reflows/blinks).
-         Stretch items so every card in a row matches the tallest card in that row. */
+      /* Solo category: cards are only as tall as their contents. packBento() then
+         sets the next project into the shortest column so leftover space stays filled. */
       .column.bento {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
         gap: 14px;
-        align-items: stretch;
+        align-items: start;
+      }
+      .column.bento.bento-packed {
+        display: block;
+        position: relative;
+      }
+      .column.bento.bento-packed > .project {
+        position: absolute;
       }
       .column.bento > .section-head,
       .column.bento > .empty {
@@ -808,12 +789,10 @@
         width: auto;
         max-width: 100%;
         min-width: 0;
-        align-self: stretch;
-        height: 100%;
+        align-self: start;
+        height: auto;
         display: flex;
         flex-direction: column;
-        content-visibility: auto;
-        contain-intrinsic-size: auto 180px;
       }
       .column.bento > .project > summary {
         flex: 0 0 auto;
@@ -1465,13 +1444,12 @@
           every_10y: "Every 10 years",
           "": "Other",
         };
-        const EMOJI_KEYS = { t: "⚡", q: "⏳", g: "🔲", u: "❓", o: "" };
+        const EMOJI_KEYS = { t: "⚡", q: "⏳", g: "🔲", u: "❓" };
         const EMOJI_API_KEYS = {
           t: "important",
           q: "waiting",
           g: "general",
           u: "doubt",
-          o: "none",
         };
         function envDefaultFocus() {
           try {
@@ -1709,17 +1687,30 @@
           const hideGlyph =
             waiting || em === "⚡" || em === "🔲" || isDoubtEmoji(em);
           if (badge) badge.textContent = hideGlyph ? "" : em;
-          const doubt = node.querySelector(":scope > .doubt-tag");
+          let doubt = node.querySelector(".doubt-tag");
           if (isDoubtEmoji(em)) {
-            if (!doubt && badge) {
-              const tag = document.createElement("span");
-              tag.className = "doubt-tag";
-              tag.dataset.act = "clear-doubt";
-              tag.title = "In doubt — click to clear";
-              tag.textContent = "DOUBT";
-              badge.after(tag);
+            if (!doubt) {
+              doubt = document.createElement("span");
+              doubt.className = "doubt-tag";
+              doubt.dataset.act = "clear-doubt";
+              doubt.title = "In doubt — click to clear";
+              doubt.textContent = "DOUBT";
             }
-          } else if (doubt) doubt.remove();
+            let end = node.querySelector(":scope > .task-end");
+            if (!end) {
+              end = document.createElement("span");
+              end.className = "task-end";
+              const actions = node.querySelector(":scope > .row-actions");
+              if (actions) node.insertBefore(end, actions);
+              else node.appendChild(end);
+            }
+            if (doubt.parentElement !== end) end.prepend(doubt);
+          } else if (doubt) {
+            const end = doubt.parentElement;
+            doubt.remove();
+            if (end?.classList.contains("task-end") && !end.children.length)
+              end.remove();
+          }
           if (typeof applySearchDom === "function") applySearchDom();
           orderTaskNodeInSection(node);
           return true;
@@ -2964,9 +2955,9 @@
 
         function taskEmoji(t) {
           const em = t?.emoji;
-          if (em === undefined || em === null) return "🔲";
-          // legacy: Shift+O before server restart saved the word "none"
-          if (em === "none" || em === "None") return "";
+          if (em === undefined || em === null || em === "") return "🔲";
+          // Older Shift+O rows stored a blank or the word "none". Those are general.
+          if (String(em).trim().toLowerCase() === "none") return "🔲";
           // Packs may store the status word instead of the glyph.
           if (String(em).trim().toLowerCase() === "doubt") return "❓";
           return em;
@@ -3016,22 +3007,22 @@
           const dueTag = due
             ? `<span class="due" title="${esc(due)}">${esc(formatDueLabel(due))}</span>`
             : "";
-          const endTag =
-            dueTag || infoTag
-              ? `<span class="task-end">${dueTag}${infoTag}</span>`
-              : "";
-          const isNew = !!(t.import_batch || "").trim();
-          const newTag = isNew
-            ? `<span class="new-tag" data-act="clear-new" title="Newly imported — hover, focus, or click to clear">NEW</span>`
-            : "";
           const em = taskEmoji(t);
           const waiting = em === "⏳";
           const important = em === "⚡";
           const general = em === "🔲";
           const doubt = isDoubtEmoji(em);
           const shownEm = waiting || important || general || doubt ? "" : em;
-          const doubtTag = isDoubtEmoji(em)
+          const doubtTag = doubt
             ? `<span class="doubt-tag" data-act="clear-doubt" title="In doubt — click to clear">DOUBT</span>`
+            : "";
+          const endTag =
+            doubtTag || dueTag || infoTag
+              ? `<span class="task-end">${doubtTag}${dueTag}${infoTag}</span>`
+              : "";
+          const isNew = !!(t.import_batch || "").trim();
+          const newTag = isNew
+            ? `<span class="new-tag" data-act="clear-new" title="Newly imported — hover, focus, or click to clear">NEW</span>`
             : "";
           const actions = isHabit
             ? `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
@@ -3061,7 +3052,6 @@
           return `<li class="task${dueNow ? " due-now" : ""}${cutClass}${waitClass}${importantClass}${generalClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}${isNew ? ' data-new="1"' : ""}>
       <span class="em">${esc(shownEm)}</span>
       ${newTag}
-      ${doubtTag}
       <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
       ${endTag}
       <span class="row-actions">${actions}</span>
@@ -3172,10 +3162,12 @@
 
         function focusColumnClass(filt) {
           const f = state.sectionFocus || "";
-          const parts = ["column", "panel"];
+          const parts = ["column"];
           if (filt === "habits") parts.push("habits-column");
           if (f && f !== filt) parts.push("section-hidden");
+          // One column on screen: projects sit on the page. The panel frame is for the split view.
           if (f === filt) parts.push("bento");
+          else parts.push("panel");
           return parts.join(" ");
         }
 
@@ -3338,6 +3330,157 @@
       ${renderHabitsColumn()}`;
         }
 
+        function clearBentoCard(card) {
+          card.style.gridColumn = "";
+          card.style.gridRow = "";
+          card.style.position = "";
+          card.style.width = "";
+          card.style.left = "";
+          card.style.top = "";
+        }
+
+        function resetBentoGrid(grid) {
+          grid.classList.remove("bento-packed");
+          grid.style.gridTemplateColumns = "";
+          grid.style.height = "";
+          delete grid.dataset.bentoSig;
+          delete grid.dataset.bentoCols;
+          delete grid.dataset.bentoW;
+          grid.querySelectorAll(":scope > .project").forEach(clearBentoCard);
+        }
+
+        // Shortest-column placement: each project keeps its content height, and
+        // the next one fills whichever column is shortest. Source order is kept
+        // (a later card never jumps above an earlier one).
+        function packBento() {
+          document.querySelectorAll("section.bento-packed").forEach((grid) => {
+            if (!grid.classList.contains("bento")) resetBentoGrid(grid);
+          });
+          let changed = false;
+          document.querySelectorAll(".column.bento").forEach((grid) => {
+            const all = [...grid.querySelectorAll(":scope > .project")];
+            const cards = all.filter(
+              (el) =>
+                !el.classList.contains("search-hidden") &&
+                !el.classList.contains("emoji-hidden"),
+            );
+            const width = grid.clientWidth;
+            const gap = 14;
+            const minCol = width >= 1400 ? 360 : 340;
+            const cols =
+              width > 0
+                ? Math.max(1, Math.floor((width + gap) / (minCol + gap)))
+                : 1;
+            if (cards.length < 2 || cols < 2) {
+              if (
+                grid.classList.contains("bento-packed") ||
+                grid.style.height ||
+                grid.style.gridTemplateColumns
+              ) {
+                resetBentoGrid(grid);
+                changed = true;
+              }
+              return;
+            }
+            const widthKey = String(Math.round(width));
+            const sameFrame =
+              grid.classList.contains("bento-packed") &&
+              grid.dataset.bentoCols === String(cols) &&
+              grid.dataset.bentoW === widthKey;
+            if (!sameFrame) {
+              grid.classList.remove("bento-packed");
+              grid.style.height = "";
+              grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+              all.forEach(clearBentoCard);
+            }
+            const colW = cards[0].getBoundingClientRect().width;
+            const heights = cards.map((card) => card.offsetHeight);
+            const colH = Array(cols).fill(0);
+            const placements = [];
+            for (let i = 0; i < cards.length; i++) {
+              let best = 0;
+              for (let c = 1; c < cols; c++) {
+                if (colH[c] < colH[best]) best = c;
+              }
+              placements.push({
+                card: cards[i],
+                left: best * (colW + gap),
+                top: colH[best],
+                h: heights[i],
+              });
+              colH[best] += heights[i] + gap;
+            }
+            const height = Math.max(0, Math.max(...colH) - gap);
+            const sig = `${cols}|${widthKey}|${placements
+              .map((p) => `${Math.round(p.left)}:${Math.round(p.top)}:${p.h}`)
+              .join(",")}|${Math.round(height)}`;
+            if (sameFrame && grid.dataset.bentoSig === sig) return;
+            grid.dataset.bentoSig = sig;
+            grid.dataset.bentoCols = String(cols);
+            grid.dataset.bentoW = widthKey;
+            grid.classList.add("bento-packed");
+            grid.style.gridTemplateColumns = "";
+            grid.style.height = `${Math.round(height)}px`;
+            const placed = new Set(placements.map((p) => p.card));
+            all.forEach((card) => {
+              if (!placed.has(card)) clearBentoCard(card);
+            });
+            const wpx = `${colW}px`;
+            for (const p of placements) {
+              p.card.style.position = "absolute";
+              p.card.style.width = wpx;
+              p.card.style.left = `${p.left}px`;
+              p.card.style.top = `${p.top}px`;
+            }
+            changed = true;
+          });
+          return changed;
+        }
+
+        function scheduleBentoPack() {
+          if (scheduleBentoPack.suppress) {
+            scheduleBentoPack.pending = true;
+            return;
+          }
+          cancelAnimationFrame(scheduleBentoPack.raf);
+          scheduleBentoPack.raf = requestAnimationFrame(() => {
+            const changed = packBento();
+            if (!changed) {
+              scheduleBentoPack.burst = 0;
+              return;
+            }
+            scheduleBentoPack.burst = (scheduleBentoPack.burst || 0) + 1;
+            if (scheduleBentoPack.burst > 4) {
+              scheduleBentoPack.burst = 0;
+              return;
+            }
+            scheduleBentoPack.suppress = true;
+            requestAnimationFrame(() => {
+              scheduleBentoPack.suppress = false;
+              if (scheduleBentoPack.pending) {
+                scheduleBentoPack.pending = false;
+                scheduleBentoPack();
+              } else scheduleBentoPack.burst = 0;
+            });
+          });
+        }
+
+        function bindBentoObserver() {
+          if (!bindBentoObserver.ro) {
+            bindBentoObserver.ro = new ResizeObserver(() =>
+              scheduleBentoPack(),
+            );
+          }
+          const ro = bindBentoObserver.ro;
+          ro.disconnect();
+          document.querySelectorAll(".column.bento").forEach((grid) => {
+            ro.observe(grid);
+            grid
+              .querySelectorAll(":scope > .project")
+              .forEach((card) => ro.observe(card));
+          });
+        }
+
         function renderDashboard() {
           rebuildTaskIdsWithInfo();
           kbSelectedEl = null;
@@ -3362,6 +3505,8 @@
           syncInlineCreateUi();
           bindInlineCreateInput();
           syncDocumentTitle();
+          packBento();
+          bindBentoObserver();
         }
 
         function listNewImportTasks() {
@@ -3652,6 +3797,7 @@
             } else if (note) note.remove();
           });
           invalidateNavCache();
+          scheduleBentoPack();
         }
 
         function render() {
@@ -3760,6 +3906,8 @@
           if (opts.scrollHeader !== false && f && f !== prev)
             scrollToPageHeader();
           applySelection(opts.selectScroll !== false);
+          packBento();
+          bindBentoObserver();
         }
 
         let navCache = null;
@@ -3887,6 +4035,7 @@
           );
           if (el) el.open = !!expanded;
           invalidateNavCache();
+          scheduleBentoPack();
         }
 
         function setSectionExpanded(id, expanded) {
@@ -3897,6 +4046,7 @@
           );
           if (el) el.classList.toggle("collapsed", !expanded);
           invalidateNavCache();
+          scheduleBentoPack();
         }
 
         function hierarchyNav(dir) {
@@ -5856,6 +6006,7 @@
           });
           applySelection(false);
           syncDocumentTitle();
+          scheduleBentoPack();
         }
 
         function revealEmojiMatches() {
@@ -7717,6 +7868,7 @@
           if (proj.open) state.collapsedProjects.delete(id);
           else state.collapsedProjects.add(id);
           invalidateNavCache();
+          scheduleBentoPack();
         });
         const searchInp = $("#globalSearch");
         if (searchInp) {

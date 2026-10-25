@@ -75,7 +75,6 @@ STATUS_EMOJIS = {
     "important": "⚡",
     "done": "✅",
     "doubt": "❓",
-    "none": "",
 }
 
 # Spoken / pack words that mean a status. Glyphs in STATUS_EMOJIS pass through as-is.
@@ -95,7 +94,7 @@ STATUS_EMOJI_ALIASES = {
     "done": "done",
     "complete": "done",
     "completed": "done",
-    "none": "none",
+    "none": "general",
 }
 
 
@@ -1113,7 +1112,7 @@ class TaskStore:
             recurrence = ""
         emoji = (payload.get("emoji") or "").strip() or STATUS_EMOJIS["general"]
         if emoji.lower() == "none":
-            emoji = ""
+            emoji = STATUS_EMOJIS["general"]
         project_id = (payload.get("project_id") or "").strip()
         if not project_id:
             return {"ok": False, "error": "project_id required"}
@@ -1167,14 +1166,12 @@ class TaskStore:
         if key in STATUS_EMOJIS:
             emoji = STATUS_EMOJIS[key]
         elif key.lower() == "none":
-            emoji = ""
+            emoji = STATUS_EMOJIS["general"]
         else:
             emoji = key
-        # Reject accidental literal "none" from older clients
         if (emoji or "").strip().lower() == "none":
-            emoji = ""
-        # "none" is an empty emoji; other empty keys are invalid
-        if not emoji and key not in STATUS_EMOJIS and key.lower() != "none":
+            emoji = STATUS_EMOJIS["general"]
+        if not emoji and key not in STATUS_EMOJIS:
             return {"ok": False, "error": "emoji required"}
         rows = self.load("tasks")
         out = []

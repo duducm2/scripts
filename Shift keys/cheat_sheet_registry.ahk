@@ -1217,7 +1217,6 @@ cheatSheets["Tasks"] := "
     ⏳ [Q] Waiting — tag hovered or selected task, or filter if none targeted
     🔲 [G] General — tag hovered or selected task, or filter if none targeted
     ❓ [U] Doubt — DOUBT badge on the hovered or selected task (click the badge to clear), or filter if no task is targeted
-    [O] Clear emoji on the hovered or selected task, or filter tasks with no emoji if none targeted
     ⚡ [I] Important on the hovered or selected task only (does not filter)
     
     === Alt ===

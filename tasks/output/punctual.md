@@ -109,7 +109,7 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ⚡ You look over, and the resumes that you have generated in Portuguese and English in your job sportal to see if there is anything purely AI-oriented
 
-⚡ O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
+🔲 O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
 
 ### Alumni Unicamp
 

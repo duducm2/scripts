@@ -102,8 +102,8 @@ def format_target_project(title: str, filt: str, section: str = "") -> str:
     lines.append(
         "- One activity full of info points: a meeting note, or they say one task, info points, don't split, or no emoji. "
         "Emit exactly one TASK_TASKS row. When they want it clear of emoji (no emoji, no status glyph, a plain note), "
-        "the emoji cell is the word none — not general, not 🔲, and not an empty cell. "
-        "The importer stores none as no emoji. Every bullet, decision, fact, and quote is a TASK_INFO row on that single parent. "
+        "the emoji cell is general. "
+        "Every bullet, decision, fact, and quote is a TASK_INFO row on that single parent. "
         "Do not create a task per bullet."
     )
     lines.append(
