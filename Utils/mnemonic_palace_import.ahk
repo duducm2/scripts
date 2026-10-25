@@ -543,7 +543,9 @@ Palace_AiCompanionFixGuidance(errorMsg) {
     if (InStr(e, "one knowledge atom") || InStr(e, "zoned")) {
         return "- One beast carries exactly one Knowledge Atom.`r`n"
         . "- Do not merge atoms onto body zones. Do not use kind=zoned or Z1-Z4.`r`n"
-        . "- Give each atom its own beast.`r`n"
+        .
+        "- A Story Reduction UPDATE already fused listed concepts into that one atom. Do not split it back apart, and do not put the sources on zones.`r`n"
+        . "- Give each remaining atom its own beast.`r`n"
         . "- Re-emit a corrected full pack."
     }
     if (InStr(e, "0 imported")) {

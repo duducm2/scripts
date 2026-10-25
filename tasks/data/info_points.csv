@@ -1,13 +1,10 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at,edit_lock,birth_date
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39,,
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39,,
-INFO_0068,project,PROJ_0015,"link rel=""stylesheet"" type=""text/css"" href=""styles/styles.css"">","link rel=""stylesheet"" type=""text/css"" href=""styles/styles.css"">",ℹ️,,1350,2026-08-29 15:48:39,,
 INFO_0076,task,TASK_0042,We also had some problems with authentication along the way,We also had some problems with authentication along the way,ℹ️,,1550,2026-08-29 15:48:39,,
 INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 15:48:39,,
 INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.","Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.",ℹ️,,1610,2026-08-29 15:48:39,,
 INFO_0079,task,TASK_0045,"Minoxidil: 6/6, Revoc: 2/2 (60 pills)","Minoxidil: 6/6, Revoc: 2/2 (60 pills)",ℹ️,,1620,2026-08-29 15:48:39,,
-INFO_0080,task,TASK_0047,Presentation: 30m,Presentation: 30m,ℹ️,,1650,2026-08-29 15:48:39,,
-INFO_0081,task,TASK_0048,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,ℹ️,,1670,2026-08-29 15:48:39,,
 INFO_0089,project,PROJ_0019,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39,,
 INFO_0090,project,PROJ_0019,Maintain ongoing literature review,"Maintain ongoing literature review
 Confirm if committee members may ask about courses near defense
@@ -44,10 +41,7 @@ INFO_0135,task,TASK_0248,"Perguntar no cartório
 Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)",,ℹ️,,10,2026-09-12 16:25:28,,
 INFO_0137,task,TASK_0251,https://unicamp-alumni.org.br/directory,,ℹ️,,10,2026-09-14 18:10:32,,
 INFO_0138,task,TASK_0251,image.png,,ℹ️,,20,2026-09-14 18:12:46,,
-INFO_0141,task,TASK_0254,https://www.linkedin.com/jobs/view/4452391795/,,ℹ️,,10,2026-09-14 18:25:58,,
-INFO_0142,task,TASK_0254,https://www.linkedin.com/jobs/view/4449189767/,,ℹ️,,20,2026-09-14 18:26:13,,
 INFO_0168,task,TASK_0258,C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\web\start.bat,,ℹ️,,10,2026-09-15 16:02:33,,
-INFO_0171,task,TASK_0264,Isolation Warning,"Keep the puppy entirely isolated from public streets, parks, and unknown animals.",ℹ️,Vaccination Timetable,4090,2026-09-17 22:16:13,,
 INFO_0172,task,TASK_0266,Socialization,Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.,ℹ️,Vaccination Timetable,4100,2026-09-17 22:16:13,,
 INFO_0173,task,TASK_0267,Outdoor Walks,She will be fully protected and ready for public outdoor walks 15 days after this final round.,ℹ️,Vaccination Timetable,4110,2026-09-17 22:16:13,,
 INFO_0176,task,TASK_0284,"Recommended annually if the puppy will go to daycares, parks, or interact closely with other dogs.",,ℹ️,,10,2026-09-17 22:23:10,,
@@ -3669,3 +3663,4 @@ INFO_0498,task,TASK_0672,"{
 }",,ℹ️,,20,2026-10-23 13:29:10,,
 INFO_0499,task,TASK_0671,https://inside-docupedia.bosch.com/confluence/spaces/PSBDO/pages/4088643213/PS+BDO+Organization,,ℹ️,,10,2026-10-23 14:35:30,,
 INFO_0500,task,TASK_0673,"""C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf""",,ℹ️,,10,2026-10-23 20:30:32,,
+INFO_0501,task,TASK_0675,C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md,,ℹ️,,10,2026-10-25 18:38:23,,

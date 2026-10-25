@@ -19,7 +19,7 @@ This system helps you memorize complex topics (e.g. Piano, English Grammar, Comm
 | **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                               |
 | **3 — Curate atoms**         | Cursor (when needed) | `prompts/concept-curation-prompt.txt` — when the transcript/text is too long or dense                              | Source transcript/text · optional practice `.md` · this README                                   |
 | **4 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Transcription **or** curated concept `.md` · existing study list · `bestiary.json` · this README |
-| **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **REMOVE** mode                                                            | In-scope palace pack · peg letters to remove · `bestiary.json`                                   |
+| **5 — Story Update**         | Cursor (when needed) | `prompts/story-reduction-prompt.txt` — the instruction says what to change                                         | In-scope palace pack · the instruction · `bestiary.json`                                         |
 | **6 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 4 or 5                                          |
 | **7 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                   |
 | **8 — Save files**           | You                  | Store snapshots and composites in `studies/[Topic]/images/` as `N.png` matching Street N                           | —                                                                                                |
@@ -48,7 +48,7 @@ flowchart TB
     transcribeNode["<b>Transcribe</b> — <code>video-transcription-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>YouTube video link</span> <span style='color:#888'>(Gemini · Input section)</span><br/><br/><span style='color:#9cdcfe'>You:</span> Paste the link in Gemini.<br/><span style='color:#b5cea8'><b>Save</b></span> Markdown transcript.<br/><span style='color:#888'>Required before Story Architect (or Curate).</span>"]
     curateNode["<b>Curate atoms</b> — <code>concept-curation-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>Source transcript/text · optional practice <code>.md</code> · README</span><br/><br/><span style='color:#9cdcfe'>You:</span> when the source is too long/dense.<br/><span style='color:#b5cea8'><b>Save</b></span> curated concept Markdown.<br/><span style='color:#888'>Optional; feeds Story Architect as transcription.</span>"]
     storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Transcription <b>or</b> curated concept <code>.md</code> · 📎 Existing study list <code>.md</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
-    refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 REMOVE · 📎 In-scope palace pack · 📎 Peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> reduced palace pack · refreshed <code>🖼️ Mnemonic image prompts</code>. Do not rewrite narratives. One beast keeps one atom."]
+    refineNode["<b>Story Update</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 The instruction · 📎 In-scope palace pack · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> say what should change: delete and pull the next beasts, merge some, or replace a deprecated concept<br/><span style='color:#ce9178'><b>You get:</b></span> updated palace pack · refreshed <code>🖼️ Mnemonic image prompts</code>. Do not rewrite narratives. One beast keeps one atom. If the instruction is unclear, the model asks before it edits."]
     mapsNode["<b>Google Maps</b><br/><br/><span style='color:#9cdcfe'>You:</span> N locations · one screenshot per street.<br/><span style='color:#888'>Use the latest <code>🖼️ Mnemonic image prompts</code> from the current story output.</span>"]
       genNode["<b>Foreground Composite</b> — <code>image-background-preservation-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Street screenshot · 📎 Matching line from <code>🖼️ Mnemonic image prompts</code></span><br/><span style='color:#9cdcfe'>You:</span> place the preservation prompt above the street prompt, then add mnemonic foreground elements without altering the place."]
     filesNode["<b>Save files</b><br/><br/><span style='color:#9cdcfe'>You:</span> Study <code>images/</code> folder · save as <code>N.png</code> matching Street N."]
@@ -115,7 +115,7 @@ Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEV
 
 **Retrieval path:** peg → `💡 **Context:**` (ultra-short core + optional Note) → **Keywords** → Quote. The user may later turn the keywords into a story outside this system. AIB does not write that story.
 
-**One atom per beast:** A beast holds exactly one Knowledge Atom. Do not merge several atoms onto one beast, and do not split an atom across body zones. Story Reduction only removes pegs.
+**One atom per beast:** A beast holds exactly one Knowledge Atom. Do not keep several atoms on one beast, and do not split an atom across body zones. Story Update follows the human's instruction: delete pegs, merge named concepts into one new atom, replace a deprecated concept, or another edit that instruction names.
 
 **Example:**
 
@@ -199,9 +199,9 @@ NEVER add moderation-bypass language, explicit sexual content, or graphic gore. 
 
 A beast holds exactly one Knowledge Atom. Body zones are not knowledge slots.
 
-- Do not merge several atoms onto one beast.
+- Do not keep several atoms on one beast.
 - Do not assign atoms to Z1–Z4, and do not use `kind=zoned`.
-- When a palace has too many beasts, run **Story Reduction** in **REMOVE** mode and drop the pegs you do not want. Each remaining beast still carries its own atom.
+- When a palace needs a change, run **Story Update** and say what to do. That may drop pegs, merge named concepts into one atom, replace a deprecated concept, or pull the next beasts forward. Each remaining beast still carries exactly one atom.
 - Older libraries that once stored extra atoms on one beast keep that text in `beast_notes`. Those notes are not a second atom.
 
 ### Characters
@@ -235,7 +235,7 @@ Named public figures and copyrighted characters are not street anchors. `charact
 
 An A–Z list of "Beasts," based on Lynne Kelly's work (_Memory Craft_). The list iterates A–Z, then AA–ZZ as needed. Entries live in `bestiary.json`.
 
-- Each Beast holds exactly one **Knowledge Atom** (one concept; one fact). Story Reduction does not put extra atoms on that beast.
+- Each Beast holds exactly one **Knowledge Atom** (one concept; one fact). A Story Update merge replaces the named atoms with one atom. It does not put extra atoms on that beast.
 - **Peg constraint:** Use the Bestiary `code` field (e.g. A, B, AB) for the Peg. NEVER use numeric identifiers (1, 2, 01, etc.).
 
 **Two-letter pegs and Custom gap-fillers:** Beyond the primary A–Z row, pegs continue as two-letter codes (`Aa`, `Ab`, …, `Zz`). When a Lynne Kelly beast exists for that letter pair, it is used directly. When no beast fits, a **Custom** gap-filler is generated as `{physical adjective from 1st letter} + {A–Z peg beast from 2nd letter}`—for example, `Bh` → Bone Hydra (not a random hawk), `Bd` → Bone dragon.
@@ -249,14 +249,14 @@ An A–Z list of "Beasts," based on Lynne Kelly's work (_Memory Craft_). The lis
 
 ### Bestiary Shifting Logic
 
-After Story Reduction (REMOVE), the peg sequence MUST be an **unbroken alphabetical mnemonic**. No gaps.
+After Story Update, the peg sequence MUST be an **unbroken alphabetical mnemonic**. No gaps.
 
 - **Rule:** For each **remaining** beast, in **remaining order**, assign the **next consecutive peg** from the bestiary (A, B, C, …). Update the Beast name to the beast for that new peg (from `bestiary.json`).
 - **Example:** Atoms at pegs A, B, C, D, E. User removes B and D. Remaining (A, C, E) → re-pegged as A, B, C with beasts from pegs A, B, C.
 - Apply this shift to the **entire** story: every Header, and every in-narrative reference to a Beast or peg, MUST use the new peg and Beast name.
 - Sequence continues A, B, C, … (or A, B, …, Z, Aa, …) with no gaps.
 
-**REMOVE constraints:** Do not add new knowledge atoms. Do not merge remaining atoms onto one beast. Only remove requested pegs and re-peg the rest. Preserve every remaining atom's `concept` and `keywords` byte-for-byte, and preserve **video quote excerpt(s)** verbatim.
+**Story Update constraints:** Do only what the instruction asks. A deletion removes those pegs and may pull the next beasts forward. A merge fuses only the named concepts into one Knowledge Atom on one beast and keeps their facts and quotes. A replacement writes the new concept and drops the deprecated facts. Do not keep several atoms on one beast. Every atom the instruction leaves alone keeps its stored `concept` and `keywords` byte-for-byte, and keeps its **video quote excerpt** verbatim. A concept this run writes is newly authored (`README §Knowledge Atom Structure`).
 
 ### Image composition rules
 
@@ -370,13 +370,13 @@ studies/
 
 Prompts are loaded via AutoHotkey. Use these exact names in the model:
 
-| Key | Model name                               | File                                       |
-| --- | ---------------------------------------- | ------------------------------------------ |
-| 4   | Creating mnemonic stories                | `story-prompt.txt`                         |
-| 5   | Transcript Youtube Video                 | `video-transcription-prompt.txt`           |
-| 6   | Curate knowledge atoms                   | `concept-curation-prompt.txt`              |
-| a   | Story reduction - merge or remove pegs   | `story-reduction-prompt.txt`               |
-| g   | Preserve background for image generation | `image-background-preservation-prompt.txt` |
+| Key | Model name                                | File                                       |
+| --- | ----------------------------------------- | ------------------------------------------ |
+| 4   | Creating mnemonic stories                 | `story-prompt.txt`                         |
+| 5   | Transcript Youtube Video                  | `video-transcription-prompt.txt`           |
+| 6   | Curate knowledge atoms                    | `concept-curation-prompt.txt`              |
+| a   | Story update - instruction edits the pack | `story-reduction-prompt.txt`               |
+| g   | Preserve background for image generation  | `image-background-preservation-prompt.txt` |
 
 ### Study plan conventions
 

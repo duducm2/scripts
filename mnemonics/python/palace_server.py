@@ -576,8 +576,8 @@ def synthesize_inscope_inventory(
         if lo <= int(p.get("palace_number") or 0) <= hi
     ]
     lines = [
-        f"In-scope working set (palaces {lo}–{hi}) — resolve ids/quotes here; "
-        "emit ONLY these (post-reduction) in the pack:",
+        f"Palace inventory (palaces {lo}–{hi}) — ids, concepts, keywords, and quotes. "
+        "Edit only what the instruction names; pull a later beast forward only when packing needs it:",
         "",
     ]
     if not palaces:
@@ -598,6 +598,7 @@ def synthesize_inscope_inventory(
             for a in _atoms_for_beast(data, b.get("id") or ""):
                 lines.append(f"- Knowledge Atom id={a.get('id') or '?'}")
                 lines.append(f"  Concept: {(a.get('concept') or '').strip() or '—'}")
+                lines.append(f"  Keywords: {(a.get('keywords') or '').strip() or '—'}")
                 lines.append(f"  Quote: {(a.get('quote') or '').strip() or '—'}")
         lines.append("")
     return "\n".join(lines)

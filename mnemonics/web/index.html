@@ -818,9 +818,9 @@
           type="button"
           id="btnStoryReduction"
           data-ico="funnel"
-          title="Toggle Story Reduction Mode (Shift+R)"
+          title="Toggle Story Update (Shift+R)"
         >
-          Story Reduction
+          Story Update
         </button>
         <button
           type="button"
@@ -1227,10 +1227,10 @@
       id="storyReductionPanel"
       class="story-reduction-panel"
       hidden
-      aria-label="Story Reduction staging"
+      aria-label="Story Update"
     >
       <header class="sr-panel-head">
-        <h2>Story Reduction</h2>
+        <h2>Story Update</h2>
         <button
           type="button"
           id="btnSrClear"
@@ -1241,22 +1241,23 @@
           Clear
         </button>
       </header>
-      <section
-        class="sr-drop sr-delete"
-        id="srDeleteZone"
-        data-sr-drop="delete"
-      >
-        <h3>Delete</h3>
-        <p class="sr-hint">Drop beasts to remove (REMOVE)</p>
-        <div class="sr-chip-list" id="srDeleteList"></div>
+      <section class="sr-drop" id="srFocusZone" data-sr-drop="focus">
+        <h3>Beasts</h3>
+        <p class="sr-hint">Drop the beasts this change is about</p>
+        <div class="sr-chip-list" id="srFocusList"></div>
       </section>
+      <textarea
+        id="srInstruction"
+        class="aq-question"
+        placeholder="What should change? Delete some and pull the next beasts, merge some, or replace a deprecated concept…"
+      ></textarea>
       <footer class="sr-panel-foot">
         <button
           type="button"
           id="btnSrGenerate"
           class="sr-btn"
           data-ico="spark"
-          title="Copy context + filled story-reduction prompt"
+          title="Send the instruction and palace context to the AI companion"
         >
           Generate Prompt
         </button>
@@ -1370,7 +1371,8 @@
         selectedPalaceIds: new Set(),
         storyReduction: {
           active: false,
-          deleteIds: [],
+          beastIds: [],
+          instruction: "",
         },
         atomQuestion: {
           active: false,
@@ -1644,13 +1646,7 @@
       }
 
       function srAllStagedIds() {
-        return new Set(state.storyReduction.deleteIds);
-      }
-
-      function srRemoveFromDelete(beastId) {
-        state.storyReduction.deleteIds = state.storyReduction.deleteIds.filter(
-          (id) => id !== beastId,
-        );
+        return new Set(state.storyReduction.beastIds);
       }
 
       function srChipLabel(beastId) {
@@ -1670,17 +1666,24 @@
         btn.classList.toggle("active", on);
         if (!on) return;
 
-        const delList = document.getElementById("srDeleteList");
-        delList.innerHTML = state.storyReduction.deleteIds
+        const focusList = document.getElementById("srFocusList");
+        focusList.innerHTML = state.storyReduction.beastIds
           .map(
             (id) =>
-              `<button type="button" class="sr-chip" data-sr-unstage="${escAttr(id)}" data-sr-from="delete" title="Remove from Delete">${esc(srChipLabel(id))}</button>`,
+              `<button type="button" class="sr-chip sr-chip-merge" data-sr-unstage="${escAttr(id)}" title="Remove from Story Update">${esc(srChipLabel(id))}</button>`,
           )
           .join("");
+        const instruction = document.getElementById("srInstruction");
+        if (instruction && document.activeElement !== instruction) {
+          instruction.value = state.storyReduction.instruction;
+        }
 
         panel.querySelectorAll("[data-sr-unstage]").forEach((el) => {
           el.onclick = () => {
-            srRemoveFromDelete(el.dataset.srUnstage);
+            state.storyReduction.beastIds =
+              state.storyReduction.beastIds.filter(
+                (id) => id !== el.dataset.srUnstage,
+              );
             renderStoryReductionPanel();
             bindStoryReductionDrag();
           };
@@ -1698,19 +1701,14 @@
             const beastId =
               e.dataTransfer.getData("text/beast-id") ||
               e.dataTransfer.getData("text/plain");
-            if (!beastId) return;
-            srStageDelete(beastId);
+            if (!beastId || !beastById(beastId)) return;
+            if (!state.storyReduction.beastIds.includes(beastId)) {
+              state.storyReduction.beastIds.push(beastId);
+            }
+            renderStoryReductionPanel();
+            bindStoryReductionDrag();
           };
         });
-      }
-
-      function srStageDelete(beastId) {
-        if (!beastById(beastId)) return;
-        if (!state.storyReduction.deleteIds.includes(beastId)) {
-          state.storyReduction.deleteIds.push(beastId);
-        }
-        renderStoryReductionPanel();
-        bindStoryReductionDrag();
       }
 
       function setStoryReductionActive(on) {
@@ -1729,7 +1727,10 @@
       }
 
       function clearStoryReductionStaging() {
-        state.storyReduction.deleteIds = [];
+        state.storyReduction.beastIds = [];
+        state.storyReduction.instruction = "";
+        const instruction = document.getElementById("srInstruction");
+        if (instruction) instruction.value = "";
         renderStoryReductionPanel();
         bindStoryReductionDrag();
       }
@@ -1953,41 +1954,44 @@
         return { beastsMeta, palaceIds, palaceNums, pegs };
       }
 
-      function srFormatDeletePegsText() {
-        return state.storyReduction.deleteIds
-          .map((id) => {
-            const b = beastById(id);
-            if (!b) return `- ${id}`;
-            return `- [${b.peg_code || "?"}] ${b.beast_name || ""} (beast_id=${b.id})`;
-          })
-          .filter(Boolean)
-          .join("\n");
+      function srFormatBeastLine(id) {
+        const b = beastById(id);
+        if (!b) return `- ${id}`;
+        const palace = palaceById(b.palace_id);
+        const num = palace?.palace_number || "?";
+        return `- Palace ${num} [${b.peg_code || "?"}] ${b.beast_name || ""} (beast_id=${b.id})`;
       }
 
-      function srBuildStagingManifest(scope, removes) {
-        const lines = [
+      function srLastPalaceNumber() {
+        let max = 0;
+        for (const p of state.data?.palaces || []) {
+          if (p.study_id !== state.studyId) continue;
+          const n = Number(p.palace_number || 0);
+          if (n > max) max = n;
+        }
+        return max;
+      }
+
+      function srBuildStagingManifest(scope, focus) {
+        const instruction = state.storyReduction.instruction.trim();
+        return [
           "=== STAGED FROM MEMORY PALACE UI (authoritative — do not ignore) ===",
-          "Reduction mode: REMOVE",
-          `Reduction scope: ${scope || "(derive from staged pegs/palaces below)"}`,
+          "This is a story update. Carry out the instruction below. You decide the edits.",
+          "The instruction may delete atoms and pull the next beasts forward, merge some concepts into one atom, replace a deprecated concept, or ask for another change.",
+          "Do not assume a merge. Do not assume a deletion. If the instruction is ambiguous, ask one short question and do not emit a pack yet.",
+          `Focus: ${scope || "(derive from the beasts below)"}`,
           "",
-          "One beast carries one Knowledge Atom. Do not merge atoms onto body zones.",
+          "BEASTS THIS CHANGE IS ABOUT:",
+          focus || "(none)",
           "",
-          "PEGS / BEASTS TO REMOVE (REMOVE):",
-          removes || "(none)",
-        ];
-        lines.push(
-          "",
-          "Atom Concept/Quote for in-scope beasts are in CONTEXT → In-scope working set.",
-          "Use the peg letters above exactly. Prefer beast peg_code over display name when re-pegging.",
+          "=== INSTRUCTION ===",
+          instruction,
           "=== END STAGED ===",
           "",
-        );
-        return lines.join("\n");
+        ].join("\n");
       }
 
       function srFillPromptTemplate(tpl) {
-        const hasDelete = state.storyReduction.deleteIds.length > 0;
-        const mode = "REMOVE";
         const { palaceNums, pegs } = srStagedBeastMeta();
         let scope = "";
         if (palaceNums.length) {
@@ -2002,36 +2006,39 @@
               ? `pegs ${pegs.join(", ")}`
               : `pegs ${pegs[0]}…${pegs[pegs.length - 1]}`);
         }
-        const removes = srFormatDeletePegsText();
-        const removeBlock = removes || "(none — no REMOVE pegs staged)";
-        const manifest = srBuildStagingManifest(scope, removes);
+        const focus = state.storyReduction.beastIds
+          .map((id) => srFormatBeastLine(id))
+          .join("\n");
+        const instruction = state.storyReduction.instruction.trim();
+        const manifest = srBuildStagingManifest(scope, focus);
 
         let out = tpl;
-        out = out.replace("[SMASH or REMOVE]", mode);
+        out = out.replace("[SMASH or REMOVE]", "UPDATE");
+        out = out.replace("[REDUCTION MODE]", "UPDATE");
+        out = out.replace("[UPDATE INSTRUCTION]", instruction);
         out = out.replace(
           "[SCOPE OR LEAVE BLANK FOR LATEST SEGMENT]",
           scope || "(latest staged segment from Memory Palace UI)",
         );
         out = out.replace(
           "[ATTACH OR PASTE]",
-          "See CONTEXT block at the top (bridge tip + in-scope working set only). Bestiary/characters are sliced there — not full technique dumps. Technique rules are already in this prompt.",
+          "See CONTEXT at the top. It includes the focus palaces and every later street, so you can pull the next beasts. Bestiary/characters are sliced there. Technique rules are already in this prompt.",
         );
-        out = out.replace("[LIST GROUPS]", "(none — do not merge atoms)");
-        out = out.replace("[LIST PEGS]", removeBlock);
+        out = out.replace("[LIST FOCUS]", focus || "(none)");
+        out = out.replace("[LIST GROUPS]", "(see the instruction)");
+        out = out.replace("[LIST UPDATES]", "(see the instruction)");
+        out = out.replace("[LIST PEGS]", "(see the instruction)");
         out = out.replace(
           "📎 Bestiary (`@studies/technique/bestiary.json`)",
           "📎 Bestiary — lean slice in CONTEXT (continue after bridge peg)",
         );
         out = out.replace(
           "📎 README (`@studies/technique/README.md`)",
-          "📎 README — omitted (rules already in this prompt)\n\n📎 Characters — names used on bridge/in-scope only (CONTEXT)",
+          "📎 README — omitted (rules already in this prompt)\n\n📎 Characters — names used on bridge and inventory only (CONTEXT)",
         );
-        // Staging job card immediately before the prompt body (after context when assembled).
         out = `${manifest}\n${out}`;
         return {
           text: out,
-          mode,
-          hasDelete,
           scope,
           beforePalace: palaceNums[0] || 0,
         };
@@ -2039,18 +2046,21 @@
 
       function srFormatContextPreamble(ctx, beforePalace, throughPalace) {
         return [
-          "=== CONTEXT (lean · Memory Palace dashboard) ===",
-          "Enough inventory to lock scope, continue pegs, and rewrite in-scope rows.",
+          "=== CONTEXT (Memory Palace dashboard) ===",
+          "Inventory from the focus palace through the last street in this study.",
+          "Use it to carry out the instruction, including pulling the next beasts forward when a deletion or merge leaves a short street.",
           "Do NOT re-emit the bridge palace. Do NOT walk the study from peg A / palace 1.",
+          "Do NOT rewrite a later beast unless you pull it forward or the instruction names it.",
+          "If the instruction is ambiguous, ask one short question and do not emit a pack yet.",
           "Full README / bestiary.json omitted on purpose — follow rules in the prompt body.",
           "",
           "=== Bridge (last settled palace) ===",
           ctx.bridge || `(none before palace ${beforePalace})`,
           "",
-          `=== In-scope working set (palaces ${beforePalace}–${throughPalace}) ===`,
+          `=== Inventory (palaces ${beforePalace}–${throughPalace}) ===`,
           ctx.inscope || "(empty)",
           "",
-          "=== Characters (bridge + in-scope names only) ===",
+          "=== Characters (bridge + inventory names only) ===",
           ctx.characters_used || "(none)",
           "",
           "=== Bestiary slice (re-peg window) ===",
@@ -2061,13 +2071,20 @@
       }
 
       async function generateStoryReductionPrompt() {
-        if (!state.storyReduction.deleteIds.length) {
-          toast("Stage beasts in Delete first");
+        const instructionEl = document.getElementById("srInstruction");
+        if (instructionEl)
+          state.storyReduction.instruction = instructionEl.value;
+        if (!state.storyReduction.beastIds.length) {
+          toast("Drop the beasts this change is about");
+          return;
+        }
+        if (!state.storyReduction.instruction.trim()) {
+          toast("Say what should change");
           return;
         }
         const { palaceNums } = srStagedBeastMeta();
         if (!palaceNums.length) {
-          toast("Stage beasts first so context can exclude in-scope palaces");
+          toast("Drop beasts first so the companion can see those palaces");
           return;
         }
         const sid = state.studyId;
@@ -2076,7 +2093,10 @@
           return;
         }
         const before = palaceNums[0];
-        const through = palaceNums[palaceNums.length - 1];
+        const through = Math.max(
+          srLastPalaceNumber(),
+          palaceNums[palaceNums.length - 1],
+        );
         try {
           const q = new URLSearchParams({
             study_id: sid,
@@ -2092,11 +2112,16 @@
           const filled = srFillPromptTemplate(tpl);
           const preamble = srFormatContextPreamble(ctxRes, before, through);
           const full = `${preamble}${filled.text}`;
-          await navigator.clipboard.writeText(full);
-          const kb = Math.round(full.length / 1024);
-          toast(
-            `Lean prompt copied (${filled.mode}; palaces ${before}–${through}; ~${kb} KB)`,
-          );
+          try {
+            const result = await api("/api/ask/send", {
+              method: "POST",
+              body: JSON.stringify({ text: full }),
+            });
+            toast(result.message || "Sending to the AI companion");
+          } catch (e) {
+            await navigator.clipboard.writeText(full);
+            toast("Prompt copied. " + String(e.message || e));
+          }
         } catch (e) {
           toast(String(e.message || e));
         }
@@ -6033,7 +6058,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Update toggle · drag the beasts this change is about · write what should change · <b>Generate Prompt</b> sends that instruction plus palace context to the AI companion. <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -6076,6 +6101,9 @@
         clearStoryReductionStaging();
       document.getElementById("btnSrGenerate").onclick = () =>
         generateStoryReductionPrompt();
+      document.getElementById("srInstruction").oninput = (e) => {
+        state.storyReduction.instruction = e.target.value;
+      };
       document.getElementById("btnPractice").onclick = () =>
         withFullData(() => setView("practice"));
       document.getElementById("btnPlans").onclick = () => togglePlansPractice();

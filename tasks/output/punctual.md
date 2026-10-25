@@ -2,61 +2,18 @@
 
 ## Personal inbox
 
-🔲 🕒 Review your habitual activities
-
-⏳ Start paying OpenCode Go if weekly limit overflows by midweek
-ℹ️ Decision Rule
-Only subscribe to OpenCode Go ($15-$20/mo flat) if Google Antigravity limits consistently run out by midweek and you need continuous access to frontier models (Claude 3.7 Sonnet, OpenAI o-series) without monitoring tokens. If spillover is infrequent, pay-as-you-go via Chinese models on OpenRouter is significantly cheaper.
-ℹ️ Chinese Providers via OpenRouter
-Alternative overflow strategy: use models like DeepSeek-V3/R1 or Qwen 2.5 Coder 32B via OpenRouter. A $5 credit deposit can cover months of occasional spillover sessions at roughly $0.20 to $2.00/mo.
-ℹ️ OpenCode Setup Details
-OpenCode natively supports OpenRouter (via /connect command and OpenRouter API key) and includes out-of-the-box free Zen models (Big Pickle, GPT-5 Nano, Nemotron Super Free). Variant cycle (Ctrl+T) toggles reasoning effort or model presets.
-
-⏳ Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home
-
-⏳ Change your TIM plan
-
-⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
-
-🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
-
-🔲 Print your keybord manual
-ℹ️ "C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf"
-
-⚡ Check the prices for other phone companies like Claro and Vivo
-
-⚡ Vá para o cartório alterar sua foto.
-
-## General
-
-ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">
-
 ⏳ Start look at investing in other countries instead of only brazil
 
 ⏳ Check if other companies can offer it for a better price for your bruxismo  guard
 
 ⏳ Limpar o túmulo da mãe
 
-✅ Read your dissertation
-
-✅ Rehearsal your presentation
-ℹ️ Presentation: 30m
-
-✅ Check if REDU already approved your repo
-ℹ️ DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO
-
-✅ test
-
 ⏳ Continue with your idea of the book
-
-⏳ You need to better understand, open code
 
 ⚡ Deixar firma aberta no cartório
 ℹ️ Perguntar no cartório
 
 Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)
-
-🔲 I took one month of iFood coupons that will probably finish October 24th
 
 ⏳ Comprar vermífugo para todos nós.
 ℹ️ **Filhotes de cachorro podem começar a tomar vermífago a partir de 2 semanas de vida (15 dias).** Como a sua pastora alemã já tem **cerca de 75 dias (aproximadamente 2 meses e meio)**, ela já está em idade perfeitamente adequada — e é essencial que o protocolo de vermifugação esteja em dia.
@@ -85,7 +42,24 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ---
 
-⚡ You need to transfer your voting place to Nova Odessa
+⚡ You need to transfer your voting place to Nova Odessa and change our photo
+
+⏳ Start paying OpenCode Go if weekly limit overflows by midweek
+ℹ️ Decision Rule
+Only subscribe to OpenCode Go ($15-$20/mo flat) if Google Antigravity limits consistently run out by midweek and you need continuous access to frontier models (Claude 3.7 Sonnet, OpenAI o-series) without monitoring tokens. If spillover is infrequent, pay-as-you-go via Chinese models on OpenRouter is significantly cheaper.
+ℹ️ Chinese Providers via OpenRouter
+Alternative overflow strategy: use models like DeepSeek-V3/R1 or Qwen 2.5 Coder 32B via OpenRouter. A $5 credit deposit can cover months of occasional spillover sessions at roughly $0.20 to $2.00/mo.
+ℹ️ OpenCode Setup Details
+OpenCode natively supports OpenRouter (via /connect command and OpenRouter API key) and includes out-of-the-box free Zen models (Big Pickle, GPT-5 Nano, Nemotron Super Free). Variant cycle (Ctrl+T) toggles reasoning effort or model presets.
+
+🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
+
+⏳ 🕒 Review your habitual activities
+
+⚡ Print your keybord manual
+ℹ️ "C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf"
+
+🔲 By a VIVO chip and then register in a prepaid plan
 
 ## Dissertation
 
@@ -107,23 +81,14 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ⏳ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
 
-⚡ You look over, and the resumes that you have generated in Portuguese and English in your job sportal to see if there is anything purely AI-oriented
-
-🔲 O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
+⚡ GitHub Pages: O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
+ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md
 
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
 ℹ️ https://unicamp-alumni.org.br/directory
 ℹ️ image.png
-
-### Bosch
-
-### Levva
-
-⏳ Job openings
-ℹ️ https://www.linkedin.com/jobs/view/4452391795/
-ℹ️ https://www.linkedin.com/jobs/view/4449189767/
 
 ## Dog
 
@@ -266,14 +231,6 @@ Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou 
 
 ### Vaccination Timetable
 
-⏳ 1st Dose V10 (2026-09-19)
-ℹ️ Isolation Warning
-Keep the puppy entirely isolated from public streets, parks, and unknown animals.
-
-⏳ We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.
-
-⏳ 2nd Dose V10 (2026-10-10)
-
 ⏳ 4th Dose V10 + Raiva (2026-12-10)
 ℹ️ Outdoor Walks
 She will be fully protected and ready for public outdoor walks 15 days after this final round.
@@ -283,8 +240,6 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.
 
 ### Essential Shopping List
-
-⏳ Buy a metal comb
 
 ⏳ Buy Collar, ID Tag, and Leash
 

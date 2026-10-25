@@ -3,7 +3,6 @@ PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,attachments\icons\P
 PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,attachments\icons\PROJ_0005.png,#ffffff,0,
 PROJ_0006,Trainings,work,Tasks,2630,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0,waiting
 PROJ_0012,Piloto PT B2B - Data insights,work,Projects,2600,1,2026-08-29 15:48:39,attachments\icons\PROJ_0012.png,#ffffff,0,waiting
-PROJ_0015,General,personal,,1720,1,2026-08-29 15:48:39,attachments\icons\PROJ_0015.png,#ffffff,0,
 PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2570,1,2026-08-29 15:48:39,attachments\icons\PROJ_0016.png,#ffffff,0,waiting
 PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0019.svg,#ffffff,0,
 PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2550,1,2026-08-29 15:48:39,attachments\icons\PROJ_0021.svg,#ffffff,1,waiting
@@ -15,8 +14,9 @@ PROJ_0028,Art of Memory,personal,,2530,1,2026-09-14 18:14:10,attachments\icons\P
 PROJ_0029,Dog,personal,,2520,1,2026-09-17 16:52:21,attachments\icons\PROJ_0029.svg,#ffffff,0,
 PROJ_0030,Dog,habits,,2330,1,2026-09-18 11:31:59,attachments\icons\PROJ_0030.svg,#ffffff,1,
 PROJ_0032,Piano,personal,,2540,1,2026-09-26 17:42:25,attachments\icons\PROJ_0032.svg,#ffffff,0,waiting
-PROJ_0034,Personal inbox,personal,,1340,1,2026-09-29 12:08:46,,#ffffff,0,
+PROJ_0034,Personal inbox,personal,,1340,1,2026-09-29 12:08:46,attachments\icons\PROJ_0034.png,#ffffff,0,
 PROJ_0035,X-Tower,work,,160,1,2026-10-05 14:50:49,attachments\icons\PROJ_0035.svg,#ffffff,0,
 PROJ_0036,UX Super,work,,340,1,2026-10-06 10:49:57,attachments\icons\PROJ_0036.png,#ffffff,0,
 PROJ_0037,TAR,work,,430,1,2026-10-14 15:08:15,,#ffffff,0,
 PROJ_0038,Ideas,work,,2620,1,2026-10-19 15:32:41,,#ffffff,0,waiting
+PROJ_0039,General,habits,,2640,1,2026-10-25 17:40:05,,#ffffff,0,waiting

@@ -129,6 +129,9 @@
 
 🩺 Track side effects, sleep changes, and activation; discuss any concerns promptly with your prescriber
 🩺 Interaction cautions: review all new meds/supplements for interactions with fluvoxamina
+### General
+
+⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
 
 ℹ️ Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add
 Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds)
