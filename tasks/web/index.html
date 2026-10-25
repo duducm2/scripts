@@ -347,10 +347,8 @@
         min-width: 1.15em;
         text-align: center;
       }
-      .task .em:empty::before {
-        content: "";
-        display: inline-block;
-        width: 0.4em;
+      .task > .em:empty {
+        display: none;
       }
       .task.is-cut {
         opacity: 0.45;
@@ -359,11 +357,53 @@
         text-decoration: line-through;
         text-decoration-color: rgba(200, 200, 200, 0.5);
       }
+      .task-end {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        align-self: center;
+      }
       .task .info-tag {
         flex: 0 0 auto;
+        width: 14px;
+        height: 16px;
+        padding: 0;
         cursor: pointer;
-        font-size: 13px;
-        line-height: 1;
+        position: relative;
+        color: var(--muted);
+        opacity: 0.72;
+      }
+      .task .info-tag::before {
+        content: "";
+        position: absolute;
+        left: 1px;
+        top: 0;
+        width: 11px;
+        height: 14px;
+        border: 1px solid currentColor;
+        border-radius: 1px;
+        clip-path: polygon(0 0, 7px 0, 11px 4px, 11px 14px, 0 14px);
+        background:
+          linear-gradient(currentColor, currentColor) 2px 7px / 5px 1px
+            no-repeat,
+          linear-gradient(currentColor, currentColor) 2px 10px / 4px 1px
+            no-repeat;
+      }
+      .task .info-tag::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 8px;
+        width: 4px;
+        height: 4px;
+        border-bottom: 1px solid currentColor;
+        border-left: 1px solid currentColor;
+      }
+      .task .info-tag:hover {
+        opacity: 1;
+        color: var(--gold);
       }
       .task .new-tag {
         flex: 0 0 auto;
@@ -415,12 +455,14 @@
         z-index: 0;
       }
       .due {
-        color: var(--muted);
+        color: #e2e2e2;
         font-size: 11px;
+        line-height: 1.2;
         white-space: nowrap;
-      }
-      .task.due-now .due {
-        color: var(--due);
+        padding: 1px 6px;
+        border-radius: 999px;
+        border: 1px solid #3a3a3a;
+        background: rgba(255, 255, 255, 0.04);
       }
       .row-actions {
         display: none;
@@ -447,8 +489,10 @@
       .plain-row:hover .row-actions,
       .plain-row.kb-selected .row-actions,
       details.project.kb-selected > .proj-actions,
-      details.project:hover > .proj-actions,
-      .task-section:not(.is-general):hover > .task-section-label .sec-actions,
+      details.project:has(> summary:hover) > .proj-actions,
+      details.project > .proj-actions:hover,
+      .task-section:not(.is-general) > .task-section-label:hover .sec-actions,
+      .task-section:not(.is-general) > .task-section-label .sec-actions:hover,
       .task-section:not(.is-general).kb-selected
         > .task-section-label
         .sec-actions {
@@ -577,8 +621,11 @@
         visibility: hidden;
         pointer-events: none;
       }
+      /* Header only. :hover on the project also matches a task or section inside it,
+         which opened a second menu at the top of the card. */
       details.project.kb-selected > .proj-actions,
-      details.project:hover > .proj-actions {
+      details.project:has(> summary:hover) > .proj-actions,
+      details.project > .proj-actions:hover {
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
@@ -590,6 +637,7 @@
         display: none;
       }
       .task-section-label {
+        position: relative;
         padding: 4px 12px 2px;
         font-size: 11px;
         font-weight: 500;
@@ -607,17 +655,30 @@
         min-width: 0;
         flex: 1 1 auto;
       }
+      /* Overlay the label. Putting the buttons in the row reflowed the section
+         and moved the task list under the pointer. */
       .task-section-label .sec-actions {
-        display: none;
+        display: inline-flex;
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
         flex: 0 0 auto;
-        margin-left: auto;
+        margin-left: 0;
         align-items: center;
+        z-index: 2;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
       }
-      .task-section:not(.is-general):hover > .task-section-label .sec-actions,
+      .task-section:not(.is-general) > .task-section-label:hover .sec-actions,
+      .task-section:not(.is-general) > .task-section-label .sec-actions:hover,
       .task-section:not(.is-general).kb-selected
         > .task-section-label
         .sec-actions {
-        display: inline-flex;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
       }
       .task-section-label::before {
         content: "▾";
@@ -683,7 +744,10 @@
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        padding: 4px 0 2px 28px;
+        padding: 4px 0 2px 0;
+      }
+      .task:has(> .em:not(:empty)) .thumbs {
+        padding-left: calc(1.15em + 8px);
       }
       .project > .thumbs {
         padding: 0 12px 10px;
@@ -750,11 +814,6 @@
         flex-direction: column;
         content-visibility: auto;
         contain-intrinsic-size: auto 180px;
-      }
-      .column.bento > .project:hover,
-      .column.bento > .project.kb-selected,
-      .column.bento > .project:focus-within {
-        content-visibility: visible;
       }
       .column.bento > .project > summary {
         flex: 0 0 auto;
@@ -969,8 +1028,7 @@
       .task.is-waiting:not(.kb-selected) {
         background: rgba(0, 0, 0, 0.28);
       }
-      .task.is-waiting .title,
-      .task.is-waiting .due {
+      .task.is-waiting .title {
         color: #8d8d8d;
       }
       details.project.is-waiting {
@@ -979,7 +1037,6 @@
       details.project.is-waiting:not(.kb-selected) > summary,
       details.project.is-waiting:not(.kb-selected) > summary .proj-title,
       details.project.is-waiting .task .title,
-      details.project.is-waiting .task .due,
       details.project.is-waiting .task-section-label,
       details.project.is-waiting .sec-title {
         color: #8d8d8d;
@@ -990,20 +1047,32 @@
       }
       .task-section.is-waiting:not(.kb-selected) > .task-section-label,
       .task-section.is-waiting .sec-title,
-      .task-section.is-waiting .task .title,
-      .task-section.is-waiting .task .due {
+      .task-section.is-waiting .task .title {
         color: #8d8d8d;
       }
       .section-bento
         > .task-section.is-waiting:not(.kb-selected)
         > .task-section-label,
       .section-bento > .task-section.is-waiting .sec-title,
-      .section-bento > .task-section.is-waiting .task .title,
-      .section-bento > .task-section.is-waiting .task .due {
+      .section-bento > .task-section.is-waiting .task .title {
         color: #7f8b96;
       }
       .column.project-focus > details.project.is-waiting {
         background: rgba(0, 0, 0, 0.22);
+      }
+      /* Important (Shift+T): orange title instead of the thunder glyph. */
+      .task.is-important .title,
+      details.project.is-waiting .task.is-important .title,
+      .task-section.is-waiting .task.is-important .title,
+      .section-bento > .task-section.is-waiting .task.is-important .title {
+        color: #f0943a;
+      }
+      .task.is-important:not(.kb-selected) {
+        box-shadow: inset 3px 0 0 #f0943a;
+        padding-left: 10px;
+      }
+      .task.is-general .title {
+        color: #d4d4d4;
       }
       .project-focus-head.is-waiting .project-focus-title,
       .project-focus-head.is-waiting .proj-title {
@@ -1617,9 +1686,13 @@
           const em = taskEmoji(t);
           const waiting = em === "⏳";
           node.classList.toggle("is-waiting", waiting);
+          node.classList.toggle("is-important", em === "⚡");
+          node.classList.toggle("is-general", em === "🔲");
           node.dataset.emoji = em;
           const badge = node.querySelector(":scope > .em");
-          if (badge) badge.textContent = waiting ? "" : em;
+          const hideGlyph =
+            waiting || em === "⚡" || em === "🔲" || isDoubtEmoji(em);
+          if (badge) badge.textContent = hideGlyph ? "" : em;
           const doubt = node.querySelector(":scope > .doubt-tag");
           if (isDoubtEmoji(em)) {
             if (!doubt && badge) {
@@ -2866,6 +2939,30 @@
           return taskEmoji({ emoji: em }) === "❓";
         }
 
+        function formatDueLabel(iso) {
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+          if (!m) return iso;
+          const months = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          const day = String(Number(m[3]));
+          const mon = months[Number(m[2]) - 1] || m[2];
+          const year = Number(m[1]);
+          if (year === new Date().getFullYear()) return day + " " + mon;
+          return day + " " + mon + " " + year;
+        }
+
         function taskLi(t) {
           const isHabit = t.kind === "habitual";
           const due = (
@@ -2877,15 +2974,25 @@
           const dueNow = isHabit && (!due || due <= today);
           const hasInfo = taskIdsWithInfo.has(t.id);
           const infoTag = hasInfo
-            ? `<span class="info-tag" data-act="info-task" title="Has info points">ℹ️</span>`
+            ? `<span class="info-tag" data-act="info-task" title="Has info points" aria-label="Has info points"></span>`
             : "";
+          const dueTag = due
+            ? `<span class="due" title="${esc(due)}">${esc(formatDueLabel(due))}</span>`
+            : "";
+          const endTag =
+            dueTag || infoTag
+              ? `<span class="task-end">${dueTag}${infoTag}</span>`
+              : "";
           const isNew = !!(t.import_batch || "").trim();
           const newTag = isNew
             ? `<span class="new-tag" data-act="clear-new" title="Newly imported — hover, focus, or click to clear">NEW</span>`
             : "";
           const em = taskEmoji(t);
           const waiting = em === "⏳";
-          const shownEm = waiting ? "" : em;
+          const important = em === "⚡";
+          const general = em === "🔲";
+          const doubt = isDoubtEmoji(em);
+          const shownEm = waiting || important || general || doubt ? "" : em;
           const doubtTag = isDoubtEmoji(em)
             ? `<span class="doubt-tag" data-act="clear-doubt" title="In doubt — click to clear">DOUBT</span>`
             : "";
@@ -2912,13 +3019,14 @@
           const cutClass =
             state.taskClipboard?.cutFromId === t.id ? " is-cut" : "";
           const waitClass = waiting ? " is-waiting" : "";
-          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}${waitClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}${isNew ? ' data-new="1"' : ""}>
+          const importantClass = important ? " is-important" : "";
+          const generalClass = general ? " is-general" : "";
+          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}${waitClass}${importantClass}${generalClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}${isNew ? ' data-new="1"' : ""}>
       <span class="em">${esc(shownEm)}</span>
       ${newTag}
       ${doubtTag}
-      ${infoTag}
       <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
-      ${due ? `<span class="due">${esc(due)}</span>` : ""}
+      ${endTag}
       <span class="row-actions">${actions}</span>
       ${thumbsHtml("task", t.id)}
     </li>`;
@@ -6304,8 +6412,8 @@
           if (!c || c.project_id !== projectId) return "";
           if ((c.entity || "task") !== "task") return "";
           if ((c.section_id || "") !== (sectionId || "")) return "";
-          return `<li class="task inline-create-row" data-inline-create="task">
-      <span class="em">🔲</span>
+          return `<li class="task inline-create-row is-general" data-inline-create="task">
+      <span class="em"></span>
       <input type="text" id="inlineTitle" placeholder="New task" autocomplete="off" />
     </li>`;
         }

@@ -203,7 +203,7 @@ PickChromeAppSheetKey(chromeTitle) {
     ; Finance cockpit (:8765). The AHK Finance window is matched in CheatSheet_ResolveActiveKey.
     if (chromeTitle = "Finance cockpit" || InStr(chromeTitle, "Finance cockpit") = 1)
         key := "Finance"
-    ; Career cockpit (:8770) — job openings, portals, companies, profile, advice, help.
+    ; Career cockpit (:8770) — openings, portals, companies, profile, people, advice, help, Hiring 2026.
     if (IsCareerCockpitChromeTitle(chromeTitle))
         key := "Career"
     if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
@@ -252,6 +252,10 @@ IsCareerCockpitChromeTitle(chromeTitle) {
     if (t = "Job portals" || InStr(t, "Job portals") = 1)
         return true
     if (InStr(t, "Career profile"))
+        return true
+    if (t = "People")
+        return true
+    if (t = "Hiring 2026" || InStr(t, "Hiring 2026") = 1)
         return true
     if (t = "Career advice" || InStr(t, "Career advice") = 1)
         return true

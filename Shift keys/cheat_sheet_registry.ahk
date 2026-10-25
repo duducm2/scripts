@@ -1373,22 +1373,23 @@ cheatSheets["Finance"] := "
 cheatSheets["Career"] := "
 (
     Career cockpit
-    Overlay Win+Alt+Shift+A. Local server :8770 (jobs · portals · companies · profile · advice · help).
+    Overlay Win+Alt+Shift+A. Local server :8770 (openings · portals · companies · profile · people · advice · help · Hiring 2026).
     
     === Navigation (not typing) ===
     🏠 [Shift+G] Job openings (home)
     🌐 [Shift+J] Job portals
     🏢 [Shift+C] Target companies (on openings: open selected company careers portal instead)
     👤 [Shift+P] Career profile
+    👥 [Shift+O] People
     💡 [Shift+A] Career advice
     ❔ [Shift+H] Keyboard shortcuts help
-    🏠 [Esc] Close modal → clear search → clear filters → openings home (openings stop after filters)
+    🏠 [Esc] Close modal, then clear search, then clear filters, then openings home (openings stop after filters)
     
     === Search & filters ===
     🔍 [Alt+S] Show / hide search (profile map filters; closing search focuses first card)
     🎛️ [Alt+F] Filters ↔ cards / fields (portals · companies · profile)
-    🎛️ [Alt+Shift+F] Filters ↔ cards (openings; Alt+F is form prompt on focused card / modal)
-    🗂️ [Alt+Shift+B] Collapse / expand filter bar
+    🎛️ [Alt+Shift+F] Filters ↔ cards (openings; Alt+F is the form prompt there)
+    🗂️ [Alt+Shift+K] Collapse / expand filter bar
     ⬅️➡️⬆️⬇️ Move between cards, or filter chips when a filter is focused
     🔤 [A–Z] [0–9] Jump by first letter (cards or filter chips)
     
@@ -1397,37 +1398,41 @@ cheatSheets["Career"] := "
     🇺🇸 [Shift+2] English field values
     🔀 [Shift+0] Show both languages
     📝 [Shift+D] Summary / detail (profile)
-    📦 [Shift+E] Collapse / expand all profile sections (accordion; also field panels)
-    🏠 [Home] First card / record in the list (openings · portals · companies · profile)
+    📦 [Shift+E] Collapse / expand all profile sections
+    🏠 [Home] First card / record (openings · portals · companies · profile)
     🎓 [Alt+Shift+U] Jump to first Education field
     💼 [Alt+Shift+X] Jump to first Experience field
+    📌 [Alt+M] Pin / unpin the focused profile record
     
     === Openings ===
     ➕ [Alt+N] Add opening
-    📋 [Alt+R] Generate openings prompt (board, open opening, or company)
-    📥 [Alt+I] Import openings (board or company)
+    📋 [Alt+R] Generate openings prompt and send it. Import box opens after the send. Keeps every IT title.
     🔖 [Shift+S] Filter saved (toggle)
     📌 [Shift+R] Filter subscribed (toggle)
-    📝 [Alt+F] Form-fill prompt (focused card or open dossier · ATS)
-    📥 [Alt+A] Import form result (focused card or open dossier)
-    ✉️ [Alt+C] Cover letter prompt (focused card or open dossier)
-    📄 [Alt+L] Import cover letter & PDF (focused card or open dossier)
-    🏢 [Shift+C] Open company careers portal (focused / open / one bulk-selected)
-    🔗 [Ctrl+Enter] Open focused job URL (no modal) · Done / close modal when open
-    ⏎ [Ctrl+Enter] or [Shift+Enter] Copy prompt or run import (any prompt/import modal)
+    📝 [Alt+F] Form prompt for the focused card or open dossier. Type the Chrome tab title. Import box opens after the send.
+    ✉️ [Alt+C] Cover letter prompt for the focused card or open dossier. Import box opens after the send.
+    🏢 [Shift+C] Open company careers portal (focused, open dossier, or one bulk-selected card)
+    🔗 [Ctrl+Enter] Open focused job URL when no modal is open. Close the open dossier when one is open.
+    ⏎ [Ctrl+Enter] or [Shift+Enter] Send the open prompt, or import the JSON. Import opens after a successful send.
     ☑️ [Ctrl+click] Bulk select
-    📌 [Alt+M] Pin / unpin in status group
-    🗑️ [Alt+Delete] Delete focused card or open dossier (confirms)
+    🖱️ Right-click a card to set status. A bulk selection changes every selected opening.
+    📌 [Alt+M] Pin / unpin inside the status group
+    🗑️ [Delete] Exclude the bulk selection (more than one opening). Excluded openings are removed.
+    🗑️ [Alt+Delete] Delete the focused card or open dossier (asks first)
     
     === Companies & portals ===
-    📋 [Alt+R] Generate openings prompt for focused company card (no need to open dossier)
-    📥 [Alt+I] Import openings for focused company card or open dossier
-    🔗 [Ctrl+Enter] Open careers / portal URL (focused card)
-    🖱️ [Ctrl+click] Open company careers (companies)
-    ➕ [Shift+N] Add company or portal
-    🗑️ [Shift+Delete] Delete open dossier (companies · portals)
+    📋 [Alt+R] Generate openings prompt for the focused company. Import box opens after the send.
+    🔗 [Ctrl+Enter] Open the focused careers page or portal URL
+    🖱️ [Ctrl+click] Open company careers
+    ➕ [Shift+N] Add a company or a portal
+    🗑️ [Shift+Delete] Delete the open dossier
     📌 [Alt+M] Pin / unpin
-    ⬆️⬇️ [Alt+↑] [Alt+↓] Move recommendation rank (ranked company)
+    ⬆️⬇️ [Alt+↑] [Alt+↓] Move recommendation rank on a ranked company
+    
+    === People ===
+    👥 [Shift+O] Open People. Hiring is someone hiring at a company. Network is someone in your network. Both can keep a company.
+    📋 [Alt+R] Prompt to import a pasted LinkedIn profile. Pick Hiring or Network first. Import box opens after the send.
+    ⏎ [Ctrl+Enter] or [Shift+Enter] Send that prompt, or import the JSON
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------

@@ -86,46 +86,47 @@ Filter and **Search all sheets** operate on this **processed** text (with haysta
 
 Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk). Line numbers drift with edits; search the file for `cheatSheets["Key"]`.
 
-| Map key              | When it applies                                                                                                                                    |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Mercado Livre`      | `chrome.exe` and `IsMercadoLivreActive()` (URL/site, not title).                                                                                   |
-| `Shopee`             | `chrome.exe`, resolver chain, and `IsShopeeActive()` when applicable.                                                                              |
-| `WhatsApp`           | Chrome tab title contains `WhatsApp`.                                                                                                              |
-| `OUTLOOK.EXE`        | Default Outlook when no reminder/message/appointment-specific sheet matches.                                                                       |
-| `OutlookReminder`    | Outlook window title matches `Reminder`.                                                                                                           |
-| `OutlookAppointment` | Outlook title matches `Appointment`, `Meeting`, or `Event`.                                                                                        |
-| `OutlookMessage`     | Outlook title matches ` - Message (` (HTML inspector).                                                                                             |
-| `TeamsMeeting`       | `IsTeamsMeetingActive()`.                                                                                                                          |
-| `TeamsChat`          | `IsTeamsChatActive()`.                                                                                                                             |
-| `Spotify.exe`        | Foreground process `Spotify.exe`.                                                                                                                  |
-| `ONENOTE.EXE`        | Foreground process OneNote.                                                                                                                        |
-| `chrome.exe`         | Chrome: general browser shortcuts; often combined with a site-specific sheet.                                                                      |
-| `Chrome PDF Viewer`  | Chrome and `IsChromePdfViewerActive()`: address-bar path ends in `.pdf` (the window title is the document title and often has no `.pdf`).          |
-| `Cursor.exe`         | Foreground Cursor. **Reference layout** for [modifier clusters](#modifier-clusters-standard-layout).                                               |
-| `Code.exe`           | Foreground VS Code. Separate sheet, initially derived from Cursor layout; diverges as migration proceeds to official VS Code and Copilot defaults. |
-| `explorer.exe`       | File Explorer.                                                                                                                                     |
-| `mspaint.exe`        | Paint.                                                                                                                                             |
-| `ClipAngel.exe`      | Clip Angel.                                                                                                                                        |
-| `Figma.exe`          | Figma.                                                                                                                                             |
-| `Gmail`              | Chrome title contains `Gmail`.                                                                                                                     |
-| `Google Keep`        | Chrome title contains `Google Keep` or `keep.google.com`.                                                                                          |
-| `FileDialog`         | Class `#32770` and dialog text contains the namespace tree control (EN/PT).                                                                        |
-| `Settings`           | Title `Settings` or `Configurações`.                                                                                                               |
-| `Command Palette`    | Title contains `Command Palette`.                                                                                                                  |
-| `EXCEL.EXE`          | Excel.                                                                                                                                             |
-| `Power BI`           | `PBIDesktop.exe` or title contains `powerbi`.                                                                                                      |
-| `UIATreeInspector`   | Chrome title or `AutoHotkey64.exe` + UIATreeInspector title.                                                                                       |
-| `Settle Up`          | Chrome title contains `Settle Up`.                                                                                                                 |
-| `Miro`               | Chrome title contains `Miro`.                                                                                                                      |
-| `Tasks`              | Chrome title is `Tasks` or starts with `Tasks` (`Tasks · Work` / `Personal` / `Habits` / `Important`), or the tab is localhost `:8766`.             |
-| `Memory Palace`      | Chrome title is `Memory Palace` or starts with `Memory Palace` (including `Memory Palace · Select a study`), or the tab is localhost `:8767`.      |
-| `Finance`            | Chrome title `Finance cockpit` or localhost `:8765`, or an AutoHotkey window titled Finance, Transactions, Accounts, Credit cards, Budgets, Goals, Recurring bills, Categories, or Finance settings. |
-| `Wikipedia`          | Chrome title contains `Wikipedia` or `wikipedia.org`.                                                                                              |
-| `YouTube`            | Chrome title contains `YouTube`.                                                                                                                   |
-| `Google`             | Chrome, no other site sheet, and title is `Google` or ` - Google Search`.                                                                          |
-| `ChatGPT`            | Chrome title contains `chatgpt`.                                                                                                                   |
-| `Gemini`             | Chrome title contains `gemini` (`cheatSheets["Gemini"]`).                                                                                          |
-| `Mobills`            | Chrome title contains `Mobills`. Hotkeys also require that site: a known other sheet (e.g. `Tasks`) wins over a Mobills URL from another window.   |
+| Map key              | When it applies                                                                                                                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Mercado Livre`      | `chrome.exe` and `IsMercadoLivreActive()` (URL/site, not title).                                                                                                                                                  |
+| `Shopee`             | `chrome.exe`, resolver chain, and `IsShopeeActive()` when applicable.                                                                                                                                             |
+| `WhatsApp`           | Chrome tab title contains `WhatsApp`.                                                                                                                                                                             |
+| `OUTLOOK.EXE`        | Default Outlook when no reminder/message/appointment-specific sheet matches.                                                                                                                                      |
+| `OutlookReminder`    | Outlook window title matches `Reminder`.                                                                                                                                                                          |
+| `OutlookAppointment` | Outlook title matches `Appointment`, `Meeting`, or `Event`.                                                                                                                                                       |
+| `OutlookMessage`     | Outlook title matches ` - Message (` (HTML inspector).                                                                                                                                                            |
+| `TeamsMeeting`       | `IsTeamsMeetingActive()`.                                                                                                                                                                                         |
+| `TeamsChat`          | `IsTeamsChatActive()`.                                                                                                                                                                                            |
+| `Spotify.exe`        | Foreground process `Spotify.exe`.                                                                                                                                                                                 |
+| `ONENOTE.EXE`        | Foreground process OneNote.                                                                                                                                                                                       |
+| `chrome.exe`         | Chrome: general browser shortcuts; often combined with a site-specific sheet.                                                                                                                                     |
+| `Chrome PDF Viewer`  | Chrome and `IsChromePdfViewerActive()`: address-bar path ends in `.pdf` (the window title is the document title and often has no `.pdf`).                                                                         |
+| `Cursor.exe`         | Foreground Cursor. **Reference layout** for [modifier clusters](#modifier-clusters-standard-layout).                                                                                                              |
+| `Code.exe`           | Foreground VS Code. Separate sheet, initially derived from Cursor layout; diverges as migration proceeds to official VS Code and Copilot defaults.                                                                |
+| `explorer.exe`       | File Explorer.                                                                                                                                                                                                    |
+| `mspaint.exe`        | Paint.                                                                                                                                                                                                            |
+| `ClipAngel.exe`      | Clip Angel.                                                                                                                                                                                                       |
+| `Figma.exe`          | Figma.                                                                                                                                                                                                            |
+| `Gmail`              | Chrome title contains `Gmail`.                                                                                                                                                                                    |
+| `Google Keep`        | Chrome title contains `Google Keep` or `keep.google.com`.                                                                                                                                                         |
+| `FileDialog`         | Class `#32770` and dialog text contains the namespace tree control (EN/PT).                                                                                                                                       |
+| `Settings`           | Title `Settings` or `Configurações`.                                                                                                                                                                              |
+| `Command Palette`    | Title contains `Command Palette`.                                                                                                                                                                                 |
+| `EXCEL.EXE`          | Excel.                                                                                                                                                                                                            |
+| `Power BI`           | `PBIDesktop.exe` or title contains `powerbi`.                                                                                                                                                                     |
+| `UIATreeInspector`   | Chrome title or `AutoHotkey64.exe` + UIATreeInspector title.                                                                                                                                                      |
+| `Settle Up`          | Chrome title contains `Settle Up`.                                                                                                                                                                                |
+| `Miro`               | Chrome title contains `Miro`.                                                                                                                                                                                     |
+| `Tasks`              | Chrome title is `Tasks` or starts with `Tasks` (`Tasks · Work` / `Personal` / `Habits` / `Important`), or the tab is localhost `:8766`.                                                                           |
+| `Memory Palace`      | Chrome title is `Memory Palace` or starts with `Memory Palace` (including `Memory Palace · Select a study`), or the tab is localhost `:8767`.                                                                     |
+| `Finance`            | Chrome title `Finance cockpit` or localhost `:8765`, or an AutoHotkey window titled Finance, Transactions, Accounts, Credit cards, Budgets, Goals, Recurring bills, Categories, or Finance settings.              |
+| `Career`             | Chrome title starts with `Job openings`, `Target companies`, `Job portals`, `Career profile`, `Career advice`, or `Keyboard shortcuts`, or is exactly `People` or `Hiring 2026`, or the tab is localhost `:8770`. |
+| `Wikipedia`          | Chrome title contains `Wikipedia` or `wikipedia.org`.                                                                                                                                                             |
+| `YouTube`            | Chrome title contains `YouTube`.                                                                                                                                                                                  |
+| `Google`             | Chrome, no other site sheet, and title is `Google` or ` - Google Search`.                                                                                                                                         |
+| `ChatGPT`            | Chrome title contains `chatgpt`.                                                                                                                                                                                  |
+| `Gemini`             | Chrome title contains `gemini` (`cheatSheets["Gemini"]`).                                                                                                                                                         |
+| `Mobills`            | Chrome title contains `Mobills`. Hotkeys also require that site: a known other sheet (e.g. `Tasks`) wins over a Mobills URL from another window.                                                                  |
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 
