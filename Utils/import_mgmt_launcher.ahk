@@ -14,6 +14,20 @@ ImportMgmt_LaunchApp() {
     ImportMgmt_ShowMainMenu()
 }
 
+; #!+X: a pack already on the clipboard runs that import. Anything else opens the hub.
+ImportMgmt_LaunchFromHotkey() {
+    hit := ""
+    try hit := ImportMgmt_ClassifyClipboard()
+    catch {
+        hit := ""
+    }
+    if (IsObject(hit)) {
+        ImportMgmt_RunClassifiedHit(hit)
+        return
+    }
+    ImportMgmt_ShowMainMenu()
+}
+
 ImportMgmt_CloseGui() {
     global g_ImportMgmtGui, g_ImportMgmtLv
     ImportMgmt_UnbindHotkeys()
@@ -411,34 +425,40 @@ ImportMgmt_ClassifyPack(body) {
     return ""
 }
 
-; #!+P [I]: clipboard was just copied. Identify the pack and import that system only.
-; Does not fall back to an older Desktop file when this copy is not a known pack.
-ImportMgmt_RunClassifiedClipboard() {
+; Clipboard pack → catalog hit, or "" when the clipboard is empty or not a known pack.
+ImportMgmt_ClassifyClipboard() {
     errMsg := ""
     body := ""
     try body := ClipAngelExport_ClipboardAsPackText(&errMsg)
     catch {
-        body := ""
-        errMsg := "Clipboard unavailable"
+        return ""
     }
-    if (body = "") {
-        msg := errMsg != "" ? errMsg : "Clipboard empty"
+    if (body = "")
+        return ""
+    return ImportMgmt_ClassifyPack(body)
+}
+
+; #!+P [I]: clipboard was just copied. Identify the pack and import that system only.
+; Does not fall back to an older Desktop file when this copy is not a known pack.
+ImportMgmt_RunClassifiedClipboard() {
+    hit := ""
+    try hit := ImportMgmt_ClassifyClipboard()
+    catch {
+        hit := ""
+    }
+    if (!IsObject(hit)) {
         ImportMgmt_PlayOutcomeChime(false)
-        try ShowCenteredOverlay_Utils("❌ " msg, 2500, BANNER_ACCENT_ERROR)
+        msg := "No import matches this copy"
+        try ShowCenteredOverlay_Utils("❌ " msg, 2800, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", msg)
         }
         return false
     }
-    hit := ImportMgmt_ClassifyPack(body)
-    if (!IsObject(hit)) {
-        ImportMgmt_PlayOutcomeChime(false)
-        try ShowCenteredOverlay_Utils("❌ No import matches this copy", 2800, BANNER_ACCENT_ERROR)
-        catch {
-            TrayTip("Import", "No import matches this copy")
-        }
-        return false
-    }
+    return ImportMgmt_RunClassifiedHit(hit)
+}
+
+ImportMgmt_RunClassifiedHit(hit) {
     placeReason := ""
     placed := false
     try placed := ImportMgmt_TryPlaceClipboardPack(hit["fileName"], &placeReason)
@@ -709,7 +729,8 @@ ImportMgmt_ShowHelp() {
 
 ImportMgmt_HelpText() {
     return "ENTRY POINTS`r`n"
-    . "#!+X  ·  Utility Shortcuts [J]  ·  Win+Alt+Shift+F double-tap`r`n"
+    .
+    "#!+X  ·  a pack on the clipboard runs that import; otherwise this hub  ·  Utility Shortcuts [J]  ·  Win+Alt+Shift+F double-tap`r`n"
     . "#!+P copy menu [I] copies the companion reply, reads its FILE sections, and runs that import.`r`n"
     . "This hub is the only AHK import UI. Domain apps no longer expose import menus.`r`n`r`n"
     . "LIST KEYS`r`n"
@@ -725,7 +746,8 @@ ImportMgmt_HelpText() {
     . "3. Open Import Management → Char / Shift+Enter on the workflow.`r`n"
     .
     "Clipboard is tried first (same unwrap as Quick Download names Shift+T). If it is not this pack, the Desktop file is used.`r`n"
-    . "A successful import plays import-success.wav. A rejected import plays import-failure.wav. Cancelling the confirm dialog is silent.`r`n`r`n"
+    .
+    "A successful import plays import-success.wav. A rejected import plays import-failure.wav. Cancelling the confirm dialog is silent.`r`n`r`n"
     . "========== [D] FINANCE DAILY ==========`r`n"
     . "Pack: FINANCE_DAILY.txt`r`n"
     . "Writes: finances/data transactions (append)`r`n"
