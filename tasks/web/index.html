@@ -338,7 +338,7 @@
         flex-wrap: wrap;
         align-items: baseline;
         gap: 8px;
-        padding: 8px 0;
+        padding: 8px 0 8px 8px;
         border-top: 1px solid var(--line);
         font-size: 13px;
       }
@@ -1567,6 +1567,22 @@
           );
         }
 
+        // Inside one section: important, then general (and other statuses), then waiting.
+        function taskSectionBand(t) {
+          const em = taskEmoji(t);
+          if (em === "⚡") return 0;
+          if (em === "⏳") return 2;
+          return 1;
+        }
+
+        function compareSectionTasks(a, b) {
+          return (
+            taskSectionBand(a) - taskSectionBand(b) ||
+            Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+            String(a.title || "").localeCompare(String(b.title || ""))
+          );
+        }
+
         function isOpenTaskRow(t) {
           return t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅";
         }
@@ -1705,7 +1721,28 @@
             }
           } else if (doubt) doubt.remove();
           if (typeof applySearchDom === "function") applySearchDom();
+          orderTaskNodeInSection(node);
           return true;
+        }
+
+        function orderTaskNodeInSection(node) {
+          const ul = node.closest(".task-list");
+          if (!ul) return;
+          const ranked = [...ul.querySelectorAll(":scope > li.task[data-id]")]
+            .map((el) => ({
+              el,
+              t: taskRowById(el.getAttribute("data-id")),
+            }))
+            .filter((x) => x.t);
+          ranked.sort((a, b) => compareSectionTasks(a.t, b.t));
+          const create = ul.querySelector(":scope > [data-inline-create]");
+          if (create) ul.insertBefore(create, ul.firstChild);
+          let after = create;
+          for (const { el } of ranked) {
+            if (after) after.after(el);
+            else ul.prepend(el);
+            after = el;
+          }
         }
 
         function patchWaitingDom(kind, id, on) {
@@ -3072,12 +3109,7 @@
           const pl = plan || projectSearchPlan(p, pts);
           const secs = pl.secs;
           const known = new Set(secs.map((s) => s.id));
-          const sortTasks = (list) =>
-            list.sort(
-              (a, b) =>
-                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
-                a.title.localeCompare(b.title),
-            );
+          const sortTasks = (list) => list.sort(compareSectionTasks);
           const parts = secs.map((s) => {
             const list = sortTasks(pl.listForSection(s.id).slice());
             const isGeneral =
