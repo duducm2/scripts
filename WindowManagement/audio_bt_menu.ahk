@@ -5,6 +5,8 @@
 ;   2× Bluetooth audio / Windows sound devices menu
 ;   hold 700ms+ AI Quick Download (name pick → click sequences → Desktop wait → rename → cut)
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
+; While the menu is open: Shift+O Common, Shift+P Full PC, Shift+H Headphones.
+; Each profile isolates one input and one output together (output first, then input).
 ; Device lists: M marks a custom emoji label (persisted in assets\data\audio_bt_emoji.ini).
 ; Loaded via #include into the WindowManagement.ahk process.
 ; Backend: infra\tools\AudioBt.ps1 (Core Audio IPolicyConfig + BluetoothAPIs).
@@ -54,7 +56,10 @@ AudioBt_HelpRows() {
                                                 command: "Connect",
                                                 meaning: "Connect a paired Bluetooth audio device (A2DP/HFP). Disconnects other connected Bluetooth audio first so this one can own the radio link." }, { key: "Shift+X",
                                                     command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "Shift+I",
-                                                        command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "Shift+R",
+                                                        command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "Shift+O",
+                                                            command: "Common", meaning: "Profile. Input Maono PD200X and output Office, on the personal PC and the work laptop. Isolates output first (connects Office and drops other Bluetooth audio), then isolates the mic." }, { key: "Shift+P",
+                                                                command: "Full PC", meaning: "Profile. Built-in devices only. Personal PC: Realtek mic (Grupo de microfones) and Realtek speakers (Alto-falantes). Work laptop: integrated mic (Microphone Array / Intel Smart Sound, or the input marked 💻) and integrated speakers (Speakers / Realtek, or the output marked 💻)." }, { key: "Shift+H",
+                                                                    command: "Headphones", meaning: "Profile. Input Maono PD200X and output JBL Live 460NC headphones (not the hands-free or headset endpoint). Works from any page of this menu. Plain H still opens Help." }, { key: "Shift+R",
                                                             command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "a-z",
                                                                 command: "Jump", meaning: "Select the next row whose first word starts with that letter." }, { key: "Shift+N",
                                                                     command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Shift+M",
@@ -65,15 +70,20 @@ AudioBt_HelpRows() {
     ]
 }
 
+AudioBt_ProfileHint() {
+    return "Shift+O Common   Shift+P Full PC   Shift+H Headphones"
+}
+
 AudioBt_HintText() {
     global g_AudioBtMode
+    profiles := AudioBt_ProfileHint()
     if (g_AudioBtMode = "root")
-        return "1/B Bluetooth   2/I Input   3/O Output   4/H Help   5/G Ignored   Enter open   Esc close"
+        return "1/B Bluetooth   2/I Input   3/O Output   4/H Help   5/G Ignored   Enter open   Esc close   " . profiles
     if (g_AudioBtMode = "help")
-        return "Esc back"
+        return "Esc back   " . profiles
     if (g_AudioBtMode = "ignore")
-        return "Enter restore   letter jump   Shift+M mark   Shift+U restore   Esc back"
-    return "1-9/0 select   letter jump   Enter default   Shift+C/X connect/disconnect   Shift+D/E disable/enable   Shift+I isolate   Shift+N ignore   Shift+M mark   Shift+R refresh   Esc back"
+        return "Enter restore   letter jump   Shift+M mark   Shift+U restore   Esc back   " . profiles
+    return "1-9/0 select   letter jump   Enter default   Shift+C/X connect/disconnect   Shift+D/E disable/enable   Shift+I isolate   Shift+N ignore   Shift+M mark   Shift+R refresh   Esc back   " . profiles
 }
 
 AudioBt_ModeTitle() {
@@ -634,6 +644,8 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("+m", AudioBt_OnMarkEmoji)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     }
+    for prof in AudioBt_ProfileDefs()
+        AudioBt_BindOne(prof.key, AudioBt_OnProfile.Bind(prof.key))
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
 
     try HotIf()
@@ -1588,6 +1600,344 @@ AudioBt_OnDisconnect(*) {
 
 AudioBt_OnIsolate(*) {
     AudioBt_DoAction("isolate")
+}
+
+; Profiles apply only while this menu is open.
+; Shift+O Common: Maono PD200X in, Office out (both PCs).
+; Shift+P Full PC: personal Realtek mic + speakers; work laptop integrated mic + speakers.
+; Shift+H Headphones: Maono PD200X in, JBL Live 460NC headphone out.
+; Output is isolated first so a Bluetooth speaker can connect and drop the other radio.
+; Input is isolated after that, so a headset microphone does not stay default.
+AudioBt_ProfileIsWork() {
+    global IS_WORK_ENVIRONMENT
+    return IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
+}
+
+AudioBt_ProfileDefs() {
+    work := AudioBt_ProfileIsWork()
+    pd200x := { kind: "In", needles: ["PD200X"], prefer: ["Podcast"] }
+    avoidBtJunk := ["Hands-Free", "Handsfree", "Headset", "AUX"]
+    if (work) {
+        pcIn := { kind: "In", computer: true, integrated: true,
+            needles: ["Microphone Array", "Smart Sound", "Internal Microphone"],
+            prefer: ["Microphone Array", "Smart Sound"],
+            avoid: ["PD200X", "JBL", "Webcam", "C270", "Stereo Mix", "Mixagem", "External", "Externo",
+                "Hands-Free", "Handsfree", "Headset", "Maono"] }
+        pcOut := { kind: "Out", computer: true, integrated: true,
+            needles: ["Speakers", "Alto-falante"],
+            prefer: ["Realtek", "Speakers"],
+            avoid: ["Headphones", "Fones", "Headset", "JBL", "Office", "PD200X", "NVIDIA", "Display Audio",
+                "Hands-Free", "Handsfree", "AUX"] }
+    } else {
+        pcIn := { kind: "In", integrated: true,
+            ids: ["{0.0.1.00000000}.{9236f67f-79b6-4c55-a573-df6e0f8399c3}"],
+            needles: ["Grupo de microfones"],
+            prefer: ["Grupo de microfones", "Realtek"],
+            avoid: ["Externo", "External", "Mixagem", "Stereo Mix", "PD200X", "JBL", "Webcam", "C270",
+                "Maono", "Headset", "Hands-Free", "Handsfree"] }
+        pcOut := { kind: "Out", integrated: true,
+            ids: ["{0.0.0.00000000}.{d2cda8f3-6330-4d0b-b560-d788366b7240}"],
+            needles: ["Alto-falante"],
+            prefer: ["Alto-falantes", "Realtek"],
+            avoid: ["Fones", "Headphones", "Headset", "PD200X", "JBL", "Office", "NVIDIA", "Display Audio",
+                "Hands-Free", "Handsfree", "AUX"] }
+    }
+    return [
+        { key: "+o", label: "Common", input: pd200x,
+            output: { kind: "Out", needles: ["Office"], prefer: ["Headphones", "Fones", "Alto-falante"],
+                avoid: avoidBtJunk, fallbackBt: ["Office"] } },
+        { key: "+p", label: "Full PC", input: pcIn, output: pcOut },
+        { key: "+h", label: "Headphones", input: pd200x,
+            output: { kind: "Out", needles: ["JBL"],
+                prefer: ["Fones de ouvido", "Headphones", "LIVE460", "LIVE 460"],
+                avoid: avoidBtJunk, fallbackBt: ["JBL LIVE460NC", "JBL LIVE 460", "JBL"] } }
+    ]
+}
+
+AudioBt_ProfileByKey(profileKey) {
+    want := StrLower(Trim(profileKey))
+    for prof in AudioBt_ProfileDefs() {
+        if (StrLower(prof.key) = want)
+            return prof
+    }
+    return ""
+}
+
+AudioBt_ProfileListHas(text, list) {
+    if (!IsObject(list))
+        return false
+    for needle in list {
+        if (needle != "" && InStr(text, needle))
+            return true
+    }
+    return false
+}
+
+AudioBt_ProfileIdHit(row, spec) {
+    if (!spec.HasProp("ids"))
+        return false
+    id := StrLower(Trim(row.id))
+    for want in spec.ids {
+        if (id = StrLower(Trim(want)))
+            return true
+    }
+    return false
+}
+
+AudioBt_ProfileIsComputer(row) {
+    return AudioBt_EmojiGet(row.id, row.kind) = "💻"
+}
+
+; Personal Realtek endpoints and the work laptop's built-in mic/speakers.
+; Headphone, headset, and external-jack names are rejected by the profile avoid list.
+AudioBt_NameLooksIntegrated(row) {
+    name := row.name
+    if (row.kind = "In") {
+        hasMic := InStr(name, "Microfone") || InStr(name, "Microphone")
+        hasChip := InStr(name, "Realtek") || InStr(name, "Smart Sound") || InStr(name, "Microphone Array")
+            || InStr(name, "Intel")
+        return hasMic && hasChip
+    }
+    if (row.kind = "Out") {
+        hasSpk := InStr(name, "Alto-falante") || InStr(name, "Speaker")
+        hasChip := InStr(name, "Realtek") || InStr(name, "Smart Sound") || InStr(name, "Intel")
+        return hasSpk && hasChip
+    }
+    return false
+}
+
+AudioBt_ProfileRowIsDead(row) {
+    for dead in ["Disabled", "Unplugged", "Disconnected", "Not present"] {
+        if InStr(row.state, dead)
+            return true
+    }
+    return false
+}
+
+AudioBt_ProfileRowScore(row, spec) {
+    if (!IsObject(row) || row.kind != spec.kind)
+        return "no"
+    if AudioBt_ProfileListHas(row.name, spec.HasProp("avoid") ? spec.avoid : [])
+        return "no"
+    idHit := AudioBt_ProfileIdHit(row, spec)
+    needleHit := AudioBt_ProfileListHas(row.name, spec.HasProp("needles") ? spec.needles : [])
+    computerHit := spec.HasProp("computer") && spec.computer && AudioBt_ProfileIsComputer(row)
+    integratedHit := spec.HasProp("integrated") && spec.integrated && AudioBt_NameLooksIntegrated(row)
+    if !(idHit || needleHit || computerHit || integratedHit)
+        return "no"
+    score := 0
+    if (idHit)
+        score += 40
+    if (computerHit)
+        score += 24
+    if (needleHit)
+        score += 12
+    if (integratedHit)
+        score += 8
+    if AudioBt_ProfileRowIsDead(row)
+        score -= 30
+    else
+        score += 20
+    if (row.isDefault)
+        score += 8
+    if InStr(row.state, "Isolated")
+        score += 4
+    if (spec.HasProp("prefer")) {
+        for needle in spec.prefer {
+            if (needle != "" && InStr(row.name, needle))
+                score += 6
+        }
+    }
+    if !AudioBt_IsIgnored(row.id, row.kind)
+        score += 2
+    return score
+}
+
+AudioBt_ResolveBtByNames(names) {
+    global g_AudioBtAllRows
+    best := ""
+    bestScore := -100000
+    for row in g_AudioBtAllRows {
+        if (row.kind != "BT")
+            continue
+        hit := 0
+        for needle in names {
+            if (needle != "" && InStr(row.name, needle) && StrLen(needle) > hit)
+                hit := StrLen(needle)
+        }
+        if (hit = 0)
+            continue
+        score := hit
+        if AudioBt_ProfileRowIsDead(row)
+            score -= 30
+        else
+            score += 20
+        if InStr(row.state, "Connected") && !InStr(row.state, "Disconnected")
+            score += 5
+        if (score > bestScore) {
+            best := row
+            bestScore := score
+        }
+    }
+    return best
+}
+
+AudioBt_ResolveProfileTarget(spec) {
+    global g_AudioBtAllRows
+    best := ""
+    bestScore := -100000
+    for row in g_AudioBtAllRows {
+        score := AudioBt_ProfileRowScore(row, spec)
+        if (score = "no")
+            continue
+        if (score > bestScore) {
+            best := row
+            bestScore := score
+        }
+    }
+    if IsObject(best)
+        return best
+    if (spec.HasProp("fallbackBt"))
+        return AudioBt_ResolveBtByNames(spec.fallbackBt)
+    return ""
+}
+
+AudioBt_ProfileTargetLabel(spec) {
+    parts := []
+    if (spec.HasProp("needles")) {
+        for needle in spec.needles
+            parts.Push(needle)
+    }
+    if (parts.Length = 0 && spec.HasProp("fallbackBt")) {
+        for needle in spec.fallbackBt
+            parts.Push(needle)
+    }
+    text := ""
+    for part in parts {
+        if (A_Index > 3)
+            break
+        text .= (text = "" ? "" : " / ") . part
+    }
+    if (spec.HasProp("computer") && spec.computer)
+        text .= (text = "" ? "built-in" : " / built-in")
+    if (text = "")
+        return spec.kind
+    return text
+}
+
+AudioBt_ProfileFailText(result) {
+    msg := AudioBt_StripResult(IsObject(result) ? result.text : "")
+    if (msg = "")
+        return "failed"
+    return msg
+}
+
+AudioBt_ProfileRefreshUi() {
+    global g_AudioBtMode
+    if (g_AudioBtMode = "In" || g_AudioBtMode = "Out" || g_AudioBtMode = "BT")
+        AudioBt_Refresh("", false)
+    else if (g_AudioBtMode = "root")
+        AudioBt_UpdateRootStatus(false)
+}
+
+AudioBt_IsolateResolved(row) {
+    result := AudioBt_Run("isolate", row.id)
+    if (!result.ok && AudioBt_ShouldSettingsFallback("isolate", row, result)) {
+        AudioBt_BusyShow("⏳ Trying Settings connect " . AudioBt_SettingsDeviceName(row) . "…")
+        result := AudioBt_TrySettingsFallback("isolate", row, result)
+    }
+    return result
+}
+
+AudioBt_IsolateProfileSide(spec, &row) {
+    result := AudioBt_IsolateResolved(row)
+    if (IsObject(result) && result.ok)
+        return result
+    if (row.kind = "BT" || !spec.HasProp("fallbackBt"))
+        return result
+    bt := AudioBt_ResolveBtByNames(spec.fallbackBt)
+    if (!IsObject(bt) || bt.id = row.id)
+        return result
+    row := bt
+    AudioBt_BusyShow("⏳ Connecting " . bt.name . "…")
+    return AudioBt_IsolateResolved(bt)
+}
+
+AudioBt_OnProfile(profileKey, *) {
+    global g_AudioBtActive, g_AudioBtBusy
+    if (!g_AudioBtActive || g_AudioBtBusy)
+        return
+    prof := AudioBt_ProfileByKey(profileKey)
+    if (!IsObject(prof))
+        return
+    g_AudioBtBusy := true
+    outRow := ""
+    inRow := ""
+    outResult := ""
+    inResult := ""
+    try {
+        AudioBt_BusyShow("⏳ " . prof.label . "…")
+        if (!AudioBt_FetchAll(false)) {
+            ShowNotification_WM("❌ " . prof.label . ": could not list audio devices")
+            return
+        }
+        g_AudioBtBusy := true
+        outRow := AudioBt_ResolveProfileTarget(prof.output)
+        inRow := AudioBt_ResolveProfileTarget(prof.input)
+        if (!IsObject(outRow) || !IsObject(inRow)) {
+            missing := ""
+            if (!IsObject(outRow))
+                missing .= "output " . AudioBt_ProfileTargetLabel(prof.output)
+            if (!IsObject(inRow))
+                missing .= (missing = "" ? "" : " and ") . "input " . AudioBt_ProfileTargetLabel(prof.input)
+            ShowNotification_WM("❌ " . prof.label . ": no " . missing)
+            return
+        }
+        AudioBt_BusyShow("⏳ Isolating output " . outRow.name . "…")
+        outResult := AudioBt_IsolateProfileSide(prof.output, &outRow)
+        if (!IsObject(outResult) || !outResult.ok) {
+            ShowNotification_WM("❌ " . prof.label . " output: " . AudioBt_ProfileFailText(outResult))
+            AudioBt_FetchAll(false)
+            AudioBt_ProfileRefreshUi()
+            return
+        }
+        if (!AudioBt_FetchAll(false)) {
+            ShowNotification_WM("❌ " . prof.label . ": output switched, then the device list failed")
+            return
+        }
+        g_AudioBtBusy := true
+        freshOut := AudioBt_ResolveProfileTarget(prof.output)
+        if (IsObject(freshOut))
+            outRow := freshOut
+        inRow := AudioBt_ResolveProfileTarget(prof.input)
+        if (!IsObject(inRow)) {
+            ShowNotification_WM("❌ " . prof.label . ": output switched, input "
+                . AudioBt_ProfileTargetLabel(prof.input) . " was not found")
+            AudioBt_ProfileRefreshUi()
+            return
+        }
+        AudioBt_BusyShow("⏳ Isolating input " . inRow.name . "…")
+        inResult := AudioBt_IsolateProfileSide(prof.input, &inRow)
+        if (!IsObject(inResult) || !inResult.ok) {
+            ShowNotification_WM("❌ " . prof.label . " input: " . AudioBt_ProfileFailText(inResult))
+            AudioBt_FetchAll(false)
+            AudioBt_ProfileRefreshUi()
+            return
+        }
+    } catch Error as err {
+        ShowNotification_WM("❌ " . prof.label . ": " . err.Message)
+        return
+    } finally {
+        g_AudioBtBusy := false
+        AudioBt_BusyHide()
+        if (g_AudioBtActive)
+            AudioBt_RefocusLv()
+    }
+    if (IsObject(outResult) && outResult.ok && IsObject(inResult) && inResult.ok) {
+        ShowCenteredOverlay_Utils("✅ " . prof.label . ": " . inRow.name . " + " . outRow.name, 1800,
+            BANNER_ACCENT_SUCCESS)
+        AudioBt_Cleanup()
+    }
 }
 
 AudioBt_OnRefresh(*) {
