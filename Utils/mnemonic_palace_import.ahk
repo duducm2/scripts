@@ -1352,6 +1352,121 @@ Palace_ImportPlanPackFromDesktop(*) {
     return Palace_ImportPlansFromDesktop(pathPlanPack)
 }
 
+; Canon ids for a pack's beast rows. A beast row's own id always wins: a later
+; re-peg must not overwrite that id with another beast's new canon id.
+; Does not mutate the library.
+Palace_PlanImportedBeasts(beastRows, palaces, palaceIdRemap, libraryBeasts) {
+    out := Map("ok", true, "error", "", "insertable", [], "remap", Map(), "replacePalaceIds", Map())
+    if (!IsObject(beastRows) || !beastRows.Length)
+        return out
+    insertable := []
+    replacePalaceIds := Map()
+    for r in beastRows {
+        r := Palace_NormalizeBeastImportRow(r)
+        rawPalaceId := r.Has("palace_id") ? Trim(r["palace_id"]) : ""
+        peg := r.Has("peg_code") ? Trim(r["peg_code"]) : ""
+        name := r.Has("beast_name") ? Trim(r["beast_name"]) : ""
+        packId := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"]) : ""
+        palaceId := Palace_ResolvePalaceIdRef(rawPalaceId, palaces, palaceIdRemap)
+        if (palaceId = "") {
+            out["ok"] := false
+            out["error"] := "unknown palace_id " . rawPalaceId
+                . (packId != "" ? " (" . packId . ")" : "")
+            return out
+        }
+        if (peg = "" || name = "") {
+            out["ok"] := false
+            out["error"] := "beast missing peg or name"
+            . (packId != "" ? " (" . packId . ")" : "")
+            return out
+        }
+        r["palace_id"] := palaceId
+        insertable.Push(r)
+        replacePalaceIds[palaceId] := true
+    }
+    surviving := []
+    if (IsObject(libraryBeasts)) {
+        for b in libraryBeasts {
+            pid := b.Has("palace_id") ? b["palace_id"] : ""
+            if (!replacePalaceIds.Has(pid))
+                surviving.Push(b)
+        }
+    }
+    beastIdRemap := Map()
+    planned := []
+    for r in insertable {
+        palaceId := Trim(r["palace_id"])
+        peg := Trim(r["peg_code"])
+        name := Trim(r["beast_name"])
+        packId := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"]) : ""
+        id := Palace_CanonBeastId(palaceId, peg)
+        if (Palace_IdExists(surviving, id) || Palace_IdExists(planned, id))
+            id := Palace_SlugId("BEAST_", peg . "_" . name, surviving)
+        if (Palace_IdExists(planned, id))
+            id := Palace_SlugId("BEAST_", peg . "_" . name, planned)
+        if (packId != "") {
+            if (beastIdRemap.Has(packId) && beastIdRemap[packId] != id) {
+                out["ok"] := false
+                out["error"] := "Beast id " . packId . " is used by two beasts"
+                return out
+            }
+            beastIdRemap[packId] := id
+        }
+        r["_canonId"] := id
+        planned.Push(Map("id", id))
+    }
+    ; Do not let a new canon id overwrite an earlier beast's pack id.
+    for r in insertable {
+        id := r["_canonId"]
+        if (!beastIdRemap.Has(id))
+            beastIdRemap[id] := id
+    }
+    out["insertable"] := insertable
+    out["remap"] := beastIdRemap
+    out["replacePalaceIds"] := replacePalaceIds
+    return out
+}
+
+; One atom per planned beast, resolved through the pack-id remap. Runs before
+; the confirm dialog so a bad pack never opens that dialog.
+Palace_PreflightAtomCoverage(atomRows, plan) {
+    out := Map("ok", true, "error", "")
+    if (!IsObject(atomRows) || !atomRows.Length || !plan["insertable"].Length)
+        return out
+    remap := plan["remap"]
+    counts := Map()
+    for r in plan["insertable"]
+        counts[r["_canonId"]] := 0
+    for r in atomRows {
+        raw := r.Has("beast_id") ? Trim(r["beast_id"]) : ""
+        atomId := r.Has("id") ? Trim(r["id"]) : "?"
+        if (raw = "" || !remap.Has(raw)) {
+            out["ok"] := false
+            out["error"] := "Atom " . atomId . ": unknown beast_id " . raw
+            return out
+        }
+        canon := remap[raw]
+        if (!counts.Has(canon)) {
+            out["ok"] := false
+            out["error"] := "Atom " . atomId . ": beast_id " . raw . " is not a beast in this pack"
+            return out
+        }
+        counts[canon] += 1
+    }
+    for r in plan["insertable"] {
+        n := counts[r["_canonId"]]
+        if (n != 1) {
+            peg := r.Has("peg_code") ? r["peg_code"] : "?"
+            name := r.Has("beast_name") ? r["beast_name"] : ""
+            out["ok"] := false
+            out["error"] := "Beast [" . peg . "] " . name . " has " . n
+                . " atoms; one beast carries one Knowledge Atom"
+            return out
+        }
+    }
+    return out
+}
+
 ; Import Management [P]: mnemonic PALACE packs only (never PLAN_PACK).
 Palace_ImportMnemonicsFromDesktop(*) {
     Palace_EnsureData()
@@ -1497,6 +1612,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
     }
     studiesPreview := studies
     palacesPreview := Palace_ShallowCopyRows(palaces)
+    palaceIdRemapPreview := Map()
+    nPalaceOk := 0
     if (palaceRows.Length) {
         labels.Push("--- Palaces (" . palaceRows.Length . ") ---")
         for r in palaceRows {
@@ -1505,6 +1622,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 labels.Push("Skip: " . resolved["skip"])
                 continue
             }
+            nPalaceOk += 1
+            packPalaceId := resolved.Has("packId") ? Trim(resolved["packId"]) : ""
+            if (packPalaceId != "" && packPalaceId != resolved["id"])
+                palaceIdRemapPreview[packPalaceId] := resolved["id"]
+            palaceIdRemapPreview[resolved["id"]] := resolved["id"]
             studyName := resolved.Has("studyId") && resolved["studyId"] != ""
                 ? Palace_StudyTitle(resolved["studyId"]) : "?"
             labels.Push("Memory Palace " . resolved["num"] . ": " . resolved["title"]
@@ -1537,6 +1659,27 @@ Palace_ImportMnemonicsFromDesktop(*) {
         . atomRows.Length . " atom(s)"
     if (excludeIds.Count)
         title .= "  ·  " . excludeIds.Count . " delete(s)"
+    ; Every rejection that sends an AI fix happens before the confirm dialog.
+    if (beastRows.Length) {
+        linkPlan := Palace_PlanImportedBeasts(beastRows, palacesPreview, palaceIdRemapPreview, beasts)
+        if (!linkPlan["ok"]) {
+            Palace_ReturnAfterImport(Palace_FailAiImport(linkPlan["error"], 4500))
+            return false
+        }
+        if (atomRows.Length) {
+            cover := Palace_PreflightAtomCoverage(atomRows, linkPlan)
+            if (!cover["ok"]) {
+                Palace_ReturnAfterImport(Palace_FailAiImport(cover["error"], 4500))
+                return false
+            }
+        }
+    } else if (atomRows.Length) {
+        Palace_ReturnAfterImport(Palace_FailAiImport("Atoms with no beasts in this pack", 4500))
+        return false
+    } else if (!nPalaceOk) {
+        Palace_ReturnAfterImport(Palace_FailAiImport("0 imported — no palace or beast rows could be applied", 3500))
+        return false
+    }
     if (!Palace_ImportConfirmPreview(title, labels)) {
         try ShowCenteredOverlay_Utils("Import cancelled — no data written", 2800, BANNER_ACCENT_INFO)
         catch {
@@ -1642,25 +1785,15 @@ Palace_ImportMnemonicsFromDesktop(*) {
     }
     replacePalaceIds := Map()
     if (beastRows.Length) {
-        insertable := []
-        for r in beastRows {
-            r := Palace_NormalizeBeastImportRow(r)
-            rawPalaceId := r.Has("palace_id") ? Trim(r["palace_id"]) : ""
-            peg := r.Has("peg_code") ? Trim(r["peg_code"]) : ""
-            name := r.Has("beast_name") ? Trim(r["beast_name"]) : ""
-            palaceId := Palace_ResolvePalaceIdRef(rawPalaceId, palaces, palaceIdRemap)
-            if (palaceId = "") {
-                Palace_ImportNoteSkip(skipCounts, "unknown palace_id " . rawPalaceId)
-                continue
-            }
-            r["palace_id"] := palaceId
-            if (peg = "" || name = "") {
-                Palace_ImportNoteSkip(skipCounts, "beast missing peg/name")
-                continue
-            }
-            insertable.Push(r)
-            replacePalaceIds[palaceId] := true
+        linkPlan := Palace_PlanImportedBeasts(beastRows, palaces, palaceIdRemap, beasts)
+        if (!linkPlan["ok"]) {
+            Palace_Notify(linkPlan["error"], 4500, BANNER_ACCENT_ERROR)
+            Palace_ReturnAfterImport()
+            return false
         }
+        insertable := linkPlan["insertable"]
+        beastIdRemap := linkPlan["remap"]
+        replacePalaceIds := linkPlan["replacePalaceIds"]
         if (replacePalaceIds.Count) {
             removeBeastIds := Map()
             for b in beasts {
@@ -1685,12 +1818,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             peg := Trim(r["peg_code"])
             name := Trim(r["beast_name"])
             packId := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"]) : ""
-            id := Palace_CanonBeastId(palaceId, peg)
-            if (Palace_IdExists(beasts, id))
-                id := Palace_SlugId("BEAST_", peg . "_" . name, beasts)
-            if (packId != "")
-                beastIdRemap[packId] := id
-            beastIdRemap[id] := id
+            id := r["_canonId"]
             keptNotes := r.Has("beast_notes") ? r["beast_notes"] : ""
             if (Trim(keptNotes) = "" && priorBeastNotes.Has(id))
                 keptNotes := priorBeastNotes[id]
@@ -1841,6 +1969,32 @@ Palace_ImportMnemonicsFromDesktop(*) {
         nExcluded := Palace_DropExcludedPalaces(&palaces, &beasts, &atoms, excludeIds, keepBeastIds)
     }
 
+    ; Reject before any save. The confirm dialog already required these checks;
+    ; this is the same gate if a row still fails while applying.
+    if (nPalaces + nBeasts + nAtoms + nExcluded = 0) {
+        summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
+        msg := "0 imported — Desktop files kept"
+        if (summary != "")
+            msg .= " — " . summary
+        notes := ""
+        for note in csvNotes
+            notes .= (notes = "" ? "" : "`r`n") . note
+        Palace_Notify(msg, 3500, BANNER_ACCENT_ERROR)
+        Palace_ReturnAfterImport()
+        return false
+    }
+    if (atomRows.Length && nBeasts > 0 && nAtoms < nBeasts && replacePalaceIds.Count) {
+        summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
+        msg := (nAtoms = 0)
+            ? "Beasts imported with 0 atoms — Desktop pack kept"
+            : "Partial atoms: " . nAtoms . " of " . nBeasts . " beasts — Desktop pack kept"
+        if (summary != "")
+            msg .= " — " . summary
+        Palace_Notify(msg, 4000, BANNER_ACCENT_ERROR)
+        Palace_ReturnAfterImport()
+        return false
+    }
+
     if (nPalaces || nExcluded)
         Palace_Save("palaces", palaces)
     if (nBeasts || nExcluded) {
@@ -1867,31 +2021,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
             . " B: " . beasts.Length . "→" . savedBeasts.Length
             . " A: " . atoms.Length . "→" . savedAtoms.Length
             . " — Desktop files kept"
-        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 5000, ""))
-        return false
-    }
-
-    if (nPalaces + nBeasts + nAtoms + nExcluded = 0) {
-        summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
-        msg := "0 imported — Desktop files kept"
-        if (summary != "")
-            msg .= " — " . summary
-        notes := ""
-        for note in csvNotes
-            notes .= (notes = "" ? "" : "`r`n") . note
-        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 3500, notes))
-        return false
-    }
-
-    ; If pack had atom rows but too few linked after beast replace, keep Desktop pack for retry.
-    if (atomRows.Length && nBeasts > 0 && nAtoms < nBeasts && replacePalaceIds.Count) {
-        summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
-        msg := (nAtoms = 0)
-            ? "Beasts imported with 0 atoms — Desktop pack kept"
-            : "Partial atoms: " . nAtoms . " of " . nBeasts . " beasts — Desktop pack kept"
-        if (summary != "")
-            msg .= " — " . summary
-        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 4000, summary))
+        Palace_Notify(msg, 5000, BANNER_ACCENT_ERROR)
+        Palace_ReturnAfterImport()
         return false
     }
 

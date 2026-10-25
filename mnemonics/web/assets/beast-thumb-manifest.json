@@ -5197,6 +5197,26 @@
       "adj_filename": "adj_cold.png",
       "adj_url": "/assets/beast-thumbs/adj_cold.png"
     },
+    "BEAST_DATAANALYST_28_Dd": {
+      "label": "Dark dragon",
+      "peg_code": "Dd",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_28_De": {
+      "label": "devil",
+      "peg_code": "De",
+      "filename": "devil.png",
+      "url": "/assets/beast-thumbs/devil.png",
+      "source_slug": "devil",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
     "BEAST_DATAANALYST_27_Cy": {
       "label": "cyborg",
       "peg_code": "Cy",
@@ -5246,26 +5266,6 @@
       "adjective": "dark",
       "adj_filename": "adj_dark.png",
       "adj_url": "/assets/beast-thumbs/adj_dark.png"
-    },
-    "BEAST_DATAANALYST_28_Dd": {
-      "label": "Dark dragon",
-      "peg_code": "Dd",
-      "filename": "dragon.png",
-      "url": "/assets/beast-thumbs/dragon.png",
-      "source_slug": "dragon",
-      "adjective": "dark",
-      "adj_filename": "adj_dark.png",
-      "adj_url": "/assets/beast-thumbs/adj_dark.png"
-    },
-    "BEAST_DATAANALYST_28_De": {
-      "label": "devil",
-      "peg_code": "De",
-      "filename": "devil.png",
-      "url": "/assets/beast-thumbs/devil.png",
-      "source_slug": "devil",
-      "adjective": null,
-      "adj_filename": null,
-      "adj_url": null
     }
   }
 }

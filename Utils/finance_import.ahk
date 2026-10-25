@@ -782,12 +782,12 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             "installments", String(nInst)
         ))
     }
-    if (!autoConfirm && !Finance_ImportConfirmEditable("Import daily transactions", parsed))
-        return false
     if (!parsed.Length) {
         Finance_FailAiImport("No rows to import", "daily", 2200)
         return false
     }
+    if (!autoConfirm && !Finance_ImportConfirmEditable("Import daily transactions", parsed))
+        return false
     txs := Finance_Load("transactions")
     accs := Finance_Load("accounts")
     cards := Finance_Load("credit_cards")
@@ -917,6 +917,22 @@ Finance_ImportMonthly(*) {
             "description", desc
         ))
     }
+    nReady := 0
+    for r in rows {
+        et := r.Has("entity_type") ? StrLower(Trim(r["entity_type"])) : ""
+        eid := r.Has("entity_id") ? Trim(r["entity_id"]) : ""
+        adj := Finance_ParseDecimal(r.Has("adjustment_amount") ? r["adjustment_amount"] : "0")
+        if (adj = 0)
+            continue
+        if (et = "account" && Finance_FindById(accs, eid))
+            nReady += 1
+        else if (et = "goal" && Finance_FindById(goals, eid))
+            nReady += 1
+    }
+    if (!nReady) {
+        Finance_FailAiImport("0 monthly adjustments applied — check entity_type/entity_id", "monthly", 2800)
+        return false
+    }
     if (!Finance_ImportConfirm("Import monthly adjustments", previewRows))
         return false
     txs := Finance_Load("transactions")
@@ -962,14 +978,14 @@ Finance_ImportMonthly(*) {
             n += 1
         }
     }
+    if (!n) {
+        Finance_Notify("0 monthly adjustments applied — no data written", 2800, BANNER_ACCENT_ERROR)
+        return false
+    }
     Finance_Save("accounts", accs)
     Finance_Save("goals", goals)
     Finance_Save("transactions", txs)
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
-    if (!n) {
-        Finance_FailAiImport("0 monthly adjustments applied — check entity_type/entity_id", "monthly", 2800)
-        return false
-    }
     Finance_ArchiveImported(sourcePath)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
     if (ImportMgmt_IsOpen())
