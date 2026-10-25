@@ -75,7 +75,7 @@
 ### Habits & Health
 
 ⏳ Prevent heartworm when traveling to coast with pets
-🔲 Pharmacological regimen interactions
+⏳ Pharmacological regimen interactions
 ⚡ Moka has to sunbath every day
 🔲 You need to check if you made something good to add to your my personal repo just for historical purposes
 🩺 Tomar vermífugo

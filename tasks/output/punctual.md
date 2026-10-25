@@ -14,16 +14,16 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 ⏳ Comprehensive physical exam (primary care) (september). You can check on your habits here. What are the clinics close to your home
 
-🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
-
 ⏳ Change your TIM plan
 
 ⏳ If one day you buy a better cooler, you can use the maximum battery power in your computer Lenovo settings
 
-⚡ Check the prices for other phone companies like Claro and Vivo
+🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
 
 🔲 Print your keybord manual
 ℹ️ "C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf"
+
+⚡ Check the prices for other phone companies like Claro and Vivo
 
 ## General
 
@@ -264,21 +264,21 @@ Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou 
 
 ### Vaccination Timetable
 
-⏳ We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.
-
 ⏳ 1st Dose V10 (2026-09-19)
 ℹ️ Isolation Warning
 Keep the puppy entirely isolated from public streets, parks, and unknown animals.
 
-⏳ 2nd Dose V10 (2026-10-10)
+⏳ We can apply the vaccine at Pellucci. The V10 is 100 reels and the raiva one is 80 reels.
 
-🔲 3rd Dose V10 (2026-11-10)
-ℹ️ Socialization
-Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.
+⏳ 2nd Dose V10 (2026-10-10)
 
 ⏳ 4th Dose V10 + Raiva (2026-12-10)
 ℹ️ Outdoor Walks
 She will be fully protected and ready for public outdoor walks 15 days after this final round.
+
+🔲 3rd Dose V10 (2026-11-10)
+ℹ️ Socialization
+Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.
 
 ### Essential Shopping List
 
