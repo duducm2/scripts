@@ -319,8 +319,12 @@ ImportWatcher_ProcessCandidate(cand) {
     global g_ImportWatcherBusy
     if (g_ImportWatcherBusy)
         return
+    try {
+        if (ImportWatcher_CompanionAiFixInFlight())
+            return
+    } catch {
+    }
     g_ImportWatcherBusy := true
-    ImportWatcher_CompanionClearAiFixSubmitted()
     importStartStamp := FormatTime(, "yyyyMMddHHmmss")
     try {
         ImportWatcher_ShowDetected(cand.item["label"])

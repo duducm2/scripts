@@ -10,6 +10,115 @@
 
 ; Desktop path of the AI-fix file submitted during the current watcher import.
 global g_ImportWatcherAiFixSubmittedPath := ""
+; One confirmed AI-fix send. While this is in flight, no import pastes another fix.
+global g_AiFixGateActive := false
+global g_AiFixGateFp := ""
+global g_AiFixGateHwnd := 0
+global g_AiFixGateCompanion := ""
+global g_AiFixGateAt := 0
+global g_AiFixGateSawStop := false
+global g_AiFixGateMisses := 0
+
+ImportWatcher_CompanionFixFingerprint(fixText) {
+    fixText := StrReplace(StrReplace(Trim(fixText), "`r`n", "`n"), "`r", "`n")
+    return fixText
+}
+
+ImportWatcher_CompanionFindHwnd(companionId) {
+    companionId := StrLower(Trim(companionId))
+    hwnd := 0
+    try {
+        switch companionId {
+            case "enterprise":
+                hwnd := GetGeminiEnterpriseWindowHwnd()
+            case "copilot":
+                hwnd := GetCopilotWebWindowHwnd()
+            default:
+                hwnd := FindGeminiChromeHwnd()
+        }
+    } catch {
+        hwnd := 0
+    }
+    return hwnd
+}
+
+ImportWatcher_CompanionReleaseAiFixGate() {
+    global g_AiFixGateActive, g_AiFixGateFp, g_AiFixGateHwnd, g_AiFixGateCompanion
+    global g_AiFixGateAt, g_AiFixGateSawStop, g_AiFixGateMisses
+    g_AiFixGateActive := false
+    g_AiFixGateFp := ""
+    g_AiFixGateHwnd := 0
+    g_AiFixGateCompanion := ""
+    g_AiFixGateAt := 0
+    g_AiFixGateSawStop := false
+    g_AiFixGateMisses := 0
+}
+
+ImportWatcher_CompanionNoteAiFixSent(fixText, hwnd, companionId) {
+    global g_AiFixGateActive, g_AiFixGateFp, g_AiFixGateHwnd, g_AiFixGateCompanion
+    global g_AiFixGateAt, g_AiFixGateSawStop, g_AiFixGateMisses
+    g_AiFixGateActive := true
+    g_AiFixGateFp := ImportWatcher_CompanionFixFingerprint(fixText)
+    g_AiFixGateHwnd := hwnd
+    g_AiFixGateCompanion := StrLower(Trim(companionId))
+    g_AiFixGateAt := A_TickCount
+    g_AiFixGateSawStop := true
+    g_AiFixGateMisses := 0
+}
+
+; True while a fix we already handed the companion is still being answered.
+ImportWatcher_CompanionAiFixInFlight() {
+    global g_AiFixGateActive, g_AiFixGateHwnd, g_AiFixGateCompanion, g_AiFixGateAt
+    global g_AiFixGateSawStop, g_AiFixGateMisses
+    if (!g_AiFixGateActive)
+        return false
+    hwnd := g_AiFixGateHwnd
+    companionId := g_AiFixGateCompanion
+    if ((!hwnd || !WinExist("ahk_id " hwnd)) && companionId != "")
+        hwnd := ImportWatcher_CompanionFindHwnd(companionId)
+    generating := false
+    if (hwnd && companionId != "") {
+        try generating := !!PromptPaste_CompanionIsGenerating(hwnd, companionId)
+        catch {
+            generating := false
+        }
+    }
+    if (generating) {
+        g_AiFixGateHwnd := hwnd
+        g_AiFixGateSawStop := true
+        g_AiFixGateMisses := 0
+        return true
+    }
+    ; Stop can blink off, and a short reply can finish before the next poll. Hold the gate
+    ; so a second import does not paste another fix while this one is still the active send.
+    if (g_AiFixGateAt && (A_TickCount - g_AiFixGateAt) < 15000)
+        return true
+    if (!g_AiFixGateSawStop) {
+        ImportWatcher_CompanionReleaseAiFixGate()
+        return false
+    }
+    g_AiFixGateMisses += 1
+    if (g_AiFixGateMisses < 2)
+        return true
+    ImportWatcher_CompanionReleaseAiFixGate()
+    return false
+}
+
+; Hold the gate before the paste so a second caller cannot send while this one is still confirming.
+ImportWatcher_CompanionClaimAiFixSend(fixText) {
+    global g_AiFixGateActive, g_AiFixGateFp, g_AiFixGateAt, g_AiFixGateSawStop, g_AiFixGateMisses
+    fp := ImportWatcher_CompanionFixFingerprint(fixText)
+    if (fp = "")
+        return false
+    if (g_AiFixGateActive)
+        return false
+    g_AiFixGateActive := true
+    g_AiFixGateFp := fp
+    g_AiFixGateAt := A_TickCount
+    g_AiFixGateSawStop := false
+    g_AiFixGateMisses := 0
+    return true
+}
 
 ImportWatcher_CompanionClearAiFixSubmitted() {
     global g_ImportWatcherAiFixSubmittedPath
@@ -53,7 +162,8 @@ ImportWatcher_CompanionAiFixPaths() {
         A_Desktop . "\FINANCE_AI_FIX.txt",
         A_Desktop . "\TASK_AI_FIX.txt",
         A_Desktop . "\PALACE_AI_FIX.txt",
-        A_Desktop . "\PACK_AI_FIX.txt"
+        A_Desktop . "\PACK_AI_FIX.txt",
+        A_Desktop . "\COLLECTIBLE_AI_FIX.txt"
     ]
 }
 
@@ -192,6 +302,69 @@ ImportWatcher_CompanionPasteFixText(fixText) {
     return !!hwnd
 }
 
+; Paste + submit one AI fix. A second call while that fix is still with the companion does not paste again.
+ImportWatcher_CompanionSubmitAiFixOnce(fixText) {
+    fixText := Trim(fixText)
+    if (fixText = "")
+        return false
+    if (ImportWatcher_CompanionAiFixInFlight() || !ImportWatcher_CompanionClaimAiFixSend(fixText))
+        return true
+    companionId := ImportWatcher_CompanionResolveTarget()
+    label := ImportWatcher_CompanionLabel(companionId)
+    hwnd := 0
+    submitted := false
+    try {
+        switch companionId {
+            case "enterprise":
+                hwnd := GeminiEnterprise_NavigateFocusAndPaste(fixText, true)
+                submitted := !!hwnd
+                if (!submitted) {
+                    hwnd := ImportWatcher_CompanionFindHwnd("enterprise")
+                    if (hwnd)
+                        submitted := !!PromptPaste_WaitForGenerationStarted(hwnd, "enterprise", 8000)
+                }
+            case "copilot":
+                hwnd := CopilotWeb_NavigateFocusAndPaste(fixText, true)
+                submitted := !!hwnd
+                if (!submitted) {
+                    hwnd := ImportWatcher_CompanionFindHwnd("copilot")
+                    if (hwnd)
+                        submitted := !!PromptPaste_WaitForGenerationStarted(hwnd, "copilot", 8000)
+                }
+            default:
+                hwnd := GeminiNavigateFocusAndPasteFirstSnippet(fixText, false)
+                if (hwnd) {
+                    try submitted := !!PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
+                    catch {
+                        try submitted := !!Gemini_WaitForPromptContentAndSubmit(hwnd)
+                        catch
+                            submitted := false
+                    }
+                    if (!submitted)
+                        submitted := !!PromptPaste_WaitForGenerationStarted(hwnd, "gemini", 8000)
+                }
+        }
+    } catch as e {
+        ImportWatcher_CompanionReleaseAiFixGate()
+        try ShowCenteredOverlay_Utils("❌ AI fix send failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", "AI fix send failed")
+        }
+        return false
+    }
+    if (!submitted) {
+        ImportWatcher_CompanionReleaseAiFixGate()
+        return false
+    }
+    ImportWatcher_CompanionNoteAiFixSent(fixText, hwnd, companionId)
+    msg := "AI fix sent to " . label
+    try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
+    catch {
+        TrayTip("Import", msg)
+    }
+    return true
+}
+
 ; Paste + submit AI-fix text (hub / non-pipeline path). When PackPipeline is active,
 ; prefer PackPipeline_SendFixAndSubmit so userHwnd restore + re-monitor stay consistent.
 ; pathOrText: Desktop fix path or raw fix body.
@@ -211,53 +384,23 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
             return !!PackPipeline_SendFixAndSubmit(fixText)
     } catch {
     }
-    companionId := ImportWatcher_CompanionResolveTarget()
-    label := ImportWatcher_CompanionLabel(companionId)
-    hwnd := 0
-    submitted := false
-    try {
-        switch companionId {
-            case "enterprise":
-                hwnd := GeminiEnterprise_NavigateFocusAndPaste(fixText, true)
-                submitted := !!hwnd
-            case "copilot":
-                hwnd := CopilotWeb_NavigateFocusAndPaste(fixText, true)
-                submitted := !!hwnd
-            default:
-                hwnd := GeminiNavigateFocusAndPasteFirstSnippet(fixText, false)
-                if (hwnd) {
-                    try submitted := !!PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
-                    catch {
-                        try submitted := !!Gemini_WaitForPromptContentAndSubmit(hwnd)
-                        catch
-                            submitted := false
-                    }
-                }
-        }
-    } catch as e {
-        try ShowCenteredOverlay_Utils("❌ AI fix send failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
-        catch {
-            TrayTip("Import", "AI fix send failed")
-        }
-        return false
-    }
-    if (!submitted)
+    if (ImportWatcher_CompanionAiFixInFlight())
+        return true
+    ok := ImportWatcher_CompanionSubmitAiFixOnce(fixText)
+    if (!ok)
         return false
     if (submittedPath != "")
         ImportWatcher_CompanionMarkAiFixSubmitted(submittedPath)
     else
         ImportWatcher_CompanionMarkAiFixSubmittedText(fixText)
-    msg := "AI fix sent to " . label
-    try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
-    catch {
-        TrayTip("Import", msg)
-    }
-    return !!hwnd
+    return true
 }
 
-; After an import run: send a fresh AI-fix once. Skip when this run already submitted it.
+; After an import run: send a fresh AI-fix once. Skip when a fix is already with the companion.
 ImportWatcher_CompanionHandleAiFixAfterImport(importStartStamp) {
     global g_ImportWatcherAiFixSubmittedPath
+    if (ImportWatcher_CompanionAiFixInFlight())
+        return false
     path := ImportWatcher_CompanionNewestAiFixSince(importStartStamp)
     if (path = "")
         return false

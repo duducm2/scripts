@@ -102,14 +102,20 @@ ImportMgmt_OnAiFixReady(path, label) {
         catch {
             TrayTip("Import", msg)
         }
+    } else if (ImportWatcher_CompanionAiFixInFlight()) {
+        msg := "AI companion is still working on the fix · Desktop " . label
+        try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
+        catch {
+            TrayTip("Import", msg)
+        }
     } else {
         msg := "AI fix copied — sending to AI companion · Desktop " . label
         try ShowCenteredOverlay_Utils(msg, 4000, BANNER_ACCENT_ERROR)
         catch {
             TrayTip("Import", msg)
         }
-        if (body != "") {
-            try ImportWatcher_CompanionPasteAndSubmitFix(body)
+        if (path != "") {
+            try ImportWatcher_CompanionPasteAndSubmitFix(path)
             catch {
             }
         }

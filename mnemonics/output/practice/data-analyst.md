@@ -1,6 +1,75 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 27: PySpark DataFrame Operations</strong> · Character: — · 5 beasts · 5 atoms</summary>
+
+![Memory Palace 27](images/data-analyst/27.jpg)
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Dc] Dark cat
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Dark cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Spark UDFs]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%20UDFs%5D&color=9fd4ff" />(wrench) to <img alt="[execute]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bexecute%5D&color=ffd966" />(guillotine)] [custom Python <img alt="[code]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcode%5D&color=ffd966" />(snake)] [uniformly across every <img alt="[row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brow%5D&color=ffd966" />(ruler)] [in the distributed <img alt="[cluster]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcluster%5D&color=ffd966" />(hive).]
+
+**Quote**
+“we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it”
+
+### [Db] Dark bird of paradise
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Dark bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Aggregation Method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BAggregation%20Method%5D&color=9fd4ff" />(calculator) to <img alt="[calculate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalculate%5D&color=ffd966" />(abacus)] [summary <img alt="[metrics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetrics%5D&color=ffd966" />(ruler) across columns] [by passing a <img alt="[dictionary]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdictionary%5D&color=ffd966" />(book)] [of mathematical <img alt="[functions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfunctions%5D&color=ffd966" />(compass).]
+
+**Quote**
+“it's going to take a dictionary where i'm going to pass it keys where the keys are columns and values where they're strings of what we want to do”
+
+### [Da] dalmatian
+
+<img src="../../web/assets/beast-thumbs/dalmatian.png" alt="dalmatian" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[standard SQL operations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstandard%20SQL%20operations%5D&color=9fd4ff" />(scroll) to <img alt="[run]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brun%5D&color=ffd966" />(sneakers)] [select and where <img alt="[filters]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfilters%5D&color=ffd966" />(sieve)] [with groupby <img alt="[categories]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcategories%5D&color=ffd966" />(boxes)] [and orderby <img alt="[sorting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsorting%5D&color=ffd966" />(ladder) in PySpark.] — Note: The filter method acts as an alias for where.
+
+**Quote**
+“select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df / titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there / so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class”
+
+### [Cz] Cold Zeus
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/zeus.png" alt="Cold Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Schema Inference]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSchema%20Inference%5D&color=9fd4ff" />(magnifier) to <img alt="[detect]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdetect%5D&color=ffd966" />(radar)] [correct column <img alt="[types]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btypes%5D&color=ffd966" />(pillar)] [instead of <img alt="[importing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bimporting%5D&color=ffd966" />(ship)] [every value as <img alt="[text]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btext%5D&color=ffd966" />(scroll).] — Note: Without this setting, PySpark reads all incoming fields as strings.
+
+**Quote**
+“except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer”
+
+### [Cy] cyborg
+
+<img src="../../web/assets/beast-thumbs/cyborg.png" alt="cyborg" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Spark CSV Reader]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%20CSV%20Reader%5D&color=9fd4ff" />(book) to <img alt="[load]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bload%5D&color=ffd966" />(crane)] [remote data <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(folder)] [into a <img alt="[distributed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdistributed%5D&color=ffd966" />(web)] [PySpark <img alt="[DataFrame]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%5D&color=ffd966" />(grid).] — Note: Setting the header argument to true uses the first row for column names.
+
+**Quote**
+“spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 26: PySpark SQL Operations</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 26](images/data-analyst/26.png)

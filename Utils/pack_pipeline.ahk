@@ -763,6 +763,11 @@ PackPipeline_HandleInvalid(errorMsg, fixText := "") {
     global g_PackPipeline
     if (!PackPipeline_IsActive())
         return
+    try {
+        if (ImportWatcher_CompanionAiFixInFlight())
+            return
+    } catch {
+    }
     g_PackPipeline.attempt += 1
     if (g_PackPipeline.attempt > g_PackPipeline.maxAttempts) {
         PackPipeline_Fail("Pack still invalid after " . g_PackPipeline.maxAttempts . " fix attempt(s): " . errorMsg)
@@ -815,47 +820,30 @@ PackPipeline_HandleImportOutcome(importOk, importStartStamp, errMsg := "") {
 }
 
 PackPipeline_SendFixAndSubmit(fixText) {
-    global g_PackPipeline
+    global g_PackPipeline, g_AiFixGateHwnd
     fixText := Trim(fixText)
     if (fixText = "" || !PackPipeline_IsActive())
         return false
-    companionId := g_PackPipeline.companionId
-    PackPipeline_CaptureUserHwnd()
-    hwnd := 0
-    submitted := false
     try {
-        switch companionId {
-            case "enterprise":
-                hwnd := GeminiEnterprise_NavigateFocusAndPaste(fixText, true)
-                submitted := !!hwnd
-            case "copilot":
-                hwnd := CopilotWeb_NavigateFocusAndPaste(fixText, true)
-                submitted := !!hwnd
-            default:
-                ; GeminiNavigateFocusAndPasteFirstSnippet second arg is switchToFirstTab, not submit.
-                hwnd := GeminiNavigateFocusAndPasteFirstSnippet(fixText, false)
-                if (hwnd) {
-                    try submitted := !!PromptPaste_SubmitWhenReady(hwnd, "gemini", 0)
-                    catch {
-                        try submitted := !!Gemini_WaitForPromptContentAndSubmit(hwnd)
-                        catch
-                            submitted := false
-                    }
-                }
-        }
-    } catch as e {
-        try ShowCenteredOverlay_Utils("❌ AI fix send failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
-        catch {
-        }
+        if (ImportWatcher_CompanionAiFixInFlight())
+            return true
+    } catch {
+    }
+    PackPipeline_CaptureUserHwnd()
+    ok := false
+    try ok := ImportWatcher_CompanionSubmitAiFixOnce(fixText)
+    catch {
+        ok := false
+    }
+    if (!ok) {
         PackPipeline_RestoreUserHwnd()
         return false
     }
-    if (!submitted) {
-        PackPipeline_RestoreUserHwnd()
-        return false
+    try {
+        if (g_AiFixGateHwnd)
+            g_PackPipeline.hwnd := g_AiFixGateHwnd
+    } catch {
     }
-    if (hwnd)
-        g_PackPipeline.hwnd := hwnd
     ; Restore user focus before re-entering background wait.
     restored := PackPipeline_RestoreUserHwnd()
     PackPipeline_NotifyUserFree(restored)

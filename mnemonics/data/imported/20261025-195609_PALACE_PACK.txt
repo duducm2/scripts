@@ -1,0 +1,91 @@
+﻿===PREVIEW===
+
+STUDY_DATAANALYST · 2 palaces · 7 beasts · 7 atoms
+
+Packing: 5+2 (remainder only on last new palace in this pack)
+
+
+
+PALACE 27 — PySpark DataFrame Operations () [PALACE_DATAANALYST_27]
+
+  [Cy] cyborg — Concept: [I use the Spark CSV Reader to load] [remote data files] [into a distributed] [PySpark DataFrame.] — Note: Setting the header argument to true uses the first row for column names. | Quote: "spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header"
+
+  [Cz] Cold Zeus — Concept: [I use Schema Inference to detect] [correct column types] [instead of importing] [every value as text.] — Note: Without this setting, PySpark reads all incoming fields as strings. | Quote: "except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer"
+
+  [Da] dalmatian — Concept: [I use the Select Method to isolate] [specific target columns] [from a DataFrame] [to reduce memory overhead.] | Quote: "select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df"
+
+  [Db] Dark bird of paradise — Concept: [I use the Where Method to filter] [DataFrame rows] [matching strict logical conditions] [before continuing downstream.] — Note: The filter method acts as an identical syntactic alias. | Quote: "titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there"
+
+  [Dc] Dark cat — Concept: [I use the Aggregation Method to calculate] [summary metrics across columns] [by passing a dictionary] [of mathematical functions.] | Quote: "it's going to take a dictionary where i'm going to pass it keys where the keys are columns and values where they're strings of what we want to do"
+
+
+
+PALACE 28 — PySpark Transformations and UDFs () [PALACE_DATAANALYST_28]
+
+  [Dd] Dark dragon — Concept: [I use GroupBy and OrderBy to organize] [distributed records into categories] [and sort the aggregated] [output rows.] | Quote: "so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class"
+
+  [De] devil — Concept: [I use Spark UDFs to execute] [custom Python code] [uniformly across every row] [in the distributed cluster.] — Note: Registering a UDF requires specifying an explicit return type from the SQL types module. | Quote: "we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it"
+
+
+
+Discard candidates:
+
+- Executing Raw Spark SQL (`spark.sql`, `createOrReplaceTempView`) skipped: already in inventory on Palace 26 / pegs Cw and Cv
+
+===END_PREVIEW===
+
+
+
+===FILE: PALACE_PALACES.csv===
+
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+
+PALACE_DATAANALYST_27,STUDY_DATAANALYST,27,PySpark DataFrame Operations,,,5,"A sunlit street scene with five distinct depth slots. Depth slot: ForegroundLeft, anchored to a rusted iron gate, a metallic cyborg drives a bright green toy farm tractor straight through the metal bars. Depth slot: MidgroundRight, anchored beside a blue parked pickup truck, a frozen blue Zeus holds a massive glowing glass magnifying glass up to the truck wheel. Depth slot: BackgroundCenter, anchored against the brick facade of a distant storefront, a spotted dalmatian grips giant silver tweezers and pinches a lamppost. Depth slot: Aerial, anchored to a telephone wire overhead, an obsidian dark bird of paradise balances an oversized copper kitchen funnel on its beak. Depth slot: ForegroundRight, anchored on a concrete bench near the sidewalk edge, a shadowy black cat rhythmically taps the buttons of an electric glass blender. Clear space separates each subject across the street scene."
+
+PALACE_DATAANALYST_28,STUDY_DATAANALYST,28,PySpark Transformations and UDFs,,,2,"A quiet city intersection with two distinct depth slots. Depth slot: ForegroundLeft, anchored against a stone retaining wall, a colossal dark dragon clutches a giant leather three-ring office binder under one wing while curling its tail around the curb. Depth slot: MidgroundRight, anchored beside an ornamental cast-iron streetlamp, a mischievous red devil vigorously turns an enormous chrome mechanic wrench around the base of the post. Both subjects are physically separated with wide empty pavement between them."
+
+===END_FILE===
+
+
+
+===FILE: PALACE_BEASTS.csv===
+
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+
+BEAST_DATAANALYST_27_Cy,PALACE_DATAANALYST_27,Cy,cyborg,Lynne Kelly,,0,1,
+
+BEAST_DATAANALYST_27_Cz,PALACE_DATAANALYST_27,Cz,Cold Zeus,Custom,,0,2,
+
+BEAST_DATAANALYST_27_Da,PALACE_DATAANALYST_27,Da,dalmatian,Lynne Kelly,,0,3,
+
+BEAST_DATAANALYST_27_Db,PALACE_DATAANALYST_27,Db,Dark bird of paradise,Custom,,0,4,
+
+BEAST_DATAANALYST_27_Dc,PALACE_DATAANALYST_27,Dc,Dark cat,Custom,,0,5,
+
+BEAST_DATAANALYST_28_Dd,PALACE_DATAANALYST_28,Dd,Dark dragon,Custom,,0,1,
+
+BEAST_DATAANALYST_28_De,PALACE_DATAANALYST_28,De,devil,Lynne Kelly,,0,2,
+
+===END_FILE===
+
+
+
+===FILE: PALACE_ATOMS.csv===
+
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+
+,BEAST_DATAANALYST_27_Cy,single,,,"[I use the Spark CSV Reader to load] [remote data files] [into a distributed] [PySpark DataFrame.] — Note: Setting the header argument to true uses the first row for column names.","tractor | Spark CSV Reader || forklift | load || paper | files || spider web | distributed || grid | DataFrame","spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header",,1
+
+,BEAST_DATAANALYST_27_Cz,single,,,"[I use Schema Inference to detect] [correct column types] [instead of importing] [every value as text.] — Note: Without this setting, PySpark reads all incoming fields as strings.","magnifying glass | Schema Inference || radar | detect || pillar | column || ship | importing || typewriter | text","except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer",,2
+
+,BEAST_DATAANALYST_27_Da,single,,,"[I use the Select Method to isolate] [specific target columns] [from a DataFrame] [to reduce memory overhead.]","tweezers | Select Method || cage | isolate || pillar | columns || grid | DataFrame || balloon | overhead","select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df",,3
+
+,BEAST_DATAANALYST_27_Db,single,,,"[I use the Where Method to filter] [DataFrame rows] [matching strict logical conditions] [before continuing downstream.] — Note: The filter method acts as an identical syntactic alias.","funnel | Where Method || sieve | filter || comb | rows || scale | logical || river | downstream","titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there",,4
+
+,BEAST_DATAANALYST_27_Dc,single,,,"[I use the Aggregation Method to calculate] [summary metrics across columns] [by passing a dictionary] [of mathematical functions.]","blender | Aggregation Method || calculator | calculate || ruler | metrics || book | dictionary || compass | functions","it's going to take a dictionary where i'm going to pass it keys where the keys are columns and values where they're strings of what we want to do",,5
+
+,BEAST_DATAANALYST_28_Dd,single,,,"[I use GroupBy and OrderBy to organize] [distributed records into categories] [and sort the aggregated] [output rows.]","binder | GroupBy and OrderBy || shelf | organize || box | categories || deck | sort || comb | rows","so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class",,1
+
+,BEAST_DATAANALYST_28_De,single,,,"[I use Spark UDFs to execute] [custom Python code] [uniformly across every row] [in the distributed cluster.]","wrench | Spark UDFs || lightning | execute || snake | Python || ruler | uniformly || beehive | cluster","we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it",,2
+
+===END_FILE===
