@@ -1470,7 +1470,7 @@ UtilitySelector_RestoreConsumerGeminiFocus(*) {
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
-    contextEntries := "", pasteChoice := "", extraAttachPaths := "") {
+    contextEntries := "", pasteChoice := "", extraAttachPaths := "", enableImageGen := false) {
     global g_lastExpansion, g_PromptPasteBusyActive
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
@@ -1508,6 +1508,22 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             }
             if (!companionHwnd)
                 companionHwnd := WinExist("A")
+        }
+        ; Copy prompt (Shift+C): same toggle as Shift+I on the companion, before the body is sent.
+        if (enableImageGen) {
+            if (usedBusyBar)
+                PromptPaste_BusyEnsure("⏳ Image generation…")
+            else
+                HotstringGeminiBanner_Show("🖼 " . aiLabel . ": image generation…")
+            toggled := false
+            try toggled := AiCompanion_ToggleImageGeneration(companion)
+            catch
+                toggled := false
+            if (!toggled) {
+                try ShowCenteredOverlay_Utils("⚠ Image generation was not toggled", 2200, BANNER_ACCENT_ERROR)
+                catch {
+                }
+            }
         }
         if (doAttach) {
             if (usedBusyBar)

@@ -1135,7 +1135,7 @@
             type="button"
             id="btnCopyPrompt"
             data-ico="copy"
-            title="Send the compose prompt and the newest Desktop image to the AI companion (Shift+C)"
+            title="Toggle image generation, then send the compose prompt and the newest Desktop image (Shift+C)"
             disabled
           >
             Copy prompt
@@ -5977,7 +5977,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Reduction toggle · drag beasts to Delete · <b>Generate Prompt</b> (context + filled prompt). <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>

@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 28: PySpark Advanced Operations</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
-_No image_
+![Memory Palace 28](images/data-analyst/28.jpg)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
@@ -42,7 +42,7 @@ _No gallery images._
 <details open>
 <summary><strong>Memory Palace 27: PySpark DataFrame Ingestion & Filtering</strong> · Character: — · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 27](images/data-analyst/27.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 

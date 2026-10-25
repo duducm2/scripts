@@ -169,6 +169,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Lib] Saved UIA targets for every cataloged control (ui_elements.ini)
 #include %A_ScriptDir%\lib\UiElementCatalog.ahk
 #include %A_ScriptDir%\lib\UiElements.ahk
+; [Lib] Personal Gemini Tools drawer (Shift+I Create image) shared with Shift keys
+#include %A_ScriptDir%\lib\gemini_tools.ahk
 ; [Utils] Shared Shift+L AI companion model list selector
 #include %A_ScriptDir%\Utils\ai_companion_model_selector.ahk
 

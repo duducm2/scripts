@@ -1503,7 +1503,8 @@ Palace_OnStudyLinkOpenFavorite(*) {
 #HotIf
 
 ; Ask (Shift+Q) — page posts the prompt; Utils pastes it into the resolved AI companion and sends.
-; Shift+C also sets the image flag so the newest Desktop snapshot is attached first.
+; Shift+C also sets the image flag so the newest Desktop snapshot is attached first,
+; and toggles image generation (companion Shift+I) before the prompt is sent.
 Palace_AskPromptPath() {
     return A_Temp "\memory_palace_ask_prompt.txt"
 }
@@ -1597,8 +1598,9 @@ Palace_AskSendDeferred() {
     global g_lastExpansion
     g_lastExpansion := 0
     try {
-        ; prompt false, paste the body, send. Shift+C also passes the newest Desktop image.
-        UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send", snapshotPaths)
+        ; prompt false, paste the body, send. Shift+C also passes the newest Desktop image
+        ; and toggles image generation (companion Shift+I) before that send.
+        UtilitySelector_PastePromptToGemini(text, false, false, true, "", "", "send", snapshotPaths, attachSnapshot)
     } catch as err {
         try ShowCenteredOverlay_Utils("⚠ Ask prompt was not sent: " err.Message, 2800, BANNER_ACCENT_ERROR)
         catch {
