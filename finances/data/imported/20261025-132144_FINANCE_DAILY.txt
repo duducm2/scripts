@@ -1,0 +1,10 @@
+﻿===PREVIEW===
+3 row(s) · 2 credit card expenses (Food), 1 normal expense (Groceries)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Food,"42,75",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Food,"7,95",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+Groceries,"5,50",expense,CAT_MERCADO,ACC_MERCADOP,,,1
+===END_FILE===

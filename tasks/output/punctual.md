@@ -25,6 +25,8 @@ OpenCode natively supports OpenRouter (via /connect command and OpenRouter API k
 
 ⚡ Check the prices for other phone companies like Claro and Vivo
 
+⚡ Vá para o cartório alterar sua foto.
+
 ## General
 
 ℹ️ link rel="stylesheet" type="text/css" href="styles/styles.css">

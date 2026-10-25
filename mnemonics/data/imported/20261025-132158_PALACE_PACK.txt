@@ -1,0 +1,48 @@
+﻿===PREVIEW===
+STUDY_DATAANALYST · 2 palaces · 8 beasts · 8 atoms
+Packing: 5+3 (remainder only on last new palace in this pack)
+
+PALACE 27 — PySpark DataFrame Ingestion & Filtering () [PALACE_DATAANALYST_27]
+  [Cy] cyborg — Concept: [I use the PySpark CSV reader to instantiate] [a distributed DataFrame] [from a remote file] [by explicitly assigning] [the architectural header.] | Quote: "spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header"
+  [Cz] Cold Zeus — Concept: [I use the inference parameter to command] [the underlying engine] [to sample the dataset] [and intelligently assign] [appropriate structured types.] | Quote: "except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer"
+  [Da] dalmatian — Concept: [I use the select method to isolate] [specific target variables] [from a complex DataFrame] [to minimize memory overhead] [for analytical operations.] | Quote: "select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df"
+  [Db] Dark bird of paradise — Concept: [I use the where method to restrict] [the distributed DataFrame] [to records satisfying] [strict analytical conditions.] | Quote: "titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there"
+  [Dc] Dark cat — Concept: [I use the aggregation method to synthesize] [complex summary statistics] [across millions of rows] [using a mapped dictionary.] | Quote: "it's going to take a dictionary where i'm going to pass it keys where the keys are columns and values where they're strings of what we want to do"
+
+PALACE 28 — PySpark Advanced Operations () [PALACE_DATAANALYST_28]
+  [Dd] Dark dragon — Concept: [I use the groupBy method to partition] [the tabular data] [based on categorical dimensions] [to establish distinct baselines.] | Quote: "so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class"
+  [De] devil — Concept: [I use a User Defined Function to execute] [proprietary Python logic] [uniformly across the cluster] [for highly specialized transformations.] | Quote: "we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it"
+  [Df] Dark frog — Concept: [I use the spark dot sql method to parse] [traditional database queries] [natively against the dataset] [registered as an ephemeral view.] | Quote: "all you have to do to use sql in here explicitly is to do spark.sql and then you would write some query"
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_27,STUDY_DATAANALYST,27,PySpark DataFrame Ingestion & Filtering,,,5,"ForegroundLeft: A cyborg phases through the metal gate while swinging a heavy book, knocking a magic wand into a glowing grid. MidgroundRight: Cold Zeus stands on a parked car, holding a giant magnifying glass to shout through a megaphone at a frozen engine block. BackgroundCenter: A giant dalmatian leans against the brick facade, using huge tweezers to pinch a quarantine tent full of floating dials. Aerial: A Dark bird of paradise perches on the street lamp, holding up a giant stop sign with heavy handcuffs dangling from it over a grid. ForegroundRight: A Dark cat sits on the trash can, throwing a roaring blender filled with a glowing potion onto an oversized abacus."
+PALACE_DATAANALYST_28,STUDY_DATAANALYST,28,PySpark Advanced Operations,,,3,"ForegroundLeft: A Dark dragon wraps around the low brick wall, tearing down a glowing fence to smash a glass divider onto a giant ledger. MidgroundRight: A devil dances on the wooden bus stop bench, unrolling a glowing blueprint to summon a lightning bolt that strikes massive steel gears. BackgroundCenter: A Dark frog sits on the striped storefront awning, waving a magic wand to cut floating scissors through a giant magnifying glass."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_DATAANALYST_27_Cy,PALACE_DATAANALYST_27,Cy,cyborg,Lynne Kelly,,0,1,
+BEAST_DATAANALYST_27_Cz,PALACE_DATAANALYST_27,Cz,Cold Zeus,Custom,,0,2,
+BEAST_DATAANALYST_27_Da,PALACE_DATAANALYST_27,Da,dalmatian,Lynne Kelly,,0,3,
+BEAST_DATAANALYST_27_Db,PALACE_DATAANALYST_27,Db,Dark bird of paradise,Custom,,0,4,
+BEAST_DATAANALYST_27_Dc,PALACE_DATAANALYST_27,Dc,Dark cat,Custom,,0,5,
+BEAST_DATAANALYST_28_Dd,PALACE_DATAANALYST_28,Dd,Dark dragon,Custom,,0,1,
+BEAST_DATAANALYST_28_De,PALACE_DATAANALYST_28,De,devil,Lynne Kelly,,0,2,
+BEAST_DATAANALYST_28_Df,PALACE_DATAANALYST_28,Df,Dark frog,Custom,,0,3,
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+,BEAST_DATAANALYST_27_Cy,single,,,"[I use the PySpark CSV reader to instantiate] [a distributed DataFrame] [from a remote file] [by explicitly assigning] [the architectural header.] — Note: This lazy operation builds the execution plan without pulling all data into driver memory.",book | PySpark CSV reader || wand | instantiate || grid | DataFrame || folder | file || stamp | assigning || hat | header,"spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header",,1
+,BEAST_DATAANALYST_27_Cz,single,,,"[I use the inference parameter to command] [the underlying engine] [to sample the dataset] [and intelligently assign] [appropriate structured types.] — Note: This prevents all columns from defaulting to generic string data types.",magnifying glass | inference parameter || megaphone | command || engine block | engine || box | dataset || clipboard | assign || blocks | types,"except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer",,1
+,BEAST_DATAANALYST_27_Da,single,,,"[I use the select method to isolate] [specific target variables] [from a complex DataFrame] [to minimize memory overhead] [for analytical operations.] — Note: Passing a single asterisk fetches every available column simultaneously.",tweezers | select method || quarantine tent | isolate || dials | variables || grid | DataFrame || umbrella | overhead || scalpel | operations,"select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df",,1
+,BEAST_DATAANALYST_27_Db,single,,,"[I use the where method to restrict] [the distributed DataFrame] [to records satisfying] [strict analytical conditions.] — Note: This method operates as an exact syntactic alias for the filter method.",stop sign | where method || handcuffs | restrict || grid | DataFrame || vinyl record | records || thermometer | conditions,"titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there",,1
+,BEAST_DATAANALYST_27_Dc,single,,,"[I use the aggregation method to synthesize] [complex summary statistics] [across millions of rows] [using a mapped dictionary.] — Note: The keys map to target column names and the values represent string-based instructions for mathematical functions.",blender | aggregation method || potion | synthesize || abacus | statistics || oars | rows || book | dictionary,"it's going to take a dictionary where i'm going to pass it keys where the keys are columns and values where they're strings of what we want to do",,1
+,BEAST_DATAANALYST_28_Dd,single,,,"[I use the groupBy method to partition] [the tabular data] [based on categorical dimensions] [to establish distinct baselines.] — Note: The aggregated results can then be systematically reorganized utilizing the orderBy method.",fence | groupBy method || glass divider | partition || ledger | data || ruler | dimensions || chalk line | baselines,"so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class",,1
+,BEAST_DATAANALYST_28_De,single,,,"[I use a User Defined Function to execute] [proprietary Python logic] [uniformly across the cluster] [for highly specialized transformations.] — Note: This strictly demands explicitly importing and defining the exact target return type from the internal SQL types module.",blueprint | User Defined Function || lightning bolt | execute || gears | logic || grapes | cluster || butterfly | transformations,"we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it",,1
+,BEAST_DATAANALYST_28_Df,single,,,"[I use the spark dot sql method to parse] [traditional database queries] [natively against the dataset] [registered as an ephemeral view.] — Note: The target DataFrame must first be explicitly registered within the active session memory.",magic wand | spark dot sql method || scissors | parse || magnifying glass | queries || box | dataset || window | view,"all you have to do to use sql in here explicitly is to do spark.sql and then you would write some query",,1
+===END_FILE===

@@ -316,6 +316,150 @@ ImportMgmt_ClipboardPackMatches(body, fileName) {
     return fileName != "" && body != "" && ClipAngelExport_LooksLikePack(body)
 }
 
+ImportMgmt_PackHit(fileName, label, runFn) {
+    return Map("fileName", fileName, "label", label, "run", runFn)
+}
+
+; FILE section title → catalog pack. Extension and quotes are ignored.
+ImportMgmt_TargetForSection(sectionName) {
+    key := StrLower(Trim(sectionName))
+    key := RegExReplace(key, '[\s"]')
+    key := RegExReplace(key, "i)\.(csv|json|txt|ini)$")
+    switch key {
+        case "finance_daily":
+            return ImportMgmt_PackHit("FINANCE_DAILY.txt", "Finance daily", Finance_ImportDaily)
+        case "finance_monthly":
+            return ImportMgmt_PackHit("FINANCE_MONTHLY.txt", "Finance monthly", Finance_ImportMonthly)
+        case "palace_palaces", "palace_beasts", "palace_atoms", "palace_pack":
+            return ImportMgmt_PackHit("PALACE_PACK.txt", "Palace mnemonic pack", Palace_ImportMnemonicsFromDesktop)
+        case "collectible", "collectible_pack":
+            return ImportMgmt_PackHit("COLLECTIBLE_PACK.txt", "Palace collectible", Collectible_ImportFromDesktop)
+        case "plans", "plan_items", "plan_pack":
+            return ImportMgmt_PackHit("PLAN_PACK.txt", "Study plan pack", Palace_ImportPlanPackFromDesktop)
+        case "task_projects", "task_tasks", "task_info", "task_pack":
+            return ImportMgmt_PackHit("TASK_PACK.txt", "Task pack", Task_ImportPackFromDesktop)
+    }
+    return ""
+}
+
+; Names inside ===FILE: …===, ---FILE: …---, and line-start =FILE: …=.
+ImportMgmt_PackSectionNames(body) {
+    found := []
+    seen := Map()
+    patterns := [
+        "i)(?:={2,}|-{2,})\s*FILE:\s*([^`r`n=]+?)\s*(?:={2,}|-{2,})",
+        "im)^\s*=\s*FILE:\s*([^=`r`n]+?)\s*="
+    ]
+    for pat in patterns {
+        pos := 1
+        while (foundAt := RegExMatch(body, pat, &m, pos)) {
+            name := Trim(m[1])
+            key := StrLower(name)
+            if (name != "" && !seen.Has(key)) {
+                seen[key] := true
+                found.Push(name)
+            }
+            pos := foundAt + m.Len(0)
+        }
+    }
+    return found
+}
+
+; Copied companion pack → catalog hit. Map(fileName, label, run), or "" when unknown.
+; Structure is the FILE section name (FINANCE_DAILY.csv, TASK_TASKS.csv, …).
+; If markers exist but no section parsed, a section filename token is enough.
+ImportMgmt_ClassifyPack(body) {
+    if (body = "")
+        return ""
+    names := ImportMgmt_PackSectionNames(body)
+    for name in names {
+        hit := ImportMgmt_TargetForSection(name)
+        if (IsObject(hit))
+            return hit
+    }
+    if (names.Length || !ClipAngelExport_LooksLikePack(body))
+        return ""
+    lower := StrLower(body)
+    tokens := [
+        ["collectible.json", "collectible"],
+        ["finance_daily.csv", "finance_daily"],
+        ["finance_monthly.csv", "finance_monthly"],
+        ["task_projects.csv", "task_projects"],
+        ["task_tasks.csv", "task_tasks"],
+        ["task_info.csv", "task_info"],
+        ["plan_items.csv", "plan_items"],
+        ["plans.csv", "plans"],
+        ["palace_palaces.csv", "palace_palaces"],
+        ["palace_beasts.csv", "palace_beasts"],
+        ["palace_atoms.csv", "palace_atoms"]
+    ]
+    for pair in tokens {
+        if (InStr(lower, pair[1]))
+            return ImportMgmt_TargetForSection(pair[2])
+    }
+    return ""
+}
+
+; #!+P [I]: clipboard was just copied. Identify the pack and import that system only.
+; Does not fall back to an older Desktop file when this copy is not a known pack.
+ImportMgmt_RunClassifiedClipboard() {
+    errMsg := ""
+    body := ""
+    try body := ClipAngelExport_ClipboardAsPackText(&errMsg)
+    catch {
+        body := ""
+        errMsg := "Clipboard unavailable"
+    }
+    if (body = "") {
+        msg := errMsg != "" ? errMsg : "Clipboard empty"
+        try ShowCenteredOverlay_Utils("❌ " msg, 2500, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", msg)
+        }
+        return false
+    }
+    hit := ImportMgmt_ClassifyPack(body)
+    if (!IsObject(hit)) {
+        try ShowCenteredOverlay_Utils("❌ No import matches this copy", 2800, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", "No import matches this copy")
+        }
+        return false
+    }
+    placeReason := ""
+    placed := false
+    try placed := ImportMgmt_TryPlaceClipboardPack(hit["fileName"], &placeReason)
+    catch {
+        placed := false
+        if (placeReason = "")
+            placeReason := "Could not write pack to Desktop"
+    }
+    if (!placed) {
+        msg := placeReason != "" ? placeReason : "Could not write pack to Desktop"
+        try ShowCenteredOverlay_Utils("❌ " msg, 2800, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", msg)
+        }
+        return false
+    }
+    try ShowCenteredOverlay_Utils("📥 " hit["label"], 1600, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    result := false
+    try result := hit["run"].Call()
+    catch as e {
+        try ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
+        BANNER_ACCENT_ERROR)
+        catch {
+        }
+        result := false
+    }
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
+    return result
+}
+
 ; True when Desktop already has this pack (exact name or baseName*.txt|.csv) on search dirs.
 ImportMgmt_DesktopPackAvailable(fileName) {
     if (fileName = "")
@@ -546,6 +690,7 @@ ImportMgmt_ShowHelp() {
 ImportMgmt_HelpText() {
     return "ENTRY POINTS`r`n"
     . "#!+X  ·  Utility Shortcuts [J]  ·  Win+Alt+Shift+F double-tap`r`n"
+    . "#!+P copy menu [I] copies the companion reply, reads its FILE sections, and runs that import.`r`n"
     . "This hub is the only AHK import UI. Domain apps no longer expose import menus.`r`n`r`n"
     . "LIST KEYS`r`n"
     . "Char = run workflow   Shift+Enter / double-click = run selected   Shift+C = copy pack name`r`n"

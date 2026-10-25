@@ -1,6 +1,124 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 28: PySpark Advanced Operations</strong> · Character: — · 3 beasts · 3 atoms</summary>
+
+_No image_
+
+<p><em>3 beasts · 3 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Df] Dark frog
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Dark frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[spark dot sql method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspark%20dot%20sql%20method%5D&color=9fd4ff" />(magic wand) to <img alt="[parse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bparse%5D&color=ffd966" />(scissors)] [traditional database <img alt="[queries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bqueries%5D&color=ffd966" />(magnifying glass)] [natively against the <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=ffd966" />(box)] [registered as an ephemeral <img alt="[view]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bview%5D&color=ffd966" />(window).] — Note: The target DataFrame must first be explicitly registered within the active session memory.
+
+**Quote**
+“all you have to do to use sql in here explicitly is to do spark.sql and then you would write some query”
+
+### [De] devil
+
+<img src="../../web/assets/beast-thumbs/devil.png" alt="devil" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use a <img alt="[User Defined Function]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BUser%20Defined%20Function%5D&color=9fd4ff" />(blueprint) to <img alt="[execute]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bexecute%5D&color=ffd966" />(lightning bolt)] [proprietary Python <img alt="[logic]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blogic%5D&color=ffd966" />(gears)] [uniformly across the <img alt="[cluster]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcluster%5D&color=ffd966" />(grapes)] [for highly specialized <img alt="[transformations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btransformations%5D&color=ffd966" />(butterfly).] — Note: This strictly demands explicitly importing and defining the exact target return type from the internal SQL types module.
+
+**Quote**
+“we can define whatever function we want and just in normal python i'll call it round float down... we can convert it to spark function or spark udf very easily by just getting a new name for it”
+
+### [Dd] Dark dragon
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Dark dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[groupBy method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BgroupBy%20method%5D&color=9fd4ff" />(fence) to <img alt="[partition]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpartition%5D&color=ffd966" />(glass divider)] [the tabular <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(ledger)] [based on categorical <img alt="[dimensions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdimensions%5D&color=ffd966" />(ruler)] [to establish distinct <img alt="[baselines]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbaselines%5D&color=ffd966" />(chalk line).] — Note: The aggregated results can then be systematically reorganized utilizing the orderBy method.
+
+**Quote**
+“so i'm going to group by what do i want to group by well that's that's how i define the group so i want that to be the class”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>Memory Palace 27: PySpark DataFrame Ingestion & Filtering</strong> · Character: — · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Dc] Dark cat
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/cat.png" alt="Dark cat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[aggregation method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baggregation%20method%5D&color=9fd4ff" />(blender) to <img alt="[synthesize]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsynthesize%5D&color=ffd966" />(potion)] [complex summary <img alt="[statistics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstatistics%5D&color=ffd966" />(abacus)] [across millions of <img alt="[rows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brows%5D&color=ffd966" />(oars)] [using a mapped <img alt="[dictionary]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdictionary%5D&color=ffd966" />(book).] — Note: The keys map to target column names and the values represent string-based instructions for mathematical functions.
+
+**Quote**
+“it's going to take a dictionary where i'm going to pass it keys where the keys are columns and values where they're strings of what we want to do”
+
+### [Db] Dark bird of paradise
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/bird_of_paradise.png" alt="Dark bird of paradise" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[where method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwhere%20method%5D&color=9fd4ff" />(stop sign) to <img alt="[restrict]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brestrict%5D&color=ffd966" />(handcuffs)] [the distributed <img alt="[DataFrame]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%5D&color=ffd966" />(grid)] [to <img alt="[records]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brecords%5D&color=ffd966" />(vinyl record) satisfying] [strict analytical <img alt="[conditions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconditions%5D&color=ffd966" />(thermometer).] — Note: This method operates as an exact syntactic alias for the filter method.
+
+**Quote**
+“titanic df dot where and an alias or the exactly the same thing as filter so it's actually saying filter right there”
+
+### [Da] dalmatian
+
+<img src="../../web/assets/beast-thumbs/dalmatian.png" alt="dalmatian" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[select method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bselect%20method%5D&color=9fd4ff" />(tweezers) to <img alt="[isolate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bisolate%5D&color=ffd966" />(quarantine tent)] [specific target <img alt="[variables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvariables%5D&color=ffd966" />(dials)] [from a complex <img alt="[DataFrame]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%5D&color=ffd966" />(grid)] [to minimize memory <img alt="[overhead]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Boverhead%5D&color=ffd966" />(umbrella)] [for analytical <img alt="[operations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Boperations%5D&color=ffd966" />(scalpel).] — Note: Passing a single asterisk fetches every available column simultaneously.
+
+**Quote**
+“select means grab specific columns and so star means all the columns this is exactly the same thing as just doing titanic df”
+
+### [Cz] Cold Zeus
+
+<img src="../../web/assets/beast-thumbs/adj_cold.png" alt="cold" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/zeus.png" alt="Cold Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[inference parameter]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binference%20parameter%5D&color=9fd4ff" />(magnifying glass) to <img alt="[command]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcommand%5D&color=ffd966" />(megaphone)] [the underlying <img alt="[engine]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bengine%5D&color=ffd966" />(engine block)] [to sample the <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=ffd966" />(box)] [and intelligently <img alt="[assign]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bassign%5D&color=ffd966" />(clipboard)] [appropriate structured <img alt="[types]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btypes%5D&color=ffd966" />(blocks).] — Note: This prevents all columns from defaulting to generic string data types.
+
+**Quote**
+“except now it's inferring schema meaning oh this looks like an integer i'm going to treat it as if it's an integer”
+
+### [Cy] cyborg
+
+<img src="../../web/assets/beast-thumbs/cyborg.png" alt="cyborg" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[PySpark CSV reader]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPySpark%20CSV%20reader%5D&color=9fd4ff" />(book) to <img alt="[instantiate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Binstantiate%5D&color=ffd966" />(wand)] [a distributed <img alt="[DataFrame]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%5D&color=ffd966" />(grid)] [from a remote <img alt="[file]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfile%5D&color=ffd966" />(folder)] [by explicitly <img alt="[assigning]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bassigning%5D&color=ffd966" />(stamp)] [the architectural <img alt="[header]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bheader%5D&color=ffd966" />(hat).] — Note: This lazy operation builds the execution plan without pulling all data into driver memory.
+
+**Quote**
+“spark.read.csv trained.csv so that's the name right there is the first argument that should match this name over here and then header equals true because it does actually have a header”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Memory Palace 26: PySpark SQL Operations</strong> · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 26](images/data-analyst/26.png)

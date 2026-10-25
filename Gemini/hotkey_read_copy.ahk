@@ -141,7 +141,7 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
-; #!+p orchestrator: show destination banner first; copy starts only after user picks P/D/Y/F/R/W/O.
+; #!+p orchestrator: show destination banner first; copy starts only after user picks P/D/Y/F/I/R/W/O.
 ; gen: when non-zero, bail if a newer press superseded this one (double-tap → code).
 HotkeyCopy_RunIntentFlow(isCode := false, gen := 0) {
     global g_HotkeyCopy_StartCopyCb, g_HotkeyCopy_BannerGen
@@ -252,7 +252,7 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
 ; Win+Alt+Shift+P tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS):
 ;   Banner is shown on the first press (message). The 400 ms window does not delay it.
 ;   2× within that window replaces the banner with the code-snippet destination menu.
-; Copy starts only after P/D/Y/F/R/W/O; N/Esc/timeout dismisses without copying.
+; Copy starts only after P/D/Y/F/I/R/W/O; N/Esc/timeout dismisses without copying.
 ; Armed / timer / block live in Utils\clip_angel_export_desktop.ahk (HotkeyCopy_DisarmDoubleTap).
 ; The destination banner registers $*P at input level 10, which swallows the second #!+p.
 ; That press is delivered to HotkeyCopy_OnBannerChordKey instead.

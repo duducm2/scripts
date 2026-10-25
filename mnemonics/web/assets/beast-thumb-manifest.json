@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-10-21",
+    "generated_at": "2026-10-25",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "536 beasts / 174 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 63 beasts with adj"
+    "catalog_scope": "544 beasts / 177 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 68 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -5196,6 +5196,86 @@
       "adjective": "cold",
       "adj_filename": "adj_cold.png",
       "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_27_Cy": {
+      "label": "cyborg",
+      "peg_code": "Cy",
+      "filename": "cyborg.png",
+      "url": "/assets/beast-thumbs/cyborg.png",
+      "source_slug": "cyborg",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_27_Cz": {
+      "label": "Cold Zeus",
+      "peg_code": "Cz",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus",
+      "adjective": "cold",
+      "adj_filename": "adj_cold.png",
+      "adj_url": "/assets/beast-thumbs/adj_cold.png"
+    },
+    "BEAST_DATAANALYST_27_Da": {
+      "label": "dalmatian",
+      "peg_code": "Da",
+      "filename": "dalmatian.png",
+      "url": "/assets/beast-thumbs/dalmatian.png",
+      "source_slug": "dalmatian",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_27_Db": {
+      "label": "Dark bird of paradise",
+      "peg_code": "Db",
+      "filename": "bird_of_paradise.png",
+      "url": "/assets/beast-thumbs/bird_of_paradise.png",
+      "source_slug": "bird_of_paradise",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_27_Dc": {
+      "label": "Dark cat",
+      "peg_code": "Dc",
+      "filename": "cat.png",
+      "url": "/assets/beast-thumbs/cat.png",
+      "source_slug": "cat",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_28_Dd": {
+      "label": "Dark dragon",
+      "peg_code": "Dd",
+      "filename": "dragon.png",
+      "url": "/assets/beast-thumbs/dragon.png",
+      "source_slug": "dragon",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_28_De": {
+      "label": "devil",
+      "peg_code": "De",
+      "filename": "devil.png",
+      "url": "/assets/beast-thumbs/devil.png",
+      "source_slug": "devil",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_28_Df": {
+      "label": "Dark frog",
+      "peg_code": "Df",
+      "filename": "frog.png",
+      "url": "/assets/beast-thumbs/frog.png",
+      "source_slug": "frog",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
     }
   }
 }
