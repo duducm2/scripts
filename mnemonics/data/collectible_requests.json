@@ -1,11 +1,10 @@
 {
   "pending_slot": "trophy",
-  "pending_palace_id": "PALACE_DATAANALYST_25",
+  "pending_palace_id": "PALACE_DATAANALYST_27",
   "cycle": [
     "trophy"
   ],
   "recent_looks": [
-    "a stop-motion puppet",
     "a knitted charm",
     "a woodcut print",
     "an origami model",
@@ -16,6 +15,7 @@
     "a cast bronze miniature",
     "an enamel badge",
     "a shadow puppet",
-    "a risograph print"
+    "a risograph print",
+    "a linocut"
   ]
 }

@@ -1,23 +1,13 @@
 # Data Analyst
 
 <details open>
-<summary><strong>Memory Palace 28: PySpark Advanced Operations</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Memory Palace 28: PySpark Advanced Operations</strong> · Character: — · 2 beasts · 2 atoms</summary>
 
 _No image_
 
-<p><em>3 beasts · 3 Knowledge Atoms</em></p>
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
-
-### [Df] Dark frog
-
-<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Dark frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
-
-**Concept**
-💡 [I use the <img alt="[spark dot sql method]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bspark%20dot%20sql%20method%5D&color=9fd4ff" />(magic wand) to <img alt="[parse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bparse%5D&color=ffd966" />(scissors)] [traditional database <img alt="[queries]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bqueries%5D&color=ffd966" />(magnifying glass)] [natively against the <img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=ffd966" />(box)] [registered as an ephemeral <img alt="[view]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bview%5D&color=ffd966" />(window).] — Note: The target DataFrame must first be explicitly registered within the active session memory.
-
-**Quote**
-“all you have to do to use sql in here explicitly is to do spark.sql and then you would write some query”
 
 ### [De] devil
 

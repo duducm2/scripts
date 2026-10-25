@@ -7,7 +7,7 @@
 
 ; =============================================================================
 ; GeminiDelayedSubmitMonitor – background completion monitor for Ctrl+Alt+Win+L
-; Reuses #!+8 completion detection; on completion shows "Copy? [N] [R]" with 4s timeout (N = no copy, R = copy + read aloud).
+; Reuses #!+8 completion detection; on completion shows "Copy response?" (Y copy, N no, I import, R read, F favorite).
 ; =============================================================================
 class GeminiDelayedSubmitMonitor {
     __New() {
@@ -61,11 +61,11 @@ class GeminiDelayedSubmitMonitor {
         this.CopyBannerShownForThisResponse := true
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
-        copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
-        .Bind(this), "F", this.CopyAndFavorite.Bind(this))
+        copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "I", this.CopyAndImport
+        .Bind(this), "R", this.CopyAndReadAloud.Bind(this), "F", this.CopyAndFavorite.Bind(this))
         StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, 0, this.DoCopyOnTimeout
-            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [F] Copy+Favorite",
+            .Bind(this), BANNER_ACCENT_INTERMEDIATE, 760, 17, "", false,
+            "[Y] Copy  [N] No  [I] Import  [R] Copy+Read  [F] Copy+Favorite",
             true)
     }
 
@@ -93,13 +93,13 @@ class GeminiDelayedSubmitMonitor {
 
     DoCopyCore(readAloud := false, skipRestoreFocus := false) {
         if (this.HasCopiedForThisResponse)
-            return
+            return false
         this.HasCopiedForThisResponse := true
         GeminiState.Invalidate()
         if !WinExist("ahk_id " this.GeminiHwnd) {
             if (WinExist("ahk_id " this.OriginalHwnd))
                 WinActivate("ahk_id " this.OriginalHwnd)
-            return
+            return false
         }
         ; If Gemini is not active when the monitor fires, activate it now.
         if !WinActive("ahk_id " this.GeminiHwnd) {
@@ -108,17 +108,19 @@ class GeminiDelayedSubmitMonitor {
             } catch {
                 if (WinExist("ahk_id " this.OriginalHwnd))
                     WinActivate("ahk_id " this.OriginalHwnd)
-                return
+                return false
             }
             if !WinWaitActive("ahk_exe chrome.exe", , 0.5) {
                 if (WinExist("ahk_id " this.OriginalHwnd))
                     WinActivate("ahk_id " this.OriginalHwnd)
-                return
+                return false
             }
         }
         copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        copied := false
         if CopyLastGeminiMessageWithRetry(copyOpt, this.GeminiHwnd) {
             PlayCopyCompletedChime()
+            copied := true
         }
         if (readAloud) {
             GeminiTriggerReadAloud(false, false, { originalHwnd: this.OriginalHwnd, geminiHwnd: this.GeminiHwnd,
@@ -134,6 +136,7 @@ class GeminiDelayedSubmitMonitor {
             if (!WinActive("ahk_id " this.OriginalHwnd))
                 WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
         }
+        return copied
     }
 
     DoCopyOnTimeout(*) {
@@ -160,6 +163,22 @@ class GeminiDelayedSubmitMonitor {
             return
         }
         MarkLastClipAsFavorite("first", true)
+    }
+
+    ; I key: copy the reply, then run the import whose FILE sections match that text.
+    CopyAndImport(*) {
+        this.CleanupCopyBanner()
+        if (!this.DoCopyCore(false)) {
+            ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
+            if (WinExist("ahk_id " this.OriginalHwnd))
+                WinActivate("ahk_id " this.OriginalHwnd)
+            return
+        }
+        try ImportMgmt_RunClassifiedClipboard()
+        catch as e {
+            ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
+            BANNER_ACCENT_ERROR)
+        }
     }
 }
 
