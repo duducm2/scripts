@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from data_aggregator import load_all
+from beast_thumb_base import decorate_beast_thumbs
 from plan_csv import load_plan_tables, next_id, save_plan_tables
 from schemas import (
     ATOMS_HEADERS,
@@ -412,7 +413,7 @@ class PalaceStore:
             "palaces": palaces,
             "palace_images": [],
             "study_images": [],
-            "beasts": beasts,
+            "beasts": decorate_beast_thumbs(beasts),
             "atoms": atoms,
             "plans": [],
             "plan_items": [],
@@ -444,7 +445,7 @@ class PalaceStore:
             "palaces": data["palaces"],
             "palace_images": data.get("palace_images", []),
             "study_images": data.get("study_images", []),
-            "beasts": data["beasts"],
+            "beasts": decorate_beast_thumbs(data["beasts"]),
             "atoms": data["atoms"],
             "plans": data["plans"],
             "plan_items": data["plan_items"] if heavy else [],

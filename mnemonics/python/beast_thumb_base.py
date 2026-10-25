@@ -41,9 +41,7 @@ def load_bestiary() -> dict:
     items = data.get("items") or []
     by_code = {it["code"]: it for it in items if it.get("code")}
     az_by_letter = {
-        it["code"].upper(): it["name"]
-        for it in items
-        if len(it.get("code") or "") == 1
+        it["code"].upper(): it["name"] for it in items if len(it.get("code") or "") == 1
     }
     az_name_to_slug = {name.lower(): slug(name) for name in az_by_letter.values()}
     custom_adjectives: set[str] = set()
@@ -334,3 +332,27 @@ def beast_thumb_md_image(
         parts.append(_md_img_tag(adj_src, adj, width))
     parts.append(_md_img_tag(beast_src, label, width))
     return "".join(parts)
+
+
+def decorate_beast_thumbs(beasts: list[dict]) -> list[dict]:
+    """Copy beast rows and attach icon URLs from peg + name.
+
+    Computed at read time so a palace import shows icons without waiting on
+    beast-thumb-manifest.json. URLs are omitted when the PNG is not on disk.
+    Stored CSV rows are not modified.
+    """
+    out: list[dict] = []
+    for beast in beasts:
+        row = dict(beast)
+        label = short_label(str(beast.get("beast_name") or ""))
+        peg = str(beast.get("peg_code") or "").strip()
+        source = str(beast.get("beast_source") or "").strip() or None
+        slug_name = canonical_slug(label, code=peg or None, source=source)
+        if thumb_png_path(slug_name).is_file():
+            row["thumb_url"] = f"/assets/beast-thumbs/{slug_name}.png"
+        else:
+            row["thumb_url"] = ""
+        adj = icon_adj_fields(label, code=peg or None, source=source)
+        row["adj_thumb_url"] = adj.get("adj_url") or ""
+        out.append(row)
+    return out

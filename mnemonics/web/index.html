@@ -1393,6 +1393,8 @@
         imagesFsId: "",
         beastThumbManifest: null,
         beastThumbManifestPromise: null,
+        bestiaryThumbMap: null,
+        bestiaryThumbMapPromise: null,
       };
 
       function invalidateDataIndex() {
@@ -2384,7 +2386,8 @@
         if (state.beastThumbManifestPromise)
           return state.beastThumbManifestPromise;
         state.beastThumbManifestPromise = fetch(
-          "/assets/beast-thumb-manifest.json?v=recallthumbs",
+          "/assets/beast-thumb-manifest.json?v=peg",
+          { cache: "no-store" },
         )
           .then((r) => (r.ok ? r.json() : null))
           .then((m) => {
@@ -2399,23 +2402,65 @@
         return state.beastThumbManifestPromise;
       }
 
+      function loadBestiaryThumbMap() {
+        if (state.bestiaryThumbMap)
+          return Promise.resolve(state.bestiaryThumbMap);
+        if (state.bestiaryThumbMapPromise) return state.bestiaryThumbMapPromise;
+        state.bestiaryThumbMapPromise = fetch(
+          "/assets/bestiary-thumb-map.json?v=peg",
+          { cache: "no-store" },
+        )
+          .then((r) => (r.ok ? r.json() : null))
+          .then((m) => {
+            state.bestiaryThumbMap =
+              m && typeof m === "object" ? m : { by_code: {} };
+            return state.bestiaryThumbMap;
+          })
+          .catch(() => {
+            state.bestiaryThumbMap = { by_code: {} };
+            return state.bestiaryThumbMap;
+          });
+        return state.bestiaryThumbMapPromise;
+      }
+
+      function reloadBeastThumbs() {
+        state.beastThumbManifest = null;
+        state.beastThumbManifestPromise = null;
+        state.bestiaryThumbMap = null;
+        state.bestiaryThumbMapPromise = null;
+        return Promise.all([loadBeastThumbManifest(), loadBestiaryThumbMap()]);
+      }
+
       function beastThumbUrl(beastId) {
-        const icons = state.beastThumbManifest?.icons;
-        if (!icons || !beastId) return "";
-        const entry = icons[beastId];
-        return entry?.url || "";
+        return beastThumbPair(beastId).beast;
       }
 
       /** @returns {{ beast: string, adj: string }} URLs; adj empty when no modifier. */
-      function beastThumbPair(beastId) {
-        const icons = state.beastThumbManifest?.icons;
-        if (!icons || !beastId) return { beast: "", adj: "" };
-        const entry = icons[beastId];
-        if (!entry) return { beast: "", adj: "" };
-        return {
-          beast: entry.url || "",
-          adj: entry.adj_url || "",
-        };
+      function beastThumbPair(beast) {
+        const id = beast && typeof beast === "object" ? beast.id : beast;
+        const peg =
+          beast && typeof beast === "object"
+            ? String(beast.peg_code || "").trim()
+            : "";
+        const fromApi =
+          beast && typeof beast === "object"
+            ? String(beast.thumb_url || "").trim()
+            : "";
+        if (fromApi) {
+          return {
+            beast: fromApi,
+            adj: String(beast.adj_thumb_url || "").trim(),
+          };
+        }
+        const fromId = id ? state.beastThumbManifest?.icons?.[id] : null;
+        if (fromId?.url) {
+          return { beast: fromId.url || "", adj: fromId.adj_url || "" };
+        }
+        const fromPeg = peg ? state.bestiaryThumbMap?.by_code?.[peg] : null;
+        if (fromPeg?.url) {
+          return { beast: fromPeg.url || "", adj: fromPeg.adj_url || "" };
+        }
+        return { beast: "", adj: "" };
       }
 
       function beastThumbPairHtml(beastId, { imgClass, size }) {
@@ -2489,7 +2534,7 @@
                 if (peg) bodyParts.push(`[${esc(peg)}]`);
                 if (name) bodyParts.push(esc(name));
                 if (conceptHtml) bodyParts.push(conceptHtml);
-                const thumbHtml = beastThumbPairHtml(b.id, {
+                const thumbHtml = beastThumbPairHtml(b, {
                   imgClass: "qr-thumb",
                   size: 28,
                 });
@@ -2888,6 +2933,13 @@
         render();
         // Keep Quick Recall list current if the picker is open (e.g. soft refresh
         // after an AHK pack import while the SPA was already running).
+        // Refetch thumbs too: a manifest loaded before the import has no new beast ids.
+        reloadBeastThumbs()
+          .then(() => {
+            paintOpenPalaceAtoms();
+            if (studyModalIsOpen()) renderQuickRecall();
+          })
+          .catch(() => {});
         if (studyModalIsOpen()) renderQuickRecall();
         if (opts.links) refreshLinkStatus().catch(() => {});
       }
@@ -3373,7 +3425,7 @@
             const notesHtml = notes
               ? `<div class="field"><span class="lbl">Notes</span><p>${esc(notes)}</p></div>`
               : "";
-            const thumbHtml = beastThumbPairHtml(b.id, {
+            const thumbHtml = beastThumbPairHtml(b, {
               imgClass: "beast-thumb",
               size: 44,
             });
@@ -3392,6 +3444,26 @@
           </section>`;
           })
           .join("");
+      }
+
+      function paintOpenPalaceAtoms() {
+        const id = state.overlayPalaceId;
+        const overlay = document.getElementById("overlay");
+        const ovAtoms = document.getElementById("ovAtoms");
+        if (!id || !overlay || !ovAtoms) return;
+        ovAtoms.innerHTML = renderPalaceAtoms(id);
+        const beastN = ovAtoms.querySelectorAll(
+          ":scope > .beast-cluster",
+        ).length;
+        if (beastN) {
+          ovAtoms.dataset.beastCount = String(beastN);
+          overlay.dataset.beastCount = String(beastN);
+        } else {
+          delete ovAtoms.dataset.beastCount;
+          delete overlay.dataset.beastCount;
+        }
+        bindStoryReductionDrag();
+        bindAtomQuestionDrag();
       }
 
       function openPalace(id) {
@@ -3425,24 +3497,8 @@
         const hasPrompt = !!(p.image_prompt || "").trim();
         btnCopy.disabled = !hasPrompt;
         btnCopy.onclick = () => copyImageComposePrompt(p.image_prompt, btnCopy);
-        const paintAtoms = () => {
-          document.getElementById("ovAtoms").innerHTML = renderPalaceAtoms(id);
-          const ovAtoms = document.getElementById("ovAtoms");
-          const beastN = ovAtoms.querySelectorAll(
-            ":scope > .beast-cluster",
-          ).length;
-          if (beastN) {
-            ovAtoms.dataset.beastCount = String(beastN);
-            overlay.dataset.beastCount = String(beastN);
-          } else {
-            delete ovAtoms.dataset.beastCount;
-            delete overlay.dataset.beastCount;
-          }
-          bindStoryReductionDrag();
-          bindAtomQuestionDrag();
-        };
-        paintAtoms();
-        loadBeastThumbManifest().then(paintAtoms);
+        paintOpenPalaceAtoms();
+        reloadBeastThumbs().then(paintOpenPalaceAtoms);
         document.getElementById("ovNotesInput").value = p.palace_notes || "";
         setNotesStatus("", "");
         renderGalleryGrid(id);

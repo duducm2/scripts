@@ -1935,9 +1935,13 @@ Palace_ImportMnemonicsFromDesktop(*) {
         if (!Palace_PushPracticeMdLink(syncIds))
             Palace_Notify("Practice study link was not updated", 2800, BANNER_ACCENT_ERROR)
     }
-    ; SPA thumbs are keyed by beast id — rebuild before {F5} so new Custom beasts get icons.
-    if (nBeasts || nExcluded)
-        Palace_RebuildBeastThumbManifest()
+    ; SPA thumbs are keyed by beast id in the JSON catalog, and also computed
+    ; from peg + name on each /api/state read. Rebuild before {F5} so a reload
+    ; still matches new ids if the page is on an older script.
+    if (nBeasts || nExcluded) {
+        if (!Palace_RebuildBeastThumbManifest())
+            Palace_Notify("Beast icon catalog was not rebuilt", 2800, BANNER_ACCENT_ERROR)
+    }
     doneMsg := "Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)"
     if (nExcluded)
         doneMsg .= ", deleted " . nExcluded . " palace(s)"

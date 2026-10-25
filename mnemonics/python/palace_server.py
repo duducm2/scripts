@@ -868,6 +868,17 @@ class PalaceHandler(BaseHTTPRequestHandler):
                                 ctype = "image/svg+xml"
                             elif suf == ".json":
                                 ctype = "application/json; charset=utf-8"
+                                if rel in (
+                                    "assets/beast-thumb-manifest.json",
+                                    "assets/bestiary-thumb-map.json",
+                                ):
+                                    self._bytes(
+                                        200,
+                                        asset.read_bytes(),
+                                        ctype,
+                                        "no-cache",
+                                    )
+                                    return
                             elif suf == ".png":
                                 ctype = "image/png"
                             elif suf in (".jpg", ".jpeg"):
