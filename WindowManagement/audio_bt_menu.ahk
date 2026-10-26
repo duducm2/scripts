@@ -5,7 +5,7 @@
 ;   2× Bluetooth audio / Windows sound devices menu
 ;   hold 700ms+ AI Quick Download (name pick → click sequences → Desktop wait → rename → cut)
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
-; While the menu is open: Shift+O Common, Shift+P Full PC, Shift+H Headphones.
+; While the menu is open: Shift+O Common, Shift+P Full PC, Shift+H Headphones, Shift+A disconnect all Bluetooth.
 ; Each profile isolates one input and one output together (output first, then input).
 ; Device lists: M marks a custom emoji label (persisted in assets\data\audio_bt_emoji.ini).
 ; Loaded via #include into the WindowManagement.ahk process.
@@ -55,23 +55,26 @@ AudioBt_HelpRows() {
                                             command: "Enable", meaning: "Enable/unblock it." }, { key: "Shift+C",
                                                 command: "Connect",
                                                 meaning: "Connect a paired Bluetooth audio device (A2DP/HFP). Disconnects other connected Bluetooth audio first so this one can own the radio link." }, { key: "Shift+X",
-                                                    command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "Shift+I",
-                                                        command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "Shift+O",
-                                                            command: "Common", meaning: "Profile. Input Maono PD200X and output Office, on the personal PC and the work laptop. Isolates output first (connects Office and drops other Bluetooth audio), then isolates the mic." }, { key: "Shift+P",
-                                                                command: "Full PC", meaning: "Profile. Built-in devices only. Personal PC: Realtek mic (Grupo de microfones) and Realtek speakers (Alto-falantes). Work laptop: integrated mic (Microphone Array / Intel Smart Sound, or the input marked 💻) and integrated speakers (Speakers / Realtek, or the output marked 💻)." }, { key: "Shift+H",
-                                                                    command: "Headphones", meaning: "Profile. Input Maono PD200X and output JBL Live 460NC headphones (not the hands-free or headset endpoint). Works from any page of this menu. Plain H still opens Help." }, { key: "Shift+R",
-                                                            command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "a-z",
-                                                                command: "Jump", meaning: "Select the next row whose first word starts with that letter." }, { key: "Shift+N",
-                                                                    command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Shift+M",
-                                                                        command: "Mark", meaning: "Set or clear a custom emoji label for the selected device (saved across sessions). Empty input clears." }, { key: "Enter",
-                                                                            command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Shift+U",
-                                                                                command: "Restore", meaning: "In the Ignored list, same as Enter — restore the selected row." }, { key: "Esc",
-                                                                                    command: "Back", meaning: "Back to the root menu." }
+                                                    command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "Shift+A",
+                                                        command: "Disconnect all", meaning: "Disconnect every connected device on the Bluetooth list (the first menu item) in one step. Skips ignored devices and does not unpair." }, { key: "Shift+I",
+                                                            command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "Shift+O",
+                                                                command: "Common", meaning: "Profile. Input Maono PD200X and output Office, on the personal PC and the work laptop. Isolates output first (connects Office and drops other Bluetooth audio), then isolates the mic." }, { key: "Shift+P",
+                                                                    command: "Full PC", meaning: "Profile. Built-in devices only. Personal PC: Realtek mic (Grupo de microfones) and Realtek speakers (Alto-falantes). Work laptop: integrated mic (Microphone Array / Intel Smart Sound, or the input marked 💻) and integrated speakers (Speakers / Realtek, or the output marked 💻)." }, { key: "Shift+H",
+                                                                        command: "Headphones", meaning: "Profile. Input Maono PD200X and output JBL Live 460NC headphones (not the hands-free or headset endpoint). Works from any page of this menu. Plain H still opens Help." }, { key: "Shift+R",
+                                                                            command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "a-z",
+                                                                                command: "Jump", meaning: "Select the next row whose first word starts with that letter." }, { key: "Shift+N",
+                                                                                    command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Shift+M",
+                                                                                        command: "Mark", meaning: "Set or clear a custom emoji label for the selected device (saved across sessions). Empty input clears." }, { key: "Enter",
+                                                                                            command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Shift+U",
+                                                                                                command: "Restore",
+                                                                                                meaning: "In the Ignored list, same as Enter — restore the selected row." }, { key: "Esc",
+                                                                                                    command: "Back",
+                                                                                                    meaning: "Back to the root menu." }
     ]
 }
 
 AudioBt_ProfileHint() {
-    return "Shift+O Common   Shift+P Full PC   Shift+H Headphones"
+    return "Shift+O Common   Shift+P Full PC   Shift+H Headphones   Shift+A all Bluetooth off"
 }
 
 AudioBt_HintText() {
@@ -83,7 +86,8 @@ AudioBt_HintText() {
         return "Esc back   " . profiles
     if (g_AudioBtMode = "ignore")
         return "Enter restore   letter jump   Shift+M mark   Shift+U restore   Esc back   " . profiles
-    return "1-9/0 select   letter jump   Enter default   Shift+C/X connect/disconnect   Shift+D/E disable/enable   Shift+I isolate   Shift+N ignore   Shift+M mark   Shift+R refresh   Esc back   " . profiles
+    return "1-9/0 select   letter jump   Enter default   Shift+C/X connect/disconnect   Shift+D/E disable/enable   Shift+I isolate   Shift+N ignore   Shift+M mark   Shift+R refresh   Esc back   " .
+    profiles
 }
 
 AudioBt_ModeTitle() {
@@ -646,6 +650,7 @@ AudioBt_BindModalHotkeys() {
     }
     for prof in AudioBt_ProfileDefs()
         AudioBt_BindOne(prof.key, AudioBt_OnProfile.Bind(prof.key))
+    AudioBt_BindOne("+a", AudioBt_OnDisconnectAll)
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
 
     try HotIf()
@@ -1598,6 +1603,78 @@ AudioBt_OnDisconnect(*) {
     AudioBt_DoAction("disconnect", true)
 }
 
+; Connected rows on the Bluetooth list (menu item 1). Ignored devices stay hidden and are left alone.
+; "Disconnected" contains the letters of "Connected", so that word has to be excluded first.
+AudioBt_BtListRowIsConnected(row) {
+    if (!IsObject(row) || row.kind != "BT")
+        return false
+    if AudioBt_IsIgnored(row.id, row.kind)
+        return false
+    if InStr(row.state, "Disconnected")
+        return false
+    return InStr(row.state, "Connected")
+}
+
+AudioBt_JoinNames(names) {
+    text := ""
+    for name in names
+        text .= (text = "" ? "" : ", ") . name
+    return text
+}
+
+AudioBt_OnDisconnectAll(*) {
+    global g_AudioBtActive, g_AudioBtBusy, g_AudioBtAllRows
+    if (!g_AudioBtActive || g_AudioBtBusy)
+        return
+    g_AudioBtBusy := true
+    dropped := []
+    failed := []
+    try {
+        AudioBt_BusyShow("⏳ Disconnecting Bluetooth audio…")
+        if (!AudioBt_FetchAll(false)) {
+            ShowNotification_WM("❌ Could not list Bluetooth devices")
+            return
+        }
+        g_AudioBtBusy := true
+        targets := []
+        for row in g_AudioBtAllRows {
+            if AudioBt_BtListRowIsConnected(row)
+                targets.Push(row)
+        }
+        if (targets.Length = 0) {
+            ShowNotification_WM("No connected Bluetooth audio devices")
+            return
+        }
+        for row in targets {
+            AudioBt_BusyShow("⏳ Disconnecting " . row.name . "…")
+            result := AudioBt_Run("disconnect", row.id)
+            if (IsObject(result) && result.ok)
+                dropped.Push(row.name)
+            else
+                failed.Push(row.name)
+        }
+        if (failed.Length > 0) {
+            AudioBt_FetchAll(false)
+            AudioBt_ProfileRefreshUi()
+        }
+    } catch Error as err {
+        ShowNotification_WM("❌ Disconnect all: " . err.Message)
+        return
+    } finally {
+        g_AudioBtBusy := false
+        AudioBt_BusyHide()
+        if (g_AudioBtActive)
+            AudioBt_RefocusLv()
+    }
+    if (failed.Length = 0 && dropped.Length > 0) {
+        ShowCenteredOverlay_Utils("✅ Disconnected " . AudioBt_JoinNames(dropped), 1800, BANNER_ACCENT_SUCCESS)
+        AudioBt_Cleanup()
+    } else if (dropped.Length = 0)
+        ShowNotification_WM("❌ Could not disconnect " . AudioBt_JoinNames(failed))
+    else
+        ShowNotification_WM("Disconnected " . AudioBt_JoinNames(dropped) . ". Failed: " . AudioBt_JoinNames(failed))
+}
+
 AudioBt_OnIsolate(*) {
     AudioBt_DoAction("isolate")
 }
@@ -1642,15 +1719,13 @@ AudioBt_ProfileDefs() {
             avoid: ["Fones", "Headphones", "Headset", "PD200X", "JBL", "Office", "NVIDIA", "Display Audio",
                 "Hands-Free", "Handsfree", "AUX"] }
     }
-    return [
-        { key: "+o", label: "Common", input: pd200x,
-            output: { kind: "Out", needles: ["Office"], prefer: ["Headphones", "Fones", "Alto-falante"],
-                avoid: avoidBtJunk, fallbackBt: ["Office"] } },
-        { key: "+p", label: "Full PC", input: pcIn, output: pcOut },
-        { key: "+h", label: "Headphones", input: pd200x,
-            output: { kind: "Out", needles: ["JBL"],
-                prefer: ["Fones de ouvido", "Headphones", "LIVE460", "LIVE 460"],
-                avoid: avoidBtJunk, fallbackBt: ["JBL LIVE460NC", "JBL LIVE 460", "JBL"] } }
+    return [{ key: "+o", label: "Common", input: pd200x,
+        output: { kind: "Out", needles: ["Office"], prefer: ["Headphones", "Fones", "Alto-falante"],
+            avoid: avoidBtJunk, fallbackBt: ["Office"] } }, { key: "+p", label: "Full PC", input: pcIn, output: pcOut }, { key: "+h",
+                label: "Headphones", input: pd200x,
+                output: { kind: "Out", needles: ["JBL"],
+                    prefer: ["Fones de ouvido", "Headphones", "LIVE460", "LIVE 460"],
+                    avoid: avoidBtJunk, fallbackBt: ["JBL LIVE460NC", "JBL LIVE 460", "JBL"] } }
     ]
 }
 
@@ -1695,7 +1770,7 @@ AudioBt_NameLooksIntegrated(row) {
     if (row.kind = "In") {
         hasMic := InStr(name, "Microfone") || InStr(name, "Microphone")
         hasChip := InStr(name, "Realtek") || InStr(name, "Smart Sound") || InStr(name, "Microphone Array")
-            || InStr(name, "Intel")
+        || InStr(name, "Intel")
         return hasMic && hasChip
     }
     if (row.kind = "Out") {
