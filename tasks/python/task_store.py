@@ -450,6 +450,43 @@ class TaskStore:
         self.migrate_info_point_columns()
         self.migrate_project_columns()
         (self.attach_dir / "icons").mkdir(parents=True, exist_ok=True)
+        self.ensure_notes_projects()
+
+    def ensure_notes_projects(self) -> list[dict]:
+        """Work, Personal, and Habits each keep a Notes project."""
+        rows = self.load("projects")
+        have = {
+            (r.get("filter") or "").strip().lower()
+            for r in rows
+            if (r.get("title") or "").strip().lower() == "notes"
+            and (r.get("active") or "1") != "0"
+        }
+        created: list[dict] = []
+        for filt in ("work", "personal", "habits"):
+            if filt in have:
+                continue
+            row = {
+                "id": next_id("PROJ_", rows),
+                "title": "Notes",
+                "filter": filt,
+                "section_path": "",
+                "sort_order": "999999",
+                "active": "1",
+                "created_at": now_stamp(),
+                "icon_ref": "",
+                "icon_color": "#ffffff",
+                "icon_tint": "0",
+                "status": "",
+            }
+            rows.append(row)
+            created.append(row)
+        if not created:
+            return []
+        self.save("projects", rows)
+        for row in created:
+            self.ensure_general_section(row["id"])
+            self.write_project_json(row["id"])
+        return created
 
     def migrate_sections(self) -> None:
         """Ensure General per project; backfill task.section_id from section_path."""

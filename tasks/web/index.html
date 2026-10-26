@@ -171,6 +171,14 @@
         vertical-align: middle;
         border: none;
       }
+      .proj-icon.proj-icon-pen {
+        width: 20px;
+        height: 20px;
+        color: #e4d2a8;
+      }
+      .project.is-notes > summary {
+        cursor: default;
+      }
       .proj-icon.proj-icon-tint {
         background: var(--icon-color, #ffffff);
         -webkit-mask-size: contain;
@@ -2068,7 +2076,38 @@
           return t === "1" || t === "true" || t === "yes";
         }
 
+        function isNotesProject(p) {
+          return (
+            String(p?.title || "")
+              .trim()
+              .toLowerCase() === "notes"
+          );
+        }
+
+        function notesPenHtml() {
+          return `<svg class="proj-icon proj-icon-pen" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm14.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+        }
+
+        function notesStayClosed(proj) {
+          return (
+            !!proj?.classList?.contains("is-notes") &&
+            !proj.closest("#sec-project-focus")
+          );
+        }
+
+        function sealNotesProjects() {
+          document
+            .querySelectorAll("details.project.is-notes")
+            .forEach((proj) => {
+              if (!notesStayClosed(proj)) return;
+              if (proj.open) proj.open = false;
+              const id = proj.getAttribute("data-id");
+              if (id) state.collapsedProjects.add(id);
+            });
+        }
+
         function projectIconHtml(project) {
+          if (isNotesProject(project)) return notesPenHtml();
           const src = projectIconSrc(project);
           if (!src) return "";
           if (!projectIconTint(project)) {
@@ -2756,7 +2795,11 @@
         }
 
         function projectsFor(filt) {
-          return dataIndex().projectsByFilter.get(filt) || [];
+          const list = (dataIndex().projectsByFilter.get(filt) || []).slice();
+          list.sort(
+            (a, b) => (isNotesProject(a) ? 1 : 0) - (isNotesProject(b) ? 1 : 0),
+          );
+          return list;
         }
 
         function openTasksFor(filt) {
@@ -3180,12 +3223,18 @@
             const allPts = byProj.get(p.id) || [];
             const plan = projectLayoutPlan(p, allPts);
             const pThumbs = thumbsHtml("project", p.id);
-            const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
+            const notes = isNotesProject(p);
+            const openAttr =
+              notes || state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
             const iconHtml = projectIconHtml(p);
             const waitClass = isWaitingRow(p) ? " is-waiting" : "";
-            blocks.push(`<details class="project${waitClass}"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
+            const notesClass = notes ? " is-notes" : "";
+            const notesTitle = notes
+              ? ` title="Notes stay closed here. Shift+Z opens them"`
+              : "";
+            blocks.push(`<details class="project${waitClass}${notesClass}"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+        <summary${notesTitle}>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
@@ -3232,17 +3281,26 @@
                 Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
                 a.title.localeCompare(b.title),
             );
+          projects.sort(
+            (a, b) => (isNotesProject(a) ? 1 : 0) - (isNotesProject(b) ? 1 : 0),
+          );
           const blocks = [];
           for (const p of projects) {
             const allPts = byProj.get(p.id) || [];
             const plan = projectLayoutPlan(p, allPts);
             const pThumbs = thumbsHtml("project", p.id);
-            const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
+            const notes = isNotesProject(p);
+            const openAttr =
+              notes || state.collapsedProjects.has(p.id) ? "" : " open";
             const ageBadge = projectAgeBadgeHtml(p.id);
             const iconHtml = projectIconHtml(p);
             const waitClass = isWaitingRow(p) ? " is-waiting" : "";
-            blocks.push(`<details class="project${waitClass}"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
+            const notesClass = notes ? " is-notes" : "";
+            const notesTitle = notes
+              ? ` title="Notes stay closed here. Shift+Z opens them"`
+              : "";
+            blocks.push(`<details class="project${waitClass}${notesClass}"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+        <summary${notesTitle}>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="habits">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
@@ -3286,8 +3344,9 @@
           const ageBadge = projectAgeBadgeHtml(p.id);
           const iconHtml = projectIconHtml(p);
           const waitClass = isWaitingRow(p) ? " is-waiting" : "";
+          const notesClass = isNotesProject(p) ? " is-notes" : "";
           return `<section class="column panel project-focus" id="sec-project-focus">
-      <details class="project${waitClass}" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+      <details class="project${waitClass}${notesClass}" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
@@ -4657,11 +4716,13 @@
               state.collapsedProjects.clear();
               state.collapsedSections.clear();
               nodes.forEach((n) => {
+                if (n.classList.contains("is-notes")) return;
                 n.open = true;
               });
               document
                 .querySelectorAll(".task-section.collapsed")
                 .forEach((s) => s.classList.remove("collapsed"));
+              sealNotesProjects();
               invalidateNavCache();
             } else {
               nodes.forEach((n) => {
@@ -5981,7 +6042,7 @@
               ".task:not(.emoji-hidden)",
             ).length;
             proj.classList.toggle("emoji-hidden", visible === 0);
-            if (visible > 0) proj.open = true;
+            if (visible > 0 && !notesStayClosed(proj)) proj.open = true;
           });
           document.querySelectorAll(".task-section").forEach((sec) => {
             if (!filtering) {
@@ -6001,6 +6062,7 @@
         function revealEmojiMatches() {
           document.querySelectorAll("details.project").forEach((proj) => {
             if (!proj.querySelector(".task:not(.emoji-hidden)")) return;
+            if (notesStayClosed(proj)) return;
             proj.open = true;
             const id = proj.getAttribute("data-id");
             if (id) state.collapsedProjects.delete(id);
@@ -6657,7 +6719,7 @@
           }
           sec.classList.remove("collapsed");
           const proj = sec.closest("details.project");
-          if (proj) proj.open = true;
+          if (proj && !notesStayClosed(proj)) proj.open = true;
           let ul = sec.querySelector(":scope > .task-list");
           if (!ul) {
             ul = document.createElement("ul");
@@ -6685,7 +6747,7 @@
             renderDashboard();
             return;
           }
-          proj.open = true;
+          if (!notesStayClosed(proj)) proj.open = true;
           proj.insertAdjacentHTML(
             "beforeend",
             inlineSectionHtml(ctx.project_id),
@@ -6743,6 +6805,16 @@
           }
           if (!ctx.project_id) {
             toast("No project available");
+            return;
+          }
+          const notesRow = (state.data?.projects || []).find(
+            (p) => p.id === ctx.project_id,
+          );
+          if (
+            isNotesProject(notesRow) &&
+            state.projectFocusId !== ctx.project_id
+          ) {
+            toast("Open Notes with Shift+Z");
             return;
           }
           if (!ctx.section_id) {
@@ -7848,14 +7920,28 @@
         });
 
         // boot
+        document.addEventListener(
+          "click",
+          (e) => {
+            const summary = e.target.closest(
+              "details.project.is-notes > summary",
+            );
+            if (!summary) return;
+            if (summary.closest("#sec-project-focus")) return;
+            e.preventDefault();
+          },
+          true,
+        );
         document.addEventListener("toggle", (e) => {
           const proj = e.target;
           if (!(proj instanceof HTMLDetailsElement)) return;
           if (!proj.classList.contains("project")) return;
           const id = proj.getAttribute("data-id");
           if (!id) return;
-          if (proj.open) state.collapsedProjects.delete(id);
+          if (proj.open && !notesStayClosed(proj))
+            state.collapsedProjects.delete(id);
           else state.collapsedProjects.add(id);
+          if (notesStayClosed(proj) && proj.open) proj.open = false;
           invalidateNavCache();
           scheduleBentoPack();
         });
