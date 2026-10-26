@@ -3029,11 +3029,9 @@
         function syncDocumentTitle() {
           // Always keep a "Tasks" prefix so Shift Keys cheat sheet matching
           // (PickChromeAppSheetKey) stays reliable under Work/Personal/Habits focus.
+          // Project focus (Shift+Z) stays "Tasks" — the project name is not shown.
           if (state.projectFocusId) {
-            const p = (state.data?.projects || []).find(
-              (x) => x.id === state.projectFocusId,
-            );
-            document.title = p ? `Tasks · ${p.title}` : "Tasks";
+            document.title = "Tasks";
             return;
           }
           if (!(state.sectionFocus || "") && state.emojiFilter === "⚡") {
