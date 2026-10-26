@@ -938,6 +938,16 @@
         letter-spacing: 0.04em;
         text-transform: uppercase;
       }
+      /* Shift+Z already knows the project. The default General label is just a title row. */
+      body.project-focus-mode
+        .section-bento
+        > .task-section.is-general
+        > .task-section-label {
+        display: none;
+      }
+      body.project-focus-mode .section-bento > .task-section.is-general {
+        padding-top: 4px;
+      }
       .section-bento > .task-section:not(.is-general) > .task-section-label {
         color: #d5e4ef;
       }
