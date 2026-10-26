@@ -1,13 +1,12 @@
 id,parent_type,parent_id,kind,ref,description,sort_order
-ATT_0011,task,TASK_0017,file,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,700
 ATT_0023,info,INFO_0112,image,attachments\20260829-TASK_0042-20260301-203740.png,20260301-203740.png,1560
 ATT_0027,info,INFO_0138,image,attachments\20260914-181246-INFO_0138-image.png,image.png,1730
 ATT_0032,info,INFO_0318,image,attachments\20261006-101945-INFO_0318-image.png,image.png,1780
 ATT_0033,info,INFO_0349,image,attachments\20261008-131309-INFO_0349-image.png,image.png,1790
 ATT_0034,info,INFO_0353,image,attachments\20261010-150408-INFO_0353-IMG_20261010_125211.jpg,IMG_20261010_125211.jpg,1800
 ATT_0035,info,INFO_0354,image,attachments\20261010-150412-INFO_0354-IMG_20261010_125128.jpg,IMG_20261010_125128.jpg,1810
-ATT_0036,info,INFO_0355,image,attachments\20261013-090823-INFO_0355-image.png,image.png,1820
 ATT_0037,info,INFO_0370,image,attachments\20261014-160803-INFO_0370-image.png,image.png,1830
 ATT_0038,info,INFO_0371,image,attachments\20261014-161413-INFO_0371-image.png,image.png,1840
 ATT_0039,info,INFO_0372,image,attachments\20261014-161623-INFO_0372-image.png,image.png,1850
 ATT_0040,info,INFO_0373,image,attachments\20261014-162433-INFO_0373-image.png,image.png,1860
+ATT_0041,info,INFO_0503,image,attachments\20261026-091330-INFO_0503-image.png,image.png,1870

@@ -1,6 +1,4 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at,edit_lock,birth_date
-INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39,,
-INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39,,
 INFO_0076,task,TASK_0042,We also had some problems with authentication along the way,We also had some problems with authentication along the way,ℹ️,,1550,2026-08-29 15:48:39,,
 INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 15:48:39,,
 INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.","Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.",ℹ️,,1610,2026-08-29 15:48:39,,
@@ -19,23 +17,6 @@ INFO_0117,task,TASK_0212,"ℹ️ Check your PowerPoint confidenciality level
 ℹ️ Create a project case
 
 ℹ️ Create Project KPIs",,ℹ️,,3990,2026-08-30 15:10:36,,
-INFO_0118,task,TASK_0213,"RISE
-- We're going to have two trainings for key users tomorrow and on Thursday
-- I have also been sending some communication on the team's groups for people to engage, even though it's been difficult for them to engage
-- We appointed all trainings for N8N
-- We sent an invitation for all colleagues in SO and we got 57 responses
-- I need to finish sending the invitations for the key users and colleagues
-
-Data insights
-- Waiting 
-
-BPM
-- We've been having discussions weekly for backlog prioritization
-- While I am on vacation discussions, we'll start with Paolo for creating an API to give data from Genesis
-- I have also created prototype screens for the necessary tasks that didn't have it
-
-AI Roleplay
-- Waiting",,ℹ️,,4000,2026-08-30 15:11:07,,
 INFO_0135,task,TASK_0248,"Perguntar no cartório
 
 Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)",,ℹ️,,10,2026-09-12 16:25:28,,
@@ -290,8 +271,6 @@ Comprimento do Dorso (para modelos X-Back): Da cernelha (base do pescoço) até 
 Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou GG em exemplares de estrutura mais larga). Sempre consulte a tabela de medidas do fabricante antes da compra.",,ℹ️,,10,2026-10-09 15:31:57,,
 INFO_0353,task,TASK_0432,IMG_20261010_125211.jpg,,ℹ️,,20,2026-10-10 15:04:08,,
 INFO_0354,task,TASK_0432,IMG_20261010_125128.jpg,,ℹ️,,30,2026-10-10 15:04:12,,
-INFO_0355,task,TASK_0435,image.png,,ℹ️,,10,2026-10-13 09:08:23,,
-INFO_0356,task,TASK_0435,https://inside-docupedia.bosch.com/confluence2/spaces/FARM/pages/961642962/%F0%9F%9A%80+Getting+Started,,ℹ️,,20,2026-10-13 09:30:02,,
 INFO_0357,task,TASK_0438,"Your credentials
 Api key: cf3387c41e2c4126968b355fe9e95393
 The API key must be send as a custom request header in the following form: genaiplatform-farm-subscription-key=<your-api-key>
@@ -380,8 +359,6 @@ INFO_0468,task,TASK_0615,Frequency Note,Do this every other day (skip one day in
 INFO_0469,task,TASK_0616,Purchase Reminder,"Buy the Furminator brand (for large dogs, long hair). Do not buy it now, wait until she grows up and sheds more.",ℹ️,,5200,2026-10-20 20:32:02,,
 INFO_0470,task,TASK_0616,Usage condition,Check if there is a necessity to use the Furminator this week based on her shedding.,ℹ️,,5210,2026-10-20 20:32:02,,
 INFO_0471,task,TASK_0613,"""C:\Users\fie7ca\OneDrive - Bosch Group\02 - Atividades\61 - Guilherme's projects\v1.2026_BDU-AM-Projects_List-KPI-TEST.xlsx""",,ℹ️,,20,2026-10-21 11:06:03,,
-INFO_0474,task,TASK_0632,Gemini CLI Docupedia:,,ℹ️,,10,2026-10-22 09:36:05,,
-INFO_0475,task,TASK_0632,https://inside-docupedia.bosch.com/confluence/spaces/RCAT/pages/7307887176/Tool+Gemini,,ℹ️,,20,2026-10-22 09:36:06,,
 INFO_0476,task,TASK_0635,"$env:GOOGLE_CLOUD_PROJECT=""rbprj-100397""",,ℹ️,,10,2026-10-22 10:04:29,,
 INFO_0479,task,TASK_0639,Demonstração,Mostrar para a BISB. Tem que ser estrategicamente integrado o que está sendo mostrado.,ℹ️,,5240,2026-10-22 10:10:52,,
 INFO_0480,task,TASK_0639,Desenvolvimento da ferramenta,Você precisa ser objetivo com o pessoal da Bisbee que está construindo a ferramenta para que eles adicionem os requisitos/adicionais necessários.,ℹ️,,5250,2026-10-22 10:10:52,,
@@ -3664,3 +3641,7 @@ INFO_0498,task,TASK_0672,"{
 INFO_0499,task,TASK_0671,https://inside-docupedia.bosch.com/confluence/spaces/PSBDO/pages/4088643213/PS+BDO+Organization,,ℹ️,,10,2026-10-23 14:35:30,,
 INFO_0500,task,TASK_0673,"""C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf""",,ℹ️,,10,2026-10-23 20:30:32,,
 INFO_0501,task,TASK_0675,C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md,,ℹ️,,10,2026-10-25 18:38:23,,
+INFO_0502,task,TASK_0438,https://inside-docupedia.bosch.com/confluence2/spaces/FARM/pages/961642962/%F0%9F%9A%80+Getting+Started,,ℹ️,,20,2026-10-26 09:13:19,,
+INFO_0503,task,TASK_0469,image.png,,ℹ️,,4550,2026-10-26 09:13:30,,
+INFO_0504,project,PROJ_0040,https://inside-docupedia.bosch.com/confluence/spaces/RCAT/pages/7307887176/Tool+Gemini,,ℹ️,,10,2026-10-26 09:28:39,,
+INFO_0505,task,TASK_0679,https://inside-docupedia.bosch.com/confluence/spaces/RCAT/pages/7307887176/Tool+Gemini,,ℹ️,,10,2026-10-26 09:30:10,,

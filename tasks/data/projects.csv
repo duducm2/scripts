@@ -2,7 +2,6 @@ id,title,filter,section_path,sort_order,active,created_at,icon_ref,icon_color,ic
 PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,attachments\icons\PROJ_0003.png,#ffffff,0,
 PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,attachments\icons\PROJ_0005.png,#ffffff,0,
 PROJ_0006,Trainings,work,Tasks,2630,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0,waiting
-PROJ_0012,Piloto PT B2B - Data insights,work,Projects,2600,1,2026-08-29 15:48:39,attachments\icons\PROJ_0012.png,#ffffff,0,waiting
 PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2570,1,2026-08-29 15:48:39,attachments\icons\PROJ_0016.png,#ffffff,0,waiting
 PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0019.svg,#ffffff,0,
 PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2550,1,2026-08-29 15:48:39,attachments\icons\PROJ_0021.svg,#ffffff,1,waiting
