@@ -1629,6 +1629,8 @@ AudioBt_OnDisconnectAll(*) {
     g_AudioBtBusy := true
     dropped := []
     failed := []
+    ; Set before Cleanup. Cleanup hides the loading bar, which would erase a banner shown first.
+    doneMsg := ""
     try {
         AudioBt_BusyShow("⏳ Disconnecting Bluetooth audio…")
         if (!AudioBt_FetchAll(false)) {
@@ -1641,21 +1643,28 @@ AudioBt_OnDisconnectAll(*) {
             if AudioBt_BtListRowIsConnected(row)
                 targets.Push(row)
         }
-        if (targets.Length = 0) {
-            ShowNotification_WM("No connected Bluetooth audio devices")
-            return
-        }
-        for row in targets {
-            AudioBt_BusyShow("⏳ Disconnecting " . row.name . "…")
-            result := AudioBt_Run("disconnect", row.id)
-            if (IsObject(result) && result.ok)
-                dropped.Push(row.name)
-            else
-                failed.Push(row.name)
-        }
-        if (failed.Length > 0) {
-            AudioBt_FetchAll(false)
-            AudioBt_ProfileRefreshUi()
+        if (targets.Length = 0)
+            doneMsg := "✅ Bluetooth audio is off"
+        else {
+            for row in targets {
+                AudioBt_BusyShow("⏳ Disconnecting " . row.name . "…")
+                result := AudioBt_Run("disconnect", row.id)
+                if (IsObject(result) && result.ok)
+                    dropped.Push(row.name)
+                else
+                    failed.Push(row.name)
+            }
+            if (failed.Length = 0)
+                doneMsg := "✅ Disconnected " . AudioBt_JoinNames(dropped)
+            else {
+                AudioBt_FetchAll(false)
+                AudioBt_ProfileRefreshUi()
+                if (dropped.Length = 0)
+                    ShowNotification_WM("❌ Could not disconnect " . AudioBt_JoinNames(failed))
+                else
+                    ShowNotification_WM("Disconnected " . AudioBt_JoinNames(dropped) . ". Failed: " . AudioBt_JoinNames(
+                        failed))
+            }
         }
     } catch Error as err {
         ShowNotification_WM("❌ Disconnect all: " . err.Message)
@@ -1663,16 +1672,12 @@ AudioBt_OnDisconnectAll(*) {
     } finally {
         g_AudioBtBusy := false
         AudioBt_BusyHide()
-        if (g_AudioBtActive)
+        if (doneMsg != "") {
+            AudioBt_Cleanup()
+            ShowCenteredOverlay_Utils(doneMsg, 1800, BANNER_ACCENT_SUCCESS)
+        } else if (g_AudioBtActive)
             AudioBt_RefocusLv()
     }
-    if (failed.Length = 0 && dropped.Length > 0) {
-        ShowCenteredOverlay_Utils("✅ Disconnected " . AudioBt_JoinNames(dropped), 1800, BANNER_ACCENT_SUCCESS)
-        AudioBt_Cleanup()
-    } else if (dropped.Length = 0)
-        ShowNotification_WM("❌ Could not disconnect " . AudioBt_JoinNames(failed))
-    else
-        ShowNotification_WM("Disconnected " . AudioBt_JoinNames(dropped) . ". Failed: " . AudioBt_JoinNames(failed))
 }
 
 AudioBt_OnIsolate(*) {
