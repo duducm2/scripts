@@ -44,14 +44,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ⚡ You need to transfer your voting place to Nova Odessa and change our photo
 
-⏳ Start paying OpenCode Go if weekly limit overflows by midweek
-ℹ️ Decision Rule
-Only subscribe to OpenCode Go ($15-$20/mo flat) if Google Antigravity limits consistently run out by midweek and you need continuous access to frontier models (Claude 3.7 Sonnet, OpenAI o-series) without monitoring tokens. If spillover is infrequent, pay-as-you-go via Chinese models on OpenRouter is significantly cheaper.
-ℹ️ Chinese Providers via OpenRouter
-Alternative overflow strategy: use models like DeepSeek-V3/R1 or Qwen 2.5 Coder 32B via OpenRouter. A $5 credit deposit can cover months of occasional spillover sessions at roughly $0.20 to $2.00/mo.
-ℹ️ OpenCode Setup Details
-OpenCode natively supports OpenRouter (via /connect command and OpenRouter API key) and includes out-of-the-box free Zen models (Big Pickle, GPT-5 Nano, Nemotron Super Free). Variant cycle (Ctrl+T) toggles reasoning effort or model presets.
-
 🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
 
 ⏳ 🕒 Review your habitual activities
@@ -256,3 +248,5 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 ## Tarefas para Submissão do Artigo (Revista JIS)
 
 ⏳ Waiting analysis
+
+## Notes
