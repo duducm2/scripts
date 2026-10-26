@@ -78,6 +78,7 @@
 ⏳ Pharmacological regimen interactions
 ⚡ Moka has to sunbath every day
 🔲 You need to check if you made something good to add to your my personal repo just for historical purposes
+⏳ Start paying OpenCode Go if weekly limit overflows by midweek
 🩺 Tomar vermífugo
 🔲 🐕 Dewormer (Vermífugo): Generally given every 3 to 6 months to prevent intestinal parasites (e.g., Drontal, Milbemax).
 🔲 🐈 Intestinal Deworming (Vermífugo): Administered every 3 to 6 months depending on their exposure to outdoor environments or prey.
