@@ -253,16 +253,6 @@
         padding: 3px 9px;
         white-space: nowrap;
       }
-      .project-focus-title .proj-age-badge,
-      .project-focus-title .proj-icon {
-        margin-left: 10px;
-        vertical-align: middle;
-      }
-      .project-focus-title .proj-icon {
-        display: inline-block;
-        margin-left: 8px;
-        margin-right: 0;
-      }
       .icon-modal-toolbar {
         display: flex;
         flex-wrap: wrap;
@@ -879,34 +869,8 @@
         background: var(--pf-panel);
         border-color: var(--pf-line);
         border-radius: 16px;
-        padding: 18px 20px 22px;
+        padding: 8px 20px 22px;
         min-height: calc(100vh - 56px);
-      }
-      .project-focus-head {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 8px 16px;
-        margin: 0 0 18px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--pf-line);
-      }
-      .project-focus-title {
-        margin: 0;
-        font-size: 22px;
-        font-weight: 650;
-        letter-spacing: 0.01em;
-        color: var(--pf-accent);
-      }
-      .project-focus-hint {
-        font-size: 12px;
-        color: var(--pf-muted);
-      }
-      .project-focus-hint kbd {
-        color: var(--pf-accent);
-        border-color: var(--pf-line);
-        background: var(--pf-card);
       }
       .column.project-focus > details.project {
         border: none;
@@ -1052,10 +1016,6 @@
       }
       .task.is-general .title {
         color: #d4d4d4;
-      }
-      .project-focus-head.is-waiting .project-focus-title,
-      .project-focus-head.is-waiting .proj-title {
-        color: #8aa0b4;
       }
       body.project-focus-mode .task,
       body.project-focus-mode .plain-row {
@@ -3294,10 +3254,6 @@
           const iconHtml = projectIconHtml(p);
           const waitClass = isWaitingRow(p) ? " is-waiting" : "";
           return `<section class="column panel project-focus" id="sec-project-focus">
-      <div class="project-focus-head${waitClass}">
-        <h2 class="project-focus-title">${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</h2>
-        <span class="project-focus-hint"><kbd>Shift+Z</kbd> exit</span>
-      </div>
       <details class="project${waitClass}" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary>${iconHtml}<span class="proj-title">${highlightTitle(p.title)}</span>${ageBadge}</summary>
         <div class="proj-actions row-actions">
