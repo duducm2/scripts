@@ -4710,13 +4710,14 @@
               applySelection(false);
               return;
             }
-            const nodes = document.querySelectorAll("details.project");
-            const openAll = Array.from(nodes).some((n) => !n.open);
+            const nodes = [
+              ...document.querySelectorAll("details.project"),
+            ].filter((n) => !n.classList.contains("is-notes"));
+            const openAll = nodes.some((n) => !n.open);
             if (openAll) {
               state.collapsedProjects.clear();
               state.collapsedSections.clear();
               nodes.forEach((n) => {
-                if (n.classList.contains("is-notes")) return;
                 n.open = true;
               });
               document
