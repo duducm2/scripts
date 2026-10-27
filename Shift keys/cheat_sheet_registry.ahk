@@ -1627,7 +1627,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file into focused Explorer / Cursor·VS Code Files Explorer (Desktop fallback), then hide
     
     === AI CHAT (Chrome) ===
-    [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
+    [Win+Alt+Shift+I] > {AI_PROVIDER}: 1× open/focus; 2× (within 400ms) new tab with a fresh page in that window
     [Win+Alt+Shift+8] > Pronunciation lookup ({AI_PROVIDER}): 1× English, 2× German, hold = EN/DE/PT ListView
     [Win+Alt+Shift+P] > {AI_PROVIDER}: 1× copy last message; 2× (within 400ms) copy last code; then 5s [Y] Desktop [F] Favorite [R] Read (1× only) [W] Paste window [O] Clip Angel [N] No
     

@@ -36,7 +36,7 @@ try Hotkey("#!+X", "Off")
 ; [Gemini module] Tiered #!+8 pronunciation (1× en / 2× de / hold ListView) -> Gemini\hotkey_pronunciation.ahk
 #include %A_ScriptDir%\Gemini\hotkey_pronunciation.ahk
 
-; [Gemini module] InitializeGeminiFirstTime and #!+I open/focus hotkey -> Gemini\gemini_open.ahk
+; [Gemini module] InitializeGeminiFirstTime and #!+I open/focus (1×) / new tab (2×) -> Gemini\gemini_open.ahk
 #include %A_ScriptDir%\Gemini\gemini_open.ahk
 
 ; Gemini_FocusPromptSameAsOpenHotkey lives in Utils.ahk (shared with Shift keys Fast Copy).
