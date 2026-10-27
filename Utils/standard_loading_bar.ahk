@@ -443,7 +443,7 @@ StandardLoadingBar_ForceHideWatchdog(*) {
         }
         return
     }
-    if (!IsObject(g_StandardLoadingBarGui))
+    if (!IsObject(g_StandardLoadingBarGui) && !IsObject(g_StandardLoadingBarBorderGui))
         return
     StandardLoadingBar_Hide(0)
 }
@@ -502,6 +502,12 @@ StandardLoadingBar_Hide(delayMs := 0) {
             borderHwnd := Integer(borderObj.Hwnd)
     } catch {
     }
+    ; Hide the accent frame before the text window. The frame is a solid rectangle
+    ; behind the text; if the text window closes first, Esc leaves a yellow block.
+    if (borderHwnd)
+        StandardLoadingBar_ForceDestroyHwnd(borderHwnd)
+    if (guiHwnd)
+        StandardLoadingBar_ForceDestroyHwnd(guiHwnd)
     try {
         if IsObject(guiObj)
             guiObj.Destroy()
@@ -512,24 +518,7 @@ StandardLoadingBar_Hide(delayMs := 0) {
             borderObj.Destroy()
     } catch {
     }
-    ; Fallback if Gui.Destroy left an AlwaysOnTop window alive.
-    if (guiHwnd && WinExist("ahk_id " guiHwnd)) {
-        try WinHide("ahk_id " guiHwnd)
-        catch {
-        }
-        try DllCall("user32\DestroyWindow", "ptr", guiHwnd)
-        catch {
-        }
-    }
-    if (borderHwnd && WinExist("ahk_id " borderHwnd)) {
-        try WinHide("ahk_id " borderHwnd)
-        catch {
-        }
-        try DllCall("user32\DestroyWindow", "ptr", borderHwnd)
-        catch {
-        }
-    }
-    stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd))
+    stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd)) || (borderHwnd && WinExist("ahk_id " borderHwnd))
     if (stillLive) {
         ; Keep references and retry — do not orphan an AlwaysOnTop window.
         g_StandardLoadingBarGui := guiObj
@@ -582,19 +571,60 @@ StandardLoadingBar_CloseKeysOverlay() {
         Utils_EnsureGlobalEscapeHotkey()
     }
     SetTimer(StandardLoadingBar_Tick, 0)
+    guiObj := g_StandardLoadingBarGui
+    borderObj := g_StandardLoadingBarBorderGui
+    guiHwnd := 0
+    borderHwnd := 0
     try {
-        if IsObject(g_StandardLoadingBarGui)
-            g_StandardLoadingBarGui.Destroy()
+        if IsObject(guiObj)
+            guiHwnd := Integer(guiObj.Hwnd)
     } catch {
+    }
+    try {
+        if IsObject(borderObj)
+            borderHwnd := Integer(borderObj.Hwnd)
+    } catch {
+    }
+    ; Accent frame first (see Hide). Gui.Destroy on the RichEdit pane can stall
+    ; after that pane is already gone, which leaves the frame as a solid block.
+    if (borderHwnd)
+        StandardLoadingBar_ForceDestroyHwnd(borderHwnd)
+    if (guiHwnd)
+        StandardLoadingBar_ForceDestroyHwnd(guiHwnd)
+    try {
+        if IsObject(guiObj)
+            guiObj.Destroy()
+    } catch {
+    }
+    try {
+        if IsObject(borderObj)
+            borderObj.Destroy()
+    } catch {
+    }
+    stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd)) || (borderHwnd && WinExist("ahk_id " borderHwnd))
+    if (stillLive) {
+        g_StandardLoadingBarGui := guiObj
+        g_StandardLoadingBarBorderGui := borderObj
+        g_StandardLoadingBarIsKeysOverlay := false
+        StandardLoadingBar_ArmForceHide(400)
+        return
     }
     g_StandardLoadingBarGui := 0
     g_StandardLoadingBarValue := 0
-    try {
-        if IsObject(g_StandardLoadingBarBorderGui)
-            g_StandardLoadingBarBorderGui.Destroy()
-    } catch {
-    }
     g_StandardLoadingBarBorderGui := 0
+}
+
+; Hide, then destroy. Returns true when the window is gone.
+StandardLoadingBar_ForceDestroyHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return true
+    try WinHide("ahk_id " hwnd)
+    catch {
+    }
+    try DllCall("user32\DestroyWindow", "ptr", hwnd)
+    catch {
+    }
+    return !WinExist("ahk_id " hwnd)
 }
 
 ; Return the Escape cancel callback from keyCallbacks, if any (used for robust Esc handling).
@@ -994,8 +1024,9 @@ StandardLoadingBar_RegisterKeyHandler(key, cb) {
     if (!cb)
         return
     ; $* prefix: hook hotkey, ignore sent keys; * allows extra modifiers (Shift) still held.
+    ; Enter / NumpadEnter need the hook too, or a focused RichEdit swallows them.
     keyToReg := key
-    if (StrLen(key) = 1 || RegExMatch(key, "i)^Numpad[0-9]$"))
+    if (StrLen(key) = 1 || RegExMatch(key, "i)^(Numpad[0-9]|Enter|NumpadEnter)$"))
         keyToReg := "$*" . key
     fn := StandardLoadingBar_KeyWrapper.Bind(key, cb)
     try {
@@ -1018,18 +1049,21 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
     chordDown := false
     try chordDown := GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Alt", "P") || GetKeyState(
         "Shift", "P")
-    if (chordDown) {
+    ; Only P is the double-tap upgrade. D/Y/F/… must still run while that chord is held,
+    ; or Win+Alt+Shift+P then D does nothing (the hook already ate the letter).
+    if (chordDown && StrLower(key) = "p") {
         chordCb := g_StandardLoadingBarChordKeyCb
         if (chordCb != "") {
             try chordCb.Call(key)
+            return
         }
-        return
     }
     ; Ignore while Ctrl is still physically down. A stuck modifier (not still held) is released
     ; so V is not delivered as Clip Angel's Ctrl+Alt+V.
+    ; Win/Alt/Shift still held from the opener do not drop other letters.
     if (StandardLoadingBar_KeysSelectionModifiersDown()) {
         StandardLoadingBar_ReleaseStuckModifiers()
-        if (StandardLoadingBar_KeysSelectionModifiersDown())
+        if (StandardLoadingBar_KeysSelectionModifiersDown() && (GetKeyState("Ctrl", "P") || StrLower(key) = "p"))
             return
     }
     if UtilityShortcuts_ShouldSwallowOpenerKey(key)
@@ -1363,18 +1397,876 @@ StandardLoadingBar_PassiveAllMonitors_Clear() {
     g_PassiveAllMonitorsOverlays := []
 }
 
-; Full AI reply on the active monitor (same UX as #!+8 pronunciation ShowResultBanner).
+; Full AI reply on the monitor under the foreground window.
+; The pane is landscape on a wide screen and never taller than that monitor's work area.
+; Markdown (**bold**, headings, lists, code) is drawn as formatting, not raw asterisks.
 ; No auto-dismiss — user closes with Enter, E, or Escape.
-ShowCopiedResponseBanner(text) {
-    if (!text || StrLen(Trim(text)) = 0)
+ShowCopiedResponseBanner(text, anchorHwnd := 0) {
+    global g_ShowCopiedResponseRichDll
+    if (!text || StrLen(Trim(text)) = 0) {
+        ShowCopiedResponse_LegacyBanner("Nothing to display")
         return
-    state := "ℹ " . text
-    closeNoOp(*) {
     }
-    closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
+    ml := mt := mr := mb := 0
+    placed := false
+    if (anchorHwnd) {
+        work := GetWorkAreaForWindow_StandardBar(anchorHwnd)
+        if (work != "") {
+            ml := work.left
+            mt := work.top
+            mr := work.right
+            mb := work.bottom
+            placed := true
+        }
+    }
+    if (!placed)
+        GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
+    ; Drop a prior bar before building this one so its teardown cannot delete the new GUI.
+    try {
+        if (g_StandardLoadingBarIsKeysOverlay)
+            StandardLoadingBar_CloseKeysOverlay()
+        else
+            StandardLoadingBar_Hide(0)
+    } catch {
+    }
+    try {
+        if (!g_ShowCopiedResponseRichDll)
+            g_ShowCopiedResponseRichDll := DllCall("LoadLibrary", "str", "msftedit.dll", "ptr")
+        if (!g_ShowCopiedResponseRichDll)
+            throw Error("msftedit.dll unavailable")
+        ShowCopiedResponse_ShowReadingPane(text, ml, mt, mr, mb)
+    } catch {
+        ShowCopiedResponse_LegacyBanner(text)
+    }
+}
+
+ShowCopiedResponse_LegacyBanner(text) {
+    state := "ℹ " . text
+    closeKeys := Map(
+        "Enter", ShowCopiedResponse_DismissNoOp,
+        "Escape", ShowCopiedResponse_DismissNoOp,
+        "E", ShowCopiedResponse_DismissNoOp)
     StandardLoadingBar_ShowWithKeys(state, closeKeys, 0, 0, "",
         BANNER_ACCENT_INTERMEDIATE, 600,
         17, "", false,
         "[Enter] [E] [Esc] Close",
         true)
+}
+
+ShowCopiedResponse_DismissNoOp(*) {
+}
+
+; Punch out the center so the accent window is a frame, not a solid block.
+ShowCopiedResponse_FrameBorder(hwnd, w, h, inset) {
+    if (!hwnd || w <= inset * 2 || h <= inset * 2)
+        return
+    outer := DllCall("gdi32\CreateRectRgn", "int", 0, "int", 0, "int", w, "int", h, "ptr")
+    inner := DllCall("gdi32\CreateRectRgn", "int", inset, "int", inset, "int", w - inset, "int", h - inset, "ptr")
+    if (!outer || !inner) {
+        if (outer)
+            DllCall("gdi32\DeleteObject", "ptr", outer)
+        if (inner)
+            DllCall("gdi32\DeleteObject", "ptr", inner)
+        return
+    }
+    DllCall("gdi32\CombineRgn", "ptr", outer, "ptr", outer, "ptr", inner, "int", 4)
+    DllCall("gdi32\DeleteObject", "ptr", inner)
+    ; SetWindowRgn takes ownership of the region when it succeeds.
+    if !DllCall("user32\SetWindowRgn", "ptr", hwnd, "ptr", outer, "int", 1)
+        DllCall("gdi32\DeleteObject", "ptr", outer)
+}
+
+ShowCopiedResponse_ShowReadingPane(text, ml, mt, mr, mb) {
+    global g_StandardLoadingBarGui, g_StandardLoadingBarBorderGui, g_StandardLoadingBarValue
+    global g_ShowCopiedResponseRichDll
+    if (!g_ShowCopiedResponseRichDll)
+        g_ShowCopiedResponseRichDll := DllCall("LoadLibrary", "str", "msftedit.dll", "ptr")
+    blocks := ShowCopiedResponse_ParseBlocks(text)
+    dpi := ShowCopiedResponse_DpiAt(ml, mt, mr, mb)
+    layout := ShowCopiedResponse_Layout(blocks, ml, mt, mr, mb, dpi)
+
+    border := 6
+    guiOpt := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
+    borderGui := Gui(guiOpt)
+    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
+    overlayGui := Gui(guiOpt)
+    overlayGui.BackColor := "1E1E2E"
+    overlayGui.MarginX := 0
+    overlayGui.MarginY := 0
+
+    editOpts := "ClassRICHEDIT50W x" . layout.marginX . " y" . layout.marginY
+        . " w" . layout.editW . " h" . layout.editH . " +0x44 +VScroll -E0x200"
+    edit := overlayGui.Add("Custom", editOpts)
+    footerY := layout.marginY + layout.editH + 8
+    overlayGui.SetFont("s13 cA6ADC8", "Segoe UI")
+    overlayGui.Add("Text", "x" . layout.marginX . " y" . footerY . " w" . layout.editW . " h" . layout.footerH .
+        " Center", "[Enter]    [E]    [Esc]    Close")
+
+    g_StandardLoadingBarBorderGui := borderGui
+    g_StandardLoadingBarGui := overlayGui
+    g_StandardLoadingBarValue := 0
+
+    hwnd := edit.Hwnd
+    ShowCopiedResponse_ThemeEdit(hwnd)
+    bg := ShowCopiedResponse_ColorRef("1E1E2E")
+    SendMessage(0x435, 0, 0x7FFFFFFE, hwnd)
+    SendMessage(0x443, 0, bg, hwnd)
+
+    guiX := layout.guiX
+    guiY := layout.guiY
+    guiW := layout.guiW
+    guiH := layout.guiH
+    borderW := guiW + 2 * border
+    borderH := guiH + 2 * border
+    borderGui.Show("NA x" . (guiX - border) . " y" . (guiY - border) . " w" . borderW . " h" . borderH)
+    ; Hollow frame, so a missed destroy cannot leave a solid yellow slab.
+    ShowCopiedResponse_FrameBorder(borderGui.Hwnd, borderW, borderH, border)
+    overlayGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH . " NA")
+    try {
+        if (hwnd)
+            DllCall("SetWindowPos", "Ptr", overlayGui.Hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0,
+                "UInt", 0x0015)
+    } catch {
+    }
+    ; Arm before the long render so Enter/E/Esc work if drawing a huge reply takes a while.
+    ShowCopiedResponse_ArmDismissKeys()
+    try StandardLoadingBar_CancelHideTimers()
+    catch {
+    }
+    try {
+        ShowCopiedResponse_Render(hwnd, blocks, layout.bodyPt)
+    } catch {
+        try ShowCopiedResponse_SetPlain(hwnd, text)
+        catch {
+        }
+    }
+    SendMessage(0x443, 0, bg, hwnd)
+    SendMessage(0xCF, 1, 0, hwnd)
+    try edit.Focus()
+    catch {
+    }
+    ; Collapse the formatting selection and start at the top. Do this after focus,
+    ; or the first focus paints the Windows highlight over the reply.
+    SendMessage(0xB1, 0, 0, hwnd)
+    scrollPt := Buffer(8, 0)
+    SendMessage(0x4DD, 0, scrollPt.Ptr, hwnd)
+}
+
+ShowCopiedResponse_Render(hwnd, blocks, bodyPt) {
+    doc := ShowCopiedResponse_BuildDocument(blocks, bodyPt)
+    try SendMessage(0x0B, 0, 0, hwnd)
+    try {
+        ShowCopiedResponse_SetPlain(hwnd, doc.plain)
+        for sp in doc.spans {
+            if (sp.len <= 0)
+                continue
+            ShowCopiedResponse_Select(hwnd, sp.start, sp.start + sp.len)
+            cf := ShowCopiedResponse_CharFormat(sp.face, sp.pt, sp.color, sp.bold, sp.italic, sp.underline)
+            SendMessage(0x444, 1, cf.Ptr, hwnd)
+        }
+        for para in doc.paras {
+            if (para.len <= 0)
+                continue
+            ShowCopiedResponse_Select(hwnd, para.start, para.start + Max(para.len, 1))
+            pf := ShowCopiedResponse_ParaFormat(para.indent, para.offset, para.before, para.after)
+            SendMessage(0x447, 0, pf.Ptr, hwnd)
+        }
+        ShowCopiedResponse_Select(hwnd, 0, 0)
+    } finally {
+        try SendMessage(0x0B, 1, 0, hwnd)
+    }
+    try DllCall("RedrawWindow", "ptr", hwnd, "ptr", 0, "ptr", 0, "uint", 0x105)
+}
+
+ShowCopiedResponse_BuildDocument(blocks, bodyPt) {
+    doc := { plain: "", spans: [], paras: [] }
+    u16 := 0
+    codePt := Max(12, bodyPt - 1)
+    first := true
+    body := { bold: false, italic: false, code: false, underline: false, pt: bodyPt, color: "CDD6F4", face: "Segoe UI" }
+    for b in blocks {
+        paraStart := u16
+        kind := b.kind
+        indent := 0
+        offset := 0
+        before := 40
+        after := 80
+        if (kind = "h") {
+            level := b.level
+            add := level = 1 ? 8 : level = 2 ? 5 : level = 3 ? 2 : 1
+            head := { bold: true, italic: false, code: false, underline: false, pt: bodyPt + add, color: "CBA6F7",
+                face: "Segoe UI" }
+            ShowCopiedResponse_AppendRun(doc, &u16, ShowCopiedResponse_PlainInline(b.text), head)
+            before := first ? 40 : (level <= 2 ? 220 : 140)
+            after := 70
+        } else if (kind = "hr") {
+            muted := { bold: false, italic: false, code: false, underline: false, pt: bodyPt, color: "A6ADC8",
+                face: "Segoe UI" }
+            ShowCopiedResponse_AppendRun(doc, &u16, "────────────────────────────────", muted)
+            before := 50
+            after := 50
+        } else if (kind = "ul" || kind = "ol") {
+            prefix := kind = "ul" ? "•  " : (b.n . ".  ")
+            ShowCopiedResponse_AppendRun(doc, &u16, prefix, body)
+            ShowCopiedResponse_AppendInline(doc, &u16, b.text, bodyPt)
+            before := 10
+            after := 36
+            indent := 420
+            offset := kind = "ul" ? -200 : -260
+        } else if (kind = "quote") {
+            ShowCopiedResponse_AppendInline(doc, &u16, b.text, bodyPt, true, "89B4FA")
+            before := 30
+            after := 70
+            indent := 280
+        } else if (kind = "code") {
+            codeStyle := { bold: false, italic: false, code: true, underline: false, pt: codePt, color: "A6E3A1",
+                face: "Consolas" }
+            ShowCopiedResponse_AppendRun(doc, &u16, b.text, codeStyle)
+            before := 50
+            after := 90
+            indent := 200
+        } else if (kind = "table") {
+            tableStyle := { bold: false, italic: false, code: true, underline: false, pt: codePt, color: "CDD6F4",
+                face: "Consolas" }
+            ShowCopiedResponse_AppendRun(doc, &u16, ShowCopiedResponse_FormatTable(b.text), tableStyle)
+            before := 30
+            after := 70
+            indent := 80
+        } else {
+            ShowCopiedResponse_AppendInline(doc, &u16, b.text, bodyPt)
+            before := first ? 16 : 30
+            after := 110
+        }
+        doc.paras.Push({
+            start: paraStart,
+            len: u16 - paraStart,
+            indent: indent,
+            offset: offset,
+            before: before,
+            after: after
+        })
+        doc.plain .= "`r"
+        u16++
+        first := false
+    }
+    return doc
+}
+
+ShowCopiedResponse_AppendInline(doc, &u16, text, bodyPt, forceItalic := false, color := "CDD6F4") {
+    for r in ShowCopiedResponse_InlineRuns(text) {
+        face := r.code ? "Consolas" : "Segoe UI"
+        pt := r.code ? Max(12, bodyPt - 1) : bodyPt
+        col := r.code ? "A6E3A1" : (r.underline ? "89B4FA" : color)
+        ShowCopiedResponse_AppendRun(doc, &u16, r.text, {
+            bold: r.bold,
+            italic: r.italic || (forceItalic && !r.code),
+            code: r.code,
+            underline: r.underline,
+            pt: pt,
+            color: col,
+            face: face
+        })
+    }
+}
+
+ShowCopiedResponse_AppendRun(doc, &u16, text, style) {
+    if (text = "")
+        return
+    text := StrReplace(text, "`r`n", "`n")
+    text := StrReplace(text, "`n", "`r")
+    len := ShowCopiedResponse_Utf16Len(text)
+    if (len <= 0)
+        return
+    doc.spans.Push({
+        start: u16,
+        len: len,
+        bold: style.bold,
+        italic: style.italic,
+        code: style.code,
+        underline: style.underline,
+        pt: style.pt,
+        color: style.color,
+        face: style.face
+    })
+    doc.plain .= text
+    u16 += len
+}
+
+ShowCopiedResponse_Utf16Len(s) {
+    if (s = "")
+        return 0
+    ; StrPut without a buffer returns the size in bytes, including the terminating null.
+    return (StrPut(s, "UTF-16") // 2) - 1
+}
+
+ShowCopiedResponse_SetPlain(hwnd, plain) {
+    settextex := Buffer(8, 0)
+    NumPut("uint", 8, settextex, 0)
+    NumPut("uint", 1200, settextex, 4)
+    bytes := StrPut(plain, "UTF-16")
+    textBuf := Buffer(bytes, 0)
+    StrPut(plain, textBuf, "UTF-16")
+    SendMessage(0x461, settextex.Ptr, textBuf.Ptr, hwnd)
+}
+
+ShowCopiedResponse_Select(hwnd, cpMin, cpMax) {
+    SendMessage(0xB1, cpMin, cpMax, hwnd)
+}
+
+ShowCopiedResponse_CharFormat(face, pt, colorHex, bold, italic, underline) {
+    cf := Buffer(116, 0)
+    NumPut("uint", 116, cf, 0)
+    mask := 0x1 | 0x2 | 0x4 | 0x40000000 | 0x80000000 | 0x20000000
+    effects := (bold ? 0x1 : 0) | (italic ? 0x2 : 0) | (underline ? 0x4 : 0)
+    NumPut("uint", mask, cf, 4)
+    NumPut("uint", effects, cf, 8)
+    NumPut("int", Round(pt * 20), cf, 12)
+    NumPut("uint", ShowCopiedResponse_ColorRef(colorHex), cf, 20)
+    NumPut("uchar", 1, cf, 24)
+    StrPut(face, cf.Ptr + 26, 32, "UTF-16")
+    return cf
+}
+
+ShowCopiedResponse_ParaFormat(startIndent, offset, spaceBefore, spaceAfter) {
+    pf := Buffer(188, 0)
+    NumPut("uint", 188, pf, 0)
+    ; Start indent, hanging offset, space before and after. Leave line spacing at the control default
+    ; so wrapped lines do not stack (a twip-sized rule collapses a paragraph onto itself).
+    NumPut("uint", 0x1 | 0x4 | 0x40 | 0x80, pf, 4)
+    NumPut("int", startIndent, pf, 12)
+    NumPut("int", offset, pf, 20)
+    NumPut("int", spaceBefore, pf, 156)
+    NumPut("int", spaceAfter, pf, 160)
+    return pf
+}
+
+ShowCopiedResponse_ThemeEdit(hwnd) {
+    try DllCall("uxtheme\SetWindowTheme", "ptr", hwnd, "wstr", "", "wstr", "")
+    catch {
+    }
+    ; ECOOP_OR + ECO_AUTOVSCROLL so the wheel and Page Down move through a long reply.
+    try SendMessage(0x44D, 2, 0x40, hwnd)
+    catch {
+    }
+}
+
+ShowCopiedResponse_DpiAt(ml, mt, mr, mb) {
+    cx := ml + (mr - ml) // 2
+    cy := mt + (mb - mt) // 2
+    rect := Buffer(16, 0)
+    NumPut("int", cx, rect, 0)
+    NumPut("int", cy, rect, 4)
+    NumPut("int", cx + 1, rect, 8)
+    NumPut("int", cy + 1, rect, 12)
+    hmon := 0
+    try hmon := DllCall("user32\MonitorFromRect", "ptr", rect, "uint", 2, "ptr")
+    catch
+        hmon := 0
+    dx := 0
+    dy := 0
+    if (hmon) {
+        try {
+            if (DllCall("shcore\GetDpiForMonitor", "ptr", hmon, "int", 0, "uint*", &dx, "uint*", &dy) = 0 && dx >= 96)
+                return dx
+        } catch {
+        }
+    }
+    dpi := 96
+    try dpi := A_ScreenDPI
+    catch
+        dpi := 96
+    return dpi >= 96 ? dpi : 96
+}
+
+; Wide monitors get a landscape pane (wider than it is tall). Height never leaves the work area.
+ShowCopiedResponse_Layout(blocks, ml, mt, mr, mb, dpi) {
+    workW := Max(1, mr - ml)
+    workH := Max(1, mb - mt)
+    border := 6
+    outer := Max(12, Floor(Min(workW, workH) * 0.03))
+    marginX := 26
+    marginY := 18
+    footerH := 28
+    gap := 8
+    maxGuiW := Max(480, workW - 2 * outer - 2 * border)
+    maxGuiH := Max(240, workH - 2 * outer - 2 * border)
+    maxEditW := Max(400, maxGuiW - marginX * 2)
+    maxEditH := Max(140, maxGuiH - marginY * 2 - footerH - gap)
+
+    scale := dpi / 96
+    bodyPt := workH >= 1400 ? 18 : workH >= 1050 ? 17 : 15
+    charPx := Max(7, Round(bodyPt * 0.5 * scale))
+    linePx := Max(22, Round(bodyPt * 1.85 * scale))
+    aspect := workW / workH
+
+    if (aspect >= 1.35) {
+        ; Landscape card: at least 1.4× as wide as the tallest pane that still fits, and a solid share of the width.
+        editHWant := maxEditH
+        editW := Min(maxEditW, Max(Floor(editHWant * 1.4), Floor(workW * 0.62)))
+    } else {
+        editW := Min(maxEditW, Max(480, Floor(workW * 0.92)))
+    }
+    ; Grow toward the full width when a narrower column would run past the bottom of this monitor.
+    guard := 0
+    loop {
+        needH := ShowCopiedResponse_EstimateLines(blocks, editW, charPx) * linePx + 28
+        if (needH <= maxEditH || editW >= maxEditW || guard >= 8)
+            break
+        guard++
+        editW := Min(maxEditW, editW + Max(120, Floor((maxEditW - editW) / 2)))
+    }
+    needH := ShowCopiedResponse_EstimateLines(blocks, editW, charPx) * linePx + 28
+    ; A short note stays a wide card, but not a near-empty slab.
+    if (needH < maxEditH * 0.38) {
+        shorterW := Min(editW, Max(680, Floor(workW * (aspect >= 1.35 ? 0.5 : 0.86))))
+        shortNeed := ShowCopiedResponse_EstimateLines(blocks, shorterW, charPx) * linePx + 28
+        if (shortNeed <= maxEditH) {
+            editW := shorterW
+            needH := shortNeed
+        }
+    }
+    editH := Min(maxEditH, Max(150, needH))
+    editW := Min(editW, maxEditW)
+
+    guiW := editW + marginX * 2
+    guiH := marginY + editH + gap + footerH + marginY
+    if (guiW + 2 * border > workW) {
+        guiW := workW - 2 * border
+        editW := Max(200, guiW - marginX * 2)
+    }
+    if (guiH + 2 * border > workH) {
+        guiH := workH - 2 * border
+        editH := Max(80, guiH - marginY * 2 - gap - footerH)
+    }
+    guiX := ml + Floor((workW - guiW) / 2)
+    guiY := mt + Floor((workH - guiH) / 2)
+    if (guiX - border < ml)
+        guiX := ml + border
+    if (guiY - border < mt)
+        guiY := mt + border
+    if (guiX + guiW + border > mr)
+        guiX := mr - border - guiW
+    if (guiY + guiH + border > mb)
+        guiY := mb - border - guiH
+    return {
+        editW: editW,
+        editH: editH,
+        guiW: guiW,
+        guiH: guiH,
+        guiX: guiX,
+        guiY: guiY,
+        marginX: marginX,
+        marginY: marginY,
+        footerH: footerH,
+        bodyPt: bodyPt
+    }
+}
+
+ShowCopiedResponse_EstimateLines(blocks, contentW, charPx) {
+    cpl := Max(20, Floor(contentW / Max(charPx, 1)))
+    lines := 0
+    for b in blocks {
+        kind := b.kind
+        if (kind = "hr") {
+            lines += 1
+            continue
+        }
+        text := b.text
+        if (kind = "code" || kind = "table") {
+            for ln in StrSplit(text, "`n")
+                lines += Max(1, Ceil(Max(StrLen(ln), 1) / cpl))
+            lines += 1
+            continue
+        }
+        vis := RegExReplace(text, "[*_``#]+", "")
+        prefix := kind = "ol" ? 4 : kind = "ul" ? 2 : 0
+        n := Max(StrLen(vis) + prefix, 1)
+        lines += Max(1, Ceil(n / cpl))
+        if (kind = "h")
+            lines += 1
+    }
+    return Max(1, lines)
+}
+
+ShowCopiedResponse_ParseBlocks(text) {
+    src := StrReplace(text, "`r`n", "`n")
+    src := StrReplace(src, "`r", "`n")
+    src := Trim(src, " `t`n")
+    raw := StrSplit(src, "`n")
+    blocks := []
+    i := 1
+    while (i <= raw.Length) {
+        line := raw[i]
+        trimmed := Trim(line, " `t")
+        if (RegExMatch(trimmed, "^``````")) {
+            i++
+            code := ""
+            while (i <= raw.Length && !RegExMatch(Trim(raw[i], " `t"), "^``````")) {
+                code .= (code = "" ? "" : "`n") . raw[i]
+                i++
+            }
+            if (i <= raw.Length)
+                i++
+            blocks.Push({ kind: "code", text: code, level: 0, n: "" })
+            continue
+        }
+        if (trimmed = "") {
+            i++
+            continue
+        }
+        if (RegExMatch(trimmed, "^(#{1,6})\s+(.*)$", &hm)) {
+            blocks.Push({ kind: "h", text: hm[2], level: StrLen(hm[1]), n: "" })
+            i++
+            continue
+        }
+        if (RegExMatch(trimmed, "^(-{3,}|\*{3,}|_{3,})$")) {
+            blocks.Push({ kind: "hr", text: "", level: 0, n: "" })
+            i++
+            continue
+        }
+        if (ShowCopiedResponse_IsTableLine(trimmed)) {
+            rows := trimmed
+            i++
+            while (i <= raw.Length && ShowCopiedResponse_IsTableLine(Trim(raw[i], " `t"))) {
+                rows .= "`n" . Trim(raw[i], " `t")
+                i++
+            }
+            blocks.Push({ kind: "table", text: rows, level: 0, n: "" })
+            continue
+        }
+        if (RegExMatch(trimmed, "^>\s?(.*)$", &qm)) {
+            quote := qm[1]
+            i++
+            while (i <= raw.Length) {
+                nxt := Trim(raw[i], " `t")
+                if (nxt = "" || !RegExMatch(nxt, "^>\s?(.*)$", &qm2))
+                    break
+                quote .= " " . qm2[1]
+                i++
+            }
+            blocks.Push({ kind: "quote", text: quote, level: 0, n: "" })
+            continue
+        }
+        if (RegExMatch(trimmed, "^(\d+)\.\s+(.*)$", &nm)) {
+            item := nm[2]
+            i++
+            item := ShowCopiedResponse_TakeContinuations(raw, &i, item)
+            blocks.Push({ kind: "ol", text: item, level: 0, n: nm[1] })
+            continue
+        }
+        if (RegExMatch(trimmed, "^[-*+]\s+(.*)$", &bm)) {
+            item := bm[1]
+            i++
+            item := ShowCopiedResponse_TakeContinuations(raw, &i, item)
+            blocks.Push({ kind: "ul", text: item, level: 0, n: "" })
+            continue
+        }
+        para := trimmed
+        i++
+        para := ShowCopiedResponse_TakeContinuations(raw, &i, para)
+        blocks.Push({ kind: "p", text: para, level: 0, n: "" })
+    }
+    if (blocks.Length = 0)
+        blocks.Push({ kind: "p", text: Trim(text), level: 0, n: "" })
+    return blocks
+}
+
+ShowCopiedResponse_TakeContinuations(raw, &i, text) {
+    while (i <= raw.Length) {
+        nxt := Trim(raw[i], " `t")
+        if (nxt = "" || ShowCopiedResponse_IsBlockStart(nxt))
+            break
+        text .= " " . nxt
+        i++
+    }
+    return text
+}
+
+ShowCopiedResponse_IsBlockStart(trimmed) {
+    if (trimmed = "")
+        return false
+    if (RegExMatch(trimmed, "^(#{1,6})\s+\S"))
+        return true
+    if (RegExMatch(trimmed, "^``````"))
+        return true
+    if (RegExMatch(trimmed, "^>\s?"))
+        return true
+    if (RegExMatch(trimmed, "^(-{3,}|\*{3,}|_{3,})$"))
+        return true
+    if (RegExMatch(trimmed, "^(\d+)\.\s+\S"))
+        return true
+    if (RegExMatch(trimmed, "^[-*+]\s+\S"))
+        return true
+    if (ShowCopiedResponse_IsTableLine(trimmed))
+        return true
+    return false
+}
+
+ShowCopiedResponse_IsTableLine(trimmed) {
+    return !!RegExMatch(trimmed, "\|.*\|")
+}
+
+ShowCopiedResponse_FormatTable(text) {
+    parsed := []
+    widths := []
+    for row in StrSplit(text, "`n") {
+        if (RegExMatch(Trim(row), "^\|?\s*:?-{2,}.*\|"))
+            continue
+        parts := StrSplit(row, "|")
+        cells := []
+        for p in parts {
+            cell := ShowCopiedResponse_PlainInline(Trim(p))
+            if (cell = "" && (A_Index = 1 || A_Index = parts.Length))
+                continue
+            cells.Push(cell)
+        }
+        if (cells.Length = 0)
+            continue
+        parsed.Push(cells)
+        for cell in cells {
+            idx := A_Index
+            w := StrLen(cell)
+            if (idx > widths.Length || w > widths[idx]) {
+                while (widths.Length < idx)
+                    widths.Push(0)
+                widths[idx] := w
+            }
+        }
+    }
+    out := ""
+    for cells in parsed {
+        line := ""
+        for cell in cells {
+            idx := A_Index
+            pad := idx < cells.Length ? Max(2, widths[idx] - StrLen(cell) + 3) : 0
+            gap := ""
+            loop pad
+                gap .= " "
+            line .= cell . gap
+        }
+        out .= (out = "" ? "" : "`n") . RTrim(line)
+    }
+    return out
+}
+
+ShowCopiedResponse_PlainInline(s) {
+    s := RegExReplace(s, "!\[([^\]]*)\]\([^)]*\)", "$1")
+    s := RegExReplace(s, "\[([^\]]+)\]\([^)]*\)", "$1")
+    s := RegExReplace(s, "``([^``]*)``", "$1")
+    s := RegExReplace(s, "\*\*\*([^*]+)\*\*\*", "$1")
+    s := RegExReplace(s, "\*\*([^*]+)\*\*", "$1")
+    s := RegExReplace(s, "__([^_]+)__", "$1")
+    s := RegExReplace(s, "(?<![\w*])\*([^*\n]+)\*(?!\*)", "$1")
+    s := RegExReplace(s, "(?<!\w)_([^_\n]+)_(?!\w)", "$1")
+    return s
+}
+
+ShowCopiedResponse_InlineRuns(s, bold := false, italic := false) {
+    runs := []
+    if (s = "")
+        return runs
+    buf := ""
+    i := 1
+    n := StrLen(s)
+    while (i <= n) {
+        ch := SubStr(s, i, 1)
+        if (ch = "\" && i < n) {
+            nxt := SubStr(s, i + 1, 1)
+            if (InStr("*_``[]()#!", nxt)) {
+                buf .= nxt
+                i += 2
+                continue
+            }
+        }
+        if (ch = "``") {
+            close := InStr(s, "``", , i + 1)
+            if (close > i) {
+                ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, false, false)
+                inner := SubStr(s, i + 1, close - i - 1)
+                if (inner != "")
+                    runs.Push(ShowCopiedResponse_Run(inner, false, false, true, false))
+                i := close + 1
+                continue
+            }
+        }
+        if (SubStr(s, i, 3) = "***") {
+            close := InStr(s, "***", , i + 3)
+            if (close) {
+                ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, false, false)
+                inner := SubStr(s, i + 3, close - (i + 3))
+                for r in ShowCopiedResponse_InlineRuns(inner, true, true)
+                    runs.Push(r)
+                i := close + 3
+                continue
+            }
+        }
+        marker2 := SubStr(s, i, 2)
+        if (marker2 = "**" || marker2 = "__") {
+            close := InStr(s, marker2, , i + 2)
+            if (close) {
+                ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, false, false)
+                inner := SubStr(s, i + 2, close - (i + 2))
+                for r in ShowCopiedResponse_InlineRuns(inner, true, italic)
+                    runs.Push(r)
+                i := close + 2
+                continue
+            }
+        }
+        if (ch = "*" || (ch = "_" && ShowCopiedResponse_UnderscoreOpens(s, i))) {
+            close := ShowCopiedResponse_FindSingleMarker(s, ch, i + 1)
+            if (close) {
+                inner := SubStr(s, i + 1, close - i - 1)
+                if (Trim(inner) != "") {
+                    ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, false, false)
+                    for r in ShowCopiedResponse_InlineRuns(inner, bold, true)
+                        runs.Push(r)
+                    i := close + 1
+                    continue
+                }
+            }
+        }
+        if ((ch = "!" && SubStr(s, i + 1, 1) = "[") || ch = "[") {
+            bracketPos := ch = "!" ? i + 1 : i
+            link := ShowCopiedResponse_ReadLink(s, bracketPos)
+            if (IsObject(link)) {
+                ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, false, false)
+                for r in ShowCopiedResponse_InlineRuns(link.label, bold, italic) {
+                    r.underline := true
+                    runs.Push(r)
+                }
+                i := link.next
+                continue
+            }
+        }
+        buf .= ch
+        i++
+    }
+    ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, false, false)
+    return runs
+}
+
+ShowCopiedResponse_FlushRun(runs, &buf, bold, italic, code, underline) {
+    if (buf = "")
+        return
+    runs.Push(ShowCopiedResponse_Run(buf, bold, italic, code, underline))
+    buf := ""
+}
+
+ShowCopiedResponse_Run(text, bold, italic, code, underline) {
+    return { text: text, bold: bold, italic: italic, code: code, underline: underline }
+}
+
+ShowCopiedResponse_ReadLink(s, bracketPos) {
+    rb := InStr(s, "]", , bracketPos + 1)
+    if (!rb || SubStr(s, rb + 1, 1) != "(")
+        return ""
+    rp := InStr(s, ")", , rb + 2)
+    if (!rp)
+        return ""
+    label := SubStr(s, bracketPos + 1, rb - bracketPos - 1)
+    if (label = "")
+        label := SubStr(s, rb + 2, rp - rb - 2)
+    return { label: label, next: rp + 1 }
+}
+
+ShowCopiedResponse_UnderscoreOpens(s, i) {
+    prev := i > 1 ? SubStr(s, i - 1, 1) : ""
+    next := SubStr(s, i + 1, 1)
+    if (next = "" || next = " " || next = "_")
+        return false
+    return !ShowCopiedResponse_IsWord(prev)
+}
+
+ShowCopiedResponse_FindSingleMarker(s, marker, start) {
+    i := start
+    n := StrLen(s)
+    while (i <= n) {
+        p := InStr(s, marker, , i)
+        if (!p)
+            return 0
+        prev := p > 1 ? SubStr(s, p - 1, 1) : ""
+        next := SubStr(s, p + 1, 1)
+        if (marker = "*" && (prev = "*" || next = "*")) {
+            i := p + 1
+            continue
+        }
+        if (marker = "_" && (ShowCopiedResponse_IsWord(next) || prev = "_")) {
+            i := p + 1
+            continue
+        }
+        return p
+    }
+    return 0
+}
+
+ShowCopiedResponse_IsWord(ch) {
+    return ch != "" && !!RegExMatch(ch, "^[A-Za-z0-9]$")
+}
+
+ShowCopiedResponse_ColorRef(hex) {
+    rr := Integer("0x" . SubStr(hex, 1, 2))
+    gg := Integer("0x" . SubStr(hex, 3, 2))
+    bb := Integer("0x" . SubStr(hex, 5, 2))
+    return (bb << 16) | (gg << 8) | rr
+}
+
+global g_ShowCopiedResponseRichDll := 0
+
+ShowCopiedResponse_ArmDismissKeys() {
+    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysHotkeys
+    global g_StandardLoadingBarGui, g_StandardLoadingBarKeysEscapeUserCb, g_StandardLoadingBarKeysEscapeActive
+    global g_StandardLoadingBarEscPollPrev, g_OnEscapePressed
+
+    g_StandardLoadingBarIsKeysOverlay := true
+    g_StandardLoadingBarKeysHotkeys := []
+    keyCallbacks := Map(
+        "Enter", ShowCopiedResponse_DismissNoOp,
+        "NumpadEnter", ShowCopiedResponse_DismissNoOp,
+        "E", ShowCopiedResponse_DismissNoOp,
+        "Escape", ShowCopiedResponse_DismissNoOp)
+
+    try HotIf()
+    catch {
+    }
+    for keyName, cb in keyCallbacks {
+        if (StrLower(Trim(keyName)) = "escape")
+            continue
+        StandardLoadingBar_RegisterKeyHandler(keyName, cb)
+        if (StrLen(keyName) = 1) {
+            o := Ord(keyName)
+            alt := ""
+            if (o >= Ord("a") && o <= Ord("z"))
+                alt := StrUpper(keyName)
+            else if (o >= Ord("A") && o <= Ord("Z"))
+                alt := StrLower(keyName)
+            if (alt != "" && alt != keyName)
+                StandardLoadingBar_RegisterKeyHandler(alt, cb)
+        }
+    }
+    g_StandardLoadingBarKeysEscapeUserCb := ShowCopiedResponse_DismissNoOp
+    try {
+        Hotkey("$*Escape", StandardLoadingBar_KeysEscapeDismiss, "On")
+        g_StandardLoadingBarKeysHotkeys.Push("$*Escape")
+    } catch {
+    }
+    g_OnEscapePressed := StandardLoadingBar_KeysEscapeDismiss
+    Utils_EnsureGlobalEscapeHotkey()
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            g_StandardLoadingBarGui.OnEvent("Escape", StandardLoadingBar_KeysEscapeDismiss)
+    } catch {
+    }
+    g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int", 0x1B) &
+    0x8000)
+    SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
+    g_StandardLoadingBarKeysEscapeActive := true
+    StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks)
+    try {
+        if IsObject(g_StandardLoadingBarGui) && g_StandardLoadingBarGui.Hwnd
+            WinActivate(g_StandardLoadingBarGui.Hwnd)
+    } catch {
+    }
+    try HotIf()
+    catch {
+    }
 }

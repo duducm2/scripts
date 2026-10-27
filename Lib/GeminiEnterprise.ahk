@@ -1730,13 +1730,7 @@ class GeminiEnterpriseAsyncLookup {
         StandardLoadingBar_Hide(0)
         if (!bannerText || StrLen(Trim(bannerText)) = 0)
             return
-        state := "ℹ " . bannerText
-        closeNoOp(*) {
-        }
-        closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
-        StandardLoadingBar_ShowWithKeys(state, closeKeys, 0, 0, "",
-            BANNER_ACCENT_INTERMEDIATE, 600, 17, "", false,
-            "[Enter] [E] [Esc] Close", true)
+        ShowCopiedResponseBanner(bannerText, origHwnd)
     }
 }
 

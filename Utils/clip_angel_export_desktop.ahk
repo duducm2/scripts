@@ -1815,7 +1815,8 @@ HotkeyCopy_DoDisplay() {
     }
     ; Defer so any pending KeyWrapper CloseKeysOverlay cannot tear down the result banner.
     bt := A_Clipboard
-    SetTimer((*) => ShowCopiedResponseBanner(bt), -1)
+    anchor := originHwnd
+    SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
 }
 
 ClipAngelExport_OnConfirmDesktop(*) {

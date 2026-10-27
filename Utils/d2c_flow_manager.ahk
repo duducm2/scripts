@@ -1468,7 +1468,8 @@ class D2C_FlowManager {
         ; Defer past KeyWrapper's post-callback CloseKeysOverlay (same pattern as #!+8 SetTimer).
         if (showBanner) {
             bt := bannerText
-            SetTimer((*) => ShowCopiedResponseBanner(bt), -1)
+            anchor := this.OriginHwnd
+            SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
         }
     }
 

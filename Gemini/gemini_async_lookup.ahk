@@ -175,17 +175,6 @@ class GeminiAsyncLookup {
     }
 
     ShowResultBanner(text) {
-        if (!text || StrLen(Trim(text)) = 0)
-            return
-        state := "ℹ " . text
-        closeNoOp(*) {
-        }
-        closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
-        ; timeoutMs 0 = no auto-dismiss; user closes with Enter, E, or Escape (Utils.ahk StandardLoadingBar_ShowWithKeys).
-        StandardLoadingBar_ShowWithKeys(state, closeKeys, 0, 0, "",
-            BANNER_ACCENT_INTERMEDIATE, 600,
-            17, "", false,
-            "[Enter] [E] [Esc] Close",
-            true)
+        ShowCopiedResponseBanner(text)
     }
 }
