@@ -777,34 +777,7 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     global IS_WORK_ENVIRONMENT
 
     if (IS_WORK_ENVIRONMENT) {
-        StandardLoadingBar_Show("⏳ Preparing 7-Zip compress...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-
-        try {
-            StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
-            EnsureItemsViewFocus()
-            Sleep 300
-
-            StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
-            Send "{AppsKey}"
-            Sleep 1000  ; Context menu takes time to appear
-
-            StandardLoadingBar_Update("🔍 Locating 7-Zip option...", BANNER_ACCENT_INTERMEDIATE)
-            Send "7"
-            Sleep 800  ; 7-Zip needs time to respond
-
-            StandardLoadingBar_Update("✍️  Sending first confirmation...", BANNER_ACCENT_INTERMEDIATE)
-            Send "{Enter}"
-            Sleep 600
-
-            StandardLoadingBar_Update("✍️  Sending second confirmation...", BANNER_ACCENT_INTERMEDIATE)
-            Send "{Enter}"
-            Sleep 800
-
-            StandardLoadingBar_Hide(500)
-        } catch as e {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ 7-Zip compress error: " . e.Message, 2000, BANNER_ACCENT_ERROR)
-        }
+        Explorer_7ZipCompress()
         return
     }
 
@@ -838,40 +811,13 @@ OneDriveShare_WaitForClipboardChange(oldClip, timeout := 5000) {
     }
 }
 
-; Shift + X : WinRAR extract to current folder (personal); work PC: 7-Zip extract
+; Shift + X : WinRAR extract to current folder (personal); work PC: 7-Zip extract here
 +x::
 {
     global IS_WORK_ENVIRONMENT
 
     if (IS_WORK_ENVIRONMENT) {
-        StandardLoadingBar_Show("⏳ Preparing 7-Zip extraction...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-
-        try {
-            StandardLoadingBar_Update("📁 Ensuring focus on items view...", BANNER_ACCENT_INTERMEDIATE)
-            EnsureItemsViewFocus()
-            Sleep 300
-
-            StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
-            Send "{AppsKey}"
-            Sleep 1000  ; Context menu takes time to appear
-
-            StandardLoadingBar_Update("🔍 Locating 7-Zip option...", BANNER_ACCENT_INTERMEDIATE)
-            Send "7"
-            Sleep 800  ; 7-Zip menu needs time to respond
-
-            StandardLoadingBar_Update("⬇️  Moving to extract option...", BANNER_ACCENT_INTERMEDIATE)
-            Send "{Down}"
-            Sleep 400
-
-            StandardLoadingBar_Update("✍️  Extracting to current folder...", BANNER_ACCENT_INTERMEDIATE)
-            Send "{Enter}"
-            Sleep 800
-
-            StandardLoadingBar_Hide(500)
-        } catch as e {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ 7-Zip extract error: " . e.Message, 2000, BANNER_ACCENT_ERROR)
-        }
+        Explorer_7ZipExtractHere()
         return
     }
 
@@ -1054,6 +1000,379 @@ Explorer_OpenFolderInWindowsTerminal() {
 +b::
 {
     Explorer_SetAsDesktopBackground()
+}
+
+; Work PC: 7-Zip via the classic shell menu. Each step is a gate. Keys are sent only after
+; that gate is true, so a slow Explorer never receives "7" / Down / Enter in the file list.
+Explorer_7ZipCompress() {
+    Explorer_7ZipRunMenuCommand(Explorer_7ZipAddNeedles(), "compress", "⏳ Preparing 7-Zip compress...", true)
+}
+
+Explorer_7ZipExtractHere() {
+    Explorer_7ZipRunMenuCommand(Explorer_7ZipExtractHereNeedles(), "extract", "⏳ Preparing 7-Zip extraction...", false)
+}
+
+Explorer_7ZipAddNeedles() {
+    return [
+        "add to archive",
+        "adicionar ao arquivo",
+        "adicionar ao ficheiro",
+        "añadir al archivo",
+        "anadir al archivo",
+        "agregar al archivo",
+        "zum archiv hinzufügen",
+        "zum archiv hinzufugen",
+        "ajouter à l'archive",
+        "ajouter a l'archive"
+    ]
+}
+
+Explorer_7ZipExtractHereNeedles() {
+    return [
+        "extract here",
+        "extrair aqui",
+        "extraer aquí",
+        "extraer aqui",
+        "hier entpacken",
+        "extraire ici"
+    ]
+}
+
+Explorer_7ZipParentNeedles() {
+    return ["7-zip", "7zip"]
+}
+
+Explorer_7ZipMoreOptionsNeedles() {
+    return [
+        "show more options",
+        "mais opções",
+        "mais opcoes",
+        "weitere optionen",
+        "mostrar más opciones",
+        "mostrar mas opciones",
+        "afficher plus d'options"
+    ]
+}
+
+Explorer_7ZipRunMenuCommand(actionNeedles, verb, banner, confirmDialog) {
+    global g_Explorer7ZipBusy
+    if (IsSet(g_Explorer7ZipBusy) && g_Explorer7ZipBusy)
+        return
+    g_Explorer7ZipBusy := true
+    ; Block other hotkeys for the whole sequence. A second hotkey during Sleep used to
+    ; type into Explorer while this one was still opening the menu.
+    Critical "On"
+    try {
+        StandardLoadingBar_Show(banner, BANNER_ACCENT_INTERMEDIATE, { passive: false })
+
+        StandardLoadingBar_Update("📁 Checking the selected file...", BANNER_ACCENT_INTERMEDIATE)
+        Explorer_EnsureItemsViewFocusPreserveSelection()
+        explorerHwnd := WinExist("A")
+        if !explorerHwnd
+            throw Error("Explorer is not the active window.")
+
+        StandardLoadingBar_Update("⏳ Letting Explorer settle...", BANNER_ACCENT_INTERMEDIATE)
+        Sleep 500
+        Explorer_RequireExplorerForeground(explorerHwnd)
+
+        if (Explorer_ShellMenuPopupHwnds().Length > 0) {
+            Explorer_DismissShellMenus()
+            Sleep 200
+            Explorer_RequireExplorerForeground(explorerHwnd)
+        }
+
+        StandardLoadingBar_Update("📋 Opening context menu...", BANNER_ACCENT_INTERMEDIATE)
+        Send "+{F10}"
+        if !Explorer_WaitStableShellMenu(12000)
+            Explorer_FailShellMenuOpen()
+
+        known7Zip := Explorer_ListProcessHwnds("ahk_exe 7zG.exe")
+        actionEl := Explorer_7ZipResolveMenuAction(actionNeedles, verb)
+        StandardLoadingBar_Update("✍️  Running 7-Zip " . verb . "...", BANNER_ACCENT_INTERMEDIATE)
+        if !Explorer_InvokeShellMenuItem(actionEl)
+            throw Error("Could not run the 7-Zip command. The menu was closed without clicking.")
+
+        if !Explorer_WaitShellMenusClosed(5000) && !Explorer_HasNewHwnd(known7Zip, "ahk_exe 7zG.exe")
+            throw Error("7-Zip did not accept the command. Closed the menu.")
+
+        if (confirmDialog) {
+            StandardLoadingBar_Update("✍️  Waiting for the 7-Zip dialog...", BANNER_ACCENT_INTERMEDIATE)
+            dialogHwnd := Explorer_WaitNewHwnd(known7Zip, "ahk_exe 7zG.exe", 10000)
+            if !dialogHwnd
+                throw Error("7-Zip dialog did not open. Enter was not sent.")
+            WinActivate("ahk_id " dialogHwnd)
+            if !WinWaitActive("ahk_id " dialogHwnd, , 4)
+                throw Error("7-Zip dialog did not take focus. Enter was not sent.")
+            Sleep 400
+            if !WinActive("ahk_id " dialogHwnd)
+                throw Error("7-Zip dialog lost focus. Enter was not sent.")
+            Send "{Enter}"
+        }
+
+        done := (verb = "extract") ? "✅ Extracting to the current folder" : "✅ 7-Zip compress started"
+        StandardLoadingBar_Update(done, BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(500)
+    } catch as e {
+        try Explorer_DismissShellMenus()
+        try StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ 7-Zip " . verb . " error: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+    } finally {
+        Critical "Off"
+        g_Explorer7ZipBusy := false
+    }
+}
+
+Explorer_7ZipResolveMenuAction(actionNeedles, verb) {
+    actionEl := Explorer_FindMenuItemInPopups(actionNeedles)
+    if actionEl
+        return actionEl
+
+    parentEl := Explorer_FindMenuItemInPopups(Explorer_7ZipParentNeedles())
+    if !parentEl {
+        moreEl := Explorer_FindMenuItemInPopups(Explorer_7ZipMoreOptionsNeedles())
+        if !moreEl
+            throw Error("7-Zip is not in the context menu. Closed it without clicking.")
+        StandardLoadingBar_Update("📋 Opening the full context menu...", BANNER_ACCENT_INTERMEDIATE)
+        if !Explorer_InvokeShellMenuItem(moreEl)
+            throw Error("Could not open the full context menu.")
+        if !Explorer_WaitStableShellMenu(12000)
+            Explorer_FailShellMenuOpen()
+        actionEl := Explorer_FindMenuItemInPopups(actionNeedles)
+        if actionEl
+            return actionEl
+        parentEl := Explorer_FindMenuItemInPopups(Explorer_7ZipParentNeedles())
+        if !parentEl
+            throw Error("7-Zip is not in the full context menu. Closed it without clicking.")
+    }
+
+    StandardLoadingBar_Update("🔍 Opening the 7-Zip menu...", BANNER_ACCENT_INTERMEDIATE)
+    if Explorer_TryExpandShellSubmenu(parentEl)
+        actionEl := Explorer_WaitShellMenuItem(actionNeedles, 4000)
+    if !actionEl {
+        if !Explorer_SendMenuAccessKey("7")
+            throw Error("7-Zip menu did not take focus. Closed it without clicking.")
+        actionEl := Explorer_WaitShellMenuItem(actionNeedles, 8000)
+    }
+    if !actionEl {
+        missing := (verb = "extract")
+            ? "Extract Here was not in the 7-Zip menu. Closed it without clicking."
+            : "Add to archive was not in the 7-Zip menu. Closed it without clicking."
+        throw Error(missing)
+    }
+    return actionEl
+}
+
+Explorer_FailShellMenuOpen() {
+    hadMenu := Explorer_ShellMenuPopupHwnds().Length > 0
+    if (hadMenu)
+        Explorer_DismissShellMenus()
+    else if WinActive("ahk_exe explorer.exe")
+        Send "{Esc}"
+    if (hadMenu)
+        throw Error("Context menu was still loading. Closed it without clicking.")
+    throw Error("Context menu did not open. No command was sent.")
+}
+
+Explorer_RequireExplorerForeground(explorerHwnd) {
+    if WinActive("ahk_id " explorerHwnd)
+        return
+    if WinActive("ahk_exe explorer.exe")
+        return
+    throw Error("Explorer lost focus. Stopped before sending keys.")
+}
+
+Explorer_ShellMenuPopupHwnds() {
+    hwnds := []
+    for hwnd in WinGetList("ahk_class #32768") {
+        if hwnd
+            hwnds.Push(hwnd)
+    }
+    return hwnds
+}
+
+Explorer_ListProcessHwnds(winTitle) {
+    hwnds := []
+    for hwnd in WinGetList(winTitle) {
+        if hwnd
+            hwnds.Push(hwnd)
+    }
+    return hwnds
+}
+
+Explorer_HwndInList(hwnd, hwnds) {
+    for known in hwnds {
+        if (known = hwnd)
+            return true
+    }
+    return false
+}
+
+Explorer_HasNewHwnd(known, winTitle) {
+    for hwnd in Explorer_ListProcessHwnds(winTitle) {
+        if !Explorer_HwndInList(hwnd, known)
+            return true
+    }
+    return false
+}
+
+Explorer_WaitNewHwnd(known, winTitle, timeoutMs) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        for hwnd in Explorer_ListProcessHwnds(winTitle) {
+            if !Explorer_HwndInList(hwnd, known)
+                return hwnd
+        }
+        Sleep 100
+    }
+    return 0
+}
+
+Explorer_DismissShellMenus() {
+    if WinActive("ahk_exe 7zG.exe") || WinActive("ahk_exe 7zFM.exe")
+        return true
+    loop 4 {
+        if (Explorer_ShellMenuPopupHwnds().Length = 0)
+            return true
+        if !WinActive("ahk_class #32768") && !WinActive("ahk_exe explorer.exe")
+            return false
+        Send "{Esc}"
+        Sleep 180
+    }
+    return Explorer_ShellMenuPopupHwnds().Length = 0
+}
+
+Explorer_CountShellMenuItems(hwnds) {
+    total := 0
+    for hwnd in hwnds {
+        try {
+            menuRoot := UIA.ElementFromHandle(hwnd)
+            for typeName in ["MenuItem", "ListItem"] {
+                try total += menuRoot.FindAll({ ControlType: typeName }).Length
+                catch {
+                }
+            }
+        } catch {
+        }
+    }
+    return total
+}
+
+; Wait until the popup exists and its item count has stopped changing, so 7-Zip's
+; shell extension is finished before we read or click anything.
+Explorer_WaitStableShellMenu(timeoutMs := 12000) {
+    deadline := A_TickCount + timeoutMs
+    appeared := false
+    while (A_TickCount < deadline) {
+        if (Explorer_ShellMenuPopupHwnds().Length > 0) {
+            appeared := true
+            break
+        }
+        Sleep 100
+    }
+    if !appeared
+        return false
+
+    Sleep 400
+    lastCount := -1
+    while (A_TickCount < deadline) {
+        hwnds := Explorer_ShellMenuPopupHwnds()
+        if (hwnds.Length = 0)
+            return false
+        count := Explorer_CountShellMenuItems(hwnds)
+        if (count > 0 && count = lastCount)
+            return true
+        lastCount := count
+        Sleep 300
+    }
+    return false
+}
+
+Explorer_WaitShellMenusClosed(timeoutMs := 5000) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (Explorer_ShellMenuPopupHwnds().Length = 0)
+            return true
+        Sleep 100
+    }
+    return false
+}
+
+Explorer_FindMenuItemInPopups(needles) {
+    for hwnd in Explorer_ShellMenuPopupHwnds() {
+        item := Explorer_FindWallpaperMenuItemInPopup(hwnd, needles)
+        if item
+            return item
+    }
+    return 0
+}
+
+Explorer_WaitShellMenuItem(needles, timeoutMs) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        item := Explorer_FindMenuItemInPopups(needles)
+        if item
+            return item
+        Sleep 200
+    }
+    return 0
+}
+
+Explorer_TryExpandShellSubmenu(menuItemEl) {
+    if !IsObject(menuItemEl)
+        return false
+    try {
+        if !menuItemEl.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+            return false
+        pat := menuItemEl.ExpandCollapsePattern
+        state := pat.ExpandCollapseState
+        if (state = UIA.ExpandCollapseState.Expanded)
+            return true
+        if (state = UIA.ExpandCollapseState.Collapsed || state = UIA.ExpandCollapseState.PartiallyExpanded) {
+            pat.Expand()
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+Explorer_SendMenuAccessKey(key) {
+    if !WinActive("ahk_class #32768")
+        return false
+    Send key
+    return true
+}
+
+Explorer_InvokeShellMenuItem(menuItemEl) {
+    if !IsObject(menuItemEl)
+        return false
+    if (Explorer_ShellMenuPopupHwnds().Length = 0)
+        return false
+    try {
+        if menuItemEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            menuItemEl.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    if (Explorer_ShellMenuPopupHwnds().Length = 0 || !WinActive("ahk_class #32768"))
+        return false
+    try menuItemEl.SetFocus()
+    catch
+        return false
+    Sleep 80
+    ; Enter only if this item itself is focused. Otherwise it would activate whatever
+    ; the menu currently highlights, which on a slow PC may not be the 7-Zip command.
+    try {
+        if !menuItemEl.HasKeyboardFocus
+            return false
+    } catch {
+        return false
+    }
+    if !WinActive("ahk_class #32768")
+        return false
+    Send "{Enter}"
+    return true
 }
 
 Explorer_WaitShellContextMenuHwnd(timeoutMs := 2500) {
