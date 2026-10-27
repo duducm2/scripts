@@ -1,0 +1,31 @@
+﻿===PREVIEW===
+0 project(s) · 8 task(s) · 8 info · Extraído das discussões recentes no Teams sobre UX Super (KPIs) com Guilherme Rocamora, Felipe Souza, Marco Pacheco e Mark Kovacs. Nota: nenhum bloco de texto bruto adicional foi colado após a instrução no prompt.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+UX Super,work,Refazer sessão de KPIs com métricas da apresentação da Alemanha e pesquisa do Felipe,important,punctual,,,2026-10-26,KPIs
+UX Super,work,Comparar resultados atuais de KPIs com os novos resultados junto ao Felipe Souza,general,punctual,,,,KPIs
+UX Super,work,Testar o Agente de KPIs com os 3 projetos enviados pelo Marco Pacheco,important,punctual,,,,KPIs
+UX Super,work,Avaliar e integrar código do UX Value KPI Strategist do Mark Kovacs no UX Super,waiting,punctual,,,,KPIs
+UX Super,work,Implementar etiquetas das 3 camadas de KPIs (Usuário/UX / Produto/Serviço / Negócio),general,punctual,,,,KPIs
+UX Super,work,Adicionar cálculo e visualização de ROI na plataforma de KPIs,general,punctual,,,,KPIs
+UX Super,work,Restringir contexto com constraints no prompt do Agente de KPIs para evitar alucinações,general,punctual,,,,KPIs
+UX Super,work,Receber documentos de projetos do time para alimentar e refinar o Agente de KPIs,general,punctual,,,,KPIs
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Refazer sessão de KPIs com métricas da apresentação da Alemanha e pesquisa do Felipe,UX Super,work,Orientação do Felipe Souza,"Pegar as métricas definidas na apresentação feita na Alemanha e utilizar apenas a pesquisa do Felipe como contexto, junto com essas métricas (confirmado o valor de 24,1M no report), para refazer a sessão de KPIs.",Contexto
+task,Comparar resultados atuais de KPIs com os novos resultados junto ao Felipe Souza,UX Super,work,Revisão comparativa,"Voltar com o Felipe Souza após regerar os KPIs para comparar os resultados atuais com os novos gerados a partir do contexto restrito.",Alinhamento
+task,Testar o Agente de KPIs com os 3 projetos enviados pelo Marco Pacheco,UX Super,work,Projetos de teste do Marco,"Marco compartilhou a pasta KPI Test Projects com 3 perfis de projeto: 1 fácil (UI development), 1 difícil (apenas research) e 1 intermediário (criação de conceito). Fluxo: reunir documentos/proposta, alimentar o agente, revisar os KPIs gerados e alinhar com o ponto focal.",Testes
+task,Avaliar e integrar código do UX Value KPI Strategist do Mark Kovacs no UX Super,UX Super,work,Código do Mark em espera,"Mark Kovacs enviou o pacote ux-value-kpi-strategist-server-1.0.0.zip. Mantido on hold por enquanto para não alterar o funcionamento atual até alinhar com o Guilherme Rocamora a melhor forma de integração.",Técnico
+task,Implementar etiquetas das 3 camadas de KPIs (Usuário/UX / Produto/Serviço / Negócio),UX Super,work,Padrão global em 3 camadas,"Dividir os KPIs nas camadas Usuário/UX, Produto/Serviço e Negócio (caso SMAG) e garantir que os projetos tenham objetivos numéricos claros definidos como norte.",Padronização
+task,Adicionar cálculo e visualização de ROI na plataforma de KPIs,UX Super,work,Diferenciação e valor de negócio,"Necessidade de demonstrar ROI e diferenciar o UX Super (geração de leads) do UX AI Platform (gestão de projetos), mantendo o Agente de KPI atuando em ambas as frentes.", Escopo
+task,Restringir contexto com constraints no prompt do Agente de KPIs para evitar alucinações,UX Super,work,Calibragem da LLM,"O gerador divide entre quantitativo/qualitativo e os 3 pilares (Current situation, Lead e Lag). Caso apresente alucinações na geração, aplicar mais constraints no prompt durante a calibragem.",Calibragem
+task,Receber documentos de projetos do time para alimentar e refinar o Agente de KPIs,UX Super,work,Envio de documentos pela equipe,"Guilherme Rocamora avisou o time para procurar o Eduardo e fornecer os documentos dos projetos trabalhados (ex.: contato da Rô agendado para amanhã às 11h30).",Coleta
+===END_FILE===
