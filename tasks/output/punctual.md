@@ -78,6 +78,8 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 ⚡ GitHub Pages: O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md
 
+🔲 At the Astra project with pictures and the tooling project to your portfolio
+
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
@@ -222,6 +224,8 @@ Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou 
 ⏳ Cartão de vacina
 ℹ️ IMG_20261010_125211.jpg
 ℹ️ IMG_20261010_125128.jpg
+
+⏳ Castrar a Moka
 
 ### Vaccination Timetable
 
