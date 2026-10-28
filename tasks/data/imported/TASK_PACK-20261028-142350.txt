@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 10 info · PowerPoint updates organized under UX Super
+
+===END_PREVIEW===
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+UX Super,work,Overtime Management PowerPoint Updates,general,punctual,,,,
+===END_FILE===
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Overtime Management PowerPoint Updates,UX Super,work,Expected Result KPI Milestone,Represent the "pain point coverage" KPI only as a milestone instead of a bar chart to show the expected result.,
+task,Overtime Management PowerPoint Updates,UX Super,work,Process Transparency Index Name,Check with Felipe if "process transparency index" is correct or if another name should be used as Guilherme did not understand it.,
+task,Overtime Management PowerPoint Updates,UX Super,work,Explain Micro Overtime Cost,Make the term "micro over time cost" more understandable within the slides.,
+task,Overtime Management PowerPoint Updates,UX Super,work,Project Description Location Update,Change the location reference in the description from "an area" to "RBLA starting in Campinas".,
+task,Overtime Management PowerPoint Updates,UX Super,work,DAF Project Description Reference,Mention "DAF" only in the project description to focus on showcasing UX and keep it out of titles and milestones.,
+task,Overtime Management PowerPoint Updates,UX Super,work,GSB/DU and GS/TET Partnership,Add to the project description that this is a partnership between GSB/DU and GS/TET.,
+task,Overtime Management PowerPoint Updates,UX Super,work,Milestones Order of Impact,Reorder milestones and achievements by impact starting from indirect cost and rework.,
+task,Overtime Management PowerPoint Updates,UX Super,work,Indirect Cost HR Dashboard note,Explicitly state that the identified indirect costs and rework are not currently being tracked on the HR dashboard.,
+task,Overtime Management PowerPoint Updates,UX Super,work,UX Shadowing Methodology,Add to the "behavior and micro overtime observed" section that the findings were gathered through UX shadowing.,
+task,Overtime Management PowerPoint Updates,UX Super,work,Milestone System Correction,Remove "overtime" from the milestone "systems with SAP overtime LANL and BI" as it is not a system.,
+===END_FILE===
