@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+3 row(s) · All items parsed (groceries on credit card, Canicross equipment on credit card, and partial salary received). Defaulted credit card to CARD_MP and account to ACC_MERCADOP where unspecified.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Groceries,"402,76",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+Canicross equipment,"525,90",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1
+Salary (partial),"2810,13",income,CAT_SALARIO,ACC_MERCADOP,,,1
+===END_FILE===
