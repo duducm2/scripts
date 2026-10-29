@@ -1366,6 +1366,7 @@ class D2C_FlowManager {
             "H", this.OnActionH.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
+            "I", this.OnActionI.Bind(this),
             "O", this.OnActionO.Bind(this),
             "N", this.OnActionN.Bind(this),
             "Escape", this.OnActionN.Bind(this)
@@ -1376,10 +1377,10 @@ class D2C_FlowManager {
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
             pk :=
-                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
         else
             pk :=
-                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [I] Import  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
             "❓ Response ready — what next? (5s)",
             keyCallbacks,
@@ -1473,6 +1474,33 @@ class D2C_FlowManager {
             bt := bannerText
             anchor := this.OriginHwnd
             SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
+        }
+    }
+
+    ; [I] Copy reply, then run Import Management on that clipboard (same as #!+p [I]).
+    OnActionI(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            clip := Trim(A_Clipboard)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            ImportMgmt_RunClassifiedClipboard()
+        } catch as e {
+            ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
+            BANNER_ACCENT_ERROR)
+        } finally {
+            this.Reset()
         }
     }
 
