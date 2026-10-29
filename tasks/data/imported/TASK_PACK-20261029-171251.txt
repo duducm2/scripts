@@ -1,0 +1,19 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 3 info · 1 existing task note update
+
+Target Project: Habits & Health
+Filter: habits
+Section Path: Daily
+===END_PREVIEW===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+"Habits & Health",habits,"Give Condroplex 1000 to puppy",general,habitual,daily,,2026-10-30,Daily
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,"Give Condroplex 1000 to puppy","Habits & Health",habits,"Treatment Duration","Give daily from now until she reaches 1 year of age.",Daily
+task,"Give Condroplex 1000 to puppy","Habits & Health",habits,"Correct Dosage (Condroplex 1000)","1 capsule per day (ideal for her estimated 12 kg to 16 kg weight range). Do not buy the 500 strength anymore.",Daily
+task,"Give Condroplex 1000 to puppy","Habits & Health",habits,"Purchase Reminder","Buy more Condroplex 1000 on Mercado Livre before the current supply runs out.",Daily
+===END_FILE===

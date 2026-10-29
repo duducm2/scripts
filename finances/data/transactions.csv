@@ -273,3 +273,8 @@ TX278,2026-10-27,Construction materials for new house,"2241,28",expense,CAT_NEWH
 TX279,2026-10-27,Transfer to checking account,"2299,99",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX280,2026-10-27,Serviceman constructing new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX281,2026-10-27,Toll booths,"50,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX282,2026-10-29,Meal Voucher,"500,00",income,CAT_SALARIO,ACC_MEALVOUC,,,1,1,,0
+TX283,2026-10-29,Meal,"500,00",expense,CAT_ALIMENTA,ACC_MEALVOUC,,,1,1,,0
+TX284,2026-10-28,Groceries,"402,76",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX285,2026-10-28,Canicross equipment,"525,90",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX286,2026-10-28,Salary (partial),"2810,13",income,CAT_SALARIO,ACC_MERCADOP,,,1,1,,0
