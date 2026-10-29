@@ -9,7 +9,7 @@
 ⏳ Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)
 ⏳ Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)
 🔲 🐕 Brush Moka's fur (Wood Brush)
-🔲 Give Condroplex 1000 to puppy
+🔲 🐕 Give Condroplex 1000 to puppy
 🐕 Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal)
 
 ## Weekly
@@ -27,6 +27,7 @@
 ⏳ Health check-up (self-check; schedule visit if concerns)
 🔲 🐕 Apply tick and flea prevention to German Shepherd
 🔲 🐈 Apply tick and flea prevention to cats
+🔲 🐕 Give dewormer to Maka
 ⚖️ Weigh German Shepherd and adjust daily grams based on calorie density and growth rate
 
 ## Quarterly
@@ -77,7 +78,7 @@
 
 ⏳ Prevent heartworm when traveling to coast with pets
 ⏳ Pharmacological regimen interactions
-⚡ Moka has to sunbath every day
+🔲 🐕 Moka has to sunbath every day
 🔲 You need to check if you made something good to add to your my personal repo just for historical purposes
 ⏳ Start paying OpenCode Go if weekly limit overflows by midweek
 🔲 Add R$350 to your private pension plan and R$50 for any emergency

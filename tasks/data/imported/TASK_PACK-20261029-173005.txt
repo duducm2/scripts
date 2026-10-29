@@ -1,0 +1,19 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 3 info · 0 skips
+
+Target Project: Habits & Health
+Filter: habits
+Section Path: Monthly
+===END_PREVIEW===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+"Habits & Health",habits,"Give dewormer to Maka",general,habitual,monthly,,2026-11-29,Monthly
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,"Give dewormer to Maka","Habits & Health",habits,"Chosen Product","Top Dog 30 kg (Ourofino). Cut tablet in half for current dosage (~15 kg weight).",Monthly
+task,"Give dewormer to Maka","Habits & Health",habits,"Treatment Duration","Give monthly until she reaches 6 months of age.",Monthly
+task,"Give dewormer to Maka","Habits & Health",habits,"Future Interval (After 6 Months)","After she is 6 months old, change the dosing frequency from monthly to once every 3 to 4 months.",Monthly
+===END_FILE===
