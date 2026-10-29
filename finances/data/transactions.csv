@@ -267,3 +267,9 @@ TX272,2026-10-24,Falset fixing,"300,00",expense,CAT_SERVICO,ACC_MERCADOP,,,1,1,,
 TX273,2026-10-24,Food,"42,75",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX274,2026-10-24,Food,"7,95",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX275,2026-10-24,Groceries,"5,50",expense,CAT_MERCADO,ACC_MERCADOP,,,1,1,,0
+TX276,2026-10-27,Food,"50,37",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX277,2026-10-27,Office Halloween plays,"10,00",expense,CAT_LAZER,ACC_MERCADOP,,,1,1,,0
+TX278,2026-10-27,Construction materials for new house,"2241,28",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX279,2026-10-27,Transfer to checking account,"2299,99",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX280,2026-10-27,Serviceman constructing new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX281,2026-10-27,Toll booths,"50,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,0

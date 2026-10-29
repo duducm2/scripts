@@ -31,6 +31,8 @@ global g_StandardLoadingBarChordKeyCb := ""
 global g_StandardLoadingBarKeysHotkeys := []
 global g_StandardLoadingBarKeysTimeoutTimer := ""
 global g_StandardLoadingBarBorderGui := 0
+; HWNDs shown by the reader. Close sweeps these even if the Gui ref was already dropped.
+global g_StandardLoadingBarOwnedHwnds := []
 global g_StandardLoadingBarTrackTimer := ""
 global g_StandardLoadingBarLastForegroundMonitorIdx := 0
 global g_StandardLoadingBarTimedProgressTimer := ""
@@ -519,6 +521,8 @@ StandardLoadingBar_Hide(delayMs := 0) {
     } catch {
     }
     stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd)) || (borderHwnd && WinExist("ahk_id " borderHwnd))
+    if !StandardLoadingBar_DestroyOwnedHwnds()
+        stillLive := true
     if (stillLive) {
         ; Keep references and retry — do not orphan an AlwaysOnTop window.
         g_StandardLoadingBarGui := guiObj
@@ -602,6 +606,8 @@ StandardLoadingBar_CloseKeysOverlay() {
     } catch {
     }
     stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd)) || (borderHwnd && WinExist("ahk_id " borderHwnd))
+    if !StandardLoadingBar_DestroyOwnedHwnds()
+        stillLive := true
     if (stillLive) {
         g_StandardLoadingBarGui := guiObj
         g_StandardLoadingBarBorderGui := borderObj
@@ -618,6 +624,10 @@ StandardLoadingBar_CloseKeysOverlay() {
 StandardLoadingBar_ForceDestroyHwnd(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return true
+    ; A hollow region (the reader frame) can survive Gui.Destroy and stay visible.
+    try DllCall("user32\SetWindowRgn", "ptr", hwnd, "ptr", 0, "int", 1)
+    catch {
+    }
     try WinHide("ahk_id " hwnd)
     catch {
     }
@@ -625,6 +635,28 @@ StandardLoadingBar_ForceDestroyHwnd(hwnd) {
     catch {
     }
     return !WinExist("ahk_id " hwnd)
+}
+
+StandardLoadingBar_RememberHwnd(hwnd) {
+    global g_StandardLoadingBarOwnedHwnds
+    if (!hwnd)
+        return
+    for h in g_StandardLoadingBarOwnedHwnds
+        if (h = hwnd)
+            return
+    g_StandardLoadingBarOwnedHwnds.Push(hwnd)
+}
+
+; Returns true when every remembered window is gone.
+StandardLoadingBar_DestroyOwnedHwnds() {
+    global g_StandardLoadingBarOwnedHwnds
+    alive := []
+    for hwnd in g_StandardLoadingBarOwnedHwnds {
+        if !StandardLoadingBar_ForceDestroyHwnd(hwnd)
+            alive.Push(hwnd)
+    }
+    g_StandardLoadingBarOwnedHwnds := alive
+    return alive.Length = 0
 }
 
 ; Return the Escape cancel callback from keyCallbacks, if any (used for robust Esc handling).
@@ -1456,26 +1488,6 @@ ShowCopiedResponse_LegacyBanner(text) {
 ShowCopiedResponse_DismissNoOp(*) {
 }
 
-; Punch out the center so the accent window is a frame, not a solid block.
-ShowCopiedResponse_FrameBorder(hwnd, w, h, inset) {
-    if (!hwnd || w <= inset * 2 || h <= inset * 2)
-        return
-    outer := DllCall("gdi32\CreateRectRgn", "int", 0, "int", 0, "int", w, "int", h, "ptr")
-    inner := DllCall("gdi32\CreateRectRgn", "int", inset, "int", inset, "int", w - inset, "int", h - inset, "ptr")
-    if (!outer || !inner) {
-        if (outer)
-            DllCall("gdi32\DeleteObject", "ptr", outer)
-        if (inner)
-            DllCall("gdi32\DeleteObject", "ptr", inner)
-        return
-    }
-    DllCall("gdi32\CombineRgn", "ptr", outer, "ptr", outer, "ptr", inner, "int", 4)
-    DllCall("gdi32\DeleteObject", "ptr", inner)
-    ; SetWindowRgn takes ownership of the region when it succeeds.
-    if !DllCall("user32\SetWindowRgn", "ptr", hwnd, "ptr", outer, "int", 1)
-        DllCall("gdi32\DeleteObject", "ptr", outer)
-}
-
 ShowCopiedResponse_ShowReadingPane(text, ml, mt, mr, mb) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarBorderGui, g_StandardLoadingBarValue
     global g_ShowCopiedResponseRichDll
@@ -1487,22 +1499,25 @@ ShowCopiedResponse_ShowReadingPane(text, ml, mt, mr, mb) {
 
     border := 6
     guiOpt := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
-    borderGui := Gui(guiOpt)
-    borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
+    ; One window. A separate frame GUI is what stayed on screen after Esc removed the text.
     overlayGui := Gui(guiOpt)
-    overlayGui.BackColor := "1E1E2E"
+    overlayGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     overlayGui.MarginX := 0
     overlayGui.MarginY := 0
+    fill := overlayGui.Add("Text", "x" . border . " y" . border . " w" . layout.guiW . " h" . layout.guiH .
+        " Background1E1E2E", " ")
 
-    editOpts := "ClassRICHEDIT50W x" . layout.marginX . " y" . layout.marginY
+    editX := border + layout.marginX
+    editY := border + layout.marginY
+    editOpts := "ClassRICHEDIT50W x" . editX . " y" . editY
         . " w" . layout.editW . " h" . layout.editH . " +0x44 +VScroll -E0x200"
     edit := overlayGui.Add("Custom", editOpts)
-    footerY := layout.marginY + layout.editH + 8
+    footerY := editY + layout.editH + 8
     overlayGui.SetFont("s13 cA6ADC8", "Segoe UI")
-    overlayGui.Add("Text", "x" . layout.marginX . " y" . footerY . " w" . layout.editW . " h" . layout.footerH .
-        " Center", "[Enter]    [E]    [Esc]    Close")
+    footer := overlayGui.Add("Text", "x" . editX . " y" . footerY . " w" . layout.editW . " h" . layout.footerH .
+        " Center Background1E1E2E", "[Enter]    [E]    [Esc]    Close")
 
-    g_StandardLoadingBarBorderGui := borderGui
+    g_StandardLoadingBarBorderGui := 0
     g_StandardLoadingBarGui := overlayGui
     g_StandardLoadingBarValue := 0
 
@@ -1512,22 +1527,17 @@ ShowCopiedResponse_ShowReadingPane(text, ml, mt, mr, mb) {
     SendMessage(0x435, 0, 0x7FFFFFFE, hwnd)
     SendMessage(0x443, 0, bg, hwnd)
 
-    guiX := layout.guiX
-    guiY := layout.guiY
-    guiW := layout.guiW
-    guiH := layout.guiH
-    borderW := guiW + 2 * border
-    borderH := guiH + 2 * border
-    borderGui.Show("NA x" . (guiX - border) . " y" . (guiY - border) . " w" . borderW . " h" . borderH)
-    ; Hollow frame, so a missed destroy cannot leave a solid yellow slab.
-    ShowCopiedResponse_FrameBorder(borderGui.Hwnd, borderW, borderH, border)
+    guiX := layout.guiX - border
+    guiY := layout.guiY - border
+    guiW := layout.guiW + 2 * border
+    guiH := layout.guiH + 2 * border
+    ; Ask for a size that already fits. Show can still come back taller (DPI), so clamp after.
+    ShowCopiedResponse_LimitRect(&guiX, &guiY, &guiW, &guiH, ml, mt, mr, mb)
     overlayGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH . " NA")
-    try {
-        if (hwnd)
-            DllCall("SetWindowPos", "Ptr", overlayGui.Hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0,
-                "UInt", 0x0015)
-    } catch {
-    }
+    StandardLoadingBar_RememberHwnd(overlayGui.Hwnd)
+    ShowCopiedResponse_ClampWindow(overlayGui, ml, mt, mr, mb)
+    ShowCopiedResponse_FitContents(overlayGui, fill, edit, footer, border, layout.marginX, layout.marginY,
+        layout.footerH, 8)
     ; Arm before the long render so Enter/E/Esc work if drawing a huge reply takes a while.
     ShowCopiedResponse_ArmDismissKeys()
     try StandardLoadingBar_CancelHideTimers()
@@ -1550,6 +1560,108 @@ ShowCopiedResponse_ShowReadingPane(text, ml, mt, mr, mb) {
     SendMessage(0xB1, 0, 0, hwnd)
     scrollPt := Buffer(8, 0)
     SendMessage(0x4DD, 0, scrollPt.Ptr, hwnd)
+    ; Focus can move the window onto another DPI and grow it. Fit it again.
+    ShowCopiedResponse_ClampWindow(overlayGui, ml, mt, mr, mb)
+    ShowCopiedResponse_FitContents(overlayGui, fill, edit, footer, border, layout.marginX, layout.marginY,
+        layout.footerH, 8)
+}
+
+; Keep x,y,w,h inside the work area. Height is what runs off the panel.
+ShowCopiedResponse_LimitRect(&x, &y, &w, &h, ml, mt, mr, mb) {
+    ShowCopiedResponse_ScreenLimit(ml, mt, mr, mb, &l, &t, &r, &b)
+    maxW := Max(1, r - l)
+    maxH := Max(1, b - t)
+    if (w > maxW)
+        w := maxW
+    if (h > maxH)
+        h := maxH
+    if (x < l)
+        x := l
+    if (y < t)
+        y := t
+    if (x + w > r)
+        x := r - w
+    if (y + h > b)
+        y := b - h
+    if (x < l)
+        x := l
+    if (y < t)
+        y := t
+}
+
+; Work area, cut back to the monitor rectangle so a bad work-area cannot hang off the panel.
+ShowCopiedResponse_ScreenLimit(ml, mt, mr, mb, &l, &t, &r, &b) {
+    l := ml
+    t := mt
+    r := mr
+    b := mb
+    cx := (ml + mr) // 2
+    cy := (mt + mb) // 2
+    try n := MonitorGetCount()
+    catch
+        return
+    loop n {
+        try MonitorGet(A_Index, &mlL, &mlT, &mlR, &mlB)
+        catch
+            continue
+        if (cx >= mlL && cx < mlR && cy >= mlT && cy < mlB) {
+            if (l < mlL)
+                l := mlL
+            if (t < mlT)
+                t := mlT
+            if (r > mlR)
+                r := mlR
+            if (b > mlB)
+                b := mlB
+            return
+        }
+    }
+}
+
+; After Show, force the real window rectangle back inside the monitor.
+ShowCopiedResponse_ClampWindow(gui, ml, mt, mr, mb) {
+    if !IsObject(gui)
+        return
+    hwnd := 0
+    try hwnd := gui.Hwnd
+    catch
+        return
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    try WinGetPos(&x, &y, &w, &h, "ahk_id " hwnd)
+    catch
+        return
+    ShowCopiedResponse_LimitRect(&x, &y, &w, &h, ml, mt, mr, mb)
+    try DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", w, "int", h, "uint", 0x0014)
+    catch {
+    }
+}
+
+; Lay the text, the reply, and the close hint inside whatever client height we actually got.
+ShowCopiedResponse_FitContents(gui, fill, edit, footer, border, marginX, marginY, footerH, gap) {
+    try WinGetClientPos(, , &cw, &ch, gui)
+    catch
+        return
+    innerW := Max(40, cw - 2 * border)
+    innerH := Max(40, ch - 2 * border)
+    try fill.Move(border, border, innerW, innerH)
+    catch {
+    }
+    editX := border + marginX
+    editY := border + marginY
+    editW := Max(40, innerW - 2 * marginX)
+    editH := innerH - marginY - gap - footerH - marginY
+    if (editH < 40)
+        editH := 40
+    try edit.Move(editX, editY, editW, editH)
+    catch {
+    }
+    footerTop := editY + editH + gap
+    if (footerTop + footerH > border + innerH)
+        footerTop := Max(border, border + innerH - footerH)
+    try footer.Move(editX, footerTop, editW, footerH)
+    catch {
+    }
 }
 
 ShowCopiedResponse_Render(hwnd, blocks, bodyPt) {
@@ -1778,55 +1890,29 @@ ShowCopiedResponse_DpiAt(ml, mt, mr, mb) {
     return dpi >= 96 ? dpi : 96
 }
 
-; Wide monitors get a landscape pane (wider than it is tall). Height never leaves the work area.
+; Fill this monitor's work area, width and height. A small inset keeps the frame on screen.
 ShowCopiedResponse_Layout(blocks, ml, mt, mr, mb, dpi) {
     workW := Max(1, mr - ml)
     workH := Max(1, mb - mt)
     border := 6
-    outer := Max(12, Floor(Min(workW, workH) * 0.03))
+    outerX := 8
+    outerY := 8
     marginX := 26
     marginY := 18
     footerH := 28
     gap := 8
-    maxGuiW := Max(480, workW - 2 * outer - 2 * border)
-    maxGuiH := Max(240, workH - 2 * outer - 2 * border)
-    maxEditW := Max(400, maxGuiW - marginX * 2)
-    maxEditH := Max(140, maxGuiH - marginY * 2 - footerH - gap)
+    maxGuiW := workW - 2 * outerX - 2 * border
+    maxGuiH := workH - 2 * outerY - 2 * border
+    if (maxGuiW < 200)
+        maxGuiW := Max(80, workW - 2 * border)
+    if (maxGuiH < 120)
+        maxGuiH := Max(60, workH - 2 * border)
+    maxEditW := Max(40, maxGuiW - marginX * 2)
+    maxEditH := Max(40, maxGuiH - marginY * 2 - footerH - gap)
 
-    scale := dpi / 96
     bodyPt := workH >= 1400 ? 18 : workH >= 1050 ? 17 : 15
-    charPx := Max(7, Round(bodyPt * 0.5 * scale))
-    linePx := Max(22, Round(bodyPt * 1.85 * scale))
-    aspect := workW / workH
-
-    if (aspect >= 1.35) {
-        ; Landscape card: at least 1.4× as wide as the tallest pane that still fits, and a solid share of the width.
-        editHWant := maxEditH
-        editW := Min(maxEditW, Max(Floor(editHWant * 1.4), Floor(workW * 0.62)))
-    } else {
-        editW := Min(maxEditW, Max(480, Floor(workW * 0.92)))
-    }
-    ; Grow toward the full width when a narrower column would run past the bottom of this monitor.
-    guard := 0
-    loop {
-        needH := ShowCopiedResponse_EstimateLines(blocks, editW, charPx) * linePx + 28
-        if (needH <= maxEditH || editW >= maxEditW || guard >= 8)
-            break
-        guard++
-        editW := Min(maxEditW, editW + Max(120, Floor((maxEditW - editW) / 2)))
-    }
-    needH := ShowCopiedResponse_EstimateLines(blocks, editW, charPx) * linePx + 28
-    ; A short note stays a wide card, but not a near-empty slab.
-    if (needH < maxEditH * 0.38) {
-        shorterW := Min(editW, Max(680, Floor(workW * (aspect >= 1.35 ? 0.5 : 0.86))))
-        shortNeed := ShowCopiedResponse_EstimateLines(blocks, shorterW, charPx) * linePx + 28
-        if (shortNeed <= maxEditH) {
-            editW := shorterW
-            needH := shortNeed
-        }
-    }
-    editH := Min(maxEditH, Max(150, needH))
-    editW := Min(editW, maxEditW)
+    editW := maxEditW
+    editH := maxEditH
 
     guiW := editW + marginX * 2
     guiH := marginY + editH + gap + footerH + marginY
