@@ -1353,14 +1353,16 @@ class D2C_FlowManager {
         }
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        ; Same destinations as #!+p, except [H] Here instead of [D] Display:
-        ; Send dictation already uses [D] for Finance daily.
+        ; Same destinations as #!+p. [D] Display shows the reply (same reader as #!+p [D]).
+        ; [H] Here stays: Send dictation's [H] skips this menu and lands on the same reader.
+        ; [D] on the earlier Send dictation menu is Finance daily; this menu is a different prompt.
         ; Paste-window keys: pick target immediately → copy reply → paste (same as #!+p [W]).
         ; To add another letter with this identical workflow, append it to pasteWindowKeys and
         ; include it in the pk strip below.
         pasteWindowKeys := ["W"]
         keyCallbacks := Map(
             "P", this.OnActionP.Bind(this),
+            "D", this.OnActionH.Bind(this),
             "H", this.OnActionH.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
@@ -1373,10 +1375,11 @@ class D2C_FlowManager {
         if (companion != "enterprise")
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
-            pk := "[P] Copy  [H] Here  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+            pk :=
+                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
         else
             pk :=
-                "[P] Copy  [H] Here  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
             "❓ Response ready — what next? (5s)",
             keyCallbacks,
@@ -1439,8 +1442,8 @@ class D2C_FlowManager {
         }
     }
 
-    ; [H] Copy reply, restore OriginHwnd, show full text banner (same UX as #!+8 / #!+p [D]).
-    ; Letter is H so it does not collide with Send dictation [D] Finance daily.
+    ; [D] Display and [H] Here: copy reply, restore OriginHwnd, show the reading pane (same as #!+p [D]).
+    ; [H] remains so Send dictation's [H] Here, which skips this menu, still opens that pane.
     OnActionH(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
