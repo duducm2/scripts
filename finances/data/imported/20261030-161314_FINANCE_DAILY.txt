@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+3 rows · 1 income transaction, 2 card expenses for dog pills
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Received 50 reels from fiancé,"50,00",income,CAT_PRESENTE,ACC_MERCADOP,,,1
+Pills for dog,"80,00",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1
+More pills for dog,"539,20",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===

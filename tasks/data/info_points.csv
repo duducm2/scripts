@@ -17,9 +17,6 @@ INFO_0117,task,TASK_0212,"ℹ️ Check your PowerPoint confidenciality level
 ℹ️ Create a project case
 
 ℹ️ Create Project KPIs",,ℹ️,,3990,2026-08-30 15:10:36,,
-INFO_0135,task,TASK_0248,"Perguntar no cartório
-
-Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)",,ℹ️,,10,2026-09-12 16:25:28,,
 INFO_0137,task,TASK_0251,https://unicamp-alumni.org.br/directory,,ℹ️,,10,2026-09-14 18:10:32,,
 INFO_0138,task,TASK_0251,image.png,,ℹ️,,20,2026-09-14 18:12:46,,
 INFO_0168,task,TASK_0258,C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\web\start.bat,,ℹ️,,10,2026-09-15 16:02:33,,
@@ -439,3 +436,4 @@ INFO_0558,task,TASK_0741,Purchase Reminder,Buy more Condroplex 1000 on Mercado L
 INFO_0559,task,TASK_0742,Chosen Product,Top Dog 30 kg (Ourofino). Cut tablet in half for current dosage (~15 kg weight).,ℹ️,Monthly,5540,2026-10-29 17:30:05,,
 INFO_0560,task,TASK_0742,Treatment Duration,Give monthly until she reaches 6 months of age.,ℹ️,Monthly,5550,2026-10-29 17:30:05,,
 INFO_0561,task,TASK_0742,Future Interval (After 6 Months),"After she is 6 months old, change the dosing frequency from monthly to once every 3 to 4 months.",ℹ️,Monthly,5560,2026-10-29 17:30:05,,
+INFO_0563,task,TASK_0679,"$env:GOOGLE_CLOUD_PROJECT=""rbprj-100397""",,ℹ️,,30,2026-10-29 18:03:57,,

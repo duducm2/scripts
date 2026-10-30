@@ -10,11 +10,6 @@
 
 ⏳ Continue with your idea of the book
 
-⚡ Deixar firma aberta no cartório
-ℹ️ Perguntar no cartório
-
-Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)
-
 ⏳ Comprar vermífugo para todos nós.
 ℹ️ **Filhotes de cachorro podem começar a tomar vermífago a partir de 2 semanas de vida (15 dias).** Como a sua pastora alemã já tem **cerca de 75 dias (aproximadamente 2 meses e meio)**, ela já está em idade perfeitamente adequada — e é essencial que o protocolo de vermifugação esteja em dia.
 
