@@ -439,3 +439,4 @@ INFO_0558,task,TASK_0741,Purchase Reminder,Buy more Condroplex 1000 on Mercado L
 INFO_0559,task,TASK_0742,Chosen Product,Top Dog 30 kg (Ourofino). Cut tablet in half for current dosage (~15 kg weight).,ℹ️,Monthly,5540,2026-10-29 17:30:05,,
 INFO_0560,task,TASK_0742,Treatment Duration,Give monthly until she reaches 6 months of age.,ℹ️,Monthly,5550,2026-10-29 17:30:05,,
 INFO_0561,task,TASK_0742,Future Interval (After 6 Months),"After she is 6 months old, change the dosing frequency from monthly to once every 3 to 4 months.",ℹ️,Monthly,5560,2026-10-29 17:30:05,,
+INFO_0563,task,TASK_0679,"$env:GOOGLE_CLOUD_PROJECT=""rbprj-100397""",,ℹ️,,30,2026-10-29 18:03:57,,

@@ -55,6 +55,8 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 🔲 Buy more psychiatric pills
 
+⚡ Cheque último update do Power Toys.
+
 ## Dissertation
 
 ⏳ Close anything that might generate costs on your Azure, the tools used for your dissertation
