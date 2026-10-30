@@ -51,17 +51,482 @@ Outlook_ClickEndTime_1200PM() {
     ClickOutlookByIdThenNameClass("4355", "12:00 PM", "AfxWndW", "Button")
 }
 
-; Shift + S : prefer Send (meeting), else Save (Event form commands)
+; Shift + S : prefer Send (meeting), else Save.
+; A bare Click() is not used: on a split button it expands the chevron menu and
+; the old shortcut treated that as success. Each candidate must match a current
+; Send/Save label, and the click counts only when the form leaves or Outlook
+; opens a dialog. Save is skipped once a Send control was found.
 +S:: {
-    Appt_RunWithLoading("Send/Save", (*) => (
-        Appt_ClickSaved("Send")
-        || Appt_ClickSaved("Save")
-        || Appt_ClickInCommandBar([{ Name: "Send", ControlType: "Button" }])
-        || Appt_ClickAny([{ Name: "Send", ControlType: "Button" }])
-        || Appt_ClickInCommandBar([{ Name: "Save", ControlType: "Button" }])
-        || Appt_ClickAny([{ Name: "Save", ControlType: "Button" }])
-        || (ShowCenteredOverlay_Utils("❌ Appointment: Send/Save not found", 1400, BANNER_ACCENT_ERROR), false)
-    ))
+    result := ""
+    try result := Appt_RunWithLoading("Send/Save", Appt_ClickSendOrSave)
+    if (result = true)
+        return
+    if (result = "send-miss")
+        ShowCenteredOverlay_Utils("❌ Appointment: Send did not complete", 1600, BANNER_ACCENT_ERROR)
+    else if (result = "save-miss")
+        ShowCenteredOverlay_Utils("❌ Appointment: Save did not complete", 1600, BANNER_ACCENT_ERROR)
+    else
+        ShowCenteredOverlay_Utils("❌ Appointment: Send/Save not found", 1400, BANNER_ACCENT_ERROR)
+}
+
+Appt_ClickSendOrSave() {
+    root := Appt_GetRootActive()
+    if !root
+        return "missing"
+    hwnd := WinExist("A")
+    if !hwnd
+        return "missing"
+    candidates := Appt_SendSave_Collect(root)
+    if (candidates.Length = 0)
+        return "missing"
+    sawSend := false
+    for c in candidates {
+        if (c.action != "send")
+            continue
+        sawSend := true
+        if Appt_SendSave_Try(hwnd, c.el)
+            return true
+    }
+    if sawSend
+        return "send-miss"
+    for c in candidates {
+        if (c.action != "save")
+            continue
+        if Appt_SendSave_Try(hwnd, c.el)
+            return true
+    }
+    return "save-miss"
+}
+
+Appt_SendSave_Try(hwnd, el) {
+    return Appt_SendSave_Commit(hwnd, el, Appt_SendSave_IsEnabled(el), !Appt_SendSave_IsOffscreen(el))
+}
+
+Appt_SendSave_Collect(root) {
+    list := []
+    seen := Map()
+    for elementId in ["Send", "Save"] {
+        el := 0
+        try el := UiElements_TrySaved(root, "OutlookAppointment", elementId)
+        if IsObject(el)
+            Appt_SendSave_Consider(list, seen, el, "saved", 0, 0)
+    }
+    scopes := []
+    try {
+        for tb in root.FindAll({ Type: UIA.Type.ToolBar })
+            scopes.Push(tb)
+    } catch {
+    }
+    for barName in ["Event form commands", "Meeting form commands", "Appointment commands", "Command bar"] {
+        for typeName in ["ToolBar", "Group", "Pane"] {
+            bar := 0
+            try bar := root.FindFirst({ Name: barName, ControlType: typeName })
+            if IsObject(bar)
+                scopes.Push(bar)
+        }
+    }
+    for scope in scopes
+        Appt_SendSave_Scan(list, seen, scope, "toolbar", 0, 0)
+    top := 0
+    limit := 0
+    try {
+        loc := root.Location
+        top := loc.y
+        band := loc.h * 0.28
+        if (band < 140)
+            band := 140
+        if (band > 260)
+            band := 260
+        limit := loc.y + band
+    } catch {
+        top := 0
+        limit := 0
+    }
+    Appt_SendSave_Scan(list, seen, root, "window", top, limit)
+    return Appt_SendSave_Sort(list)
+}
+
+Appt_SendSave_Scan(list, seen, scope, band, top, limit) {
+    if !IsObject(scope)
+        return
+    for typeId in [UIA.Type.Button, UIA.Type.SplitButton] {
+        try {
+            for el in scope.FindAll({ Type: typeId })
+                Appt_SendSave_Consider(list, seen, el, band, top, limit)
+        } catch {
+        }
+    }
+    if (band != "toolbar")
+        return
+    try {
+        for el in scope.FindAll({ Type: UIA.Type.Text })
+            Appt_SendSave_Consider(list, seen, el, band, top, limit)
+    } catch {
+    }
+}
+
+Appt_SendSave_Consider(list, seen, el, band, top, limit) {
+    if !IsObject(el)
+        return
+    action := Appt_SendSave_Classify(Appt_SendSave_Label(el))
+    if (action = "") {
+        id := ""
+        try id := el.AutomationId
+        action := Appt_SendSave_ClassifyId(id)
+    }
+    if (action = "")
+        return
+    btn := Appt_SendSave_AsButton(el)
+    if !IsObject(btn)
+        return
+    if (band = "window" && !Appt_SendSave_InTopBand(btn, top, limit))
+        return
+    key := Appt_SendSave_Key(btn)
+    if (key = "" || seen.Has(key))
+        return
+    seen[key] := true
+    list.Push({
+        el: btn,
+        action: action,
+        score: Appt_SendSave_Score(btn, action, band)
+    })
+}
+
+Appt_SendSave_Commit(hwnd, el, wasEnabled, wasOnScreen) {
+    hadMenu := Appt_SendSave_HasPopupMenu(hwnd)
+    wasSplitOpen := Appt_SendSave_SplitOpened(el)
+    if Appt_SendSave_Fire(el, "invoke") && Appt_SendSave_Wait(hwnd, el, wasEnabled, wasOnScreen, hadMenu, wasSplitOpen)
+        return true
+    if Appt_SendSave_Fire(el, "mouse") && Appt_SendSave_Wait(hwnd, el, wasEnabled, wasOnScreen, hadMenu, wasSplitOpen)
+        return true
+    try el.SetFocus()
+    catch {
+    }
+    Sleep 40
+    if !Appt_SendSave_FocusIsOn(el) || Appt_SendSave_SplitOpened(el)
+        return false
+    try Send "{Enter}"
+    return Appt_SendSave_Wait(hwnd, el, wasEnabled, wasOnScreen, hadMenu, wasSplitOpen)
+}
+
+Appt_SendSave_Wait(hwnd, el, wasEnabled, wasOnScreen, hadMenu, wasSplitOpen) {
+    Sleep 120
+    deadline := A_TickCount + 900
+    checkedMenu := false
+    loop {
+        if !WinExist("ahk_id " hwnd)
+            return true
+        menuOpened := !wasSplitOpen && Appt_SendSave_SplitOpened(el)
+        if (!menuOpened && !hadMenu && !checkedMenu) {
+            checkedMenu := true
+            menuOpened := Appt_SendSave_HasPopupMenu(hwnd)
+        }
+        if menuOpened {
+            try Send "{Esc}"
+            Sleep 60
+            return false
+        }
+        fg := 0
+        try fg := WinExist("A")
+        if (fg && fg != hwnd) {
+            if Appt_SendSave_ForegroundIsMenu(fg) {
+                try Send "{Esc}"
+                Sleep 60
+                return false
+            }
+            exe := ""
+            try exe := WinGetProcessName("ahk_id " fg)
+            if (exe = "OUTLOOK.EXE" || exe = "olk.exe")
+                return true
+        }
+        if Appt_SendSave_Retired(el, wasEnabled, wasOnScreen)
+            return true
+        if (A_TickCount >= deadline)
+            break
+        Sleep 80
+    }
+    return false
+}
+
+Appt_SendSave_Fire(el, how) {
+    if (how = "invoke") {
+        try {
+            if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                el.InvokePattern.Invoke()
+                return true
+            }
+        } catch {
+        }
+        return false
+    }
+    loc := ""
+    try loc := el.Location
+    if !IsObject(loc) || loc.w < 4 || loc.h < 4
+        return false
+    span := loc.w
+    if (loc.w >= 56)
+        span := loc.w - 28
+    x := Round(loc.x + span / 2)
+    y := Round(loc.y + loc.h / 2)
+    prevMode := A_CoordModeMouse
+    CoordMode("Mouse", "Screen")
+    ok := false
+    try {
+        Click(x " " y)
+        ok := true
+    } catch {
+    }
+    CoordMode("Mouse", prevMode)
+    return ok
+}
+
+Appt_SendSave_Classify(raw) {
+    n := Appt_SendSave_NormalizeLabel(raw)
+    if (n = "")
+        return ""
+    if RegExMatch(n,
+        "i)cancel|discard|don.?t|do not|n[aã]o enviar|response|availability|reminder|delete|remove|follow|tentative|decline|\\baccept\\b|forward|reply|\\boptions?\\b|chevron|dropdown"
+    )
+        return ""
+    if (n = "send" || n = "enviar" || InStr(n, "send update") = 1 || InStr(n, "send invitation") = 1
+    || InStr(n, "send invite") = 1 || InStr(n, "enviar atualiza") = 1 || InStr(n, "enviar convite") = 1)
+        return "send"
+    if (n = "save" || n = "salvar" || InStr(n, "save and close") = 1 || InStr(n, "save & close") = 1
+    || InStr(n, "save event") = 1 || InStr(n, "save meeting") = 1 || InStr(n, "salvar e fechar") = 1
+    || InStr(n, "salvar evento") = 1 || InStr(n, "salvar reuni") = 1)
+        return "save"
+    return ""
+}
+
+Appt_SendSave_ClassifyId(raw) {
+    id := StrLower(Trim(raw))
+    if (id = "")
+        return ""
+    if RegExMatch(id, "i)cancel|discard|delete|remove|option|chevron|expand")
+        return ""
+    if InStr(id, "send") || InStr(id, "enviar")
+        return "send"
+    if InStr(id, "save") || InStr(id, "salvar")
+        return "save"
+    return ""
+}
+
+Appt_SendSave_NormalizeLabel(raw) {
+    s := Trim(raw)
+    s := RegExReplace(s, "i)\s*\([^)]*\)\s*$", "")
+    s := RegExReplace(s, "\s+", " ")
+    return StrLower(Trim(s))
+}
+
+Appt_SendSave_Label(el) {
+    name := ""
+    try name := Trim(el.Name)
+    if (name != "")
+        return name
+    try {
+        for t in el.FindAll({ Type: UIA.Type.Text }) {
+            tn := ""
+            try tn := Trim(t.Name)
+            if (tn != "")
+                return tn
+        }
+    } catch {
+    }
+    help := ""
+    try help := Trim(el.HelpText)
+    return help
+}
+
+Appt_SendSave_AsButton(el) {
+    cur := el
+    loop 8 {
+        if !IsObject(cur)
+            return 0
+        t := 0
+        try t := cur.Type
+        if (t = UIA.Type.Button || t = UIA.Type.SplitButton)
+            return cur
+        parent := 0
+        try parent := cur.Parent
+        catch
+            return 0
+        if !IsObject(parent)
+            return 0
+        cur := parent
+    }
+    return 0
+}
+
+Appt_SendSave_Score(el, action, band) {
+    score := (action = "send") ? 0 : 100
+    n := Appt_SendSave_NormalizeLabel(Appt_SendSave_Label(el))
+    if (n != "send" && n != "enviar" && n != "save" && n != "salvar")
+        score += 10
+    try {
+        if (el.Type = UIA.Type.SplitButton)
+            score += 5
+    } catch {
+    }
+    if (band != "toolbar" && band != "saved")
+        score += 20
+    if !Appt_SendSave_IsEnabled(el)
+        score += 40
+    if Appt_SendSave_IsOffscreen(el)
+        score += 30
+    try score += el.Location.x / 10000
+    return score
+}
+
+Appt_SendSave_Sort(list) {
+    n := list.Length
+    loop n {
+        i := A_Index
+        loop (n - i) {
+            j := A_Index
+            if (list[j].score > list[j + 1].score) {
+                tmp := list[j]
+                list[j] := list[j + 1]
+                list[j + 1] := tmp
+            }
+        }
+    }
+    return list
+}
+
+Appt_SendSave_Key(el) {
+    try {
+        loc := el.Location
+        name := ""
+        try name := el.Name
+        return el.Type "|" Round(loc.x) "|" Round(loc.y) "|" name
+    } catch {
+    }
+    return ""
+}
+
+Appt_SendSave_InTopBand(el, top, limit) {
+    if (limit <= top)
+        return false
+    try {
+        loc := el.Location
+        if (loc.w < 8 || loc.h < 8)
+            return false
+        mid := loc.y + loc.h / 2
+        return mid >= top - 4 && mid <= limit
+    } catch {
+    }
+    return false
+}
+
+Appt_SendSave_IsEnabled(el) {
+    try return !!el.GetPropertyValue(UIA.Property.IsEnabled)
+    return true
+}
+
+Appt_SendSave_IsOffscreen(el) {
+    try return !!el.GetPropertyValue(UIA.Property.IsOffscreen)
+    return false
+}
+
+Appt_SendSave_Retired(el, wasEnabled, wasOnScreen) {
+    try {
+        if (wasOnScreen && el.GetPropertyValue(UIA.Property.IsOffscreen))
+            return true
+        if (wasEnabled && !el.GetPropertyValue(UIA.Property.IsEnabled))
+            return true
+    } catch {
+    }
+    return false
+}
+
+Appt_SendSave_SplitOpened(el) {
+    cur := el
+    loop 4 {
+        if !IsObject(cur)
+            return false
+        opened := false
+        try {
+            if cur.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+                opened := cur.ExpandCollapsePattern.ExpandCollapseState = UIA.ExpandCollapseState.Expanded
+        } catch {
+        }
+        if opened
+            return true
+        parent := 0
+        try parent := cur.Parent
+        catch
+            return false
+        if !IsObject(parent) || Appt_SendSave_Same(parent, cur)
+            return false
+        cur := parent
+    }
+    return false
+}
+
+Appt_SendSave_HasPopupMenu(hwnd) {
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    if !IsObject(root)
+        return false
+    el := 0
+    try el := root.FindFirst({ ControlType: "Menu" })
+    return IsObject(el)
+}
+
+Appt_SendSave_ForegroundIsMenu(hwnd) {
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    if !IsObject(root)
+        return false
+    t := 0
+    try t := root.Type
+    if (t = UIA.Type.Menu)
+        return true
+    el := 0
+    try el := root.FindFirst({ ControlType: "Menu" })
+    if IsObject(el)
+        return true
+    try el := root.FindFirst({ ControlType: "MenuItem" })
+    return IsObject(el)
+}
+
+Appt_SendSave_FocusIsOn(el) {
+    fe := 0
+    try fe := UIA.GetFocusedElement()
+    cur := fe
+    loop 8 {
+        if !IsObject(cur)
+            return false
+        if Appt_SendSave_Same(cur, el)
+            return true
+        parent := 0
+        try parent := cur.Parent
+        catch
+            return false
+        if !IsObject(parent) || Appt_SendSave_Same(parent, cur)
+            return false
+        cur := parent
+    }
+    return false
+}
+
+Appt_SendSave_Same(a, b) {
+    if !IsObject(a) || !IsObject(b)
+        return false
+    try {
+        idA := a.RuntimeId
+        idB := b.RuntimeId
+        if (idA != "" && idA = idB)
+            return true
+    } catch {
+    }
+    try {
+        la := a.Location
+        lb := b.Location
+        return Round(la.x) = Round(lb.x) && Round(la.y) = Round(lb.y) && Round(la.w) = Round(lb.w)
+    } catch {
+    }
+    return false
 }
 
 ; Shift + D : Start date (combo) - Start Date
