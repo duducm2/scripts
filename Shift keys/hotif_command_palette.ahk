@@ -108,20 +108,4 @@ $Enter:: CommandPalette_ActivateSelectedItem()
 ; Ctrl + 6 : Trigger Down five times then Enter
 ^6:: CommandPalette_SelectNthAndActivate(5)
 
-; Easy Selection
-; Alt + 1 : Easy Selection - 1st item
-!1:: CommandPalette_SelectNthAndActivate(0)
-
-; Alt + 2 : Easy Selection - 2nd item
-!2:: CommandPalette_SelectNthAndActivate(1)
-
-; Alt + 3 : Easy Selection - 3rd item
-!3:: CommandPalette_SelectNthAndActivate(2)
-
-; Alt + 4 : Easy Selection - 4th item
-!4:: CommandPalette_SelectNthAndActivate(3)
-
-; Alt + 5 : Easy Selection - 5th item
-!5:: CommandPalette_SelectNthAndActivate(4)
-
 #HotIf
