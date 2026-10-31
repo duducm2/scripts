@@ -2,7 +2,8 @@
 #SingleInstance Force
 #UseHook True
 ; Alt/Win hotkey release must not open the menu bar or Start. vkE8 is an unassigned key.
-#MenuMaskKey vkE8
+; Must be set before hotkeys are created (#UseHook and the includes below).
+A_MenuMaskKey := "vkE8"
 
 ; WM daemon flags — init before any #include auto-execute can call WM_UsesAutomationDaemon().
 global WM_USE_DAEMON := false

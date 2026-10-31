@@ -54,20 +54,10 @@
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
-; Alt+P / Alt+B are swallowed here. A pass-through hook injects a key during the chord,
-; so Clip Angel's own hotkey sometimes never fires, and the Alt release selects Window.
-; Post the same hotkey Clip Angel registered (reset = Alt+P, favorites = Alt+B).
-; No Send, no UIA. #MenuMaskKey vkE8 keeps the Alt release from opening the menu.
-!p:: ClipAngel_FireNativeOpen("p")
-!b:: ClipAngel_FireNativeOpen("b")
-
-ClipAngel_FireNativeOpen(letter) {
-    if ClipAngel_PostHotkey(letter, "a")
-        return
-    try ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 1500, BANNER_ACCENT_ERROR)
-    catch {
-    }
-}
+; Clip Angel's own Alt+P / Alt+B are cleared, so this process owns the chords.
+; Alt+P opens all marks. Alt+B opens favorites.
+!p:: ClipAngel_OpenWithMarkFilter("all")
+!b:: ClipAngel_OpenWithMarkFilter("favorites")
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)
