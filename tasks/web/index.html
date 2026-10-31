@@ -278,6 +278,9 @@
         border: 1px solid #3a3a3a;
         background-color: #141414;
       }
+      .habit-span.is-decade {
+        --span-decade: #68bdff;
+      }
       .habit-span.is-decade .habit-span-track {
         width: 120px;
       }
@@ -331,35 +334,35 @@
       .habit-span.is-yearly .habit-span-marks {
         background: repeating-linear-gradient(
           90deg,
-          var(--gold) 0 4px,
+          var(--span-decade) 0 4px,
           transparent 4px calc(100% / 10)
         );
       }
       .habit-span.is-every2 .habit-span-marks {
         background: repeating-linear-gradient(
           90deg,
-          var(--gold) 0 6px,
+          var(--span-decade) 0 6px,
           transparent 6px calc(100% / 5)
         );
       }
       .habit-span.is-every3 .habit-span-marks {
         background: repeating-linear-gradient(
           90deg,
-          var(--gold) 0 8px,
+          var(--span-decade) 0 8px,
           transparent 8px calc(100% / 4)
         );
       }
       .habit-span.is-every5 .habit-span-marks {
         background: repeating-linear-gradient(
           90deg,
-          var(--gold) 0 10px,
+          var(--span-decade) 0 10px,
           transparent 10px calc(100% / 2)
         );
       }
       .habit-span.is-every10 .habit-span-marks {
         background: linear-gradient(
           90deg,
-          var(--gold) 0 10px,
+          var(--span-decade) 0 10px,
           transparent 10px
         );
       }
@@ -372,6 +375,9 @@
         color: var(--gold);
         font-variant-numeric: tabular-nums;
         text-align: right;
+      }
+      .habit-span.is-decade .habit-span-label {
+        color: var(--span-decade);
       }
       .icon-modal-toolbar {
         display: flex;

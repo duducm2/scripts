@@ -27,15 +27,6 @@ INFO_0177,task,TASK_0286,"Leishmaniose: Depending on veterinary guidance in the 
 
 Giárdia: Sometimes recommended, though considered non-core.",,ℹ️,,10,2026-09-17 22:23:59,,
 INFO_0182,task,TASK_0303,Caloric and Macronutrient Breakdown,"TDEE: ~2,700 kcal/day (Mifflin-St Jeor based on 82 kg, height, age, moderate activity). Target: 2,500 kcal/day for body recomposition (mild deficit). Macros: Protein 165g (~2g/kg body weight), Fats 80g (~30% intake), Carbohydrates 280g.",ℹ️,Daily,4120,2026-09-21 19:06:59,,
-INFO_0187,task,TASK_0744,German Shepherd Feeding Breakdown by Life Stage,"Life stage feeding guidelines:
-- 60-Day-Old Puppy (6-9 kg): 150g - 200g per day divided into 4 meals (40g - 50g per meal).
-- Current 15 kg Puppy (~4 months): 250g - 350g per day divided into 3 meals (85g - 115g per meal) to support rapid growth.
-- Grown Adult (30-40 kg): 350g - 500g per day divided into 2 meals (175g - 250g per meal).",ℹ️,Feeding Schedule,4130,2026-09-24 13:05:52,,
-INFO_0188,task,TASK_0744,Puppy Food Timeline and Calorie Density Notes,"Nutritional notes:
-- Puppy Food Timeline: Large breeds like German Shepherds should continue eating puppy food until they are 12 to 15 months old to ensure proper bone and joint growth.
-- Food Density: High-quality foods are calorie-dense; fewer grams per meal are required compared to standard foods.
-- Calorie Calculation: Daily grams can be calculated precisely based on the specific brand's calorie content once brand details are known.",ℹ️,Feeding Schedule,4140,2026-09-24 13:05:52,,
-INFO_0189,task,TASK_0744,Birth date & age,,🐕,,4150,2026-09-25 11:55:01,agent,2026-07-19
 INFO_0198,task,TASK_0339,Maia,,ℹ️,person contacted,20,2026-09-28 08:33:53,,
 INFO_0199,task,TASK_0339,Guilherme do tooling,,ℹ️,person,10,2026-09-28 08:33:59,,
 INFO_0200,task,TASK_0339,Alex,,ℹ️,person contacted,30,2026-09-28 08:34:04,,
@@ -328,21 +319,4 @@ INFO_0580,task,TASK_0747,Yellow Fever: 14/10/2022,,🩺,,2520,2026-08-29 15:48:3
 INFO_0581,task,TASK_0747,Hepatitis A: 2016 (series considered fine),,🩺,,2530,2026-08-29 15:48:39,,
 INFO_0582,task,TASK_0747,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",,🩺,,2540,2026-08-29 15:48:39,,
 INFO_0583,task,TASK_0747,Varicella (catapora): history of disease in childhood; no vaccine needed,,🩺,,2550,2026-08-29 15:48:39,,
-INFO_0584,task,TASK_0744,"Pastor alemão Capa Preta, nascida em dia dezenove de julho de dois mil e vinte e seis.",Next due: 2026-09-18,⏳,,4680,2026-09-18 11:32:24,,
-INFO_0585,task,TASK_0744,Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal),"Recurrence: daily
-Next due: 2026-09-24",🐕,Feeding Schedule,4870,2026-09-24 13:05:52,,
-INFO_0586,task,TASK_0744,Weigh German Shepherd and adjust daily grams based on calorie density and growth rate,"Recurrence: monthly
-Next due: 2026-10-19",⚖️,Feeding Schedule,4880,2026-09-24 13:05:52,,
-INFO_0587,task,TASK_0744,Month 3 feeding (15 kg rapid growth): 250g-350g/day divided into 3 meals (85g-115g/meal),Due: 2026-10-19,🐕,Feeding Schedule,4890,2026-09-24 13:05:52,,
-INFO_0588,task,TASK_0744,Month 4 feeding (~4 months milestone): 250g-350g/day divided into 3 meals (85g-115g/meal),Due: 2026-11-19,🐕,Feeding Schedule,4900,2026-09-24 13:05:52,,
-INFO_0589,task,TASK_0744,Month 5 feeding: Puppy food across 3 meals (adjust portion between 250g-350g and adult target),Due: 2026-12-19,🐕,Feeding Schedule,4910,2026-09-24 13:05:52,,
-INFO_0590,task,TASK_0744,Month 6 feeding: Puppy food across 3 meals (monitor weight and adjust portion),Due: 2027-01-19,🐕,Feeding Schedule,4920,2026-09-24 13:05:52,,
-INFO_0591,task,TASK_0744,Month 7 feeding: Puppy food across 3 meals (support rapid bone and joint growth),Due: 2027-02-19,🐕,Feeding Schedule,4930,2026-09-24 13:05:52,,
-INFO_0592,task,TASK_0744,Month 8 feeding: Puppy food across 3 meals (monitor growth and calorie density),Due: 2027-03-19,🐕,Feeding Schedule,4940,2026-09-24 13:05:52,,
-INFO_0593,task,TASK_0744,Month 9 feeding: Large-breed puppy food across 3 meals (maintain bone/joint nutrition),Due: 2027-04-19,🐕,Feeding Schedule,4950,2026-09-24 13:05:52,,
-INFO_0594,task,TASK_0744,Month 10 feeding: Large-breed puppy food across 3 meals (monitor weight progression),Due: 2027-05-19,🐕,Feeding Schedule,4960,2026-09-24 13:05:52,,
-INFO_0595,task,TASK_0744,Month 11 feeding: Large-breed puppy food across 3 meals (prepare transition to adult schedule),Due: 2027-06-19,🐕,Feeding Schedule,4970,2026-09-24 13:05:52,,
-INFO_0596,task,TASK_0744,Month 12 feeding (1 Year): Puppy food milestone (maintain puppy food through 12-15 months),Due: 2027-07-19,🐕,Feeding Schedule,4980,2026-09-24 13:05:52,,
-INFO_0597,task,TASK_0744,Month 13 feeding: Large-breed puppy food (continue through 12-15 months; monitor weight),Due: 2027-08-19,🐕,Feeding Schedule,4990,2026-09-24 13:05:52,,
-INFO_0598,task,TASK_0744,Month 14 feeding: Large-breed puppy food (12-15 months window; plan adult switch),Due: 2027-09-19,🐕,Feeding Schedule,5000,2026-09-24 13:05:52,,
-INFO_0599,task,TASK_0744,"Month 15 feeding (Adulthood / 30-40 kg): Transition to adult food, 350g-500g/day in 2 meals (175g-250g/meal)",Due: 2027-10-19,🐕,Feeding Schedule,5010,2026-09-24 13:05:52,,
+INFO_0584,project,PROJ_0026,Your last day for submitting your dissertation is November 23,,ℹ️,,10,2026-10-31 16:12:28,,
