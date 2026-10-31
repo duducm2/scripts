@@ -281,3 +281,5 @@ TX286,2026-10-28,Salary (partial),"2810,13",income,CAT_SALARIO,ACC_MERCADOP,,,1,
 TX287,2026-10-29,Received 50 reels from fiancé,"50,00",income,CAT_PRESENTE,ACC_MERCADOP,,,1,1,,0
 TX288,2026-10-29,Pills for dog,"80,00",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX289,2026-10-29,More pills for dog,"539,20",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX290,2026-10-30,Transfer from Mercado Pago long-term to checking,"1656,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX291,2026-10-30,Construction worker for new house,"1656,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0

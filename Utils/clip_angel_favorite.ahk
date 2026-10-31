@@ -1471,11 +1471,10 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := true) {
         ClipAngel_EnsureWindowActive(priorHwnd)
 }
 
-; Open once via OpenForAutomation, wait for grid, then incremental paste (^!b).
-; suppressVisual (default true): keepTransparent list wait so layout never maximizes on-screen.
+; Open once via OpenForAutomation (filter + row 0), then incremental paste (^!b).
+; No second list-ready poll: that wait repeats the same UIA work for up to 1200 ms.
 ClipAngel_SendNativeTopItemKeys(priorHwnd := 0, suppressVisual := true) {
     ClipAngel_ActivateNativeFirstClip(priorHwnd, suppressVisual)
-    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, suppressVisual)
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
         ClipAngel_EnsureWindowActive(priorHwnd)
@@ -2027,8 +2026,27 @@ ClipAngel_OpenClipMenuViaKeyboard(hwnd := 0) {
     return true
 }
 
-; Clip > Mark favorite via menu (no Alt+Q — Alt+Q focuses Window ribbon; Favorite column not in UIA tree).
-; Pass root when already attached. Exact Name FindFirst only (no full MenuItem FindAll).
+; Clip > Mark as favorite is ShortcutKeys Alt+Q (setFavouriteToolStripMenuItem). WinForms runs that
+; only while the form is active, so ControlSend is not enough. A bare Alt-up still highlights Window;
+; if that happens the caller falls back to the menu invoke below.
+ClipAngel_SendMarkFavoriteAltQ(hwnd) {
+    if !hwnd
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    if !WinActive("ahk_id " hwnd) {
+        try WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 0.25)
+            return false
+    }
+    Send "!q"
+    if ClipAngel_KeyboardFocusIsMainMenu() {
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+        return false
+    }
+    return true
+}
+
+; Clip > Mark favorite via menu. Fallback when Alt+Q lands on the ribbon. Pass root when already attached.
 ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
     if !hwnd
         return false
@@ -2134,8 +2152,7 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
     }
 }
 
-; Menu invoke only — never Alt+Q (focuses Window ribbon). Skips Favorite-column FindAll.
-; Pass root when already attached.
+; Row 0: Alt+Q first. Menu invoke only if the shortcut did not mark the newest clip.
 ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
     if !hwnd
         return false
@@ -2148,12 +2165,16 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
     ClipAngel_PrepareFavoriteAltQ(hwnd, root)
     if ClipAngel_Row0TitleLooksFavorited(hwnd, root)
         return true
-    if ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)
-        return true
-    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
-    ClipAngel_ReleaseChordModifiersForSend()
-    ClipAngel_SendToHwnd(hwnd, "{Escape}")
-    Sleep 40
+    newestId := 0
+    newest := ClipAngelDb_Newest()
+    if (newest)
+        newestId := newest["id"]
+    if ClipAngel_SendMarkFavoriteAltQ(hwnd) {
+        if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 250) = true)
+            return true
+        if ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+            return true
+    }
     if ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)
         return true
     return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
@@ -2437,13 +2458,9 @@ MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
     ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, el)
     Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
     ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    marked := ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, el)
-    if !marked {
-        ClipAngel_SendToHwnd(hwnd, "{Escape}")
-        Sleep 40
+    marked := ClipAngel_SendMarkFavoriteAltQ(hwnd)
+    if !marked
         marked := ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, el)
-    }
     favCell := ClipAngel_FindFavoriteCell(rowTarget)
     titleOk := ClipAngel_Row0TitleLooksFavorited(hwnd, el)
     if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) || titleOk || marked {

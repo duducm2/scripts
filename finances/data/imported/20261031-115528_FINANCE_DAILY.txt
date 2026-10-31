@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+2 rows · 1 transfer (Mercado Pago long-term to checking), 1 expense (construction worker for new house)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Transfer from Mercado Pago long-term to checking,"1656,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+Construction worker for new house,"1656,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+===END_FILE===

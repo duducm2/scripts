@@ -157,8 +157,52 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
     return true
 }
 
+; Alt+P / Alt+B: Clip Angel's own hotkeys (Open last / Open favorites) clear filters and select the top clip.
+; Post that hotkey, then one short layout pass so a parked off-screen window still lands on the cursor monitor.
+; UIA open remains the fallback when the post does not show the window.
+ClipAngel_OpenNative(letter) {
+    global g_ClipAngelFavoriteSuppressActive
+    mode := (letter = "b") ? "favorites" : "all"
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    g_ClipAngelFavoriteSuppressActive := false
+    try WinSetTransparent("Off", "ahk_id " hwnd)
+    catch {
+    }
+    alreadyHere := WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd)
+    ClipAngel_ReleaseChordModifiersForSend()
+    if !ClipAngel_PostHotkey(letter, "a")
+        return ClipAngel_OpenWithMarkFilter(mode)
+    if alreadyHere
+        return true
+    ClipAngel_EnsureForegroundAfterNativeOpen()
+    deadline := A_TickCount + 280
+    while (A_TickCount < deadline) {
+        if ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd) {
+            mon := ClipAngel_GetMonitorIndexFromCursor()
+            onMon := true
+            if (mon >= 1) {
+                try onMon := (GetAhkMonitorIndexFromHwnd(hwnd) = mon)
+                catch
+                    onMon := true
+            }
+            if onMon {
+                try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-open.wav")
+                catch {
+                }
+                return true
+            }
+        }
+        Sleep 20
+    }
+    return ClipAngel_OpenWithMarkFilter(mode)
+}
+
 ; AHK-owned Alt+P / Alt+B open: show Clip Angel, ControlSend Ctrl+1 (all marks) or Ctrl+2 (favorites), Row 0.
-; Requires Clip Angel global Alt+P/B cleared; List menu Ctrl+1 / Ctrl+2 kept. No ribbon validation.
+; Fallback when the native hotkey post does not show the window. No ribbon validation.
 ; Loading Indication via StandardLoadingBar (standard_information_display.md); silent activate so one bar owns UX.
 CLIPANGEL_MARKFILTER_WAIT_MS := 300
 
