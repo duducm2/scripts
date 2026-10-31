@@ -1429,11 +1429,26 @@ StandardLoadingBar_PassiveAllMonitors_Clear() {
     g_PassiveAllMonitorsOverlays := []
 }
 
-; Full AI reply on the monitor under the foreground window.
-; The pane is landscape on a wide screen and never taller than that monitor's work area.
+; Monitor of the prompt the user is answering. Call before that prompt is closed.
+; Copying the reply focuses the companion, so the foreground monitor is the wrong one.
+ShowCopiedResponse_CapturePromptWorkArea() {
+    global g_StandardLoadingBarGui
+    hwnd := 0
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            hwnd := g_StandardLoadingBarGui.Hwnd
+    } catch {
+    }
+    if (hwnd)
+        return GetWorkAreaForWindow_StandardBar(hwnd)
+    return ""
+}
+
+; Full AI reply. anchor is a work-area {left,top,right,bottom} from the prompt the user
+; answered, an hwnd for that window's monitor, or 0 for the foreground monitor.
 ; Markdown (**bold**, headings, lists, code) is drawn as formatting, not raw asterisks.
 ; No auto-dismiss — user closes with Enter, E, or Escape.
-ShowCopiedResponseBanner(text, anchorHwnd := 0) {
+ShowCopiedResponseBanner(text, anchor := 0) {
     global g_ShowCopiedResponseRichDll
     if (!text || StrLen(Trim(text)) = 0) {
         ShowCopiedResponse_LegacyBanner("Nothing to display")
@@ -1441,8 +1456,19 @@ ShowCopiedResponseBanner(text, anchorHwnd := 0) {
     }
     ml := mt := mr := mb := 0
     placed := false
-    if (anchorHwnd) {
-        work := GetWorkAreaForWindow_StandardBar(anchorHwnd)
+    if (IsObject(anchor)) {
+        try {
+            ml := anchor.left
+            mt := anchor.top
+            mr := anchor.right
+            mb := anchor.bottom
+            if (mr > ml && mb > mt)
+                placed := true
+        } catch {
+            placed := false
+        }
+    } else if (anchor) {
+        work := GetWorkAreaForWindow_StandardBar(anchor)
         if (work != "") {
             ml := work.left
             mt := work.top

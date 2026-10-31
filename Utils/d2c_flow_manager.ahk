@@ -1448,6 +1448,9 @@ class D2C_FlowManager {
     OnActionH(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
+        ; Prompt monitor first. Reset() below clears OriginHwnd, and the copy focuses the companion.
+        place := ShowCopiedResponse_CapturePromptWorkArea()
+        origin := this.OriginHwnd
         this.CleanupActionPrompt()
         bannerText := ""
         showBanner := false
@@ -1472,7 +1475,7 @@ class D2C_FlowManager {
         ; Defer past KeyWrapper's post-callback CloseKeysOverlay (same pattern as #!+8 SetTimer).
         if (showBanner) {
             bt := bannerText
-            anchor := this.OriginHwnd
+            anchor := IsObject(place) ? place : origin
             SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
         }
     }

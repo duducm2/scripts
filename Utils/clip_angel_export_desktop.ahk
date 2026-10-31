@@ -1801,6 +1801,12 @@ HotkeyCopy_DoCopyOnly() {
 
 ; [D] Copy, restore origin window, show full reply banner (same UX as #!+8 / D2C [D]).
 HotkeyCopy_OnDisplay(*) {
+    global g_HotkeyCopy_Flow
+    ; The prompt may have followed the user off the companion. Remember that screen
+    ; before FinalizeIntent closes the prompt and the copy focuses the companion.
+    try g_HotkeyCopy_Flow.displayWork := ShowCopiedResponse_CapturePromptWorkArea()
+    catch {
+    }
     HotkeyCopy_FinalizeIntent("D")
 }
 
@@ -1815,8 +1821,13 @@ HotkeyCopy_DoDisplay() {
     }
     ; Defer so any pending KeyWrapper CloseKeysOverlay cannot tear down the result banner.
     bt := A_Clipboard
-    anchor := originHwnd
-    SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
+    place := ""
+    try place := g_HotkeyCopy_PostCopyContext.displayWork
+    catch {
+    }
+    if (!IsObject(place) || place = "")
+        place := originHwnd
+    SetTimer((*) => ShowCopiedResponseBanner(bt, place), -1)
 }
 
 ClipAngelExport_OnConfirmDesktop(*) {
