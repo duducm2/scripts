@@ -3,8 +3,8 @@ INFO_0076,task,TASK_0042,We also had some problems with authentication along the
 INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 15:48:39,,
 INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.","Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.",ℹ️,,1610,2026-08-29 15:48:39,,
 INFO_0079,task,TASK_0045,"Minoxidil: 6/6, Revoc: 2/2 (60 pills)","Minoxidil: 6/6, Revoc: 2/2 (60 pills)",ℹ️,,1620,2026-08-29 15:48:39,,
-INFO_0089,project,PROJ_0019,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39,,
-INFO_0090,project,PROJ_0019,Maintain ongoing literature review,"Maintain ongoing literature review
+INFO_0089,project,PROJ_0044,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39,,
+INFO_0090,project,PROJ_0045,Maintain ongoing literature review,"Maintain ongoing literature review
 Confirm if committee members may ask about courses near defense
 Add DOI to your research and PPT presentation base (if applicable)
 Check if your student subscription is generating any cost
@@ -27,15 +27,15 @@ INFO_0177,task,TASK_0286,"Leishmaniose: Depending on veterinary guidance in the 
 
 Giárdia: Sometimes recommended, though considered non-core.",,ℹ️,,10,2026-09-17 22:23:59,,
 INFO_0182,task,TASK_0303,Caloric and Macronutrient Breakdown,"TDEE: ~2,700 kcal/day (Mifflin-St Jeor based on 82 kg, height, age, moderate activity). Target: 2,500 kcal/day for body recomposition (mild deficit). Macros: Protein 165g (~2g/kg body weight), Fats 80g (~30% intake), Carbohydrates 280g.",ℹ️,Daily,4120,2026-09-21 19:06:59,,
-INFO_0187,project,PROJ_0030,German Shepherd Feeding Breakdown by Life Stage,"Life stage feeding guidelines:
+INFO_0187,task,TASK_0744,German Shepherd Feeding Breakdown by Life Stage,"Life stage feeding guidelines:
 - 60-Day-Old Puppy (6-9 kg): 150g - 200g per day divided into 4 meals (40g - 50g per meal).
 - Current 15 kg Puppy (~4 months): 250g - 350g per day divided into 3 meals (85g - 115g per meal) to support rapid growth.
 - Grown Adult (30-40 kg): 350g - 500g per day divided into 2 meals (175g - 250g per meal).",ℹ️,Feeding Schedule,4130,2026-09-24 13:05:52,,
-INFO_0188,project,PROJ_0030,Puppy Food Timeline and Calorie Density Notes,"Nutritional notes:
+INFO_0188,task,TASK_0744,Puppy Food Timeline and Calorie Density Notes,"Nutritional notes:
 - Puppy Food Timeline: Large breeds like German Shepherds should continue eating puppy food until they are 12 to 15 months old to ensure proper bone and joint growth.
 - Food Density: High-quality foods are calorie-dense; fewer grams per meal are required compared to standard foods.
 - Calorie Calculation: Daily grams can be calculated precisely based on the specific brand's calorie content once brand details are known.",ℹ️,Feeding Schedule,4140,2026-09-24 13:05:52,,
-INFO_0189,project,PROJ_0030,Birth date & age,,🐕,,4150,2026-09-25 11:55:01,agent,2026-07-19
+INFO_0189,task,TASK_0744,Birth date & age,,🐕,,4150,2026-09-25 11:55:01,agent,2026-07-19
 INFO_0198,task,TASK_0339,Maia,,ℹ️,person contacted,20,2026-09-28 08:33:53,,
 INFO_0199,task,TASK_0339,Guilherme do tooling,,ℹ️,person,10,2026-09-28 08:33:59,,
 INFO_0200,task,TASK_0339,Alex,,ℹ️,person contacted,30,2026-09-28 08:34:04,,
@@ -137,135 +137,6 @@ INFO_0320,task,TASK_0415,C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU
 INFO_0346,task,TASK_0339,PS/BDO,,ℹ️,,280,2026-10-07 14:51:40,,
 INFO_0347,task,TASK_0420,https://inside-docupedia.bosch.com/confluence/spaces/PSBDO/pages/5779009962/XTower+Project+Funnel+and%E2%80%8B+Resource+Management,,ℹ️,,10,2026-10-07 16:02:45,,
 INFO_0349,task,TASK_0424,image.png,,ℹ️,,10,2026-10-08 13:13:09,,
-INFO_0351,task,TASK_0429,"Note: the links and images in this document may point to external sources. Please review them before opening.
-
-Planejamento & Equipamentos para Correr com Pastora Alemã
-
-Este documento reúne todas as recomendações, palavras-chave para busca em e-commerce, análises de equipamentos e o cronograma de desenvolvimento essencial para a sua filhote de Pastora Alemã (atualmente com 60 dias de vida).
-
-1. Alerta Veterinário Crucial: A Janela dos 60 Dias ao Adulto
-
-Como a sua filhote tem apenas 2 meses (60 dias), há dois fatores primordiais a considerar:
-
-Placas de Crescimento (Fises Ósseas): Cães de porte grande como o Pastor Alemão só completam a maturação musculoesquelética entre 12 e 18 meses. Impactos repetitivos de corrida contínua antes desse período podem causar danos articulares permanentes e agravar predisposições genéticas à displasia coxofemoral e de cotovelo.
-
-Crescimento Rápido: Um filhote de 60 dias pesa em média entre 6 e 9 kg, enquanto uma fêmea adulta alcança entre 22 e 32 kg. Qualquer peitoral técnico de ponta comprado agora ficará pequeno em poucas semanas.
-
-2. Cronograma de Treinamento por Faixa Etária
-
-Idade
-
-Fase de Treino
-
-Equipamento Recomendado
-
-2 a 6 meses
-
-Adaptação e adestramento básico de caminhada sem puxar. Estímulos sensoriais e passeios curtos após vacinação.
-
-Peitoral leve e ajustável de entrada (tipo H ou Y simples) e guia convencional.
-
-6 a 12 meses
-
-Aumento progressivo de distância em caminhada; introdução a trotes curtos e intermitentes na grama ou terra.
-
-Peitoral ajustável tamanho médio (M/G) e início do uso de guia com amortecedor.
-
-12 a 18+ meses
-
-Liberação pelo médico veterinário para corridas contínuas e Canicross.
-
-Cinto mãos livres + Peitoral profissional esportivo (Bretelle ou X-Back em tamanho definitivo G/GG).
-
-3. Strings de Busca para E-commerce
-
-Quando chegar o momento de pesquisar componentes nos marketplaces (Mercado Livre, Amazon, Shopee, Petz, Cobasi), utilize os seguintes termos exatos:
-
-Cinto e Guia do Condutor (Mãos Livres)
-
-guia maos livres para cachorro corrida
-
-guia de cintura para correr com caes
-
-guia elastica amortecedor corrida pet hands free
-
-cinto canicross corrida caes com bolsos
-
-Peitorais Esportivos
-
-peitoral Y corrida cachorro ergonomico
-
-arnes canicross pastor alemao
-
-peitoral esportivo tracao caes
-
-4. O Equipamento Ideal: Por que NÃO usar coleira de pescoço ou antipuxão tradicional?
-
-Coleira de Pescoço: Em ritmo de corrida, qualquer freada ou arrancada transmite impacto direto na traqueia e vértebras cervicais, gerando risco de lesões sérias.
-
-Peitoral Antipuxão Tradicional (engate frontal): Foi projetado para treinamento de passeio lento. Ao ser puxado na corrida, ele gira os ombros do cão para o lado, alterando a biomecânica e aumentando o risco de tropeços e torções articulares.
-
-Peitoral em ""Y"" / Arnês Esportivo: Distribui o impacto de tração uniformemente no osso esterno (peito), mantendo escápulas e ombros totalmente livres para a passada anatômica.
-
-5. Comparativo dos Melhores Peitorais do Mercado
-
-Categoria A: Alta Performance & Canicross Profissional
-
-1. Nostro Pet - Arnês Bretelle Sport / Adventure (Nacional - Melhor Relação Performance)
-
-Indicação: Modelo ergonômico ajustável com ponto de tração dorsal intermediário. Excelente tanto para corridas urbanas quanto para caminhadas esportivas.
-
-Construção: Fitas de alta tenacidade, forro em neoprene nas áreas de atrito e costuras reforçadas.
-
-Preço Médio: R 295,00.
-
-Links Oficiais:
-
-Arnês Bretelle Canicross Sport Ajustável - Nostro Pet
-
-Arnês Bretelle Canicross Adventure - Nostro Pet
-
-2. Nostro Pet - Arnês X-Back Sport (Tração Pura)
-
-Indicação: Modelo tradicional de corrida esportiva e canicross. O ponto de fixação da guia fica na base da cauda, distribuindo a tração por todo o dorso do cão. Nota: exclusivo para corrida e tração, não indicado para passeios urbanos comuns.
-
-Preço Médio: Em torno de R 260,00.
-
-Link Oficial:
-
-Arnês X-Back Sport - Nostro Pet
-
-3. Ruffwear - Hi & Light / Web Master (Referência Internacional)
-
-Indicação: Modelo ultraleve, respirável e de secagem rápida com corte em Y.
-
-Preço Médio: R 500,00 (linha importada).
-
-Categoria B: Melhor Custo-Benefício & Versatilidade Diária
-
-1. Zee.Dog - FlyHarness
-
-Indicação: Peitoral leve para caminhadas ativas e corridas moderadas do dia a dia. Alça de segurança superior e estrutura respirável.
-
-Preço Médio: R 270,00.
-
-2. Kurgo - Journey Air Dog Harness
-
-Indicação: Alternativa robusta com tecido ripstop, quatro pontos de regulagem e peito acolchoado em V/Y.
-
-Preço Médio: R 280,00.
-
-6. Como Tirar as Medidas para a Pastora Alemã Adulta
-
-Quando a sua cachorra atingir a maturidade (por volta de 1 ano a 1 ano e meio):
-
-Circunferência do Pescoço: Medir na base do pescoço (onde ele se conecta ao tórax), e não na altura da garganta.
-
-Circunferência do Tórax: Medir a parte mais larga da caixa torácica, cerca de 2 a 3 dedos atrás das patas dianteiras.
-
-Comprimento do Dorso (para modelos X-Back): Da cernelha (base do pescoço) até o início da cauda.
-
-Tamanho Médio Esperado: Pastoras Alemãs fêmeas adultas costumam vestir G (ou GG em exemplares de estrutura mais larga). Sempre consulte a tabela de medidas do fabricante antes da compra.",,ℹ️,,10,2026-10-09 15:31:57,,
 INFO_0353,task,TASK_0432,IMG_20261010_125211.jpg,,ℹ️,,20,2026-10-10 15:04:08,,
 INFO_0354,task,TASK_0432,IMG_20261010_125128.jpg,,ℹ️,,30,2026-10-10 15:04:12,,
 INFO_0357,task,TASK_0438,"Your credentials
@@ -437,3 +308,41 @@ INFO_0559,task,TASK_0742,Chosen Product,Top Dog 30 kg (Ourofino). Cut tablet in 
 INFO_0560,task,TASK_0742,Treatment Duration,Give monthly until she reaches 6 months of age.,ℹ️,Monthly,5550,2026-10-29 17:30:05,,
 INFO_0561,task,TASK_0742,Future Interval (After 6 Months),"After she is 6 months old, change the dosing frequency from monthly to once every 3 to 4 months.",ℹ️,Monthly,5560,2026-10-29 17:30:05,,
 INFO_0563,task,TASK_0679,"$env:GOOGLE_CLOUD_PROJECT=""rbprj-100397""",,ℹ️,,30,2026-10-29 18:03:57,,
+INFO_0564,task,TASK_0745,"Track side effects, sleep changes, and activation; discuss any concerns promptly with your prescriber",,🩺,,2340,2026-08-29 15:48:39,,
+INFO_0565,task,TASK_0745,Interaction cautions: review all new meds/supplements for interactions with fluvoxamina,,🩺,,2350,2026-08-29 15:48:39,,
+INFO_0566,task,TASK_0746,"Tdap (tetanus, diphtheria, pertussis): one dose in 2025 (Age 28) as adult catch-up, regardless of prior dT",,🩺,,2370,2026-08-29 15:48:39,,
+INFO_0567,task,TASK_0746,"Td or Tdap boosters every 10 years after 2025: 2035 (Age 38), 2045 (Age 48), 2055 (Age 58), 2065 (Age 68), 2075 (Age 78), 2085 (Age 88), 2095 (Age 98)",,🩺,,2380,2026-08-29 15:48:39,,
+INFO_0568,task,TASK_0746,Varicella (chickenpox/catapora): history of disease in childhood; no vaccine needed,,🩺,,2390,2026-08-29 15:48:39,,
+INFO_0569,task,TASK_0746,"Influenza: annually, every year",,🩺,,2400,2026-08-29 15:48:39,,
+INFO_0570,task,TASK_0746,"COVID-19: annually, every year per local seasonality",,🩺,,2410,2026-08-29 15:48:39,,
+INFO_0571,task,TASK_0746,Herpes Zoster (Shingrix): 2-dose series at 50 years — 2047 (Age 50) Dose 1; Dose 2 in 2–6 months (still 2047/2048),,🩺,,2420,2026-08-29 15:48:39,,
+INFO_0572,task,TASK_0746,"Pneumococcal (at 60 years if average risk): 2057 (Age 60) per current guideline (e.g., single PCV20, or PCV15 followed by PPSV23 depending on policy at that time)",,🩺,,2430,2026-08-29 15:48:39,,
+INFO_0573,task,TASK_0746,Yellow Fever: you received 14/10/2022; generally one dose is lifelong. Booster only if policy/travel risk requires,,🩺,,2440,2026-08-29 15:48:39,,
+INFO_0574,task,TASK_0746,Hepatitis A/B: your records are considered complete; no routine boosters if immunocompetent,,🩺,,2450,2026-08-29 15:48:39,,
+INFO_0575,task,TASK_0746,MMR: appears complete; no routine adult boosters if two documented doses,,🩺,,2460,2026-08-29 15:48:39,,
+INFO_0576,task,TASK_0746,"Travel/occupational vaccines (e.g., meningococcal, hepatitis boosters, rabies pre-exposure): as needed based on destination/risk",,🩺,,2470,2026-08-29 15:48:39,,
+INFO_0577,task,TASK_0747,COVID-19 bivalente Pfizer: 16/02/2024; prior Pfizer doses 2021–2022; CoronaVac booster 03/11/2022,,🩺,,2490,2026-08-29 15:48:39,,
+INFO_0578,task,TASK_0747,Influenza trivalente: 04/12/2024 (keep annually),,🩺,,2500,2026-08-29 15:48:39,,
+INFO_0579,task,TASK_0747,dT (adult diphtheria-tetanus) booster: 04/04/2022 (Tdap still due once; plan in 2025),,🩺,,2510,2026-08-29 15:48:39,,
+INFO_0580,task,TASK_0747,Yellow Fever: 14/10/2022,,🩺,,2520,2026-08-29 15:48:39,,
+INFO_0581,task,TASK_0747,Hepatitis A: 2016 (series considered fine),,🩺,,2530,2026-08-29 15:48:39,,
+INFO_0582,task,TASK_0747,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",,🩺,,2540,2026-08-29 15:48:39,,
+INFO_0583,task,TASK_0747,Varicella (catapora): history of disease in childhood; no vaccine needed,,🩺,,2550,2026-08-29 15:48:39,,
+INFO_0584,task,TASK_0744,"Pastor alemão Capa Preta, nascida em dia dezenove de julho de dois mil e vinte e seis.",Next due: 2026-09-18,⏳,,4680,2026-09-18 11:32:24,,
+INFO_0585,task,TASK_0744,Feed German Shepherd puppy (15 kg current): 250g-350g/day divided into 3 meals (85g-115g/meal),"Recurrence: daily
+Next due: 2026-09-24",🐕,Feeding Schedule,4870,2026-09-24 13:05:52,,
+INFO_0586,task,TASK_0744,Weigh German Shepherd and adjust daily grams based on calorie density and growth rate,"Recurrence: monthly
+Next due: 2026-10-19",⚖️,Feeding Schedule,4880,2026-09-24 13:05:52,,
+INFO_0587,task,TASK_0744,Month 3 feeding (15 kg rapid growth): 250g-350g/day divided into 3 meals (85g-115g/meal),Due: 2026-10-19,🐕,Feeding Schedule,4890,2026-09-24 13:05:52,,
+INFO_0588,task,TASK_0744,Month 4 feeding (~4 months milestone): 250g-350g/day divided into 3 meals (85g-115g/meal),Due: 2026-11-19,🐕,Feeding Schedule,4900,2026-09-24 13:05:52,,
+INFO_0589,task,TASK_0744,Month 5 feeding: Puppy food across 3 meals (adjust portion between 250g-350g and adult target),Due: 2026-12-19,🐕,Feeding Schedule,4910,2026-09-24 13:05:52,,
+INFO_0590,task,TASK_0744,Month 6 feeding: Puppy food across 3 meals (monitor weight and adjust portion),Due: 2027-01-19,🐕,Feeding Schedule,4920,2026-09-24 13:05:52,,
+INFO_0591,task,TASK_0744,Month 7 feeding: Puppy food across 3 meals (support rapid bone and joint growth),Due: 2027-02-19,🐕,Feeding Schedule,4930,2026-09-24 13:05:52,,
+INFO_0592,task,TASK_0744,Month 8 feeding: Puppy food across 3 meals (monitor growth and calorie density),Due: 2027-03-19,🐕,Feeding Schedule,4940,2026-09-24 13:05:52,,
+INFO_0593,task,TASK_0744,Month 9 feeding: Large-breed puppy food across 3 meals (maintain bone/joint nutrition),Due: 2027-04-19,🐕,Feeding Schedule,4950,2026-09-24 13:05:52,,
+INFO_0594,task,TASK_0744,Month 10 feeding: Large-breed puppy food across 3 meals (monitor weight progression),Due: 2027-05-19,🐕,Feeding Schedule,4960,2026-09-24 13:05:52,,
+INFO_0595,task,TASK_0744,Month 11 feeding: Large-breed puppy food across 3 meals (prepare transition to adult schedule),Due: 2027-06-19,🐕,Feeding Schedule,4970,2026-09-24 13:05:52,,
+INFO_0596,task,TASK_0744,Month 12 feeding (1 Year): Puppy food milestone (maintain puppy food through 12-15 months),Due: 2027-07-19,🐕,Feeding Schedule,4980,2026-09-24 13:05:52,,
+INFO_0597,task,TASK_0744,Month 13 feeding: Large-breed puppy food (continue through 12-15 months; monitor weight),Due: 2027-08-19,🐕,Feeding Schedule,4990,2026-09-24 13:05:52,,
+INFO_0598,task,TASK_0744,Month 14 feeding: Large-breed puppy food (12-15 months window; plan adult switch),Due: 2027-09-19,🐕,Feeding Schedule,5000,2026-09-24 13:05:52,,
+INFO_0599,task,TASK_0744,"Month 15 feeding (Adulthood / 30-40 kg): Transition to adult food, 350g-500g/day in 2 meals (175g-250g/meal)",Due: 2027-10-19,🐕,Feeding Schedule,5010,2026-09-24 13:05:52,,

@@ -3,22 +3,27 @@ PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39,attachments\icons\P
 PROJ_0005,General,work,Tasks,40,1,2026-08-29 15:48:39,attachments\icons\PROJ_0005.png,#ffffff,0,
 PROJ_0006,Trainings,work,Tasks,2630,1,2026-08-29 15:48:39,attachments\icons\PROJ_0006.svg,#ffffff,0,waiting
 PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,2570,1,2026-08-29 15:48:39,attachments\icons\PROJ_0016.png,#ffffff,0,waiting
-PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0019.svg,#ffffff,0,
-PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2550,1,2026-08-29 15:48:39,attachments\icons\PROJ_0021.svg,#ffffff,1,waiting
-PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",habits,,2360,1,2026-08-29 15:48:39,attachments\icons\PROJ_0022.svg,#ffffff,1,waiting
-PROJ_0023,Notes from Your Records (Prior Vaccines),habits,,2480,1,2026-08-29 15:48:39,attachments\icons\PROJ_0023.svg,#ffffff,1,waiting
 PROJ_0026,Dissertation,personal,,2490,1,2026-08-30 21:05:29,,#ffffff,0,
 PROJ_0027,Job Search,personal,,2510,1,2026-09-14 18:09:36,attachments\icons\PROJ_0027.png,#ffffff,0,
 PROJ_0028,Art of Memory,personal,,2530,1,2026-09-14 18:14:10,attachments\icons\PROJ_0028.svg,#ffffff,0,waiting
 PROJ_0029,Dog,personal,,2520,1,2026-09-17 16:52:21,attachments\icons\PROJ_0029.svg,#ffffff,0,
-PROJ_0030,Dog,habits,,2330,1,2026-09-18 11:31:59,attachments\icons\PROJ_0030.svg,#ffffff,1,
 PROJ_0032,Piano,personal,,2540,1,2026-09-26 17:42:25,attachments\icons\PROJ_0032.svg,#ffffff,0,waiting
 PROJ_0034,Personal inbox,personal,,1340,1,2026-09-29 12:08:46,attachments\icons\PROJ_0034.png,#ffffff,0,
 PROJ_0035,X-Tower,work,,160,1,2026-10-05 14:50:49,attachments\icons\PROJ_0035.svg,#ffffff,0,
 PROJ_0036,UX Super,work,,340,1,2026-10-06 10:49:57,attachments\icons\PROJ_0036.png,#ffffff,0,
 PROJ_0037,TAR,work,,430,1,2026-10-14 15:08:15,,#ffffff,0,
 PROJ_0038,Ideas,work,,2620,1,2026-10-19 15:32:41,,#ffffff,0,waiting
-PROJ_0039,General,habits,,2640,1,2026-10-25 17:40:05,,#ffffff,0,waiting
 PROJ_0040,Notes,work,,999999,1,2026-10-26 09:25:29,,#ffffff,0,
 PROJ_0041,Notes,personal,,999999,1,2026-10-26 09:25:29,,#ffffff,0,
 PROJ_0042,Notes,habits,,999999,1,2026-10-26 09:25:29,,#ffffff,0,
+PROJ_0043,General,habits,,1880,1,2026-08-29 15:48:39,attachments\icons\PROJ_0043.svg,#ffffff,0,
+PROJ_0044,Daily,habits,,1890,1,2026-08-29 15:48:39,attachments\icons\PROJ_0044.svg,#ffffff,0,
+PROJ_0045,Weekly,habits,,1900,1,2026-08-29 15:48:39,attachments\icons\PROJ_0045.svg,#ffffff,0,
+PROJ_0046,Monthly,habits,,1910,1,2026-08-29 15:48:39,attachments\icons\PROJ_0046.svg,#ffffff,0,
+PROJ_0047,Quarterly,habits,,1920,1,2026-08-29 15:48:39,attachments\icons\PROJ_0047.svg,#ffffff,0,
+PROJ_0048,Bi-yearly (Every 6 months),habits,,1930,1,2026-08-29 15:48:39,attachments\icons\PROJ_0048.svg,#ffffff,0,
+PROJ_0049,Yearly,habits,,1940,1,2026-08-29 15:48:39,attachments\icons\PROJ_0049.svg,#ffffff,0,
+PROJ_0050,Every 10 Years (Documents),habits,,1950,1,2026-08-29 15:48:39,attachments\icons\PROJ_0050.svg,#ffffff,0,
+PROJ_0051,Every 2 Years,habits,,1960,1,2026-08-29 15:48:39,attachments\icons\PROJ_0051.svg,#ffffff,0,
+PROJ_0052,Every 3 Years,habits,,1970,1,2026-08-29 15:48:39,attachments\icons\PROJ_0052.svg,#ffffff,0,
+PROJ_0053,Every 5 Years,habits,,1980,1,2026-08-29 15:48:39,attachments\icons\PROJ_0053.svg,#ffffff,0,

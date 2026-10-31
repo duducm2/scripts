@@ -1108,7 +1108,7 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = current clipboard; "grammar" | "aiopt" | "task_pack" | "finance_daily"
+    ; presetMode: "" = currentd clipboard; "grammar" | "aiopt" | "task_pack" | "finance_daily"
     ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
     ; Finance daily / registry presets: attach context files then paste prompt + dictation.
     ; Finance daily sends only (no wait / download / import); user finishes manually.
