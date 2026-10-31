@@ -186,10 +186,14 @@ PromptPaste_OnTimeout(*) {
 }
 
 ; Show banner immediately; block until Y / H / N / Esc / timeout. Returns "reminders", "strip", or "send".
-PromptPaste_ShowOptionsAndWait() {
+; promptKeys: bottom strip. Empty keeps the in-companion labels.
+PromptPaste_ShowOptionsAndWait(promptKeys := "") {
     global g_PromptPasteWaitChoice, g_PromptPasteWaitActive
     g_PromptPasteWaitChoice := ""
     g_PromptPasteWaitActive := true
+    if (promptKeys = "")
+        promptKeys := "[Y] Send now  [H] Human notes  [N]/Esc Paste"
+    textWidth := (StrLen(promptKeys) > 48) ? 560 : 420
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     keyCallbacks := Map(
@@ -205,11 +209,11 @@ PromptPaste_ShowOptionsAndWait() {
         0,
         PromptPaste_OnTimeout,
         BANNER_ACCENT_INTERMEDIATE,
-        420,
+        textWidth,
         17,
         "",
         true,
-        "[Y] Send now  [H] Human notes  [N]/Esc Paste",
+        promptKeys,
         true,
         true,
         true

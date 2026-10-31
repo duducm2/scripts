@@ -69,12 +69,12 @@ ClipAngel_CopyFocusedFilteredContent() {
 ; Shift + X : Clear filters (F7)
 +x:: Send "{F7}"
 
-; Shift + F : Mark the selected clip as favorite (Clip Angel Alt+Q). Menu invoke if Alt lands on Window.
+; Shift + F : Mark the selected clip as favorite (Clip Angel Alt+Q).
 +f:: {
     ClipAngel_FocusGridIfFilterCombo()
     hwnd := ClipAngel_MainHwnd()
-    if (hwnd && !ClipAngel_SendMarkFavoriteAltQ(hwnd))
-        ClipAngel_InvokeMarkFavoriteViaMenu(hwnd)
+    if hwnd
+        ClipAngel_SendMarkFavoriteAltQ(hwnd)
     if hwnd
         ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }

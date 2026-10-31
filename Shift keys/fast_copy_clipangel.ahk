@@ -446,7 +446,10 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
             }
             Gemini_FocusPromptSameAsOpenHotkey(uia, false)
             if (A_Index = 1) {
-                ClipAngel_SendNativeTopItemKeys(priorHwnd)
+                if !ClipAngel_SendNativeTopItemKeys(priorHwnd) {
+                    ShowCenteredOverlay_Utils("❌ Top clip was not selected, so nothing was pasted.", 2000, BANNER_ACCENT_ERROR)
+                    break
+                }
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
                 ClipAngel_ReleaseChordModifiersForSend()
@@ -687,7 +690,10 @@ ExecuteSequentialPaste(actionCount) {
             catch {
             }
             if (A_Index = 1) {
-                ClipAngel_SendNativeTopItemKeys(priorHwnd)
+                if !ClipAngel_SendNativeTopItemKeys(priorHwnd) {
+                    ShowCenteredOverlay_Utils("❌ Top clip was not selected, so nothing was pasted.", 2000, BANNER_ACCENT_ERROR)
+                    break
+                }
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
                 ClipAngel_ReleaseChordModifiersForSend()

@@ -102,6 +102,31 @@ HandleHotstringChar(char) {
     }
 }
 
+; Chrome window the user had open before Utility Shortcuts: Gemini, Enterprise, Copilot, or ChatGPT.
+UtilitySelector_HwndIsCompanionWindow(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    title := ""
+    try {
+        if (StrLower(WinGetProcessName("ahk_id " hwnd)) != "chrome.exe")
+            return false
+        title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    if (title = "")
+        return false
+    if (IsConsumerGeminiChromeTitle(title) || GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(
+        title))
+        return true
+    return InStr(title, "chatgpt", false)
+}
+
+UtilitySelector_OriginIsCompanionWindow() {
+    global g_UtilitySelectorRestoreHwnd
+    return UtilitySelector_HwndIsCompanionWindow(g_UtilitySelectorRestoreHwnd)
+}
+
 UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := false) {
     global g_lastExpansion, g_PromptPasteBusyActive
     if (!IsObject(prompt))
@@ -118,7 +143,12 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
     pasteChoice := ""
     if (doPasteBody) {
         CleanupHotstringSelector()
-        pasteChoice := PromptPaste_ShowOptionsAndWait()
+        ; N pastes in the current window and does not send. Y sends here only when
+        ; this window is already a companion; otherwise Y carries the prompt there.
+        pasteKeys := UtilitySelector_OriginIsCompanionWindow()
+            ? "[Y] Send now  [H] Human notes  [N]/Esc Paste"
+            : "[Y] Send to companion  [H] Human notes  [N]/Esc Paste"
+        pasteChoice := PromptPaste_ShowOptionsAndWait(pasteKeys)
         if (pasteChoice = "")
             return
         ; Immediate visual feedback after Y / H / N / Esc (before context resolve / attach / paste).
@@ -138,8 +168,10 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             pickedCount := resolved.pickedCount
         }
         ; Pack catalog + Send: always route through the companion (no [L] required).
+        ; Y from any other window does the same: focus the companion and send.
+        ; N and H still paste where the user is and do not send.
         ; Reply download/copy stays manual; import is Import Management.
-        if (pasteChoice = "send" && PackPipeline_IsCatalogPrompt(prompt))
+        if (pasteChoice = "send" && (PackPipeline_IsCatalogPrompt(prompt) || !UtilitySelector_OriginIsCompanionWindow()))
             useGemini := true
         PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
         clip := ""

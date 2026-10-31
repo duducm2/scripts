@@ -283,3 +283,11 @@ TX288,2026-10-29,Pills for dog,"80,00",card_expense,CAT_PETS,ACC_MERCADOP,CARD_M
 TX289,2026-10-29,More pills for dog,"539,20",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX290,2026-10-30,Transfer from Mercado Pago long-term to checking,"1656,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX291,2026-10-30,Construction worker for new house,"1656,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX292,2026-10-31,"FGTS: 56211,59 -> 57096,69 (+885,10 yield)","885,10",income,CAT_INVESTIM,ACC_FGTS,,,1,1,,0
+TX293,2026-10-31,"Nubank (checking account): 50,00 -> 50,44 (+0,44 yield)","0,44",income,CAT_INVESTIM,ACC_NUBANKMA,,,1,1,,0
+TX294,2026-10-31,"Nubank (short-term): 5039,39 -> 5063,08 (+23,69 yield)","23,69",income,CAT_INVESTIM,ACC_TRANSITI,,,1,1,,0
+TX295,2026-10-31,"99 Pay (short-term): 5040,37 -> 5059,67 (+19,30 yield)","19,30",income,CAT_INVESTIM,ACC_99PAY,,,1,1,,0
+TX296,2026-10-31,"Mercado Pago (checking account): 5941,84 -> 5955,51 (+13,67 yield)","13,67",income,CAT_INVESTIM,ACC_MERCADOP,,,1,1,,0
+TX297,2026-10-31,"Meli dólares: 119,51 -> 138,05 (+18,54 yield)","18,54",income,CAT_INVESTIM,ACC_MELIDOLA,,,1,1,,0
+TX298,2026-10-31,"Mercado Pago (short-term): 12255,15 -> 12301,83 (+46,68 yield)","46,68",income,CAT_INVESTIM,ACC_MERCADOP2,,,1,1,,0
+TX299,2026-10-31,"Mercado Pago (long-term): 44744,50 -> 45055,07 (+310,57 yield)","310,57",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
