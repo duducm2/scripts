@@ -1606,8 +1606,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Symbol Layer] Win+Alt+Shift - Primary combination
     [Window Management] Ctrl+Alt+Win - Secondary combination
     
-    [Alt+P] Clip Angel: AHK open → Show all marks (Ctrl+1) + Row 0 (clear native Alt+P in Clip Angel)
-    [Alt+B] Clip Angel: AHK open → Show only favorite (Ctrl+2) + Row 0 (clear native Alt+B in Clip Angel)
+    [Alt+P] Clip Angel: AHK posts the native reset hotkey (no key injected, so Window does not take focus).
+    [Alt+B] Clip Angel: AHK posts the native favorites hotkey (no key injected, so Window does not take focus).
     [Esc] (Clip Angel focused) Minimize
     
     === CURSOR ===
@@ -1619,8 +1619,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+S] > Opens or activates Spotify
     
     === CLIP ANGEL ===
-    [Alt+P] AHK: open + Show all marks (Ctrl+1) + select first clip
-    [Alt+B] AHK: open + Show only favorite (Ctrl+2) + select first clip
+    [Alt+P] AHK posts the native reset hotkey. Alt never reaches the Window menu.
+    [Alt+B] AHK posts the native favorites hotkey. Alt never reaches the Window menu.
     [Esc] (Clip Angel focused) Minimize
     [Win+Alt+Shift+1] > Send top list item from Clip Angel
     [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file into focused Explorer / Cursor·VS Code Files Explorer (Desktop fallback), then hide

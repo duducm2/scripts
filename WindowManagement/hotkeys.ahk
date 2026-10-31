@@ -54,25 +54,19 @@
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
-; Clip Angel Alt+P / Alt+B: global open from any window (clear native Alt+P/B in Clip Angel settings).
-; AutoSlot freeze lives here (WindowManagement includes AutoSlot; Utils does not).
-!p:: {
-    try AutoSlot_BeginPlaceFreeze()
+; Alt+P / Alt+B are swallowed here. A pass-through hook injects a key during the chord,
+; so Clip Angel's own hotkey sometimes never fires, and the Alt release selects Window.
+; Post the same hotkey Clip Angel registered (reset = Alt+P, favorites = Alt+B).
+; No Send, no UIA. #MenuMaskKey vkE8 keeps the Alt release from opening the menu.
+!p:: ClipAngel_FireNativeOpen("p")
+!b:: ClipAngel_FireNativeOpen("b")
+
+ClipAngel_FireNativeOpen(letter) {
+    if ClipAngel_PostHotkey(letter, "a")
+        return
+    try ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 1500, BANNER_ACCENT_ERROR)
     catch {
     }
-    try AutoSlot_BeginSwapQuiet(AutoSlot_RECENT_MS)
-    catch {
-    }
-    ClipAngel_OpenWithMarkFilter("all")
-}
-!b:: {
-    try AutoSlot_BeginPlaceFreeze()
-    catch {
-    }
-    try AutoSlot_BeginSwapQuiet(AutoSlot_RECENT_MS)
-    catch {
-    }
-    ClipAngel_OpenWithMarkFilter("favorites")
 }
 
 ; =============================================================================
