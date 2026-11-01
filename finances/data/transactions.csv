@@ -291,3 +291,5 @@ TX296,2026-10-31,"Mercado Pago (checking account): 5941,84 -> 5955,51 (+13,67 yi
 TX297,2026-10-31,"Meli dólares: 119,51 -> 138,05 (+18,54 yield)","18,54",income,CAT_INVESTIM,ACC_MELIDOLA,,,1,1,,0
 TX298,2026-10-31,"Mercado Pago (short-term): 12255,15 -> 12301,83 (+46,68 yield)","46,68",income,CAT_INVESTIM,ACC_MERCADOP2,,,1,1,,0
 TX299,2026-10-31,"Mercado Pago (long-term): 44744,50 -> 45055,07 (+310,57 yield)","310,57",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
+TX300,2026-10-31,serviceman repairing new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX301,2026-10-31,transferência long term para checking,"828,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0

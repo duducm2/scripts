@@ -14,6 +14,7 @@ PALACES_HEADERS = [
     "study_id",
     "palace_number",
     "title",
+    "mnemonic_name",
     "character_name",
     "image_rel_path",
     "depth_slots_used",

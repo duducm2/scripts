@@ -28,7 +28,12 @@ from collectibles import (
     remove_item,
     set_equipped,
 )  # noqa: E402
-from palace_save import save_images, save_notes, save_study_images  # noqa: E402
+from palace_save import (  # noqa: E402
+    save_images,
+    save_mnemonic_name,
+    save_notes,
+    save_study_images,
+)
 from palace_store import PalaceStore  # noqa: E402
 from study_plan_parser import default_studies_root  # noqa: E402
 from study_plans_save import save_payload  # noqa: E402
@@ -1214,6 +1219,21 @@ class PalaceHandler(BaseHTTPRequestHandler):
                     str(payload.get("palace_id") or ""),
                     str(
                         payload.get("notes") if payload.get("notes") is not None else ""
+                    ),
+                    self.data_dir,
+                    self.output_dir,
+                    self.studies_root,
+                )
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
+            if path in ("/api/palace/name", "/palace/name"):
+                result = save_mnemonic_name(
+                    str(payload.get("palace_id") or ""),
+                    str(
+                        payload.get("mnemonic_name")
+                        if payload.get("mnemonic_name") is not None
+                        else ""
                     ),
                     self.data_dir,
                     self.output_dir,

@@ -167,18 +167,22 @@ def render_palace_section_md(
 ) -> list[str]:
     num = palace.get("number", "")
     ptitle = md_escape(palace.get("title") or "")
+    cue = md_escape((palace.get("mnemonic_name") or "").strip())
     character = dash(md_escape(palace.get("character") or ""))
     beast_count = int(palace.get("beast_count") or 0)
     atom_count = int(palace.get("atom_count") or 0)
 
     open_attr = " open" if open_default else ""
     atom_short = "atom" if atom_count == 1 else "atoms"
-    summary = (
-        f"<strong>Memory Palace {num}: {ptitle}</strong>"
+    tail = (
         f" · Character: {character}"
         f" · {beast_count} {_beast_noun(beast_count)}"
         f" · {atom_count} {atom_short}"
     )
+    if cue:
+        summary = f"<strong>{cue}</strong> · Memory Palace {num}: {ptitle}{tail}"
+    else:
+        summary = f"<strong>Memory Palace {num}: {ptitle}</strong>{tail}"
 
     lines: list[str] = [
         f"<details{open_attr}>",

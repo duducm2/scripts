@@ -1,4 +1,4 @@
-"""Save palace notes and gallery images from the dashboard HTTP API."""
+"""Save palace notes, mnemonic names, and gallery images from the dashboard HTTP API."""
 
 from __future__ import annotations
 
@@ -110,6 +110,41 @@ def save_notes(
     save_all(data_dir, data)
     _sync_study(study_id, data_dir, output_dir, notes_root)
     return {"ok": True, "palace_id": palace_id, "study_id": study_id}
+
+
+def save_mnemonic_name(
+    palace_id: str,
+    mnemonic_name: str,
+    data_dir: Path,
+    output_dir: Path,
+    notes_root: Path | None,
+) -> dict[str, Any]:
+    palace_id = (palace_id or "").strip()
+    if not palace_id:
+        return {"ok": False, "error": "palace_id required"}
+    name = (mnemonic_name or "").strip()
+    data = load_all(data_dir)
+    palace = _find_palace(data, palace_id)
+    if not palace:
+        return {"ok": False, "error": f"unknown palace_id {palace_id}"}
+    study_id = palace.get("study_id") or ""
+    new_palaces: list[dict[str, str]] = []
+    for row in data["palaces"]:
+        if row.get("id") == palace_id:
+            updated = dict(row)
+            updated["mnemonic_name"] = name
+            new_palaces.append(updated)
+        else:
+            new_palaces.append(row)
+    data["palaces"] = new_palaces
+    save_all(data_dir, data)
+    _sync_study(study_id, data_dir, output_dir, notes_root)
+    return {
+        "ok": True,
+        "palace_id": palace_id,
+        "study_id": study_id,
+        "mnemonic_name": name,
+    }
 
 
 def _gallery_dest_path(

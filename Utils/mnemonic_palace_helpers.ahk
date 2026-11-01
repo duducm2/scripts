@@ -587,8 +587,8 @@ Palace_Headers(kind) {
         case "studies":
             return ["id", "title", "notes_rel_path", "sort_order", "active"]
         case "palaces":
-            return ["id", "study_id", "palace_number", "title", "character_name", "image_rel_path", "depth_slots_used",
-                "image_prompt", "palace_notes"]
+            return ["id", "study_id", "palace_number", "title", "mnemonic_name", "character_name", "image_rel_path",
+                "depth_slots_used", "image_prompt", "palace_notes"]
         case "palace_images":
             return ["id", "palace_id", "image_rel_path", "caption", "sort_order"]
         case "study_images":

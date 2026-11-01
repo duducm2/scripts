@@ -610,6 +610,11 @@ class PalaceStore:
                 )
             ),
             "title": title,
+            "mnemonic_name": str(
+                payload.get(
+                    "mnemonic_name", (existing or {}).get("mnemonic_name", "")
+                )
+            ).strip(),
             "character_name": str(
                 payload.get("character_name")
                 or (existing or {}).get("character_name")

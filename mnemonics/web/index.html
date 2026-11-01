@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=askbtn1" />
+    <link rel="stylesheet" href="/dashboard.css?v=palacename1" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -1093,9 +1093,22 @@
 
     <div id="overlay" aria-hidden="true">
       <div class="overlay-bar">
-        <div>
+        <div class="overlay-identity">
           <h2 id="ovTitle">Memory Palace</h2>
+          <p class="count" id="ovTopic"></p>
           <p class="count" id="ovCount"></p>
+          <label class="palace-name-field">
+            <input
+              id="ovNameInput"
+              type="text"
+              maxlength="80"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Palace name"
+              placeholder="Rhyme or alliteration, 2–4 concrete words, sounds like the topic, ignore the beasts"
+            />
+          </label>
+          <span class="notes-status" id="ovNameStatus"></span>
         </div>
         <div class="overlay-nav">
           <button
@@ -1380,6 +1393,7 @@
           question: "",
         },
         notesTimer: null,
+        nameTimer: null,
         planCheckSnapshot: null,
         plansScroll: null,
         plansScrollRestorePending: false,
@@ -3100,7 +3114,7 @@
             return `<article class="palace${selected}" data-palace-id="${escAttr(p.id)}" tabindex="0" role="button">
             ${img}
             <div class="meta">
-              <h3>Memory Palace ${esc(p.palace_number)}: ${esc(p.title)}</h3>
+              <h3>${esc(palaceHeading(p))}</h3>
               <p class="char">${esc(p.character_name || "")}</p>
               <p class="counts">${nb} beasts · ${na} Knowledge Atoms</p>
               ${renderPromptBlock(p.image_prompt, p.id)}

@@ -1527,6 +1527,33 @@ footer {
   font-size: 0.95rem;
   margin: 0.2rem 0 0;
 }
+.overlay-bar .overlay-identity {
+  min-width: min(36rem, 100%);
+}
+.overlay-bar .palace-name-field {
+  display: block;
+  margin-top: 0.45rem;
+}
+.overlay-bar .palace-name-field input {
+  width: min(36rem, 70vw);
+  box-sizing: border-box;
+  background: #120f0c;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0.35rem 0.55rem;
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 0.95rem;
+}
+.overlay-bar .palace-name-field input:focus {
+  outline: 1px solid var(--gold);
+  border-color: var(--gold);
+}
+.overlay-bar #ovNameStatus {
+  display: block;
+  min-height: 1.1em;
+  margin-top: 0.2rem;
+}
 #btnClose {
   background: var(--rpg-brass);
   color: #1c1408;

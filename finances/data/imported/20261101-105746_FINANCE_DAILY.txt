@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+2 row(s) · serviceman (new house), transfer between Mercado Pago accounts
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+"serviceman repairing new house","828,00","expense","CAT_NEWHOUSE","ACC_MERCADOP","","",1
+"transferência long term para checking","828,00","transfer","","ACC_MERCADOP3","","ACC_MERCADOP",1
+===END_FILE===

@@ -184,6 +184,7 @@ def snapshot(
                     "id": st_id,
                     "number": st.get("palace_number", ""),
                     "title": st.get("title", ""),
+                    "mnemonic_name": st.get("mnemonic_name", ""),
                     "character": st.get("character_name", ""),
                     "image_rel": st.get("image_rel_path", ""),
                     "image_abs": str(img_path) if img_path else "",
