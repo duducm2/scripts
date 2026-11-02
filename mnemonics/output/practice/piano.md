@@ -1,7 +1,7 @@
 # Piano
 
 <details open>
-<summary><strong>Memory Palace 11: Clefs and Note Placement</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Clefs and Note Placement, Treble and Bass like a Couple in a Bunk Bed</strong> · Memory Palace 11: Clefs and Note Placement · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 11](images/piano/11.png)
 
@@ -70,7 +70,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: Reading and Hand Posture</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>Reading and Hand Posture, a Cat Draped Over the Keys</strong> · Memory Palace 10: Reading and Hand Posture · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 10](images/piano/10.jpg)
 
@@ -109,7 +109,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: Note Symbols and Counting</strong> · Character: — · 1 beast · 1 atom</summary>
+<summary><strong>Note Symbols and Counting like a Casino Dealer's Chips</strong> · Memory Palace 9: Note Symbols and Counting · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 9](images/piano/9.png)
 
@@ -138,7 +138,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: Reading Spaces and Resolution</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Reading Spaces and Resolution, the Sigh when the Song Finally Comes Home</strong> · Memory Palace 8: Reading Spaces and Resolution · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 8](images/piano/8.png)
 
@@ -187,7 +187,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Musical Structure</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Musical Structure like the Floor Plan of a Haunted Ballroom</strong> · Memory Palace 7: Musical Structure · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 7](images/piano/7.png)
 
@@ -239,7 +239,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Chord Positions and Harmony Basics</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Chord Positions and Harmony Basics, Voices Spooning in a Choir Loft</strong> · Memory Palace 6: Chord Positions and Harmony Basics · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 6](images/piano/6.png)
 
@@ -314,7 +314,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Chord Construction and Types</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Chord Construction and Types, Stacking Pancakes that Sing</strong> · Memory Palace 5: Chord Construction and Types · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/piano/5.png)
 
@@ -383,7 +383,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Key Choice, Chords, and Pedal</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Key Choice, Chords, and Pedal like a Sports Car's Gas Pedal</strong> · Memory Palace 4: Key Choice, Chords, and Pedal · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 4](images/piano/4.png)
 
@@ -438,7 +438,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Practice Structure and Scale Steps</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Practice Structure and Scale Steps, Climbing a Staircase in Heels</strong> · Memory Palace 3: Practice Structure and Scale Steps · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/piano/3.png)
 
@@ -516,7 +516,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Note Values and Relaxed Hand</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Note Values and a Relaxed Hand, Fingers Melting into Warm Chocolate</strong> · Memory Palace 2: Note Values and Relaxed Hand · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/piano/2.png)
 
@@ -597,7 +597,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Keyboard Map and Reading System</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Keyboard Map and Reading System like a Treasure Map on Ivory Keys</strong> · Memory Palace 1: Keyboard Map and Reading System · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/piano/1.png)
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=palacename1" />
+    <link rel="stylesheet" href="/dashboard.css?v=palacename2" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -1093,23 +1093,6 @@
 
     <div id="overlay" aria-hidden="true">
       <div class="overlay-bar">
-        <div class="overlay-identity">
-          <h2 id="ovTitle">Memory Palace</h2>
-          <p class="count" id="ovTopic"></p>
-          <p class="count" id="ovCount"></p>
-          <label class="palace-name-field">
-            <input
-              id="ovNameInput"
-              type="text"
-              maxlength="80"
-              autocomplete="off"
-              spellcheck="false"
-              aria-label="Palace name"
-              placeholder="Rhyme or alliteration, 2–4 concrete words, sounds like the topic, ignore the beasts"
-            />
-          </label>
-          <span class="notes-status" id="ovNameStatus"></span>
-        </div>
         <div class="overlay-nav">
           <button
             type="button"
@@ -1174,11 +1157,21 @@
       </div>
       <div class="overlay-body">
         <div class="overlay-stage">
-          <div
-            class="overlay-image"
-            id="ovImage"
-            title="Press F for full-screen"
-          ></div>
+          <div class="overlay-portrait">
+            <button
+              type="button"
+              id="ovFrameTitle"
+              class="palace-frame-title"
+              title="Edit palace name"
+            >
+              Memory Palace
+            </button>
+            <div
+              class="overlay-image"
+              id="ovImage"
+              title="Press F for full-screen"
+            ></div>
+          </div>
           <div class="practice overlay-atoms">
             <h3>Practice — Knowledge Atoms</h3>
             <div id="ovAtoms"></div>
@@ -1234,6 +1227,24 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div id="palaceNameModal" class="palace-name-modal" hidden>
+      <form id="palaceNameForm" class="palace-name-card">
+        <p class="palace-name-topic" id="palaceNameTopic"></p>
+        <textarea
+          id="palaceNameInput"
+          maxlength="240"
+          rows="3"
+          aria-label="Palace name"
+          placeholder="A vivid scene that still says the topic"
+        ></textarea>
+        <p class="notes-status" id="ovNameStatus"></p>
+        <div class="palace-name-actions">
+          <button type="submit" id="palaceNameSave">Save</button>
+          <button type="button" id="palaceNameCancel">Cancel</button>
+        </div>
+      </form>
     </div>
 
     <aside
@@ -2557,6 +2568,12 @@
               gap.setAttribute("aria-hidden", "true");
               bento.appendChild(gap);
             }
+            const palaceLabel = document.createElement("div");
+            palaceLabel.className = "qr-palace-name";
+            palaceLabel.textContent =
+              String(p.mnemonic_name || "").trim() ||
+              String(p.title || "").trim();
+            bento.appendChild(palaceLabel);
             for (const b of beasts(p.id).slice().sort(comparePegThenSort)) {
               for (const a of atoms(b.id)) {
                 atomCount += 1;
@@ -3521,10 +3538,7 @@
         const idx = list.findIndex((x) => x.id === id);
         const overlay = document.getElementById("overlay");
         paintPalaceName(p);
-        const nAtoms = beasts(id).reduce((n, b) => n + atoms(b.id).length, 0);
-        document.getElementById("ovCount").textContent =
-          `${nAtoms} Knowledge Atom${nAtoms === 1 ? "" : "s"}` +
-          (p.character_name ? ` · Character: ${p.character_name}` : "");
+        closePalaceNameModal();
         const src = mediaUrl(p.image_rel_path);
         document.getElementById("ovImage").innerHTML = src
           ? `<img src="${escAttr(src)}" alt="Memory Palace ${escAttr(p.palace_number)}"/>`
@@ -3547,8 +3561,6 @@
         reloadBeastThumbs().then(paintOpenPalaceAtoms);
         document.getElementById("ovNotesInput").value = p.palace_notes || "";
         setNotesStatus("", "");
-        document.getElementById("ovNameInput").value = p.mnemonic_name || "";
-        setNameStatus("", "");
         renderGalleryGrid(id);
         document.getElementById("btnPrevPalace").disabled = idx <= 0;
         document.getElementById("btnNextPalace").disabled =
@@ -3618,6 +3630,7 @@
         document.getElementById("overlay").setAttribute("aria-hidden", "true");
         delete document.getElementById("overlay").dataset.beastCount;
         state.overlayPalaceId = "";
+        closePalaceNameModal();
         syncExpandImageButton();
         syncAtomDetailsButton();
       }
@@ -3637,50 +3650,64 @@
 
       function paintPalaceName(p) {
         const cue = String(p?.mnemonic_name || "").trim();
-        document.getElementById("ovTitle").textContent = cue
-          ? cue
-          : `Memory Palace ${p.palace_number}`;
-        const topic = document.getElementById("ovTopic");
-        if (topic) topic.textContent = p.title || "";
+        const btn = document.getElementById("ovFrameTitle");
+        if (!btn) return;
+        btn.textContent =
+          cue || p?.title || `Memory Palace ${p?.palace_number || ""}`;
+      }
+
+      function palaceNameModalOpen() {
+        const modal = document.getElementById("palaceNameModal");
+        return !!(modal && !modal.hidden);
+      }
+
+      function closePalaceNameModal() {
+        const modal = document.getElementById("palaceNameModal");
+        if (modal) modal.hidden = true;
+        setNameStatus("", "");
+      }
+
+      function openPalaceNameModal() {
+        const p = palaceById(state.overlayPalaceId);
+        if (!p) return;
+        document.getElementById("palaceNameTopic").textContent = p.title || "";
+        document.getElementById("palaceNameInput").value =
+          p.mnemonic_name || "";
+        setNameStatus("", "");
+        const modal = document.getElementById("palaceNameModal");
+        modal.hidden = false;
+        document.getElementById("palaceNameInput").focus();
       }
 
       async function savePalaceName(palaceId, rawName) {
         const pid = palaceId || state.overlayPalaceId;
-        if (!pid) return;
-        const name = String(
-          rawName != null
-            ? rawName
-            : document.getElementById("ovNameInput").value,
-        ).trim();
+        if (!pid) return false;
+        const name = String(rawName || "").trim();
         const p = palaceById(pid);
-        if (p && name === String(p.mnemonic_name || "").trim()) return;
+        if (p && name === String(p.mnemonic_name || "").trim()) {
+          closePalaceNameModal();
+          return true;
+        }
         const gen = ++state.nameSaveGen;
-        const stillHere = () =>
-          gen === state.nameSaveGen && state.overlayPalaceId === pid;
-        if (stillHere()) setNameStatus("Saving…", "");
+        setNameStatus("Saving…", "");
         try {
           const r = await api("/api/palace/name", {
             method: "POST",
             body: JSON.stringify({ palace_id: pid, mnemonic_name: name }),
           });
-          if (gen !== state.nameSaveGen) return;
+          if (gen !== state.nameSaveGen) return false;
           if (!r.ok) throw new Error(r.error || "fail");
           if (p) p.mnemonic_name = name;
           if (state.overlayPalaceId === pid && p) paintPalaceName(p);
-          if (stillHere()) setNameStatus("Saved", "ok");
+          closePalaceNameModal();
           if (state.view === "practice") renderPractice();
+          if (document.getElementById("quickRecallList")) renderQuickRecall();
+          return true;
         } catch (e) {
-          if (gen !== state.nameSaveGen) return;
-          if (state.overlayPalaceId === pid)
-            setNameStatus(String(e.message || e), "err");
+          if (gen !== state.nameSaveGen) return false;
+          setNameStatus(String(e.message || e), "err");
+          return false;
         }
-      }
-
-      function schedulePalaceNameSave() {
-        const pid = state.overlayPalaceId;
-        const name = document.getElementById("ovNameInput").value;
-        clearTimeout(state.nameTimer);
-        state.nameTimer = setTimeout(() => savePalaceName(pid, name), 800);
       }
 
       async function saveNotes() {
@@ -6255,12 +6282,16 @@
         clearTimeout(state.notesTimer);
         state.notesTimer = setTimeout(saveNotes, 800);
       };
-      const ovNameInput = document.getElementById("ovNameInput");
-      ovNameInput.oninput = () => schedulePalaceNameSave();
-      ovNameInput.onblur = () => {
+      document.getElementById("ovFrameTitle").onclick = (e) => {
+        e.stopPropagation();
+        openPalaceNameModal();
+      };
+      document.getElementById("palaceNameCancel").onclick = () =>
+        closePalaceNameModal();
+      document.getElementById("palaceNameForm").onsubmit = (e) => {
+        e.preventDefault();
         const pid = state.overlayPalaceId;
-        const name = ovNameInput.value;
-        clearTimeout(state.nameTimer);
+        const name = document.getElementById("palaceNameInput").value;
         savePalaceName(pid, name);
       };
       document.getElementById("btnPlansNext").onclick = () =>
@@ -6976,10 +7007,10 @@
       }
 
       document.addEventListener("keydown", (e) => {
-        if (e.target && e.target.id === "ovNameInput") {
-          if (e.key === "Enter" || e.key === "Escape") {
+        if (palaceNameModalOpen()) {
+          if (e.key === "Escape") {
             e.preventDefault();
-            e.target.blur();
+            closePalaceNameModal();
           }
           return;
         }

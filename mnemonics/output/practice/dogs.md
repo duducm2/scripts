@@ -1,7 +1,7 @@
 # Dogs
 
 <details open>
-<summary><strong>Memory Palace 3: Chew Substitution and Safe Exchanges</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>Chew Substitution and Safe Exchanges, Swapping a Stolen Shoe for a Squeaky Turkey</strong> · Memory Palace 3: Chew Substitution and Safe Exchanges · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 3](images/dogs/3.jpg)
 
@@ -40,7 +40,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: German Shepherd Scoring and Activities (Snoopy)</strong> · Character: — · 1 beast · 1 atom</summary>
+<summary><strong>German Shepherd Scoring and Activities, Snoopy Dancing on a Doghouse Roof</strong> · Memory Palace 2: German Shepherd Scoring and Activities (Snoopy) · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 2](images/dogs/2.jpg)
 
@@ -69,7 +69,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: German Shepherd Traits (Scooby-Doo)</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>German Shepherd Traits, Scooby-Doo Sneaking Snacks in a Haunted Hallway</strong> · Memory Palace 1: German Shepherd Traits (Scooby-Doo) · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/dogs/1.jpg)
 

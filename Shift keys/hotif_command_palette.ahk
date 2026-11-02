@@ -90,6 +90,9 @@ $Enter:: CommandPalette_ActivateSelectedItem()
 ; Shift + E : Edit favorite (Ctrl+K → UIA walk → Enter)
 +e:: CommandPalette_EditFavoriteSelected()
 
+; Shift + X : Toggle pin/unpin selected item to Home (Ctrl+K → Pin/Unpin from home)
++x:: CommandPalette_TogglePinHomeSelected()
+
 ; Ctrl + 1 : Trigger Enter
 ^1:: CommandPalette_SelectNthAndActivate(0)
 

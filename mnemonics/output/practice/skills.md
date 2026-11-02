@@ -1,7 +1,7 @@
 # Skills
 
 <details open>
-<summary><strong>Memory Palace 5: Cognitive Shuffling Fundamentals</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>Cognitive Shuffling Fundamentals, a Deck of Thoughts Dealt Until You Sleep</strong> · Memory Palace 5: Cognitive Shuffling Fundamentals · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 5](images/skills/5.png)
 
@@ -46,7 +46,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Rotina de Ativação Matinal</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Rotina de Ativação Matinal, Coffee So Strong It Slaps You Awake</strong> · Memory Palace 4: Rotina de Ativação Matinal · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 4](images/skills/4.png)
 
@@ -105,7 +105,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Vital Signs</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>Vital Signs, a Hospital Monitor Beeping like a Dance Track</strong> · Memory Palace 3: Vital Signs · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 3](images/skills/3.jpg)
 
@@ -150,7 +150,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Enhancing Brain Focus and Retention</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>Enhancing Brain Focus and Retention, a Spotlight in a Noisy Nightclub</strong> · Memory Palace 2: Enhancing Brain Focus and Retention · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 2](images/skills/2.png)
 
@@ -189,7 +189,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Core Speed Reading Principles</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Core Speed Reading Principles, Eyes Sprinting Down a Page in a Wind Tunnel</strong> · Memory Palace 1: Core Speed Reading Principles · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/skills/1.png)
 

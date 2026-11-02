@@ -1,7 +1,7 @@
 # Science
 
 <details open>
-<summary><strong>Memory Palace 20: Visual Analysis Definition</strong> · Character: — · 1 beast · 1 atom</summary>
+<summary><strong>Visual Analysis Definition, a Cartoon Sponge Frozen While Triangles Rain</strong> · Memory Palace 20: Visual Analysis Definition · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 20](images/science/20.jpg)
 
@@ -30,7 +30,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>How and Why Questions, a Detective who Will Not Stop Asking</strong> · Memory Palace 19: How and Why Questions · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 19](images/science/19.png)
 
@@ -92,7 +92,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 18: Definition and Characteristics</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Definition and Characteristics, a Police Lineup of Traits</strong> · Memory Palace 18: Definition and Characteristics · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 18](images/science/18.png)
 
@@ -151,7 +151,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 17: Participatory Action Research Mechanics</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Participatory Action Research Mechanics, the Subjects Grab the Wrench</strong> · Memory Palace 17: Participatory Action Research Mechanics · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 17](images/science/17.png)
 
@@ -200,7 +200,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 16: From Raw Data to Theory</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>From Raw Data to Theory, Mud Turning into a Marble Statue</strong> · Memory Palace 16: From Raw Data to Theory · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 16](images/science/16.png)
 
@@ -249,7 +249,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 15: From Social Theory to Bosch UX Practice</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>From Social Theory to Bosch UX Practice, Philosophy in a Dishwasher Factory</strong> · Memory Palace 15: From Social Theory to Bosch UX Practice · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 15](images/science/15.png)
 
@@ -318,7 +318,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 14: Foundations of Reasoning</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Foundations of Reasoning, the Stone Floor Under a Debate</strong> · Memory Palace 14: Foundations of Reasoning · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 14](images/science/14.png)
 
@@ -377,7 +377,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 13: The Evolution of Grounded Theory</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>The Evolution of Grounded Theory, a Theory Growing Out of the Dirt</strong> · Memory Palace 13: The Evolution of Grounded Theory · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 13](images/science/13.png)
 
@@ -446,7 +446,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 12: Foundations and Constant Comparison</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Foundations and Constant Comparison, Holding Two Stories Up to the Light</strong> · Memory Palace 12: Foundations and Constant Comparison · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 12](images/science/12.png)
 
@@ -505,7 +505,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 11: The Structure Web</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>The Structure Web, a Spider's Map of How the Theory Hangs Together</strong> · Memory Palace 11: The Structure Web · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 11](images/science/11.png)
 
@@ -564,7 +564,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: The Coin Flip Casino</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>The Coin Flip Casino, Luck in a Velvet Room that Smells like Coins</strong> · Memory Palace 10: The Coin Flip Casino · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 10](images/science/10.png)
 
@@ -633,7 +633,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: The Bayesian Courtroom</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>The Bayesian Courtroom, the Judge who Updates the Odds After Every Witness</strong> · Memory Palace 9: The Bayesian Courtroom · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 9](images/science/9.png)
 
@@ -702,7 +702,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: The Hypothesis Courtroom</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>The Hypothesis Courtroom, a Trial where the Idea Is on the Stand</strong> · Memory Palace 8: The Hypothesis Courtroom · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 8](images/science/8.png)
 
@@ -741,7 +741,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Paradigms, Crisis, and Shifts</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Paradigms, Crisis, and Shifts, the Earthquake Under a Textbook</strong> · Memory Palace 7: Paradigms, Crisis, and Shifts · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 7](images/science/7.png)
 
@@ -810,7 +810,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Science vs. Pseudoscience</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Science vs Pseudoscience, a Lab Coat versus a Crystal Shop</strong> · Memory Palace 6: Science vs. Pseudoscience · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 6](images/science/6.png)
 
@@ -879,7 +879,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Research Bias</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Research Bias, the Funhouse Mirror in a Lab Coat</strong> · Memory Palace 5: Research Bias · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 5](images/science/5.png)
 
@@ -938,7 +938,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Calculating Share and Demand</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Calculating Share and Demand, a Bakery Fight Over the Last Croissant</strong> · Memory Palace 4: Calculating Share and Demand · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 4](images/science/4.png)
 
@@ -987,7 +987,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Conjoint Analysis Basics</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Conjoint Analysis Basics, a Dating App that Scores Every Feature</strong> · Memory Palace 3: Conjoint Analysis Basics · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/science/3.png)
 
@@ -1056,7 +1056,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: The Comparative Method of Valuation</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>The Comparative Method of Valuation, Shopping like a Jealous Neighbor</strong> · Memory Palace 2: The Comparative Method of Valuation · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 2](images/science/2.png)
 
@@ -1115,7 +1115,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: What your sample says vs. what the world might say</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>What Your Sample Says vs What the World Might Say, a Gossip Column versus the Census</strong> · Memory Palace 1: What your sample says vs. what the world might say · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 1](images/science/1.png)
 

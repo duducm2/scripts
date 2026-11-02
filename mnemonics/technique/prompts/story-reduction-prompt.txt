@@ -150,10 +150,11 @@ Same headers and purity rules as story generation (prompt **4**). Put each body 
 ### `PALACE_PALACES.csv`
 
 ```
-id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+id,study_id,palace_number,title,mnemonic_name,character_name,image_rel_path,depth_slots_used,image_prompt
 ```
 
 - Preserve stable `id` values when palaces survive reduction; `palace_number` may be left empty (importer assigns next free index) or renumbered if empty palaces are removed. Keep a clear `title`.
+- `mnemonic_name` — copy the existing name for every palace that already has one. Invent one only for a palace that is new in this pack. Same standard as story generation: topic words stay in the name, glued to one pop-culture, sensory, funny, sexy, strange, or slightly taboo hook. Not a short rhyme. Not a beast count or beast name. Quality bar: `Mariah Carey Christmas Snowflake Schema Core`; `Database Views for Gossipers and Acid for the Ones Who Like the Illegal Stuff`. Never put a real person or copyrighted character in `character_name` or `image_prompt`.
 - Refresh every surviving row’s `image_prompt` (foreground only; depth slots; `README §Image composition rules`; leave `character_name` blank and NEVER write a real or copyrighted character name into `image_prompt`).
 - `depth_slots_used` = post-reduction beast count (0–5).
 - `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.

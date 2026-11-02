@@ -322,6 +322,11 @@ def render_markdown(
         for i, pid in enumerate(pids):
             if i > 0:
                 lines.append("")
+            palace = palaces.get(pid) or {}
+            cue = (palace.get("mnemonic_name") or palace.get("title") or "").strip()
+            if cue:
+                lines.append(f"**{cue}**")
+                lines.append("")
             for beast in beasts_by_palace.get(pid, []):
                 for atom in atoms_by_beast.get(beast["id"], []):
                     lines.append(render_atom_line(beast, atom))

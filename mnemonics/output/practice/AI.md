@@ -1,7 +1,7 @@
 # Ai
 
 <details open>
-<summary><strong>Memory Palace 5: AI System Architecture</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>AI System Architecture like a Leaky Gothic Cathedral</strong> · Memory Palace 5: AI System Architecture · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 5](images/AI/5.png)
 
@@ -53,7 +53,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · Character: — · 1 beast · 1 atom</summary>
+<summary><strong>AI Pricing and Elo Mechanics at a Vegas High-Roller Table</strong> · Memory Palace 3: AI Pricing & Elo Mechanics · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 3](images/AI/3.jpg)
 
@@ -85,7 +85,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: The Semantic Layer & RAG Structure</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>The Semantic Layer and RAG Structure like a Thrift-Store Wedding Dress</strong> · Memory Palace 2: The Semantic Layer & RAG Structure · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/AI/2.png)
 
@@ -154,7 +154,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Foundations & Semantic Interoperability</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Babel Fish Foundations and Semantic Interoperability at a Sticky Costume Party</strong> · Memory Palace 1: Foundations & Semantic Interoperability · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 1](images/AI/1.png)
 

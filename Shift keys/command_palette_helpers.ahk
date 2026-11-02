@@ -200,3 +200,89 @@ CommandPalette_ActivateMenuElement(el) {
     }
     return false
 }
+
+; Open Ctrl+K context menu and activate "Pin to home" / "Unpin from home"
+; (whichever is present — toggles pin state for the selected list item).
+CommandPalette_TogglePinHomeSelected() {
+    Send "^k"
+
+    deadline := A_TickCount + 1500
+    downCount := 0
+    maxDowns := 16
+    while (A_TickCount < deadline) {
+        el := CommandPalette_FindPinHomeToggleElement()
+        if el {
+            if CommandPalette_ActivateMenuElement(el)
+                return
+            Send "{Enter}"
+            return
+        }
+        if (downCount < maxDowns) {
+            Send "{Down}"
+            downCount += 1
+        }
+        Sleep 40
+    }
+
+    Send "{Escape}"
+    ToolTip "Pin/Unpin from home not found in context menu.", 10, 10
+    SetTimer(() => ToolTip(), -2800)
+}
+
+CommandPalette_FindPinHomeToggleElement() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return 0
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        saved := UiElements_TrySaved(root, "Command Palette", "PinHomeToggle")
+        if (saved && CommandPalette_ElementLooksLikePinHomeToggle(saved))
+            return saved
+        ; Exact EN labels first (avoid matching Pin/Unpin to Dock).
+        for name in ["Unpin from home", "Pin to home",
+            "Desafixar da página inicial", "Desafixar da Página inicial",
+            "Fixar na página inicial", "Fixar na Página inicial"] {
+            try {
+                el := root.FindFirst({ Name: name, matchmode: "Substring", cs: false })
+                if CommandPalette_ElementLooksLikePinHomeToggle(el)
+                    return el
+            } catch {
+            }
+        }
+        for stem in ["Unpin from home", "Pin to home", "Desafixar", "Fixar"] {
+            try {
+                el := root.FindFirst({ Name: stem, matchmode: "Substring", cs: false })
+                if CommandPalette_ElementLooksLikePinHomeToggle(el)
+                    return el
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+CommandPalette_ElementLooksLikePinHomeToggle(el) {
+    if !el
+        return false
+    nm := ""
+    try nm := el.Name
+    if !nm
+        return false
+    ; Home pin only — never Dock pin/unpin.
+    if RegExMatch(nm, "i)\b(dock|doca)\b")
+        return false
+    if RegExMatch(nm, "i)unpin\s+from\s+home") || RegExMatch(nm, "i)pin\s+to\s+home")
+        return true
+    if RegExMatch(nm, "i)desafixar") && RegExMatch(nm, "i)(p[aá]gina\s+inicial|in[ií]cio|home)")
+        return true
+    if RegExMatch(nm, "i)\bfixar\b") && RegExMatch(nm, "i)(p[aá]gina\s+inicial|in[ií]cio|home)")
+        return true
+    haystack := nm
+    try haystack .= " " el.GetPropertyValue(UIA.Property.HelpText)
+    try haystack .= " " el.AutomationId
+    if RegExMatch(haystack, "i)\b(dock|doca)\b")
+        return false
+    return (RegExMatch(haystack, "i)(unpin|pin)") && RegExMatch(haystack, "i)home"))
+    || (RegExMatch(haystack, "i)(desafixar|fixar)") && RegExMatch(haystack, "i)(inicial|in[ií]cio|home)"))
+}

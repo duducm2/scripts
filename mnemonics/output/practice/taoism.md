@@ -1,7 +1,7 @@
 # Taoism
 
 <details open>
-<summary><strong>Memory Palace 4: Religious Development & Pantheon</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Religious Development and Pantheon, a Parade of Gods in Silk Masks</strong> · Memory Palace 4: Religious Development & Pantheon · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/taoism/4.jpg)
 
@@ -70,7 +70,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Cosmology & The Body</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Cosmology and The Body, the Universe Mapped onto Warm Skin</strong> · Memory Palace 3: Cosmology & The Body · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/taoism/3.jpg)
 
@@ -139,7 +139,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Foundational Texts & Figures</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Foundational Texts and Figures, Old Books that Smell like Incense and Rain</strong> · Memory Palace 2: Foundational Texts & Figures · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/taoism/2.jpg)
 
@@ -208,7 +208,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Core Philosophy</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Core Philosophy, Water Slipping Through a Lover's Fingers</strong> · Memory Palace 1: Core Philosophy · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/taoism/1.jpg)
 

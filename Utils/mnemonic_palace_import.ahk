@@ -1893,6 +1893,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
             existing["study_id"] := studyId
             existing["palace_number"] := num
             existing["title"] := titleP
+            nameIn := rowIn.Has("mnemonic_name") ? Trim(rowIn["mnemonic_name"]) : ""
+            if (nameIn != "")
+                existing["mnemonic_name"] := nameIn
             if (rowIn.Has("character_name") && Trim(rowIn["character_name"]) != "")
                 existing["character_name"] := rowIn["character_name"]
             if (rowIn.Has("depth_slots_used") && Trim(rowIn["depth_slots_used"]) != "")
@@ -1912,6 +1915,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 stub["study_id"] := studyId
                 stub["palace_number"] := num
                 stub["title"] := titleP
+                stub["mnemonic_name"] := rowIn.Has("mnemonic_name") ? Trim(rowIn["mnemonic_name"]) : ""
                 stub["character_name"] := rowIn.Has("character_name") ? rowIn["character_name"] : ""
                 stub["image_rel_path"] := img
                 stub["depth_slots_used"] := rowIn.Has("depth_slots_used") ? rowIn["depth_slots_used"] : "0"
@@ -1924,6 +1928,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                     "study_id", studyId,
                     "palace_number", num,
                     "title", titleP,
+                    "mnemonic_name", rowIn.Has("mnemonic_name") ? Trim(rowIn["mnemonic_name"]) : "",
                     "character_name", rowIn.Has("character_name") ? rowIn["character_name"] : "",
                     "image_rel_path", img,
                     "depth_slots_used", rowIn.Has("depth_slots_used") ? rowIn["depth_slots_used"] : "0",

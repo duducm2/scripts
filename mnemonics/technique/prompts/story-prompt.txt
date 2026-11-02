@@ -156,12 +156,13 @@ Each `===FILE: …===` body: UTF-8, comma separator, header row first, no preamb
 Header (exact):
 
 ```
-id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+id,study_id,palace_number,title,mnemonic_name,character_name,image_rel_path,depth_slots_used,image_prompt
 ```
 
 Rules:
 - Prefer `id` like `PALACE_<STUDY_SLUG>_<NN>` for **new** palaces (e.g. next free `NN` after inventory). Leave empty only if the importer must assign.
-- `palace_number` — optional integer within the study. Prefer values **after** the highest existing palace in inventory (or leave empty for importer next-free). Prefer a stable `id` and a clear `title` (title is the human identifier).
+- `palace_number` — optional integer within the study. Prefer values **after** the highest existing palace in inventory (or leave empty for importer next-free). Prefer a stable `id` and a clear `title` (the topic). `mnemonic_name` is the recall cue.
+- `mnemonic_name` — required on every new palace. Keep the topic words in the name and glue on one sticky hook: pop culture, a sense, something funny, sexy, strange, or a little taboo. One spoken scene, not a short rhyme, and not a beast count or beast name. Quality bar: `Mariah Carey Christmas Snowflake Schema Core` for Snowflake Schema Core; `Database Views for Gossipers and Acid for the Ones Who Like the Illegal Stuff` for Database Views and ACID. Celebrities and taboo hooks belong in this field only.
 - `character_name` — leave blank. Do not write a real person, historical figure, celebrity, or copyrighted character.
 - `image_rel_path` — relative to notes studies root when known (e.g. `violin/images/1.png`); leave empty if unknown (human may use Memory Palace **[Q]** later).
 - `depth_slots_used` — 0–5 (beast count / depth slots for that **new** palace).

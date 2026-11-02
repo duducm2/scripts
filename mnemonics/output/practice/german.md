@@ -1,7 +1,7 @@
 # German
 
 <details open>
-<summary><strong>Memory Palace 11: The German Alphabet</strong> · Character: — · 1 beast · 1 atom</summary>
+<summary><strong>The German Alphabet Recited by a Cabaret Singer in a Bowler Hat</strong> · Memory Palace 11: The German Alphabet · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 11](images/german/11.png)
 
@@ -30,7 +30,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 10: Formants and Resonance</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Formants and Resonance like a Voice Echoing in a Tiled Bathroom</strong> · Memory Palace 10: Formants and Resonance · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 10](images/german/10.png)
 
@@ -99,7 +99,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 9: Simple and Complex Sound Foundations</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Simple and Complex Sound Foundations, Building Blocks that Buzz on the Tongue</strong> · Memory Palace 9: Simple and Complex Sound Foundations · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 9](images/german/9.png)
 
@@ -158,7 +158,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 8: The German R Variations</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>The German R Variations, a Gargle in a Beer Hall</strong> · Memory Palace 8: The German R Variations · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 8](images/german/8.png)
 
@@ -207,7 +207,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 7: Consonant Limits and Vowel Reductions</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Consonant Limits and Vowel Reductions, Sounds Squeezed in a Tiny Elevator</strong> · Memory Palace 7: Consonant Limits and Vowel Reductions · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 7](images/german/7.png)
 
@@ -276,7 +276,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 6: Vowel Length Rules</strong> · Character: — · 2 beasts · 2 atoms</summary>
+<summary><strong>Vowel Length Rules Stretched like Chewing Gum</strong> · Memory Palace 6: Vowel Length Rules · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 6](images/german/6.png)
 
@@ -315,7 +315,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 5: Compound Stress and Consonants</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Compound Stress and Consonants, German Words Stacked like a Club Sandwich</strong> · Memory Palace 5: Compound Stress and Consonants · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/german/5.png)
 
@@ -384,7 +384,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 4: Drops and Fast Diphthongs</strong> · Character: — · 4 beasts · 4 atoms</summary>
+<summary><strong>Drops and Fast Diphthongs like a Rollercoaster Scream</strong> · Memory Palace 4: Drops and Fast Diphthongs · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 4](images/german/4.png)
 
@@ -443,7 +443,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 3: Shifted Placements and Rounded Vowels</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Shifted Placements and Rounded Vowels, Lips Puckered for a Selfie</strong> · Memory Palace 3: Shifted Placements and Rounded Vowels · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/german/3.png)
 
@@ -512,7 +512,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 2: Deep German Sounds</strong> · Character: — · 3 beasts · 3 atoms</summary>
+<summary><strong>Deep German Sounds from a Throat-Singing Subway Tunnel</strong> · Memory Palace 2: Deep German Sounds · Character: — · 3 beasts · 3 atoms</summary>
 
 ![Memory Palace 2](images/german/2.png)
 
@@ -561,7 +561,7 @@ _No gallery images._
 </details>
 
 <details open>
-<summary><strong>Memory Palace 1: Re-tuned Mouth Moves</strong> · Character: — · 5 beasts · 5 atoms</summary>
+<summary><strong>Re-tuned Mouth Moves like a Kissing Lesson in Berlin</strong> · Memory Palace 1: Re-tuned Mouth Moves · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/german/1.png)
 
