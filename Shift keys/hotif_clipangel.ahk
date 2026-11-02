@@ -603,20 +603,32 @@ ShowClipAngelFilterSelector() {
     Hotkey("Escape", HandleClipAngelFilterEscape, "On")
 }
 
-; Sticky fallback when TypeFilter UIA read fails (keeps Alt+1 ↔ Alt+2 alternating).
+; Sticky fallback when TypeFilter UIA read fails (keeps all ↔ images alternating).
 global g_ClipAngelImagesOnlyToggle := false
+
+ClipAngel_GetTypeFilterCombo(hwnd := 0) {
+    if !hwnd
+        hwnd := WinExist("A")
+    if !hwnd
+        return 0
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        combo := UiElements_TrySaved(root, "ClipAngel.exe", "Filter")
+        if !combo
+            combo := root.FindFirst({ AutomationId: "TypeFilter" })
+        if !combo
+            combo := root.FindFirst({ AutomationId: "TypeFilter", Type: 50003 })
+        return combo ? combo : 0
+    } catch {
+    }
+    return 0
+}
 
 ; Returns Map("ok", bool, "imagesOnly", bool) — ok false means combo value unavailable.
 ClipAngel_ReadImagesOnlyTypeFilter() {
     out := Map("ok", false, "imagesOnly", false)
     try {
-        hwnd := WinExist("A")
-        if !hwnd
-            return out
-        root := UIA.ElementFromHandle(hwnd)
-        combo := UiElements_TrySaved(root, "ClipAngel.exe", "Filter")
-        if !combo
-            combo := root.FindFirst({ AutomationId: "TypeFilter" })
+        combo := ClipAngel_GetTypeFilterCombo()
         if !combo
             return out
         val := ""
@@ -624,40 +636,79 @@ ClipAngel_ReadImagesOnlyTypeFilter() {
         if (val = "") {
             try val := combo.Name
         }
+        val := Trim(val)
         if (val = "")
             return out
         out["ok"] := true
-        out["imagesOnly"] := RegExMatch(val, "i)\b(img|image)s?\b")
+        ; ClipAngel TypeFilter uses short names like "img" (not always "image").
+        out["imagesOnly"] := RegExMatch(val, "i)^(img|images?)$")
     } catch {
     }
     return out
 }
 
-; Send ClipAngel List menu Alt+N type filter without hitting our Alt+N paste remaps.
+; Apply via TypeFilter ComboBox (Home = all types, I = img). Avoids Alt+1/2 paste remaps.
+ClipAngel_ApplyTypeFilterAllOrImages(wantImages) {
+    combo := ClipAngel_GetTypeFilterCombo()
+    if !combo
+        return false
+    try {
+        try combo.SetFocus()
+        catch {
+        }
+        combo.Click()
+        Sleep 120
+        Send "{Home}"
+        Sleep 120
+        if wantImages {
+            Send "i"
+            Sleep 80
+        }
+        Send "{Tab}"
+        Sleep 50
+        Send "{F10}"
+        return true
+    } catch {
+    }
+    return false
+}
+
+; Fallback: List menu Alt+1 / Alt+2 with our paste remaps suspended.
+; Must run after chord modifiers are released — Shift still down turns this into Alt+Shift+N.
 ClipAngel_SendNativeTypeFilter(digit) {
     hk := "!" digit
     try Hotkey(hk, "Off")
     try {
-        Send("!" digit)
+        SendInput("!" digit)
     } finally {
         try Hotkey(hk, "On")
     }
 }
 
-; Toggle List filter: all types (Alt+1) ↔ only images (Alt+2).
+; Toggle List filter: all types ↔ only images.
 ClipAngel_ToggleAllVsImagesTypeFilter() {
     global g_ClipAngelImagesOnlyToggle
+    ; Shift+Y leaves Shift down; releasing first is required for Alt+N / combo type-ahead.
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
     state := ClipAngel_ReadImagesOnlyTypeFilter()
     imagesOnly := state["ok"] ? state["imagesOnly"] : g_ClipAngelImagesOnlyToggle
-    if imagesOnly {
-        ClipAngel_SendNativeTypeFilter("1")
-        g_ClipAngelImagesOnlyToggle := false
-        ShowCenteredOverlay_Utils("📋 All types", 700, BANNER_ACCENT_INTERMEDIATE)
-    } else {
-        ClipAngel_SendNativeTypeFilter("2")
-        g_ClipAngelImagesOnlyToggle := true
-        ShowCenteredOverlay_Utils("🖼️ Images only", 700, BANNER_ACCENT_INTERMEDIATE)
-    }
+    wantImages := !imagesOnly
+
+    if !ClipAngel_ApplyTypeFilterAllOrImages(wantImages)
+        ClipAngel_SendNativeTypeFilter(wantImages ? "2" : "1")
+
+    g_ClipAngelImagesOnlyToggle := wantImages
+    Sleep 60
+    after := ClipAngel_ReadImagesOnlyTypeFilter()
+    if after["ok"]
+        g_ClipAngelImagesOnlyToggle := after["imagesOnly"]
+
+    if g_ClipAngelImagesOnlyToggle
+        ShowCenteredOverlay_Utils("Images only", 700, BANNER_ACCENT_INTERMEDIATE)
+    else
+        ShowCenteredOverlay_Utils("All types", 700, BANNER_ACCENT_INTERMEDIATE)
 }
 
 ; Shift + Y : Toggle type filter — all clips ↔ images only
