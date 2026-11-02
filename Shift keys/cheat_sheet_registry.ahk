@@ -732,7 +732,7 @@ cheatSheets["ClipAngel.exe"] := "
     💾 [S][S]ave as file
     🔗 [M][M]erge clips
     📥 [I][I]mport clips
-    🔍 [Y]File t[Y]pe filter (Quick Wizard)
+    🖼️ [Y]Toggle all clips ↔ images onl[Y]
     🔁 [P]Constant [P]asting ↓ (delimiter; native Ctrl+Alt+B paste+previous; toggle stop)
     🔁 [B]Constant pasting ↑ ([B]ottom-up; delimiter; native Ctrl+Alt+V paste+next; toggle stop)
     ⌨️ [Esc] Minimize window

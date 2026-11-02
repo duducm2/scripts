@@ -1,0 +1,10 @@
+﻿=FILE: COLLECTIBLE_PACK.txt=
+{
+"palace_id": "PALACE_DATAANALYST_16",
+"slot": "trophy",
+"name": "API to Power BI Clay Conduit",
+"blurb": "This hand-built clay trophy celebrates the bridge between web APIs and Power BI, guarded by a curious bower-bird and a Bone marmoset.",
+"anim": "bob",
+"anchor": "pedestal"
+}
+=END_FILE=
