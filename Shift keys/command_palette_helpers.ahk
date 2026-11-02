@@ -212,9 +212,13 @@ CommandPalette_TogglePinHomeSelected() {
     while (A_TickCount < deadline) {
         el := CommandPalette_FindPinHomeToggleElement()
         if el {
-            if CommandPalette_ActivateMenuElement(el)
-                return
-            Send "{Enter}"
+            activated := CommandPalette_ActivateMenuElement(el)
+            if !activated
+                Send "{Enter}"
+            Sleep 50
+            Send "{Escape}"
+            Sleep 40
+            Send "{Escape}"
             return
         }
         if (downCount < maxDowns) {
