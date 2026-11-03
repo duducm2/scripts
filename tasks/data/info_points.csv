@@ -180,7 +180,6 @@ INFO_0386,task,TASK_0470,Nota,"Amanda mandará uma mensagem pro Mark e compartil
 INFO_0415,task,TASK_0488,Notes,"Alinhamento inicial com os responsáveis pelo projeto para compreender o contexto atual da ferramenta, principais grupos de usuários envolvidos e expectativas de negócio.",ℹ️,,4810,2026-10-16 12:11:37,,
 INFO_0416,task,TASK_0489,Notes,"Explorar a aplicação como ela existe hoje, entendendo funcionalidades, áreas, tipos de informação, permissões e principais fluxos",ℹ️,,4820,2026-10-16 12:11:37,,
 INFO_0417,task,TASK_0491,Notes,"Investigar ferramentas de mercado e internas que façam gestão de capacidade, workforce planning, resource allocation ou atividades semelhantes",ℹ️,,4830,2026-10-16 12:11:37,,
-INFO_0419,task,TASK_0493,Notes,"Entender como acontece hoje o planejamento e gerenciamento dos recursos, inclusive o que acontece fora da ferramenta. Meta: 16–20 participantes distribuídos entre os quatro grupos: core leadership, regional leader, cluster leader, e colaborador do cluster.",ℹ️,,4850,2026-10-16 12:11:37,,
 INFO_0420,task,TASK_0494,Notes,"Consolidar evidências das entrevistas, observações, benchmark e análise da ferramenta. Identificar padrões, diferenças por perfil/região, necessidades, dores e hipóteses.",ℹ️,,4860,2026-10-16 12:11:37,,
 INFO_0421,task,TASK_0495,Notes,"Representar o processo atual end-to-end, mostrando atores, tarefas, decisões, entradas de dados, sistemas envolvidos, handoffs e participação da ferramenta.",ℹ️,,4870,2026-10-16 12:11:37,,
 INFO_0422,task,TASK_0496,Notes,"Organizar problemas encontrados e diferenciá-los entre UX, processo, qualidade de dados, tecnologia, governança, operação etc. Avaliar impacto, frequência e criticidade.",ℹ️,,4880,2026-10-16 12:11:37,,
@@ -205,9 +204,6 @@ INFO_0446,task,TASK_0511,Chinese Providers via OpenRouter,Alternative overflow s
 INFO_0447,task,TASK_0511,OpenCode Setup Details,"OpenCode natively supports OpenRouter (via /connect command and OpenRouter API key) and includes out-of-the-box free Zen models (Big Pickle, GPT-5 Nano, Nemotron Super Free). Variant cycle (Ctrl+T) toggles reasoning effort or model presets.",ℹ️,Reference,5120,2026-10-18 15:36:09,,
 INFO_0449,task,TASK_0515,Objetivo da mudança,"O e-mail não deve ir direto para o Fábio Ferreira, mas sim para o Regional Lead usar como suporte e argumento para abrir conversas e gerar leads qualificados.",ℹ️,,5140,2026-10-19 09:22:38,,
 INFO_0454,task,TASK_0486,"Por mim esta ok, vou ver se tudo bem a gente mandar pra todos os cluster leader a survey",,ℹ️,,10,2026-10-19 11:31:33,,
-INFO_0455,task,TASK_0520,"Perguntar no cartório
-
-Custos de cartório (Emolumentos de registro no Cartório de Registro de Imóveis; Taxas de certidão, autenticação e reconhecimento de firma)",,ℹ️,,10,2026-10-19 19:57:08,,
 INFO_0456,task,TASK_0524,I need to eventually add the reports here,,ℹ️,,10,2026-10-19 14:25:48,,
 INFO_0457,task,TASK_0524,https://bosch.sharepoint.com/sites/msteams_5691328/Shared%20Documents/Forms/AllItems.aspx?d=wf5b173538d784692b7c3f7160bfb04e0&csf=1&web=1&e=SLZoWH&ovuser=0ae51e19%2D07c8%2D4e4b%2Dbb6d%2D648ee58410f4%2Cfie7ca%40bosch%2Ecom&TeamsCID=c0f6df40%2D40af%2D4f14%2Da869%2D72713066fffa&OR=Teams%2DHL&CT=1792430357943&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNjA5MTcxMjIyNiIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D&CID=997546a2%2Db06c%2D0001%2D7324%2D3f8de91bfde6&cidOR=SPO&FolderCTID=0x012000CF6A43B3DD5CDD47B05B322E0FFF923F&id=%2Fsites%2Fmsteams%5F5691328%2FShared%20Documents%2FGeneral%2FProjects%2FInternal%20Projects%2FOther%20Divisons%2FGS%2FGS%20%2D%20Suporte%20FTE%20Projeto%20XTOWER%2F01%5FInfos%20projeto,,ℹ️,,20,2026-10-19 14:25:55,,
 INFO_0464,task,TASK_0611,https://inside-docupedia.bosch.com/confluence2/spaces/AgenticAI/pages/1233448283/Antigravity,,ℹ️,,20,2026-10-20 14:25:48,,
@@ -227,7 +223,6 @@ INFO_0488,task,TASK_0646,Mental Health Shield,"Mental Health Shield: Finasteride
 INFO_0489,task,TASK_0646,Psychiatric Boost,Psychiatric Boost: The anti-inflammatory properties of Omega-3 (specifically EPA) actively enhance the antidepressant and anti-anxiety effects of Fluvoxamine.,ℹ️,Positive Synergies,5330,2026-10-22 14:54:29,,
 INFO_0490,task,TASK_0646,Hair Restoration,"Hair Restoration: Finasteride (stops DHT miniaturization) and Oral Minoxidil (stimulates blood flow and growth phases) do not compete metabolically, making them the gold standard combination for follicle regeneration.",ℹ️,Positive Synergies,5340,2026-10-22 14:54:29,,
 INFO_0491,task,TASK_0646,Elevated LDL Cholesterol,"Elevated LDL Cholesterol: High-dose DHA will lower your triglycerides but can artificially raise your LDL (bad cholesterol) numbers by 7-10% on blood tests. Clinically, the DHA is actually converting small, dangerous LDL particles into larger, safer ones, so this numerical increase is not a cardiovascular threat.",ℹ️,Expected Lab Anomalies,5350,2026-10-22 14:54:29,,
-INFO_0499,task,TASK_0671,https://inside-docupedia.bosch.com/confluence/spaces/PSBDO/pages/4088643213/PS+BDO+Organization,,ℹ️,,10,2026-10-23 14:35:30,,
 INFO_0500,task,TASK_0673,"""C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf""",,ℹ️,,10,2026-10-23 20:30:32,,
 INFO_0501,task,TASK_0675,C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md,,ℹ️,,10,2026-10-25 18:38:23,,
 INFO_0502,task,TASK_0438,https://inside-docupedia.bosch.com/confluence2/spaces/FARM/pages/961642962/%F0%9F%9A%80+Getting+Started,,ℹ️,,20,2026-10-26 09:13:19,,
@@ -268,30 +263,6 @@ INFO_0550,task,TASK_0726,gráfico estacado,,ℹ️,,50,2026-10-28 15:25:12,,
 INFO_0551,task,TASK_0726,"ninguém sabe quanto custa ter 500 colaboradores na planta no fim de semana. Queremos falar que, não se gasta apenas 25 milhões, mas 30 milhões. Isso potemos farlar de bate pronto",,ℹ️,,60,2026-10-28 15:27:37,,
 INFO_0552,task,TASK_0732,image.png,,ℹ️,,10,2026-10-28 16:12:46,,
 INFO_0553,task,TASK_0732,image.png,,ℹ️,,20,2026-10-28 16:16:24,,
-INFO_0554,task,TASK_0739,"Eisenbart Michael (PS/BDO-P M/PJ-AIP) <Michael.Eisenbart@de.bosch.com>
- 
-Rossin Cesar (PS/BDO-A-AM)
-Eisenbart Michael (PS/BDO-P M/PJ-AIP) <Michael.Eisenbart@de.bosch.com>
-ele é Department Head - principalmente dos times de desenvolvimento backend -> e tem muita experiência com IA
- 
-Dirschwigl Ralf (PS/BDO-P-DE)
- 
-ele é cluster lead na Alemanha e bem critico
- 
-Berg Florian (PS/BDO-P-AT) 
- 
-Ele é responsável pelo hub na Áustria (PETA de bastante gente que o BUTA está na Alemanha)
- 
-PO regional -> Bruno Queiroz
- 
-Antje Geissner -> explorar entrada de dinheiro vs. recurso disponivel
- 
-PO do MAS -> James Brickell
- 
-PS/BDO Organization - PS/BDO XELERATOR - PS Business Digital Organization - Docupedia",,ℹ️,,10,2026-10-29 12:08:45,,
-INFO_0555,task,TASK_0740,"com a anne e o michael tmb
- 
-mas o flavio e tal ja vale a pena marcar uma conversa",,ℹ️,,10,2026-10-29 12:15:52,,
 INFO_0556,task,TASK_0741,Treatment Duration,Give daily from now until she reaches 1 year of age.,ℹ️,Daily,5510,2026-10-29 17:12:51,,
 INFO_0557,task,TASK_0741,Correct Dosage (Condroplex 1000),1 capsule per day (ideal for her estimated 12 kg to 16 kg weight range). Do not buy the 500 strength anymore.,ℹ️,Daily,5520,2026-10-29 17:12:51,,
 INFO_0558,task,TASK_0741,Purchase Reminder,Buy more Condroplex 1000 on Mercado Livre before the current supply runs out.,ℹ️,Daily,5530,2026-10-29 17:12:51,,
@@ -320,5 +291,9 @@ INFO_0581,task,TASK_0747,Hepatitis A: 2016 (series considered fine),,🩺,,2530,
 INFO_0582,task,TASK_0747,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",,🩺,,2540,2026-08-29 15:48:39,,
 INFO_0583,task,TASK_0747,Varicella (catapora): history of disease in childhood; no vaccine needed,,🩺,,2550,2026-08-29 15:48:39,,
 INFO_0584,project,PROJ_0026,Your last day for submitting your dissertation is November 23,,ℹ️,,10,2026-10-31 16:12:28,,
-INFO_0585,task,TASK_0751,"Natalia Pova Mattioli
-63c4b8b4-5e43-4769-b327-b4cd458d8682@eumail.smartrecruiters.com",,ℹ️,,10,2026-11-01 10:53:41,,
+INFO_0586,task,TASK_0753,Geissner Antje,,ℹ️,,10,2026-11-03 12:34:50,,
+INFO_0587,task,TASK_0753,Berg Florian (PS/BDO-P-AT),,ℹ️,,20,2026-11-03 12:35:22,,
+INFO_0588,task,TASK_0753,Bruno Queiroz (individual),,ℹ️,,30,2026-11-03 12:35:49,,
+INFO_0589,task,TASK_0753,Dirschwigl Ralf,,ℹ️,,40,2026-11-03 12:36:51,,
+INFO_0590,task,TASK_0753,James Brickell,,ℹ️,,50,2026-11-03 12:37:13,,
+INFO_0591,task,TASK_0754,https://outset.ai/,,ℹ️,,10,2026-11-03 15:18:28,,
