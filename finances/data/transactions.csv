@@ -293,3 +293,14 @@ TX298,2026-10-31,"Mercado Pago (short-term): 12255,15 -> 12301,83 (+46,68 yield)
 TX299,2026-10-31,"Mercado Pago (long-term): 44744,50 -> 45055,07 (+310,57 yield)","310,57",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
 TX300,2026-10-31,serviceman repairing new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX301,2026-10-31,transferência long term para checking,"828,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX302,2026-11-02,phone recharging,"40,00",expense,CAT_CELULAR,ACC_MERCADOP,,,1,1,,0
+TX303,2026-11-02,restaurant on holidays,"135,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX304,2026-11-02,whistler,"8,90",card_expense,CAT_MATERIAI,,CARD_MP,,1,1,,0
+TX305,2026-11-02,dog food container,"27,90",card_expense,CAT_PETS,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX306,2026-11-02,toll booth,"50,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX307,2026-11-02,groceries,"86,94",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX308,2026-11-02,equipment to read better,"12,00",card_expense,CAT_MATERIAI,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX309,2026-11-02,minoxidil pills,"239,13",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX310,2026-11-02,serviceman maintenance in new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX311,2026-11-02,transfer from long-term savings to checking account,"828,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX312,2026-11-02,printing of keyboard manual,"18,50",expense,CAT_MATERIAI,ACC_MERCADOP,,,1,1,,0

@@ -1,0 +1,17 @@
+﻿===PREVIEW===
+11 row(s) · phone recharge, credit restaurant on holidays, whistler, dog food container, toll booth, groceries, item to read better, minoxidil, house maintenance service, transfer from Mercado Pago long-term savings, keyboard manual printing.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+phone recharging,"40,00",expense,CAT_CELULAR,ACC_MERCADOP,,,1
+restaurant on holidays,"135,00",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1
+whistler,"8,90",expense,CAT_MATERIAI,ACC_MERCADOP,,,1
+dog food container,"27,90",expense,CAT_PETS,ACC_MERCADOP,,,1
+toll booth,"50,00",expense,CAT_CARRO,ACC_MERCADOP,,,1
+groceries,"86,94",expense,CAT_MERCADO,ACC_MERCADOP,,,1
+equipment to read better,"12,00",expense,CAT_MATERIAI,ACC_MERCADOP,,,1
+minoxidil pills,"239,13",expense,CAT_SAUDE,ACC_MERCADOP,,,1
+serviceman maintenance in new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+transfer from long-term savings to checking account,"828,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+printing of keyboard manual,"18,50",expense,CAT_MATERIAI,ACC_MERCADOP,,,1
+===END_FILE===
