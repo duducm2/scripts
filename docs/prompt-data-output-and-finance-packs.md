@@ -277,6 +277,7 @@ Pack header (inside `===FILE: FINANCE_DAILY.csv===`):
 
 `description,amount,type,category_id,account_id,card_id,transfer_account_id,installments`
 
+- **Default expense deduction:** when the speaker does not specify whether an expense is a normal expense (debit/cash/Pix) or a credit card purchase, the AI companion deduces `type=card_expense` (credit card is the default / most frequently used transaction type, defaulting to `card_id=CARD_MP` and linked `account_id=ACC_MERCADOP` if unspecified). Normal `type=expense` is only used when the speaker explicitly specifies debit, cash, Pix, or a checking account.
 - `installments` defaults to `1` when the speaker does **not** mention parcels / Nx / “em N vezes” (normal single-charge card use). Only set N>1 when explicitly parcelado. When N>1: AI sets `amount` = **full** purchase; importer expands into N `card_expense` rows (`installment_n`, `installment_group`, parcel dates via card `closing_day`).
 - Stored ledger also has `paid` (`0`/`1`). Credit-card **Shift+P** supports pay **entire** or **partial**; FIFO marks parcels paid (splits a parcel if needed). `current_spent` = sum of unpaid parcels.
 
