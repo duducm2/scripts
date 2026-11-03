@@ -111,6 +111,26 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 
 ⏳ Buy Collar, ID Tag, and Leash
 
+### Dewormer
+
+🔲 Give dewormer - November 2026 (2026-11-10)
+
+⏳ Give dewormer - December 2026 (2026-12-10)
+
+⏳ Give dewormer - January 2027 (2027-01-10)
+
+⏳ Give dewormer - February 2027 (2027-02-10)
+
+⏳ Give dewormer - March 2027 (2027-03-10)
+
+⏳ Give dewormer - April 2027 (2027-04-10)
+
+⏳ Give dewormer - May 2027 (2027-05-10)
+
+⏳ Give dewormer - June 2027 (2027-06-10)
+
+⏳ Give dewormer - July 2027 (2027-07-10)
+
 ## Art of Memory
 
 ⏳ How to store big vocabularies

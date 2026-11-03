@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+0 project(s) · 9 task(s) · 0 info · Dewormer task list generated from Nov 2026 to Jul 2027 under section Dewormer.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Dog,personal,Give dewormer - November 2026,general,punctual,,2026-11-10,,Dewormer
+Dog,personal,Give dewormer - December 2026,general,punctual,,2026-12-10,,Dewormer
+Dog,personal,Give dewormer - January 2027,general,punctual,,2027-01-10,,Dewormer
+Dog,personal,Give dewormer - February 2027,general,punctual,,2027-02-10,,Dewormer
+Dog,personal,Give dewormer - March 2027,general,punctual,,2027-03-10,,Dewormer
+Dog,personal,Give dewormer - April 2027,general,punctual,,2027-04-10,,Dewormer
+Dog,personal,Give dewormer - May 2027,general,punctual,,2027-05-10,,Dewormer
+Dog,personal,Give dewormer - June 2027,general,punctual,,2027-06-10,,Dewormer
+Dog,personal,Give dewormer - July 2027,general,punctual,,2027-07-10,,Dewormer
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+===END_FILE===
