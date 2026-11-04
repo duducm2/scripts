@@ -1,0 +1,17 @@
+﻿===PREVIEW===
+4 row(s) · brief coverage / skips
+- Groceries purchase (13.34) -> CAT_MERCADO | ACC_MERCADOP
+- Maintenance maintenance in new house (828.00) -> CAT_HABITACAO | ACC_MERCADOP
+- Long-term savings to Checkout checking account transfer (828.00) -> ACC_MERCADOP_POUPANCA | ACC_MERCADOP
+- Smartphone internet credit (360.00) -> CAT_TELECOM | ACC_MERCADOP
+- Groceries purchase (200.72) -> CAT_MERCADO | ACC_MERCADOP
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Groceries,"13,34",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+Maintenance house,"828,00",expense,CAT_MATERIAI,ACC_MERCADOP,,,1
+Transfer savings to checking,"828,00",transfer,,ACC_MERCADOP_POUPANCA,,ACC_MERCADOP,1
+Smartphone credit internet,"360,00",card_expense,CAT_TELECOM,ACC_MERCADOP,CARD_MP,,1
+Groceries,"200,72",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===

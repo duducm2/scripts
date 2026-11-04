@@ -1,0 +1,18 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 5 info · Contained note summarizing Gemini CLI Quota details at Bosch under Notes (work)
+===END_PREVIEW===
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Notes,work,Gemini CLI Quota & Documentation (Bosch),general,punctual,,,,
+===END_FILE===
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Gemini CLI Quota & Documentation (Bosch),Notes,work,Cost & Licensing Coverage,"Under the AskBosch powered by Gemini Enterprise Advanced subscription, tokens and model requests consumed in Gemini CLI via project 'rbprj-100397' are 100% covered with no extra charge to the cost center.",Quota
+task,Gemini CLI Quota & Documentation (Bosch),Notes,work,Daily Limit & Usage Mechanics,"When authenticated via Bosch Code Assist Enterprise, quota is capped at 2,000 requests/user/day (shared across Gemini CLI and VS Code Code Assist agent mode). Each tool execution (ReadFile, SearchText) in YOLO mode triggers model calls that consume this quota. Check stats inside the CLI with '/stats model'.",Quota
+task,Gemini CLI Quota & Documentation (Bosch),Notes,work,Transition to Google Antigravity,"Gemini CLI and Gemini Code Assist sunset at the end of 2026. Bosch recommends migrating to Google Antigravity, which features a weekly pooled quota ($15/month equivalent per user) and faster access to new models.",Migration
+task,Gemini CLI Quota & Documentation (Bosch),Notes,work,Official Bosch Documentation,"AskBosch Tooling Docupedia: https://inside-docupedia.bosch.com/confluence2/pages/viewpage.action?pageId=976816515 | Antigravity FAQ & Licensing: https://inside-docupedia.bosch.com/confluence2/pages/viewpage.action?pageId=1233448283 | Best Practices Presentation: https://bosch.sharepoint.com/sites/ESWDiscussion/Shared%20Documents/AI%20%40%20XSW/Token%20Optimization%20for%20Agentic%20Software%20Development.pptx?web=1",Docs
+task,Gemini CLI Quota & Documentation (Bosch),Notes,work,Best Practices & Quota Optimization,"Use '/clear' between tasks to avoid prompt snowballing from conversation history. Restrict file search/read scopes on large source files (e.g., avoid scanning 20k+ line files entirely) and maintain .geminiignore.",Best Practices
+===END_FILE===

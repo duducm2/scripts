@@ -304,3 +304,8 @@ TX309,2026-11-02,minoxidil pills,"239,13",card_expense,CAT_SAUDE,ACC_MERCADOP,CA
 TX310,2026-11-02,serviceman maintenance in new house,"828,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX311,2026-11-02,transfer from long-term savings to checking account,"828,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX312,2026-11-02,printing of keyboard manual,"18,50",expense,CAT_MATERIAI,ACC_MERCADOP,,,1,1,,0
+TX313,2026-11-03,Groceries,"13,34",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX314,2026-11-03,Maintenance house,"828,00",expense,CAT_MATERIAI,ACC_MERCADOP,,,1,1,,0
+TX315,2026-11-03,Transfer savings to checking,"828,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX316,2026-11-03,Smartphone credit internet,"360,00",card_expense,CAT_CELULAR,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX317,2026-11-03,Groceries,"262,72",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
