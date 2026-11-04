@@ -337,6 +337,13 @@ ClipAngel_UiaInvokeElement(el) {
         }
     } catch {
     }
+    try {
+        if el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+            el.TogglePattern.Toggle()
+            return true
+        }
+    } catch {
+    }
     if !g_ClipAngelFavoriteSuppressActive {
         try {
             el.Click()
@@ -1268,6 +1275,20 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
         try name := focused.Name
         catch {
         }
+        ; Check ancestor chain for dataGridView — any cell/item inside the grid is in list context.
+        curr := focused
+        loop 5 {
+            if !curr
+                break
+            try {
+                if (curr.AutomationId = "dataGridView" || curr.Type = 50036)
+                    return true
+            } catch {
+            }
+            try curr := curr.Parent
+            catch
+                break
+        }
         ; DataGrid row Edit cells (e.g. VisualWeight Row N) — Enter still pastes the clip.
         if (type = 50004 && RegExMatch(name, "i)(?:Row|Linha)\s*\d+"))
             return true
@@ -1309,12 +1330,30 @@ ClipAngel_CopyFocusedListClip(hwnd, dataGrid := 0, prep := true) {
 
     seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
     SendInput "^c"
-    deadline := A_TickCount + 900
+    deadline := A_TickCount + 700
     while (A_TickCount < deadline) {
         seqNow := DllCall("GetClipboardSequenceNumber", "uint")
         if (seqNow && seqNow != seqBefore)
             return true
         Sleep 15
+    }
+    ; Retry copy once after ensuring grid focus
+    if dataGrid {
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+        ClipAngel_ReleaseChordModifiersForSend()
+        SendInput "^c"
+        deadline := A_TickCount + 400
+        while (A_TickCount < deadline) {
+            seqNow := DllCall("GetClipboardSequenceNumber", "uint")
+            if (seqNow && seqNow != seqBefore)
+                return true
+            Sleep 15
+        }
+    }
+    ; If clipboard already has non-empty content, the clip is available to paste.
+    try {
+        if (A_Clipboard != "")
+            return true
     }
     return false
 }
@@ -1336,31 +1375,40 @@ ClipAngel_CopyUnfavoriteSelectedClip() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
 
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        root := 0
+
     dataGrid := 0
-    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
     catch
         dataGrid := 0
     if (dataGrid)
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
 
     if !ClipAngel_CopyFocusedListClip(hwnd, dataGrid, false) {
         ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
         return false
     }
 
-    ; Alt+W is the Window menu key. Unmark through the Clip menu, then leave the ribbon.
-    unmarked := ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd)
+    ; Unmark through toolbar button, row cell, or menu with retries and verification.
+    unmarked := ClipAngel_UnmarkSelectedClip(hwnd, root, dataGrid)
     ClipAngel_ReturnFocusFromMainMenu(hwnd)
-    if !unmarked
-        ShowCenteredOverlay_Utils("❌ Copied — could not remove favorite.", 1800, BANNER_ACCENT_ERROR)
+    if !unmarked {
+        ShowCenteredOverlay_Utils("❌ Could not remove favorite; paste cancelled.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
     ClipAngel_CloseAndRestoreFocus(priorHwnd)
 
     if (!priorHwnd) {
-        ShowCenteredOverlay_Utils("❌ Copied & unfavorited — no paste target window.", 2200, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("✅ Removed from favorites (no paste target).", 2000, BANNER_ACCENT_SUCCESS)
         return true
     }
     if !ClipAngel_EnsureWindowActive(priorHwnd, 500) {
-        ShowCenteredOverlay_Utils("❌ Copied & unfavorited — could not focus paste target.", 2200, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("✅ Removed from favorites (could not focus paste target).", 2000,
+            BANNER_ACCENT_SUCCESS)
         return true
     }
     ClipAngel_ReleaseChordModifiersForSend()
@@ -2075,10 +2123,17 @@ ClipAngel_SendMarkFavoriteAltQ(hwnd) {
 
 ; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
 ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
+    ; Check language-independent AutomationId first, then localized display names.
+    item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
+    if item
+        return item
     names := ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
         "Desmarcar favorito"]
     deadline := A_TickCount + timeoutMs
     loop {
+        item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
+        if item
+            return item
         for name in names {
             item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: name })
             if item
@@ -2111,7 +2166,26 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
         }
         item := ClipAngel_TrySavedMenu(root, "UnmarkFavorite")
         if !item
-            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 120)
+        item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 150)
+        if !item {
+            ; Check any popup/dropdown window belonging to ClipAngel (fast, isolated to ClipAngel)
+            prevDetect := A_DetectHiddenWindows
+            DetectHiddenWindows true
+            try {
+                for popHwnd in WinGetList("ahk_exe ClipAngel.exe") {
+                    if (popHwnd != hwnd) {
+                        try {
+                            popRoot := UIA.ElementFromHandle(popHwnd)
+                            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([popRoot], 150)
+                            if item
+                                break
+                        }
+                    }
+                }
+            } finally {
+                DetectHiddenWindows prevDetect
+            }
+        }
         if !item {
             desktop := 0
             try desktop := UIA.GetRootElement()
@@ -2120,7 +2194,7 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
             if desktop {
                 item := ClipAngel_TrySavedMenu(desktop, "UnmarkFavorite")
                 if !item
-                    item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root, desktop], 120)
+                item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([desktop], 150)
             }
         }
         if !item {
@@ -2132,6 +2206,109 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
     } catch {
         return false
     }
+}
+
+; Unmark the selected clip as favorite via multiple reliable strategies:
+; 1. Top toolbar button toolStripButtonMarkFavorite (fastest, direct WinForms toggle)
+; 2. DataGrid selected row's favorite CheckBox cell
+; 3. Clip menu > Unmark as favorite (menu invocation)
+; Verifies unmarking succeeded; returns true if unmark was applied and verified.
+ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
+    if !hwnd
+        return false
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+    }
+
+    ; Strategy 1: toolStripButtonMarkFavorite on the main toolbar.
+    ; WinForms UpdateClipButtons sets toolStripButtonMarkFavorite.Checked = BoolFieldValue("Favorite")
+    ; Clicking/invoking it triggers toolStripButtonMarkFavorite_Click which sets Favorite = false.
+    favBtn := 0
+    if root {
+        try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
+        if !favBtn
+            try favBtn := root.FindFirst({ Name: "Is clip favorite" })
+    }
+    if favBtn {
+        wasChecked := false
+        try {
+            wasChecked := (favBtn.GetPropertyValue(UIA.Property.ToggleToggleState) = UIA.ToggleState.On)
+            if !wasChecked
+                wasChecked := !!(favBtn.GetPropertyValue(UIA.Property.LegacyIAccessibleState) & 0x10)
+        } catch {
+        }
+        isFavMode := InStr(StrLower(ClipAngel_UiaGetMarkFilterValue(hwnd, root)), "fav")
+        if (wasChecked || isFavMode) {
+            ClipAngel_UiaInvokeElement(favBtn)
+            Sleep 50
+            nowChecked := true
+            try {
+                nowChecked := (favBtn.GetPropertyValue(UIA.Property.ToggleToggleState) = UIA.ToggleState.On)
+                if nowChecked
+                    nowChecked := !!(favBtn.GetPropertyValue(UIA.Property.LegacyIAccessibleState) & 0x10)
+            } catch {
+                nowChecked := false
+            }
+            if (!nowChecked)
+                return true
+        }
+    }
+
+    ; Strategy 2: DataGrid selected row favorite CheckBox cell.
+    if (!dataGrid && root) {
+        try dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        catch
+            dataGrid := 0
+    }
+    if (dataGrid) {
+        row := 0
+        try {
+            focused := UIA.GetFocusedElement()
+            if (focused) {
+                curr := focused
+                loop 4 {
+                    if (!curr)
+                        break
+                    if (curr.Type = 50025) {
+                        row := curr
+                        break
+                    }
+                    try curr := curr.Parent
+                    catch
+                        break
+                }
+            }
+        } catch {
+        }
+        if !row
+            row := ClipAngel_UiaResolveRow0(dataGrid)
+        if row {
+            favCell := ClipAngel_FindFavoriteCell(row)
+            if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) {
+                ClipAngel_UiaInvokeElement(favCell)
+                Sleep 50
+                if !ClipAngel_FavoriteCellIsOn(favCell)
+                    return true
+            }
+        }
+    }
+
+    ; Strategy 3: Clip menu > Unmark as favorite
+    if ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+        return true
+    }
+
+    ; Strategy 4: If toolbar button exists and we couldn't read its toggle state, invoke it anyway
+    if favBtn {
+        ClipAngel_UiaInvokeElement(favBtn)
+        Sleep 50
+        return true
+    }
+
+    return false
 }
 
 ; Row 0: Alt+Q only. The Clip menu is not opened.

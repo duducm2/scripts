@@ -174,16 +174,20 @@ $Enter:: {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
-; Ctrl+Enter / Shift+Enter on a list clip: copy to OS clipboard → unmark favorite → minimize.
-; No longer gated on Favorites filter (UIA MarkFilter misses were the main reliability failure).
-; Outside list context, pass through native chord without minimizing.
+; Ctrl+Enter / Shift+Enter on a list clip: copy to OS clipboard → unmark favorite → minimize → paste.
+; When in list context or filter combo, always execute the copy+unfavorite flow.
+; Never fall back to nativeChord in list context, because native Shift+Enter pastes without unfavoriting!
+; Outside list context (search bar, text preview), pass through native chord.
 ClipAngel_HotkeyCopyUnfavoriteOrPassthrough(nativeChord) {
     if ClipAngel_ConstantPaste_IsActive() || ClipAngel_ConstantPaste_IsDelimiterPromptActive() {
         SendInput nativeChord
         return
     }
-    if ClipAngel_CopyUnfavoriteSelectedClip()
+        hwnd := ClipAngel_MainHwnd()
+    if (ClipAngel_FocusIsFilterCombo() || ClipAngel_IsListPasteEnterContext(hwnd)) {
+        ClipAngel_CopyUnfavoriteSelectedClip()
         return
+    }
     SendInput nativeChord
 }
 
