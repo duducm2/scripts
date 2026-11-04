@@ -52,6 +52,8 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 🔲 Clean your keyboard.
 
+🔲 Check if your SIM JEP arrived
+
 ## Dissertation
 
 ℹ️ Your last day for submitting your dissertation is November 23
@@ -89,13 +91,15 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ## Dog
 
-⏳ By vitamins to moka
-
 ⏳ Cartão de vacina
 ℹ️ IMG_20261010_125211.jpg
 ℹ️ IMG_20261010_125128.jpg
 
 ⏳ Castrar a Moka
+
+### Essential Shopping List
+
+⏳ Buy Collar, ID Tag, and Leash
 
 ### Vaccination Timetable
 
@@ -106,10 +110,6 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 🔲 3rd Dose V10 (2026-11-10)
 ℹ️ Socialization
 Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.
-
-### Essential Shopping List
-
-⏳ Buy Collar, ID Tag, and Leash
 
 ### Dewormer
 
