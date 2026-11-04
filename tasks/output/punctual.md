@@ -97,10 +97,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ⏳ Castrar a Moka
 
-### Essential Shopping List
-
-⏳ Buy Collar, ID Tag, and Leash
-
 ### Vaccination Timetable
 
 ⏳ 4th Dose V10 + Raiva (2026-12-10)
