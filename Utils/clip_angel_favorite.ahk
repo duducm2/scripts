@@ -1291,9 +1291,9 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
 ; Copy the selected list row through ClipAngel itself so every clip type is preserved.
 ; Fast, non-blocking check with bounded timeout.
 ClipAngel_CopyFocusedListClip(hwnd, dataGrid := 0, prep := false) {
-    SendInput "{Shift up}{Ctrl up}^c"
     seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
-    deadline := A_TickCount + 100
+    SendInput "{Shift up}{Ctrl up}^c"
+    deadline := A_TickCount + 120
     while (A_TickCount < deadline) {
         seqNow := DllCall("GetClipboardSequenceNumber", "uint")
         if (seqNow && seqNow != seqBefore)
@@ -2115,10 +2115,14 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
         }
         clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
         if !clipMenu
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, AutomationId: "clipToolStripMenuItem" })
+        if !clipMenu
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Recortar" })
+        if !clipMenu
             clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if clipMenu {
             if !ClipAngel_UiaInvokeElement(clipMenu)
-                return false
+                ClipAngel_OpenClipMenuViaKeyboard(hwnd)
         } else {
             ClipAngel_OpenClipMenuViaKeyboard(hwnd)
         }
@@ -2167,9 +2171,10 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
 }
 
 ; Unmark the selected clip as favorite via multiple reliable strategies:
-; 1. Top toolbar button toolStripButtonMarkFavorite (fastest, direct WinForms toggle)
-; 2. Alt+Q keyboard shortcut (native ClipAngel command for toggle favorite)
-; 3. Clip menu > Unmark as favorite (menu invocation)
+; 1. Clip menu > Unmark as favorite (resetFavouriteToolStripMenuItem)
+;    Directly executes SetRowMark("Favorite", false, true, false).
+;    Not blocked by LoadedClipRowReader.
+; 2. Top toolbar button toolStripButtonMarkFavorite (direct WinForms toggle)
 ; Verifies unmarking succeeded; returns true if unmark was applied.
 ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
     if !hwnd
@@ -2180,8 +2185,14 @@ ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
             root := 0
     }
 
-    ; Strategy 1: toolStripButtonMarkFavorite on the main toolbar.
-    ; Scoped search: root -> children -> toolStripTop -> children -> toolStripButtonMarkFavorite (<5ms)
+    ; Strategy 1: Clip menu > Unmark as favorite (resetFavouriteToolStripMenuItem)
+    if ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+        Sleep 50
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+        return true
+    }
+
+    ; Strategy 2: Top toolbar button toolStripButtonMarkFavorite
     favBtn := 0
     if root {
         try {
@@ -2203,24 +2214,8 @@ ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
         }
     }
     if favBtn {
-        try {
-            if favBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                favBtn.InvokePattern.Invoke()
-                return true
-            }
-        } catch {
-        }
-        if ClipAngel_UiaInvokeElement(favBtn)
-            return true
-    }
-
-    ; Strategy 2: Alt+Q keyboard shortcut (native ClipAngel command for toggle favorite)
-    if ClipAngel_SendMarkFavoriteAltQ(hwnd)
-        return true
-
-    ; Strategy 3: Menu fallback (Clip menu > Unmark as favorite)
-    if ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
-        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+        ClipAngel_UiaInvokeElement(favBtn)
+        Sleep 50
         return true
     }
 
