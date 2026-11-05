@@ -6,6 +6,7 @@
 ;   hold 700ms+ AI Quick Download (name pick → click sequences → Desktop wait → rename → cut)
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
 ; While the menu is open: Shift+O Common, Shift+P Full PC, Shift+H Headphones, Shift+A disconnect all Bluetooth.
+; Shift+O/P/H automatically disconnect all Bluetooth devices first (Shift+A) as a standard.
 ; Each profile isolates one input and one output together (output first, then input).
 ; Device lists: M marks a custom emoji label (persisted in assets\data\audio_bt_emoji.ini).
 ; Loaded via #include into the WindowManagement.ahk process.
@@ -58,9 +59,9 @@ AudioBt_HelpRows() {
                                                     command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "Shift+A",
                                                         command: "Disconnect all", meaning: "Disconnect every connected device on the Bluetooth list (the first menu item) in one step. Skips ignored devices and does not unpair." }, { key: "Shift+I",
                                                             command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "Shift+O",
-                                                                command: "Common", meaning: "Profile. Input Maono PD200X and output Office, on the personal PC and the work laptop. Isolates output first (connects Office and drops other Bluetooth audio), then isolates the mic." }, { key: "Shift+P",
-                                                                    command: "Full PC", meaning: "Profile. Built-in devices only. Personal PC: Realtek mic (Grupo de microfones) and Realtek speakers (Alto-falantes). Work laptop: integrated mic (Microphone Array / Intel Smart Sound, or the input marked 💻) and integrated speakers (Speakers / Realtek, or the output marked 💻)." }, { key: "Shift+H",
-                                                                        command: "Headphones", meaning: "Profile. Input Maono PD200X and output JBL Live 460NC headphones (not the hands-free or headset endpoint). Works from any page of this menu. Plain H still opens Help." }, { key: "Shift+R",
+                                                                command: "Common", meaning: "Profile. Input Maono PD200X and output Office, on the personal PC and the work laptop. Disconnects all Bluetooth audio first (Shift+A), isolates output (connects Office), then isolates the mic." }, { key: "Shift+P",
+                                                                    command: "Full PC", meaning: "Profile. Built-in devices only. Disconnects all Bluetooth audio first (Shift+A). Personal PC: Realtek mic (Grupo de microfones) and Realtek speakers (Alto-falantes). Work laptop: integrated mic (Microphone Array / Intel Smart Sound, or the input marked 💻) and integrated speakers (Speakers / Realtek, or the output marked 💻)." }, { key: "Shift+H",
+                                                                        command: "Headphones", meaning: "Profile. Input Maono PD200X and output JBL Live 460NC headphones (not the hands-free or headset endpoint). Disconnects all Bluetooth audio first (Shift+A). Works from any page of this menu. Plain H still opens Help." }, { key: "Shift+R",
                                                                             command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "a-z",
                                                                                 command: "Jump", meaning: "Select the next row whose first word starts with that letter." }, { key: "Shift+N",
                                                                                     command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Shift+M",
@@ -1622,8 +1623,32 @@ AudioBt_JoinNames(names) {
     return text
 }
 
+AudioBt_DisconnectAllBluetooth(&dropped, &failed) {
+    global g_AudioBtAllRows, g_AudioBtBusy
+    dropped := []
+    failed := []
+    AudioBt_BusyShow("⏳ Disconnecting Bluetooth audio…")
+    if (!AudioBt_FetchAll(false))
+        return false
+    g_AudioBtBusy := true
+    targets := []
+    for row in g_AudioBtAllRows {
+        if AudioBt_BtListRowIsConnected(row)
+            targets.Push(row)
+    }
+    for row in targets {
+        AudioBt_BusyShow("⏳ Disconnecting " . row.name . "…")
+        result := AudioBt_Run("disconnect", row.id)
+        if (IsObject(result) && result.ok)
+            dropped.Push(row.name)
+        else
+            failed.Push(row.name)
+    }
+    return true
+}
+
 AudioBt_OnDisconnectAll(*) {
-    global g_AudioBtActive, g_AudioBtBusy, g_AudioBtAllRows
+    global g_AudioBtActive, g_AudioBtBusy
     if (!g_AudioBtActive || g_AudioBtBusy)
         return
     g_AudioBtBusy := true
@@ -1632,39 +1657,22 @@ AudioBt_OnDisconnectAll(*) {
     ; Set before Cleanup. Cleanup hides the loading bar, which would erase a banner shown first.
     doneMsg := ""
     try {
-        AudioBt_BusyShow("⏳ Disconnecting Bluetooth audio…")
-        if (!AudioBt_FetchAll(false)) {
+        if (!AudioBt_DisconnectAllBluetooth(&dropped, &failed)) {
             ShowNotification_WM("❌ Could not list Bluetooth devices")
             return
         }
-        g_AudioBtBusy := true
-        targets := []
-        for row in g_AudioBtAllRows {
-            if AudioBt_BtListRowIsConnected(row)
-                targets.Push(row)
-        }
-        if (targets.Length = 0)
+        if (dropped.Length = 0 && failed.Length = 0)
             doneMsg := "✅ Bluetooth audio is off"
+        else if (failed.Length = 0)
+            doneMsg := "✅ Disconnected " . AudioBt_JoinNames(dropped)
         else {
-            for row in targets {
-                AudioBt_BusyShow("⏳ Disconnecting " . row.name . "…")
-                result := AudioBt_Run("disconnect", row.id)
-                if (IsObject(result) && result.ok)
-                    dropped.Push(row.name)
-                else
-                    failed.Push(row.name)
-            }
-            if (failed.Length = 0)
-                doneMsg := "✅ Disconnected " . AudioBt_JoinNames(dropped)
-            else {
-                AudioBt_FetchAll(false)
-                AudioBt_ProfileRefreshUi()
-                if (dropped.Length = 0)
-                    ShowNotification_WM("❌ Could not disconnect " . AudioBt_JoinNames(failed))
-                else
-                    ShowNotification_WM("Disconnected " . AudioBt_JoinNames(dropped) . ". Failed: " . AudioBt_JoinNames(
-                        failed))
-            }
+            AudioBt_FetchAll(false)
+            AudioBt_ProfileRefreshUi()
+            if (dropped.Length = 0)
+                ShowNotification_WM("❌ Could not disconnect " . AudioBt_JoinNames(failed))
+            else
+                ShowNotification_WM("Disconnected " . AudioBt_JoinNames(dropped) . ". Failed: " . AudioBt_JoinNames(
+                    failed))
         }
     } catch Error as err {
         ShowNotification_WM("❌ Disconnect all: " . err.Message)
@@ -1688,6 +1696,7 @@ AudioBt_OnIsolate(*) {
 ; Shift+O Common: Maono PD200X in, Office out (both PCs).
 ; Shift+P Full PC: personal Realtek mic + speakers; work laptop integrated mic + speakers.
 ; Shift+H Headphones: Maono PD200X in, JBL Live 460NC headphone out.
+; Automatically disconnects all Bluetooth devices first (same as Shift+A) as a standard.
 ; Output is isolated first so a Bluetooth speaker can connect and drop the other radio.
 ; Input is isolated after that, so a headset microphone does not stay default.
 AudioBt_ProfileIsWork() {
@@ -1957,6 +1966,10 @@ AudioBt_OnProfile(profileKey, *) {
     inResult := ""
     try {
         AudioBt_BusyShow("⏳ " . prof.label . "…")
+        btDropped := []
+        btFailed := []
+        AudioBt_DisconnectAllBluetooth(&btDropped, &btFailed)
+        g_AudioBtBusy := true
         if (!AudioBt_FetchAll(false)) {
             ShowNotification_WM("❌ " . prof.label . ": could not list audio devices")
             return
