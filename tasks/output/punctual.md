@@ -50,10 +50,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 🔲 Buy more psychiatric pills
 
-🔲 Clean your keyboard.
-
-🔲 Check if your SIM JEP arrived
-
 ## Dissertation
 
 ℹ️ Your last day for submitting your dissertation is November 23
@@ -135,7 +131,7 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 
 ## Piano
 
-🔲 Play the songs that are highlighted with stars from one to six
+⏳ Play the songs that are highlighted with stars from one to six
 
 ## Tarefas para Submissão do Artigo (Revista JIS)
 
