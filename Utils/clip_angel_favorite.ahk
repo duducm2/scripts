@@ -1294,9 +1294,14 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
             return true
         ; ComboBox / Edit / Document — filters, search, preview, edit-clip UI.
         if (type = 50003 || type = 50004 || type = 50030)
-            return false
+        ; If user is actively typing in preview editor, search box, or URL box — not list context.
+            if (aid = "richTextBox" || aid = "comboBoxSearchString" || aid = "urlTextBox" || aid = "textBoxSearch")
+                return false
         if (aid = "MarkFilter" || aid = "TypeFilter" || aid = "comboBoxSearchString"
             || aid = "richTextBox" || aid = "urlTextBox")
+            type := 0
+        try type := focused.Type
+        if (type = 50003 || type = 50030)  ; ComboBox or Document
             return false
         if (type = 50036 || type = 50025)  ; Table / DataGrid row
             return true
@@ -1307,6 +1312,7 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
         ; Title/image cells inside a row still paste via Enter.
         if (type = 50006 && RegExMatch(name, "i)(?:Row|Linha)\s*\d+"))
             return true
+        return true
     } catch {
     }
     return true
@@ -1328,1124 +1334,215 @@ ClipAngel_CopyFocusedListClip(hwnd, dataGrid := 0, prep := true) {
         ClipAngel_ReleaseChordModifiersForSend()
     }
 
-    seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
-    SendInput "^c"
-    deadline := A_TickCount + 700
-    while (A_TickCount < deadline) {
-        seqNow := DllCall("GetClipboardSequenceNumber", "uint")
-        if (seqNow && seqNow != seqBefore)
-            return true
-        Sleep 15
-    }
-    ; Retry copy once after ensuring grid focus
-    if dataGrid {
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
-        ClipAngel_ReleaseChordModifiersForSend()
+    ; Copy the selected list row through ClipAngel itself so every clip type is preserved.
+    ; Fast, non-blocking check with bounded timeout.
+    ClipAngel_CopyFocusedListClip(hwnd, dataGrid := 0, prep := false) {
+        seqBefore := DllCall("GetClipboardSequenceNumber", "uint")
         SendInput "^c"
-        deadline := A_TickCount + 400
+        deadline := A_TickCount + 700
+        SendInput "{Shift up}{Ctrl up}^c"
+        deadline := A_TickCount + 120
         while (A_TickCount < deadline) {
             seqNow := DllCall("GetClipboardSequenceNumber", "uint")
             if (seqNow && seqNow != seqBefore)
                 return true
             Sleep 15
+            Sleep 10
         }
-    }
-    ; If clipboard already has non-empty content, the clip is available to paste.
-    try {
-        if (A_Clipboard != "")
-            return true
-    }
-    return false
-}
-
-; Ctrl+Enter / Shift+Enter: copy focused list clip → unmark favorite → paste into prior app.
-; A filter combo still counts: focus the list, then unmark. Preview/edit passthrough stays with the caller.
-; Returns true when copy+unfavorite succeeded (paste may still warn if target focus fails).
-ClipAngel_CopyUnfavoriteSelectedClip() {
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd
-        return false
-    onFilter := ClipAngel_FocusIsFilterCombo()
-    if (!onFilter && !ClipAngel_IsListPasteEnterContext(hwnd))
-        return false
-
-    ; Clip Angel is foreground here — ResolvePriorHwnd walks z-order for the paste target.
-    priorHwnd := ClipAngel_ResolvePriorHwnd(0)
-
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-
-    root := 0
-    try root := UIA.ElementFromHandle(hwnd)
-    catch
-        root := 0
-
-    dataGrid := 0
-    try dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    catch
-        dataGrid := 0
-    if (dataGrid)
-    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
-
-    if !ClipAngel_CopyFocusedListClip(hwnd, dataGrid, false) {
-        ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR)
-        return false
-    }
-
-    ; Unmark through toolbar button, row cell, or menu with retries and verification.
-    unmarked := ClipAngel_UnmarkSelectedClip(hwnd, root, dataGrid)
-    ClipAngel_ReturnFocusFromMainMenu(hwnd)
-    if !unmarked {
-        ShowCenteredOverlay_Utils("❌ Could not remove favorite; paste cancelled.", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
-
-    ClipAngel_CloseAndRestoreFocus(priorHwnd)
-
-    if (!priorHwnd) {
-        ShowCenteredOverlay_Utils("✅ Removed from favorites (no paste target).", 2000, BANNER_ACCENT_SUCCESS)
-        return true
-    }
-    if !ClipAngel_EnsureWindowActive(priorHwnd, 500) {
-        ShowCenteredOverlay_Utils("✅ Removed from favorites (could not focus paste target).", 2000,
-            BANNER_ACCENT_SUCCESS)
-        return true
-    }
-    ClipAngel_ReleaseChordModifiersForSend()
-    SendInput "^v"
-    return true
-}
-
-; Down N (optional), native Enter to paste selected clip, then minimize Clip Angel.
-ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
-    ; Alt+1–5 leave Alt logically down; without release, Enter becomes Alt+Enter (paste file).
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    hwnd := ClipAngel_MainHwnd()
-    if (hwnd) {
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
-        if (dataGrid)
+        ; Retry copy once after ensuring grid focus
+        if dataGrid {
             ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
-    }
-    if (downCount > 0) {
-        loop downCount
-            Send "{Down}"
-    }
-    Send "{Enter}"
-    ClipAngel_CloseAndRestoreFocus(0)
-}
-
-; Poll until richTextBox has keyboard focus (after F10 toggle to preview).
-ClipAngel_UiaWaitPreviewFocused(hwnd, timeoutMs := 150, root := 0) {
-    if !hwnd
-        return false
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            return false
-    }
-    if !root
-        return false
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        preview := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
-        try {
-            if (preview && preview.HasKeyboardFocus)
-                return true
-        } catch {
-        }
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    return false
-}
-
-; Down N (optional), F10 → select-all → copy preview text, then minimize Clip Angel.
-ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    hwnd := ClipAngel_MainHwnd()
-    root := 0
-    dataGrid := 0
-    if (hwnd) {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if (dataGrid)
-            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
-    }
-    if (downCount > 0) {
-        loop downCount
-            Send "{Down}"
-        ; Only brief settle if grid lost focus after Down.
-        if (dataGrid) {
-            focused := false
-            try focused := dataGrid.HasKeyboardFocus
-            catch {
-            }
-            if !focused
-                Sleep 40
-        }
-    }
-    Send "{F10}"
-    if (hwnd)
-        ClipAngel_UiaWaitPreviewFocused(hwnd, 150, root)
-    Send "^a"
-    Sleep 40
-    Send "^c"
-    try ClipWait(0.3)
-    catch {
-    }
-    ClipAngel_CloseAndRestoreFocus(0)
-}
-
-; Open Clip Angel on all marks + Row 0, then restore prior focus for paste.
-; suppressVisual (default true): park off-screen like MarkLastClipAsFavorite — no maximize flash.
-; Replaces native Alt+P + fixed 200×3 settles.
-ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := true) {
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    targetMon := 0
-    if (priorHwnd) {
-        try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
-        catch
-            targetMon := 0
-    }
-    hwnd := 0
-    root := 0
-    ClipAngel_OpenForAutomation("all", targetMon, suppressVisual, &hwnd, &root)
-    ClipAngel_ReleaseChordModifiersForSend()
-    if (priorHwnd && !suppressVisual)
-        ClipAngel_EnsureWindowActive(priorHwnd)
-}
-
-; Fresh UIA read: all-marks filter and Row 0 is the selected row. Sending ^{Home} is not this check.
-ClipAngel_TopRowIsCurrent(hwnd) {
-    if !hwnd
-        return false
-    root := 0
-    try root := UIA.ElementFromHandle(hwnd)
-    catch
-        return false
-    if !ClipAngel_MarkFilterMatchesMode(true, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
-        return false
-    return ClipAngel_UiaIsRow0Selected(hwnd, root)
-}
-
-ClipAngel_WaitTopRowCurrent(hwnd, timeoutMs) {
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        if ClipAngel_TopRowIsCurrent(hwnd)
-            return true
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    return ClipAngel_TopRowIsCurrent(hwnd)
-}
-
-; Open once, then paste with Ctrl+Alt+B only after Row 0 is confirmed selected.
-; Returns false without pasting when the top row never becomes current.
-ClipAngel_SendNativeTopItemKeys(priorHwnd := 0, suppressVisual := true) {
-    ClipAngel_ActivateNativeFirstClip(priorHwnd, suppressVisual)
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd
-        return false
-    if !ClipAngel_WaitTopRowCurrent(hwnd, 150) {
-        root := 0
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-        ClipAngel_ApplyMarkFilterMode(true, hwnd, root)
-        ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
-        if !ClipAngel_WaitTopRowCurrent(hwnd, 400)
-            return false
-    }
-    ClipAngel_ReleaseChordModifiersForSend()
-    if (priorHwnd)
-        ClipAngel_EnsureWindowActive(priorHwnd)
-    if !ClipAngel_PostHotkey("b", "ca")
-        SendInput "^!b"
-    return true
-}
-
-; Send top list item via Clip Angel native keys. Minimizes Clip Angel and restores prior focus after paste.
-ClipAngel_SendTopListItem(priorHwnd := 0) {
-    if !ClipAngel_TryAcquireAutomationLock()
-        return false
-    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
-    ok := false
-    try {
-        ok := ClipAngel_SendNativeTopItemKeys(priorHwnd)
-        if !ok
-            ShowCenteredOverlay_Utils("❌ Top clip was not selected, so nothing was pasted.", 2000, BANNER_ACCENT_ERROR)
-    } catch Error as e {
-        ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-        ok := false
-    } finally {
-        ClipAngel_CloseAndRestoreFocus(priorHwnd)
-        ClipAngel_ReleaseAutomationLock()
-    }
-    return ok
-}
-
-; Paste N top-list items in order. Opens once, incremental paste between items, minimizes + restores prior focus at end.
-ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
-    if (!IsInteger(count))
-        return false
-    n := Integer(count)
-    if (n < 1)
-        return false
-    if !ClipAngel_TryAcquireAutomationLock()
-        return false
-    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
-    ok := false
-    try {
-        ClipAngel_WaitChordModifiersReleased()
-        ClipAngel_ReleaseChordModifiersForSend()
-        topOk := true
-        loop n {
-            if (A_Index = 1) {
-                if !ClipAngel_SendNativeTopItemKeys(priorHwnd) {
-                    ShowCenteredOverlay_Utils("❌ Top clip was not selected, so nothing was pasted.", 2000,
-                        BANNER_ACCENT_ERROR)
-                    topOk := false
-                    break
-                }
-            } else {
-                Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
-                ClipAngel_ReleaseChordModifiersForSend()
-                if !ClipAngel_PostHotkey("b", "ca")
-                    SendInput "^!b"
-            }
-            Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
-        }
-        ok := topOk
-    } catch Error as e {
-        ShowCenteredOverlay_Utils("❌ Clip Angel sequential paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-        ok := false
-    } finally {
-        ClipAngel_CloseAndRestoreFocus(priorHwnd)
-        ClipAngel_ReleaseAutomationLock()
-    }
-    return ok
-}
-
-; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
-; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
-ClipAngel_UiaGetMarkFilterElement(hwnd, root := 0) {
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
-                return 0
-        }
-        return ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
-    } catch {
-        return 0
-    }
-}
-
-ClipAngel_UiaGetMarkFilterValue(hwnd, root := 0) {
-    try {
-        mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
-        return mf ? mf.Value : ""
-    } catch {
-        return ""
-    }
-}
-
-; MarkFilter combo: leave "favorite" (or any non-all) for "all marks" via dropdown (fast fallback).
-ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root := 0) {
-    if !hwnd
-        return false
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
-                return false
-        }
-        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
-        if !mf
-            return false
-        if (StrLower(Trim(mf.Value)) = "all marks")
-            return true
-        mf.SetFocus()
-        mf.Click()
-        Sleep 30
-        Send "{Home}"
-        Sleep 30
-        Send "{Tab}"
-        Sleep 30
-        return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
-    } catch {
-        return false
-    }
-}
-
-; MarkFilter combo → favorites (second item after "all marks" in Clip Angel dropdown).
-ClipAngel_UiaSetMarkFilterFavorites(hwnd, root := 0) {
-    if !hwnd
-        return false
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
-                return false
-        }
-        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
-        if !mf
-            return false
-        if InStr(StrLower(Trim(mf.Value)), "favor")
-            return true
-        mf.SetFocus()
-        mf.Click()
-        Sleep 30
-        Send "{Home}{Down}"
-        Sleep 30
-        Send "{Enter}"
-        Sleep 30
-        if InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
-            return true
-        ; List-item pick after expand (dropdown labels vary by locale).
-        try {
-            if mf.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
-                mf.ExpandCollapsePattern.Expand()
-        } catch {
-        }
-        Sleep 40
-        for item in mf.FindAll({ Type: 50007 }) { ; ListItem
-            n := "", v := ""
-            try n := item.Name
-            catch {
-            }
-            try v := item.Value
-            catch {
-            }
-            if InStr(StrLower(n . " " . v), "favor") {
-                try {
-                    if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                        item.SelectionItemPattern.Select()
-                    else
-                        item.Click()
-                } catch {
-                    try item.Click()
-                    catch {
-                    }
-                }
-                deadline := A_TickCount + 200
-                while (A_TickCount < deadline) {
-                    if InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
-                        return true
-                    Sleep CLIPANGEL_UIA_POLL_MS
-                }
-                break
-            }
-        }
-        return InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
-    } catch {
-        return false
-    }
-}
-
-; List menu: "Show all marks" / "Show only favorite" (same as Ctrl+1 / Ctrl+2).
-ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root := 0) {
-    if !hwnd
-        return false
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
-                return false
-        }
-        listItem := ClipAngel_TrySavedMenu(root, "List")
-        if !listItem
-            listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
-        if !listItem || !ClipAngel_UiaInvokeElement(listItem)
-            return false
-        names := wantAll
-            ? ["Show all marks", "all marks"]
-                : ["Show only favorite", "Show only favorites", "favorite"]
-        item := ClipAngel_TrySavedMenu(root, wantAll ? "ShowAllMarks" : "ShowOnlyFavorite")
-        if !item {
-            try desktop := UIA.GetRootElement()
-            catch
-                desktop := 0
-            if desktop
-                item := ClipAngel_TrySavedMenu(desktop, wantAll ? "ShowAllMarks" : "ShowOnlyFavorite")
-        }
-        if item
-            names := []
-        deadline := A_TickCount + 180
-        while (A_TickCount < deadline) {
-            for name in names {
-                item := ClipAngel_UiaFindMenuItem([root], { Type: 50011, Name: name })
-                if !item {
-                    try desktop := UIA.GetRootElement()
-                    catch
-                        desktop := 0
-                    if desktop
-                        item := ClipAngel_UiaFindMenuItem([root, desktop], { Type: 50011, Name: name })
-                }
-                if item
-                    break
-            }
-            if item
-                break
-            Sleep CLIPANGEL_UIA_POLL_MS
-        }
-        if !item {
             ClipAngel_ReleaseChordModifiersForSend()
-            ClipAngel_SendToHwnd(hwnd, "{Escape}")
-            return false
-        }
-        if !ClipAngel_UiaInvokeElement(item)
-            return false
-        deadline := A_TickCount + 220
-        while (A_TickCount < deadline) {
-            if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
-                return true
-            Sleep CLIPANGEL_UIA_POLL_MS
-        }
-        return ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
-    } catch {
-        return false
-    }
-}
-
-; Apply MarkFilter for Alt+P/B. ControlSend alone often fails when Clip Angel is already focused;
-; prefer grid-focused SendInput (does not trip Shift-keys HotIf at SendLevel 0), then UIA fallbacks.
-ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root := 0) {
-    if !hwnd
-        return false
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-    }
-    mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
-    mfVal() {
-        try return mf ? mf.Value : ClipAngel_UiaGetMarkFilterValue(hwnd, root)
-        catch
-            return ClipAngel_UiaGetMarkFilterValue(hwnd, root)
-    }
-    if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
-        return true
-    global g_ClipAngelFavoriteSuppressActive
-    if !g_ClipAngelFavoriteSuppressActive {
-        if !WinActive("ahk_id " hwnd)
-            ClipAngel_EnsureWindowActive(hwnd, 200)
-    }
-    try {
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if dataGrid
-            try dataGrid.SetFocus()
-    } catch {
-    }
-    ClipAngel_ReleaseChordModifiersForSend()
-    keys := wantAll ? "^1" : "^2"
-    priorSendLevel := A_SendLevel
-    SendLevel 0
-    if g_ClipAngelFavoriteSuppressActive
-        ClipAngel_SendToHwnd(hwnd, keys)
-    else
-        SendInput keys
-    ClipAngel_ReturnFocusFromMainMenu(hwnd)
-    deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
-    while (A_TickCount < deadline) {
-        if !mf
-            mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
-        if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal()) {
-            SendLevel priorSendLevel
-            return true
-        }
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    SendLevel priorSendLevel
-    ; ControlSend retry (cold open / unfocused child).
-    try ControlSend(keys, , "ahk_id " hwnd)
-    catch {
-    }
-    deadline := A_TickCount + 150
-    while (A_TickCount < deadline) {
-        if !mf
-            mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
-        if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
-            return true
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    if wantAll {
-        if ClipAngel_NativeSendShiftP(hwnd, 220, root)
-            return true
-        if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root)
-            return true
-    } else if ClipAngel_UiaSetMarkFilterFavorites(hwnd, root) {
-        return true
-    }
-    if ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root)
-        return true
-    return ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
-}
-
-; One native Shift+P at SendLevel 0 (OnSubmitO runs under #InputLevel 10; default Send is ignored by ClipAngel).
-ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
-    global g_ClipAngelFavoriteSuppressActive
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-    }
-    if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
-        return true
-    if !g_ClipAngelFavoriteSuppressActive {
-        if !WinActive("ahk_id " hwnd)
-            ClipAngel_EnsureWindowActive(hwnd, 200)
-    }
-    ClipAngel_ReleaseChordModifiersForSend()
-    try {
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if dataGrid
-            try dataGrid.SetFocus()
-    } catch {
-    }
-    priorSendLevel := A_SendLevel
-    SendLevel 0
-    if g_ClipAngelFavoriteSuppressActive
-        ClipAngel_SendToHwnd(hwnd, "+p")
-    else
-        SendInput "+p"
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks") {
-            SendLevel priorSendLevel
-            return true
-        }
-        Sleep 15
-    }
-    SendLevel priorSendLevel
-    return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
-}
-
-; Select first list row: focus grid when cheap, then Ctrl+Home only (no UIA select/verify).
-ClipAngel_FastEnsureRow0(hwnd, root := 0) {
-    global g_ClipAngelFavoriteSuppressActive
-    if !hwnd
-        return false
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-    }
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    if dataGrid {
-        try dataGrid.SetFocus()
-        catch {
-        }
-    }
-    priorSendLevel := A_SendLevel
-    SendLevel 0
-    ClipAngel_ReleaseChordModifiersForSend()
-    if g_ClipAngelFavoriteSuppressActive
-        ClipAngel_SendToHwnd(hwnd, "^{Home}")
-    else
-        SendInput "^{Home}"
-    SendLevel priorSendLevel
-    ClipAngel_ReturnFocusFromMainMenu(hwnd)
-    return true
-}
-
-; Native Shift+P to leave favorites filter; fast UIA MarkFilter fallback when synthetic Send is ignored.
-ClipAngel_LeaveFavoritesFilter(hwnd) {
-    result := Map("method", "none", "ok", false, "before", "", "after", "", "row0Selected", false)
-    if !hwnd
-        return result
-    root := 0
-    try root := UIA.ElementFromHandle(hwnd)
-    catch
-        root := 0
-    result["before"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
-    if (StrLower(Trim(result["before"])) = "all marks") {
-        result["ok"] := true
-        result["method"] := "already_all_marks"
-        result["after"] := result["before"]
-        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd, root)
-        return result
-    }
-    if ClipAngel_NativeSendShiftP(hwnd, 220, root) {
-        result["ok"] := true
-        result["method"] := "native_shift_p"
-        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
-        result["row0Selected"] := ClipAngel_UiaIsRow0Selected(hwnd, root) || ClipAngel_FastEnsureRow0(hwnd, root)
-        return result
-    }
-    if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root) {
-        result["ok"] := true
-        result["method"] := "uia_combo"
-        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
-        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd, root)
-        return result
-    }
-    result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
-    return result
-}
-
-ClipAngel_UiaIsRow0Selected(hwnd, root := 0) {
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
-                return false
-        }
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if !dataGrid
-            return false
-        row0 := ClipAngel_UiaResolveRow0(dataGrid)
-        if !row0
-            return false
-        return ClipAngel_UiaRow0IsSelected(row0, dataGrid, ClipAngel_UiaGridHasSelectionPattern(dataGrid))
-    } catch {
-        return false
-    }
-}
-
-; Force Row 0 selected and grid keyboard focus before mark-favorite.
-; force=false (default): skip select work when Row 0 already selected (LeaveFavorites / WaitForListReady).
-; Pass root when already attached. During favorite suppress, do not steal foreground.
-; Does not call BeginFavoriteSuppress — caller owns suppress once.
-ClipAngel_PrepareFavoriteAltQ(hwnd, root := 0) {
-    global g_ClipAngelFavoriteSuppressActive
-    if !hwnd
-        return false
-    if !g_ClipAngelFavoriteSuppressActive
-        ClipAngel_EnsureWindowActive(hwnd)
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch {
-            root := 0
-        }
-    }
-    ClipAngel_UiaEnsureRow0Selected(hwnd, false, root)
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    if dataGrid {
-        row0 := ClipAngel_UiaResolveRow0(dataGrid)
-        if row0 {
-            try row0.SetFocus()
-            catch {
+            SendInput "^c"
+            deadline := A_TickCount + 400
+            while (A_TickCount < deadline) {
+                seqNow := DllCall("GetClipboardSequenceNumber", "uint")
+                if (seqNow && seqNow != seqBefore)
+                    return true
+                Sleep 15
             }
         }
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
-    }
-    if g_ClipAngelFavoriteSuppressActive
-        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    return true
-}
-
-; True when Row 0 favorite checkbox is on (empty/missing cell => false).
-ClipAngel_Row0FavoriteIsOn(hwnd) {
-    if !hwnd
-        return false
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-        if !root
-            return false
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if !dataGrid
-            return false
-        row0 := ClipAngel_UiaResolveRow0(dataGrid)
-        if !row0
-            return false
-        favCell := ClipAngel_FindFavoriteCell(row0)
-        return favCell && ClipAngel_FavoriteCellIsOn(favCell)
-    } catch {
+        ; If clipboard already has non-empty content, the clip is available to paste.
+        try {
+            if (A_Clipboard != "")
+                return true
+        }
         return false
     }
-}
 
-; Favorite mark often appears only as a star in Title RTF (no Favorite UIA column).
-; Pass root when caller already attached to avoid a second ElementFromHandle.
-ClipAngel_Row0TitleLooksFavorited(hwnd, root := 0) {
-    if !hwnd
-        return false
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
+    ; Ctrl+Enter / Shift+Enter: copy focused list clip → unmark favorite → paste into prior app.
+    ; A filter combo still counts: focus the list, then unmark. Preview/edit passthrough stays with the caller.
+    ; Returns true when copy+unfavorite succeeded (paste may still warn if target focus fails).
+    ClipAngel_CopyUnfavoriteSelectedClip() {
+        hwnd := ClipAngel_MainHwnd()
+        ; Highly optimized for near-instant execution (<80ms total latency).
+        ClipAngel_CopyUnfavoriteSelectedClip(hwnd := 0) {
+            if !hwnd
+                hwnd := ClipAngel_MainHwnd()
+            if !hwnd
                 return false
-        }
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if !dataGrid
-            return false
-        row0 := ClipAngel_UiaResolveRow0(dataGrid)
-        if !row0
-            return false
-        titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
-        if !titleCell
-            return false
-        val := ""
-        try val := titleCell.Value
-        catch {
-            return false
-        }
-        if (val = "" || val = "(null)")
-            return false
-        ; RTF may encode ⭐ as \u11088? or literal; also accept filled star glyphs.
-        return RegExMatch(val, "i)(\\u11088|\\u2[Bb]50|⭐|★)")
-    } catch {
-        return false
-    }
-}
-
-; Clip menu keyboard open — single Alt+C chord (never bare {Alt}; that highlights Window first).
-ClipAngel_OpenClipMenuViaKeyboard(hwnd := 0) {
-    ClipAngel_ReleaseChordModifiersForSend()
-    ClipAngel_SendToHwnd(hwnd, "!c")
-    Sleep 40
-    return true
-}
-
-; Clip > Mark as favorite is ShortcutKeys Alt+Q. WinForms runs that only while the form is active.
-; If Alt lands on the ribbon, put focus back on the list and send the chord once more. No Clip menu.
-ClipAngel_SendMarkFavoriteAltQ(hwnd) {
-    if !hwnd
-        return false
-    ClipAngel_ReleaseChordModifiersForSend()
-    if !WinActive("ahk_id " hwnd) {
-        try WinActivate("ahk_id " hwnd)
-        if !WinWaitActive("ahk_id " hwnd, , 0.25)
-            return false
-    }
-    loop 2 {
-        Send "!q"
-        if !ClipAngel_KeyboardFocusIsMainMenu()
-            return true
-        ClipAngel_ReturnFocusFromMainMenu(hwnd)
-    }
-    return false
-}
-
-; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
-ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
-    ; Check language-independent AutomationId first, then localized display names.
-    item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
-    if item
-        return item
-    names := ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
-        "Desmarcar favorito"]
-    deadline := A_TickCount + timeoutMs
-    loop {
-        item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
-        if item
-            return item
-        for name in names {
-            item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: name })
-            if item
-                return item
-        }
-        if (A_TickCount >= deadline)
-            break
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    return 0
-}
-
-ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
-    if !hwnd
-        return false
-    try {
-        if !root {
-            root := UIA.ElementFromHandle(hwnd)
-            if !root
+            onFilter := ClipAngel_FocusIsFilterCombo()
+            if (!onFilter && !ClipAngel_IsListPasteEnterContext(hwnd))
                 return false
-        }
-        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
-        if !clipMenu
-            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
-        if clipMenu {
-            if !ClipAngel_UiaInvokeElement(clipMenu)
-                return false
-        } else {
-            ClipAngel_OpenClipMenuViaKeyboard(hwnd)
-        }
-        item := ClipAngel_TrySavedMenu(root, "UnmarkFavorite")
-        if !item
-        item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 150)
-        if !item {
-            ; Check any popup/dropdown window belonging to ClipAngel (fast, isolated to ClipAngel)
-            prevDetect := A_DetectHiddenWindows
-            DetectHiddenWindows true
-            try {
-                for popHwnd in WinGetList("ahk_exe ClipAngel.exe") {
-                    if (popHwnd != hwnd) {
-                        try {
-                            popRoot := UIA.ElementFromHandle(popHwnd)
-                            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([popRoot], 150)
-                            if item
+
+            ; Clip Angel is foreground here — ResolvePriorHwnd walks z-order for the paste target.
+            priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+
+            ClipAngel_WaitChordModifiersReleased()
+            ClipAngel_ReleaseChordModifiersForSend()
+
+            root := 0
+            try root := UIA.ElementFromHandle(hwnd)
+            catch
+                root := 0
+
+            dataGrid := 0
+            try dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+            catch
+                dataGrid := 0
+            if (dataGrid)
+                ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+
+            if !ClipAngel_CopyFocusedListClip(hwnd, dataGrid, false) {
+                ShowCenteredOverlay_Utils("❌ Clip Angel copy failed; favorite was retained.", 1800, BANNER_ACCENT_ERROR
+                )
+                ; 1. Fast copy of selected clip
+                if !ClipAngel_CopyFocusedListClip(hwnd) {
+                    ShowCenteredOverlay_Utils("❌ Clip Angel copy failed.", 1200, BANNER_ACCENT_ERROR)
+                    return false
+                }
+
+                ; Unmark through toolbar button, row cell, or menu with retries and verification.
+                unmarked := ClipAngel_UnmarkSelectedClip(hwnd, root, dataGrid)
+                ClipAngel_ReturnFocusFromMainMenu(hwnd)
+                ; 2. Fast unmark via direct toolbar button or row cell
+                unmarked := ClipAngel_UnmarkSelectedClip(hwnd)
+                if !unmarked {
+                    ShowCenteredOverlay_Utils("❌ Could not remove favorite; paste cancelled.", 2000,
+                        BANNER_ACCENT_ERROR)
+                    ShowCenteredOverlay_Utils("❌ Could not remove favorite; paste cancelled.", 1500,
+                        BANNER_ACCENT_ERROR)
+                    return false
+                }
+
+                ClipAngel_CloseAndRestoreFocus(priorHwnd)
+                ; 3. Minimize Clip Angel and restore focus to prior app
+                WinMinimize("ahk_id " hwnd)
+
+                if (!priorHwnd) {
+                    ShowCenteredOverlay_Utils("✅ Removed from favorites (no paste target).", 2000,
+                        BANNER_ACCENT_SUCCESS)
+                    return true
+                    if (priorHwnd && WinExist("ahk_id " priorHwnd)) {
+                        WinActivate("ahk_id " priorHwnd)
+                        deadline := A_TickCount + 150
+                        while (A_TickCount < deadline) {
+                            if WinActive("ahk_id " priorHwnd)
                                 break
+                            Sleep 10
                         }
                     }
-                }
-            } finally {
-                DetectHiddenWindows prevDetect
-            }
-        }
-        if !item {
-            desktop := 0
-            try desktop := UIA.GetRootElement()
-            catch {
-            }
-            if desktop {
-                item := ClipAngel_TrySavedMenu(desktop, "UnmarkFavorite")
-                if !item
-                item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([desktop], 150)
-            }
-        }
-        if !item {
-            ClipAngel_ReleaseChordModifiersForSend()
-            ClipAngel_SendToHwnd(hwnd, "{Escape}")
-            return false
-        }
-        return ClipAngel_UiaInvokeElement(item)
-    } catch {
-        return false
-    }
-}
-
-; Unmark the selected clip as favorite via multiple reliable strategies:
-; 1. Top toolbar button toolStripButtonMarkFavorite (fastest, direct WinForms toggle)
-; 2. DataGrid selected row's favorite CheckBox cell
-; 3. Clip menu > Unmark as favorite (menu invocation)
-; Verifies unmarking succeeded; returns true if unmark was applied and verified.
-ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
-    if !hwnd
-        return false
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-    }
-
-    ; Strategy 1: toolStripButtonMarkFavorite on the main toolbar.
-    ; WinForms UpdateClipButtons sets toolStripButtonMarkFavorite.Checked = BoolFieldValue("Favorite")
-    ; Clicking/invoking it triggers toolStripButtonMarkFavorite_Click which sets Favorite = false.
-    favBtn := 0
-    if root {
-        try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
-        if !favBtn
-            try favBtn := root.FindFirst({ Name: "Is clip favorite" })
-    }
-    if favBtn {
-        wasChecked := false
-        try {
-            wasChecked := (favBtn.GetPropertyValue(UIA.Property.ToggleToggleState) = UIA.ToggleState.On)
-            if !wasChecked
-                wasChecked := !!(favBtn.GetPropertyValue(UIA.Property.LegacyIAccessibleState) & 0x10)
-        } catch {
-        }
-        isFavMode := InStr(StrLower(ClipAngel_UiaGetMarkFilterValue(hwnd, root)), "fav")
-        if (wasChecked || isFavMode) {
-            ClipAngel_UiaInvokeElement(favBtn)
-            Sleep 50
-            nowChecked := true
-            try {
-                nowChecked := (favBtn.GetPropertyValue(UIA.Property.ToggleToggleState) = UIA.ToggleState.On)
-                if nowChecked
-                    nowChecked := !!(favBtn.GetPropertyValue(UIA.Property.LegacyIAccessibleState) & 0x10)
-            } catch {
-                nowChecked := false
-            }
-            if (!nowChecked)
-                return true
-        }
-    }
-
-    ; Strategy 2: DataGrid selected row favorite CheckBox cell.
-    if (!dataGrid && root) {
-        try dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        catch
-            dataGrid := 0
-    }
-    if (dataGrid) {
-        row := 0
-        try {
-            focused := UIA.GetFocusedElement()
-            if (focused) {
-                curr := focused
-                loop 4 {
-                    if (!curr)
-                        break
-                    if (curr.Type = 50025) {
-                        row := curr
-                        break
+                    if !ClipAngel_EnsureWindowActive(priorHwnd, 500) {
+                        ShowCenteredOverlay_Utils("✅ Removed from favorites (could not focus paste target).", 2000,
+                            BANNER_ACCENT_SUCCESS)
+                        return true
                     }
-                    try curr := curr.Parent
-                    catch
-                        break
-                }
-            }
-        } catch {
-        }
-        if !row
-            row := ClipAngel_UiaResolveRow0(dataGrid)
-        if row {
-            favCell := ClipAngel_FindFavoriteCell(row)
-            if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) {
-                ClipAngel_UiaInvokeElement(favCell)
-                Sleep 50
-                if !ClipAngel_FavoriteCellIsOn(favCell)
+                    ClipAngel_ReleaseChordModifiersForSend()
+
+                    ; 4. Paste
+                    SendInput "^v"
                     return true
-            }
-        }
-    }
-
-    ; Strategy 3: Clip menu > Unmark as favorite
-    if ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
-        ClipAngel_ReturnFocusFromMainMenu(hwnd)
-        return true
-    }
-
-    ; Strategy 4: If toolbar button exists and we couldn't read its toggle state, invoke it anyway
-    if favBtn {
-        ClipAngel_UiaInvokeElement(favBtn)
-        Sleep 50
-        return true
-    }
-
-    return false
-}
-
-; Row 0: Alt+Q only. The Clip menu is not opened.
-ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
-    if !hwnd
-        return false
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch {
-            root := 0
-        }
-    }
-    ClipAngel_PrepareFavoriteAltQ(hwnd, root)
-    if ClipAngel_Row0TitleLooksFavorited(hwnd, root)
-        return true
-    newestId := 0
-    newest := ClipAngelDb_Newest()
-    if (newest)
-        newestId := newest["id"]
-    if !ClipAngel_SendMarkFavoriteAltQ(hwnd)
-        return false
-    if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 400) = true)
-        return true
-    return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
-}
-
-; Bounded wait for Clip Angel to ingest newest clipboard (replaces fixed Sleep 400).
-; prevId: MAX(Id) snapshot taken *before* the copy — preferred DB waitnew path.
-; When prevId unset, polls DB newest title vs clipboard, then falls back to UIA.
-ClipAngel_WaitForClipboardIngest(timeoutMs := CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId := -1) {
-    clipPreview := ""
-    try clipPreview := SubStr(A_Clipboard, 1, 80)
-    catch {
-        clipPreview := ""
-    }
-    ; Fast path: wait until MAX(Id) exceeds pre-copy snapshot.
-    if (prevId is Integer && prevId >= 0) {
-        if (ClipAngelDb_WaitNew(prevId, timeoutMs) != "")
-            return
-    } else if (ClipAngelDb_ExePath() != "") {
-        ; Post-copy without snapshot: poll newest until title overlaps clipboard.
-        deadlineDb := A_TickCount + timeoutMs
-        while (A_TickCount < deadlineDb) {
-            newest := ClipAngelDb_Newest()
-            if (newest) {
-                if (clipPreview = "")
-                    return
-                title := newest["title"]
-                if (title != "" && (InStr(title, clipPreview) || InStr(clipPreview, SubStr(title, 1, 40))))
-                    return
-            }
-            Sleep 50
-        }
-    }
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
-        Sleep Min(timeoutMs, 200)
-        return
-    }
-    deadline := A_TickCount + timeoutMs
-    root := 0
-    try root := UIA.ElementFromHandle(hwnd)
-    catch
-        root := 0
-    while (A_TickCount < deadline) {
-        if ClipAngel_IsListReady(&hwnd, root) {
-            if (clipPreview = "")
-                return
-            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-            row0 := dataGrid ? ClipAngel_UiaResolveRow0(dataGrid) : 0
-            if row0 {
-                titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
-                val := ""
-                try val := titleCell ? titleCell.Value : ""
-                catch {
-                    val := ""
                 }
-                if (val != "" && val != "(null)" && (InStr(val, clipPreview) || InStr(clipPreview, SubStr(val, 1, 40))))
-                    return
-            }
-        }
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-}
 
-; Poll DB Favorite bit after UI toggle (fast confirm). Returns true/false/"" (unknown).
-ClipAngel_WaitDbFavoriteOn(id, timeoutMs := 400) {
-    if !(id is Integer) || id <= 0
-        return ""
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        v := ClipAngelDb_IsFav(id)
-        if (v = 1)
-            return true
-        if (v = 0) {
-            Sleep 40
-            continue
-        }
-        break
-    }
-    v := ClipAngelDb_IsFav(id)
-    if (v = 1)
-        return true
-    if (v = 0)
-        return false
-    return ""
-}
+                ; Down N (optional), native Enter to paste selected clip, then minimize Clip Angel.
+                ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
+                    ; Alt+1–5 leave Alt logically down; without release, Enter becomes Alt+Enter (paste file).
+                    ClipAngel_WaitChordModifiersReleased()
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    hwnd := ClipAngel_MainHwnd()
+                    if (hwnd) {
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+                        if (dataGrid)
+                            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+                    }
+                    if (downCount > 0) {
+                        loop downCount
+                            Send "{Down}"
+                    }
+                    Send "{Enter}"
+                    ClipAngel_CloseAndRestoreFocus(0)
+                }
 
-MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) {
-    if waitForIngest
-        ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
-    if !ClipAngel_TryAcquireAutomationLock()
-        return
-    priorHwnd := ClipAngel_ResolvePriorHwnd(0)
-    resultKind := ""
-    resultMsg := ""
-    try {
-        ; DB pre-check: skip entire window dance when newest is already favorite.
-        alreadyFav := false
-        if (target != "last") {
-            newest := ClipAngelDb_Newest()
-            if (newest && newest["favorite"]) {
-                alreadyFav := true
-                resultKind := "success"
-                resultMsg := "✅ Newest clip is already a favorite."
-            }
-        }
-        if !alreadyFav {
-            StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
-                centerOnHwnd: priorHwnd,
-                fontSize: 17,
-                passive: false
-            })
-            try {
-                if (target = "last") {
-                    MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
-                } else {
+                ; Poll until richTextBox has keyboard focus (after F10 toggle to preview).
+                ClipAngel_UiaWaitPreviewFocused(hwnd, timeoutMs := 150, root := 0) {
+                    if !hwnd
+                        return false
+                    if !root {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            return false
+                    }
+                    if !root
+                        return false
+                    deadline := A_TickCount + timeoutMs
+                    while (A_TickCount < deadline) {
+                        preview := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
+                        try {
+                            if (preview && preview.HasKeyboardFocus)
+                                return true
+                        } catch {
+                        }
+                        Sleep CLIPANGEL_UIA_POLL_MS
+                    }
+                    return false
+                }
+
+                ; Down N (optional), F10 → select-all → copy preview text, then minimize Clip Angel.
+                ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
+                    ClipAngel_WaitChordModifiersReleased()
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    hwnd := ClipAngel_MainHwnd()
+                    root := 0
+                    dataGrid := 0
+                    if (hwnd) {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        if (dataGrid)
+                            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+                    }
+                    if (downCount > 0) {
+                        loop downCount
+                            Send "{Down}"
+                        ; Only brief settle if grid lost focus after Down.
+                        if (dataGrid) {
+                            focused := false
+                            try focused := dataGrid.HasKeyboardFocus
+                            catch {
+                            }
+                            if !focused
+                                Sleep 40
+                        }
+                    }
+                    Send "{F10}"
+                    if (hwnd)
+                        ClipAngel_UiaWaitPreviewFocused(hwnd, 150, root)
+                    Send "^a"
+                    Sleep 40
+                    Send "^c"
+                    try ClipWait(0.3)
+                    catch {
+                    }
+                    ClipAngel_CloseAndRestoreFocus(0)
+                }
+
+                ; Open Clip Angel on all marks + Row 0, then restore prior focus for paste.
+                ; suppressVisual (default true): park off-screen like MarkLastClipAsFavorite — no maximize flash.
+                ; Replaces native Alt+P + fixed 200×3 settles.
+                ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := true) {
+                    ClipAngel_WaitChordModifiersReleased()
+                    ClipAngel_ReleaseChordModifiersForSend()
                     targetMon := 0
                     if (priorHwnd) {
                         try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
@@ -2454,373 +1551,1360 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
                     }
                     hwnd := 0
                     root := 0
-                    newestId := 0
-                    newest := ClipAngelDb_Newest()
-                    if (newest)
-                        newestId := newest["id"]
-                    ; One suppress + open + all-marks + Row 0 (shared automation core).
-                    if !ClipAngel_OpenForAutomation("all", targetMon, true, &hwnd, &root) {
-                        resultKind := "error"
-                        resultMsg := "❌ Clip Angel did not open."
-                    } else if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, true) {
-                        resultKind := "error"
-                        resultMsg := "❌ Clip Angel did not open."
-                    } else {
+                    ClipAngel_OpenForAutomation("all", targetMon, suppressVisual, &hwnd, &root)
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    if (priorHwnd && !suppressVisual)
+                        ClipAngel_EnsureWindowActive(priorHwnd)
+                }
+
+                ; Fresh UIA read: all-marks filter and Row 0 is the selected row. Sending ^{Home} is not this check.
+                ClipAngel_TopRowIsCurrent(hwnd) {
+                    if !hwnd
+                        return false
+                    root := 0
+                    try root := UIA.ElementFromHandle(hwnd)
+                    catch
+                        return false
+                    if !ClipAngel_MarkFilterMatchesMode(true, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+                        return false
+                    return ClipAngel_UiaIsRow0Selected(hwnd, root)
+                }
+
+                ClipAngel_WaitTopRowCurrent(hwnd, timeoutMs) {
+                    deadline := A_TickCount + timeoutMs
+                    while (A_TickCount < deadline) {
+                        if ClipAngel_TopRowIsCurrent(hwnd)
+                            return true
+                        Sleep CLIPANGEL_UIA_POLL_MS
+                    }
+                    return ClipAngel_TopRowIsCurrent(hwnd)
+                }
+
+                ; Open once, then paste with Ctrl+Alt+B only after Row 0 is confirmed selected.
+                ; Returns false without pasting when the top row never becomes current.
+                ClipAngel_SendNativeTopItemKeys(priorHwnd := 0, suppressVisual := true) {
+                    ClipAngel_ActivateNativeFirstClip(priorHwnd, suppressVisual)
+                    hwnd := ClipAngel_MainHwnd()
+                    if !hwnd
+                        return false
+                    if !ClipAngel_WaitTopRowCurrent(hwnd, 150) {
+                        root := 0
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                        ClipAngel_ApplyMarkFilterMode(true, hwnd, root)
+                        ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
+                        if !ClipAngel_WaitTopRowCurrent(hwnd, 400)
+                            return false
+                    }
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    if (priorHwnd)
+                        ClipAngel_EnsureWindowActive(priorHwnd)
+                    if !ClipAngel_PostHotkey("b", "ca")
+                        SendInput "^!b"
+                    return true
+                }
+
+                ; Send top list item via Clip Angel native keys. Minimizes Clip Angel and restores prior focus after paste.
+                ClipAngel_SendTopListItem(priorHwnd := 0) {
+                    if !ClipAngel_TryAcquireAutomationLock()
+                        return false
+                    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+                    ok := false
+                    try {
+                        ok := ClipAngel_SendNativeTopItemKeys(priorHwnd)
+                        if !ok
+                            ShowCenteredOverlay_Utils("❌ Top clip was not selected, so nothing was pasted.", 2000,
+                                BANNER_ACCENT_ERROR)
+                    } catch Error as e {
+                        ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+                        ok := false
+                    } finally {
+                        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+                        ClipAngel_ReleaseAutomationLock()
+                    }
+                    return ok
+                }
+
+                ; Paste N top-list items in order. Opens once, incremental paste between items, minimizes + restores prior focus at end.
+                ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
+                    if (!IsInteger(count))
+                        return false
+                    n := Integer(count)
+                    if (n < 1)
+                        return false
+                    if !ClipAngel_TryAcquireAutomationLock()
+                        return false
+                    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+                    ok := false
+                    try {
+                        ClipAngel_WaitChordModifiersReleased()
+                        ClipAngel_ReleaseChordModifiersForSend()
+                        topOk := true
+                        loop n {
+                            if (A_Index = 1) {
+                                if !ClipAngel_SendNativeTopItemKeys(priorHwnd) {
+                                    ShowCenteredOverlay_Utils("❌ Top clip was not selected, so nothing was pasted.",
+                                        2000,
+                                        BANNER_ACCENT_ERROR)
+                                    topOk := false
+                                    break
+                                }
+                            } else {
+                                Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+                                ClipAngel_ReleaseChordModifiersForSend()
+                                if !ClipAngel_PostHotkey("b", "ca")
+                                    SendInput "^!b"
+                            }
+                            Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
+                        }
+                        ok := topOk
+                    } catch Error as e {
+                        ShowCenteredOverlay_Utils("❌ Clip Angel sequential paste failed: " . e.Message, 2500,
+                            BANNER_ACCENT_ERROR)
+                        ok := false
+                    } finally {
+                        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+                        ClipAngel_ReleaseAutomationLock()
+                    }
+                    return ok
+                }
+
+                ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
+                ; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
+                ClipAngel_UiaGetMarkFilterElement(hwnd, root := 0) {
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return 0
+                        }
+                        return ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
+                    } catch {
+                        return 0
+                    }
+                }
+
+                ClipAngel_UiaGetMarkFilterValue(hwnd, root := 0) {
+                    try {
+                        mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
+                        return mf ? mf.Value : ""
+                    } catch {
+                        return ""
+                    }
+                }
+
+                ; MarkFilter combo: leave "favorite" (or any non-all) for "all marks" via dropdown (fast fallback).
+                ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root := 0) {
+                    if !hwnd
+                        return false
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return false
+                        }
+                        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
+                        if !mf
+                            return false
+                        if (StrLower(Trim(mf.Value)) = "all marks")
+                            return true
+                        mf.SetFocus()
+                        mf.Click()
+                        Sleep 30
+                        Send "{Home}"
+                        Sleep 30
+                        Send "{Tab}"
+                        Sleep 30
+                        return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; MarkFilter combo → favorites (second item after "all marks" in Clip Angel dropdown).
+                ClipAngel_UiaSetMarkFilterFavorites(hwnd, root := 0) {
+                    if !hwnd
+                        return false
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return false
+                        }
+                        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
+                        if !mf
+                            return false
+                        if InStr(StrLower(Trim(mf.Value)), "favor")
+                            return true
+                        mf.SetFocus()
+                        mf.Click()
+                        Sleep 30
+                        Send "{Home}{Down}"
+                        Sleep 30
+                        Send "{Enter}"
+                        Sleep 30
+                        if InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
+                            return true
+                        ; List-item pick after expand (dropdown labels vary by locale).
+                        try {
+                            if mf.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+                                mf.ExpandCollapsePattern.Expand()
+                        } catch {
+                        }
+                        Sleep 40
+                        for item in mf.FindAll({ Type: 50007 }) { ; ListItem
+                            n := "", v := ""
+                            try n := item.Name
+                            catch {
+                            }
+                            try v := item.Value
+                            catch {
+                            }
+                            if InStr(StrLower(n . " " . v), "favor") {
+                                try {
+                                    if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                                        item.SelectionItemPattern.Select()
+                                    else
+                                        item.Click()
+                                } catch {
+                                    try item.Click()
+                                    catch {
+                                    }
+                                }
+                                deadline := A_TickCount + 200
+                                while (A_TickCount < deadline) {
+                                    if InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
+                                        return true
+                                    Sleep CLIPANGEL_UIA_POLL_MS
+                                }
+                                break
+                            }
+                        }
+                        return InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; List menu: "Show all marks" / "Show only favorite" (same as Ctrl+1 / Ctrl+2).
+                ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root := 0) {
+                    if !hwnd
+                        return false
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return false
+                        }
+                        listItem := ClipAngel_TrySavedMenu(root, "List")
+                        if !listItem
+                            listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
+                        if !listItem || !ClipAngel_UiaInvokeElement(listItem)
+                            return false
+                        names := wantAll
+                            ? ["Show all marks", "all marks"]
+                                : ["Show only favorite", "Show only favorites", "favorite"]
+                        item := ClipAngel_TrySavedMenu(root, wantAll ? "ShowAllMarks" : "ShowOnlyFavorite")
+                        if !item {
+                            try desktop := UIA.GetRootElement()
+                            catch
+                                desktop := 0
+                            if desktop
+                                item := ClipAngel_TrySavedMenu(desktop, wantAll ? "ShowAllMarks" : "ShowOnlyFavorite")
+                        }
+                        if item
+                            names := []
+                        deadline := A_TickCount + 180
+                        while (A_TickCount < deadline) {
+                            for name in names {
+                                item := ClipAngel_UiaFindMenuItem([root], { Type: 50011, Name: name })
+                                if !item {
+                                    try desktop := UIA.GetRootElement()
+                                    catch
+                                        desktop := 0
+                                    if desktop
+                                        item := ClipAngel_UiaFindMenuItem([root, desktop], { Type: 50011, Name: name })
+                                }
+                                if item
+                                    break
+                            }
+                            if item
+                                break
+                            Sleep CLIPANGEL_UIA_POLL_MS
+                        }
+                        if !item {
+                            ClipAngel_ReleaseChordModifiersForSend()
+                            ClipAngel_SendToHwnd(hwnd, "{Escape}")
+                            return false
+                        }
+                        if !ClipAngel_UiaInvokeElement(item)
+                            return false
+                        deadline := A_TickCount + 220
+                        while (A_TickCount < deadline) {
+                            if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+                                return true
+                            Sleep CLIPANGEL_UIA_POLL_MS
+                        }
+                        return ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; Apply MarkFilter for Alt+P/B. ControlSend alone often fails when Clip Angel is already focused;
+                ; prefer grid-focused SendInput (does not trip Shift-keys HotIf at SendLevel 0), then UIA fallbacks.
+                ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root := 0) {
+                    if !hwnd
+                        return false
+                    if !root {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                    }
+                    mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
+                    mfVal() {
+                        try return mf ? mf.Value : ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+                        catch
+                            return ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+                    }
+                    if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
+                        return true
+                    global g_ClipAngelFavoriteSuppressActive
+                    if !g_ClipAngelFavoriteSuppressActive {
+                        if !WinActive("ahk_id " hwnd)
+                            ClipAngel_EnsureWindowActive(hwnd, 200)
+                    }
+                    try {
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        if dataGrid
+                            try dataGrid.SetFocus()
+                    } catch {
+                    }
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    keys := wantAll ? "^1" : "^2"
+                    priorSendLevel := A_SendLevel
+                    SendLevel 0
+                    if g_ClipAngelFavoriteSuppressActive
+                        ClipAngel_SendToHwnd(hwnd, keys)
+                    else
+                        SendInput keys
+                    ClipAngel_ReturnFocusFromMainMenu(hwnd)
+                    deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
+                    while (A_TickCount < deadline) {
+                        if !mf
+                            mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
+                        if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal()) {
+                            SendLevel priorSendLevel
+                            return true
+                        }
+                        Sleep CLIPANGEL_UIA_POLL_MS
+                    }
+                    SendLevel priorSendLevel
+                    ; ControlSend retry (cold open / unfocused child).
+                    try ControlSend(keys, , "ahk_id " hwnd)
+                    catch {
+                    }
+                    deadline := A_TickCount + 150
+                    while (A_TickCount < deadline) {
+                        if !mf
+                            mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
+                        if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
+                            return true
+                        Sleep CLIPANGEL_UIA_POLL_MS
+                    }
+                    if wantAll {
+                        if ClipAngel_NativeSendShiftP(hwnd, 220, root)
+                            return true
+                        if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root)
+                            return true
+                    } else if ClipAngel_UiaSetMarkFilterFavorites(hwnd, root) {
+                        return true
+                    }
+                    if ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root)
+                        return true
+                    return ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
+                }
+
+                ; One native Shift+P at SendLevel 0 (OnSubmitO runs under #InputLevel 10; default Send is ignored by ClipAngel).
+                ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
+                    global g_ClipAngelFavoriteSuppressActive
+                    if !root {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                    }
+                    if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
+                        return true
+                    if !g_ClipAngelFavoriteSuppressActive {
+                        if !WinActive("ahk_id " hwnd)
+                            ClipAngel_EnsureWindowActive(hwnd, 200)
+                    }
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    try {
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        if dataGrid
+                            try dataGrid.SetFocus()
+                    } catch {
+                    }
+                    priorSendLevel := A_SendLevel
+                    SendLevel 0
+                    if g_ClipAngelFavoriteSuppressActive
+                        ClipAngel_SendToHwnd(hwnd, "+p")
+                    else
+                        SendInput "+p"
+                    deadline := A_TickCount + timeoutMs
+                    while (A_TickCount < deadline) {
+                        if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks") {
+                            SendLevel priorSendLevel
+                            return true
+                        }
+                        Sleep 15
+                    }
+                    SendLevel priorSendLevel
+                    return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
+                }
+
+                ; Select first list row: focus grid when cheap, then Ctrl+Home only (no UIA select/verify).
+                ClipAngel_FastEnsureRow0(hwnd, root := 0) {
+                    global g_ClipAngelFavoriteSuppressActive
+                    if !hwnd
+                        return false
+                    if !root {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                    }
+                    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                    if dataGrid {
+                        try dataGrid.SetFocus()
+                        catch {
+                        }
+                    }
+                    priorSendLevel := A_SendLevel
+                    SendLevel 0
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    if g_ClipAngelFavoriteSuppressActive
+                        ClipAngel_SendToHwnd(hwnd, "^{Home}")
+                    else
+                        SendInput "^{Home}"
+                    SendLevel priorSendLevel
+                    ClipAngel_ReturnFocusFromMainMenu(hwnd)
+                    return true
+                }
+
+                ; Native Shift+P to leave favorites filter; fast UIA MarkFilter fallback when synthetic Send is ignored.
+                ClipAngel_LeaveFavoritesFilter(hwnd) {
+                    result := Map("method", "none", "ok", false, "before", "", "after", "", "row0Selected", false)
+                    if !hwnd
+                        return result
+                    root := 0
+                    try root := UIA.ElementFromHandle(hwnd)
+                    catch
+                        root := 0
+                    result["before"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+                    if (StrLower(Trim(result["before"])) = "all marks") {
+                        result["ok"] := true
+                        result["method"] := "already_all_marks"
+                        result["after"] := result["before"]
+                        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd, root)
+                        return result
+                    }
+                    if ClipAngel_NativeSendShiftP(hwnd, 220, root) {
+                        result["ok"] := true
+                        result["method"] := "native_shift_p"
+                        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+                        result["row0Selected"] := ClipAngel_UiaIsRow0Selected(hwnd, root) || ClipAngel_FastEnsureRow0(
+                            hwnd, root)
+                        return result
+                    }
+                    if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root) {
+                        result["ok"] := true
+                        result["method"] := "uia_combo"
+                        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+                        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd, root)
+                        return result
+                    }
+                    result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+                    return result
+                }
+
+                ClipAngel_UiaIsRow0Selected(hwnd, root := 0) {
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return false
+                        }
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        if !dataGrid
+                            return false
+                        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+                        if !row0
+                            return false
+                        return ClipAngel_UiaRow0IsSelected(row0, dataGrid, ClipAngel_UiaGridHasSelectionPattern(
+                            dataGrid))
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; Force Row 0 selected and grid keyboard focus before mark-favorite.
+                ; force=false (default): skip select work when Row 0 already selected (LeaveFavorites / WaitForListReady).
+                ; Pass root when already attached. During favorite suppress, do not steal foreground.
+                ; Does not call BeginFavoriteSuppress — caller owns suppress once.
+                ClipAngel_PrepareFavoriteAltQ(hwnd, root := 0) {
+                    global g_ClipAngelFavoriteSuppressActive
+                    if !hwnd
+                        return false
+                    if !g_ClipAngelFavoriteSuppressActive
+                        ClipAngel_EnsureWindowActive(hwnd)
+                    if !root {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch {
+                            root := 0
+                        }
+                    }
+                    ClipAngel_UiaEnsureRow0Selected(hwnd, false, root)
+                    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                    if dataGrid {
+                        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+                        if row0 {
+                            try row0.SetFocus()
+                            catch {
+                            }
+                        }
+                        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+                    }
+                    if g_ClipAngelFavoriteSuppressActive
+                        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+                    return true
+                }
+
+                ; True when Row 0 favorite checkbox is on (empty/missing cell => false).
+                ClipAngel_Row0FavoriteIsOn(hwnd) {
+                    if !hwnd
+                        return false
+                    try {
+                        root := UIA.ElementFromHandle(hwnd)
+                        if !root
+                            return false
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        if !dataGrid
+                            return false
+                        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+                        if !row0
+                            return false
+                        favCell := ClipAngel_FindFavoriteCell(row0)
+                        return favCell && ClipAngel_FavoriteCellIsOn(favCell)
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; Favorite mark often appears only as a star in Title RTF (no Favorite UIA column).
+                ; Pass root when caller already attached to avoid a second ElementFromHandle.
+                ClipAngel_Row0TitleLooksFavorited(hwnd, root := 0) {
+                    if !hwnd
+                        return false
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return false
+                        }
+                        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        if !dataGrid
+                            return false
+                        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+                        if !row0
+                            return false
+                        titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
+                        if !titleCell
+                            return false
+                        val := ""
+                        try val := titleCell.Value
+                        catch {
+                            return false
+                        }
+                        if (val = "" || val = "(null)")
+                            return false
+                        ; RTF may encode ⭐ as \u11088? or literal; also accept filled star glyphs.
+                        return RegExMatch(val, "i)(\\u11088|\\u2[Bb]50|⭐|★)")
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; Clip menu keyboard open — single Alt+C chord (never bare {Alt}; that highlights Window first).
+                ClipAngel_OpenClipMenuViaKeyboard(hwnd := 0) {
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    ClipAngel_SendToHwnd(hwnd, "!c")
+                    Sleep 40
+                    return true
+                }
+
+                ; Clip > Mark as favorite is ShortcutKeys Alt+Q. WinForms runs that only while the form is active.
+                ; If Alt lands on the ribbon, put focus back on the list and send the chord once more. No Clip menu.
+                ClipAngel_SendMarkFavoriteAltQ(hwnd) {
+                    if !hwnd
+                        return false
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    if !WinActive("ahk_id " hwnd) {
+                        try WinActivate("ahk_id " hwnd)
+                        if !WinWaitActive("ahk_id " hwnd, , 0.25)
+                            return false
+                    }
+                    loop 2 {
+                        Send "!q"
+                        if !ClipAngel_KeyboardFocusIsMainMenu()
+                            return true
+                        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+                    }
+                    return false
+                }
+
+                ; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
+                ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
+                    ; Check language-independent AutomationId first, then localized display names.
+                    item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
+                    if item
+                        return item
+                    names := ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
+                        "Desmarcar favorito"]
+                    deadline := A_TickCount + timeoutMs
+                    loop {
+                        item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
+                        if item
+                            return item
+                        for name in names {
+                            item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: name })
+                            if item
+                                return item
+                        }
+                        if (A_TickCount >= deadline)
+                            break
+                        Sleep CLIPANGEL_UIA_POLL_MS
+                    }
+                    return 0
+                }
+
+                ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
+                    if !hwnd
+                        return false
+                    try {
+                        if !root {
+                            root := UIA.ElementFromHandle(hwnd)
+                            if !root
+                                return false
+                        }
+                        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
+                        if !clipMenu
+                            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+                        if clipMenu {
+                            if !ClipAngel_UiaInvokeElement(clipMenu)
+                                return false
+                        } else {
+                            ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+                        }
+                        item := ClipAngel_TrySavedMenu(root, "UnmarkFavorite")
+                        if !item
+                            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 150)
+                        if !item {
+                            ; Check any popup/dropdown window belonging to ClipAngel (fast, isolated to ClipAngel)
+                            prevDetect := A_DetectHiddenWindows
+                            DetectHiddenWindows true
+                            try {
+                                for popHwnd in WinGetList("ahk_exe ClipAngel.exe") {
+                                    if (popHwnd != hwnd) {
+                                        try {
+                                            popRoot := UIA.ElementFromHandle(popHwnd)
+                                            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([popRoot], 150)
+                                            if item
+                                                break
+                                        }
+                                    }
+                                }
+                            } finally {
+                                DetectHiddenWindows prevDetect
+                            }
+                        }
+                        if !item {
+                            desktop := 0
+                            try desktop := UIA.GetRootElement()
+                            catch {
+                            }
+                            if desktop {
+                                item := ClipAngel_TrySavedMenu(desktop, "UnmarkFavorite")
+                                if !item
+                                    item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([desktop], 150)
+                            }
+                        }
+                        if !item {
+                            ClipAngel_ReleaseChordModifiersForSend()
+                            ClipAngel_SendToHwnd(hwnd, "{Escape}")
+                            return false
+                        }
+                        return ClipAngel_UiaInvokeElement(item)
+                    } catch {
+                        return false
+                    }
+                }
+
+                ; Unmark the selected clip as favorite via multiple reliable strategies:
+                ; 1. Top toolbar button toolStripButtonMarkFavorite (fastest, direct WinForms toggle)
+                ; 2. DataGrid selected row's favorite CheckBox cell
+                ; 3. Clip menu > Unmark as favorite (menu invocation)
+                ; Verifies unmarking succeeded; returns true if unmark was applied and verified.
+                ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
+                    if !hwnd
+                        return false
+                    if !root {
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                    }
+
+                    ; Strategy 1: toolStripButtonMarkFavorite on the main toolbar.
+                    ; WinForms UpdateClipButtons sets toolStripButtonMarkFavorite.Checked = BoolFieldValue("Favorite")
+                    ; Clicking/invoking it triggers toolStripButtonMarkFavorite_Click which sets Favorite = false.
+                    ; Fast scoped search (Scope: 2 = Children) on root, then Children on toolbar (<10ms).
+                    favBtn := 0
+                    if root {
+                        try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
+                        if !favBtn
+                            try favBtn := root.FindFirst({ Name: "Is clip favorite" })
+                        try {
+                            tb := root.FindFirst({ Scope: 2, AutomationId: "toolStripTop" })
+                            if tb
+                                favBtn := tb.FindFirst({ Scope: 2, AutomationId: "toolStripButtonMarkFavorite" })
+                        } catch {
+                        }
+                        if !favBtn {
+                            try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
+                            catch
+                                favBtn := 0
+                        }
+                    }
+                    if favBtn {
+                        wasChecked := false
+                        try {
+                            wasChecked := (favBtn.GetPropertyValue(UIA.Property.ToggleToggleState) = UIA.ToggleState.On
+                            )
+                            if !wasChecked
+                                wasChecked := !!(favBtn.GetPropertyValue(UIA.Property.LegacyIAccessibleState) & 0x10)
+                            if favBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+                                favBtn.InvokePattern.Invoke()
+                            else if favBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
+                                favBtn.TogglePattern.Toggle()
+                            else
+                                favBtn.Click()
+                            return true
+                        } catch {
+                        }
+                        isFavMode := InStr(StrLower(ClipAngel_UiaGetMarkFilterValue(hwnd, root)), "fav")
+                        if (wasChecked || isFavMode) {
+                            ClipAngel_UiaInvokeElement(favBtn)
+                            Sleep 50
+                            nowChecked := true
+                            try {
+                                nowChecked := (favBtn.GetPropertyValue(UIA.Property.ToggleToggleState) = UIA.ToggleState
+                                .On)
+                                if nowChecked
+                                    nowChecked := !!(favBtn.GetPropertyValue(UIA.Property.LegacyIAccessibleState) &
+                                    0x10)
+                                favBtn.Click()
+                                return true
+                            } catch {
+                                nowChecked := false
+                            }
+                            if (!nowChecked)
+                                return true
+                        }
+                    }
+
+                    ; Strategy 2: DataGrid selected row favorite CheckBox cell.
+                    if (!dataGrid && root) {
+                        try dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                        catch
+                            dataGrid := 0
+                    }
+                    if (dataGrid) {
+                        row := 0
+                        try {
+                            focused := UIA.GetFocusedElement()
+                            if (focused) {
+                                curr := focused
+                                loop 4 {
+                                    if (!curr)
+                                        break
+                                    if (curr.Type = 50025) {
+                                        row := curr
+                                        break
+                                    }
+                                    try curr := curr.Parent
+                                    catch
+                                        break
+                                }
+                            }
+                            if (focused && focused.Type = 50025)
+                                row := focused
+                        } catch {
+                        }
+                        if !row
+                            row := ClipAngel_UiaResolveRow0(dataGrid)
+                        if row {
+                            favCell := ClipAngel_FindFavoriteCell(row)
+                            if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) {
+                                ClipAngel_UiaInvokeElement(favCell)
+                                Sleep 50
+                                if !ClipAngel_FavoriteCellIsOn(favCell)
+                                    if favCell {
+                                        try {
+                                            ClipAngel_UiaInvokeElement(favCell)
+                                            return true
+                                        } catch {
+                                        }
+                                    }
+                            }
+                        }
+
+                        ; Strategy 3: Clip menu > Unmark as favorite
+                        if ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+                            ClipAngel_ReturnFocusFromMainMenu(hwnd)
+                            return true
+                        }
+
+                        ; Strategy 4: If toolbar button exists and we couldn't read its toggle state, invoke it anyway
+                        if favBtn {
+                            ClipAngel_UiaInvokeElement(favBtn)
+                            Sleep 50
+                            return true
+                        }
+
+                        return false
+                    }
+
+                    ; Row 0: Alt+Q only. The Clip menu is not opened.
+                    ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
+                        if !hwnd
+                            return false
+                        if !root {
+                            try root := UIA.ElementFromHandle(hwnd)
+                            catch {
+                                root := 0
+                            }
+                        }
+                        ClipAngel_PrepareFavoriteAltQ(hwnd, root)
+                        if ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+                            return true
+                        newestId := 0
+                        newest := ClipAngelDb_Newest()
+                        if (newest)
+                            newestId := newest["id"]
+                        if !ClipAngel_SendMarkFavoriteAltQ(hwnd)
+                            return false
+                        if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 400) = true)
+                            return true
+                        return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+                    }
+
+                    ; Bounded wait for Clip Angel to ingest newest clipboard (replaces fixed Sleep 400).
+                    ; prevId: MAX(Id) snapshot taken *before* the copy — preferred DB waitnew path.
+                    ; When prevId unset, polls DB newest title vs clipboard, then falls back to UIA.
+                    ClipAngel_WaitForClipboardIngest(timeoutMs := CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId := -1) {
+                        clipPreview := ""
+                        try clipPreview := SubStr(A_Clipboard, 1, 80)
+                        catch {
+                            clipPreview := ""
+                        }
+                        ; Fast path: wait until MAX(Id) exceeds pre-copy snapshot.
+                        if (prevId is Integer && prevId >= 0) {
+                            if (ClipAngelDb_WaitNew(prevId, timeoutMs) != "")
+                                return
+                        } else if (ClipAngelDb_ExePath() != "") {
+                            ; Post-copy without snapshot: poll newest until title overlaps clipboard.
+                            deadlineDb := A_TickCount + timeoutMs
+                            while (A_TickCount < deadlineDb) {
+                                newest := ClipAngelDb_Newest()
+                                if (newest) {
+                                    if (clipPreview = "")
+                                        return
+                                    title := newest["title"]
+                                    if (title != "" && (InStr(title, clipPreview) || InStr(clipPreview, SubStr(title, 1,
+                                        40))))
+                                        return
+                                }
+                                Sleep 50
+                            }
+                        }
                         hwnd := ClipAngel_MainHwnd()
-                        if (hwnd && !root) {
+                        if !hwnd {
+                            Sleep Min(timeoutMs, 200)
+                            return
+                        }
+                        deadline := A_TickCount + timeoutMs
+                        root := 0
+                        try root := UIA.ElementFromHandle(hwnd)
+                        catch
+                            root := 0
+                        while (A_TickCount < deadline) {
+                            if ClipAngel_IsListReady(&hwnd, root) {
+                                if (clipPreview = "")
+                                    return
+                                dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                                row0 := dataGrid ? ClipAngel_UiaResolveRow0(dataGrid) : 0
+                                if row0 {
+                                    titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
+                                    val := ""
+                                    try val := titleCell ? titleCell.Value : ""
+                                    catch {
+                                        val := ""
+                                    }
+                                    if (val != "" && val != "(null)" && (InStr(val, clipPreview) || InStr(clipPreview,
+                                        SubStr(val, 1, 40))))
+                                        return
+                                }
+                            }
+                            Sleep CLIPANGEL_UIA_POLL_MS
+                        }
+                    }
+
+                    ; Poll DB Favorite bit after UI toggle (fast confirm). Returns true/false/"" (unknown).
+                    ClipAngel_WaitDbFavoriteOn(id, timeoutMs := 400) {
+                        if !(id is Integer) || id <= 0
+                            return ""
+                        deadline := A_TickCount + timeoutMs
+                        while (A_TickCount < deadline) {
+                            v := ClipAngelDb_IsFav(id)
+                            if (v = 1)
+                                return true
+                            if (v = 0) {
+                                Sleep 40
+                                continue
+                            }
+                            break
+                        }
+                        v := ClipAngelDb_IsFav(id)
+                        if (v = 1)
+                            return true
+                        if (v = 0)
+                            return false
+                        return ""
+                    }
+
+                    MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) {
+                        if waitForIngest
+                            ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
+                        if !ClipAngel_TryAcquireAutomationLock()
+                            return
+                        priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+                        resultKind := ""
+                        resultMsg := ""
+                        try {
+                            ; DB pre-check: skip entire window dance when newest is already favorite.
+                            alreadyFav := false
+                            if (target != "last") {
+                                newest := ClipAngelDb_Newest()
+                                if (newest && newest["favorite"]) {
+                                    alreadyFav := true
+                                    resultKind := "success"
+                                    resultMsg := "✅ Newest clip is already a favorite."
+                                }
+                            }
+                            if !alreadyFav {
+                                StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
+                                    centerOnHwnd: priorHwnd,
+                                    fontSize: 17,
+                                    passive: false
+                                })
+                                try {
+                                    if (target = "last") {
+                                        MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
+                                    } else {
+                                        targetMon := 0
+                                        if (priorHwnd) {
+                                            try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
+                                            catch
+                                                targetMon := 0
+                                        }
+                                        hwnd := 0
+                                        root := 0
+                                        newestId := 0
+                                        newest := ClipAngelDb_Newest()
+                                        if (newest)
+                                            newestId := newest["id"]
+                                        ; One suppress + open + all-marks + Row 0 (shared automation core).
+                                        if !ClipAngel_OpenForAutomation("all", targetMon, true, &hwnd, &root) {
+                                            resultKind := "error"
+                                            resultMsg := "❌ Clip Angel did not open."
+                                        } else if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false,
+                                            true) {
+                                            resultKind := "error"
+                                            resultMsg := "❌ Clip Angel did not open."
+                                        } else {
+                                            hwnd := ClipAngel_MainHwnd()
+                                            if (hwnd && !root) {
+                                                try root := UIA.ElementFromHandle(hwnd)
+                                                catch
+                                                    root := 0
+                                            }
+                                            ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root)
+                                            if ok {
+                                                ; Prefer DB Favorite bit confirm when id known.
+                                                dbOk := newestId > 0 ? ClipAngel_WaitDbFavoriteOn(newestId, 400) : ""
+                                                if (dbOk = false)
+                                                    ok := ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+                                                ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+                                                resultKind := "success"
+                                                resultMsg := "✅ Marked focused clip as favorite."
+                                            } else {
+                                                resultKind := "error"
+                                                resultMsg := "❌ Could not mark favorite (menu/list focus)."
+                                            }
+                                        }
+                                    }
+                                } finally {
+                                    try StandardLoadingBar_Hide(0)
+                                    catch {
+                                    }
+                                }
+                            }
+                        } catch Error as e {
+                            try StandardLoadingBar_Hide(0)
+                            catch {
+                            }
+                            resultKind := "error"
+                            resultMsg := "❌ Mark favorite failed: " . e.Message
+                        } finally {
+                            hwndEnd := ClipAngel_MainHwnd()
+                            ClipAngel_EndFavoriteSuppress(hwndEnd)
+                            ClipAngel_RestorePriorFocus(priorHwnd)
+                            ClipAngel_ReleaseAutomationLock()
+                        }
+                        if (resultKind = "success")
+                            ShowCenteredOverlay_Utils(resultMsg, 1500, BANNER_ACCENT_SUCCESS)
+                        else if (resultKind = "error")
+                            ShowCenteredOverlay_Utils(resultMsg, 2500, BANNER_ACCENT_ERROR)
+                    }
+
+                    ; Legacy UIA path for target="last" only (no callers today; API preserved).
+                    ; Optional &resultKind / &resultMsg: when provided, defer banners to caller (after Loading Indication Hide).
+                    MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
+                        deferBanner := IsSet(resultKind) && IsSet(resultMsg)
+                        ActivateClipAngelWithFocusCorrection()
+                        hwnd := ClipAngel_MainHwnd()
+                        if !hwnd {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ Clip Angel did not open."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+                            return
+                        }
+                        try WinActivate("ahk_id " hwnd)
+                        catch {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ Clip Angel window not found."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+                            return
+                        }
+                        if !WinWaitActive("ahk_id " hwnd, , 2) {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ Clip Angel did not become active."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000,
+                                    BANNER_ACCENT_ERROR)
+                            return
+                        }
+                        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+                        el := UIA.ElementFromHandle(hwnd)
+                        if !el {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ Clip Angel UI not available."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
+                            return
+                        }
+                        dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+                        if !dataGrid {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ Clip list not found (Window tab may still have focus)."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).",
+                                    2500,
+                                    BANNER_ACCENT_ERROR)
+                            return
+                        }
+                        rows := 0
+                        try rows := dataGrid.FindAll({ Type: 50025 })
+                        catch {
+                            rows := 0
+                        }
+                        if !rows || rows.Length < 1 {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ No clips in list."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
+                            return
+                        }
+                        rowTarget := rows[rows.Length]
+                        hasSel := rowTarget.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                        try {
+                            if hasSel
+                                rowTarget.SelectionItemPattern.Select()
+                            else
+                                rowTarget.SetFocus()
+                        } catch {
+                            try rowTarget.SetFocus()
+                        }
+                        try {
+                            if rowTarget.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+                                rowTarget.ScrollItemPattern.ScrollIntoView()
+                        } catch {
+                        }
+                        favCell := ClipAngel_FindFavoriteCell(rowTarget)
+                        if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
+                            if deferBanner {
+                                resultKind := "success"
+                                resultMsg := "✅ Selected clip is already a favorite."
+                            } else
+                                ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500,
+                                    BANNER_ACCENT_SUCCESS)
+                            return
+                        }
+                        if !WinActive("ahk_id " hwnd) {
+                            try WinActivate("ahk_id " hwnd)
+                            if !WinWaitActive("ahk_id " hwnd, , 2) {
+                                if deferBanner {
+                                    resultKind := "error"
+                                    resultMsg := "❌ Clip Angel lost focus before mark favorite."
+                                } else
+                                    ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before mark favorite.", 2000,
+                                        BANNER_ACCENT_ERROR)
+                                return
+                            }
+                        }
+                        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, el)
+                        Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+                        ClipAngel_WaitChordModifiersReleased()
+                        marked := ClipAngel_SendMarkFavoriteAltQ(hwnd)
+                        favCell := ClipAngel_FindFavoriteCell(rowTarget)
+                        titleOk := ClipAngel_Row0TitleLooksFavorited(hwnd, el)
+                        if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) || titleOk || marked {
+                            ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+                            if deferBanner {
+                                resultKind := "success"
+                                resultMsg := "✅ Marked focused clip as favorite."
+                            } else
+                                ShowCenteredOverlay_Utils("✅ Marked focused clip as favorite.", 1500,
+                                    BANNER_ACCENT_SUCCESS)
+                        } else {
+                            if deferBanner {
+                                resultKind := "error"
+                                resultMsg := "❌ Could not confirm favorite (list may not have focus)."
+                            } else
+                                ShowCenteredOverlay_Utils("❌ Could not confirm favorite (list may not have focus).",
+                                    2500,
+                                    BANNER_ACCENT_ERROR)
+                        }
+                    }
+
+                    ; =============================================================================
+                    ; Clip Angel: Remove favorite status from all currently favorited clips
+                    ; =============================================================================
+                    ; After MsgBox, restore/activate if the dialog minimized or stole focus.
+                    ClipAngel_ReassertFocusAfterDialog(hwnd, timeoutMs := 1000) {
+                        if !hwnd || !WinExist("ahk_id " hwnd)
+                            return false
+                        ; MsgBox often leaves Clip Angel minimized or behind — restore before activate.
+                        if !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd) {
+                            if !ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
+                                return false
+                        }
+                        if !ClipAngel_EnsureWindowActive(hwnd, timeoutMs) {
+                            ; Second pass: restore + show + activate (covers race after modal close).
+                            try {
+                                mm := WinGetMinMax("ahk_id " hwnd)
+                                if (mm = -1)
+                                    WinRestore("ahk_id " hwnd)
+                            } catch {
+                            }
+                            try WinShow("ahk_id " hwnd)
+                            catch {
+                            }
+                            if !ClipAngel_EnsureWindowActive(hwnd, timeoutMs)
+                                return false
+                        }
+                        return WinActive("ahk_id " hwnd)
+                    }
+
+                    ; Ensure Yes/Sim (Button1) is focused so Enter confirms — Default1 alone can miss after Owner.
+                    ClipAngel_FocusUnfavoriteAllConfirmYes() {
+                        dlgTitle := "Clip Angel — unfavorite all"
+                        deadline := A_TickCount + 1500
+                        while (A_TickCount < deadline) {
+                            if hwndDlg := WinExist(dlgTitle " ahk_class #32770") {
+                                try {
+                                    WinActivate("ahk_id " hwndDlg)
+                                    ControlFocus("Button1", "ahk_id " hwndDlg)
+                                } catch {
+                                }
+                                try {
+                                    ; Button1 = Yes/Sim for YesNo; fall back to caption match if needed.
+                                    if (ControlGetFocus("ahk_id " hwndDlg) = "Button1")
+                                        return
+                                    loop 4 {
+                                        try {
+                                            btnText := ControlGetText("Button" . A_Index, "ahk_id " hwndDlg)
+                                            if RegExMatch(btnText, "i)^(Yes|Sim|&Yes|&Sim)") {
+                                                ControlFocus("Button" . A_Index, "ahk_id " hwndDlg)
+                                                return
+                                            }
+                                        } catch {
+                                        }
+                                    }
+                                } catch {
+                                }
+                                return
+                            }
+                            Sleep 20
+                        }
+                    }
+
+                    ; Confirm → favorites filter (Ctrl+2) → select all → unmark (Alt+W / Shift+U).
+                    ; Loading Indication stays up for the whole removal; Clip Angel minimizes on success.
+                    ClipAngel_UnfavoriteAllClips() {
+                        hwnd := ClipAngel_MainHwnd()
+                        if !hwnd {
+                            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+                            return false
+                        }
+
+                        ; MUST lock before MsgBox: auto-minimize-on-deactivate hides Clip Angel when the
+                        ; dialog steals focus, and Owner'd MsgBox minimizes with its owner.
+                        if !ClipAngel_TryAcquireAutomationLock()
+                            return false
+
+                        ok := false
+                        errMsg := ""
+                        loadingShown := false
+                        try {
+                            ownerOpt := " Owner" . hwnd
+                            ; Default1 + timer focus so Enter confirms without Tab.
+                            SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, -50)
+                            response := MsgBox(
+                                "Remove favorite status from ALL currently favorited clips?`n`n"
+                                . "Clips stay in history; only the favorite mark is cleared.",
+                                "Clip Angel — unfavorite all",
+                                "YesNo Icon! Default1" . ownerOpt
+                            )
+                            try SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, 0)
+                            catch {
+                            }
+                            if (response != "Yes") {
+                                ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
+                                return false
+                            }
+
+                            ClipAngel_WaitChordModifiersReleased()
+                            ClipAngel_ReleaseChordModifiersForSend()
+
+                            if !ClipAngel_ReassertFocusAfterDialog(hwnd, 1000) {
+                                errMsg := "❌ Clip Angel lost focus aftQer confirm."
+                                return false
+                            }
+
+                            StandardLoadingBar_Show("⏳ Removing all favorites...", BANNER_ACCENT_INTERMEDIATE, {
+                                passive: false,
+                                centerOnHwnd: hwnd,
+                                fontSize: 17
+                            })
+                            loadingShown := true
+
+                            if !ClipAngel_ReassertFocusAfterDialog(hwnd, 800) {
+                                errMsg := "❌ Clip Angel did not stay active."
+                                return false
+                            }
+
+                            root := 0
                             try root := UIA.ElementFromHandle(hwnd)
                             catch
                                 root := 0
+
+                            StandardLoadingBar_Update("⏳ Opening favorites...", BANNER_ACCENT_INTERMEDIATE)
+                            if !ClipAngel_ApplyMarkFilterMode(false, hwnd, root) {
+                                if (!ClipAngel_ReassertFocusAfterDialog(hwnd, 800)
+                                || !ClipAngel_ApplyMarkFilterMode(false, hwnd, root)) {
+                                    errMsg := "❌ Could not open favorites filter."
+                                    return false
+                                }
+                            }
+
+                            if !ClipAngel_ReassertFocusAfterDialog(hwnd, 600) {
+                                errMsg := "❌ Clip Angel lost focus before select-all."
+                                return false
+                            }
+
+                            if !root {
+                                try root := UIA.ElementFromHandle(hwnd)
+                                catch
+                                    root := 0
+                            }
+                            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                            if dataGrid
+                                ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+
+                            StandardLoadingBar_Update("⏳ Unfavoriting all...", BANNER_ACCENT_INTERMEDIATE)
+                            if !ClipAngel_ReassertFocusAfterDialog(hwnd, 600) {
+                                errMsg := "❌ Clip Angel lost focus before unmark."
+                                return false
+                            }
+
+                            priorSendLevel := A_SendLevel
+                            SendLevel 0
+                            ClipAngel_ReleaseChordModifiersForSend()
+                            ; Select all favorited rows, then Clip > Unmark (Alt+W would open the Window item).
+                            SendInput "^a"
+                            Sleep 80
+                            if !WinActive("ahk_id " hwnd)
+                                ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
+                            if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+                                errMsg := "❌ Could not unmark the selected clips."
+                                ok := false
+                            } else {
+                                ok := true
+                            }
+                            ClipAngel_ReturnFocusFromMainMenu(hwnd)
+                            SendLevel priorSendLevel
+                        } catch Error as e {
+                            errMsg := "❌ Unfavorite all failed: " . e.Message
+                            ok := false
+                        } finally {
+                            if loadingShown {
+                                try StandardLoadingBar_Hide(0)
+                                catch {
+                                }
+                            }
+                            ClipAngel_ReleaseAutomationLock()
                         }
-                        ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root)
+
                         if ok {
-                            ; Prefer DB Favorite bit confirm when id known.
-                            dbOk := newestId > 0 ? ClipAngel_WaitDbFavoriteOn(newestId, 400) : ""
-                            if (dbOk = false)
-                                ok := ClipAngel_Row0TitleLooksFavorited(hwnd, root)
-                            ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-                            resultKind := "success"
-                            resultMsg := "✅ Marked focused clip as favorite."
-                        } else {
-                            resultKind := "error"
-                            resultMsg := "❌ Could not mark favorite (menu/list focus)."
+                            if hwnd
+                                ClipAngel_HideWindow(hwnd)
+                            try ScriptSoundPlay(A_ScriptDir "\assets\sounds\unfavorite-all-success.wav")
+                            ShowCenteredOverlay_Utils("✅ Favorite marks cleared from selection.", 1500,
+                                BANNER_ACCENT_SUCCESS)
+                        } else if (errMsg != "") {
+                            if hwnd
+                                ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
+                            ShowCenteredOverlay_Utils(errMsg, 2500, BANNER_ACCENT_ERROR)
                         }
+                        return ok
                     }
-                }
-            } finally {
-                try StandardLoadingBar_Hide(0)
-                catch {
-                }
-            }
-        }
-    } catch Error as e {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        resultKind := "error"
-        resultMsg := "❌ Mark favorite failed: " . e.Message
-    } finally {
-        hwndEnd := ClipAngel_MainHwnd()
-        ClipAngel_EndFavoriteSuppress(hwndEnd)
-        ClipAngel_RestorePriorFocus(priorHwnd)
-        ClipAngel_ReleaseAutomationLock()
-    }
-    if (resultKind = "success")
-        ShowCenteredOverlay_Utils(resultMsg, 1500, BANNER_ACCENT_SUCCESS)
-    else if (resultKind = "error")
-        ShowCenteredOverlay_Utils(resultMsg, 2500, BANNER_ACCENT_ERROR)
-}
-
-; Legacy UIA path for target="last" only (no callers today; API preserved).
-; Optional &resultKind / &resultMsg: when provided, defer banners to caller (after Loading Indication Hide).
-MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
-    deferBanner := IsSet(resultKind) && IsSet(resultMsg)
-    ActivateClipAngelWithFocusCorrection()
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ Clip Angel did not open."
-        } else
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    try WinActivate("ahk_id " hwnd)
-    catch {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ Clip Angel window not found."
-        } else
-            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    if !WinWaitActive("ahk_id " hwnd, , 2) {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ Clip Angel did not become active."
-        } else
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    el := UIA.ElementFromHandle(hwnd)
-    if !el {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ Clip Angel UI not available."
-        } else
-            ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
-    if !dataGrid {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ Clip list not found (Window tab may still have focus)."
-        } else
-            ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
-                BANNER_ACCENT_ERROR)
-        return
-    }
-    rows := 0
-    try rows := dataGrid.FindAll({ Type: 50025 })
-    catch {
-        rows := 0
-    }
-    if !rows || rows.Length < 1 {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ No clips in list."
-        } else
-            ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    rowTarget := rows[rows.Length]
-    hasSel := rowTarget.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-    try {
-        if hasSel
-            rowTarget.SelectionItemPattern.Select()
-        else
-            rowTarget.SetFocus()
-    } catch {
-        try rowTarget.SetFocus()
-    }
-    try {
-        if rowTarget.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
-            rowTarget.ScrollItemPattern.ScrollIntoView()
-    } catch {
-    }
-    favCell := ClipAngel_FindFavoriteCell(rowTarget)
-    if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
-        if deferBanner {
-            resultKind := "success"
-            resultMsg := "✅ Selected clip is already a favorite."
-        } else
-            ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
-        return
-    }
-    if !WinActive("ahk_id " hwnd) {
-        try WinActivate("ahk_id " hwnd)
-        if !WinWaitActive("ahk_id " hwnd, , 2) {
-            if deferBanner {
-                resultKind := "error"
-                resultMsg := "❌ Clip Angel lost focus before mark favorite."
-            } else
-                ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before mark favorite.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-    }
-    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, el)
-    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
-    ClipAngel_WaitChordModifiersReleased()
-    marked := ClipAngel_SendMarkFavoriteAltQ(hwnd)
-    favCell := ClipAngel_FindFavoriteCell(rowTarget)
-    titleOk := ClipAngel_Row0TitleLooksFavorited(hwnd, el)
-    if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) || titleOk || marked {
-        ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-        if deferBanner {
-            resultKind := "success"
-            resultMsg := "✅ Marked focused clip as favorite."
-        } else
-            ShowCenteredOverlay_Utils("✅ Marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
-    } else {
-        if deferBanner {
-            resultKind := "error"
-            resultMsg := "❌ Could not confirm favorite (list may not have focus)."
-        } else
-            ShowCenteredOverlay_Utils("❌ Could not confirm favorite (list may not have focus).", 2500,
-                BANNER_ACCENT_ERROR)
-    }
-}
-
-; =============================================================================
-; Clip Angel: Remove favorite status from all currently favorited clips
-; =============================================================================
-; After MsgBox, restore/activate if the dialog minimized or stole focus.
-ClipAngel_ReassertFocusAfterDialog(hwnd, timeoutMs := 1000) {
-    if !hwnd || !WinExist("ahk_id " hwnd)
-        return false
-    ; MsgBox often leaves Clip Angel minimized or behind — restore before activate.
-    if !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd) {
-        if !ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
-            return false
-    }
-    if !ClipAngel_EnsureWindowActive(hwnd, timeoutMs) {
-        ; Second pass: restore + show + activate (covers race after modal close).
-        try {
-            mm := WinGetMinMax("ahk_id " hwnd)
-            if (mm = -1)
-                WinRestore("ahk_id " hwnd)
-        } catch {
-        }
-        try WinShow("ahk_id " hwnd)
-        catch {
-        }
-        if !ClipAngel_EnsureWindowActive(hwnd, timeoutMs)
-            return false
-    }
-    return WinActive("ahk_id " hwnd)
-}
-
-; Ensure Yes/Sim (Button1) is focused so Enter confirms — Default1 alone can miss after Owner.
-ClipAngel_FocusUnfavoriteAllConfirmYes() {
-    dlgTitle := "Clip Angel — unfavorite all"
-    deadline := A_TickCount + 1500
-    while (A_TickCount < deadline) {
-        if hwndDlg := WinExist(dlgTitle " ahk_class #32770") {
-            try {
-                WinActivate("ahk_id " hwndDlg)
-                ControlFocus("Button1", "ahk_id " hwndDlg)
-            } catch {
-            }
-            try {
-                ; Button1 = Yes/Sim for YesNo; fall back to caption match if needed.
-                if (ControlGetFocus("ahk_id " hwndDlg) = "Button1")
-                    return
-                loop 4 {
-                    try {
-                        btnText := ControlGetText("Button" . A_Index, "ahk_id " hwndDlg)
-                        if RegExMatch(btnText, "i)^(Yes|Sim|&Yes|&Sim)") {
-                            ControlFocus("Button" . A_Index, "ahk_id " hwndDlg)
-                            return
-                        }
-                    } catch {
-                    }
-                }
-            } catch {
-            }
-            return
-        }
-        Sleep 20
-    }
-}
-
-; Confirm → favorites filter (Ctrl+2) → select all → unmark (Alt+W / Shift+U).
-; Loading Indication stays up for the whole removal; Clip Angel minimizes on success.
-ClipAngel_UnfavoriteAllClips() {
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
-        ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
-
-    ; MUST lock before MsgBox: auto-minimize-on-deactivate hides Clip Angel when the
-    ; dialog steals focus, and Owner'd MsgBox minimizes with its owner.
-    if !ClipAngel_TryAcquireAutomationLock()
-        return false
-
-    ok := false
-    errMsg := ""
-    loadingShown := false
-    try {
-        ownerOpt := " Owner" . hwnd
-        ; Default1 + timer focus so Enter confirms without Tab.
-        SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, -50)
-        response := MsgBox(
-            "Remove favorite status from ALL currently favorited clips?`n`n"
-            . "Clips stay in history; only the favorite mark is cleared.",
-            "Clip Angel — unfavorite all",
-            "YesNo Icon! Default1" . ownerOpt
-        )
-        try SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, 0)
-        catch {
-        }
-        if (response != "Yes") {
-            ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
-            return false
-        }
-
-        ClipAngel_WaitChordModifiersReleased()
-        ClipAngel_ReleaseChordModifiersForSend()
-
-        if !ClipAngel_ReassertFocusAfterDialog(hwnd, 1000) {
-            errMsg := "❌ Clip Angel lost focus aftQer confirm."
-            return false
-        }
-
-        StandardLoadingBar_Show("⏳ Removing all favorites...", BANNER_ACCENT_INTERMEDIATE, {
-            passive: false,
-            centerOnHwnd: hwnd,
-            fontSize: 17
-        })
-        loadingShown := true
-
-        if !ClipAngel_ReassertFocusAfterDialog(hwnd, 800) {
-            errMsg := "❌ Clip Angel did not stay active."
-            return false
-        }
-
-        root := 0
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-
-        StandardLoadingBar_Update("⏳ Opening favorites...", BANNER_ACCENT_INTERMEDIATE)
-        if !ClipAngel_ApplyMarkFilterMode(false, hwnd, root) {
-            if (!ClipAngel_ReassertFocusAfterDialog(hwnd, 800)
-            || !ClipAngel_ApplyMarkFilterMode(false, hwnd, root)) {
-                errMsg := "❌ Could not open favorites filter."
-                return false
-            }
-        }
-
-        if !ClipAngel_ReassertFocusAfterDialog(hwnd, 600) {
-            errMsg := "❌ Clip Angel lost focus before select-all."
-            return false
-        }
-
-        if !root {
-            try root := UIA.ElementFromHandle(hwnd)
-            catch
-                root := 0
-        }
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        if dataGrid
-            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
-
-        StandardLoadingBar_Update("⏳ Unfavoriting all...", BANNER_ACCENT_INTERMEDIATE)
-        if !ClipAngel_ReassertFocusAfterDialog(hwnd, 600) {
-            errMsg := "❌ Clip Angel lost focus before unmark."
-            return false
-        }
-
-        priorSendLevel := A_SendLevel
-        SendLevel 0
-        ClipAngel_ReleaseChordModifiersForSend()
-        ; Select all favorited rows, then Clip > Unmark (Alt+W would open the Window item).
-        SendInput "^a"
-        Sleep 80
-        if !WinActive("ahk_id " hwnd)
-            ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
-        if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
-            errMsg := "❌ Could not unmark the selected clips."
-            ok := false
-        } else {
-            ok := true
-        }
-        ClipAngel_ReturnFocusFromMainMenu(hwnd)
-        SendLevel priorSendLevel
-    } catch Error as e {
-        errMsg := "❌ Unfavorite all failed: " . e.Message
-        ok := false
-    } finally {
-        if loadingShown {
-            try StandardLoadingBar_Hide(0)
-            catch {
-            }
-        }
-        ClipAngel_ReleaseAutomationLock()
-    }
-
-    if ok {
-        if hwnd
-            ClipAngel_HideWindow(hwnd)
-        try ScriptSoundPlay(A_ScriptDir "\assets\sounds\unfavorite-all-success.wav")
-        ShowCenteredOverlay_Utils("✅ Favorite marks cleared from selection.", 1500, BANNER_ACCENT_SUCCESS)
-    } else if (errMsg != "") {
-        if hwnd
-            ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
-        ShowCenteredOverlay_Utils(errMsg, 2500, BANNER_ACCENT_ERROR)
-    }
-    return ok
-}

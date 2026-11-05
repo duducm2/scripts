@@ -183,9 +183,13 @@ ClipAngel_HotkeyCopyUnfavoriteOrPassthrough(nativeChord) {
         SendInput nativeChord
         return
     }
-        hwnd := ClipAngel_MainHwnd()
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        SendInput nativeChord
+        return
+    }
     if (ClipAngel_FocusIsFilterCombo() || ClipAngel_IsListPasteEnterContext(hwnd)) {
-        ClipAngel_CopyUnfavoriteSelectedClip()
+        ClipAngel_CopyUnfavoriteSelectedClip(hwnd)
         return
     }
     SendInput nativeChord
