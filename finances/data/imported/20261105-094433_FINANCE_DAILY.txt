@@ -1,0 +1,12 @@
+﻿===PREVIEW===
+2 rows · maintenance for new home (expense) and balance replenishment (transfer)
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Maintenance for our new home,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Transfer from long-term to checking account,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+===END_FILE===
+
+Please copy the code block above and save it as FINANCE_DAILY.txt on your Desktop, or use the generated download chip.
+
+Is there any other transaction you would like to parse or adjust?
