@@ -311,3 +311,5 @@ TX316,2026-11-03,Smartphone credit internet,"360,00",card_expense,CAT_CELULAR,AC
 TX317,2026-11-03,Groceries,"262,72",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX318,2026-11-04,Maintenance for our new home,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX319,2026-11-04,Transfer from long-term to checking account,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX320,2026-11-05,Construction man,"836,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX321,2026-11-05,transfer,"836,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
