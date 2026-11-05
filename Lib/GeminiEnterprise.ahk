@@ -385,9 +385,18 @@ GeminiEnterprise_OpenOrFocus() {
             return false
         }
         if (!alreadyActive && WinActive("ahk_id " hwnd))
-            GeminiEnterprise_WaitForComposerDiscoverable(root)
-        if (WinActive("ahk_id " hwnd))
-            GeminiEnterprise_FocusComposer(root, true)
+        GeminiEnterprise_WaitForComposerDiscoverable(root, 1500)
+        if (WinActive("ahk_id " hwnd)) {
+            focusedEl := GeminiEnterprise_FocusComposer(root, true)
+            if (!focusedEl) {
+                deadline := A_TickCount + 2000
+                while (A_TickCount < deadline) {
+                    Sleep 50
+                    if (focusedEl := GeminiEnterprise_FocusComposer(root, true))
+                        break
+                }
+            }
+        }
         GeminiEnterprise_CacheHwnd(hwnd)
         GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
         return true
@@ -414,9 +423,18 @@ GeminiEnterprise_OpenOrFocus() {
             StandardLoadingBar_Hide(0)
             return false
         }
-        GeminiEnterprise_WaitForComposerDiscoverable(root, 4000)
-        if (WinActive("ahk_id " hwnd))
-            GeminiEnterprise_FocusComposer(root, true)
+        GeminiEnterprise_WaitForComposerDiscoverable(root, 6000)
+        if (WinActive("ahk_id " hwnd)) {
+            focusedEl := GeminiEnterprise_FocusComposer(root, true)
+            if (!focusedEl) {
+                deadline := A_TickCount + 3000
+                while (A_TickCount < deadline) {
+                    Sleep 100
+                    if (focusedEl := GeminiEnterprise_FocusComposer(root, true))
+                        break
+                }
+            }
+        }
         GeminiEnterprise_CacheHwnd(hwnd)
         GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
         StandardLoadingBar_Hide(0)
@@ -629,15 +647,31 @@ GeminiEnterprise_FocusComposer(uia := 0, playChime := true, scrollIntoView := tr
         try el.ScrollIntoView()
     try el.SetFocus()
     Sleep 40
-    try el.Click()
-    Sleep 40
+    focused := false
     try {
-        if (el.HasKeyboardFocus && playChime)
-            GeminiEnterprise_PlayFocusedChime()
+        if (el.HasKeyboardFocus)
+            focused := true
     } catch {
-        if (playChime)
-            GeminiEnterprise_PlayFocusedChime()
     }
+    if (!focused) {
+        try el.Click()
+        Sleep 40
+    }
+    start := A_TickCount
+    while (A_TickCount - start < 350) {
+        try {
+            if (el.HasKeyboardFocus) {
+                focused := true
+                break
+            }
+        } catch {
+            focused := true
+            break
+        }
+        Sleep 25
+    }
+    if (focused && playChime)
+        GeminiEnterprise_PlayFocusedChime()
     return el
 }
 
