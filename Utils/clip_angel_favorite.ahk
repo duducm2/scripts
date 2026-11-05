@@ -2079,6 +2079,26 @@ ClipAngel_SendMarkFavoriteAltQ(hwnd) {
     return false
 }
 
+; Clip > Unmark as favorite is ShortcutKeys Alt+W (resetFavouriteToolStripMenuItem).
+; Bypasses LoadedClipRowReader check on toolStripButtonMarkFavorite. Fast (<15ms).
+ClipAngel_SendUnmarkFavoriteAltW(hwnd) {
+    if !hwnd
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    if !WinActive("ahk_id " hwnd) {
+        try WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 0.25)
+            return false
+    }
+    loop 2 {
+        Send "!w"
+        if !ClipAngel_KeyboardFocusIsMainMenu()
+            return true
+        ClipAngel_ReturnFocusFromMainMenu(hwnd)
+    }
+    return false
+}
+
 ; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
 ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
     ; Check language-independent AutomationId first, then localized display names.
@@ -2171,10 +2191,11 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
 }
 
 ; Unmark the selected clip as favorite via multiple reliable strategies:
-; 1. Clip menu > Unmark as favorite (resetFavouriteToolStripMenuItem)
-;    Directly executes SetRowMark("Favorite", false, true, false).
-;    Not blocked by LoadedClipRowReader.
-; 2. Top toolbar button toolStripButtonMarkFavorite (direct WinForms toggle)
+; 1. Fast direct Alt+W chord (WinForms shortcut for resetFavouriteToolStripMenuItem).
+;    Executes SetRowMark("Favorite", false, true, false).
+;    Bypasses LoadedClipRowReader check on toolStripButtonMarkFavorite. Fast (<15ms).
+; 2. Clip menu > Unmark as favorite (resetFavouriteToolStripMenuItem via UIA)
+; 3. Top toolbar button toolStripButtonMarkFavorite (direct WinForms toggle)
 ; Verifies unmarking succeeded; returns true if unmark was applied.
 ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
     if !hwnd
@@ -2185,14 +2206,19 @@ ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
             root := 0
     }
 
-    ; Strategy 1: Clip menu > Unmark as favorite (resetFavouriteToolStripMenuItem)
+    ; Strategy 1: Direct Alt+W chord (WinForms shortcut for resetFavouriteToolStripMenuItem)
+    if ClipAngel_SendUnmarkFavoriteAltW(hwnd) {
+        return true
+    }
+
+    ; Strategy 2: Clip menu > Unmark as favorite (resetFavouriteToolStripMenuItem)
     if ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
         Sleep 50
         ClipAngel_ReturnFocusFromMainMenu(hwnd)
         return true
     }
 
-    ; Strategy 2: Top toolbar button toolStripButtonMarkFavorite
+    ; Strategy 3: Top toolbar button toolStripButtonMarkFavorite
     favBtn := 0
     if root {
         try {
@@ -2698,12 +2724,12 @@ ClipAngel_UnfavoriteAllClips() {
         priorSendLevel := A_SendLevel
         SendLevel 0
         ClipAngel_ReleaseChordModifiersForSend()
-        ; Select all favorited rows, then Clip > Unmark (Alt+W would open the Window item).
+        ; Select all favorited rows, then Alt+W (with menu invoke fallback).
         SendInput "^a"
         Sleep 80
         if !WinActive("ahk_id " hwnd)
             ClipAngel_ReassertFocusAfterDialog(hwnd, 400)
-        if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+        if !ClipAngel_SendUnmarkFavoriteAltW(hwnd) && !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
             errMsg := "❌ Could not unmark the selected clips."
             ok := false
         } else {

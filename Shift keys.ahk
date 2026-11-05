@@ -19,6 +19,7 @@
 #Requires AutoHotkey v2.0+
 
 #SingleInstance Force
+Persistent()
 
 ; Must exist before #include Utils. The keyboard hook can evaluate
 ; #HotIf FastCopyMode_IsActive() while later includes are still starting.

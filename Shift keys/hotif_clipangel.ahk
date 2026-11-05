@@ -79,12 +79,12 @@ ClipAngel_CopyFocusedFilteredContent() {
         ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
 
-; Shift + U : Unmark as favorite via the Clip menu. Alt+W opens the Window item.
+; Shift + U : Unmark the selected clip as favorite (Clip Angel Alt+W).
 +u:: {
     ClipAngel_FocusGridIfFilterCombo()
     hwnd := ClipAngel_MainHwnd()
     if hwnd
-        ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd)
+        ClipAngel_SendUnmarkFavoriteAltW(hwnd)
     if hwnd
         ClipAngel_ReturnFocusFromMainMenu(hwnd)
 }
