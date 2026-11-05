@@ -439,8 +439,11 @@ GeminiOpen_OpenOrFocus() {
 #!+i:: {
     global g_GeminiOpen_DoubleTapArmed, g_GeminiOpen_LastPressTick, g_GeminiOpen_DoubleTapTimer
 
-    if !GetKeyState("i", "P")
+    ; Programmatic / synthetic trigger (SendInput or Send): open/focus companion directly
+    if !GetKeyState("i", "P") {
+        GeminiOpen_OpenOrFocus()
         return
+    }
 
     thresholdMs := 400
     try thresholdMs := AI_QD_DOUBLE_TAP_MS

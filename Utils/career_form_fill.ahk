@@ -109,7 +109,29 @@ CareerForm_IsCompanionTitle(title) {
     if (CareerForm_IsCareerCockpitTitle(title))
         return false
     text := StrLower(title)
-    return InStr(text, "gemini") || InStr(text, "copilot") || InStr(text, "askbosch")
+    return InStr(text, "gemini")
+        || InStr(text, "copilot")
+        || InStr(text, "askbosch")
+        || InStr(text, "ask bosch")
+        || InStr(text, "vertex ai")
+        || InStr(text, "chatgpt")
+}
+
+CareerForm_FindOpenCompanionWindow() {
+    for procName in ["chrome.exe", "msedge.exe"] {
+        try {
+            for hwnd in WinGetList("ahk_exe " procName) {
+                title := ""
+                try title := WinGetTitle("ahk_id " hwnd)
+                catch {
+                    continue
+                }
+                if (title != "" && CareerForm_IsCompanionTitle(title))
+                    return hwnd
+            }
+        }
+    }
+    return 0
 }
 
 CareerForm_CaptureWindow() {
@@ -332,6 +354,7 @@ CareerForm_ReadClipboard(outPath) {
 
 CareerForm_WaitForCompanion(timeoutMs := 20000) {
     start := A_TickCount
+    sentHotkey := false
     loop {
         hwnd := 0
         try hwnd := WinExist("A")
@@ -349,14 +372,35 @@ CareerForm_WaitForCompanion(timeoutMs := 20000) {
             catch {
                 title := ""
             }
-            if (proc = "chrome.exe" && CareerForm_IsCompanionTitle(title)) {
+            if ((proc = "chrome.exe" || proc = "msedge.exe") && CareerForm_IsCompanionTitle(title)) {
                 Sleep 600
                 return hwnd
             }
         }
+
+        ; If the companion window is already open in the background, bring it forward
+        found := CareerForm_FindOpenCompanionWindow()
+        if (found) {
+            try {
+                WinActivate("ahk_id " found)
+                if WinWaitActive("ahk_id " found, , 2) {
+                    Sleep 600
+                    return found
+                }
+            } catch {
+            }
+        }
+
+        ; If not found after a brief moment, send the companion hotkey via AHK hook
+        if (!sentHotkey && (A_TickCount - start) > 800) {
+            sentHotkey := true
+            SendLevel 1
+            Send "#!+i"
+        }
+
         if ((A_TickCount - start) >= timeoutMs)
             return 0
-        Sleep 200
+        Sleep 250
     }
 }
 
