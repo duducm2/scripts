@@ -1274,7 +1274,8 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
                 break
             try {
                 pAid := curr.AutomationId
-                if (pAid = "richTextBox" || pAid = "comboBoxSearchString" || pAid = "textBoxSearch" || pAid = "urlTextBox")
+                if (pAid = "richTextBox" || pAid = "comboBoxSearchString" || pAid = "textBoxSearch" || pAid =
+                    "urlTextBox")
                     return false
             } catch {
             }
@@ -2148,7 +2149,7 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
         }
         item := ClipAngel_TrySavedMenu(root, "UnmarkFavorite")
         if !item
-        item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 150)
+            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 150)
         if !item {
             ; Check any popup/dropdown window belonging to ClipAngel (fast, isolated to ClipAngel)
             prevDetect := A_DetectHiddenWindows
@@ -2176,7 +2177,7 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
             if desktop {
                 item := ClipAngel_TrySavedMenu(desktop, "UnmarkFavorite")
                 if !item
-                item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([desktop], 150)
+                    item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([desktop], 150)
             }
         }
         if !item {

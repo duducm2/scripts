@@ -2296,11 +2296,7 @@
           }
           clip.copiedText = text;
           state.infoClipboard = clip;
-          try {
-            await navigator.clipboard.writeText(text);
-          } catch (_) {
-            /* The in-app paste still has the info point. */
-          }
+          await writeTextToClipboard(text);
           toast("Copied info");
           return true;
         }
@@ -2663,29 +2659,38 @@
           toast("Copied Convert to Task prompt · " + where);
         }
 
-        async function copyProjectJsonText(text) {
-          const value = String(text || "");
+        async function writeTextToClipboard(text) {
+          const value = String(text ?? "");
           if (navigator.clipboard?.writeText) {
             try {
               await navigator.clipboard.writeText(value);
-              return;
+              return true;
             } catch (_) {
-              /* Fall through. ClipboardItem reports a failed type as "not found". */
+              /* Fall through. */
             }
           }
-          const area = document.createElement("textarea");
-          area.value = value;
-          area.setAttribute("readonly", "");
-          area.style.cssText = "position:fixed;left:-9999px;top:0";
-          document.body.appendChild(area);
-          area.focus();
-          area.select();
-          let ok = false;
           try {
-            ok = document.execCommand("copy");
-          } finally {
-            area.remove();
+            const area = document.createElement("textarea");
+            area.value = value;
+            area.setAttribute("readonly", "");
+            area.style.cssText = "position:fixed;left:-9999px;top:0";
+            document.body.appendChild(area);
+            area.focus();
+            area.select();
+            let ok = false;
+            try {
+              ok = document.execCommand("copy");
+            } finally {
+              area.remove();
+            }
+            return ok;
+          } catch (_) {
+            return false;
           }
+        }
+
+        async function copyProjectJsonText(text) {
+          const ok = await writeTextToClipboard(text);
           if (!ok) throw new Error("Could not copy the JSON");
         }
 
@@ -4626,7 +4631,7 @@
           return payload;
         }
 
-        function copyTaskById(id, opts = {}) {
+        async function copyTaskById(id, opts = {}) {
           const t = taskRowById(id);
           const cut = !!opts.cut;
           const payload = taskToCopyPayload(t, { cut });
@@ -4634,17 +4639,22 @@
             toast("Select or hover a task first");
             return false;
           }
+          const text = String(t.title || "").trim();
           state.taskClipboard = {
             ...payload,
+            copiedText: text,
             cutFromId: cut ? t.id : "",
           };
+          if (text) {
+            await writeTextToClipboard(text);
+          }
           toast(cut ? "Cut task — paste to move" : "Copied task");
           render();
           applySelection(false);
           return true;
         }
 
-        function cutTaskById(id) {
+        async function cutTaskById(id) {
           return copyTaskById(id, { cut: true });
         }
 
@@ -7605,11 +7615,11 @@
               return;
             }
             if (act === "copy-task") {
-              copyTaskById(id);
+              await copyTaskById(id);
               return;
             }
             if (act === "cut-task") {
-              cutTaskById(id);
+              await cutTaskById(id);
               return;
             }
             if (act === "del-task") {
@@ -7817,13 +7827,13 @@
             if (k === "c" || e.code === "KeyC") {
               e.preventDefault();
               e.stopPropagation();
-              copyTaskById(selectedTaskId() || hoveredTaskId());
+              await copyTaskById(selectedTaskId() || hoveredTaskId());
               return;
             }
             if (k === "x" || e.code === "KeyX") {
               e.preventDefault();
               e.stopPropagation();
-              cutTaskById(selectedTaskId() || hoveredTaskId());
+              await cutTaskById(selectedTaskId() || hoveredTaskId());
               return;
             }
             return;
