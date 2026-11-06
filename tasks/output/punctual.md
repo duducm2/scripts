@@ -50,6 +50,10 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 🔲 Buy more psychiatric pills
 
+⚡ Move your keyboard from where it is now
+
+⚡ Reschedule your psychiatric appointment around January 6th
+
 ## Dissertation
 
 ℹ️ Your last day for submitting your dissertation is November 23

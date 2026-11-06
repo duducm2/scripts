@@ -1,6 +1,104 @@
 # Data Analyst
 
 <details open>
+<summary><strong>PySpark Ranking Functions, a Sweaty Podium Where Tied Winners Share a Tiny Gold Trophy</strong> · Memory Palace 29: PySpark Ranking Functions · Character: — · 1 beast · 1 atom</summary>
+
+_No image_
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### [Di] diamond python
+
+<img src="../../web/assets/beast-thumbs/diamond_python.png" alt="diamond python" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Ranking Functions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRanking%20Functions%5D&color=9fd4ff" />(gold trophy) to <img alt="[assign]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bassign%5D&color=ffd966" />(branding iron)] [numbered <img alt="[positions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpositions%5D&color=ffd966" />(podium)] [to <img alt="[ordered]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bordered%5D&color=ffd966" />(ladder) rows] [inside a <img alt="[partition]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpartition%5D&color=ffd966" />(glass divider).] — Note: Row number gives unique numbers even on ties, rank gives ties the same number and skips next numbers, and dense rank gives ties the same number without skipping numbers.
+
+**Quote**
+“whereas dense rank uh it don't skip any of the value and whether it is repetitive or non-repetitive it will increment only by one so for same values it will not increment whenever it see a different value then it will increment by one”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>PySpark Aggregations and Window Functions, a Neon Casino Dealer Counting Chips Through a Glass Window</strong> · Memory Palace 28: PySpark Aggregations and Window Functions · Character: — · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Dh] Dark Hydra
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/hydra.png" alt="Dark Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Window Specifications]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BWindow%20Specifications%5D&color=9fd4ff" />(window frame) to <img alt="[calculate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalculate%5D&color=ffd966" />(calculator)] [summary <img alt="[metrics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetrics%5D&color=ffd966" />(scale)] [across ordered <img alt="[partitions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpartitions%5D&color=ffd966" />(glass divider)] [on every <img alt="[row]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brow%5D&color=ffd966" />(train car).] — Note: A window specification sets partition columns with partitionBy and row order with orderBy.
+
+**Quote**
+“these are also aggregation but these are used when the group by is not enough”
+
+### [Dg] Dark goat
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Dark goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Collect Set Lists]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCollect%20Set%20Lists%5D&color=9fd4ff" />(glass jar) to <img alt="[pack]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpack%5D&color=ffd966" />(suitcase)] [<img alt="[column]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcolumn%5D&color=ffd966" />(pillar) values] [for each <img alt="[group]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgroup%5D&color=ffd966" />(basket)] [into an <img alt="[array]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Barray%5D&color=ffd966" />(egg carton).] — Note: Collect set keeps only unique values and drops duplicates, while collect list keeps every value including duplicates.
+
+**Quote**
+“and this collect set it it it gets the list which is a distinct of all the data like if there are repeated products here it will take only one value it will not repeat but in collect list it will repeat everything”
+
+### [Df] Dark frog
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Dark frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Post-Aggregation Filtering]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BPost-Aggregation%20Filtering%5D&color=9fd4ff" />(sieve) to <img alt="[check]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcheck%5D&color=ffd966" />(checkmark)] [<img alt="[conditions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bconditions%5D&color=ffd966" />(traffic light) on] [<img alt="[grouped]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgrouped%5D&color=ffd966" />(folder) summary] [values <img alt="[after]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bafter%5D&color=ffd966" />(hourglass) aggregation.] — Note: Standard SQL uses HAVING because WHERE cannot check aggregated values, while PySpark chains filter onto the grouped dataframe.
+
+**Quote**
+“the special thing about having is that it is applied only after the aggregation after it has done the group by then based on the aggregated value we can apply any filter”
+
+### [De] devil
+
+<img src="../../web/assets/beast-thumbs/devil.png" alt="devil" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Group By Aggregations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGroup%20By%20Aggregations%5D&color=9fd4ff" />(sorting tray) to <img alt="[calculate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalculate%5D&color=ffd966" />(calculator)] [<img alt="[separate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bseparate%5D&color=ffd966" />(knife) summary] [<img alt="[metrics]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetrics%5D&color=ffd966" />(scale) across] [distinct category <img alt="[keys]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bkeys%5D&color=ffd966" />(key).] — Note: The query output can only show the grouping columns and the aggregated metrics.
+
+**Quote**
+“for different payment method what is the average quantity so for each of them if you want to calculate separate aggregation that is where the group by comes into picture”
+
+### [Dd] Dark dragon
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Dark dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Basic Dataframe Aggregations]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BBasic%20Dataframe%20Aggregations%5D&color=9fd4ff" />(abacus) to <img alt="[calculate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcalculate%5D&color=ffd966" />(calculator)] [summary <img alt="[numbers]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnumbers%5D&color=ffd966" />(ruler)] [across the whole <img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=ffd966" />(desk)] [without <img alt="[splitting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsplitting%5D&color=ffd966" />(axe) rows.] — Note: Call count directly on the dataframe, or import min, max, sum, and avg into a select statement.
+
+**Quote**
+“so if we do df dot count we will get the count of records how many records are there in this data frame or in that table”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>PySpark DataFrame Operations, a Warehouse Menu of Rows You Can Taste</strong> · Memory Palace 27: PySpark DataFrame Operations · Character: — · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 27](images/data-analyst/27.jpg)
