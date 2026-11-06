@@ -212,6 +212,66 @@ PasteWindow_CompletionForPasteOutcome(autoSend, needsLearnPrompt) {
     return { state: "✅ Pasted — you can continue", holdMs: 900 }
 }
 
+; Checks if a window/tab title matches the given companion name/identity.
+; Ultra-fast string check (<10 microseconds), zero UIA overhead.
+D2C_CompanionTitleMatches(title, companion) {
+    if (title = "")
+        return false
+    companion := StrLower(Trim(companion))
+    if (companion = "gemini")
+        return IsConsumerGeminiChromeTitle(title)
+    if (companion = "enterprise")
+        return GeminiEnterprise_TitleMatches(title)
+    if (companion = "copilot")
+        return CopilotWeb_TitleMatchesCopilot(title)
+    if (companion = "chatgpt")
+        return InStr(title, "chatgpt", false) > 0
+    return IsConsumerGeminiChromeTitle(title) || GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(title) || InStr(title, "chatgpt", false) > 0
+}
+
+; Generic/placeholder titles for fresh AI chats before they get renamed to a specific conversation topic.
+D2C_IsGenericCompanionTitle(title, companion) {
+    if (title = "")
+        return true
+    t := StrLower(Trim(title))
+    ; Strip browser suffix: " - Google Chrome", " - Microsoft Edge", etc.
+    t := RegExReplace(t, "\s*-\s*(google chrome|microsoft edge|edge|chrome).*$", "")
+    t := Trim(t)
+    companion := StrLower(Trim(companion))
+    if (companion = "gemini")
+        return (t = "gemini" || t = "google gemini" || t = "gemini advanced")
+    if (companion = "enterprise")
+        return (t = "askbosch" || t = "ask bosch" || t = "gemini enterprise" || t = "vertex ai search")
+    if (companion = "copilot")
+        return (t = "copilot" || t = "microsoft copilot" || InStr(t, "copilot: your ai companion"))
+    if (companion = "chatgpt")
+        return (t = "chatgpt" || t = "new chat" || t = "chatgpt - new chat")
+    return false
+}
+
+; Returns true if the user switched tabs on Chrome away from the generating conversation,
+; closed the window, or navigated away.
+; Extremely lightweight: purely Win32 title comparison, no UIA.
+D2C_CompanionTabSwitched(hwnd, companion, initialTitle := "") {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd) || !WinExist("ahk_id " hwnd))
+        return true
+    currentTitle := ""
+    try currentTitle := WinGetTitle("ahk_id " hwnd)
+    catch
+        return true
+    if (currentTitle = "")
+        return true
+    ; If the active tab no longer matches the companion at all (e.g. switched to YouTube, Docs, GitHub, etc.):
+    if (!D2C_CompanionTitleMatches(currentTitle, companion))
+        return true
+    ; If we had an initial title recorded and it was an established conversation name:
+    if (initialTitle != "" && currentTitle != initialTitle) {
+        if (!D2C_IsGenericCompanionTitle(initialTitle, companion))
+            return true
+    }
+    return false
+}
+
 ; True when this companion window is still generating. One targeted stop lookup per call.
 D2C_CompanionHasStop(hwnd, companion) {
     return AiGeneratingWatcher_IsGenerating(hwnd, companion, D2C_ProbeCompanionHasStop)
@@ -450,6 +510,7 @@ class D2C_FlowManager {
         this.MonitorLastCheckTick := 0
         this.HasCopiedForThisResponse := false
         this.ShowReplyHereAfterSend := false
+        this.MonitorInitialTitle := ""
     }
 
     ; --- Entry Points ---
@@ -1287,8 +1348,38 @@ class D2C_FlowManager {
         this.CurrentPhase := "Monitoring"
         this.MonitorRetryCount := 0
         this.MonitorButtonEverFound := false
+        this.MonitorInitialTitle := ""
+        try {
+            if (this.GeminiHwnd && WinExist("ahk_id " this.GeminiHwnd))
+                this.MonitorInitialTitle := WinGetTitle("ahk_id " this.GeminiHwnd)
+        } catch {
+        }
         this.MonitorTimer := this.CheckGeminiCompletion.Bind(this)
         SetTimer(this.MonitorTimer, 500)
+    }
+
+    IsCompanionTabSwitched(companion := "") {
+        if (!this.GeminiHwnd || !DllCall("IsWindow", "ptr", this.GeminiHwnd) || !WinExist("ahk_id " this.GeminiHwnd))
+            return true
+        currentTitle := ""
+        try currentTitle := WinGetTitle("ahk_id " this.GeminiHwnd)
+        catch
+            return true
+        if (currentTitle = "")
+            return true
+        if (companion = "")
+            companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        if (!D2C_CompanionTitleMatches(currentTitle, companion))
+            return true
+        if (this.MonitorInitialTitle != "" && currentTitle != this.MonitorInitialTitle) {
+            if (D2C_IsGenericCompanionTitle(this.MonitorInitialTitle, companion))
+                this.MonitorInitialTitle := currentTitle
+            else
+                return true
+        } else if (this.MonitorInitialTitle = "") {
+            this.MonitorInitialTitle := currentTitle
+        }
+        return false
     }
 
     CheckGeminiCompletion() {
@@ -1299,6 +1390,16 @@ class D2C_FlowManager {
             return
         }
 
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+
+        ; If user switched tabs on Chrome or navigated away, deliberately cancel the flow
+        ; without showing the "Response ready" banner. Fast title-only check (<10µs, no UIA).
+        if (this.IsCompanionTabSwitched(companion)) {
+            SetTimer(this.MonitorTimer, 0)
+            this.Reset()
+            return
+        }
+
         this.MonitorRetryCount++
         if (this.MonitorRetryCount > this.MonitorMaxRetries) {
             SetTimer(this.MonitorTimer, 0)
@@ -1306,7 +1407,6 @@ class D2C_FlowManager {
             return
         }
 
-        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
         if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
             this.MonitorButtonEverFound := true
             return
@@ -1319,6 +1419,10 @@ class D2C_FlowManager {
             isTrulyGone := true
             loop 4 {
                 Sleep 200
+                if (this.IsCompanionTabSwitched(companion)) {
+                    this.Reset()
+                    return
+                }
                 if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
                     isTrulyGone := false
                     break
@@ -1326,6 +1430,10 @@ class D2C_FlowManager {
             }
 
             if (isTrulyGone) {
+                if (this.IsCompanionTabSwitched(companion)) {
+                    this.Reset()
+                    return
+                }
                 ; Timer is already stopped, proceed to next phase
                 try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
                 catch {
@@ -1351,8 +1459,12 @@ class D2C_FlowManager {
         if (this.CurrentPhase = "PromptingAction") {
             return
         }
-        this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        if (this.IsCompanionTabSwitched(companion)) {
+            this.Reset()
+            return
+        }
+        this.CurrentPhase := "PromptingAction"
         ; Same destinations as #!+p. [D] Display shows the reply (same reader as #!+p [D]).
         ; [H] Here stays: Send dictation's [H] skips this menu and lands on the same reader.
         ; [D] on the earlier Send dictation menu is Finance daily; this menu is a different prompt.
