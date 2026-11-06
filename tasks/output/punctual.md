@@ -43,9 +43,6 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 
 ⏳ 🕒 Review your habitual activities
 
-⚡ Print your keybord manual
-ℹ️ "C:\Users\eduev\Meu Drive\24 - Temp\P-45_owners_manual_En_D0.pdf"
-
 🔲 By a VIVO chip and then register in a prepaid plan
 
 🔲 Buy more psychiatric pills

@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Late Night Casino Blackjack Dealer PySpark Aggregations and Window Functions</strong> · Memory Palace 28: PySpark Aggregations and Window Functions · Character: — · 2 beasts · 2 atoms</summary>
 
-_No image_
+![Memory Palace 28](images/data-analyst/28.jpg)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
