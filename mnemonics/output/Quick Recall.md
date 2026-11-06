@@ -175,16 +175,3 @@
 <img src="../web/assets/beast-thumbs/arachne.png" alt="Arachne" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [A] Arachne [Breeding <img alt="[Lines]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLines%5D&color=9fd4ff" />(ruler)] [I choose <img alt="[working]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bworking%5D&color=ffd966" />(hardhat) lines] [for extreme <img alt="[intensity]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bintensity%5D&color=ffd966" />(fire)] [and <img alt="[pet]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpet%5D&color=ffd966" />(leash) lines] [for calm <img alt="[companions]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcompanions%5D&color=ffd966" />(heart)] — Note: Show lines prioritize physical conformation and structure.
 
 </details>
-
-<details open>
-<summary><strong>Piano</strong> · 1 palace · 5 atoms</summary>
-
-**Clefs and Note Placement, Treble and Bass like a Couple in a Bunk Bed**
-
-<img src="../web/assets/beast-thumbs/ape.png" alt="ape" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ap] ape Musical note names must be written in uppercase letters because lowercase letters represent different concepts in music theory notation.
-<img src="../web/assets/beast-thumbs/aoudad.png" alt="aoudad" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Ao] aoudad Treble F is located in the first space at the very bottom of the treble staff
-<img src="../web/assets/beast-thumbs/angel.png" alt="angel" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [An] angel Moving to an adjacent white key on the piano means stepping between a line note and a space note on the musical staff.
-<img src="../web/assets/beast-thumbs/amulet.png" alt="amulet" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Am] amulet Middle C for the left hand is drawn with a downward stem on a ledger line above the bass staff.
-<img src="../web/assets/beast-thumbs/alligator.png" alt="alligator" width="44" height="44" style="vertical-align:middle;height:44px;width:44px;" /> [Al] alligator Bass F sits on the second line from the top and acts as a symmetrical mirror image to Treble G around Middle C.
-
-</details>
