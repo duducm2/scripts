@@ -265,6 +265,11 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 
 - One `image_prompt` per palace row: foreground only; depth slots + a different structural anchor for each beast, with clear empty space between beasts (never a huddle or a shared object); plain English; bizarreness levers reflected. Never name a real person or a copyrighted character (`README §Image composition rules`).
 - Each beast physically engages the fantasy object of its one topic keyword (`README §Image composition rules`). That object is the Keyword on the left of pair 1, whose RecognizableWord is the blue topic in the first square-bracket group. Do not use pair 2 (the orange word in the second clause) and do not act out the rest of the sentence. One beast, one object.
+- **One object only (HARD):** that object is the beast's only prop. NEVER add a harness, cart, saddle, chain, costume, sign, tool, or any second item. Put bizarreness into the beast (scale, pose, odd body feature) or into how it uses its one object.
+- **Far apart (HARD):** spread beasts over the full depth of the photo — nearest a few meters from the camera, farthest at the far end of the street or a distant facade, others in between or up high. Each sentence names its slot, its own anchor, and a distance cue (`a few meters from the camera`, `halfway down the street`, `at the far end of the street`, `up on the roof`). NEVER put two beasts near each other or on the same structure.
+- **Photorealism:** write for a real-photo result — real animals in a real street, matching the photo's light, with contact shadows and real textures. Avoid buzzwords (`8k`, `hyperrealistic`, `cinematic`, `epic`, `fantasy art`); describe light, material, and distance instead.
+- **Locale lock (HARD):** describe only beasts and their one object. NEVER invent new structures or set pieces (towers, bridges, stages, portals, statues, scaffolding, giant machines, billboards, vehicles, crowds) and NEVER ask to repaint, rebuild, or change weather, season, or time of day. A beast MAY damage its own anchor while acting with its object (crack, dent, debris) — keep it local; the place stays recognizable.
+- **Shape (Gemini / Nano Banana):** plain descriptive sentences, one per beast in slot order — `Depth slot: {slot}, {named anchor}, {distance cue}: a {scale} {beast} {action} its {one object}.` — then end with: `Keep the photo exactly as it is; add only these beasts; real-photo look with matching light and contact shadows; beasts far apart.`
 - Leave `character_name` blank. In `image_prompt` NEVER write a real, celebrity, historical, or copyrighted character name.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
 
@@ -308,6 +313,10 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 | Each new `concept` core is 4–5 square-bracket groups; Note unchunked; quote never wrapped as concept groups | Yes |
 | 5–6 keyword pairs: formal name + bare infinitive from group 1, then one single concrete word from each later group | Yes |
 | image_prompt filled per new palace | Yes |
+| image_prompt: exactly one object per beast (pair-1 Keyword); no harness, cart, costume, or second prop | Yes |
+| image_prompt: beasts far apart (near / middle / far / high), each with its own anchor and a distance cue | Yes |
+| image_prompt: no new structures or place changes; only local damage from a beast's action | Yes |
+| image_prompt: real-photo wording; no `8k` / `hyperrealistic` / `cinematic` buzzwords | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 
 ---
