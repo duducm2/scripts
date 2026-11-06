@@ -273,7 +273,6 @@ ToggleAICompanionChromeTab() {
     Send("^" . targetTab)
     Sleep 120
     g_GeminiToggleTab := targetTab
-    ShowSingleCharTabBanner_Utils(targetTab)
 }
 
 ; Map ResolveGlobalAICompanion() → AI_COMPANION_* ids for AiCompanionModels_*.

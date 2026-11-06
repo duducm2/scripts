@@ -78,7 +78,6 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
         if (switchToFirstTab) {
             Send("^1")
             Sleep 280
-            ShowSingleCharTabBanner_Utils(1)
         }
 
         try {

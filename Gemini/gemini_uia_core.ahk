@@ -400,9 +400,8 @@ GeminiWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread,
 }
 
 ; =============================================================================
-; Show tab indicator banner (1 = blue, 2 = yellow): square, center of active-window monitor.
-; Delegates to Utils for identical behavior as #!+U tab-switching in Utils.ahk. Auto-hides after 700 ms.
+; Tab indicator banner (1 = blue, 2 = yellow) — permanently removed per user request.
 ; =============================================================================
 ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
-    ShowSingleCharTabBanner_Utils(tabNumber)
+    return
 }

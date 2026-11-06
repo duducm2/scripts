@@ -180,7 +180,6 @@ class GeminiAsyncReadAloud {
         this.ClearStep()
         if (this.UseTrashTab) {
             Send("^2")
-            ShowGeminiTabBanner(2, this.GeminiHwnd)
             this.ScheduleStep(this.BuildUIA.Bind(this), GEMINI_TAB_SWITCH_MS)
             return
         }

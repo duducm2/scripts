@@ -70,14 +70,10 @@ FastCopyModeBanner_Hide() {
 }
 
 ; =============================================================================
-; Single-character tab banner (uses standard loading indicator). tabNumber 1 = blue, 2 = yellow. Auto-hides after 700 ms.
+; Single-character tab banner (1 = blue, 2 = yellow) — permanently removed per user request.
 ; =============================================================================
 ShowSingleCharTabBanner_Utils(tabNumber) {
-    msg := String(tabNumber)
-    bgColor := (tabNumber = 1) ? "0000FF" : "FFFF00"
-    StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 120, fontSize: 72,
-        passiveBgColor: bgColor, alpha: 178 })
-    StandardLoadingBar_Hide(700)
+    return
 }
 
 ; =============================================================================

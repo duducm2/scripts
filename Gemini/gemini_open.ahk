@@ -59,8 +59,8 @@ InitializeGeminiFirstTime() {
                     break
                 Sleep 100
             }
-            if (promptField)
-                SetTimer(() => Gemini_ShowDeferredTabBanner(uia), -1)
+            if (promptField) {
+            }
         } catch {
         }
 
@@ -297,238 +297,228 @@ GeminiOpen_FocusDocPrompt(doc) {
     return 0
 }
 
-    GeminiOpen_FocusFreshPage(hwnd, companion, host, playChime := true) {
-        deadline := A_TickCount + 8000
-        while (A_TickCount < deadline) {
-            if (!WinExist("ahk_id " hwnd))
-                return false
-            doc := GeminiOpen_FindOnscreenDoc(hwnd, host)
-            if (IsObject(doc)) {
-                try {
-                    if (companion = "enterprise") {
-                            if (GeminiEnterprise_FocusComposer(doc, playChime)) {
-                                GeminiEnterprise_CacheHwnd(hwnd)
-                                GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
-                                return true
-                            }
-                        } else if (companion = "copilot") {
-                                if (CopilotWeb_FocusComposer(doc, playChime)) {
-                                    CopilotWeb_CacheHwnd(hwnd)
-                                    CopilotWeb_RefreshHotkeyContext(hwnd, true)
-                                    return true
-                                }
-                            } else {
-                                el := GeminiOpen_FocusDocPrompt(doc)
-                                if (el) {
-                                    try el.SetFocus()
-                                    catch {
-                                    }
-                                    Sleep 40
-                                    focusedOk := false
-                                    try {
-                                        if (el.HasKeyboardFocus)
-                                            focusedOk := true
-                                    } catch {
-                                    }
-                                            if (!focusedOk) {
-                                                try el.Click()
-                                                Sleep 40
-                                            }
-                                        startFocus := A_TickCount
-                                        while (A_TickCount - startFocus < 350) {
-                                            try {
-                                                if (el.HasKeyboardFocus) {
-                                                    focusedOk := true
-                                                    break
-                                                }
-                                            } catch {
-                                                focusedOk := true
-                                                break
-                                            }
-                                            Sleep 25
-                                        }
-                                        if (focusedOk) {
-                                            if (playChime)
-                                                Utils_PlayGeminiFocusedChime()
-                                            try {
-                                                uia := UIA_Browser("ahk_id " hwnd)
-                                                SetTimer(() => Gemini_ShowDeferredTabBanner(uia), -1)
-                                            } catch {
-                                            }
-                                            return true
-                                        }
-                                    }
-                                }
-                            }
-                            catch {
-                            }
-                        }
-                        Sleep 200
+GeminiOpen_FocusFreshPage(hwnd, companion, host, playChime := true) {
+    deadline := A_TickCount + 8000
+    while (A_TickCount < deadline) {
+        if (!WinExist("ahk_id " hwnd))
+            return false
+        doc := GeminiOpen_FindOnscreenDoc(hwnd, host)
+        if (IsObject(doc)) {
+            try {
+                if (companion = "enterprise") {
+                    if (GeminiEnterprise_FocusComposer(doc, playChime)) {
+                        GeminiEnterprise_CacheHwnd(hwnd)
+                        GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
+                        return true
                     }
-                    return false
-                }
-
-                ; New tab in the main companion window, loaded with a fresh companion page and a new chat.
-                GeminiOpen_NewCompanionTab() {
-                    hwnd := GeminiOpen_CompanionHwnd()
-                    if (!hwnd) {
-                        GeminiOpen_OpenOrFocus()
-                        return
+                } else if (companion = "copilot") {
+                    if (CopilotWeb_FocusComposer(doc, playChime)) {
+                        CopilotWeb_CacheHwnd(hwnd)
+                        CopilotWeb_RefreshHotkeyContext(hwnd, true)
+                        return true
                     }
-                    url := GeminiOpen_LaunchUrl()
-                    host := GeminiOpen_UrlHost(url)
-                    if (url = "" || host = "") {
-                        ShowCenteredOverlay_Utils("❌ Error: Companion URL unavailable.", 2000, BANNER_ACCENT_ERROR)
-                        return
-                    }
-                    try {
-                        if !WinActive("ahk_id " hwnd) {
-                            WinActivate("ahk_id " hwnd)
-                            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000) {
-                                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
-                                    BANNER_ACCENT_ERROR)
-                                return
-                            }
-                        }
-                    } catch {
-                        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-                        return
-                    }
-
-                    label := "Gemini"
-                    try label := GetGlobalAIProviderLabel()
-                    StandardLoadingBar_Show("📤 New " . label . " tab...", BANNER_ACCENT_INTERMEDIATE)
-                    GeminiOpen_WaitChordUp()
-                    companion := ResolveGlobalAICompanion()
-                    try {
-                        if (!GeminiOpen_OpenBlankTab(hwnd) || !GeminiOpen_CommitUrl(hwnd, url, host)) {
-                            StandardLoadingBar_Hide(0)
-                            ShowCenteredOverlay_Utils("❌ New companion tab did not open.", 2000, BANNER_ACCENT_ERROR)
-                            return
-                        }
-                        focused := GeminiOpen_FocusFreshPage(hwnd, companion, host, false)
-                        StandardLoadingBar_Hide(0)
-                        if (focused) {
-                            try AiCompanion_StartNewChat(GlobalAICompanionModelsId())
-                            catch {
-                            }
-                            GeminiOpen_FocusFreshPage(hwnd, companion, host, true)
-                        } else {
-                            GeminiOpen_FocusFreshPage(hwnd, companion, host, true)
-                        }
-                    } catch {
-                        StandardLoadingBar_Hide(0)
-                        ShowCenteredOverlay_Utils("❌ New companion tab did not open.", 2000, BANNER_ACCENT_ERROR)
-                    }
-                }
-
-                GeminiOpen_OpenOrFocus() {
-                    companion := ResolveGlobalAICompanion()
-                    if (companion = "enterprise")
-                        return GeminiEnterprise_OpenOrFocus()
-                    if (companion = "copilot")
-                        return CopilotWeb_OpenOrFocus()
-                    t0 := A_TickCount
-                    SetTitleMatchMode(2)
-                    if hwnd := GetGeminiWindowHwnd() {
-                        alreadyActive := false
-                        try
-                            alreadyActive := WinActive("ahk_id " hwnd)
+                } else {
+                    el := GeminiOpen_FocusDocPrompt(doc)
+                    if (el) {
+                        try el.SetFocus()
                         catch {
                         }
-                        if (!alreadyActive) {
+                        Sleep 40
+                        focusedOk := false
+                        try {
+                            if (el.HasKeyboardFocus)
+                                focusedOk := true
+                        } catch {
+                        }
+                        if (!focusedOk) {
+                            try el.Click()
+                            Sleep 40
+                        }
+                        startFocus := A_TickCount
+                        while (A_TickCount - startFocus < 350) {
                             try {
-                                WinActivate("ahk_id " hwnd)
-                            } catch {
-                                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
-                                    BANNER_ACCENT_ERROR)
-                                return
-                            }
-                            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000)
-                                return
-                        }
-
-                        if (alreadyActive && GEMINI_OPEN_FAST_SETTLE_MS > 0)
-                            Sleep GEMINI_OPEN_FAST_SETTLE_MS
-
-                        try
-                            uia := UIA_Browser("ahk_id " hwnd)
-                        catch {
-                            ShowCenteredOverlay_Utils("❌ Error: Could not attach to Gemini window.", 2000,
-                                BANNER_ACCENT_ERROR)
-                            return
-                        }
-
-                        Gemini_WaitForPromptFieldDiscoverable(uia)
-
-                        focusPhase := ""
-                        promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase)
-                        if (!promptField) {
-                            deadline := A_TickCount + 2000
-                            while (A_TickCount < deadline) {
-                                Sleep 50
-                                if (promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase))
+                                if (el.HasKeyboardFocus) {
+                                    focusedOk := true
                                     break
+                                }
+                            } catch {
+                                focusedOk := true
+                                break
                             }
+                            Sleep 25
                         }
-                        if (promptField) {
-                            tBanner := A_TickCount
-                            SetTimer(() => (Gemini_ShowDeferredTabBanner(uia), GeminiPerfLog("tab_banner_deferred",
-                                tBanner)), -1)
+                        if (focusedOk) {
+                            if (playChime)
+                                Utils_PlayGeminiFocusedChime()
+                            return true
                         }
-                        GeminiPerfLog(focusPhase != "" ? focusPhase : "focus_failed", t0)
-                        GeminiPerfLog("activation", t0)
-                    } else {
-                        InitializeGeminiFirstTime()
                     }
                 }
+            }
+            catch {
+            }
+        }
+        Sleep 200
+    }
+    return false
+}
 
-                #!+i:: {
-                    global g_GeminiOpen_DoubleTapArmed, g_GeminiOpen_LastPressTick, g_GeminiOpen_DoubleTapTimer
+; New tab in the main companion window, loaded with a fresh companion page and a new chat.
+GeminiOpen_NewCompanionTab() {
+    hwnd := GeminiOpen_CompanionHwnd()
+    if (!hwnd) {
+        GeminiOpen_OpenOrFocus()
+        return
+    }
+    url := GeminiOpen_LaunchUrl()
+    host := GeminiOpen_UrlHost(url)
+    if (url = "" || host = "") {
+        ShowCenteredOverlay_Utils("❌ Error: Companion URL unavailable.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        if !WinActive("ahk_id " hwnd) {
+            WinActivate("ahk_id " hwnd)
+            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000) {
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
+                    BANNER_ACCENT_ERROR)
+                return
+            }
+        }
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
 
-                    ; Programmatic / synthetic trigger (SendInput or Send): open/focus companion directly
-                    if !GetKeyState("i", "P") {
-                        GeminiOpen_OpenOrFocus()
-                        return
-                    }
+    label := "Gemini"
+    try label := GetGlobalAIProviderLabel()
+    StandardLoadingBar_Show("📤 New " . label . " tab...", BANNER_ACCENT_INTERMEDIATE)
+    GeminiOpen_WaitChordUp()
+    companion := ResolveGlobalAICompanion()
+    try {
+        if (!GeminiOpen_OpenBlankTab(hwnd) || !GeminiOpen_CommitUrl(hwnd, url, host)) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ New companion tab did not open.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        focused := GeminiOpen_FocusFreshPage(hwnd, companion, host, false)
+        StandardLoadingBar_Hide(0)
+        if (focused) {
+            try AiCompanion_StartNewChat(GlobalAICompanionModelsId())
+            catch {
+            }
+            GeminiOpen_FocusFreshPage(hwnd, companion, host, true)
+        } else {
+            GeminiOpen_FocusFreshPage(hwnd, companion, host, true)
+        }
+    } catch {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ New companion tab did not open.", 2000, BANNER_ACCENT_ERROR)
+    }
+}
 
-                    thresholdMs := 400
-                    try thresholdMs := AI_QD_DOUBLE_TAP_MS
-                    catch {
-                        thresholdMs := 400
-                    }
+GeminiOpen_OpenOrFocus() {
+    companion := ResolveGlobalAICompanion()
+    if (companion = "enterprise")
+        return GeminiEnterprise_OpenOrFocus()
+    if (companion = "copilot")
+        return CopilotWeb_OpenOrFocus()
+    t0 := A_TickCount
+    SetTitleMatchMode(2)
+    if hwnd := GetGeminiWindowHwnd() {
+        alreadyActive := false
+        try
+            alreadyActive := WinActive("ahk_id " hwnd)
+        catch {
+        }
+        if (!alreadyActive) {
+            try {
+                WinActivate("ahk_id " hwnd)
+            } catch {
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
+                    BANNER_ACCENT_ERROR)
+                return
+            }
+            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000)
+                return
+        }
 
-                    pressTime := A_TickCount
-                    elapsed := (g_GeminiOpen_LastPressTick > 0) ? (pressTime - g_GeminiOpen_LastPressTick) : 9999
-                    isSecondTap := g_GeminiOpen_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
+        if (alreadyActive && GEMINI_OPEN_FAST_SETTLE_MS > 0)
+            Sleep GEMINI_OPEN_FAST_SETTLE_MS
 
-                    KeyWait "i"
+        try
+            uia := UIA_Browser("ahk_id " hwnd)
+        catch {
+            ShowCenteredOverlay_Utils("❌ Error: Could not attach to Gemini window.", 2000,
+                BANNER_ACCENT_ERROR)
+            return
+        }
 
-                    if (isSecondTap) {
-                        GeminiOpen_DisarmDoubleTap()
-                        GeminiOpen_NewCompanionTab()
-                        return
-                    }
+        Gemini_WaitForPromptFieldDiscoverable(uia)
 
-                    if (g_GeminiOpen_DoubleTapTimer) {
-                        SetTimer(g_GeminiOpen_DoubleTapTimer, 0)
-                        g_GeminiOpen_DoubleTapTimer := 0
-                    }
-                    g_GeminiOpen_LastPressTick := A_TickCount
-                    g_GeminiOpen_DoubleTapArmed := true
-                    g_GeminiOpen_DoubleTapTimer := ObjBindMethod(GeminiOpen_DoubleTapTimerObj, "OnSingleTapTimeout")
-                    SetTimer(g_GeminiOpen_DoubleTapTimer, -thresholdMs)
-                }
+        focusPhase := ""
+        promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase)
+        if (!promptField) {
+            deadline := A_TickCount + 2000
+            while (A_TickCount < deadline) {
+                Sleep 50
+                if (promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase))
+                    break
+            }
+        }
+        GeminiPerfLog(focusPhase != "" ? focusPhase : "focus_failed", t0)
+        GeminiPerfLog("activation", t0)
+    } else {
+        InitializeGeminiFirstTime()
+    }
+}
 
-                ; Ready chime for flows that do not use Gemini_FocusPromptWithChime (e.g. legacy call sites).
-                Gemini_PlayReadyChime(minIntervalMs := 400) {
-                    static lastChimeTick := 0
-                    if (!IsSoundEnabled())
-                        return false
-                    now := A_TickCount
-                    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
-                        return false
-                    lastChimeTick := now
-                    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
-                    return true
-                }
+#!+i:: {
+    global g_GeminiOpen_DoubleTapArmed, g_GeminiOpen_LastPressTick, g_GeminiOpen_DoubleTapTimer
+
+    ; Programmatic / synthetic trigger (SendInput or Send): open/focus companion directly
+    if !GetKeyState("i", "P") {
+        GeminiOpen_OpenOrFocus()
+        return
+    }
+
+    thresholdMs := 400
+    try thresholdMs := AI_QD_DOUBLE_TAP_MS
+    catch {
+        thresholdMs := 400
+    }
+
+    pressTime := A_TickCount
+    elapsed := (g_GeminiOpen_LastPressTick > 0) ? (pressTime - g_GeminiOpen_LastPressTick) : 9999
+    isSecondTap := g_GeminiOpen_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
+
+    KeyWait "i"
+
+    if (isSecondTap) {
+        GeminiOpen_DisarmDoubleTap()
+        GeminiOpen_NewCompanionTab()
+        return
+    }
+
+    if (g_GeminiOpen_DoubleTapTimer) {
+        SetTimer(g_GeminiOpen_DoubleTapTimer, 0)
+        g_GeminiOpen_DoubleTapTimer := 0
+    }
+    g_GeminiOpen_LastPressTick := A_TickCount
+    g_GeminiOpen_DoubleTapArmed := true
+    g_GeminiOpen_DoubleTapTimer := ObjBindMethod(GeminiOpen_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(g_GeminiOpen_DoubleTapTimer, -thresholdMs)
+}
+
+; Ready chime for flows that do not use Gemini_FocusPromptWithChime (e.g. legacy call sites).
+Gemini_PlayReadyChime(minIntervalMs := 400) {
+    static lastChimeTick := 0
+    if (!IsSoundEnabled())
+        return false
+    now := A_TickCount
+    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
+        return false
+    lastChimeTick := now
+    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+    return true
+}

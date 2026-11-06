@@ -57,7 +57,6 @@ class GeminiAsyncTTS {
         ; Chrome convention: Ctrl+2 selects the second tab in the window.
         Send("^2")
         Sleep 150
-        ShowGeminiTabBanner(2, this.GeminiHwnd)
         uia := UIA_Browser()
         Sleep 300
         promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)

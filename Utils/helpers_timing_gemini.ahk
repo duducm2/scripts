@@ -194,125 +194,117 @@ Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
         promptField.Click()
     catch {
     }
-        if (Gemini_PollPromptKeyboardFocus(promptField, Max(300, GEMINI_PROMPT_FOCUS_TIMEOUT_MS))) {
-            outPhase := "direct_focus"
-            if (playChime)
-                Utils_PlayGeminiFocusedChime()
-            return promptField
-        }
+    if (Gemini_PollPromptKeyboardFocus(promptField, Max(300, GEMINI_PROMPT_FOCUS_TIMEOUT_MS))) {
+        outPhase := "direct_focus"
+        if (playChime)
+            Utils_PlayGeminiFocusedChime()
+        return promptField
+    }
 
-        if (useAnchorFallback) {
-            anchorButton := Gemini_FindUploadAnchorButton(uia)
-            if (anchorButton && Gemini_ApplyAnchorBacktrack(anchorButton)) {
+    if (useAnchorFallback) {
+        anchorButton := Gemini_FindUploadAnchorButton(uia)
+        if (anchorButton && Gemini_ApplyAnchorBacktrack(anchorButton)) {
+            try
+                promptField := FindGeminiPromptField(uia)
+            catch {
+            }
+            if (promptField) {
                 try
-                    promptField := FindGeminiPromptField(uia)
+                    promptField.SetFocus()
                 catch {
                 }
-                if (promptField) {
+                if (!Gemini_PollPromptKeyboardFocus(promptField)) {
                     try
-                        promptField.SetFocus()
+                        promptField.Click()
                     catch {
                     }
-                    if (!Gemini_PollPromptKeyboardFocus(promptField)) {
-                        try
-                            promptField.Click()
-                        catch {
-                        }
-                        Gemini_PollPromptKeyboardFocus(promptField, Max(300, GEMINI_PROMPT_FOCUS_TIMEOUT_MS))
-                    }
-                    try {
-                        if (promptField.HasKeyboardFocus) {
-                            outPhase := "anchor_fallback"
-                            if (playChime)
-                                Utils_PlayGeminiFocusedChime()
-                            return promptField
-                        }
-                    } catch {
-                    }
+                    Gemini_PollPromptKeyboardFocus(promptField, Max(300, GEMINI_PROMPT_FOCUS_TIMEOUT_MS))
                 }
-            }
-        }
-
-        return false
-    }
-
-    ; Shared by Gemini.ahk #!+i, Shift keys Fast Copy, and async flows. Resolves UIA when omitted.
-    Gemini_FocusPromptSameAsOpenHotkey(uia, playChime := true) {
-        if (!IsObject(uia)) {
-            try
-                uia := UIA_Browser()
-            catch
-                return false
-        }
-        return Gemini_FocusPromptWithChime(uia, { playChime: playChime, useAnchorFallback: true })
-    }
-
-    Gemini_WaitForPromptFieldDiscoverable(uia, timeoutMs := 0) {
-        if (timeoutMs <= 0)
-            timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS + 200
-        start := A_TickCount
-        while (A_TickCount - start < timeoutMs) {
-            try {
-                if (FindGeminiPromptField(uia))
-                    return true
-            } catch {
-            }
-            Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-        }
-        return false
-    }
-
-    Gemini_ShowDeferredTabBanner(uia) {
-        try {
-            tabInfo := GetChromeActiveTabIndex(uia)
-            if (!tabInfo) {
-                Sleep 80
-                tabInfo := GetChromeActiveTabIndex(uia)
-            }
-            if (tabInfo && tabInfo.count >= 2 && tabInfo.index)
-                ShowSingleCharTabBanner_Utils(tabInfo.index)
-        } catch {
-        }
-    }
-
-    FocusGeminiAskFieldForHwnd(geminiHwnd, playChime := false) {
-        if (!geminiHwnd)
-            return false
-        try {
-            if (!WinActive("ahk_id " geminiHwnd))
-                return false
-        } catch {
-            return false
-        }
-        try {
-            uia := UIA_Browser("ahk_id " geminiHwnd)
-            result := Gemini_FocusPromptWithChime(uia, { playChime: playChime, useAnchorFallback: true })
-            return !!result
-        } catch {
-        }
-        return false
-    }
-
-    ; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
-    GetChromeActiveTabIndex(uia) {
-        try {
-            uia.GetCurrentMainPaneElement()
-            tabs := uia.GetTabs()
-            if (!tabs.Length)
-                return 0
-            current := uia.GetTab("")
-            if (!current)
-                return 0
-            rid := current.RuntimeId
-            for i, tab in tabs {
                 try {
-                    if (tab.RuntimeId = rid)
-                        return { index: i, count: tabs.Length }
+                    if (promptField.HasKeyboardFocus) {
+                        outPhase := "anchor_fallback"
+                        if (playChime)
+                            Utils_PlayGeminiFocusedChime()
+                        return promptField
+                    }
                 } catch {
-                    continue
                 }
             }
+        }
+    }
+
+    return false
+}
+
+; Shared by Gemini.ahk #!+i, Shift keys Fast Copy, and async flows. Resolves UIA when omitted.
+Gemini_FocusPromptSameAsOpenHotkey(uia, playChime := true) {
+    if (!IsObject(uia)) {
+        try
+            uia := UIA_Browser()
+        catch
+            return false
+    }
+    return Gemini_FocusPromptWithChime(uia, { playChime: playChime, useAnchorFallback: true })
+}
+
+Gemini_WaitForPromptFieldDiscoverable(uia, timeoutMs := 0) {
+    if (timeoutMs <= 0)
+        timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS + 200
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        try {
+            if (FindGeminiPromptField(uia))
+                return true
         } catch {
         }
-        return 0
+        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
     }
+    return false
+}
+
+Gemini_ShowDeferredTabBanner(uia) {
+    ; Tab indicator banner permanently removed per user request.
+    return
+}
+
+FocusGeminiAskFieldForHwnd(geminiHwnd, playChime := false) {
+    if (!geminiHwnd)
+        return false
+    try {
+        if (!WinActive("ahk_id " geminiHwnd))
+            return false
+    } catch {
+        return false
+    }
+    try {
+        uia := UIA_Browser("ahk_id " geminiHwnd)
+        result := Gemini_FocusPromptWithChime(uia, { playChime: playChime, useAnchorFallback: true })
+        return !!result
+    } catch {
+    }
+    return false
+}
+
+; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
+GetChromeActiveTabIndex(uia) {
+    try {
+        uia.GetCurrentMainPaneElement()
+        tabs := uia.GetTabs()
+        if (!tabs.Length)
+            return 0
+        current := uia.GetTab("")
+        if (!current)
+            return 0
+        rid := current.RuntimeId
+        for i, tab in tabs {
+            try {
+                if (tab.RuntimeId = rid)
+                    return { index: i, count: tabs.Length }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return 0
+}
