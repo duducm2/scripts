@@ -154,7 +154,8 @@ id,study_id,palace_number,title,mnemonic_name,character_name,image_rel_path,dept
 ```
 
 - Preserve stable `id` values when palaces survive reduction; `palace_number` may be left empty (importer assigns next free index) or renumbered if empty palaces are removed. Keep a clear `title`.
-- `mnemonic_name` — copy the existing name for every palace that already has one. Invent one only for a palace that is new in this pack. Same standard as story generation: topic words stay in the name, glued to one pop-culture, sensory, funny, sexy, strange, or slightly taboo hook. Not a short rhyme. Not a beast count or beast name. Quality bar: `Mariah Carey Christmas Snowflake Schema Core`; `Database Views for Gossipers and Acid for the Ones Who Like the Illegal Stuff`. Never put a real person or copyrighted character in `character_name` or `image_prompt`.
+  - **Update title when necessary (HARD):** If removing, merging, or updating beasts changes the scope of the palace—especially if dropped beasts or their actions contributed to the original palace `title`—you MUST update `title` to accurately reflect the surviving atoms and topic. Do not keep a title that references concepts or actions that are no longer in this palace.
+- `mnemonic_name` — copy the existing name for every palace that already has one, UNLESS the removed/changed beasts or actions were part of what created that mnemonic hook. If beasts whose actions formed the hook were removed, update `mnemonic_name` to reflect the surviving topics and a new hook. Invent one for a palace that is new in this pack. Same standard as story generation: topic words stay in the name, glued to one pop-culture, sensory, funny, sexy, strange, or slightly taboo hook. Not a short rhyme. Not a beast count or beast name. Quality bar: `Mariah Carey Christmas Snowflake Schema Core`; `Database Views for Gossipers and Acid for the Ones Who Like the Illegal Stuff`. Never put a real person or copyrighted character in `character_name` or `image_prompt`.
 - Refresh every surviving row’s `image_prompt` (foreground only; depth slots; `README §Image composition rules`; leave `character_name` blank and NEVER write a real or copyrighted character name into `image_prompt`).
 - `depth_slots_used` = post-reduction beast count (0–5).
 - `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.
@@ -236,6 +237,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
    - When the instruction names more than one of these, finish all of them before you re-peg.
 4. Re-peg the remaining beasts inside the scope. Continue after the bridge peg. Do not restart at `A`.
 5. Re-pack **5 beasts per palace** (remainder < 5 only on the last palace that still has beasts). When a deletion or merge would leave 1–4 beasts and a later street still has beasts, **pull those next beasts forward**. Under `Exclude:`, list every palace that ends empty (`<palace_number> <palace_id>`, same line or the next line). To drop a knowledge atom instead of naming the palace, list its `BEAST_` or `ATOM_` id in that same block. The importer deletes that beast and its atom, and deletes a palace that then has no beasts left. Leave `character_name` blank. Leave `story` empty. Leave `zone` and `zone_label` empty. Set `is_smashed` to `0`. Refresh `image_prompt` and `depth_slots_used` on every palace that gains or loses a beast.
+6. **Update palace title and mnemonic name when needed:** If beasts removed or modified were part of what defined the palace's `title` or `mnemonic_name` hook, update both fields so they accurately reflect only the surviving beasts, concepts, and actions. Never leave a title or mnemonic name referring to atoms that no longer exist in that palace.
 
 ## Image prompts
 
@@ -261,6 +263,7 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | Scope locked; PREVIEW starts with Scope:; pack has only in-scope rows (no whole-study dump from A; no out-of-scope atoms from inventory) | Yes |
 | Unbroken peg sequence **in scope**; pack 5/palace with remainder < 5 only on highest **in-scope** palace_number; later streets pulled forward when needed; emptied later palaces on `Exclude:` and absent from FILE; no sparse-then-full; one atom per beast | Yes |
 | Facts and quotes the instruction kept are intact; a replacement drops only the deprecated facts | Yes |
+| Palace title and mnemonic_name updated if removed or changed beasts were part of their original creation | Yes |
 | Plain everyday English on concept (+ Note) / image_prompt / PREVIEW Concept; no archaic/old-fashioned/literary diction; no diction upgrades; quotes untouched; `story` left empty | Yes |
 | Each atom the instruction left alone has `concept` and `keywords` copied byte-for-byte; merged quotes are joined with ` / ` on one line | Yes |
 | A concept newly authored in this run (not copied) is 4–5 square-bracket groups; Note unchunked; quote never wrapped as concept groups | Yes |
