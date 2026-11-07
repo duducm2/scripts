@@ -52,6 +52,7 @@ Na fase em que ela está (75 dias), o protocolo geralmente segue esta estrutura:
 ⚡ Reschedule your psychiatric appointment around January 6th
 
 ⚡ Fix bosch powertool
+ℹ️ image.png
 
 ## Dissertation
 

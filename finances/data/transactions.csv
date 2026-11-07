@@ -313,3 +313,9 @@ TX318,2026-11-04,Maintenance for our new home,"820,00",expense,CAT_NEWHOUSE,ACC_
 TX319,2026-11-04,Transfer from long-term to checking account,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX320,2026-11-05,Construction man,"836,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX321,2026-11-05,transfer,"836,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX322,2026-11-06,groceries,"58,24",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX323,2026-11-06,haircut,"140,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1,1,,0
+TX324,2026-11-06,construction worker reconstructing our new home,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX325,2026-11-06,transfer long-term to checking,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX326,2026-11-06,groceries,"77,00",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX327,2026-11-06,drug pills,"48,06",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0

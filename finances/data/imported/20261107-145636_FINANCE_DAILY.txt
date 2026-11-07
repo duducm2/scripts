@@ -1,0 +1,13 @@
+﻿===PREVIEW===
+6 row(s) · coverage: groceries (credit), haircut (expense), construction worker for new house (expense), internal transfer (long-term to checking), groceries (card_expense default), drug pills (card_expense default)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+groceries,"58,24",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+haircut,"140,00",expense,CAT_BELEZA,ACC_MERCADOP,,,1
+construction worker reconstructing our new home,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+transfer long-term to checking,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+groceries,"77,00",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+drug pills,"48,06",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===
