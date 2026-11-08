@@ -158,6 +158,7 @@ CareerForm_CaptureWindow() {
 
 CareerForm_OpenUia() {
     inspector := A_ScriptDir "\..\vendor\UIA-v2\UIATreeInspector.ahk"
+    inspectorDir := A_ScriptDir "\..\vendor\UIA-v2"
     if !FileExist(inspector) {
         CareerForm_Fail("UIA Tree Inspector was not found.")
     }
@@ -173,7 +174,7 @@ CareerForm_OpenUia() {
         CareerForm_WriteResult({ ok: true, error: "" })
         return
     }
-    try Run('"' A_AhkPath '" "' inspector '"')
+    try Run('"' A_AhkPath '" "' inspector '"', inspectorDir)
     catch as err {
         CareerForm_Fail(err.Message)
     }
@@ -211,6 +212,7 @@ CareerForm_ClipboardUnicode() {
 
 CareerForm_EnsureInspector() {
     inspector := A_ScriptDir "\..\vendor\UIA-v2\UIATreeInspector.ahk"
+    inspectorDir := A_ScriptDir "\..\vendor\UIA-v2"
     if !FileExist(inspector)
         CareerForm_Fail("UIA Tree Inspector was not found.")
     hwnd := 0
@@ -220,7 +222,7 @@ CareerForm_EnsureInspector() {
     }
     launched := false
     if (!hwnd) {
-        try Run('"' A_AhkPath '" "' inspector '"')
+        try Run('"' A_AhkPath '" "' inspector '"', inspectorDir)
         catch as err {
             CareerForm_Fail(err.Message)
         }
@@ -265,6 +267,9 @@ CareerForm_DumpTree(windowName, outPath) {
         CareerForm_Fail("Window name is required.")
     if (outPath = "")
         CareerForm_Fail("Missing --out for the UI tree.")
+
+    ; Ensure UIA Tree Inspector is open and visible on screen
+    try CareerForm_EnsureInspector()
 
     ; 1. If clipboard already has a valid UIA tree, use it immediately
     before := CareerForm_ClipboardUnicode()
