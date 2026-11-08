@@ -1242,6 +1242,7 @@ cheatSheets["Memory Palace"] := "
     🆕 [Shift+L] Open latest palace for the selected study
     📖 [Shift+M] Method
     👕 [Shift+W] Wardrobe (equip or unequip relics)
+    🎭 [Alt+C] Characters (PAO catalog & CRUD)
     🗂 [Shift+B] Browse
     ▶ [Shift+Y] YouTube playlists (letter jumps to a title; Enter opens a new window)
     🔗 [Shift+1] Links (study video / article / favorite)
@@ -1750,6 +1751,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Shift+L] > Latest palace (selected study)
     [Shift+M] > Method
     [Shift+W] > Wardrobe (equip or unequip relics)
+    [Alt+C] > Characters (PAO catalog & CRUD)
     [Shift+B] > Browse
     [Shift+1] > Links
     [Shift+H] > Help (glossary · Practice / Plans GitHub)

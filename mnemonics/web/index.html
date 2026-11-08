@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Memory Palace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/dashboard.css?v=palacename2" />
+    <link rel="stylesheet" href="/dashboard.css?v=pao_chars_compact_2" />
     <style>
       /* Secondary app chrome — does not override Practice/Plans dashboard look */
       .app-more {
@@ -793,6 +793,415 @@
           font-size: 0.95rem;
         }
       }
+    
+      /* High-priority RPG Navigation & Dense Characters Table styles */
+      #btnCharacters {
+        background: var(--rpg-fill);
+        color: var(--rpg-ink);
+        border: 1px solid var(--rpg-edge);
+        border-radius: 2px;
+        box-shadow: var(--rpg-inset);
+        padding: 0.5rem 0.72rem;
+        line-height: 1;
+        font-family: Georgia, "Palatino Linotype", serif;
+        font-size: 0.95rem;
+        font-weight: 650;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        height: 2.35rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+      }
+      #btnCharacters:hover,
+      #btnCharacters.active {
+        background: var(--rpg-brass);
+        color: #1c1408;
+        border-color: #e6cc8a;
+      }
+      #btnCharacters:focus {
+        outline: 2px solid #fff4d0;
+        outline-offset: 2px;
+      }
+      [data-ico="user"]::before {
+        content: "";
+        width: 1.05em;
+        height: 1.05em;
+        min-width: 14px;
+        min-height: 14px;
+        flex: 0 0 auto;
+        background-color: currentColor;
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%2F%3E%3C%2Fsvg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%2F%3E%3C%2Fsvg%3E");
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+      }
+      #charactersPanel.hidden {
+        display: none !important;
+      }
+      .characters-layout {
+        padding: 0.85rem 1.5rem 2.5rem;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      .char-top-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        margin-bottom: 0.75rem;
+      }
+      .char-title-group {
+        display: flex;
+        align-items: baseline;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+      }
+      .char-title-group h2 {
+        margin: 0;
+        font-family: Georgia, "Palatino Linotype", serif;
+        font-size: 1.5rem;
+        color: #f7eed7;
+        letter-spacing: 0.02em;
+      }
+      .char-subtitle {
+        margin: 0;
+        font-size: 0.86rem;
+        color: #baa992;
+      }
+      .char-badge-count {
+        display: inline-block;
+        background: rgba(230, 204, 138, 0.14);
+        color: #e6cc8a;
+        border: 1px solid rgba(230, 204, 138, 0.3);
+        padding: 0.15rem 0.55rem;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-left: 0.35rem;
+      }
+      .char-actions-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .char-search-input {
+        background: #16120e;
+        color: var(--rpg-ink, #f3e9d2);
+        border: 1px solid var(--rpg-edge, #5c4a32);
+        border-radius: 2px;
+        padding: 0.45rem 0.75rem;
+        font-family: Georgia, serif;
+        font-size: 0.9rem;
+        min-width: 280px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+      }
+      .char-search-input:focus {
+        border-color: #e6cc8a;
+        outline: 2px solid rgba(230, 204, 138, 0.35);
+      }
+      .char-cat-select {
+        background: #16120e;
+        color: var(--rpg-ink, #f3e9d2);
+        border: 1px solid var(--rpg-edge, #5c4a32);
+        border-radius: 2px;
+        padding: 0.45rem 0.75rem;
+        font-family: Georgia, serif;
+        font-size: 0.9rem;
+        max-width: 240px;
+        cursor: pointer;
+      }
+      .char-cat-select:focus {
+        border-color: #e6cc8a;
+        outline: 2px solid rgba(230, 204, 138, 0.35);
+      }
+      .btn-char-primary {
+        background: var(--rpg-fill, #2b2319);
+        color: var(--rpg-ink, #f3e9d2);
+        border: 1px solid var(--rpg-edge, #5c4a32);
+        border-radius: 2px;
+        box-shadow: var(--rpg-inset, inset 0 1px 0 rgba(255, 255, 255, 0.08));
+        padding: 0.45rem 0.85rem;
+        font-family: Georgia, serif;
+        font-size: 0.9rem;
+        font-weight: 650;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.12s ease;
+        height: 2.35rem;
+      }
+      .btn-char-primary:hover {
+        background: var(--rpg-brass, #b8860b);
+        color: #1c1408;
+        border-color: #e6cc8a;
+      }
+      .char-pills-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+        padding: 0.45rem 0.6rem;
+        background: rgba(20, 16, 12, 0.7);
+        border: 1px solid rgba(230, 204, 138, 0.15);
+        border-radius: 3px;
+      }
+      .char-pill-btn {
+        background: #1b1611;
+        color: #baa992;
+        border: 1px solid rgba(230, 204, 138, 0.2);
+        border-radius: 2px;
+        padding: 0.25rem 0.55rem;
+        font-family: Georgia, serif;
+        font-size: 0.78rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        transition: all 0.12s ease;
+        user-select: none;
+      }
+      .char-pill-btn:hover {
+        background: #2a2218;
+        color: #f7eed7;
+        border-color: #e6cc8a;
+      }
+      .char-pill-btn.active {
+        background: var(--rpg-brass, #b8860b);
+        color: #1c1408;
+        border-color: #e6cc8a;
+        font-weight: 700;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      }
+      .char-pill-badge {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.05rem 0.3rem;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: normal;
+      }
+      .char-table-wrap {
+        border: 1px solid var(--rpg-edge, #5c4a32);
+        border-radius: 3px;
+        background: #14100c;
+        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+        max-height: calc(100vh - 215px);
+        overflow-y: auto;
+        overflow-x: auto;
+      }
+      .char-dense-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Georgia, "Palatino Linotype", serif;
+        font-size: 0.88rem;
+        text-align: left;
+      }
+      .char-dense-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #221b14;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      }
+      .char-dense-table th {
+        padding: 0.55rem 0.65rem;
+        color: #e6cc8a;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #5c4a32;
+        white-space: nowrap;
+      }
+      .char-dense-table td {
+        padding: 0.4rem 0.65rem;
+        border-bottom: 1px solid rgba(230, 204, 138, 0.1);
+        color: #ddd2be;
+        vertical-align: middle;
+        line-height: 1.35;
+      }
+      .char-dense-table tbody tr {
+        transition: background-color 0.1s ease;
+      }
+      .char-dense-table tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.015);
+      }
+      .char-dense-table tbody tr:hover {
+        background: rgba(218, 165, 32, 0.1) !important;
+      }
+      .char-col-idx {
+        width: 40px;
+        text-align: center;
+        color: #8c7e6c;
+        font-size: 0.8rem;
+      }
+      .char-col-cat {
+        width: 155px;
+        white-space: nowrap;
+      }
+      .char-chip-cat {
+        display: inline-block;
+        background: rgba(230, 204, 138, 0.1);
+        color: #dec899;
+        border: 1px solid rgba(230, 204, 138, 0.22);
+        border-radius: 2px;
+        padding: 0.15rem 0.45rem;
+        font-size: 0.75rem;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .char-col-name {
+        width: 175px;
+        font-weight: 700;
+        color: #fff4d0 !important;
+      }
+      .char-col-desc {
+        min-width: 220px;
+        color: #b5a58e;
+        font-style: italic;
+        font-size: 0.85rem;
+      }
+      .char-col-action {
+        min-width: 210px;
+        color: #aed0f7;
+      }
+      .char-col-object {
+        min-width: 210px;
+        color: #fad187;
+      }
+      .char-pao-ico {
+        display: inline-block;
+        margin-right: 0.3rem;
+        font-style: normal;
+      }
+      .char-col-btns {
+        width: 80px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .char-row-btn {
+        background: #251e16;
+        border: 1px solid rgba(230, 204, 138, 0.25);
+        color: #f3e9d2;
+        border-radius: 2px;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        margin: 0 0.15rem;
+        transition: all 0.12s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .char-row-btn:hover {
+        background: #3d3020;
+        border-color: #e6cc8a;
+        color: #fff;
+      }
+      .char-row-btn.btn-del:hover {
+        background: #501d1d;
+        border-color: #f27272;
+      }
+      .char-empty-row {
+        text-align: center;
+        padding: 3rem 1rem !important;
+        color: #8c7e6c;
+        font-style: italic;
+        font-size: 1rem;
+      }
+      .char-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.78);
+        backdrop-filter: blur(3px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .char-modal-backdrop.hidden {
+        display: none !important;
+      }
+      .char-modal-content {
+        background: #1c150e;
+        border: 1px solid #e6cc8a;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), inset 0 0 15px rgba(0,0,0,0.5);
+        border-radius: 3px;
+        width: 100%;
+        max-width: 560px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        color: #f7eed7;
+      }
+      .char-modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(230, 204, 138, 0.25);
+        padding-bottom: 0.75rem;
+      }
+      .char-modal-head h3 {
+        margin: 0;
+        font-family: Georgia, serif;
+        font-size: 1.35rem;
+        color: #f7eed7;
+      }
+      .char-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .char-form-group label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #c4b69f;
+      }
+      .char-form-group input,
+      .char-form-group textarea,
+      .char-form-group select {
+        background: #120e0a;
+        color: #f7eed7;
+        border: 1px solid rgba(230, 204, 138, 0.3);
+        border-radius: 2px;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.92rem;
+        font-family: Georgia, serif;
+        outline: none;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+      }
+      .char-form-group input:focus,
+      .char-form-group textarea:focus,
+      .char-form-group select:focus {
+        border-color: #e6cc8a;
+        outline: 2px solid rgba(230, 204, 138, 0.3);
+      }
+      .char-modal-foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid rgba(230, 204, 138, 0.25);
+        padding-top: 0.85rem;
+      }
+
     </style>
   </head>
   <body>
@@ -878,6 +1287,14 @@
           title="Trophies (Alt+W)"
         >
           Trophies
+        </button>
+        <button
+          type="button"
+          id="btnCharacters"
+          data-ico="user"
+          title="Characters PAO catalog (Alt+C)"
+        >
+          Characters
         </button>
         <div>
           <label for="atomSearch">Search Knowledge Atoms</label>
@@ -1072,6 +1489,8 @@
     <div id="entertainmentPanel" class="hidden" aria-hidden="true"></div>
 
     <div id="wardrobePanel" class="hidden" aria-hidden="true"></div>
+
+    <div id="charactersPanel" class="hidden" aria-hidden="true"></div>
 
     <div id="appExtra" class="hidden" aria-hidden="true"></div>
 
@@ -2903,6 +3322,9 @@
         document
           .getElementById("btnWardrobe")
           .classList.toggle("active", state.view === "wardrobe");
+        document
+          .getElementById("btnCharacters")
+          ?.classList.toggle("active", state.view === "characters");
         document.querySelectorAll("#appMore [data-view]").forEach((b) => {
           b.classList.toggle("active", b.dataset.view === state.view);
         });
@@ -2916,10 +3338,12 @@
           method: document.getElementById("methodPanel"),
           entertainment: document.getElementById("entertainmentPanel"),
           wardrobe: document.getElementById("wardrobePanel"),
+          characters: document.getElementById("charactersPanel"),
           playlists: document.getElementById("playlistsPanel"),
           extra: document.getElementById("appExtra"),
         };
         Object.entries(panels).forEach(([k, el]) => {
+          if (!el) return;
           const on =
             (name === "practice" && k === "practice") ||
             (name === "plans" && k === "plans") ||
@@ -2927,6 +3351,7 @@
             (name === "method" && k === "method") ||
             (name === "entertainment" && k === "entertainment") ||
             (name === "wardrobe" && k === "wardrobe") ||
+            (name === "characters" && k === "characters") ||
             (name === "playlists" && k === "playlists") ||
             (["browse", "links", "help"].includes(name) && k === "extra");
           el.classList.toggle("hidden", !on);
@@ -2941,6 +3366,13 @@
         state.data.entertainmentLoaded = true;
       }
 
+      async function ensureCharacters() {
+        if (state.charactersLoaded && state.characters) return;
+        const res = await api("/api/characters");
+        state.characters = res.characters || [];
+        state.charactersLoaded = true;
+      }
+
       function setView(v) {
         if (v !== "images") closeImagesFs();
         if (v !== "practice") clearPalaceSelection();
@@ -2952,6 +3384,12 @@
         document.body.classList.toggle("view-playlists", v === "playlists");
         setChromeActive();
         showPanel(v);
+        if (v === "characters") {
+          ensureCharacters()
+            .then(() => render())
+            .catch((e) => toast(String(e.message || e)));
+          return;
+        }
         if (v === "entertainment") {
           ensureEntertainment()
             .then(() => render())
@@ -3013,6 +3451,7 @@
         else if (state.view === "entertainment") renderEntertainment();
         else if (state.view === "wardrobe") renderWardrobe();
         else if (state.view === "playlists") renderPlaylists();
+        else if (state.view === "characters") renderCharacters();
         else if (state.view === "browse")
           renderBrowse(document.getElementById("appExtra"));
         else if (state.view === "links")
@@ -6158,12 +6597,298 @@
         return true;
       }
 
+            /* ---------- Characters (PAO Catalog CRUD) High-Density Table ---------- */
+      state.charQuery = state.charQuery || "";
+      state.charCategory = state.charCategory || "ALL";
+
+      function renderCharacters() {
+        const panel = document.getElementById("charactersPanel");
+        if (!panel) return;
+
+        const allChars = state.characters || [];
+        const categories = {};
+        allChars.forEach((c) => {
+          const cat = (c.category || "Outros").trim();
+          categories[cat] = (categories[cat] || 0) + 1;
+        });
+
+        const activeCat = state.charCategory || "ALL";
+        const q = (state.charQuery || "").toLowerCase().trim();
+
+        const filtered = allChars.filter((c) => {
+          if (activeCat !== "ALL" && (c.category || "Outros").trim().toLowerCase() !== activeCat.toLowerCase()) {
+            return false;
+          }
+          if (q) {
+            const hit =
+              (c.name || "").toLowerCase().includes(q) ||
+              (c.characteristics || "").toLowerCase().includes(q) ||
+              (c.action || "").toLowerCase().includes(q) ||
+              (c.object || "").toLowerCase().includes(q) ||
+              (c.category || "").toLowerCase().includes(q);
+            if (!hit) return false;
+          }
+          return true;
+        });
+
+        const sortedCats = Object.keys(categories).sort();
+
+        // Category pills
+        const catPillsHtml = [
+          `<button type="button" class="char-pill-btn ${activeCat === "ALL" ? "active" : ""}" data-char-cat="ALL">` +
+            `Todas as Categorias <span class="char-pill-badge">${allChars.length}</span></button>`,
+          ...sortedCats.map(
+            (cat) =>
+              `<button type="button" class="char-pill-btn ${activeCat.toLowerCase() === cat.toLowerCase() ? "active" : ""}" data-char-cat="${escAttr(cat)}">` +
+              `${esc(cat)} <span class="char-pill-badge">${categories[cat]}</span></button>`,
+          ),
+        ].join("");
+
+        // Category dropdown options
+        const catSelectOptions = [
+          `<option value="ALL"${activeCat === "ALL" ? " selected" : ""}>Todas as Categorias (${allChars.length})</option>`,
+          ...sortedCats.map(
+            (cat) =>
+              `<option value="${escAttr(cat)}"${activeCat.toLowerCase() === cat.toLowerCase() ? " selected" : ""}>${esc(cat)} (${categories[cat]})</option>`,
+          ),
+        ].join("");
+
+        // Compact table rows
+        const rowsHtml = filtered.length
+          ? filtered
+              .map(
+                (c, idx) =>
+                  `<tr data-name="${escAttr(c.name)}">` +
+                  `<td class="char-col-idx">${idx + 1}</td>` +
+                  `<td class="char-col-cat"><span class="char-chip-cat" title="${escAttr(c.category || "")}">${esc(c.category || "Outros")}</span></td>` +
+                  `<td class="char-col-name">${esc(c.name)}</td>` +
+                  `<td class="char-col-desc" title="${escAttr(c.characteristics || "")}">${esc(c.characteristics || "")}</td>` +
+                  `<td class="char-col-action" title="${escAttr(c.action || "")}"><span class="char-pao-ico">⚡</span>${esc(c.action || "")}</td>` +
+                  `<td class="char-col-object" title="${escAttr(c.object || "")}"><span class="char-pao-ico">🎯</span>${esc(c.object || "")}</td>` +
+                  `<td class="char-col-btns">` +
+                  `<button type="button" class="char-row-btn btn-edit-char" data-name="${escAttr(c.name)}" title="Editar personagem">✏️</button>` +
+                  `<button type="button" class="char-row-btn btn-del btn-del-char" data-name="${escAttr(c.name)}" title="Excluir personagem">🗑️</button>` +
+                  `</td>` +
+                  `</tr>`,
+              )
+              .join("")
+          : `<tr><td colspan="7" class="char-empty-row">Nenhum personagem encontrado para os filtros atuais.</td></tr>`;
+
+        panel.innerHTML =
+          `<div class="characters-layout">` +
+          `<div class="char-top-bar">` +
+          `<div class="char-title-group">` +
+          `<h2>Personagens (Catálogo PAO)</h2>` +
+          `<p class="char-subtitle">Pessoa · Ação · Objeto <span class="char-badge-count">${filtered.length} visíveis / ${allChars.length} total</span></p>` +
+          `</div>` +
+          `<div class="char-actions-bar">` +
+          `<input type="search" id="charSearchInput" class="char-search-input" placeholder="🔍 Filtrar por nome, traço, ação ou objeto…" value="${escAttr(state.charQuery || "")}" autocomplete="off" />` +
+          `<select id="charCatSelect" class="char-cat-select" title="Filtrar por Categoria">${catSelectOptions}</select>` +
+          `<button type="button" id="btnCharAdd" class="btn-char-primary">+ Novo Personagem</button>` +
+          `</div>` +
+          `</div>` +
+          `<div class="char-pills-bar" id="charPillsWrap">${catPillsHtml}</div>` +
+          `<div class="char-table-wrap">` +
+          `<table class="char-dense-table">` +
+          `<thead>` +
+          `<tr>` +
+          `<th class="char-col-idx">#</th>` +
+          `<th class="char-col-cat">Categoria</th>` +
+          `<th class="char-col-name">Personagem (P)</th>` +
+          `<th class="char-col-desc">Características Visuais</th>` +
+          `<th class="char-col-action">⚡ Ação Marcante (A)</th>` +
+          `<th class="char-col-object">🎯 Objeto / Adereço (O)</th>` +
+          `<th class="char-col-btns">Ações</th>` +
+          `</tr>` +
+          `</thead>` +
+          `<tbody>${rowsHtml}</tbody>` +
+          `</table>` +
+          `</div>` +
+          `</div>` +
+          `<div id="charModalBackdrop" class="char-modal-backdrop hidden"></div>`;
+
+        const searchInput = panel.querySelector("#charSearchInput");
+        if (searchInput) {
+          searchInput.oninput = () => {
+            state.charQuery = searchInput.value;
+            renderCharacters();
+            const s = document.getElementById("charSearchInput");
+            if (s) {
+              s.focus();
+              s.selectionStart = s.selectionEnd = s.value.length;
+            }
+          };
+        }
+
+        const catSelect = panel.querySelector("#charCatSelect");
+        if (catSelect) {
+          catSelect.onchange = () => {
+            state.charCategory = catSelect.value;
+            renderCharacters();
+          };
+        }
+
+        panel.querySelectorAll("[data-char-cat]").forEach((btn) => {
+          btn.onclick = () => {
+            state.charCategory = btn.dataset.charCat;
+            renderCharacters();
+          };
+        });
+
+        panel.querySelector("#btnCharAdd")?.addEventListener("click", () => {
+          openCharModal();
+        });
+
+        panel.querySelectorAll(".btn-edit-char").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.name;
+            const item = (state.characters || []).find((c) => c.name === name);
+            if (item) openCharModal(item);
+          };
+        });
+
+        panel.querySelectorAll(".btn-del-char").forEach((btn) => {
+          btn.onclick = async (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.name;
+            if (!confirm(`Deseja realmente excluir "${name}" do catálogo PAO?`)) return;
+            try {
+              const res = await api("/api/characters", {
+                method: "POST",
+                body: JSON.stringify({ action_type: "delete", name }),
+              });
+              if (res.ok) {
+                state.characters = (state.characters || []).filter((c) => c.name !== name);
+                toast(`"${name}" removido`);
+                renderCharacters();
+              }
+            } catch (err) {
+              toast(String(err.message || err), 4000);
+            }
+          };
+        });
+      }
+
+      function openCharModal(item = null) {
+        const modalWrap = document.getElementById("charModalBackdrop");
+        if (!modalWrap) return;
+
+        const isEdit = !!item;
+        const allChars = state.characters || [];
+        const existingCats = Array.from(
+          new Set(allChars.map((c) => (c.category || "Outros").trim())),
+        ).sort();
+
+        const catOptions = existingCats
+          .map((cat) => `<option value="${escAttr(cat)}"></option>`)
+          .join("");
+
+        modalWrap.innerHTML =
+          `<div class="char-modal-content">` +
+          `<div class="char-modal-head">` +
+          `<h3>${isEdit ? "Editar Personagem" : "Novo Personagem PAO"}</h3>` +
+          `<button type="button" class="char-row-btn" id="btnCharModalClose" style="font-size:1.1rem;padding:0.2rem 0.5rem">✕</button>` +
+          `</div>` +
+          `<form id="charForm" style="display:flex;flex-direction:column;gap:0.9rem">` +
+          `<input type="hidden" id="charOriginalName" value="${escAttr(item ? item.name : "")}" />` +
+          `<div class="char-form-group">` +
+          `<label for="charCatInput">Categoria</label>` +
+          `<input type="text" id="charCatInput" list="charCatList" value="${escAttr(item ? item.category : (state.charCategory !== "ALL" ? state.charCategory : "Animação, Desenhos e Games"))}" required />` +
+          `<datalist id="charCatList">${catOptions}</datalist>` +
+          `</div>` +
+          `<div class="char-form-group">` +
+          `<label for="charNameInput">Nome do Personagem</label>` +
+          `<input type="text" id="charNameInput" value="${escAttr(item ? item.name : "")}" placeholder="Ex: Gandalf, Ash Ketchum…" required />` +
+          `</div>` +
+          `<div class="char-form-group">` +
+          `<label for="charDescInput">Características / Descrição Visual</label>` +
+          `<textarea id="charDescInput" rows="2" placeholder="Traços físicos marcantes, roupas, postura…">${esc(item ? item.characteristics : "")}</textarea>` +
+          `</div>` +
+          `<div class="char-form-group">` +
+          `<label for="charActionInput">⚡ Ação Marcante (A do PAO)</label>` +
+          `<textarea id="charActionInput" rows="2" placeholder="Ação física dramática ou cômica que ele sempre executa…" required>${esc(item ? item.action : "")}</textarea>` +
+          `</div>` +
+          `<div class="char-form-group">` +
+          `<label for="charObjectInput">🎯 Objeto / Adereço (O do PAO)</label>` +
+          `<textarea id="charObjectInput" rows="2" placeholder="Objeto físico característico que ele empunha ou usa…" required>${esc(item ? item.object : "")}</textarea>` +
+          `</div>` +
+          `<div class="char-modal-foot">` +
+          `<button type="button" class="char-row-btn" id="btnCharModalCancel" style="padding:0.4rem 0.8rem">Cancelar</button>` +
+          `<button type="submit" class="btn-char-primary" style="padding:0.45rem 1rem">Salvar Personagem</button>` +
+          `</div>` +
+          `</form>` +
+          `</div>`;
+
+        modalWrap.classList.remove("hidden");
+
+        const close = () => {
+          modalWrap.classList.add("hidden");
+          modalWrap.innerHTML = "";
+        };
+
+        modalWrap.querySelector("#btnCharModalClose").onclick = close;
+        modalWrap.querySelector("#btnCharModalCancel").onclick = close;
+        modalWrap.onclick = (e) => {
+          if (e.target === modalWrap) close();
+        };
+
+        const form = modalWrap.querySelector("#charForm");
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const origName = modalWrap.querySelector("#charOriginalName").value.trim();
+          const cat = modalWrap.querySelector("#charCatInput").value.trim() || "Outros";
+          const name = modalWrap.querySelector("#charNameInput").value.trim();
+          const desc = modalWrap.querySelector("#charDescInput").value.trim();
+          const action = modalWrap.querySelector("#charActionInput").value.trim();
+          const obj = modalWrap.querySelector("#charObjectInput").value.trim();
+
+          if (!name || !action || !obj) {
+            toast("Preencha Nome, Ação e Objeto!", 3000);
+            return;
+          }
+
+          const payload = {
+            category: cat,
+            name: name,
+            characteristics: desc,
+            action: action,
+            object: obj,
+            original_name: origName,
+          };
+
+          try {
+            const res = await api("/api/characters", {
+              method: "POST",
+              body: JSON.stringify(payload),
+            });
+            if (res.ok) {
+              const updated = res.character;
+              const list = state.characters || [];
+              const targetName = (origName || name).toLowerCase();
+              const idx = list.findIndex((c) => c.name.toLowerCase() === targetName);
+              if (idx >= 0) {
+                list[idx] = updated;
+              } else {
+                list.push(updated);
+              }
+              state.characters = list;
+              close();
+              toast(isEdit ? "Personagem atualizado!" : "Personagem adicionado!");
+              renderCharacters();
+            }
+          } catch (err) {
+            toast(String(err.message || err), 4000);
+          }
+        };
+      }
+
       function renderHelp(root) {
         const practiceGh = state.data.meta?.practice_github || "#";
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0">Help / glossary</h2>
-          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Update toggle · drag the beasts this change is about · one note can update some and delete others · <b>Generate Prompt</b> sends that instruction plus palace context to the AI companion. <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>Shift+P</b> Plans · <b>Alt+W</b> Trophies · <b>Alt+C</b> Characters (PAO catalog) · <b>Shift+N</b> first unchecked phase task (skips backlog) · <b>Shift+Up/Down</b> move that phase and renumber · <b>Shift+I</b> Images backlog · <b>Shift+B</b> Browse · <b>Shift+Y</b> YouTube playlists · <b>Shift+M</b> Method · <b>Shift+H</b> Help · <b>Shift+1</b> Links · <b>Shift+L</b> Latest palace. Practice grid: <b>Ctrl+Click</b> select · <b>Delete</b> remove selected. <b>Shift+R</b> Story Update toggle · drag the beasts this change is about · one note can update some and delete others · <b>Generate Prompt</b> sends that instruction plus palace context to the AI companion. <b>Shift+Q</b> Ask · drag knowledge atoms · write a question · <b>Generate Prompt</b> copies it, pastes it into the open AI companion, and sends it. Overlay: <b>F</b> full image · <b>Shift+D</b> details · <b>Shift+C</b> toggle image generation, then send the compose prompt and the newest Desktop image to the AI companion · <b>Shift+G</b> find a palace trophy.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" data-ico="external" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -6219,6 +6944,10 @@
       document.getElementById("btnEntertainment").onclick = () =>
         toggleEntertainment();
       document.getElementById("btnWardrobe").onclick = () => toggleWardrobe();
+      document.getElementById("btnCharacters").onclick = () => {
+        if (state.view === "characters") setView("practice");
+        else setView("characters");
+      };
       document.getElementById("btnFindRelic").onclick = () => findRelic();
       document.getElementById("btnStudyImagesAdd").onclick = () =>
         document.getElementById("studyImagesFileInput").click();
@@ -7041,6 +7770,19 @@
           return;
         }
         if (
+          e.altKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.shiftKey &&
+          (e.key === "c" || e.key === "C")
+        ) {
+          e.preventDefault();
+          if (studyModalIsOpen()) closeStudyModal({ focusLatest: false });
+          if (state.view === "characters") setView("practice");
+          else setView("characters");
+          return;
+        }
+        if (
           state.view === "entertainment" &&
           state.entertainment.draft &&
           e.key === "Escape"
@@ -7066,6 +7808,13 @@
           if (k === "F" || k === "f") {
             e.preventDefault();
             openStudyLinkChrome("favorite");
+            return;
+          }
+          if ((k === "C" || k === "c") && !document.getElementById("overlay").classList.contains("open")) {
+            e.preventDefault();
+            if (studyModalIsOpen()) closeStudyModal({ focusLatest: false });
+            if (state.view === "characters") setView("practice");
+            else setView("characters");
             return;
           }
         }

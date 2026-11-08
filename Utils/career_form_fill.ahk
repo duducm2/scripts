@@ -260,14 +260,56 @@ CareerForm_CloseInspector() {
 }
 
 CareerForm_DumpTree(windowName, outPath) {
-    ; Use the inspector's Shift+C "Copy full UI tree" shortcut. It selects the
-    ; window by the name the user typed and copies that tree to the clipboard.
     windowName := Trim(windowName)
     if (windowName = "")
         CareerForm_Fail("Window name is required.")
     if (outPath = "")
         CareerForm_Fail("Missing --out for the UI tree.")
+
+    ; 1. If clipboard already has a valid UIA tree, use it immediately
     before := CareerForm_ClipboardUnicode()
+    if (before != "" && RegExMatch(before, "Type:\s*\d+\s*\(")) {
+        try {
+            file := FileOpen(outPath, "w", "UTF-8")
+            if (file) {
+                file.Write(before)
+                file.Close()
+                CareerForm_WriteResult({ ok: true, chars: StrLen(before), error: "" })
+                return
+            }
+        } catch {
+        }
+    }
+
+    ; 2. Direct UIA dump of matching Chrome window (no inspector GUI required)
+    targetHwnd := CareerForm_FindChromeByTitle(windowName)
+    if (!targetHwnd) {
+        SetTitleMatchMode 2
+        try targetHwnd := WinExist(windowName)
+        catch {
+            targetHwnd := 0
+        }
+    }
+    if (targetHwnd) {
+        try {
+            root := UIA.ElementFromHandle(targetHwnd)
+            if (IsObject(root)) {
+                tree := root.DumpAll()
+                if (tree != "" && RegExMatch(tree, "Type:\s*\d+\s*\(")) {
+                    file := FileOpen(outPath, "w", "UTF-8")
+                    if (file) {
+                        file.Write(tree)
+                        file.Close()
+                        CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
+                        return
+                    }
+                }
+            }
+        } catch {
+        }
+    }
+
+    ; 3. Fallback: Inspector search dialog
     CareerForm_EnsureInspector()
     SendLevel 1
     Send "+c"
@@ -275,7 +317,8 @@ CareerForm_DumpTree(windowName, outPath) {
     if !WinWait("Select Tree Item", , 8) {
         CareerForm_CloseInspector()
         CareerForm_Fail(
-            "UIA Tree Inspector did not ask for the window name. Leave its window available, then try again.")
+            "Could not read the application window UI tree directly. Make sure the application tab (" windowName ") is open and active in Chrome."
+        )
     }
     try {
         WinActivate("Select Tree Item")

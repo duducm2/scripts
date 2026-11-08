@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+import csv
 import json
 import os
 import re
@@ -746,6 +747,129 @@ class PalaceHandler(BaseHTTPRequestHandler):
     def _store(self) -> PalaceStore:
         return PalaceStore(self.data_dir, self.output_dir, self.studies_root)
 
+    def _characters_csv_path(self) -> Path:
+        return self.data_dir / "pao_characters.csv"
+
+    def _desktop_characters_csv_path(self) -> Path | None:
+        user_home = Path.home()
+        onedrive_desktop = user_home / "OneDrive" / "Desktop" / "pao_characters.csv"
+        if onedrive_desktop.parent.is_dir():
+            return onedrive_desktop
+        plain_desktop = user_home / "Desktop" / "pao_characters.csv"
+        if plain_desktop.parent.is_dir():
+            return plain_desktop
+        return None
+
+    def _load_characters(self) -> list[dict[str, str]]:
+        csv_file = self._characters_csv_path()
+        if not csv_file.is_file():
+            return []
+        items: list[dict[str, str]] = []
+        try:
+            with csv_file.open("r", encoding="utf-8-sig") as f:
+                reader = csv.DictReader(f, delimiter=";")
+                for row in reader:
+                    if not row:
+                        continue
+                    name = (row.get("name") or "").strip()
+                    if not name:
+                        continue
+                    items.append({
+                        "category": (row.get("category") or "Outros").strip(),
+                        "name": name,
+                        "characteristics": (row.get("characteristics") or "").strip(),
+                        "action": (row.get("action") or "").strip(),
+                        "object": (row.get("object") or "").strip(),
+                    })
+        except Exception as e:
+            sys.stderr.write(f"Error loading characters: {e}\n")
+        return items
+
+    def _save_characters(self, characters: list[dict[str, str]]) -> bool:
+        csv_file = self._characters_csv_path()
+        header = ["category", "name", "characteristics", "action", "object"]
+        try:
+            with csv_file.open("w", encoding="utf-8-sig", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=header, delimiter=";")
+                writer.writeheader()
+                for c in characters:
+                    writer.writerow({
+                        "category": c.get("category", ""),
+                        "name": c.get("name", ""),
+                        "characteristics": c.get("characteristics", ""),
+                        "action": c.get("action", ""),
+                        "object": c.get("object", ""),
+                    })
+            desk = self._desktop_characters_csv_path()
+            if desk:
+                try:
+                    shutil.copy2(csv_file, desk)
+                except Exception as de:
+                    sys.stderr.write(f"Warning: could not sync characters to desktop: {de}\n")
+            return True
+        except Exception as e:
+            sys.stderr.write(f"Error saving characters: {e}\n")
+            return False
+
+    def _upsert_character(self, payload: dict[str, Any]) -> dict[str, Any]:
+        name = str(payload.get("name") or "").strip()
+        if not name:
+            return {"ok": False, "error": "name is required"}
+        category = str(payload.get("category") or "Outros").strip()
+        characteristics = str(payload.get("characteristics") or "").strip()
+        action = str(payload.get("action") or "").strip()
+        obj = str(payload.get("object") or "").strip()
+        original_name = str(payload.get("original_name") or "").strip()
+
+        characters = self._load_characters()
+        found = False
+        target_name = (original_name or name).lower()
+        for c in characters:
+            if c["name"].lower() == target_name:
+                c["category"] = category
+                c["name"] = name
+                c["characteristics"] = characteristics
+                c["action"] = action
+                c["object"] = obj
+                found = True
+                break
+        if not found:
+            characters.append({
+                "category": category,
+                "name": name,
+                "characteristics": characteristics,
+                "action": action,
+                "object": obj,
+            })
+        saved = self._save_characters(characters)
+        if not saved:
+            return {"ok": False, "error": "could not save characters CSV"}
+        return {
+            "ok": True,
+            "character": {
+                "category": category,
+                "name": name,
+                "characteristics": characteristics,
+                "action": action,
+                "object": obj,
+            },
+            "count": len(characters),
+        }
+
+    def _delete_character(self, name: str) -> dict[str, Any]:
+        clean_name = (name or "").strip()
+        if not clean_name:
+            return {"ok": False, "error": "name is required"}
+        characters = self._load_characters()
+        initial_len = len(characters)
+        characters = [c for c in characters if c["name"].lower() != clean_name.lower()]
+        if len(characters) == initial_len:
+            return {"ok": False, "error": f"character '{clean_name}' not found"}
+        saved = self._save_characters(characters)
+        if not saved:
+            return {"ok": False, "error": "could not save characters CSV"}
+        return {"ok": True, "deleted": clean_name, "count": len(characters)}
+
     def _reduction_context(self, parsed: urllib.parse.ParseResult) -> dict[str, Any]:
         from technique_renderer import default_technique_dir  # noqa: E402
 
@@ -893,11 +1017,12 @@ class PalaceHandler(BaseHTTPRequestHandler):
                                 ctype = "image/webp"
                             elif suf == ".gif":
                                 ctype = "image/gif"
+                            cache_header = "no-cache" if suf in (".css", ".js", ".html") else "public, max-age=3600"
                             self._bytes(
                                 200,
                                 asset.read_bytes(),
                                 ctype,
-                                "public, max-age=3600",
+                                cache_header,
                             )
                             return
 
@@ -917,6 +1042,11 @@ class PalaceHandler(BaseHTTPRequestHandler):
             qs = urllib.parse.parse_qs(parsed.query)
             include = (qs.get("include") or [""])[0].strip().lower()
             self._json(200, self._store().state(include_all=include == "all"))
+            return
+
+        if path == "/api/characters":
+            chars = self._load_characters()
+            self._json(200, {"ok": True, "characters": chars, "count": len(chars)})
             return
 
         if path == "/api/collectibles":
@@ -1109,6 +1239,18 @@ class PalaceHandler(BaseHTTPRequestHandler):
     def do_DELETE(self) -> None:
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
+        if path.startswith("/api/characters"):
+            parts = [p for p in path.split("/") if p]
+            name = ""
+            if len(parts) >= 3:
+                name = parts[2]
+            else:
+                qs = urllib.parse.parse_qs(parsed.query)
+                name = (qs.get("name") or [""])[0]
+            result = self._delete_character(name)
+            self._json(200 if result.get("ok") else 400, result)
+            return
+
         store = self._store()
         try:
             parts = [p for p in path.split("/") if p]
@@ -1135,6 +1277,14 @@ class PalaceHandler(BaseHTTPRequestHandler):
 
         store = self._store()
         try:
+            if path == "/api/characters":
+                if str(payload.get("action_type") or "").lower() == "delete":
+                    result = self._delete_character(str(payload.get("name") or ""))
+                else:
+                    result = self._upsert_character(payload)
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
             if path == "/api/open":
                 self._json(200, open_user_target(str(payload.get("target") or "")))
                 return
