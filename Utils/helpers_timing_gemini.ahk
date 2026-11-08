@@ -17,7 +17,6 @@ FindGeminiPromptField(uia) {
             return saved
     } catch {
     }
-    promptField := 0
 
     ; Resolve document element if uia is UIA_Browser or top-level window
     doc := uia
@@ -32,656 +31,327 @@ FindGeminiPromptField(uia) {
     } catch {
     }
 
-    ; 1. Fast path: Find by substring name in document / root (case-insensitive)
+    ; 1. Fast path: Find by name in document / root
     for name in GEMINI_PROMPT_FIELD_NAMES {
         try {
-            promptField := uia.FindFirst({ Name: name, Type: 50004 })
-            if (promptField) {
-                promptField := doc.FindFirst({ Name: name, matchmode: 2, casesense: false })
-                if (promptField)
-                    return promptField
-            }
-        } catch
-            continue
-        promptField := doc.FindFirst({ Name: name, matchmode: 2, casesense: false })
-        if (promptField)
-            return promptField
+            promptField := doc.FindFirst({ Name: name, matchmode: 2, casesense: false })
+            if (promptField)
+                return promptField
+        } catch {
+        }
+        try {
+            promptField := uia.FindFirst({ Name: name, matchmode: 2, casesense: false })
+            if (promptField)
+                return promptField
+        } catch {
+        }
     }
-    catch {
-    }
-}
-catch {
-}
-}
-try {
-    promptField := uia.FindFirst({ Type: "Edit", Name: GEMINI_PROMPT_FIELD_NAMES[1] })
-    if (promptField)
-        return promptField
-} catch {
 
-    ; 2. AutomationId & ClassName known for AI companions
-    for criteria in [{ AutomationId: "prompt-textarea" }, { AutomationId: "agent-search-prosemirror-editor" }, { AutomationId: "m365-chat-editor-target-element" }, { ClassName: "ql-editor",
-        matchmode: 2 }, { ClassName: "rich-textarea", matchmode: 2 }, { ClassName: "ProseMirror", matchmode: 2 }
-        for criteria in [{ AutomationId: "prompt-textarea" }, { AutomationId: "agent-search-prosemirror-editor" }, { AutomationId: "m365-chat-editor-target-element" }, { ClassName: "ql-editor",
-            matchmode: 2 }, { ClassName: "rich-textarea", matchmode: 2 }, { ClassName: "ProseMirror", matchmode: 2 }
-        ] {
-            try {
+    ; 2. AutomationId & ClassName known for AI companions (ChatGPT, Copilot, Gemini)
+    for criteria in [
+        { AutomationId: "prompt-textarea" },
+        { AutomationId: "agent-search-prosemirror-editor" },
+        { AutomationId: "m365-chat-editor-target-element" },
+        { ClassName: "ql-editor", matchmode: 2 },
+        { ClassName: "rich-textarea", matchmode: 2 },
+        { ClassName: "ProseMirror", matchmode: 2 }
+    ] {
+        try {
             el := doc.FindFirst(criteria)
             if (el)
                 return el
+        } catch {
         }
-        catch {}
+        try {
+            el := uia.FindFirst(criteria)
+            if (el)
+                return el
+        } catch {
+        }
     }
 
-    ; 3. Fallback: Find all edits in document and match name / class / last edit
+    ; 3. Fallback: Find all edits in document and match name / class
     try {
-        allEdits := uia.FindAll({ Type: 50004 })
         allEdits := doc.FindAll({ Type: 50004 })
         for edit in allEdits {
-            if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui") || InStr(edit.ClassName,
-                "rich-textarea")) {
+            try {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui") || InStr(edit.ClassName, "rich-textarea"))
+                    return edit
                 for name in GEMINI_PROMPT_FIELD_NAMES {
-                    if InStr(edit.Name, name) || InStr(edit.Name, "prompt") || InStr(edit.Name, "gemini") {
-                        for name in GEMINI_PROMPT_FIELD_NAMES {
-                            try {
-                                if InStr(edit.Name, name) || InStr(edit.Name, "prompt") || InStr(edit.Name, "gemini")
-                                    return edit
-                            }
-                        }
-                        catch {
-                        }
-                    }
-                    for name in GEMINI_PROMPT_FIELD_NAMES {
-                        try {
-                            if InStr(edit.Name, name) || InStr(edit.Name, "prompt") || InStr(edit.Name, "gemini")
-                                return edit
-                        } catch {
-                        }
-                    }
-                    catch {
-                        try {
-                            if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "rich-textarea") || InStr(
-                                edit.ClassName, "new-input-ui"))
-                                return edit
-                        } catch {
-                        }
-                    }
-                    if (allEdits.Length > 0 && doc != uia)
-                        return allEdits[allEdits.Length]
+                    if InStr(edit.Name, name) || InStr(edit.Name, "prompt") || InStr(edit.Name, "gemini")
+                        return edit
                 }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+
+    ; 4. Final fallback on top-level uia if distinct
+    if (doc != uia) {
+        try {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                try {
+                    if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "rich-textarea"))
+                        return edit
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+        }
+    }
+
+    return 0
+}
+
+; Play audible focused chime for AI companions (16-bit PCM cue).
+Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
+    static lastChimeTick := 0
+    if (!IsSoundEnabled())
+        return false
+    now := A_TickCount
+    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
+        return false
+    lastChimeTick := now
+    soundPath := A_ScriptDir . "\assets\sounds\ai-companion-focused.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\..\assets\sounds\ai-companion-focused.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\assets\sounds\into-cursor-textfield.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\assets\sounds\gemini-focused.wav"
+    ScriptSoundPlay(soundPath)
+    return true
+}
+
+Gemini_PollPromptKeyboardFocus(promptField, timeoutMs := 0, pollMs := 0) {
+    if (timeoutMs <= 0)
+        timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS
+    if (pollMs <= 0)
+        pollMs := GEMINI_PROMPT_FOCUS_POLL_MS
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        try {
+            if (promptField.HasKeyboardFocus)
+                return true
+        } catch {
+        }
+        Sleep pollMs
+    }
+    try
+        return promptField.HasKeyboardFocus
+    catch
+        return false
+}
+
+Gemini_FindUploadAnchorButton(uia) {
+    anchorButton := 0
+    try {
+        anchorButton := UiElements_TrySaved(uia, "Gemini", "Upload")
+        if (anchorButton)
+            return anchorButton
+    } catch {
+    }
+    try {
+        anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu", ControlType: "Button" })
+        if (!anchorButton)
+            anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu", cs: false })
+    } catch {
+    }
+    if (!anchorButton) {
+        try {
+            allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
+            for button in allButtons {
+                try {
+                    if (InStr(button.Name, "Open upload file menu", false)) {
+                        anchorButton := button
+                        break
+                    }
+                } catch {
+                    continue
+                }
+            }
+        } catch {
+        }
+    }
+    return anchorButton
+}
+
+Gemini_ApplyAnchorBacktrack(anchorButton) {
+    try {
+        anchorButton.SetFocus()
+        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
+        SendInput "+{Tab}"
+        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Focus Gemini prompt: direct FindFirst → bounded poll → anchor Shift+Tab fallback. Optional ready chime.
+Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
+    outPhase := "focus_failed"
+    if (!IsObject(uia))
+        return false
+
+    playChime := true
+    useAnchorFallback := true
+    if (IsObject(options)) {
+        if (options.HasProp("playChime"))
+            playChime := options.playChime
+        if (options.HasProp("useAnchorFallback"))
+            useAnchorFallback := options.useAnchorFallback
+    }
+
+    promptField := 0
+    try
+        promptField := FindGeminiPromptField(uia)
+    catch {
+    }
+
+    if (promptField) {
+        try {
+            if (promptField.HasKeyboardFocus) {
+                outPhase := "fast_already_focused"
+                if (playChime)
+                    Utils_PlayGeminiFocusedChime()
+                return promptField
+            }
+        } catch {
+        }
+
+        try
+            promptField.SetFocus()
+        catch {
+        }
+
+        if (Gemini_PollPromptKeyboardFocus(promptField)) {
+            outPhase := "direct_focus"
+            if (playChime)
+                Utils_PlayGeminiFocusedChime()
+            return promptField
+        }
+
+        try
+            promptField.Click()
+        catch {
+        }
+
+        if (Gemini_PollPromptKeyboardFocus(promptField, Max(300, GEMINI_PROMPT_FOCUS_TIMEOUT_MS))) {
+            outPhase := "direct_focus"
+            if (playChime)
+                Utils_PlayGeminiFocusedChime()
+            return promptField
+        }
+
+        ; Element was found and clicked/focused; even if UIA HasKeyboardFocus lags in Chromium, focus is set
+        outPhase := "direct_focus"
+        if (playChime)
+            Utils_PlayGeminiFocusedChime()
+        return promptField
+    }
+
+    ; Anchor fallback if promptField was not found directly
+    if (useAnchorFallback) {
+        anchorButton := Gemini_FindUploadAnchorButton(uia)
+        if (anchorButton && Gemini_ApplyAnchorBacktrack(anchorButton)) {
+            try
+                promptField := FindGeminiPromptField(uia)
+            catch {
+            }
+            if (promptField) {
+                try
+                    promptField.SetFocus()
                 catch {
                 }
+                if (playChime)
+                    Utils_PlayGeminiFocusedChime()
+                outPhase := "anchor_fallback"
+                return promptField
+            }
+            if (playChime)
+                Utils_PlayGeminiFocusedChime()
+            outPhase := "anchor_fallback"
+            return anchorButton
+        }
+    }
 
-                ; 4. Final fallback on the top-level uia if doc was distinct
-                if (doc != uia) {
-                    for name in GEMINI_PROMPT_FIELD_NAMES {
-                        try {
-                            allEdits := uia.FindAll({ Type: 50004 })
-                            for edit in allEdits {
-                                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "rich-textarea")) {
-                                    return edit
-                                    try {
-                                        if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "rich-textarea"
-                                        ) || InStr(
-                                            edit.ClassName, "new-input-ui"))
-                                            return edit
-                                    } catch {
-                                    }
-                                    promptField := uia.FindFirst({ Name: name, matchmode: 2, casesense: false })
-                                    if (promptField)
-                                        return promptField
-                                }
-                                catch {
-                                }
-                            }
-                        }
+    return false
+}
 
-                        return 0
-                    }
+; Shared by Gemini.ahk #!+i, Shift keys Fast Copy, and async flows. Resolves UIA when omitted.
+Gemini_FocusPromptSameAsOpenHotkey(uia, playChime := true) {
+    if (!IsObject(uia)) {
+        try
+            uia := UIA_Browser()
+        catch
+            return false
+    }
+    return Gemini_FocusPromptWithChime(uia, { playChime: playChime, useAnchorFallback: true })
+}
 
-                    ; Move keyboard focus to the main Ask Gemini field when that Chrome window is already foreground.
-                    ; Does not WinActivate (avoids stealing focus from another app). Optional chime matches Gemini.ahk open-hotkey UX.
-                    Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
-                        static lastChimeTick := 0
-                        if (!IsSoundEnabled())
-                            return false
-                        now := A_TickCount
-                        if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
-                            return false
-                        lastChimeTick := now
-                        soundPath := A_ScriptDir . "\assets\sounds\ai-companion-focused.wav"
-                        if (!FileExist(soundPath))
-                            soundPath := A_ScriptDir . "\..\assets\sounds\ai-companion-focused.wav"
-                        if (!FileExist(soundPath))
-                            soundPath := A_ScriptDir . "\assets\sounds\into-cursor-textfield.wav"
-                        if (!FileExist(soundPath))
-                            soundPath := A_ScriptDir . "\assets\sounds\gemini-focused.wav"
-                        ScriptSoundPlay(soundPath)
-                        return true
-                    }
+Gemini_WaitForPromptFieldDiscoverable(uia, timeoutMs := 0) {
+    if (timeoutMs <= 0)
+        timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS + 200
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        try {
+            if (FindGeminiPromptField(uia))
+                return true
+        } catch {
+        }
+        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
+    }
+    return false
+}
 
-                    Gemini_PollPromptKeyboardFocus(promptField, timeoutMs := 0, pollMs := 0) {
-                        if (timeoutMs <= 0)
-                            timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS
-                        if (pollMs <= 0)
-                            pollMs := GEMINI_PROMPT_FOCUS_POLL_MS
-                        start := A_TickCount
-                        while (A_TickCount - start < timeoutMs) {
-                            try {
-                                if (promptField.HasKeyboardFocus)
-                                    return true
-                            } catch {
-                            }
-                            Sleep pollMs
-                        }
-                        try
-                            return promptField.HasKeyboardFocus
-                        catch
-                            return false
-                    }
+Gemini_ShowDeferredTabBanner(uia) {
+    ; Tab indicator banner permanently removed per user request.
+    return
+}
 
-                    Gemini_FindUploadAnchorButton(uia) {
-                        anchorButton := 0
-                        try {
-                            anchorButton := UiElements_TrySaved(uia, "Gemini", "Upload")
-                            if (anchorButton)
-                                return anchorButton
-                        } catch {
-                        }
-                        try {
-                            anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu",
-                                ControlType: "Button" })
-                            if (!anchorButton)
-                                anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu",
-                                    cs: false })
-                        } catch {
-                        }
-                        if (!anchorButton) {
-                            try {
-                                allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
-                                for button in allButtons {
-                                    try {
-                                        if (InStr(button.Name, "Open upload file menu", false)) {
-                                            anchorButton := button
-                                            break
-                                        }
-                                        if (allEdits.Length > 0 && doc != uia)
-                                            return allEdits[allEdits.Length]
-                                    } catch {
-                                        continue
-                                    }
-                                    catch {
-                                    }
-                                    try {
-                                        allEdits := uia.FindAll({ Type: 50004 })
-                                        for edit in allEdits {
-                                            for name in GEMINI_PROMPT_FIELD_NAMES {
-                                                if InStr(edit.Name, name) || InStr(edit.Name, "prompt") || InStr(edit.Name,
-                                                    "gemini")
-                                                    return edit
-                                            }
-                                        }
-                                        catch {
-                                        }
-                                    }
-                                    return anchorButton
-                                }
+FocusGeminiAskFieldForHwnd(geminiHwnd, playChime := false) {
+    if (!geminiHwnd)
+        return false
+    try {
+        if (!WinActive("ahk_id " geminiHwnd))
+            return false
+    } catch {
+        return false
+    }
+    try {
+        uia := UIA_Browser("ahk_id " geminiHwnd)
+        result := Gemini_FocusPromptWithChime(uia, { playChime: playChime, useAnchorFallback: true })
+        return !!result
+    } catch {
+    }
+    return false
+}
 
-                                ; 4. Final fallback on the top-level uia if doc was distinct
-                                if (doc != uia) {
-                                    for name in GEMINI_PROMPT_FIELD_NAMES {
-                                        try {
-                                            promptField := uia.FindFirst({ Name: name, matchmode: 2, casesense: false })
-                                            if (promptField)
-                                                return promptField
-                                        } catch {
-                                        }
-                                    }
-                                }
-                                catch {
-                                }
-                                Gemini_ApplyAnchorBacktrack(anchorButton) {
-                                    try {
-                                        anchorButton.SetFocus()
-                                        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-                                        SendInput "+{Tab}"
-                                        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-                                        return true
-                                    } catch {
-                                        return false
-                                    }
-                                }
-
-                                return 0
-                            }
-                            ; Focus Gemini prompt: direct FindFirst → bounded poll → anchor Shift+Tab fallback. Optional ready chime.
-                            Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
-                                outPhase := "focus_failed"
-                                if (!IsObject(uia))
-                                    return false
-
-                                ; Move keyboard focus to the main Ask Gemini field when that Chrome window is already foreground.
-                                ; Does not WinActivate (avoids stealing focus from another app). Optional chime matches Gemini.ahk open-hotkey UX.
-                                Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
-                                    static lastChimeTick := 0
-                                    if (!IsSoundEnabled())
-                                        return false
-                                    now := A_TickCount
-                                    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
-                                        return false
-                                    lastChimeTick := now
-                                    soundPath := A_ScriptDir . "\assets\sounds\gemini-focused.wav"
-                                    soundPath := A_ScriptDir . "\assets\sounds\ai-companion-focused.wav"
-                                    if (!FileExist(soundPath))
-                                        soundPath := A_ScriptDir . "\..\assets\sounds\gemini-focused.wav"
-                                    soundPath := A_ScriptDir . "\..\assets\sounds\ai-companion-focused.wav"
-                                    if (!FileExist(soundPath))
-                                        soundPath := A_ScriptDir . "\assets\sounds\into-cursor-textfield.wav"
-                                    if (!FileExist(soundPath))
-                                        soundPath := A_ScriptDir . "\assets\sounds\gemini-focused.wav"
-                                    ScriptSoundPlay(soundPath)
-                                    return true
-                                }
-                                playChime := true
-                                useAnchorFallback := true
-                                if (IsObject(options)) {
-                                    if (options.HasProp("playChime"))
-                                        playChime := options.playChime
-                                    if (options.HasProp("useAnchorFallback"))
-                                        useAnchorFallback := options.useAnchorFallback
-                                }
-
-                                Gemini_PollPromptKeyboardFocus(promptField, timeoutMs := 0, pollMs := 0) {
-                                    if (timeoutMs <= 0)
-                                        timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS
-                                    if (pollMs <= 0)
-                                        pollMs := GEMINI_PROMPT_FOCUS_POLL_MS
-                                    start := A_TickCount
-                                    while (A_TickCount - start < timeoutMs) {
-                                        try {
-                                            if (promptField.HasKeyboardFocus)
-                                                return true
-                                        } catch {
-                                        }
-                                        Sleep pollMs
-                                    }
-                                    try
-                                        return promptField.HasKeyboardFocus
-                                    catch
-                                        return false
-                                }
-                                promptField := 0
-                                try
-                                    promptField := FindGeminiPromptField(uia)
-                                catch {
-                                }
-
-                                Gemini_FindUploadAnchorButton(uia) {
-                                    anchorButton := 0
-                                    try {
-                                        anchorButton := UiElements_TrySaved(uia, "Gemini", "Upload")
-                                        if (anchorButton)
-                                            return anchorButton
-                                    } catch {
-                                    }
-                                    try {
-                                        anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu",
-                                            ControlType: "Button" })
-                                        if (!anchorButton)
-                                            anchorButton := uia.FindFirst({ Type: UIA_ControlType_Button, Name: "Open upload file menu",
-                                                cs: false })
-                                    } catch {
-                                    }
-                                    if (!anchorButton) {
-                                        try {
-                                            allButtons := uia.FindAll({ Type: UIA_ControlType_Button })
-                                            for button in allButtons {
-                                                try {
-                                                    if (InStr(button.Name, "Open upload file menu", false)) {
-                                                        anchorButton := button
-                                                        break
-                                                    }
-                                                } catch {
-                                                    continue
-                                                }
-                                            }
-                                        } catch {
-                                        }
-                                    }
-                                    return anchorButton
-                                }
-                                if (promptField) {
-                                    try {
-                                        if (promptField.HasKeyboardFocus) {
-                                            outPhase := "fast_already_focused"
-                                            if (playChime)
-                                                Utils_PlayGeminiFocusedChime()
-                                            return promptField
-                                        }
-                                    } catch {
-                                    }
-
-                                    Gemini_ApplyAnchorBacktrack(anchorButton) {
-                                        try {
-                                            anchorButton.SetFocus()
-                                            Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-                                            SendInput "+{Tab}"
-                                            Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-                                            return true
-                                        } catch {
-                                            return false
-                                        }
-                                    }
-                                    try
-                                        promptField.SetFocus()
-                                    catch {
-                                    }
-
-                                    ; Focus Gemini prompt: direct FindFirst → bounded poll → anchor Shift+Tab fallback. Optional ready chime.
-                                    Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
-                                        outPhase := "focus_failed"
-                                        if (!IsObject(uia))
-                                            return false
-                                        if (Gemini_PollPromptKeyboardFocus(promptField)) {
-                                            outPhase := "direct_focus"
-                                            if (playChime)
-                                                Utils_PlayGeminiFocusedChime()
-                                            return promptField
-                                        }
-
-                                        playChime := true
-                                        useAnchorFallback := true
-                                        if (IsObject(options)) {
-                                            if (options.HasProp("playChime"))
-                                                playChime := options.playChime
-                                            if (options.HasProp("useAnchorFallback"))
-                                                useAnchorFallback := options.useAnchorFallback
-                                        }
-                                        try
-                                            promptField.Click()
-                                        catch {
-                                        }
-
-                                        promptField := 0
-                                        try
-                                            promptField := FindGeminiPromptField(uia)
-                                        catch {
-                                        }
-                                        if (!promptField)
-                                            return false
-                                        if (Gemini_PollPromptKeyboardFocus(promptField, Max(300,
-                                            GEMINI_PROMPT_FOCUS_TIMEOUT_MS))) {
-                                            outPhase := "direct_focus"
-                                            if (playChime)
-                                                Utils_PlayGeminiFocusedChime()
-                                            return promptField
-                                        }
-
-                                        try {
-                                            if (promptField.HasKeyboardFocus) {
-                                                outPhase := "fast_already_focused"
-                                                if (playChime)
-                                                    Utils_PlayGeminiFocusedChime()
-                                                return promptField
-                                                if (promptField) {
-                                                    try
-                                                        promptField.SetFocus()
-                                                    catch {
-                                                    }
-                                                }
-                                                catch {
-                                                }
-                                                ; Element was found and clicked/focused; even if UIA HasKeyboardFocus lags in Chromium, focus is set
-                                                outPhase := "direct_focus"
-                                                if (playChime)
-                                                    Utils_PlayGeminiFocusedChime()
-                                                return promptField
-                                            }
-
-                                            try
-                                                promptField.SetFocus()
-                                            catch {
-                                            }
-                                            if (Gemini_PollPromptKeyboardFocus(promptField)) {
-                                                try
-                                                    promptField.Click()
-                                                catch {
-                                                }
-                                                outPhase := "direct_focus"
-                                                if (playChime)
-                                                    Utils_PlayGeminiFocusedChime()
-                                                return promptField
-                                            }
-                                            ; Anchor fallback if promptField was not found directly
-                                            if (useAnchorFallback) {
-                                                anchorButton := Gemini_FindUploadAnchorButton(uia)
-                                                if (anchorButton && Gemini_ApplyAnchorBacktrack(anchorButton)) {
-                                                    try
-                                                        promptField := FindGeminiPromptField(uia)
-                                                    catch {
-                                                    }
-                                                    if (promptField) {
-                                                        try
-                                                            promptField.SetFocus()
-                                                        catch {
-                                                        }
-                                                        if (playChime)
-                                                            Utils_PlayGeminiFocusedChime()
-                                                        outPhase := "anchor_fallback"
-                                                        return promptField
-                                                    }
-                                                    if (playChime)
-                                                        Utils_PlayGeminiFocusedChime()
-                                                    outPhase := "anchor_fallback"
-                                                    return anchorButton
-                                                }
-                                            }
-
-                                            try
-                                                promptField.Click()
-                                            catch {
-                                            }
-                                            if (Gemini_PollPromptKeyboardFocus(promptField, Max(300,
-                                                GEMINI_PROMPT_FOCUS_TIMEOUT_MS))) {
-                                                outPhase := "direct_focus"
-                                                if (playChime)
-                                                    Utils_PlayGeminiFocusedChime()
-                                                return promptField
-                                            }
-                                            return false
-                                        }
-
-                                        ; Anchor fallback if promptField was not found directly
-                                        if (useAnchorFallback) {
-                                            anchorButton := Gemini_FindUploadAnchorButton(uia)
-                                            if (anchorButton && Gemini_ApplyAnchorBacktrack(anchorButton)) {
-                                                try
-                                                    promptField := FindGeminiPromptField(uia)
-                                                catch {
-                                                }
-                                                if (promptField) {
-                                                    try
-                                                        promptField.SetFocus()
-                                                    catch {
-                                                    }
-                                                    if (!Gemini_PollPromptKeyboardFocus(promptField)) {
-                                                        try
-                                                            promptField.Click()
-                                                        catch {
-                                                        }
-                                                        Gemini_PollPromptKeyboardFocus(promptField, Max(300,
-                                                            GEMINI_PROMPT_FOCUS_TIMEOUT_MS))
-                                                    }
-                                                    try {
-                                                        if (promptField.HasKeyboardFocus) {
-                                                            outPhase := "anchor_fallback"
-                                                            if (playChime)
-                                                                Utils_PlayGeminiFocusedChime()
-                                                            return promptField
-                                                        }
-                                                    } catch {
-                                                    }
-                                                    outPhase := "anchor_fallback"
-                                                    if (playChime)
-                                                        Utils_PlayGeminiFocusedChime()
-                                                    return promptField
-                                                }
-                                                outPhase := "anchor_fallback"
-                                                if (playChime)
-                                                    Utils_PlayGeminiFocusedChime()
-                                                return anchorButton
-                                            }
-                                        }
-                                        ; Shared by Gemini.ahk #!+i, Shift keys Fast Copy, and async flows. Resolves UIA when omitted.
-                                        Gemini_FocusPromptSameAsOpenHotkey(uia, playChime := true) {
-                                            if (!IsObject(uia)) {
-                                                try
-                                                    uia := UIA_Browser()
-                                                catch
-                                                    return false
-                                            }
-                                            return Gemini_FocusPromptWithChime(uia, { playChime: playChime,
-                                                useAnchorFallback: true })
-                                        }
-
-                                        ; Element was found and clicked/focused; even if UIA HasKeyboardFocus is delayed in Chromium, focus is set
-                                        outPhase := "direct_focus"
-                                        if (playChime)
-                                            Utils_PlayGeminiFocusedChime()
-                                        return promptField
-                                        return false
-                                    }
-                                    Gemini_WaitForPromptFieldDiscoverable(uia, timeoutMs := 0) {
-                                        if (timeoutMs <= 0)
-                                            timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS + 200
-                                        start := A_TickCount
-                                        while (A_TickCount - start < timeoutMs) {
-                                            try {
-                                                if (FindGeminiPromptField(uia))
-                                                    return true
-                                            } catch {
-                                            }
-                                            Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-                                        }
-                                        return false
-                                    }
-
-                                    ; Shared by Gemini.ahk #!+i, Shift keys Fast Copy, and async flows. Resolves UIA when omitted.
-                                    Gemini_FocusPromptSameAsOpenHotkey(uia, playChime := true) {
-                                        if (!IsObject(uia)) {
-                                            try
-                                                uia := UIA_Browser()
-                                            catch
-                                                return false
-                                        }
-                                        return Gemini_FocusPromptWithChime(uia, { playChime: playChime,
-                                            useAnchorFallback: true })
-                                    }
-                                    Gemini_ShowDeferredTabBanner(uia) {
-                                        ; Tab indicator banner permanently removed per user request.
-                                        return
-                                    }
-
-                                    Gemini_WaitForPromptFieldDiscoverable(uia, timeoutMs := 0) {
-                                        if (timeoutMs <= 0)
-                                            timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS + 200
-                                        start := A_TickCount
-                                        while (A_TickCount - start < timeoutMs) {
-                                            try {
-                                                if (FindGeminiPromptField(uia))
-                                                    return true
-                                            } catch {
-                                            }
-                                            Sleep GEMINI_PROMPT_FOCUS_POLL_MS
-                                        }
-                                        return false
-                                    }
-                                    FocusGeminiAskFieldForHwnd(geminiHwnd, playChime := false) {
-                                        if (!geminiHwnd)
-                                            return false
-                                        try {
-                                            if (!WinActive("ahk_id " geminiHwnd))
-                                                return false
-                                        } catch {
-                                            return false
-                                        }
-                                        try {
-                                            uia := UIA_Browser("ahk_id " geminiHwnd)
-                                            result := Gemini_FocusPromptWithChime(uia, { playChime: playChime,
-                                                useAnchorFallback: true })
-                                            return !!result
-                                        } catch {
-                                        }
-                                        return false
-                                    }
-
-                                    Gemini_ShowDeferredTabBanner(uia) {
-                                        ; Tab indicator banner permanently removed per user request.
-                                        return
-                                    }
-
-                                    FocusGeminiAskFieldForHwnd(geminiHwnd, playChime := false) {
-                                        if (!geminiHwnd)
-                                            return false
-                                        try {
-                                            if (!WinActive("ahk_id " geminiHwnd))
-                                                return false
-                                        } catch {
-                                            return false
-                                        }
-                                        try {
-                                            uia := UIA_Browser("ahk_id " geminiHwnd)
-                                            result := Gemini_FocusPromptWithChime(uia, { playChime: playChime,
-                                                useAnchorFallback: true })
-                                            return !!result
-                                        } catch {
-                                        }
-                                        return false
-                                    }
-
-                                    ; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
-                                    GetChromeActiveTabIndex(uia) {
-                                        try {
-                                            uia.GetCurrentMainPaneElement()
-                                            tabs := uia.GetTabs()
-                                            if (!tabs.Length)
-                                                return 0
-                                            current := uia.GetTab("")
-                                            if (!current)
-                                                return 0
-                                            rid := current.RuntimeId
-                                            for i, tab in tabs {
-                                                try {
-                                                    if (tab.RuntimeId = rid)
-                                                        return { index: i, count: tabs.Length }
-                                                } catch {
-                                                    continue
-                                                }
-                                            }
-                                        } catch {
-                                        }
-                                        return 0
-                                    }
-                                    ; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
-                                    GetChromeActiveTabIndex(uia) {
-                                        try {
-                                            uia.GetCurrentMainPaneElement()
-                                            tabs := uia.GetTabs()
-                                            if (!tabs.Length)
-                                                return 0
-                                            current := uia.GetTab("")
-                                            if (!current)
-                                                return 0
-                                            rid := current.RuntimeId
-                                            for i, tab in tabs {
-                                                try {
-                                                    if (tab.RuntimeId = rid)
-                                                        return { index: i, count: tabs.Length }
-                                                } catch {
-                                                    continue
-                                                }
-                                            }
-                                        } catch {
-                                        }
-                                        return 0
-                                    }
+; 1-based active Chrome tab index via UIA (tab bar). Returns { index, count } or 0. Shared with Gemini.ahk.
+GetChromeActiveTabIndex(uia) {
+    try {
+        uia.GetCurrentMainPaneElement()
+        tabs := uia.GetTabs()
+        if (!tabs.Length)
+            return 0
+        current := uia.GetTab("")
+        if (!current)
+            return 0
+        rid := current.RuntimeId
+        for i, tab in tabs {
+            try {
+                if (tab.RuntimeId = rid)
+                    return { index: i, count: tabs.Length }
+            } catch {
+                continue
+            }
+        }
+    } catch {
+    }
+    return 0
+}
