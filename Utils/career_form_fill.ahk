@@ -281,7 +281,7 @@ CareerForm_DumpTree(windowName, outPath) {
         }
     }
 
-    ; 2. Direct UIA dump of matching Chrome window (no inspector GUI required)
+    ; 2. Direct UIA dump of matching browser window (fast, headless, 100% automatic)
     targetHwnd := CareerForm_FindChromeByTitle(windowName)
     if (!targetHwnd) {
         SetTitleMatchMode 2
@@ -305,78 +305,12 @@ CareerForm_DumpTree(windowName, outPath) {
                     }
                 }
             }
-        } catch {
+        } catch as err {
+            CareerForm_Fail("Direct UIA tree dump failed: " err.Message)
         }
     }
 
-    ; 3. Fallback: Inspector search dialog
-    CareerForm_EnsureInspector()
-    SendLevel 1
-    Send "+c"
-    SendLevel 0
-    if !WinWait("Select Tree Item", , 8) {
-        CareerForm_CloseInspector()
-        CareerForm_Fail(
-            "Could not read the application window UI tree directly. Make sure the application tab (" windowName ") is open and active in Chrome."
-        )
-    }
-    try {
-        WinActivate("Select Tree Item")
-        WinWaitActive("Select Tree Item", , 2)
-    } catch {
-    }
-    SendText(windowName)
-    Sleep 80
-    Send "{Enter}"
-
-    tree := ""
-    seenClear := (before = "")
-    start := A_TickCount
-    loop {
-        if WinExist("UIA Tree Inspector") {
-            message := ""
-            try message := Trim(WinGetText("UIA Tree Inspector"))
-            catch {
-                message := ""
-            }
-            try WinClose("UIA Tree Inspector")
-            catch {
-            }
-            if (message = "")
-                message := "UIA Tree Inspector could not copy that window."
-            message := Trim(RegExReplace(message, "^OK\R+", ""))
-            CareerForm_CloseInspector()
-            CareerForm_Fail(message)
-        }
-        text := CareerForm_ClipboardUnicode()
-        if (text = "")
-            seenClear := true
-        if (text != "" && RegExMatch(text, "Type:\s*\d+\s*\(") && (seenClear || text != before)) {
-            tree := text
-            break
-        }
-        if ((A_TickCount - start) > 50000) {
-            CareerForm_CloseInspector()
-            CareerForm_Fail(
-                "The inspector did not copy a UI tree. The tab title has to match the start of a window in the UIA Tree Inspector list."
-            )
-        }
-        Sleep 250
-    }
-    try {
-        file := FileOpen(outPath, "w", "UTF-8")
-        if (!file) {
-            CareerForm_CloseInspector()
-            CareerForm_Fail("Could not write the UI tree.")
-        }
-        file.Write(tree)
-        file.Close()
-    } catch as err {
-        CareerForm_CloseInspector()
-        CareerForm_Fail(err.Message)
-    }
-    CareerForm_CloseInspector()
-    CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
+    CareerForm_Fail("Could not find the application window. Make sure the job application tab (" windowName ") is open in Chrome.")
 }
 
 CareerForm_ReadClipboard(outPath) {
@@ -575,32 +509,49 @@ CareerForm_ReadPlan(planPath) {
 
 CareerForm_FindChromeByTitle(windowName) {
     needle := Trim(windowName)
-    if (needle = "")
-        return 0
     needleLower := StrLower(needle)
     best := 0
     bestScore := 0
-    for hwnd in WinGetList("ahk_exe chrome.exe") {
-        title := ""
-        try title := WinGetTitle("ahk_id " hwnd)
-        catch {
-            continue
-        }
-        if (title = "" || CareerForm_IsCareerCockpitTitle(title))
-            continue
-        titleLower := StrLower(title)
-        score := 0
-        if (titleLower = needleLower)
-            score := 3
-        else if InStr(titleLower, needleLower)
-            score := 2
-        else if InStr(needleLower, titleLower)
-            score := 1
-        if (score > bestScore) {
-            bestScore := score
-            best := hwnd
+    firstNonCockpit := 0
+
+    browserExes := ["ahk_exe chrome.exe", "ahk_exe msedge.exe", "ahk_exe brave.exe"]
+    for bExe in browserExes {
+        for hwnd in WinGetList(bExe) {
+            title := ""
+            try title := WinGetTitle("ahk_id " hwnd)
+            catch {
+                continue
+            }
+            if (title = "" || CareerForm_IsCareerCockpitTitle(title) || CareerForm_IsCompanionTitle(title))
+                continue
+            if (!firstNonCockpit)
+                firstNonCockpit := hwnd
+            if (needleLower = "")
+                continue
+            titleLower := StrLower(title)
+            score := 0
+            if (titleLower = needleLower)
+                score := 10
+            else if InStr(titleLower, needleLower)
+                score := 6
+            else if InStr(needleLower, titleLower)
+                score := 5
+            else {
+                words := StrSplit(needleLower, [" ", "-", "|", ",", ":", "(", ")"])
+                for w in words {
+                    w := Trim(w)
+                    if (StrLen(w) >= 3 && InStr(titleLower, w))
+                        score += 1
+                }
+            }
+            if (score > bestScore) {
+                bestScore := score
+                best := hwnd
+            }
         }
     }
+    if (!best && firstNonCockpit)
+        best := firstNonCockpit
     return best
 }
 
