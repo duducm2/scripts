@@ -467,7 +467,14 @@ CopilotWeb_PlayFocusedChime(minIntervalMs := 400) {
     if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
         return false
     lastChimeTick := now
-    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+    soundPath := A_ScriptDir . "\assets\sounds\ai-companion-focused.wav"
+    if (!FileExist(soundPath))
+    soundPath := A_ScriptDir . "\..\assets\sounds\ai-companion-focused.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\assets\sounds\into-cursor-textfield.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\assets\sounds\gemini-focused.wav"
+    ScriptSoundPlay(soundPath)
     return true
 }
 
@@ -510,6 +517,8 @@ CopilotWeb_FocusComposer(uia, playChime := true, scrollIntoView := true) {
         }
         Sleep 25
     }
+    if (!focused)
+        focused := true
     if (focused && playChime)
         CopilotWeb_PlayFocusedChime()
     return el
@@ -577,7 +586,7 @@ CopilotWeb_OpenOrFocus() {
             return false
         }
         if (!alreadyActive && WinActive("ahk_id " hwnd))
-        CopilotWeb_WaitForComposerDiscoverable(root, 1500)
+            CopilotWeb_WaitForComposerDiscoverable(root, 1500)
         if (WinActive("ahk_id " hwnd)) {
             focusedEl := CopilotWeb_FocusComposer(root, true)
             if (!focusedEl) {

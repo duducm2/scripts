@@ -512,13 +512,5 @@ GeminiOpen_OpenOrFocus() {
 
 ; Ready chime for flows that do not use Gemini_FocusPromptWithChime (e.g. legacy call sites).
 Gemini_PlayReadyChime(minIntervalMs := 400) {
-    static lastChimeTick := 0
-    if (!IsSoundEnabled())
-        return false
-    now := A_TickCount
-    if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
-        return false
-    lastChimeTick := now
-    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
-    return true
+    return Utils_PlayGeminiFocusedChime(minIntervalMs)
 }

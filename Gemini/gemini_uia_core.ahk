@@ -319,16 +319,22 @@ GeminiHasMoreOptionsForResponse(uia) {
 ; Find consumer Gemini browser window (excludes Gemini Enterprise)
 GetGeminiWindowHwnd() {
     try {
-        for hwnd in WinGetList("ahk_exe chrome.exe") {
-            try {
-                if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd))
-                    return hwnd
-            } catch {
-                ; Silently skip invalid windows
-            }
-        }
+        active := WinExist("A")
+        if (active && IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " active)))
+            return active
     } catch {
-        ; Silently handle WinGetList errors
+    }
+    for proc in ["chrome.exe", "msedge.exe", "brave.exe"] {
+        try {
+            for hwnd in WinGetList("ahk_exe " proc) {
+                try {
+                    if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd))
+                        return hwnd
+                } catch {
+                }
+            }
+        } catch {
+        }
     }
     return 0
 }

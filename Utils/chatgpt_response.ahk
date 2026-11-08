@@ -22,7 +22,7 @@ ChatGPT_FindStopButton(uia) {
     return 0
 }
 
-ChatGPT_FocusComposer(hwnd) {
+ChatGPT_FocusComposer(hwnd, playChime := true) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return 0
     root := 0
@@ -35,6 +35,11 @@ ChatGPT_FocusComposer(hwnd) {
     try el.SetFocus()
     catch {
     }
+    try el.Click()
+    catch {
+    }
+    if (playChime)
+        Utils_PlayGeminiFocusedChime()
     return el
 }
 

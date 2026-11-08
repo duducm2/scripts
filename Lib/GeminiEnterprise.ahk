@@ -314,7 +314,14 @@ GeminiEnterprise_PlayFocusedChime(minIntervalMs := 400) {
     if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
         return false
     lastChimeTick := now
-    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+    soundPath := A_ScriptDir . "\assets\sounds\ai-companion-focused.wav"
+    if (!FileExist(soundPath))
+    soundPath := A_ScriptDir . "\..\assets\sounds\ai-companion-focused.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\assets\sounds\into-cursor-textfield.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\assets\sounds\gemini-focused.wav"
+    ScriptSoundPlay(soundPath)
     return true
 }
 
@@ -385,7 +392,7 @@ GeminiEnterprise_OpenOrFocus() {
             return false
         }
         if (!alreadyActive && WinActive("ahk_id " hwnd))
-        GeminiEnterprise_WaitForComposerDiscoverable(root, 1500)
+            GeminiEnterprise_WaitForComposerDiscoverable(root, 1500)
         if (WinActive("ahk_id " hwnd)) {
             focusedEl := GeminiEnterprise_FocusComposer(root, true)
             if (!focusedEl) {
@@ -670,6 +677,8 @@ GeminiEnterprise_FocusComposer(uia := 0, playChime := true, scrollIntoView := tr
         }
         Sleep 25
     }
+    if (!focused)
+        focused := true
     if (focused && playChime)
         GeminiEnterprise_PlayFocusedChime()
     return el
