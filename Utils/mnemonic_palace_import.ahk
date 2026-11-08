@@ -622,6 +622,11 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
         peg := Trim(bm[1])
         name := Trim(bm[2])
         rest := Trim(bm[3])
+        character := ""
+        if (RegExMatch(rest, "i)\|\s*Character:\s*(.*?)$", &cm)) {
+            character := Trim(cm[1])
+            rest := Trim(SubStr(rest, 1, cm.Pos - 1))
+        }
         concept := rest
         quote := ""
         story := ""
@@ -676,7 +681,9 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
             "quote", quote,
             "story", story,
             "ipa", "",
-            "sort_order", "1"
+            "sort_order", "1",
+            "character", character,
+            "justification", ""
         ))
     }
     if (!beasts.Length)
@@ -2063,7 +2070,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "quote", r.Has("quote") ? r["quote"] : "",
                 "story", story,
                 "ipa", r.Has("ipa") ? r["ipa"] : "",
-                "sort_order", r.Has("sort_order") ? r["sort_order"] : "1"
+                "sort_order", r.Has("sort_order") ? r["sort_order"] : "1",
+                "character", r.Has("character") ? r["character"] : "",
+                "justification", r.Has("justification") ? r["justification"] : ""
             )
             if (!pendingByBeast.Has(beastId))
                 pendingByBeast[beastId] := []

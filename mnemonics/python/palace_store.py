@@ -778,6 +778,8 @@ class PalaceStore:
                 or (existing or {}).get("sort_order")
                 or _next_sort([r for r in rows if r.get("beast_id") == beast_id])
             ),
+            "character": str(payload.get("character", (existing or {}).get("character", ""))),
+            "justification": str(payload.get("justification", (existing or {}).get("justification", ""))),
         }
         trial = [
             row if r.get("id") == rid else r

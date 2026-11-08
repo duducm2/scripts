@@ -46,14 +46,14 @@ STUDY_… · N palaces · N beasts · N atoms
 Packing: 5+5+…+remainder (remainder only on last **new** palace in this pack)
 
 PALACE N+1 — <title> (<character>) [<palace_id>]
-  [U] <beast> — Concept: … | Quote: "…"
-  [V] <beast> — Concept: … | Quote: "…"
-  [W] <beast> — Concept: … | Quote: "…"
-  [X] <beast> — Concept: … | Quote: "…"
-  [Y] <beast> — Concept: … | Quote: "…"
+  [U] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [V] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [W] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [X] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [Y] <beast> — Concept: … | Quote: "…" | Character: <name>
 PALACE N+2 — <title> (<character>) [<palace_id>]   ← last new palace in this pack may have 1–4
-  [Z] <beast> — Concept: … | Quote: "…"
-  [Aa] <beast> — Concept: … | Quote: "…"
+  [Z] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [Aa] <beast> — Concept: … | Quote: "…" | Character: <name>
   [Aa] <beast> Z2 — …
 
 Discard candidates: none | list pegs / palace ids with one-line why (incl. already-known skipped from inventory)
@@ -194,7 +194,7 @@ Rules:
 Header (exact):
 
 ```
-id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character,justification
 ```
 
 Rules:
@@ -225,6 +225,12 @@ Rules:
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
   - **story** — do **not** author a narrative. Omit the column. If a legacy header still has `story`, leave every cell empty. The user writes the story later from the keywords.
   - **ipa** ← German IPA when needed; else empty
+  - **character** ← Name of the specific Character attributed to this Knowledge Atom.
+    - **Attribution Logic (HARD MANDATE):** You must choose this character based **strictly on the atom's primary (first) keyword** (the tangible Keyword anchor on the left of pair 1 in `keywords`). Choose an iconic figure (from pop-culture, cinema, cartoons/games, anime, mythology, history, or the user's PAO catalog) that vividly embodies that specific primary keyword.
+    - **No-Repetition Proximity Rule (Window of at least ±6 Memory Palaces - HARD MANDATE):** A character assigned to a Knowledge Atom must **NOT** appear in any memory palace within **at least six memory palaces** of the current one (neither within the current palace across different atoms, nor in the 6 preceding palaces in the attached inventory, nor within any palace in this pack within 6 palaces). This prevents character repetition fatigue. Always verify the characters used in the preceding 6 palaces before selecting.
+    - **Always Assign / Best Judgment Rule (Never leave empty - HARD MANDATE):** Every Knowledge Atom MUST have an assigned character. If a direct or obvious connection to the primary keyword is not immediately obvious, the AI MUST make its best creative/associative judgment to find an iconic character and articulate the connection in `justification`. NEVER leave `character` blank, null, or marked as "(unassigned)". There must ALWAYS be a character.
+    - **Interaction Rule (STRICT):** Do **NOT** generate or simulate any narrative interaction between the character and the beast. Output only the character's name.
+  - **justification** ← 1–2 concise sentences explaining why this specific character directly relates to or embodies the primary (first) keyword. Do not describe beast interactions. Never leave empty.
 - Leave `id` empty if unknown (`ATOM_####` assigned on import).
 
 ---
@@ -279,6 +285,8 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 - NEVER top up an existing under-filled inventory palace with new beasts.
 - NEVER dump the whole practice `.md` / study into PREVIEW or FILE sections.
 - NEVER assign two+ characters to one palace or reuse a character already used (inventory + this pack).
+- NEVER reuse a character in a Knowledge Atom if that character appeared in any of the 6 surrounding memory palaces (at least 6 palaces before or within this pack).
+- NEVER leave a Knowledge Atom's `character` or `justification` field empty or unassigned; always make your best creative judgment to find an iconic character.
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached inventory ids used for continuity + this pack’s new rows.
 - NEVER use numeric pegs or cross-beast narrative dependency.
 - NEVER under-fill a **pack** palace (1–4 beasts) when ≥5 new beasts remain to place in this pack.

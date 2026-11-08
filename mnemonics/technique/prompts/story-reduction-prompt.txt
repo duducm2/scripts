@@ -68,14 +68,14 @@ Packing: 5+5+…+remainder (remainder only on last in-scope palace)
 Changes: what the instruction changed (short)
 
 PALACE N — <title> (<character>) [<palace_id>]
-  [U] <beast> — Concept: … | Quote: "…"
-  [V] <beast> — Concept: … | Quote: "…"
-  [W] <beast> — Concept: … | Quote: "…"
-  [X] <beast> — Concept: … | Quote: "…"
-  [Y] <beast> — Concept: … | Quote: "…"
+  [U] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [V] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [W] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [X] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [Y] <beast> — Concept: … | Quote: "…" | Character: <name>
 PALACE N+1 — <title> (<character>) [<palace_id>]   ← last in-scope may have 1–4
-  [Z] <beast> — Concept: … | Quote: "…"
-  [Aa] <beast> — Concept: … | Quote: "…"
+  [Z] <beast> — Concept: … | Quote: "…" | Character: <name>
+  [Aa] <beast> — Concept: … | Quote: "…" | Character: <name>
 
 Exclude:
 28 PALACE_…
@@ -178,17 +178,24 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 ### `PALACE_ATOMS.csv`
 
 ```
-id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character,justification
 ```
 
-- Keep each surviving atom’s `id`. For an atom the instruction does not change, copy `concept` and `keywords` **byte-for-byte**. Do not re-chunk, tighten, or rewrite that stored concept. Do not add or adjust a ` — Note:` on it. A row that drops the stored `id` is treated as new and must pass the two-part sentence check.
+- Keep each surviving atom’s `id`. For an atom the instruction does not change, copy `concept`, `keywords`, `character`, and `justification` **byte-for-byte**. Do not re-chunk, tighten, or rewrite that stored concept. Do not add or adjust a ` — Note:` on it. A row that drops the stored `id` is treated as new and must pass the two-part sentence check.
 - **Newly authored concept (only when this run must write a concept that is not copied from an existing atom):** use `README §Knowledge Atom Structure`. 4–5 square-bracket groups that read as one sentence, so the atom has 5–6 keywords: `[I use {formal name} to {bare verb}] [{continuation}] [{continuation}] [{continuation}]`. Group 1 has no closing period. Later groups do not start a new “I …”. Optional ` — Note:` stays unbracketed and impersonal after the groups. 5–6 keyword pairs (`Keyword | RecognizableWord` joined by ` || `): formal name from group 1, bare infinitive after `to` from group 1 (mandatory), then one single concrete word from each later group. Never key a multi-word abstraction. Example: `[I use Databricks Jobs to convert] [my interactive notebooks] [into scheduled] [production pipelines.]` → `calendar | Databricks Jobs || wand | convert || notebook | notebooks || clock | scheduled || factory | pipelines`. Never key Note text. Brackets apply only to that new `concept` core, never to `quote` or PREVIEW labels.
 - CSV `keywords` is SSOT (not required in PREVIEW). Do not silently wipe or normalize keywords on an atom whose concept was copied.
+- **character and justification:**
+  - For an atom the instruction leaves alone, copy `character` and `justification` **byte-for-byte**.
+  - For any newly authored or merged concept: assign `character` strictly based on the atom's **primary (first) keyword** (the tangible Keyword anchor on the left of pair 1 in `keywords`). Choose an iconic figure (from pop-culture, cinema, cartoons/games, anime, mythology, history, or the user's PAO catalog) that vividly embodies that specific primary keyword.
+  - **No-Repetition Proximity Rule (Window of at least ±6 Memory Palaces - HARD MANDATE):** A character assigned to a Knowledge Atom must **NOT** appear in any memory palace within **at least six memory palaces** of the current one (neither within the current palace across different atoms, nor in the 6 preceding palaces in the attached inventory, nor within any palace in this pack within 6 palaces). This prevents character repetition fatigue. Always verify the characters used in the preceding 6 palaces before selecting.
+  - **Always Assign / Best Judgment Rule (Never leave empty - HARD MANDATE):** Every Knowledge Atom MUST have an assigned character. If a direct or obvious connection to the primary keyword is not immediately obvious, the AI MUST make its best creative/associative judgment to find an iconic character and articulate the connection in `justification`. NEVER leave `character` blank, null, or marked as "(unassigned)". There must ALWAYS be a character.
+  - The `justification` must be 1–2 concise sentences explaining why this character relates to or embodies that specific primary keyword.
+  - **Interaction Rule (STRICT):** Do **NOT** generate or simulate any narrative interaction between the character and the beast; simply output the character's name and justification.
 - **Quote:** keep the verbatim transcript excerpt intact. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
 - **story:** do **not** author or rewrite a narrative. Omit the column. If a legacy header still has `story`, leave every cell empty. Keywords remain the recall cue; the user writes the story later.
 - `kind` is `single`. Leave `zone` and `zone_label` empty. One atom row per beast.
-- **When the instruction changes a concept** (a merge, a replacement, or another rewrite it names): that concept is newly authored, so use the keyword sentence above. Re-derive 5–6 keyword pairs. A merge keeps every fact from the concepts it names, unless the instruction says to drop something, and joins their quotes verbatim on one line with ` / ` (no line break inside the CSV cell). A replacement writes the new concept the human asked for and drops the deprecated facts; keep the old `quote` verbatim unless the instruction gives a new one. Keep the first affected atom `id` and beast `id`. Do not emit beasts the merge consumes. `kind=single`. Leave `zone` and `zone_label` empty. Set `is_smashed` to `0`. Leave `story` empty. Apply this only to the beasts the instruction updates. Other beasts in the same instruction can be deleted.
-- **When the instruction deletes atoms:** drop only those atoms. Other beasts in the same instruction can still be updated. After every named edit, re-peg and pull later beasts forward under the packing rules. Copy every untouched survivor’s `concept` and `keywords` byte-for-byte.
+- **When the instruction changes a concept** (a merge, a replacement, or another rewrite it names): that concept is newly authored, so use the keyword sentence above. Re-derive 5–6 keyword pairs. Re-derive character and justification based strictly on the newly derived primary keyword. A merge keeps every fact from the concepts it names, unless the instruction says to drop something, and joins their quotes verbatim on one line with ` / ` (no line break inside the CSV cell). A replacement writes the new concept the human asked for and drops the deprecated facts; keep the old `quote` verbatim unless the instruction gives a new one. Keep the first affected atom `id` and beast `id`. Do not emit beasts the merge consumes. `kind=single`. Leave `zone` and `zone_label` empty. Set `is_smashed` to `0`. Leave `story` empty. Apply this only to the beasts the instruction updates. Other beasts in the same instruction can be deleted.
+- **When the instruction deletes atoms:** drop only those atoms. Other beasts in the same instruction can still be updated. After every named edit, re-peg and pull later beasts forward under the packing rules. Copy every untouched survivor’s `concept`, `keywords`, `character`, and `justification` byte-for-byte.
 
 ---
 

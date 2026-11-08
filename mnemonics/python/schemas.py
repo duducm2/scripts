@@ -58,6 +58,8 @@ ATOMS_HEADERS = [
     "story",
     "ipa",
     "sort_order",
+    "character",
+    "justification",
 ]
 
 # Legacy read cap. New atoms: 5–6 keyword pairs. Group 1 yields name + verb;
@@ -288,6 +290,12 @@ def iter_keyword_pairs(raw: str | None) -> list[tuple[str, str]]:
         if left and right:
             out.append((left, right))
     return out
+
+
+def extract_primary_keyword(raw: str | None) -> str:
+    """Return the primary (first) tangible Keyword anchor from the keywords string."""
+    pairs = iter_keyword_pairs(raw)
+    return pairs[0][0] if pairs else ""
 
 
 def _term_pattern(term: str) -> str | None:

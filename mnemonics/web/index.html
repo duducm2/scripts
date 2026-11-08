@@ -3898,9 +3898,17 @@
       }
 
       function renderAtomCard(a) {
+        const charHtml = a.character
+          ? `<div class="field field-character"><span class="lbl">Character</span><p style="margin:0;font-weight:600;color:var(--gold,#e6cc8a)">${esc(a.character)}</p></div>`
+          : "";
+        const justHtml = a.justification
+          ? `<div class="field field-justification"><span class="lbl">Justification</span><p style="margin:0;font-style:italic;color:#baa992">${esc(a.justification)}</p></div>`
+          : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">
           <div class="field field-concept"><span class="lbl">Concept</span><div class="concept-copy">${formatConcept(a.concept, a.keywords)}</div></div>
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
+          ${charHtml}
+          ${justHtml}
         </article>`;
       }
 
@@ -5745,12 +5753,24 @@
         );
         if (keywordsRaw == null) return;
         const quote = prompt("Quote", a?.quote || "") || "";
+        const character =
+          prompt(
+            "Character (strictly based on primary keyword)",
+            a?.character || "",
+          ) || "";
+        const justification =
+          prompt(
+            "Justification (why this character relates to primary keyword)",
+            a?.justification || "",
+          ) || "";
         const body = {
           beast_id: beastId,
           kind: "single",
           concept,
           keywords: keywordsRaw,
           quote,
+          character,
+          justification,
           story: a?.story || "",
         };
         if (a?.id) body.id = a.id;

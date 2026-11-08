@@ -19,6 +19,12 @@
 **Quote**
 “whereas dense rank uh it don't skip any of the value and whether it is repetitive or non-repetitive it will increment only by one so for same values it will not increment whenever it see a different value then it will increment by one”
 
+**Character**
+Ash Ketchum
+
+**Justification**
+Ash Ketchum dedica sua jornada a disputar torneios e subir no ranking das ligas para conquistar o cobiçado troféu dourado (gold trophy).
+
 ### [Dd] Dark dragon
 
 <img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/dragon.png" alt="Dark dragon" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -28,6 +34,12 @@
 
 **Quote**
 “and this collect set it it it gets the list which is a distinct of all the data like if there are repeated products here it will take only one value it will not repeat but in collect list it will repeat everything”
+
+**Character**
+Plankton
+
+**Justification**
+Plankton é obcecado por capturar e armazenar fórmulas e elementos secretos trancados dentro de um jarro ou frasco de vidro transparente (glass jar).
 
 #### Notes
 

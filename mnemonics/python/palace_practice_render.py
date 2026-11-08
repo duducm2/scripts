@@ -101,6 +101,12 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
     concept = format_concept(atom.get("concept"), atom.get("keywords"))
     lines.extend(format_field_block("Concept", concept))
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
+    char = (atom.get("character") or "").strip()
+    just = (atom.get("justification") or "").strip()
+    if char:
+        lines.extend(format_field_block("Character", md_escape(char)))
+    if just:
+        lines.extend(format_field_block("Justification", md_escape(just)))
     return lines
 
 

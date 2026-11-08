@@ -152,6 +152,8 @@ def snapshot(
                             "beast_name": b.get("beast_name", ""),
                             "beast_notes": b.get("beast_notes", ""),
                             "sort_order": a.get("sort_order", ""),
+                            "character": a.get("character", ""),
+                            "justification": a.get("justification", ""),
                         }
                     )
             atom_count = len(palace_atoms)

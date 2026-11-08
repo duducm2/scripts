@@ -598,7 +598,7 @@ Palace_Headers(kind) {
                 "sort_order", "beast_notes"]
         case "atoms":
             return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "keywords", "quote", "story", "ipa",
-                "sort_order"]
+                "sort_order", "character", "justification"]
         case "plans":
             return ["id", "study_id", "title", "sort_order", "active"]
         case "plan_items":
