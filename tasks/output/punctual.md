@@ -18,8 +18,6 @@
 
 🔲 By a VIVO chip and then register in a prepaid plan
 
-⚡ Reschedule your psychiatric appointment around January 6th
-
 ⚡ Fix bosch powertool
 ℹ️ image.png
 ℹ️ image.png

@@ -102,7 +102,16 @@ CareerForm_Fail(message) {
 
 CareerForm_IsCareerCockpitTitle(title) {
     text := StrLower(title)
-    return InStr(text, "job openings") || InStr(text, ":8770")
+    return InStr(text, "job openings")
+        || InStr(text, "target companies")
+        || InStr(text, "job portals")
+        || InStr(text, "career profile")
+        || InStr(text, "people")
+        || InStr(text, "hiring 2026")
+        || InStr(text, "career advice")
+        || InStr(text, "keyboard shortcuts")
+        || InStr(text, "portfolio")
+        || InStr(text, ":8770")
 }
 
 CareerForm_IsCompanionTitle(title) {

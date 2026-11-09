@@ -253,13 +253,15 @@ IsCareerCockpitChromeTitle(chromeTitle) {
         return true
     if (InStr(t, "Career profile"))
         return true
-    if (t = "People")
+    if (InStr(t, "People") = 1)
         return true
     if (t = "Hiring 2026" || InStr(t, "Hiring 2026") = 1)
         return true
     if (t = "Career advice" || InStr(t, "Career advice") = 1)
         return true
     if (InStr(t, "Keyboard shortcuts") = 1)
+        return true
+    if (InStr(t, "Portfolio") || InStr(t, "Eduardo Figueiredo — Portfolio"))
         return true
     return false
 }
