@@ -219,42 +219,15 @@ CareerForm_ClipboardUnicode() {
     return text
 }
 
-CareerForm_ForceWinActivate(hwnd) {
-    if !WinExist("ahk_id " hwnd)
-        return false
-    fgHwnd := DllCall("GetForegroundWindow", "Ptr")
-    fgThreadId := DllCall("GetWindowThreadProcessId", "Ptr", fgHwnd, "Ptr", 0, "UInt")
-    curThreadId := DllCall("GetCurrentThreadId", "UInt")
-
-    if (fgThreadId && fgThreadId != curThreadId)
-        DllCall("AttachThreadInput", "UInt", curThreadId, "UInt", fgThreadId, "Int", 1)
-
-    DllCall("user32\AllowSetForegroundWindow", "Int", -1)
-    DllCall("BringWindowToTop", "Ptr", hwnd)
-    DllCall("SetForegroundWindow", "Ptr", hwnd)
-    try WinActivate("ahk_id " hwnd)
-
-    if (fgThreadId && fgThreadId != curThreadId)
-        DllCall("AttachThreadInput", "UInt", curThreadId, "UInt", fgThreadId, "Int", 0)
-
-    return (WinActive("A") = hwnd)
-}
-
 CareerForm_EnsureInspector() {
     inspector := A_ScriptDir "\..\vendor\UIA-v2\UIATreeInspector.ahk"
     inspectorDir := A_ScriptDir "\..\vendor\UIA-v2"
     if !FileExist(inspector)
         CareerForm_Fail("UIA Tree Inspector was not found.")
     hwnd := 0
-    try hwnd := WinExist("UIATreeInspector ahk_class AutoHotkeyGUI")
+    try hwnd := WinExist("UIATreeInspector")
     catch {
         hwnd := 0
-    }
-    if (!hwnd) {
-        try hwnd := WinExist("UIATreeInspector")
-        catch {
-            hwnd := 0
-        }
     }
     launched := false
     if (!hwnd) {
@@ -267,7 +240,12 @@ CareerForm_EnsureInspector() {
             CareerForm_Fail("UIA Tree Inspector did not open.")
         hwnd := WinExist("UIATreeInspector")
     }
-    CareerForm_ForceWinActivate(hwnd)
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 3)
+    } catch as err {
+        CareerForm_Fail("Could not bring UIA Tree Inspector forward. " err.Message)
+    }
     if (launched)
         Sleep 1500
     return hwnd
@@ -275,15 +253,9 @@ CareerForm_EnsureInspector() {
 
 CareerForm_CloseInspector() {
     hwnd := 0
-    try hwnd := WinExist("UIATreeInspector ahk_class AutoHotkeyGUI")
+    try hwnd := WinExist("UIATreeInspector")
     catch {
         hwnd := 0
-    }
-    if (!hwnd) {
-        try hwnd := WinExist("UIATreeInspector")
-        catch {
-            hwnd := 0
-        }
     }
     if (!hwnd)
         return
@@ -311,12 +283,15 @@ CareerForm_DumpTree(windowName, outPath) {
 
     ; 1. Ensure UIA Tree Inspector is open and focused on the desktop
     hwnd := CareerForm_EnsureInspector()
-    CareerForm_ForceWinActivate(hwnd)
-    Sleep 500
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 3)
+    }
+    Sleep 400
 
     ; 2. Hit Shift+C to trigger the "Select Tree Item" search dialog in Shift keys.ahk
     SendLevel 100
-    SendEvent "+c"
+    Send "+c"
     SendLevel 0
 
     dialogOpened := false
@@ -326,12 +301,13 @@ CareerForm_DumpTree(windowName, outPath) {
     }
 
     if (dialogOpened) {
-        CareerForm_ForceWinActivate(dialogOpened)
-        Sleep 150
-        Send "^a"
-        Sleep 50
+        try {
+            WinActivate("Select Tree Item")
+            WinWaitActive("Select Tree Item", , 3)
+        }
+        Sleep 100
         SendText(windowName)
-        Sleep 150
+        Sleep 100
         Send "{Enter}"
 
         ; Wait for Shift+C flow to copy the tree to the clipboard
@@ -378,7 +354,7 @@ CareerForm_DumpTree(windowName, outPath) {
                     file.Write(tree)
                     file.Close()
                     CareerForm_CloseInspector()
-                    CareerForm_WriteResult({ ok: true, chars: StrLen(tree), method: "shift-c", error: "" })
+                    CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
                     return
                 }
             } catch {
@@ -406,7 +382,7 @@ CareerForm_DumpTree(windowName, outPath) {
                         file.Write(tree)
                         file.Close()
                         CareerForm_CloseInspector()
-                        CareerForm_WriteResult({ ok: true, chars: StrLen(tree), method: "direct-dump", error: "" })
+                        CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
                         return
                     }
                 }
