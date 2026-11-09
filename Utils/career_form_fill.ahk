@@ -315,16 +315,21 @@ CareerForm_DumpTree(windowName, outPath) {
         seenClear := (before = "")
         start := A_TickCount
         loop {
-            if WinExist("UIA Tree Inspector") {
+            msgboxHwnd := 0
+            try msgboxHwnd := WinExist("UIA Tree Inspector ahk_class #32770")
+            catch {
+                msgboxHwnd := 0
+            }
+            if (msgboxHwnd) {
                 message := ""
-                try message := Trim(WinGetText("UIA Tree Inspector"))
+                try message := Trim(WinGetText("ahk_id " msgboxHwnd))
                 catch {
                     message := ""
                 }
-                try WinClose("UIA Tree Inspector")
+                try WinClose("ahk_id " msgboxHwnd)
                 catch {
                 }
-                if (message != "" && !InStr(message, "Windows and Controls")) {
+                if (message != "") {
                     message := Trim(RegExReplace(message, "^OK\R+", ""))
                     CareerForm_CloseInspector()
                     CareerForm_Fail(message)
