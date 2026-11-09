@@ -1,0 +1,7 @@
+; Machine-local Handy AI transcription model configuration — TEMPLATE (tracked in git)
+; Auto-created on first run to assets/data/handy_ai_model.ini if missing.
+; Slot: 1 = Parakeet Unified EN, 2 = Nemotron Streaming (PT), 3 = Cohere Transcribe, 4+ = ExtraModels
+; Can be defaulted per environment via HANDY_AI_DEFAULT_SLOT in env.ahk.
+[Handy]
+Slot=1
+SchemaVersion=3

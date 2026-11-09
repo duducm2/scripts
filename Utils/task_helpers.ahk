@@ -152,6 +152,8 @@ Task_WriteEnvDefaultFocus() {
 }
 
 Task_Setting(section, key, default := "") {
+    if (!FileExist(Task_SettingsPath()))
+        Task_EnsureSettings()
     val := IniRead(Task_SettingsPath(), section, key, default)
     if (val = "ERROR")
         return default
@@ -1046,3 +1048,7 @@ Task_Terms() {
         ["Attachment", "image | url | file | text refs under tasks/data/attachments or absolute paths."]
     ]
 }
+
+; Ensure configuration file exists with environment-specific defaults on module load.
+Task_EnsureSettings()
+

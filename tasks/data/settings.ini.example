@@ -1,0 +1,14 @@
+; Machine-local Tasks UI settings — TEMPLATE (tracked in git)
+; Auto-created on first run to tasks/data/settings.ini if missing.
+; Missing keys are filled on startup from Task_SettingsDefaults().
+; Filter default follows IS_WORK_ENVIRONMENT from env.ahk (work vs personal).
+[General]
+Filter=personal
+LastProjectId=
+DashboardChromeHwnd=
+
+[Dashboard]
+ShowByFilter=1
+ShowByEmoji=1
+ShowHabitsUpcoming=1
+ShowCompletedRecent=1

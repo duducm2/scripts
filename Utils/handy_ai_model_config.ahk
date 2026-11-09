@@ -77,6 +77,52 @@ Handy_GetHandyAiModelIniPath() {
     return A_ScriptDir "\assets\data\handy_ai_model.ini"
 }
 
+; Returns the default Handy slot configured for this environment (via HANDY_AI_DEFAULT_SLOT in env.ahk).
+; Falls back to HANDY_AI_SLOT_ENGLISH (1) if no environment override is present.
+Handy_DefaultSlotForEnv() {
+    global HANDY_AI_DEFAULT_SLOT, HANDY_AI_SLOT_ENGLISH
+    try {
+        if (IsSet(HANDY_AI_DEFAULT_SLOT) && IsInteger(HANDY_AI_DEFAULT_SLOT) && HANDY_AI_DEFAULT_SLOT >= 1)
+            return Integer(HANDY_AI_DEFAULT_SLOT)
+    } catch {
+    }
+    return HANDY_AI_SLOT_ENGLISH
+}
+
+; Guarantees assets\data\handy_ai_model.ini exists with valid Slot and SchemaVersion.
+; If the file or Slot key is missing/invalid, initializes it using Handy_DefaultSlotForEnv().
+; Existing saved values are never overwritten.
+Handy_EnsureSettings() {
+    global HANDY_AI_INI_SCHEMA_VERSION, g_HandyAiModels
+    path := Handy_GetHandyAiModelIniPath()
+    defaultSlot := Handy_DefaultSlotForEnv()
+
+    if (!FileExist(path)) {
+        Handy_PersistSlotToIni(defaultSlot)
+        return
+    }
+
+    s := ""
+    try s := IniRead(path, "Handy", "Slot", "")
+    catch {
+        s := ""
+    }
+    if (s = "" || !IsInteger(s) || (IsObject(g_HandyAiModels) && g_HandyAiModels.Count > 0 && !g_HandyAiModels.Has(Integer(s)))) {
+        Handy_PersistSlotToIni(defaultSlot)
+    }
+
+    ver := ""
+    try ver := IniRead(path, "Handy", "SchemaVersion", "")
+    catch {
+        ver := ""
+    }
+    if (ver = "" || !IsInteger(ver)) {
+        try IniWrite(String(HANDY_AI_INI_SCHEMA_VERSION), path, "Handy", "SchemaVersion")
+        catch {
+        }
+    }
+}
+
 Handy_ReadIniSchemaVersion() {
     path := Handy_GetHandyAiModelIniPath()
     s := ""
@@ -333,10 +379,16 @@ Handy_PersistSlotToIni(slot) {
 Handy_ReadPersistedAiModelSlotFromIni() {
     global g_HandyAiModels, HANDY_AI_LEGACY_SLOT_SCHEMA
     path := Handy_GetHandyAiModelIniPath()
+    if (!FileExist(path))
+        Handy_EnsureSettings()
     s := ""
     try s := IniRead(path, "Handy", "Slot", "")
-    if (s = "" || !IsInteger(s))
-        return 0
+    if (s = "" || !IsInteger(s)) {
+        Handy_EnsureSettings()
+        try s := IniRead(path, "Handy", "Slot", "")
+        if (s = "" || !IsInteger(s))
+            return Handy_DefaultSlotForEnv()
+    }
     rawSlot := Integer(s)
     schemaVersion := Handy_ReadIniSchemaVersion()
     if (schemaVersion >= HANDY_AI_LEGACY_SLOT_SCHEMA) {
@@ -347,17 +399,17 @@ Handy_ReadPersistedAiModelSlotFromIni() {
             Handy_PersistSlotToIni(n)
     }
     if !g_HandyAiModels.Has(n)
-        return 0
+        return Handy_DefaultSlotForEnv()
     return n
 }
 
-; Returns persisted slot, or 0 if missing / invalid / not in g_HandyAiModels.
+; Returns persisted slot, or default if missing / invalid / not in g_HandyAiModels.
 Handy_GetPersistedAiModelSlot() {
     global g_HandyAiPersistedSlot, g_HandyAiModels
     if (g_HandyAiPersistedSlot >= 1 && g_HandyAiModels.Has(g_HandyAiPersistedSlot))
         return g_HandyAiPersistedSlot
     slot := Handy_ReadPersistedAiModelSlotFromIni()
-    g_HandyAiPersistedSlot := g_HandyAiModels.Has(slot) ? slot : 0
+    g_HandyAiPersistedSlot := (g_HandyAiModels.Has(slot)) ? slot : Handy_DefaultSlotForEnv()
     return g_HandyAiPersistedSlot
 }
 
@@ -365,6 +417,7 @@ Handy_SetPersistedAiModelSlot(slot) {
     return Handy_PersistSlotToIni(slot)
 }
 
-; Build catalog then warm in-process slot cache (modal highlight before any take).
+; Build catalog, ensure configuration exists with environment defaults, then warm slot cache.
 HandyAiModels_LoadCatalog()
+Handy_EnsureSettings()
 Handy_GetPersistedAiModelSlot()
