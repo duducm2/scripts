@@ -96,10 +96,91 @@
     Send "{Enter}"
 }
 
-; Shift + A : Attach file - Attach
+; Shift + A / Alt + Shift + O : Attach file -> Upload from this device (see teams.md L46)
 +a::
+$!+o::
 {
-    Send "!+o"
+    TeamsChat_AttachAndUploadFromDevice()
+}
+
+TeamsChat_FindUploadFromDevice(root) {
+    if !root
+        return 0
+    try {
+        saved := UiElements_TrySaved(root, "TeamsChat", "UploadFromDevice")
+        if saved
+            return saved
+    }
+
+    names := ["Upload from this device", "Carregar deste dispositivo", "Carregar a partir deste dispositivo",
+        "Carregar do computador"]
+    for name in names {
+        try {
+            el := root.FindFirst({ Name: name, Type: "50011" })
+            if el
+                return el
+        }
+    }
+    for name in names {
+        try {
+            el := root.FindFirst({ Name: name, matchmode: "Substring", casesense: false })
+            if el
+                return el
+        }
+    }
+
+    ; Fallback: search desktop root in case popup menu is hosted in a separate top-level window/overlay
+    try {
+        desktopRoot := UIA.GetRootElement()
+        for name in names {
+            try {
+                el := desktopRoot.FindFirst({ Name: name, Type: "50011" })
+                if el
+                    return el
+            }
+        }
+    }
+    return 0
+}
+
+TeamsChat_AttachAndUploadFromDevice() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+    } catch {
+        root := 0
+    }
+
+    ; Check if "Upload from this device" menu item is already visible
+    uploadItem := TeamsChat_FindUploadFromDevice(root)
+    if !uploadItem {
+        Send "!+o"
+        deadline := A_TickCount + 2000
+        while (A_TickCount < deadline) {
+            Sleep 50
+            uploadItem := TeamsChat_FindUploadFromDevice(root)
+            if uploadItem
+                break
+        }
+    }
+
+    if uploadItem {
+        try {
+            uploadItem.Click()
+            return
+        } catch {
+            try {
+                uploadItem.Invoke()
+                return
+            }
+        }
+    }
+
+    ShowSmallLoadingIndicator_ChatGPT("Could not find Upload from this device")
+    SetTimer(() => HideSmallLoadingIndicator_ChatGPT(), -2000)
 }
 
 ; =============================================================================

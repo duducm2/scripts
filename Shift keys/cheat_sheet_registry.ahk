@@ -262,7 +262,7 @@ cheatSheets["TeamsChat"] := "
     Redigir:
     [Ctrl + Shift + X] > Expand text box
     [Ctrl + Enter] > Send (expanded text box)
-    [Alt + Shift + O] > Attach file
+    [Alt + Shift + O] > Attach file (Upload from this device)
     [Shift + Enter] > Start new line
     [Ctrl + B] > Apply bold style
     [Ctrl + I] > Apply italic style

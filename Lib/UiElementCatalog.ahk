@@ -135,6 +135,7 @@ UiElementCatalog_All() {
         e.Call("TeamsChat", "Call", "Call", "Shift keys/hotif_teams_chat.ahk", "button"),
         e.Call("TeamsChat", "QuickViews", "Quick views", "Shift keys/hotif_teams_chat.ahk", "any"),
         e.Call("TeamsChat", "Composer", "Compose box", "Utils/teams_jump_to_chat.ahk", "edit"),
+        e.Call("TeamsChat", "UploadFromDevice", "Upload from this device", "Shift keys/hotif_teams_chat.ahk", "button"),
         e.Call("OUTLOOK.EXE", "Mail", "Mail module", "Outlook.ahk", "any"),
         e.Call("OUTLOOK.EXE", "Calendar", "Calendar module", "Outlook.ahk", "any"),
         e.Call("OUTLOOK.EXE", "Reply", "Reply", "Shift keys/hotif_outlook_main.ahk", "button"),

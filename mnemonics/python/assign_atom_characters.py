@@ -28,7 +28,9 @@ def load_pao_catalog(data_dir: Path) -> list[dict[str, str]]:
         return list(reader)
 
 
-def load_palace_and_beast_maps(data_dir: Path) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+def load_palace_and_beast_maps(
+    data_dir: Path,
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     """Map beast_id -> beast row, and palace_id -> palace row."""
     beasts_map: dict[str, dict[str, Any]] = {}
     beasts_file = data_dir / "beasts.csv"
@@ -119,11 +121,13 @@ def build_batch_prompt(
     sample_chars = [c.get("name", "") for c in pao_catalog[:50] if c.get("name")]
     if sample_chars:
         lines.append(", ".join(sample_chars) + "...")
-    lines.extend([
-        "",
-        "Atoms to assign:",
-        "id | Primary Keyword | Palace (Num) | Forbidden Nearby Characters (±6 palaces) | Concept",
-    ])
+    lines.extend(
+        [
+            "",
+            "Atoms to assign:",
+            "id | Primary Keyword | Palace (Num) | Forbidden Nearby Characters (±6 palaces) | Concept",
+        ]
+    )
     for a in unassigned:
         kw = a.get("keywords", "")
         primary = extract_primary_keyword(kw)
@@ -138,22 +142,30 @@ def build_batch_prompt(
             num = int(palace.get("palace_number", "0") or 0)
         except ValueError:
             num = 0
-        forbidden = get_forbidden_nearby_characters(sid, num, char_index, min_distance=6)
+        forbidden = get_forbidden_nearby_characters(
+            sid, num, char_index, min_distance=6
+        )
         forb_str = ", ".join(sorted(forbidden)) if forbidden else "none"
-        lines.append(f"{aid} | {primary} | {pid} (#{num}) | Forbidden: [{forb_str}] | {concept}")
-    lines.extend([
-        "",
-        "Output format (pure CSV only):",
-        "```csv",
-        "id,character,justification",
-        "<id>,<character>,<justification>",
-        "```",
-    ])
+        lines.append(
+            f"{aid} | {primary} | {pid} (#{num}) | Forbidden: [{forb_str}] | {concept}"
+        )
+    lines.extend(
+        [
+            "",
+            "Output format (pure CSV only):",
+            "```csv",
+            "id,character,justification",
+            "<id>,<character>,<justification>",
+            "```",
+        ]
+    )
     return "\n".join(lines)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Assign characters and justifications to atoms.")
+    parser = argparse.ArgumentParser(
+        description="Assign characters and justifications to atoms."
+    )
     parser.add_argument(
         "--data-dir",
         type=Path,
@@ -238,7 +250,9 @@ def main(argv: list[str] | None = None) -> int:
             if key in checked_chars:
                 prev_num = checked_chars[key]
                 if abs(num - prev_num) <= 6 and num != prev_num:
-                    print(f"  [COLLISION] Character '{ch}' appears in {sid} palace {prev_num} and {num} (distance {abs(num - prev_num)} <= 6)!")
+                    print(
+                        f"  [COLLISION] Character '{ch}' appears in {sid} palace {prev_num} and {num} (distance {abs(num - prev_num)} <= 6)!"
+                    )
                     collisions += 1
             checked_chars[key] = num
 
@@ -249,12 +263,16 @@ def main(argv: list[str] | None = None) -> int:
             print("\nSample unassigned atoms:")
             for a in unassigned[:10]:
                 prim = extract_primary_keyword(a.get("keywords"))
-                print(f"  [{a.get('id')}] Primary Keyword: '{prim}' -> Concept: {a.get('concept', '')[:60]}...")
+                print(
+                    f"  [{a.get('id')}] Primary Keyword: '{prim}' -> Concept: {a.get('concept', '')[:60]}..."
+                )
             if len(unassigned) > 10:
                 print(f"  ... and {len(unassigned) - 10} more.")
 
     if args.prompt:
-        prompt_text = build_batch_prompt(unassigned, pao_catalog, beasts_map, palaces_map, char_index)
+        prompt_text = build_batch_prompt(
+            unassigned, pao_catalog, beasts_map, palaces_map, char_index
+        )
         print(prompt_text)
 
     if args.apply:
@@ -266,9 +284,7 @@ def main(argv: list[str] | None = None) -> int:
         with apply_path.open("r", encoding="utf-8-sig", newline="") as f:
             apply_reader = csv.DictReader(f)
             apply_map = {
-                r.get("id", "").strip(): r
-                for r in apply_reader
-                if r.get("id")
+                r.get("id", "").strip(): r for r in apply_reader if r.get("id")
             }
 
         updated_count = 0
@@ -290,18 +306,26 @@ def main(argv: list[str] | None = None) -> int:
                         num = int(palace.get("palace_number", "0") or 0)
                     except ValueError:
                         num = 0
-                    forbidden = get_forbidden_nearby_characters(sid, num, char_index, min_distance=6)
+                    forbidden = get_forbidden_nearby_characters(
+                        sid, num, char_index, min_distance=6
+                    )
                     if new_char.lower() in forbidden:
-                        print(f"  [WARNING] '{new_char}' for {aid} collides with a character used within ±6 palaces in {sid}!")
+                        print(
+                            f"  [WARNING] '{new_char}' for {aid} collides with a character used within ±6 palaces in {sid}!"
+                        )
                         collision_warnings += 1
                     a["character"] = new_char
                     # Update index dynamically
-                    char_index.setdefault(sid, {}).setdefault(num, set()).add(new_char.lower())
+                    char_index.setdefault(sid, {}).setdefault(num, set()).add(
+                        new_char.lower()
+                    )
                 if new_just:
                     a["justification"] = new_just
                 updated_count += 1
 
-        print(f"Matched and updated {updated_count} atoms ({collision_warnings} proximity warnings).")
+        print(
+            f"Matched and updated {updated_count} atoms ({collision_warnings} proximity warnings)."
+        )
         if not args.dry_run:
             with atoms_path.open("w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=ATOMS_HEADERS)
