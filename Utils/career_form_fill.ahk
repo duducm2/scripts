@@ -518,305 +518,305 @@ CareerForm_FindChromeByTitle(windowName) {
     needleLower := StrLower(needle)
     best := 0
     bestScore := 0
-            firstNonCockpit := 0
+    firstNonCockpit := 0
 
-            browserExes := ["ahk_exe chrome.exe", "ahk_exe msedge.exe", "ahk_exe brave.exe"]
-            for bExe in browserExes {
-                for hwnd in WinGetList(bExe) {
-                    title := ""
-                    try title := WinGetTitle("ahk_id " hwnd)
-                    catch {
-                        continue
-                    }
-                    if (title = "" || CareerForm_IsCareerCockpitTitle(title) || CareerForm_IsCompanionTitle(title))
-                        continue
-                    if (!firstNonCockpit)
-                        firstNonCockpit := hwnd
-                    if (needleLower = "")
-                        continue
-                    titleLower := StrLower(title)
-                    score := 0
-                    if (titleLower = needleLower)
-                        score := 10
-                    else if InStr(titleLower, needleLower)
-                        score := 6
-                    else if InStr(needleLower, titleLower)
-                        score := 5
-                    else {
-                        words := StrSplit(needleLower, [" ", "-", "|", ",", ":", "(", ")"])
-                        for w in words {
-                            w := Trim(w)
-                            if (StrLen(w) >= 3 && InStr(titleLower, w))
-                                score += 1
-                        }
-                    }
-                    if (score > bestScore) {
-                        bestScore := score
-                        best := hwnd
-                    }
+    browserExes := ["ahk_exe chrome.exe", "ahk_exe msedge.exe", "ahk_exe brave.exe"]
+    for bExe in browserExes {
+        for hwnd in WinGetList(bExe) {
+            title := ""
+            try title := WinGetTitle("ahk_id " hwnd)
+            catch {
+                continue
+            }
+            if (title = "" || CareerForm_IsCareerCockpitTitle(title) || CareerForm_IsCompanionTitle(title))
+                continue
+            if (!firstNonCockpit)
+                firstNonCockpit := hwnd
+            if (needleLower = "")
+                continue
+            titleLower := StrLower(title)
+            score := 0
+            if (titleLower = needleLower)
+                score := 10
+            else if InStr(titleLower, needleLower)
+                score := 6
+            else if InStr(needleLower, titleLower)
+                score := 5
+            else {
+                words := StrSplit(needleLower, [" ", "-", "|", ",", ":", "(", ")"])
+                for w in words {
+                    w := Trim(w)
+                    if (StrLen(w) >= 3 && InStr(titleLower, w))
+                        score += 1
                 }
             }
-            if (!best && firstNonCockpit)
-                best := firstNonCockpit
-            return best
+            if (score > bestScore) {
+                bestScore := score
+                best := hwnd
+            }
         }
+    }
+    if (!best && firstNonCockpit)
+        best := firstNonCockpit
+    return best
+}
 
-        CareerForm_ElementByPath(root, path) {
-            if (!IsObject(root) || path = "")
-                return root
-            el := root
-            for part in StrSplit(path, ",") {
-                idx := Integer(part)
-                kids := 0
-                try kids := el.GetChildren()
-                catch {
-                    return 0
-                }
-                if (!IsObject(kids) || idx < 1 || idx > kids.Length)
-                    return 0
-                el := kids[idx]
-                if (!IsObject(el))
-                    return 0
-            }
-            return el
-        }
-
-        CareerForm_FindControl(root, step) {
-            found := 0
-            if (step.path != "") {
-                try found := CareerForm_ElementByPath(root, step.path)
-                catch {
-                    found := 0
-                }
-                if IsObject(found)
-                    return found
-            }
-            aid := Trim(step.automationId)
-            if (aid != "" && !RegExMatch(aid, "^\d+$")) {
-                try found := root.FindFirst({ AutomationId: aid })
-                catch {
-                    found := 0
-                }
-                if IsObject(found)
-                    return found
-            }
-            if (step.name != "" && step.type != "") {
-                try found := root.FindFirst({ Type: step.type, Name: step.name })
-                catch {
-                    found := 0
-                }
-                if IsObject(found)
-                    return found
-            }
+CareerForm_ElementByPath(root, path) {
+    if (!IsObject(root) || path = "")
+        return root
+    el := root
+    for part in StrSplit(path, ",") {
+        idx := Integer(part)
+        kids := 0
+        try kids := el.GetChildren()
+        catch {
             return 0
         }
+        if (!IsObject(kids) || idx < 1 || idx > kids.Length)
+            return 0
+        el := kids[idx]
+        if (!IsObject(el))
+            return 0
+    }
+    return el
+}
 
-        CareerForm_PasteValue(value) {
-            A_Clipboard := ""
-            A_Clipboard := value
-            if !ClipWait(1)
-                return false
-            Sleep 40
-            Send "^a"
-            Sleep 30
-            Send "^v"
-            Sleep 80
-            return true
+CareerForm_FindControl(root, step) {
+    found := 0
+    if (step.path != "") {
+        try found := CareerForm_ElementByPath(root, step.path)
+        catch {
+            found := 0
         }
+        if IsObject(found)
+            return found
+    }
+    aid := Trim(step.automationId)
+    if (aid != "" && !RegExMatch(aid, "^\d+$")) {
+        try found := root.FindFirst({ AutomationId: aid })
+        catch {
+            found := 0
+        }
+        if IsObject(found)
+            return found
+    }
+    if (step.name != "" && step.type != "") {
+        try found := root.FindFirst({ Type: step.type, Name: step.name })
+        catch {
+            found := 0
+        }
+        if IsObject(found)
+            return found
+    }
+    return 0
+}
 
-        CareerForm_SetText(el, value) {
-            try el.SetFocus()
+CareerForm_PasteValue(value) {
+    A_Clipboard := ""
+    A_Clipboard := value
+    if !ClipWait(1)
+        return false
+    Sleep 40
+    Send "^a"
+    Sleep 30
+    Send "^v"
+    Sleep 80
+    return true
+}
+
+CareerForm_SetText(el, value) {
+    try el.SetFocus()
+    catch {
+    }
+    Sleep 60
+    wrote := false
+    try {
+        el.Value := value
+        wrote := true
+    } catch {
+        wrote := false
+    }
+    current := ""
+    try current := el.Value
+    catch {
+        current := ""
+    }
+    if (wrote && current = value)
+        return true
+    return CareerForm_PasteValue(value)
+}
+
+CareerForm_Yes(value) {
+    text := StrLower(Trim(value))
+    return text = "1" || text = "true" || text = "yes" || text = "y" || text = "on" || text = "sim" || text =
+        "checked"
+}
+
+CareerForm_Check(el, value) {
+    want := CareerForm_Yes(value)
+    state := -1
+    try state := el.TogglePattern.ToggleState
+    catch {
+        state := -1
+    }
+    if (state = 1 && want)
+        return true
+    if (state = 0 && !want)
+        return true
+    try {
+        el.TogglePattern.Toggle()
+        return true
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+        return false
+    }
+}
+
+CareerForm_Select(el, value) {
+    try el.SetFocus()
+    catch {
+    }
+    try el.ExpandCollapsePattern.Expand()
+    catch {
+        try el.Click()
+        catch {
+        }
+    }
+    Sleep 180
+    if !CareerForm_PasteValue(value)
+        return false
+    Sleep 180
+    Send "{Enter}"
+    Sleep 80
+    return true
+}
+
+CareerForm_Click(el) {
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    try {
+        el.SetFocus()
+        Send "{Space}"
+        return true
+    } catch {
+        return false
+    }
+}
+
+CareerForm_FillForm(planPath) {
+    if (planPath = "" || !FileExist(planPath))
+        CareerForm_Fail("Fill plan was not found.")
+    plan := ""
+    try plan := CareerForm_ReadPlan(planPath)
+    catch as err {
+        CareerForm_Fail(err.Message)
+    }
+    hwnd := CareerForm_FindChromeByTitle(plan.window)
+    if (!hwnd)
+        CareerForm_Fail("No Chrome window title contains: " plan.window)
+    try {
+        WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 2)
+            CareerForm_Fail("Could not activate the application window.")
+    } catch as err {
+        CareerForm_Fail(err.Message)
+    }
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch as err {
+        CareerForm_Fail("Could not read the window UI: " err.Message)
+    }
+    if (!IsObject(root))
+        CareerForm_Fail("Could not read the window UI.")
+
+    try StandardLoadingBar_Show("Filling the application form…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: hwnd })
+    catch {
+    }
+    filled := 0
+    skipped := 0
+    errors := []
+    saved := CareerForm_ClipboardUnicode()
+    try {
+        for step in plan.steps {
+            label := step.label != "" ? step.label : step.name
+            try StandardLoadingBar_Update("Filling " label)
             catch {
             }
-            Sleep 60
-            wrote := false
-            try {
-                el.Value := value
-                wrote := true
-            } catch {
-                wrote := false
+            el := CareerForm_FindControl(root, step)
+            if (!IsObject(el)) {
+                skipped += 1
+                errors.Push("Not found: " label)
+                continue
             }
-            current := ""
-            try current := el.Value
-            catch {
-                current := ""
-            }
-            if (wrote && current = value)
-                return true
-            return CareerForm_PasteValue(value)
-        }
-
-        CareerForm_Yes(value) {
-            text := StrLower(Trim(value))
-            return text = "1" || text = "true" || text = "yes" || text = "y" || text = "on" || text = "sim" || text =
-                "checked"
-        }
-
-        CareerForm_Check(el, value) {
-            want := CareerForm_Yes(value)
-            state := -1
-            try state := el.TogglePattern.ToggleState
-            catch {
-                state := -1
-            }
-            if (state = 1 && want)
-                return true
-            if (state = 0 && !want)
-                return true
-            try {
-                el.TogglePattern.Toggle()
-                return true
-            } catch {
-            }
-            try {
-                el.Click()
-                return true
-            } catch {
-                return false
-            }
-        }
-
-        CareerForm_Select(el, value) {
-            try el.SetFocus()
-            catch {
-            }
-            try el.ExpandCollapsePattern.Expand()
-            catch {
-                try el.Click()
-                catch {
-                }
-            }
-            Sleep 180
-            if !CareerForm_PasteValue(value)
-                return false
-            Sleep 180
-            Send "{Enter}"
-            Sleep 80
-            return true
-        }
-
-        CareerForm_Click(el) {
-            try {
-                el.Click()
-                return true
-            } catch {
-            }
-            try {
-                el.SetFocus()
-                Send "{Space}"
-                return true
-            } catch {
-                return false
-            }
-        }
-
-        CareerForm_FillForm(planPath) {
-            if (planPath = "" || !FileExist(planPath))
-                CareerForm_Fail("Fill plan was not found.")
-            plan := ""
-            try plan := CareerForm_ReadPlan(planPath)
-            catch as err {
-                CareerForm_Fail(err.Message)
-            }
-            hwnd := CareerForm_FindChromeByTitle(plan.window)
-            if (!hwnd)
-                CareerForm_Fail("No Chrome window title contains: " plan.window)
-            try {
-                WinActivate("ahk_id " hwnd)
-                if !WinWaitActive("ahk_id " hwnd, , 2)
-                    CareerForm_Fail("Could not activate the application window.")
-            } catch as err {
-                CareerForm_Fail(err.Message)
-            }
-            root := 0
-            try root := UIA.ElementFromHandle(hwnd)
-            catch as err {
-                CareerForm_Fail("Could not read the window UI: " err.Message)
-            }
-            if (!IsObject(root))
-                CareerForm_Fail("Could not read the window UI.")
-
-            try StandardLoadingBar_Show("Filling the application form…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-                centerOnHwnd: hwnd })
-            catch {
-            }
-            filled := 0
-            skipped := 0
-            errors := []
-            saved := CareerForm_ClipboardUnicode()
-            try {
-                for step in plan.steps {
-                    label := step.label != "" ? step.label : step.name
-                    try StandardLoadingBar_Update("Filling " label)
-                    catch {
-                    }
-                    el := CareerForm_FindControl(root, step)
-                    if (!IsObject(el)) {
-                        skipped += 1
-                        errors.Push("Not found: " label)
-                        continue
-                    }
-                    ok := false
-                    if (step.action = "check")
-                        ok := CareerForm_Check(el, step.value)
-                    else if (step.action = "click")
-                        ok := CareerForm_Click(el)
-                    else if (step.action = "select")
-                        ok := CareerForm_Select(el, step.value)
-                    else
-                        ok := CareerForm_SetText(el, step.value)
-                    if (ok)
-                        filled += 1
-                    else {
-                        skipped += 1
-                        errors.Push("Could not set: " label)
-                    }
-                    Sleep 90
-                }
-            } finally {
-                if (saved != "") {
-                    try A_Clipboard := saved
-                    catch {
-                    }
-                }
-                try {
-                    StandardLoadingBar_Update("Filled " filled " field" (filled = 1 ? "" : "s"))
-                    Sleep 700
-                    StandardLoadingBar_Hide(0)
-                } catch {
-                }
-            }
-            CareerForm_WriteResult({
-                ok: true,
-                filled: filled,
-                skipped: skipped,
-                errors: errors,
-                error: ""
-            })
-        }
-
-        try {
-            args := CareerForm_ParseArgs()
-            if args.Has("result")
-                g_CareerFormResultPath := args["result"]
-            action := args.Has("action") ? args["action"] : ""
-            if (action = "capture-window")
-                CareerForm_CaptureWindow()
-            else if (action = "open-uia")
-                CareerForm_OpenUia()
-            else if (action = "dump-tree")
-                CareerForm_DumpTree(args.Has("title") ? args["title"] : "", args.Has("out") ? args["out"] : "")
-            else if (action = "read-clipboard")
-                CareerForm_ReadClipboard(args.Has("out") ? args["out"] : "")
-            else if (action = "send-prompt")
-                CareerForm_SendPrompt(args.Has("file") ? args["file"] : "")
-            else if (action = "fill-form")
-                CareerForm_FillForm(args.Has("plan") ? args["plan"] : "")
+            ok := false
+            if (step.action = "check")
+                ok := CareerForm_Check(el, step.value)
+            else if (step.action = "click")
+                ok := CareerForm_Click(el)
+            else if (step.action = "select")
+                ok := CareerForm_Select(el, step.value)
             else
-                CareerForm_Fail(
-                    "Unknown action. Use capture-window, open-uia, dump-tree, read-clipboard, send-prompt, or fill-form."
-                )
-            ExitApp 0
-        } catch Error as err {
-            CareerForm_Fail(err.Message)
+                ok := CareerForm_SetText(el, step.value)
+            if (ok)
+                filled += 1
+            else {
+                skipped += 1
+                errors.Push("Could not set: " label)
+            }
+            Sleep 90
         }
+    } finally {
+        if (saved != "") {
+            try A_Clipboard := saved
+            catch {
+            }
+        }
+        try {
+            StandardLoadingBar_Update("Filled " filled " field" (filled = 1 ? "" : "s"))
+            Sleep 700
+            StandardLoadingBar_Hide(0)
+        } catch {
+        }
+    }
+    CareerForm_WriteResult({
+        ok: true,
+        filled: filled,
+        skipped: skipped,
+        errors: errors,
+        error: ""
+    })
+}
+
+try {
+    args := CareerForm_ParseArgs()
+    if args.Has("result")
+        g_CareerFormResultPath := args["result"]
+    action := args.Has("action") ? args["action"] : ""
+    if (action = "capture-window")
+        CareerForm_CaptureWindow()
+    else if (action = "open-uia")
+        CareerForm_OpenUia()
+    else if (action = "dump-tree")
+        CareerForm_DumpTree(args.Has("title") ? args["title"] : "", args.Has("out") ? args["out"] : "")
+    else if (action = "read-clipboard")
+        CareerForm_ReadClipboard(args.Has("out") ? args["out"] : "")
+    else if (action = "send-prompt")
+        CareerForm_SendPrompt(args.Has("file") ? args["file"] : "")
+    else if (action = "fill-form")
+        CareerForm_FillForm(args.Has("plan") ? args["plan"] : "")
+    else
+        CareerForm_Fail(
+            "Unknown action. Use capture-window, open-uia, dump-tree, read-clipboard, send-prompt, or fill-form."
+        )
+    ExitApp 0
+} catch Error as err {
+    CareerForm_Fail(err.Message)
+}
