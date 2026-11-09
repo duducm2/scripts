@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 6 info · Created the focus group breakout room recording task with Teams limitations and instructions as info points.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+X-Tower,work,Record every breakout room in focus groups,important,punctual,,,,Phase 2: Understand context of use
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Record every breakout room in focus groups,X-Tower,work,Teams auto-record limitations,"Microsoft Teams does not automatically record conversations in breakout rooms, even if the main meeting is set to be recorded.",
+task,Record every breakout room in focus groups,X-Tower,work,Manual recording required,"An organizer, co-organizer, or presenter must join each specific breakout room and manually click 'Start recording' from the meeting toolbar.",
+task,Record every breakout room in focus groups,X-Tower,work,Use co-hosts,"Assign a co-host or presenter to each room so they can start the recording for their respective group.",
+task,Record every breakout room in focus groups,X-Tower,work,Hop between rooms,"If you are the only organizer, you must enter the first room, start the recording, exit, join the next room, start the recording, and repeat this for every room until they are all recording.",
+task,Record every breakout room in focus groups,X-Tower,work,Recording files & Storage,"Each breakout room generates its own separate recording file, saved directly to the OneDrive of the specific person who clicked 'Start recording' in that room.",
+task,Record every breakout room in focus groups,X-Tower,work,Access limits,"The recording is shared with the attendees of that specific room via the meeting chat, but if a student or guest started the recording, they might need to manually share it with you to ensure you have access.",
+===END_FILE===
+
+Please copy the code block above and save it as TASK_PACK.txt to import the new task and notes into your project.
