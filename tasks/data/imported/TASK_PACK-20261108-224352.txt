@@ -1,0 +1,21 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 5 info · Extracted concise info points for top 4 targeted brands and procurement strategy.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Monthly,habits,Buy monthly frozen meals (marmitas),general,habitual,monthly,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Buy monthly frozen meals (marmitas),Monthly,habits,Liv Up Strategy,"Best for first order: Kit 20 Saudáveis is ~R$ 14.99/meal (R$ 299.80 total, free shipping > R$ 290). Uses superior ultracongelamento. Watch out for QC issues on subsequent orders (~R$ 18.49/meal).",
+task,Buy monthly frozen meals (marmitas),Monthly,habits,Swift Strategy,"Best sustainable long-term solution: Prato Feito line is R$ 15.90/meal (300g) on volume promos. Unbeatable per-gram economics; proprietary refrigerated trucks guarantee -18°C cold chain.",
+task,Buy monthly frozen meals (marmitas),Monthly,habits,Frutifica Strategy,"High culinary variety: Kit Variados (20 units, 300g each) is R$ 17.04/meal via Pix (R$ 340.87 total). Strong regional delivery network.",
+task,Buy monthly frozen meals (marmitas),Monthly,habits,My Fit Food Strategy,"Ultra-local (NO/Americana): 10-meal starter kit is R$ 17.49/meal (R$ 174.90). Order directly via WhatsApp to bypass 26.2% iFood platform taxes and eliminate transit thawing risks.",
+task,Buy monthly frozen meals (marmitas),Monthly,habits,Procurement Context,"Cooking at home costs ~R$ 11.27 - R$ 12.96/meal plus 1.5 - 3.5 hours of labor. Avoid ultra-processed supermarket brands (Perdigão/Seara at Pague Menos) to prevent syneresis and high sodium intake.",
+===END_FILE===

@@ -27,6 +27,7 @@
 🔲 🐕 Apply tick and flea prevention to German Shepherd
 🔲 🐈 Apply tick and flea prevention to cats
 🔲 🐕 Give dewormer to Maka
+🔲 Buy monthly frozen meals (marmitas)
 
 ## Quarterly
 
