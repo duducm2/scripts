@@ -269,8 +269,6 @@
                     "UIA Tree Inspector",
                     "IconX"
                 return
-                ; Fallback: force foreground
-                DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
             }
 
             ; Foreground HWND (avoids stale WinExist match when multiple windows match the title pattern).
