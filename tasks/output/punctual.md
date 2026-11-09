@@ -103,7 +103,7 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 
 ⏳ You should check how to remember numbers, maybe with the SPA technique
 
-🔲 Check all characters and add the ones that are missing and you have emotional connection
+⚡ Check all characters and add the ones that are missing and you have emotional connection
 
 ## Piano
 
