@@ -27,7 +27,7 @@ Maps_DebugIsWork() {
     }
 }
 
-; Tracked file so a work run can be pushed and pulled. Same split as quick_update_debug_*.txt.
+; Tracked file so a work run can be pushed and pulled. Split per machine (work vs personal).
 Maps_DebugLogPath() {
     name := Maps_DebugIsWork() ? "maps_capture_debug_work.txt" : "maps_capture_debug_personal.txt"
     return A_ScriptDir "\assets\data\" name
