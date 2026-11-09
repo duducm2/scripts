@@ -50,6 +50,8 @@
 
 🔲 At the Astra project with pictures and the tooling project to your portfolio
 
+⚡ Check all your resumes and portfolios if they're correct
+
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
@@ -101,6 +103,8 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 ⏳ How to store big vocabularies
 
 ⏳ You should check how to remember numbers, maybe with the SPA technique
+
+🔲 Check all characters and add the ones that are missing and you have emotional connection
 
 ## Piano
 
