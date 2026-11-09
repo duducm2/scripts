@@ -22,6 +22,7 @@
 
 ⚡ Fix bosch powertool
 ℹ️ image.png
+ℹ️ image.png
 
 ## Dissertation
 
