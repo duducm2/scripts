@@ -135,282 +135,294 @@
                 continue
             try {
                 itemName := item.Name
-                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(itemName), searchTextLower) {
-                    matchingItem := item
-                    break
-                }
-            } catch {
-                ; Skip items without names
-                continue
-            }
-        }
-
-        ; Select the matching item
-        if (matchingItem) {
-            try {
-                matchingItem.Select()
-                ; Optional: Scroll into view and set focus
-                matchingItem.ScrollIntoView()
-                matchingItem.SetFocus()
-
-                ; Workaround: force UIA Tree Inspector to refresh the right-side UIA tree
-                ; by "jiggling" selection Down then Up after selection via search.
-                if (inspectorHwnd) {
-                    if !WinActive("ahk_id " inspectorHwnd) {
-                        WinActivate "ahk_id " inspectorHwnd
-                        WinWaitActive "ahk_id " inspectorHwnd, , 1
-                    }
-
-                    if WinActive("ahk_id " inspectorHwnd) {
-                        ; Ensure the windows TreeView has Win32 focus before jiggle (arrow keys)
-                        leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
-                        try matchingItem.SetFocus()
-                        Sleep 500
-                        UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 1000)
+                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
+                    if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(itemName
+                    ), searchTextLower) {
+                        matchingItem := item
+                        break
                     }
                 }
-            } catch Error as e {
-                MsgBox "Error selecting tree item:`n" e.Message, "UIA Tree Inspector", "IconX"
+                catch {
+                    ; Skip items without names
+                    continue
+                }
             }
-        } else {
-            MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
-        }
 
-    } catch Error as e {
-        MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
+            ; Select the matching item
+            if (matchingItem) {
+                try {
+                    matchingItem.Select()
+                    ; Optional: Scroll into view and set focus
+                    matchingItem.ScrollIntoView()
+                    matchingItem.SetFocus()
+
+                    ; Workaround: force UIA Tree Inspector to refresh the right-side UIA tree
+                    ; by "jiggling" selection Down then Up after selection via search.
+                    if (inspectorHwnd) {
+                        if !WinActive("ahk_id " inspectorHwnd) {
+                            WinActivate "ahk_id " inspectorHwnd
+                            WinWaitActive "ahk_id " inspectorHwnd, , 1
+                        }
+
+                        if WinActive("ahk_id " inspectorHwnd) {
+                            ; Ensure the windows TreeView has Win32 focus before jiggle (arrow keys)
+                            leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
+                            try matchingItem.SetFocus()
+                            Sleep 500
+                            UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 1000)
+                        }
+                    }
+                } catch Error as e {
+                    MsgBox "Error selecting tree item:`n" e.Message, "UIA Tree Inspector", "IconX"
+                }
+            } else {
+                MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
+            }
+
+        }
+        catch Error as e {
+            MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
+            }
     }
-}
 
-; Shift + C : Search window/control and copy full UIA tree to clipboard
-+c:: {
-    barShown := false
-    try {
-        ; Global variable to store user input
-        global g_TreeItemSearchInput := ""
-
-        StandardLoadingBar_Show("⏳ UIA Tree Inspector: preparing copy…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
-        barShown := true
-
-        ; Create GUI dialog (same as Shift+S)
-        searchGui := Gui("+AlwaysOnTop +ToolWindow", "Select Tree Item")
-        searchGui.SetFont("s10", "Segoe UI")
-        searchGui.AddText("w350 Center", "Enter text to search for tree item (starts with):")
-        searchGui.AddEdit("w300 Center vTreeItemInput")
-
-        SubmitTreeItemSearch(ctrl, *) {
-            global g_TreeItemSearchInput
-            g_TreeItemSearchInput := ctrl.Gui["TreeItemInput"].Text
-            ctrl.Gui.Destroy()
-        }
-        CancelTreeItemSearch(ctrl, *) {
-            global g_TreeItemSearchInput
-            g_TreeItemSearchInput := ""
-            ctrl.Gui.Destroy()
-        }
-
-        okBtn := searchGui.AddButton("w80 xp-40 y+10 Default", "OK")
-        okBtn.OnEvent("Click", SubmitTreeItemSearch)
-        cancelBtn := searchGui.AddButton("w80 xp+90", "Cancel")
-        cancelBtn.OnEvent("Click", CancelTreeItemSearch)
-
-        searchGui.Show("w350 h150")
-        searchGui["TreeItemInput"].Focus()
-        WinWaitClose("ahk_id " searchGui.Hwnd)
-
-        global g_TreeItemSearchInput
-        searchText := g_TreeItemSearchInput
-        g_TreeItemSearchInput := ""
-        if (searchText = "")
-            return
-
-        ; Always-on-top loading banner can keep focus after the modal closes; WinActivate(Inspector) then fails silently.
-        try
-            StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Sleep 80
-
-        ; Prefer the real foreground window if it is already UIATreeInspector (avoids stale WinExist match).
-        inspectorHwnd := 0
+    ; Shift + C : Search window/control and copy full UIA tree to clipboard
+    +c:: {
+        barShown := false
         try {
-            if (WinActive("ahk_exe AutoHotkey64.exe") && InStr(WinGetTitle("A"), "UIATreeInspector"))
-                inspectorHwnd := WinGetID("A")
-        } catch {
-        }
-        if (!inspectorHwnd)
-            inspectorHwnd := WinExist("UIATreeInspector")
-        if (!inspectorHwnd)
-            inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
-        if (!inspectorHwnd)
-            return
+            ; Global variable to store user input
+            global g_TreeItemSearchInput := ""
 
-        ; AHK v2 WinActivate throws if the window does not exist; wrap so a bad/stale hwnd does not abort +c.
-        loop 6 {
-            try {
-                DllCall("user32\AllowSetForegroundWindow", "Int", -1)
-                DllCall("user32\BringWindowToTop", "Ptr", inspectorHwnd)
-                DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
-                if WinActive("ahk_id " inspectorHwnd)
-                    break
-                if !WinExist("ahk_id " inspectorHwnd)
-                    break
-                WinActivate "ahk_id " inspectorHwnd
-                WinWaitActive "ahk_id " inspectorHwnd, , 0.35
-            } catch {
-                Sleep 50
+            StandardLoadingBar_Show("⏳ UIA Tree Inspector: preparing copy…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+            barShown := true
+
+            ; Create GUI dialog (same as Shift+S)
+            searchGui := Gui("+AlwaysOnTop +ToolWindow", "Select Tree Item")
+            searchGui.SetFont("s10", "Segoe UI")
+            searchGui.AddText("w350 Center", "Enter text to search for tree item (starts with):")
+            searchGui.AddEdit("w300 Center vTreeItemInput")
+
+            SubmitTreeItemSearch(ctrl, *) {
+                global g_TreeItemSearchInput
+                g_TreeItemSearchInput := ctrl.Gui["TreeItemInput"].Text
+                ctrl.Gui.Destroy()
             }
-        }
-        if !WinActive("ahk_id " inspectorHwnd) {
-            ; Fallback: force foreground
-            DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
-        }
+            CancelTreeItemSearch(ctrl, *) {
+                global g_TreeItemSearchInput
+                g_TreeItemSearchInput := ""
+                ctrl.Gui.Destroy()
+            }
 
-        ; Foreground HWND (avoids stale WinExist match when multiple windows match the title pattern).
-        inspectorHwnd := WinGetID("A")
+            okBtn := searchGui.AddButton("w80 xp-40 y+10 Default", "OK")
+            okBtn.OnEvent("Click", SubmitTreeItemSearch)
+            cancelBtn := searchGui.AddButton("w80 xp+90", "Cancel")
+            cancelBtn.OnEvent("Click", CancelTreeItemSearch)
 
-        try {
-            StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-                centerOnHwnd: inspectorHwnd })
-        } catch {
+            searchGui.Show("w350 h150")
+            searchGui["TreeItemInput"].Focus()
+            WinWaitClose("ahk_id " searchGui.Hwnd)
+
+            global g_TreeItemSearchInput
+            searchText := g_TreeItemSearchInput
+            g_TreeItemSearchInput := ""
+            if (searchText = "")
+                return
+
+            ; Always-on-top loading banner can keep focus after the modal closes; WinActivate(Inspector) then fails silently.
             try
-                StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-                    centerOnHwnd: 0 })
+                StandardLoadingBar_Hide(0)
             catch {
             }
-        }
+            Sleep 80
 
-        ; Select matching item in left tree (AutomationId="4") (same as Shift+S)
-        root := UIA.ElementFromHandle(inspectorHwnd)
-        Sleep 500
-        treeContainer := UIATreeInspector_FindTreeByAutomationId(root, "4")
-        if (!treeContainer) {
-            MsgBox "Could not find the tree container (AutomationId='4').", "UIA Tree Inspector", "IconX"
-            return
-        }
-
-        leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
-
-        treeItems := treeContainer.FindAll({ Type: "TreeItem" })
-        if (!treeItems) {
-            MsgBox "No tree items found in the tree container.", "UIA Tree Inspector", "IconX"
-            return
-        }
-
-        matchingItem := ""
-        searchTextLower := StrLower(searchText)
-        for item in treeItems {
-            if (!item)
-                continue
+            ; Prefer the real foreground window if it is already UIATreeInspector (avoids stale WinExist match).
+            inspectorHwnd := 0
             try {
-                itemName := item.Name
-                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(itemName), searchTextLower) {
-                    matchingItem := item
-                    break
+                if (WinActive("ahk_exe AutoHotkey64.exe") && InStr(WinGetTitle("A"), "UIATreeInspector"))
+                    inspectorHwnd := WinGetID("A")
+            } catch {
+            }
+            if (!inspectorHwnd)
+                inspectorHwnd := WinExist("UIATreeInspector")
+            if (!inspectorHwnd)
+                inspectorHwnd := WinExist("ahk_exe UIATreeInspectorAutoHotkey64.exe")
+            if (!inspectorHwnd)
+                return
+
+            ; AHK v2 WinActivate throws if the window does not exist; wrap so a bad/stale hwnd does not abort +c.
+            loop 6 {
+                try {
+                    DllCall("user32\AllowSetForegroundWindow", "Int", -1)
+                    DllCall("user32\BringWindowToTop", "Ptr", inspectorHwnd)
+                    DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
+                    if WinActive("ahk_id " inspectorHwnd)
+                        break
+                    if !WinExist("ahk_id " inspectorHwnd)
+                        break
+                    WinActivate "ahk_id " inspectorHwnd
+                    WinWaitActive "ahk_id " inspectorHwnd, , 0.35
+                } catch {
+                    Sleep 50
                 }
-            } catch {
-                continue
             }
-        }
-        if (!matchingItem) {
-            MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
-            return
-        }
-
-        try
-            matchingItem.Select()
-        catch {
-        }
-        try
-            matchingItem.ScrollIntoView()
-        catch {
-        }
-        try
-            matchingItem.SetFocus()
-        catch {
-        }
-        Sleep 1500
-
-        ; Refresh workaround (force correct UIA Tree load)
-        try
-            StandardLoadingBar_Update("🔄 Refreshing UIA Tree…")
-        catch {
-        }
-        if !WinActive("ahk_id " inspectorHwnd) {
-            try {
-                WinActivate "ahk_id " inspectorHwnd
-                WinWaitActive "ahk_id " inspectorHwnd, , 1
-            } catch {
+            if !WinActive("ahk_id " inspectorHwnd) {
+                MsgBox "Could not activate UIATreeInspector after the search dialog. Try again.",
+                    "UIA Tree Inspector",
+                    "IconX"
+                return
+                ; Fallback: force foreground
+                DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
             }
-        }
-        if WinActive("ahk_id " inspectorHwnd) {
+
+            ; Foreground HWND (avoids stale WinExist match when multiple windows match the title pattern).
             inspectorHwnd := WinGetID("A")
-            leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
-            try matchingItem.SetFocus()
-            UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 2000)
-        }
 
-        ; Focus UIA Tree panel (right-side tree) and select root
-        try
-            StandardLoadingBar_Update("🌳 Focusing UIA Tree panel…")
-        catch {
-        }
-        Sleep 1500
-        rightTree := UIATreeInspector_FindRightDumpTree(root)
-        if (!rightTree) {
-            MsgBox "Could not find the UIA Tree panel (AutomationId='17').", "UIA Tree Inspector", "IconX"
-            return
-        }
-
-        rootItem := 0
-        try
-            rootItem := rightTree.FindFirst({ Type: UIA.Type.TreeItem })
-        catch TargetError {
             try {
-                items := rightTree.FindAll({ Type: UIA.Type.TreeItem })
-                if (items.Length)
-                    rootItem := items[1]
+                StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+                    centerOnHwnd: inspectorHwnd })
             } catch {
+                try
+                    StandardLoadingBar_Show("🔎 Selecting window/control…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+                        centerOnHwnd: 0 })
+                catch {
+                }
             }
-        }
-        if (rootItem) {
-            try rootItem.Select()
-            try rootItem.ScrollIntoView()
-            try rootItem.SetFocus()
-        } else {
-            try rightTree.SetFocus()
-        }
-        Sleep 1500
 
-        ; Copy complete UI tree to clipboard via context menu
-        try
-            StandardLoadingBar_Update("📋 Copying full tree to clipboard…")
-        catch {
-        }
-        A_Clipboard := ""
-        Sleep 400
-        try {
-            Send "{AppsKey}"
-            Sleep 600
-            Send "{Up}"
-            Sleep 400
-            Send "{Enter}"
-        } catch {
-        }
-        Sleep 1200
-    } catch Error as e {
-        try
-            StandardLoadingBar_Update("❌ Copy failed: " . SubStr(e.Message, 1, 60))
-        catch {
-        }
-        try
-            StandardLoadingBar_Hide(2000)
-        catch {
-        }
-        MsgBox "Error in Shift+C UIA Tree copy:`n" e.Message, "UIA Tree Inspector", "IconX"
-        return
-    } finally {
-        if (barShown)
-            try StandardLoadingBar_Hide(0)
-    }
-}
-#HotIf
+            ; Select matching item in left tree (AutomationId="4") (same as Shift+S)
+            root := UIA.ElementFromHandle(inspectorHwnd)
+            Sleep 500
+            treeContainer := UIATreeInspector_FindTreeByAutomationId(root, "4")
+            if (!treeContainer) {
+                MsgBox "Could not find the tree container (AutomationId='4').", "UIA Tree Inspector", "IconX"
+                return
+            }
+
+            leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
+
+            treeItems := treeContainer.FindAll({ Type: "TreeItem" })
+            if (!treeItems) {
+                MsgBox "No tree items found in the tree container.", "UIA Tree Inspector", "IconX"
+                return
+            }
+
+            matchingItem := ""
+            searchTextLower := StrLower(searchText)
+            for item in treeItems {
+                if (!item)
+                    continue
+                try {
+                    itemName := item.Name
+                    if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
+                        if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(
+                            itemName), searchTextLower) {
+                            matchingItem := item
+                            break
+                        }
+                    }
+                    catch {
+                        continue
+                    }
+                }
+                if (!matchingItem) {
+                    MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
+                    return
+                }
+
+                try
+                    matchingItem.Select()
+                catch {
+                }
+                try
+                    matchingItem.ScrollIntoView()
+                catch {
+                }
+                try
+                    matchingItem.SetFocus()
+                catch {
+                }
+                Sleep 1500
+
+                ; Refresh workaround (force correct UIA Tree load)
+                try
+                    StandardLoadingBar_Update("🔄 Refreshing UIA Tree…")
+                catch {
+                }
+                if !WinActive("ahk_id " inspectorHwnd) {
+                    try {
+                        WinActivate "ahk_id " inspectorHwnd
+                        WinWaitActive "ahk_id " inspectorHwnd, , 1
+                    } catch {
+                    }
+                }
+                if WinActive("ahk_id " inspectorHwnd) {
+                    inspectorHwnd := WinGetID("A")
+                    leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
+                    try matchingItem.SetFocus()
+                    UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 2000)
+                }
+
+                ; Focus UIA Tree panel (right-side tree) and select root
+                try
+                    StandardLoadingBar_Update("🌳 Focusing UIA Tree panel…")
+                catch {
+                }
+                Sleep 1500
+                rightTree := UIATreeInspector_FindRightDumpTree(root)
+                if (!rightTree) {
+                    MsgBox "Could not find the UIA Tree panel (AutomationId='17').", "UIA Tree Inspector", "IconX"
+                    return
+                }
+
+                rootItem := 0
+                try
+                    rootItem := rightTree.FindFirst({ Type: UIA.Type.TreeItem })
+                catch TargetError {
+                    try {
+                        items := rightTree.FindAll({ Type: UIA.Type.TreeItem })
+                        if (items.Length)
+                            rootItem := items[1]
+                    } catch {
+                    }
+                }
+                if (rootItem) {
+                    try rootItem.Select()
+                    try rootItem.ScrollIntoView()
+                    try rootItem.SetFocus()
+                } else {
+                    try rightTree.SetFocus()
+                }
+                Sleep 1500
+
+                ; Copy complete UI tree to clipboard via context menu
+                try
+                    StandardLoadingBar_Update("📋 Copying full tree to clipboard…")
+                catch {
+                }
+                A_Clipboard := ""
+                Sleep 400
+                try {
+                    Send "{AppsKey}"
+                    Sleep 600
+                    Send "{Up}"
+                    Sleep 400
+                    Send "{Enter}"
+                } catch {
+                }
+                Sleep 1200
+            }
+            catch Error as e {
+                try
+                    StandardLoadingBar_Update("❌ Copy failed: " . SubStr(e.Message, 1, 60))
+                catch {
+                }
+                try
+                    StandardLoadingBar_Hide(2000)
+                catch {
+                }
+                MsgBox "Error in Shift+C UIA Tree copy:`n" e.Message, "UIA Tree Inspector", "IconX"
+                return
+                } finally {
+                    if (barShown)
+                        try StandardLoadingBar_Hide(0)
+                }
+            }
+            #HotIf
