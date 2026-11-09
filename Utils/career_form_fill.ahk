@@ -168,8 +168,10 @@ CareerForm_OpenUia() {
         hwnd := 0
     }
     if (hwnd) {
-        try WinActivate("ahk_id " hwnd)
-        catch {
+        try {
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 2)
+        } catch {
         }
         CareerForm_WriteResult({ ok: true, error: "" })
         return
@@ -177,6 +179,13 @@ CareerForm_OpenUia() {
     try Run('"' A_AhkPath '" "' inspector '"', inspectorDir)
     catch as err {
         CareerForm_Fail(err.Message)
+    }
+    try {
+        if WinWait("UIATreeInspector", , 8) {
+            WinActivate("UIATreeInspector")
+            WinWaitActive("UIATreeInspector", , 2)
+        }
+    } catch {
     }
     CareerForm_WriteResult({ ok: true, error: "" })
 }
