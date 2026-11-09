@@ -319,3 +319,6 @@ TX324,2026-11-06,construction worker reconstructing our new home,"820,00",expens
 TX325,2026-11-06,transfer long-term to checking,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX326,2026-11-06,groceries,"77,00",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX327,2026-11-06,drug pills,"48,06",card_expense,CAT_SAUDE,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX328,2026-11-08,Subscription to Mercado Livre,"10,00",card_expense,CAT_SUBSCRIP,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX329,2026-11-08,Food delivery app subscription,"8,97",card_expense,CAT_SUBSCRIP,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX330,2026-11-08,Food,"341,82",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0

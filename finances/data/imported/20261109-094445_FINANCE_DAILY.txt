@@ -1,0 +1,12 @@
+﻿===PREVIEW===
+3 rows · 2 subscriptions, 1 food purchase
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Subscription to Mercado Livre,"10,00",card_expense,CAT_SUBSCRIP,ACC_MERCADOP,CARD_MP,,1
+Food delivery app subscription,"8,97",card_expense,CAT_SUBSCRIP,ACC_MERCADOP,CARD_MP,,1
+Food,"341,82",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===
+
+Please copy the code block above and save it as FINANCE_DAILY.txt on your Desktop, or download the generated file from the attachment chip. Would you like to process any more transactions?
