@@ -179,9 +179,10 @@
     } catch Error as e {
         MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
     }
+}
 
-    ; Shift + C : Search window/control and copy full UIA tree to clipboard
-    +c:: {
+; Shift + C : Search window/control and copy full UIA tree to clipboard
++c:: {
         barShown := false
         try {
             ; Global variable to store user input
@@ -304,21 +305,18 @@
                     continue
                 try {
                     itemName := item.Name
-                    if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
-                        if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(
-                            itemName), searchTextLower) {
-                            matchingItem := item
-                            break
-                        }
+                    if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower || InStr(StrLower(itemName), searchTextLower)) {
+                        matchingItem := item
+                        break
                     }
-                    catch {
-                        continue
-                    }
+                } catch {
+                    continue
                 }
-                if (!matchingItem) {
-                    MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
-                    return
-                }
+            }
+            if (!matchingItem) {
+                MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
+                return
+            }
 
                 try
                     matchingItem.Select()
