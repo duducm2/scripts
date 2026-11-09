@@ -135,7 +135,7 @@
                 continue
             try {
                 itemName := item.Name
-                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
+                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(itemName), searchTextLower) {
                     matchingItem := item
                     break
                 }
@@ -247,6 +247,9 @@
         ; AHK v2 WinActivate throws if the window does not exist; wrap so a bad/stale hwnd does not abort +c.
         loop 6 {
             try {
+                DllCall("user32\AllowSetForegroundWindow", "Int", -1)
+                DllCall("user32\BringWindowToTop", "Ptr", inspectorHwnd)
+                DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
                 if WinActive("ahk_id " inspectorHwnd)
                     break
                 if !WinExist("ahk_id " inspectorHwnd)
@@ -258,10 +261,8 @@
             }
         }
         if !WinActive("ahk_id " inspectorHwnd) {
-            MsgBox "Could not activate UIATreeInspector after the search dialog. Try again.",
-                "UIA Tree Inspector",
-                "IconX"
-            return
+            ; Fallback: force foreground
+            DllCall("user32\SetForegroundWindow", "Ptr", inspectorHwnd)
         }
 
         ; Foreground HWND (avoids stale WinExist match when multiple windows match the title pattern).
@@ -302,7 +303,7 @@
                 continue
             try {
                 itemName := item.Name
-                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
+                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(itemName), searchTextLower) {
                     matchingItem := item
                     break
                 }
