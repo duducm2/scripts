@@ -127,7 +127,7 @@
             return
         }
 
-        ; Search for TreeItem where Name starts with searchText (case-insensitive)
+        ; Search for TreeItem where Name starts with or contains searchText (case-insensitive)
         matchingItem := ""
         searchTextLower := StrLower(searchText)
         for item in treeItems {
@@ -135,54 +135,49 @@
                 continue
             try {
                 itemName := item.Name
-                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) {
-                    if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower) || InStr(StrLower(itemName
-                    ), searchTextLower) {
-                        matchingItem := item
-                        break
-                    }
+                if (StrLower(SubStr(itemName, 1, StrLen(searchText))) = searchTextLower || InStr(StrLower(itemName), searchTextLower)) {
+                    matchingItem := item
+                    break
                 }
-                catch {
-                    ; Skip items without names
-                    continue
-                }
+            } catch {
+                ; Skip items without names
+                continue
             }
-
-            ; Select the matching item
-            if (matchingItem) {
-                try {
-                    matchingItem.Select()
-                    ; Optional: Scroll into view and set focus
-                    matchingItem.ScrollIntoView()
-                    matchingItem.SetFocus()
-
-                    ; Workaround: force UIA Tree Inspector to refresh the right-side UIA tree
-                    ; by "jiggling" selection Down then Up after selection via search.
-                    if (inspectorHwnd) {
-                        if !WinActive("ahk_id " inspectorHwnd) {
-                            WinActivate "ahk_id " inspectorHwnd
-                            WinWaitActive "ahk_id " inspectorHwnd, , 1
-                        }
-
-                        if WinActive("ahk_id " inspectorHwnd) {
-                            ; Ensure the windows TreeView has Win32 focus before jiggle (arrow keys)
-                            leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
-                            try matchingItem.SetFocus()
-                            Sleep 500
-                            UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 1000)
-                        }
-                    }
-                } catch Error as e {
-                    MsgBox "Error selecting tree item:`n" e.Message, "UIA Tree Inspector", "IconX"
-                }
-            } else {
-                MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
-            }
-
         }
-        catch Error as e {
-            MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
+
+        ; Select the matching item
+        if (matchingItem) {
+            try {
+                matchingItem.Select()
+                ; Optional: Scroll into view and set focus
+                matchingItem.ScrollIntoView()
+                matchingItem.SetFocus()
+
+                ; Workaround: force UIA Tree Inspector to refresh the right-side UIA tree
+                ; by "jiggling" selection Down then Up after selection via search.
+                if (inspectorHwnd) {
+                    if !WinActive("ahk_id " inspectorHwnd) {
+                        WinActivate "ahk_id " inspectorHwnd
+                        WinWaitActive "ahk_id " inspectorHwnd, , 1
+                    }
+
+                    if WinActive("ahk_id " inspectorHwnd) {
+                        ; Ensure the windows TreeView has Win32 focus before jiggle (arrow keys)
+                        leftHwnd := UIATreeInspector_FocusLeftWindowsTree(treeContainer, inspectorHwnd)
+                        try matchingItem.SetFocus()
+                        Sleep 500
+                        UIATreeInspector_JiggleLeftTree(leftHwnd, inspectorHwnd, 1000)
+                    }
+                }
+            } catch Error as e {
+                MsgBox "Error selecting tree item:`n" e.Message, "UIA Tree Inspector", "IconX"
             }
+        } else {
+            MsgBox Format("No tree item found starting with '{}'.", searchText), "UIA Tree Inspector", "IconX"
+        }
+
+    } catch Error as e {
+        MsgBox "Error in tree item search:`n" e.Message, "UIA Tree Inspector", "IconX"
     }
 
     ; Shift + C : Search window/control and copy full UIA tree to clipboard
