@@ -271,31 +271,93 @@ CareerForm_CloseInspector() {
 }
 
 CareerForm_DumpTree(windowName, outPath) {
+    ; Use the inspector's Shift+C "Copy full UI tree" shortcut. It selects the
+    ; window by the name the user typed and copies that tree to the clipboard.
     windowName := Trim(windowName)
     if (windowName = "")
         CareerForm_Fail("Window name is required.")
     if (outPath = "")
         CareerForm_Fail("Missing --out for the UI tree.")
 
-    ; Ensure UIA Tree Inspector is open and visible on screen
-    try CareerForm_EnsureInspector()
-
-    ; 1. If clipboard already has a valid UIA tree, use it immediately
     before := CareerForm_ClipboardUnicode()
-    if (before != "" && RegExMatch(before, "Type:\s*\d+\s*\(")) {
+
+    ; 1. Ensure UIA Tree Inspector is open and focused on the desktop
+    hwnd := CareerForm_EnsureInspector()
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 3)
+    }
+    Sleep 400
+
+    ; 2. Hit Shift+C to trigger the "Select Tree Item" search dialog in Shift keys.ahk
+    SendLevel 100
+    Send "+c"
+    SendLevel 0
+
+    dialogOpened := false
+    try dialogOpened := WinWait("Select Tree Item", , 8)
+    catch {
+        dialogOpened := false
+    }
+
+    if (dialogOpened) {
         try {
-            file := FileOpen(outPath, "w", "UTF-8")
-            if (file) {
-                file.Write(before)
-                file.Close()
-                CareerForm_WriteResult({ ok: true, chars: StrLen(before), error: "" })
-                return
+            WinActivate("Select Tree Item")
+            WinWaitActive("Select Tree Item", , 3)
+        }
+        Sleep 100
+        SendText(windowName)
+        Sleep 100
+        Send "{Enter}"
+
+        ; Wait for Shift+C flow to copy the tree to the clipboard
+        tree := ""
+        seenClear := (before = "")
+        start := A_TickCount
+        loop {
+            if WinExist("UIA Tree Inspector") {
+                message := ""
+                try message := Trim(WinGetText("UIA Tree Inspector"))
+                catch {
+                    message := ""
+                }
+                try WinClose("UIA Tree Inspector")
+                catch {
+                }
+                if (message != "" && !InStr(message, "Windows and Controls")) {
+                    message := Trim(RegExReplace(message, "^OK\R+", ""))
+                    CareerForm_CloseInspector()
+                    CareerForm_Fail(message)
+                }
             }
-        } catch {
+            text := CareerForm_ClipboardUnicode()
+            if (text = "")
+                seenClear := true
+            if (text != "" && RegExMatch(text, "Type:\s*\d+\s*\(") && (seenClear || text != before)) {
+                tree := text
+                break
+            }
+            if ((A_TickCount - start) > 40000)
+                break
+            Sleep 250
+        }
+
+        if (tree != "") {
+            try {
+                file := FileOpen(outPath, "w", "UTF-8")
+                if (file) {
+                    file.Write(tree)
+                    file.Close()
+                    CareerForm_CloseInspector()
+                    CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
+                    return
+                }
+            } catch {
+            }
         }
     }
 
-    ; 2. Direct UIA dump of matching browser window (fast, headless, 100% automatic)
+    ; 3. Fallback: Direct UIA dump of matching browser window if Shift+C dialog did not return
     targetHwnd := CareerForm_FindChromeByTitle(windowName)
     if (!targetHwnd) {
         SetTitleMatchMode 2
@@ -314,18 +376,18 @@ CareerForm_DumpTree(windowName, outPath) {
                     if (file) {
                         file.Write(tree)
                         file.Close()
+                        CareerForm_CloseInspector()
                         CareerForm_WriteResult({ ok: true, chars: StrLen(tree), error: "" })
                         return
                     }
                 }
             }
-        } catch as err {
-            CareerForm_Fail("Direct UIA tree dump failed: " err.Message)
+        } catch {
         }
     }
 
-    CareerForm_Fail("Could not find the application window. Make sure the job application tab (" windowName ") is open in Chrome."
-    )
+    CareerForm_CloseInspector()
+    CareerForm_Fail("Could not read the application window UI tree. Make sure the job application tab (" windowName ") is open in Chrome.")
 }
 
 CareerForm_ReadClipboard(outPath) {
