@@ -6573,9 +6573,51 @@
       state.charQuery = state.charQuery || "";
       state.charCategory = state.charCategory || "ALL";
 
+      function updateCharCounts(panel) {
+        if (!panel) return;
+        const allChars = state.characters || [];
+        const categories = {};
+        allChars.forEach((c) => {
+          const cat = (c.category || "Outros").trim();
+          categories[cat] = (categories[cat] || 0) + 1;
+        });
+
+        const visibleCount = panel.querySelectorAll(".char-dense-table tbody tr:not(.char-empty-row)").length;
+        const badgeCount = panel.querySelector(".char-badge-count");
+        if (badgeCount) {
+          badgeCount.textContent = `${visibleCount} visíveis / ${allChars.length} total`;
+        }
+
+        panel.querySelectorAll(".char-pill-btn[data-char-cat]").forEach((btn) => {
+          const cat = btn.dataset.charCat;
+          const badge = btn.querySelector(".char-pill-badge");
+          if (badge) {
+            badge.textContent = cat === "ALL" ? allChars.length : (categories[cat] || 0);
+          }
+        });
+
+        const catSelect = panel.querySelector("#charCatSelect");
+        if (catSelect) {
+          Array.from(catSelect.options).forEach((opt) => {
+            const cat = opt.value;
+            if (cat === "ALL") {
+              opt.textContent = `Todas as Categorias (${allChars.length})`;
+            } else {
+              opt.textContent = `${cat} (${categories[cat] || 0})`;
+            }
+          });
+        }
+      }
+
       function renderCharacters() {
         const panel = document.getElementById("charactersPanel");
         if (!panel) return;
+
+        const prevTableWrap = panel.querySelector(".char-table-wrap");
+        const prevTableScrollTop = prevTableWrap ? prevTableWrap.scrollTop : 0;
+        const prevTableScrollLeft = prevTableWrap ? prevTableWrap.scrollLeft : 0;
+        const prevWinY = window.scrollY || document.documentElement.scrollTop || 0;
+        const prevWinX = window.scrollX || document.documentElement.scrollLeft || 0;
 
         const allChars = state.characters || [];
         const categories = {};
@@ -6679,6 +6721,23 @@
           `</div>` +
           `<div id="charModalBackdrop" class="char-modal-backdrop hidden"></div>`;
 
+        const newTableWrap = panel.querySelector(".char-table-wrap");
+        if (newTableWrap) {
+          newTableWrap.scrollTop = prevTableScrollTop;
+          newTableWrap.scrollLeft = prevTableScrollLeft;
+        }
+        if (prevWinY || prevWinX) {
+          window.scrollTo(prevWinX, prevWinY);
+        }
+        requestAnimationFrame(() => {
+          if (newTableWrap && prevTableScrollTop) {
+            newTableWrap.scrollTop = prevTableScrollTop;
+          }
+          if (prevWinY || prevWinX) {
+            window.scrollTo(prevWinX, prevWinY);
+          }
+        });
+
         const searchInput = panel.querySelector("#charSearchInput");
         if (searchInput) {
           searchInput.oninput = () => {
@@ -6725,6 +6784,12 @@
             e.stopPropagation();
             const name = btn.dataset.name;
             if (!confirm(`Deseja realmente excluir "${name}" do catálogo PAO?`)) return;
+
+            const tableWrap = panel.querySelector(".char-table-wrap");
+            const savedTableScroll = tableWrap ? tableWrap.scrollTop : 0;
+            const savedWinY = window.scrollY || document.documentElement.scrollTop || 0;
+            const savedWinX = window.scrollX || document.documentElement.scrollLeft || 0;
+
             try {
               const res = await api("/api/characters", {
                 method: "POST",
@@ -6733,7 +6798,25 @@
               if (res.ok) {
                 state.characters = (state.characters || []).filter((c) => c.name !== name);
                 toast(`"${name}" removido`);
-                renderCharacters();
+
+                const tr = btn.closest("tr");
+                if (tr) {
+                  tr.remove();
+                  panel.querySelectorAll(".char-dense-table tbody tr").forEach((r, idx) => {
+                    const colIdx = r.querySelector(".char-col-idx");
+                    if (colIdx) colIdx.textContent = idx + 1;
+                  });
+                  const tbody = panel.querySelector(".char-dense-table tbody");
+                  if (tbody && !tbody.querySelector("tr")) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="char-empty-row">Nenhum personagem encontrado para os filtros atuais.</td></tr>`;
+                  }
+                  updateCharCounts(panel);
+                } else {
+                  renderCharacters();
+                }
+
+                if (tableWrap) tableWrap.scrollTop = savedTableScroll;
+                window.scrollTo(savedWinX, savedWinY);
               }
             } catch (err) {
               toast(String(err.message || err), 4000);
