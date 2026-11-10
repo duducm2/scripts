@@ -312,6 +312,9 @@ ImportWatcher_RunItem(path, item) {
         catch {
             TrayTip("Import", "Import failed")
         }
+        try ImportMgmt_CloseIfOpen()
+        catch {
+        }
     }
 }
 
@@ -332,6 +335,9 @@ ImportWatcher_ProcessCandidate(cand) {
         ImportWatcher_RunItem(cand.path, cand.item)
         ; After import: send a fresh AI-fix once if this run has not already submitted it.
         try ImportWatcher_CompanionHandleAiFixAfterImport(importStartStamp)
+        catch {
+        }
+        try ImportMgmt_CloseIfOpen()
         catch {
         }
     } finally {

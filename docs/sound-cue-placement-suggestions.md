@@ -37,6 +37,7 @@ Fill in filenames you keep locally if they differ from the list.
 | `unfavorite-all-success.wav`                      | After unfavorite-all succeeds (`ClipAngel_UnfavoriteAllClips`; CC0 bell ding)    |
 | `clipangel-open.wav`                              | After Alt+P / Alt+B open succeeds (`ClipAngel_OpenWithMarkFilter`; CC0 ack ding) |
 | `clipangel-restart-success.wav`                   | After hard restart succeeds (`ClipAngel_Restart`; CC0 complete ding)             |
+| `task-opened.wav`                                 | After Tasks is successfully launched or selected (`Task_LaunchApp`)              |
 | System `*16` / `*64`                              | Via `ScriptSoundPlaySystem` (gated)                                              |
 
 `quick-update-failure.wav` exists in tree; confirm whether any path plays it—if not, candidate for failed Quick Update.

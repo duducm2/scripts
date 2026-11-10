@@ -1,0 +1,22 @@
+﻿===PREVIEW===
+STUDY_DATAANALYST · 1 palaces · 2 beasts · 2 atoms
+Packing: 2 (remainder only on last new palace in this pack)
+PALACE 29 — Delta Lake Schema Enforcement and Evolution (—) [PALACE_DATAANALYST_29]
+  [Df] Dark frog — Concept: [I use Schema Enforcement to block] [incoming write operations] [with mismatched] [table schemas.] — Note: This default Delta Lake check throws a runtime error when column names, counts, or types do not match, preventing silent data corruption. | Quote: "Schema enforcement is a Delta Lake feature that prevents you from appending data with a different schema to a table unless you explicitly specify that the table should allow data with different schemas to be written." | Character: Davy Jones
+  [Dg] Dark goat — Concept: [I use Schema Evolution to adapt] [my target table] [dynamically to] [new columns.] — Note: Enabled with the mergeSchema option, it adds new columns or widens compatible types without rewriting old rows, filling older rows with NULL. | Quote: "Schema evolution refers to the ability of a table to adapt to different schemas over time, typically by allowing for additional columns to be added." | Character: Weird Al Yankovic
+Discard candidates: none
+===END_PREVIEW===
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,mnemonic_name,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATAANALYST_29,STUDY_DATAANALYST,29,Delta Lake Schema Enforcement and Evolution,"Delta Lake Schema Enforcement and Evolution, a Velvet Rope Bouncer Fighting a Shapeshifting Chameleon",,,2,"Depth slot: ForegroundLeft, heavy iron gate on the left, a few meters from the camera: a colossal Dark frog made of black shadow stuff slamming its massive steel padlock against the gate bars and denting the iron. Depth slot: MidgroundRight, brick corner wall on the right, halfway down the street: an upside-down Dark goat with glowing purple horns stretching a giant rubber accordion across the bricks while floating a foot off the ground. Keep the photo exactly as it is; add only these beasts; real-photo look with matching light and contact shadows; beasts far apart."
+===END_FILE===
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_DATAANALYST_29_Df,PALACE_DATAANALYST_29,Df,Dark frog,Custom,,0,1,
+BEAST_DATAANALYST_29_Dg,PALACE_DATAANALYST_29,Dg,Dark goat,Custom,,0,2,
+===END_FILE===
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character,justification
+,BEAST_DATAANALYST_29_Df,single,,,"[I use Schema Enforcement to block] [incoming write operations] [with mismatched] [table schemas.] — Note: This default Delta Lake check throws a runtime error when column names, counts, or types do not match, preventing silent data corruption.",padlock | Schema Enforcement || brick wall | block || pen | write || broken puzzle | mismatched || blueprint | schemas,Schema enforcement is a Delta Lake feature that prevents you from appending data with a different schema to a table unless you explicitly specify that the table should allow data with different schemas to be written.,,1,Davy Jones,Davy Jones guards his cursed chest sealed with a heavy padlock and carries the key everywhere to keep its contents locked away.
+,BEAST_DATAANALYST_29_Dg,single,,,"[I use Schema Evolution to adapt] [my target table] [dynamically to] [new columns.] — Note: Enabled with the mergeSchema option, it adds new columns or widens compatible types without rewriting old rows, filling older rows with NULL.",accordion | Schema Evolution || chameleon | adapt || desk | table || spring | dynamically || pillar | columns,"Schema evolution refers to the ability of a table to adapt to different schemas over time, typically by allowing for additional columns to be added.",,2,Weird Al Yankovic,Weird Al Yankovic is famous for playing his signature accordion across his parody concerts and music videos.
+===END_FILE===

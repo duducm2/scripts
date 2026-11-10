@@ -557,22 +557,46 @@ Palace_AiCompanionFixGuidance(errorMsg) {
     . "- Do not paste Markdown streets as the primary deliverable."
 }
 
-; Write Desktop AI fix note, copy to clipboard, ≥5s toast, close Import Manager if open.
-; Returns true if the hub was closed (caller should skip Palace_ShowMainMenu).
-Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
-    path := Palace_WriteAiCompanionImportError(errorMsg, extraNotes)
-    if (path != "")
-        return ImportMgmt_OnAiFixReady(path, "PALACE_AI_FIX.txt")
-    ms := notifyMs < 5000 ? 5000 : notifyMs
-    ImportMgmt_PlayOutcomeChime(false)
-    Palace_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
+Palace_HasRecentAiFix() {
+    for fixFile in ["PALACE_AI_FIX.txt", "COLLECTIBLE_AI_FIX.txt", "PACK_AI_FIX.txt"] {
+        fixPath := A_Desktop . "\" . fixFile
+        if (!FileExist(fixPath))
+            continue
+        try {
+            modTime := FileGetTime(fixPath, "M")
+            nowTime := FormatTime(, "yyyyMMddHHmmss")
+            if (DateDiff(nowTime, modTime, "Seconds") < 180)
+                return true
+        } catch {
+            return true
+        }
+    }
     return false
 }
 
+; Write Desktop AI fix note, copy to clipboard, ≥5s toast, close Import Manager if open.
+; Returns true (skip launch) so callers never open the Memory Palace app.
+Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
+    path := Palace_WriteAiCompanionImportError(errorMsg, extraNotes)
+    if (path != "") {
+        ImportMgmt_OnAiFixReady(path, "PALACE_AI_FIX.txt")
+        return true
+    }
+    ms := notifyMs < 5000 ? 5000 : notifyMs
+    ImportMgmt_PlayOutcomeChime(false)
+    Palace_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
+    return true
+}
+
 ; While Import Manager is still open, leave the Palace menu closed. The hub closes itself when the run ends.
-; Skip launch when PackPipeline is active (AI-fix loop owns the next step).
-Palace_ReturnAfterImport(hubClosed := false) {
-    if (hubClosed || ImportMgmt_IsOpen())
+; If there is an AI fix to do, we never open the Memory Palace app.
+Palace_ReturnAfterImport(skipLaunch := false) {
+    if (skipLaunch || ImportMgmt_IsOpen())
+        return
+    if (Palace_HasRecentAiFix())
         return
     try {
         if (PackPipeline_IsActive())
@@ -1569,7 +1593,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         if (pathPack = "") {
             ImportMgmt_PlayOutcomeChime(false)
             Palace_Notify("No PALACE_PACK / PALACE_*.txt|.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
-            Palace_ReturnAfterImport()
+            Palace_ReturnAfterImport(true)
             return false
         }
         split := Palace_SplitPalacePack(pathPack)
@@ -1977,9 +2001,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     if (beastRows.Length) {
         linkPlan := Palace_PlanImportedBeasts(beastRows, palaces, palaceIdRemap, beasts)
         if (!linkPlan["ok"]) {
-            ImportMgmt_PlayOutcomeChime(false)
-            Palace_Notify(linkPlan["error"], 4500, BANNER_ACCENT_ERROR)
-            Palace_ReturnAfterImport()
+            Palace_ReturnAfterImport(Palace_FailAiImport(linkPlan["error"], 4500))
             return false
         }
         insertable := linkPlan["insertable"]
@@ -2147,9 +2169,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         notes := ""
         for note in csvNotes
             notes .= (notes = "" ? "" : "`r`n") . note
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify(msg, 3500, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 3500, notes))
         return false
     }
     if (atomRows.Length && nBeasts > 0 && nAtoms < nBeasts && replacePalaceIds.Count) {
@@ -2159,9 +2179,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             : "Partial atoms: " . nAtoms . " of " . nBeasts . " beasts — Desktop pack kept"
         if (summary != "")
             msg .= " — " . summary
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify(msg, 4000, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 4000, notes))
         return false
     }
 
@@ -2458,21 +2476,58 @@ Palace_WriteTempCsvFromSection(body) {
     return tmp
 }
 
+Palace_WritePlanAiFix(errorMsg, extraNotes := "") {
+    errorMsg := Trim(errorMsg)
+    if (errorMsg = "")
+        errorMsg := "PLAN_PACK rejected"
+    body := "The Desktop study plan importer rejected my last PLAN_PACK. Fix and re-deliver.`r`n`r`n"
+        . "IMPORT ERROR`r`n"
+        . errorMsg . "`r`n`r`n"
+    if (Trim(extraNotes) != "")
+        body .= "EXTRA NOTES`r`n" . Trim(extraNotes) . "`r`n`r`n"
+    body .= "WHAT YOU MUST DO`r`n"
+        . "- Re-emit one complete, valid PLAN_PACK.txt with ===FILE: PLANS.csv=== and ===FILE: PLAN_ITEMS.csv=== sections.`r`n"
+        . "- Optional section: ===FILE: PLAN_RESOURCES.csv===.`r`n"
+        . "- Ensure headers and fields match expected plan columns.`r`n`r`n"
+        . "DELIVERY RULES (mandatory)`r`n"
+        . "- Deliver one complete PLAN_PACK.txt.`r`n"
+        . "- Never claim you saved to Desktop / disk. I save the file myself.`r`n"
+        . "- Re-deliver using the exact canonical filename (PLAN_PACK.txt).`r`n"
+        . "- Never add updated, corrected, v2, or similar suffixes.`r`n`r`n"
+        . "After you fix it, I will save PLAN_PACK.txt to Desktop and run Import Management [L] again.`r`n"
+    path := A_Desktop . "\PACK_AI_FIX.txt"
+    try {
+        Palace_WriteUtf8(path, body)
+        return path
+    } catch {
+        return ""
+    }
+}
+
+Palace_FailPlanAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
+    path := Palace_WritePlanAiFix(errorMsg, extraNotes)
+    if (path != "")
+        return ImportMgmt_OnAiFixReady(path, "PACK_AI_FIX.txt")
+    ms := notifyMs < 5000 ? 5000 : notifyMs
+    ImportMgmt_PlayOutcomeChime(false)
+    Palace_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
+    return false
+}
+
 Palace_ImportPlansFromDesktop(pathPack) {
     text := Palace_NormalizePackText(Palace_ReadUtf8(pathPack))
     if (text = "") {
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify("Empty PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(Palace_FailPlanAiImport("Empty PLAN_PACK", 2200))
         return false
     }
     plansBody := Palace_ExtractPackFileSection(text, "PLANS.csv")
     itemsBody := Palace_ExtractPackFileSection(text, "PLAN_ITEMS.csv")
     resBody := Palace_ExtractPackFileSection(text, "PLAN_RESOURCES.csv")
     if (plansBody = "" || itemsBody = "") {
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify("PLAN_PACK needs PLANS.csv + PLAN_ITEMS.csv sections", 3000, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(Palace_FailPlanAiImport("PLAN_PACK needs PLANS.csv + PLAN_ITEMS.csv sections", 3000))
         return false
     }
     tmpP := Palace_WriteTempCsvFromSection(plansBody)
@@ -2495,9 +2550,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     }
 
     if (!planRows.Length) {
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify("No plan rows in PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(Palace_FailPlanAiImport("No plan rows in PLAN_PACK", 2200))
         return false
     }
 
@@ -2639,9 +2692,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     }
 
     if (!nPlans) {
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify("Import produced no plans", 2500, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(Palace_FailPlanAiImport("Import produced no plans", 2500))
         return false
     }
 

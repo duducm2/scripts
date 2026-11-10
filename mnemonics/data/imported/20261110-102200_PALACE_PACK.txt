@@ -1,0 +1,42 @@
+﻿===PREVIEW===
+STUDY_DATA_ANALYST · 2 palaces · 6 beasts · 6 atoms
+Packing: 5+1 (remainder only on last new palace in this pack)
+
+PALACE 29 — Delta Lake Time Travel (Time Travel DeLorean Tracks in the Mud) [PALACE_DATA_ANALYST_29]
+[Df] Dark frog — Concept: [I use Delta Time Travel to bring] [previous data] [back from an accidental] [update statement.] | Quote: "so versioning will help you suppose you ran an update statement uh which is not necessary or like you didn't put the right filter right so that like you can bring that previous data back" | Character: Doc Brown
+[Dg] Dark goat — Concept: [I use the History Log to track] [every data] [change as a sequentially] [numbered version.] | Quote: "your first version of the file is called zero then one 2 three every every changes the version will keep getting added" | Character: Ebenezer Scrooge
+[Dh] Dark Hydra — Concept: [I use the versionAsOf option to fetch] [a historical] [dataset from a specific] [version index.] | Quote: "in options I am saying that version as of right and which version zero version from the Delta path" | Character: Inspector Gadget
+[Di] diamond python — Concept: [I use the timestampAsOf option to travel] [back to the exact] [data state from a precise] [datetime string.] | Quote: "you can use the timestamp of which would help you to travel back to the status where which time it was" | Character: Julius Caesar
+[Dj] Dark jester — Concept: [I use the RESTORE TABLE command to undo] [unwanted updates] [and revert to a previous] [version.] | Quote: "we have this Spar SQL command that help you to restore restore table you know what it is right and Delta path to version zero" | Character: Judge Dredd
+
+PALACE 30 — Delta Table Restoration (Table Restoration Carpenter Glue Mess) [PALACE_DATA_ANALYST_30]
+[Dk] Dark kitten — Concept: [I use an overwrite operation to replace] [the active data] [without erasing the underlying] [version history.] | Quote: "override does not clean up your history it will only overwrite your data" | Character: Bob the Builder
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,mnemonic_name,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATA_ANALYST_29,STUDY_DATA_ANALYST,29,"Delta Lake Time Travel","Time Travel DeLorean Tracks in the Mud",,,5,"Depth slot: ForegroundLeft, parked car, a few meters from the camera: a colossal Dark frog crushes its clock. Depth slot: MidgroundRight, lamp post, halfway down the street: a microscopic Dark goat eats its ledger. Depth slot: BackgroundCenter, brick facade, at the far end of the street: a massive Dark Hydra twists its dial. Depth slot: Aerial, roof, up on the roof: a giant diamond python squeezes its calendar. Depth slot: ForegroundRight, fire hydrant, near the camera: a tiny Dark jester swings its gavel. Keep the photo exactly as it is; add only these beasts; real-photo look with matching light and contact shadows; beasts far apart."
+PALACE_DATA_ANALYST_30,STUDY_DATA_ANALYST,30,"Delta Table Restoration","Table Restoration Carpenter Glue Mess",,,1,"Depth slot: ForegroundLeft, stone wall, a few meters from the camera: a massive Dark kitten drives its bulldozer. Keep the photo exactly as it is; add only these beasts; real-photo look with matching light and contact shadows; beasts far apart."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order,beast_notes
+BEAST_DATA_ANALYST_29_Df,PALACE_DATA_ANALYST_29,Df,Dark frog,Custom,,0,1,
+BEAST_DATA_ANALYST_29_Dg,PALACE_DATA_ANALYST_29,Dg,Dark goat,Custom,,0,2,
+BEAST_DATA_ANALYST_29_Dh,PALACE_DATA_ANALYST_29,Dh,Dark Hydra,Custom,,0,3,
+BEAST_DATA_ANALYST_29_Di,PALACE_DATA_ANALYST_29,Di,diamond python,Lynne Kelly,,0,4,
+BEAST_DATA_ANALYST_29_Dj,PALACE_DATA_ANALYST_29,Dj,Dark jester,Custom,,0,5,
+BEAST_DATA_ANALYST_30_Dk,PALACE_DATA_ANALYST_30,Dk,Dark kitten,Custom,,0,1,
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character,justification
+,BEAST_DATA_ANALYST_29_Df,single,,,"[I use Delta Time Travel to bring] [previous data] [back from an accidental] [update statement.]","clock | Delta Time Travel || wand | bring || file | data || magnet | accidental || eraser | update","so versioning will help you suppose you ran an update statement uh which is not necessary or like you didn't put the right filter right so that like you can bring that previous data back",,1,Doc Brown,Doc Brown is iconic for his time-traveling DeLorean and constant focus on the clock to alter the past.
+,BEAST_DATA_ANALYST_29_Dg,single,,,"[I use the History Log to track] [every data] [change as a sequentially] [numbered version.]","ledger | History Log || eye | track || chart | data || stamp | change || badge | version","your first version of the file is called zero then one 2 three every every changes the version will keep getting added",,2,Ebenezer Scrooge,Ebenezer Scrooge is a miserly accountant who obsessively tracks every penny in his massive ledger.
+,BEAST_DATA_ANALYST_29_Dh,single,,,"[I use the versionAsOf option to fetch] [a historical] [dataset from a specific] [version index.]","dial | versionAsOf option || net | fetch || scroll | historical || map | dataset || signpost | index","in options I am saying that version as of right and which version zero version from the Delta path",,3,Inspector Gadget,Inspector Gadget constantly turns dials and presses buttons on his trench coat to fetch his various investigative tools.
+,BEAST_DATA_ANALYST_29_Di,single,,,"[I use the timestampAsOf option to travel] [back to the exact] [data state from a precise] [datetime string.]","calendar | timestampAsOf option || train | travel || arrow | exact || mirror | state || ticket | string","you can use the timestamp of which would help you to travel back to the status where which time it was",,4,Julius Caesar,Julius Caesar famously introduced the Julian calendar to reform how the empire tracked dates and time.
+,BEAST_DATA_ANALYST_29_Dj,single,,,"[I use the RESTORE TABLE command to undo] [unwanted updates] [and revert to a previous] [version.]","gavel | RESTORE TABLE command || shield | undo || trash | updates || boomerang | revert || mask | version","we have this Spar SQL command that help you to restore restore table you know what it is right and Delta path to version zero",,5,Judge Dredd,Judge Dredd swings his heavy gavel to restore harsh order and enforce his commands in Mega-City One.
+,BEAST_DATA_ANALYST_30_Dk,single,,,"[I use an overwrite operation to replace] [the active data] [without erasing the underlying] [version history.]","bulldozer | overwrite operation || hammer | replace || block | data || vacuum | erasing || book | history","override does not clean up your history it will only overwrite your data",,1,Bob the Builder,Bob Builder is heavily associated with driving large construction vehicles like a bulldozer to clear space and replace old structures.
+===END_FILE===

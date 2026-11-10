@@ -66,41 +66,9 @@ ImportWatcher_CompanionNoteAiFixSent(fixText, hwnd, companionId) {
     g_AiFixGateMisses := 0
 }
 
-; True while a fix we already handed the companion is still being answered.
+; We do not monitor or look if the companion answered after sending an AI fix;
+; the user will manually start the flow afterwards.
 ImportWatcher_CompanionAiFixInFlight() {
-    global g_AiFixGateActive, g_AiFixGateHwnd, g_AiFixGateCompanion, g_AiFixGateAt
-    global g_AiFixGateSawStop, g_AiFixGateMisses
-    if (!g_AiFixGateActive)
-        return false
-    hwnd := g_AiFixGateHwnd
-    companionId := g_AiFixGateCompanion
-    if ((!hwnd || !WinExist("ahk_id " hwnd)) && companionId != "")
-        hwnd := ImportWatcher_CompanionFindHwnd(companionId)
-    generating := false
-    if (hwnd && companionId != "") {
-        try generating := !!PromptPaste_CompanionIsGenerating(hwnd, companionId)
-        catch {
-            generating := false
-        }
-    }
-    if (generating) {
-        g_AiFixGateHwnd := hwnd
-        g_AiFixGateSawStop := true
-        g_AiFixGateMisses := 0
-        return true
-    }
-    ; Stop can blink off, and a short reply can finish before the next poll. Hold the gate
-    ; so a second import does not paste another fix while this one is still the active send.
-    if (g_AiFixGateAt && (A_TickCount - g_AiFixGateAt) < 15000)
-        return true
-    if (!g_AiFixGateSawStop) {
-        ImportWatcher_CompanionReleaseAiFixGate()
-        return false
-    }
-    g_AiFixGateMisses += 1
-    if (g_AiFixGateMisses < 2)
-        return true
-    ImportWatcher_CompanionReleaseAiFixGate()
     return false
 }
 
@@ -356,17 +324,34 @@ ImportWatcher_CompanionSubmitAiFixOnce(fixText) {
         ImportWatcher_CompanionReleaseAiFixGate()
         return false
     }
+    ; Ensure any reply watch or monitoring is disarmed: we do NOT look if the companion answered.
+    try AiCompanion_AbortReplyWatchesLocal()
+    catch {
+    }
+    try {
+        if (PackPipeline_IsActive())
+            PackPipeline_Reset()
+    } catch {
+    }
     ImportWatcher_CompanionNoteAiFixSent(fixText, hwnd, companionId)
     msg := "AI fix sent to " . label
     try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
     catch {
         TrayTip("Import", msg)
     }
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
+    ; Leave focus on the AI companion window ("we start there").
+    try {
+        if (hwnd && WinExist("ahk_id " hwnd))
+            WinActivate("ahk_id " hwnd)
+    } catch {
+    }
     return true
 }
 
-; Paste + submit AI-fix text (hub / non-pipeline path). When PackPipeline is active,
-; prefer PackPipeline_SendFixAndSubmit so userHwnd restore + re-monitor stay consistent.
+; Paste + submit AI-fix text (hub / non-pipeline path).
 ; pathOrText: Desktop fix path or raw fix body.
 ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
     fixText := ""
@@ -381,11 +366,9 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
         return false
     try {
         if (PackPipeline_IsActive())
-            return !!PackPipeline_SendFixAndSubmit(fixText)
+            PackPipeline_Reset()
     } catch {
     }
-    if (ImportWatcher_CompanionAiFixInFlight())
-        return true
     ok := ImportWatcher_CompanionSubmitAiFixOnce(fixText)
     if (!ok)
         return false
@@ -393,18 +376,23 @@ ImportWatcher_CompanionPasteAndSubmitFix(pathOrText) {
         ImportWatcher_CompanionMarkAiFixSubmitted(submittedPath)
     else
         ImportWatcher_CompanionMarkAiFixSubmittedText(fixText)
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
     return true
 }
 
 ; After an import run: send a fresh AI-fix once. Skip when a fix is already with the companion.
 ImportWatcher_CompanionHandleAiFixAfterImport(importStartStamp) {
     global g_ImportWatcherAiFixSubmittedPath
-    if (ImportWatcher_CompanionAiFixInFlight())
-        return false
     path := ImportWatcher_CompanionNewestAiFixSince(importStartStamp)
     if (path = "")
         return false
     if (path = g_ImportWatcherAiFixSubmittedPath)
         return false
-    return ImportWatcher_CompanionPasteAndSubmitFix(path)
+    ok := ImportWatcher_CompanionPasteAndSubmitFix(path)
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
+    return ok
 }

@@ -1,6 +1,140 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Table Restoration Carpenter Glue Mess</strong> · Memory Palace 30: Delta Table Restoration · Character: — · 1 beast · 1 atom</summary>
+
+_No image_
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### [Dk] Dark kitten
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/kitten.png" alt="Dark kitten" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use an <img alt="[overwrite operation]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Boverwrite%20operation%5D&color=9fd4ff" />(bulldozer) to <img alt="[replace]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breplace%5D&color=ffd966" />(hammer)] [the active <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(block)] [without <img alt="[erasing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Berasing%5D&color=ffd966" />(vacuum) the underlying] [version <img alt="[history]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhistory%5D&color=ffd966" />(book).]
+
+**Quote**
+“override does not clean up your history it will only overwrite your data”
+
+**Character**
+Bob the Builder
+
+**Justification**
+Bob Builder is heavily associated with driving large construction vehicles like a bulldozer to clear space and replace old structures.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>Time Travel DeLorean Tracks in the Mud</strong> · Memory Palace 29: Delta Lake Time Travel · Character: — · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Dj] Dark jester
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/jester.png" alt="Dark jester" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[RESTORE TABLE command]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BRESTORE%20TABLE%20command%5D&color=9fd4ff" />(gavel) to <img alt="[undo]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bundo%5D&color=ffd966" />(shield)] [unwanted <img alt="[updates]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bupdates%5D&color=ffd966" />(trash)] [and <img alt="[revert]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brevert%5D&color=ffd966" />(boomerang) to a previous] [<img alt="[version]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bversion%5D&color=ffd966" />(mask).]
+
+**Quote**
+“we have this Spar SQL command that help you to restore restore table you know what it is right and Delta path to version zero”
+
+**Character**
+Judge Dredd
+
+**Justification**
+Judge Dredd swings his heavy gavel to restore harsh order and enforce his commands in Mega-City One.
+
+### [Di] diamond python
+
+<img src="../../web/assets/beast-thumbs/diamond_python.png" alt="diamond python" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[timestampAsOf option]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BtimestampAsOf%20option%5D&color=9fd4ff" />(calendar) to <img alt="[travel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btravel%5D&color=ffd966" />(train)] [back to the <img alt="[exact]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bexact%5D&color=ffd966" />(arrow)] [data <img alt="[state]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstate%5D&color=ffd966" />(mirror) from a precise] [datetime <img alt="[string]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstring%5D&color=ffd966" />(ticket).]
+
+**Quote**
+“you can use the timestamp of which would help you to travel back to the status where which time it was”
+
+**Character**
+Julius Caesar
+
+**Justification**
+Julius Caesar famously introduced the Julian calendar to reform how the empire tracked dates and time.
+
+### [Dh] Dark Hydra
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/hydra.png" alt="Dark Hydra" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[versionAsOf option]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BversionAsOf%20option%5D&color=9fd4ff" />(dial) to <img alt="[fetch]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfetch%5D&color=ffd966" />(net)] [a <img alt="[historical]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bhistorical%5D&color=ffd966" />(scroll)] [<img alt="[dataset]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdataset%5D&color=ffd966" />(map) from a specific] [version <img alt="[index]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bindex%5D&color=ffd966" />(signpost).]
+
+**Quote**
+“in options I am saying that version as of right and which version zero version from the Delta path”
+
+**Character**
+Inspector Gadget
+
+**Justification**
+Inspector Gadget constantly turns dials and presses buttons on his trench coat to fetch his various investigative tools.
+
+### [Dg] Dark goat
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/goat.png" alt="Dark goat" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[History Log]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BHistory%20Log%5D&color=9fd4ff" />(ledger) to <img alt="[track]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btrack%5D&color=ffd966" />(eye)] [every <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(chart)] [<img alt="[change]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bchange%5D&color=ffd966" />(stamp) as a sequentially] [numbered <img alt="[version]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bversion%5D&color=ffd966" />(badge).]
+
+**Quote**
+“your first version of the file is called zero then one 2 three every every changes the version will keep getting added”
+
+**Character**
+Ebenezer Scrooge
+
+**Justification**
+Ebenezer Scrooge is a miserly accountant who obsessively tracks every penny in his massive ledger.
+
+### [Df] Dark frog
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/frog.png" alt="Dark frog" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Delta Time Travel]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDelta%20Time%20Travel%5D&color=9fd4ff" />(clock) to <img alt="[bring]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbring%5D&color=ffd966" />(wand)] [previous <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(file)] [back from an <img alt="[accidental]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Baccidental%5D&color=ffd966" />(magnet)] [<img alt="[update]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bupdate%5D&color=ffd966" />(eraser) statement.]
+
+**Quote**
+“so versioning will help you suppose you ran an update statement uh which is not necessary or like you didn't put the right filter right so that like you can bring that previous data back”
+
+**Character**
+Doc Brown
+
+**Justification**
+Doc Brown is iconic for his time-traveling DeLorean and constant focus on the clock to alter the past.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Late Night Casino Blackjack Dealer PySpark Aggregations and Window Functions</strong> · Memory Palace 28: PySpark Aggregations and Window Functions · Character: — · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 28](images/data-analyst/28.jpg)

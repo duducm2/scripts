@@ -783,11 +783,8 @@ PackPipeline_HandleInvalid(errorMsg, fixText := "") {
         PackPipeline_Fail("Could not paste/submit AI fix")
         return
     }
-    ; Re-enter wait for the corrected generation.
-    global g_PackPipelineMonitorButtonSeen, g_PackPipelineMonitorRetry
-    g_PackPipelineMonitorButtonSeen := false
-    g_PackPipelineMonitorRetry := 0
-    PackPipeline_StartMonitor()
+    ; Do not re-enter wait for the corrected generation. User resumes manually afterwards.
+    PackPipeline_Reset()
 }
 
 ; After domain import: if a fresh *_AI_FIX.txt was written, feed companion + re-monitor.
@@ -822,34 +819,26 @@ PackPipeline_HandleImportOutcome(importOk, importStartStamp, errMsg := "") {
 PackPipeline_SendFixAndSubmit(fixText) {
     global g_PackPipeline, g_AiFixGateHwnd
     fixText := Trim(fixText)
-    if (fixText = "" || !PackPipeline_IsActive())
+    if (fixText = "")
         return false
-    try {
-        if (ImportWatcher_CompanionAiFixInFlight())
-            return true
-    } catch {
-    }
-    PackPipeline_CaptureUserHwnd()
     ok := false
     try ok := ImportWatcher_CompanionSubmitAiFixOnce(fixText)
     catch {
         ok := false
     }
-    if (!ok) {
-        PackPipeline_RestoreUserHwnd()
+    if (!ok)
         return false
-    }
     try {
         if (g_AiFixGateHwnd)
             g_PackPipeline.hwnd := g_AiFixGateHwnd
     } catch {
     }
-    ; Restore user focus before re-entering background wait.
-    restored := PackPipeline_RestoreUserHwnd()
-    PackPipeline_NotifyUserFree(restored)
     try ImportWatcher_CompanionMarkAiFixSubmittedText(fixText)
     catch {
     }
+    ; Focus remains on the companion window ("we start there").
+    ; End the pipeline so background monitoring / auto-retrieve does not run.
+    PackPipeline_Reset()
     return true
 }
 

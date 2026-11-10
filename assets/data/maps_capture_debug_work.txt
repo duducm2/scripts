@@ -1,29 +1,29 @@
-﻿{"session":"20261106184637","seq":1,"t":41126484,"step":"machine","data":{"computer":"CA-C-00806","log":"C:\\Users\\fie7ca\\Documents\\scripts\\assets\\data\\maps_capture_debug_work.txt","scriptDir":"C:\\Users\\fie7ca\\Documents\\scripts","user":"FIE7CA","work":"yes"}}
-{"session":"20261106184637","seq":2,"t":41126484,"step":"enter","data":{"desktop":"C:\\Users\\fie7ca\\Desktop","dpi":"144","title":"4152 Av. Lix da Cunha - Google Maps - Google Chrome"}}
-{"session":"20261106184637","seq":3,"t":41127656,"step":"attach","data":{"hwnd":"6161384","ok":"1"}}
-{"session":"20261106184637","seq":4,"t":41128281,"step":"maximize","data":{"hwnd":"6161384","ok":"1"}}
-{"session":"20261106184637","seq":5,"t":41128296,"step":"document","data":{"ok":"1"}}
-{"session":"20261106184637","seq":6,"t":41128312,"step":"collapse_panel","data":{"ok":"0"}}
-{"session":"20261106184637","seq":7,"t":41131000,"step":"hide_chrome","data":{"ok":"0"}}
-{"session":"20261106184637","seq":8,"t":41132203,"step":"session_start","data":{"desktop":"C:\\Users\\fie7ca\\Desktop","dpi":"144","isWork":"1","methods":"canvas,print,screen","outPath":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png"}}
-{"session":"20261106184637","seq":9,"t":41132328,"step":"pane","data":{"attempt":"1","b":"2159","h":"1977","l":"0","name":"Street View","ok":"1","r":"3840","t":"182","w":"3840"}}
-{"session":"20261106184637","seq":10,"t":41132328,"step":"rect_fit","data":{"attempt":"1","clientB":"2158","clientL":"0","clientR":"3840","clientT":"0","h":"1976","l":"0","ok":"1","paneH":"1977","paneL":"0","paneT":"182","paneW":"3840","rule":"intersect","t":"182","w":"3840"}}
-{"session":"20261106184637","seq":11,"t":41132328,"step":"method_start","data":{"attempt":"1","method":"canvas"}}
-{"session":"20261106184637","seq":12,"t":41132656,"step":"canvas_token","data":{"title":"AHKMAPS:0:blank - Google Chrome","token":"0:blank"}}
-{"session":"20261106184637","seq":13,"t":41132703,"step":"method_fail","data":{"attempt":"1","bytes":"0","err":"blank or black image","h":"0","headerErr":"capture file missing","method":"canvas","w":"0"}}
-{"session":"20261106184637","seq":14,"t":41132703,"step":"method_start","data":{"attempt":"1","method":"print"}}
-{"session":"20261106184637","seq":15,"t":41132875,"step":"print_window","data":{"err":"","exists":"1","h":"1976","hwnd":"6161384","ok":"1","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
-{"session":"20261106184637","seq":16,"t":41132890,"step":"method_file","data":{"attempt":"1","bytes":"33039","h":"1976","headerErr":"","method":"print","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
-{"session":"20261106184637","seq":17,"t":41132921,"step":"commit_start","data":{"dest":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1580","minW":"3072","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261106184637","seq":18,"t":41133218,"step":"commit_header","data":{"bytes":"33039","err":"","h":"1976","ok":"1","w":"3840"}}
-{"session":"20261106184637","seq":19,"t":41133234,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
-{"session":"20261106184637","seq":20,"t":41133234,"step":"keep_png","data":{"bytes":"33039","dest":"C:\\Users\\fie7ca\\Documents\\scripts\\debug-maps-capture\\20261106-184644-print-a1.png","reason":"blank or black image","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261106184637","seq":21,"t":41133234,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
-{"session":"20261106184637","seq":22,"t":41133296,"step":"method_start","data":{"attempt":"1","method":"screen"}}
-{"session":"20261106184637","seq":23,"t":41135609,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"1976","ok":"1","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
-{"session":"20261106184637","seq":24,"t":41135625,"step":"method_file","data":{"attempt":"1","bytes":"13794013","h":"1976","headerErr":"","method":"screen","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
-{"session":"20261106184637","seq":25,"t":41135656,"step":"commit_start","data":{"dest":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1580","minW":"3072","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261106184637","seq":26,"t":41135953,"step":"commit_header","data":{"bytes":"13794013","err":"","h":"1976","ok":"1","w":"3840"}}
-{"session":"20261106184637","seq":27,"t":41136046,"step":"pixel_gate","data":{"code":"0","err":"","reason":"ok"}}
-{"session":"20261106184637","seq":28,"t":41136296,"step":"commit_ok","data":{"bytes":"13794013","dest":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png","h":"1976","w":"3840"}}
-{"session":"20261106184637","seq":29,"t":41138390,"step":"saved","data":{"name":"PALACE_QUICK_IMAGE.png","path":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png"}}
+﻿{"session":"20261110104248","seq":1,"t":7176343,"step":"machine","data":{"computer":"CA-C-00806","log":"C:\\Users\\fie7ca\\Documents\\scripts\\assets\\data\\maps_capture_debug_work.txt","scriptDir":"C:\\Users\\fie7ca\\Documents\\scripts","user":"FIE7CA","work":"yes"}}
+{"session":"20261110104248","seq":2,"t":7176343,"step":"enter","data":{"desktop":"C:\\Users\\fie7ca\\Desktop","dpi":"144","title":"4152 Av. Lix da Cunha - Google Maps - Google Chrome"}}
+{"session":"20261110104248","seq":3,"t":7177046,"step":"attach","data":{"hwnd":"5047404","ok":"1"}}
+{"session":"20261110104248","seq":4,"t":7177656,"step":"maximize","data":{"hwnd":"5047404","ok":"1"}}
+{"session":"20261110104248","seq":5,"t":7177671,"step":"document","data":{"ok":"1"}}
+{"session":"20261110104248","seq":6,"t":7177687,"step":"collapse_panel","data":{"ok":"0"}}
+{"session":"20261110104248","seq":7,"t":7180328,"step":"hide_chrome","data":{"ok":"0"}}
+{"session":"20261110104248","seq":8,"t":7181531,"step":"session_start","data":{"desktop":"C:\\Users\\fie7ca\\Desktop","dpi":"144","isWork":"1","methods":"canvas,print,screen","outPath":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png"}}
+{"session":"20261110104248","seq":9,"t":7181656,"step":"pane","data":{"attempt":"1","b":"2160","h":"2160","l":"0","name":"Street View","ok":"1","r":"3840","t":"0","w":"3840"}}
+{"session":"20261110104248","seq":10,"t":7181656,"step":"rect_fit","data":{"attempt":"1","clientB":"2160","clientL":"0","clientR":"3840","clientT":"0","h":"2160","l":"0","ok":"1","paneH":"2160","paneL":"0","paneT":"0","paneW":"3840","rule":"pane","t":"0","w":"3840"}}
+{"session":"20261110104248","seq":11,"t":7181656,"step":"method_start","data":{"attempt":"1","method":"canvas"}}
+{"session":"20261110104248","seq":12,"t":7184218,"step":"canvas_token","data":{"title":"4152 Av. Lix da Cunha - Google Maps - Google Chrome","token":"(none)"}}
+{"session":"20261110104248","seq":13,"t":7184250,"step":"method_fail","data":{"attempt":"1","bytes":"0","err":"canvas export failed","h":"0","headerErr":"capture file missing","method":"canvas","w":"0"}}
+{"session":"20261110104248","seq":14,"t":7184250,"step":"method_start","data":{"attempt":"1","method":"print"}}
+{"session":"20261110104248","seq":15,"t":7184421,"step":"print_window","data":{"err":"","exists":"1","h":"2160","hwnd":"5047404","ok":"1","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"0"}}
+{"session":"20261110104248","seq":16,"t":7184453,"step":"method_file","data":{"attempt":"1","bytes":"36115","h":"2160","headerErr":"","method":"print","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261110104248","seq":17,"t":7184484,"step":"commit_start","data":{"dest":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1728","minW":"3072","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261110104248","seq":18,"t":7184781,"step":"commit_header","data":{"bytes":"36115","err":"","h":"2160","ok":"1","w":"3840"}}
+{"session":"20261110104248","seq":19,"t":7184781,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261110104248","seq":20,"t":7184796,"step":"keep_png","data":{"bytes":"36115","dest":"C:\\Users\\fie7ca\\Documents\\scripts\\debug-maps-capture\\20261110-104256-print-a1.png","reason":"blank or black image","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261110104248","seq":21,"t":7184796,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
+{"session":"20261110104248","seq":22,"t":7184812,"step":"method_start","data":{"attempt":"1","method":"screen"}}
+{"session":"20261110104248","seq":23,"t":7187046,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"2160","ok":"1","out":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"0"}}
+{"session":"20261110104248","seq":24,"t":7187078,"step":"method_file","data":{"attempt":"1","bytes":"13112128","h":"2160","headerErr":"","method":"screen","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261110104248","seq":25,"t":7187093,"step":"commit_start","data":{"dest":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1728","minW":"3072","src":"C:\\Users\\fie7ca\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261110104248","seq":26,"t":7187406,"step":"commit_header","data":{"bytes":"13112128","err":"","h":"2160","ok":"1","w":"3840"}}
+{"session":"20261110104248","seq":27,"t":7187484,"step":"pixel_gate","data":{"code":"0","err":"","reason":"ok"}}
+{"session":"20261110104248","seq":28,"t":7187734,"step":"commit_ok","data":{"bytes":"13112128","dest":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png","h":"2160","w":"3840"}}
+{"session":"20261110104248","seq":29,"t":7189796,"step":"saved","data":{"name":"PALACE_QUICK_IMAGE.png","path":"C:\\Users\\fie7ca\\Desktop\\PALACE_QUICK_IMAGE.png"}}

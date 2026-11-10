@@ -119,13 +119,46 @@ Task_ImportReadLabels(path) {
     return labels
 }
 
+Task_WriteAiFix(errorMsg, extraNotes := "") {
+    errorMsg := Trim(errorMsg)
+    if (errorMsg = "")
+        errorMsg := "TASK_PACK rejected"
+    body := "The Desktop Tasks importer rejected my last TASK_PACK.txt. Fix and re-deliver.`r`n`r`n"
+        . "IMPORT ERROR`r`n"
+        . errorMsg . "`r`n`r`n"
+    if (Trim(extraNotes) != "")
+        body .= "EXTRA NOTES`r`n" . Trim(extraNotes) . "`r`n`r`n"
+    body .= "WHAT YOU MUST DO`r`n"
+        . "- Read the IMPORT ERROR above and reframe as one complete, valid TASK_PACK.`r`n"
+        . "- Prefer download chip; else one marked fence. Never claim a disk save.`r`n`r`n"
+        . "DELIVERY RULES (mandatory)`r`n"
+        . "- Deliver one complete TASK_PACK.txt.`r`n"
+        . "- Include ===PREVIEW=== and FILE sections for TASK_PROJECTS / TASK_TASKS / TASK_INFO.`r`n"
+    path := Task_ImportAiFixPath()
+    try {
+        f := FileOpen(path, "w", "UTF-8")
+        if (f) {
+            f.Write(body)
+            f.Close()
+            return path
+        }
+    } catch {
+    }
+    return ""
+}
+
 Task_ImportFailAi(errorMsg := "") {
     path := Task_ImportAiFixPath()
-    if (FileExist(path))
+    if (!FileExist(path) && errorMsg != "")
+        path := Task_WriteAiFix(errorMsg)
+    if (path != "" && FileExist(path))
         return ImportMgmt_OnAiFixReady(path, "TASK_AI_FIX.txt")
     ImportMgmt_PlayOutcomeChime(false)
     if (errorMsg != "")
         Task_Notify(errorMsg, 5000, BANNER_ACCENT_ERROR)
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
     return false
 }
 

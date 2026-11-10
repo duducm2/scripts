@@ -25,6 +25,9 @@ Task_LaunchApp() {
                 return
         }
         Task_ActivateDashboard(existing)
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\task-opened.wav")
+        catch {
+        }
         return
     }
     try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
@@ -47,6 +50,11 @@ Task_LaunchApp() {
     }
     if (!ok)
         Task_Notify("Chrome failed to open Tasks", 2500, BANNER_ACCENT_ERROR)
+    else {
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\task-opened.wav")
+        catch {
+        }
+    }
 }
 
 Task_CloseWebApp() {

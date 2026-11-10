@@ -43,18 +43,40 @@ ImportMgmt_CloseGui() {
 ImportMgmt_IsOpen() {
     global g_ImportMgmtGui
     try {
-        return IsObject(g_ImportMgmtGui)
+        if (IsObject(g_ImportMgmtGui))
+            return true
     } catch {
-        return false
     }
+    prev := A_TitleMatchMode
+    SetTitleMatchMode(2)
+    open := false
+    try {
+        open := !!WinExist("Import Management ahk_class AutoHotkeyGUI")
+    } catch {
+        open := false
+    }
+    SetTitleMatchMode(prev)
+    return open
 }
 
 ; Close hub if open. Returns true when it was open (caller should skip domain menus).
 ImportMgmt_CloseIfOpen() {
-    if (!ImportMgmt_IsOpen())
-        return false
-    ImportMgmt_CloseGui()
-    return true
+    closed := false
+    if (ImportMgmt_IsOpen()) {
+        ImportMgmt_CloseGui()
+        closed := true
+    }
+    prev := A_TitleMatchMode
+    SetTitleMatchMode(2)
+    try {
+        if (WinExist("Import Management ahk_class AutoHotkeyGUI")) {
+            WinClose("Import Management ahk_class AutoHotkeyGUI")
+            closed := true
+        }
+    } catch {
+    }
+    SetTitleMatchMode(prev)
+    return closed
 }
 
 ; Shared outcome tones for every Import Management workflow.
@@ -91,33 +113,19 @@ ImportMgmt_OnAiFixReady(path, label) {
         catch {
         }
     }
-    pipelineOwns := false
-    try pipelineOwns := PackPipeline_IsActive()
-    catch {
-        pipelineOwns := false
+    try {
+        if (PackPipeline_IsActive())
+            PackPipeline_Reset()
+    } catch {
     }
-    if (pipelineOwns) {
-        msg := "AI fix ready — pack pipeline will send to companion · Desktop " . label
-        try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_ERROR)
+    msg := "AI fix copied — sending to AI companion · Desktop " . label
+    try ShowCenteredOverlay_Utils(msg, 4000, BANNER_ACCENT_ERROR)
+    catch {
+        TrayTip("Import", msg)
+    }
+    if (path != "") {
+        try ImportWatcher_CompanionPasteAndSubmitFix(path)
         catch {
-            TrayTip("Import", msg)
-        }
-    } else if (ImportWatcher_CompanionAiFixInFlight()) {
-        msg := "AI companion is still working on the fix · Desktop " . label
-        try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_INFO)
-        catch {
-            TrayTip("Import", msg)
-        }
-    } else {
-        msg := "AI fix copied — sending to AI companion · Desktop " . label
-        try ShowCenteredOverlay_Utils(msg, 4000, BANNER_ACCENT_ERROR)
-        catch {
-            TrayTip("Import", msg)
-        }
-        if (path != "") {
-            try ImportWatcher_CompanionPasteAndSubmitFix(path)
-            catch {
-            }
         }
     }
     return ImportMgmt_CloseIfOpen()

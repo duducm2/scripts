@@ -84,11 +84,16 @@ Collectible_WriteAiFix(errorMsg, extraNotes := "") {
 
 Collectible_Fail(errorMsg, extraNotes := "") {
     path := Collectible_WriteAiFix(errorMsg, extraNotes)
-    if (path != "")
-        return ImportMgmt_OnAiFixReady(path, "COLLECTIBLE_AI_FIX.txt")
+    if (path != "") {
+        ImportMgmt_OnAiFixReady(path, "COLLECTIBLE_AI_FIX.txt")
+        return true
+    }
     ImportMgmt_PlayOutcomeChime(false)
     Palace_Notify(errorMsg, 5000, BANNER_ACCENT_ERROR)
-    return false
+    try ImportMgmt_CloseIfOpen()
+    catch {
+    }
+    return true
 }
 
 ; Import Management [C] and the Desktop watcher.
@@ -98,14 +103,14 @@ Collectible_ImportFromDesktop(*) {
     if (path = "") {
         ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("No COLLECTIBLE_PACK.txt on Desktop", 2800, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(true)
         return false
     }
     py := Palace_PythonDir() . "\collectibles.py"
     pyCmd := Palace_FindPythonCmd()
     if (!FileExist(py) || pyCmd = "") {
         Collectible_Fail("Collectible importer is missing (collectibles.py).")
-        Palace_ReturnAfterImport()
+        Palace_ReturnAfterImport(true)
         return false
     }
     outPath := A_Temp . "\collectible_import_result.json"
