@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Table Restoration Carpenter Glue Mess</strong> · Memory Palace 30: Delta Table Restoration · Character: — · 1 beast · 1 atom</summary>
 
-_No image_
+![Memory Palace 30](images/data-analyst/30.png)
 
 <p><em>1 beast · 1 Knowledge Atom</em></p>
 
@@ -38,7 +38,7 @@ _No gallery images._
 <details open>
 <summary><strong>Time Travel DeLorean Tracks in the Mud</strong> · Memory Palace 29: Delta Lake Time Travel · Character: — · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 29](images/data-analyst/29.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
