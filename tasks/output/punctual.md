@@ -10,7 +10,7 @@
 
 ⏳ Continue with your idea of the book
 
-⚡ You need to transfer your voting place to Nova Odessa and change our photo
+⏳ You need to transfer your voting place to Nova Odessa and change our photo
 
 🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
 

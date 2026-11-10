@@ -112,33 +112,32 @@ TeamsChat_FindUploadFromDevice(root) {
             return saved
     }
 
+    ; 1. Single native UIA condition with combined names and LastToFirstOrder (order 2, index -1).
+    ; In Teams, popup flyouts are appended at the end of the DOM (fui-FluentProvider),
+    ; so reverse traversal finds the item in milliseconds without scanning prior chat messages.
     names := ["Upload from this device", "Carregar deste dispositivo", "Carregar a partir deste dispositivo",
         "Carregar do computador"]
-    for name in names {
-        try {
-            el := root.FindFirst({ Name: name, Type: "50011" })
-            if el
-                return el
-        }
-    }
-    for name in names {
-        try {
-            el := root.FindFirst({ Name: name, matchmode: "Substring", casesense: false })
-            if el
-                return el
-        }
+    cond := { Type: 50011, Name: names }
+    try {
+        el := root.FindElement(cond, 4, -1, 2)
+        if el
+            return el
     }
 
-    ; Fallback: search desktop root in case popup menu is hosted in a separate top-level window/overlay
+    ; 2. Substring regex fallback for other locales or variants
+    try {
+        subCond := { Type: 50011, Name: "(?i)upload|carregar|dispositivo|ger[äa]t|device", matchmode: "RegEx" }
+        el := root.FindElement(subCond, 4, -1, 2)
+        if el
+            return el
+    }
+
+    ; 3. Fallback: check desktop root in case popup menu is hosted in a separate top-level window/overlay
     try {
         desktopRoot := UIA.GetRootElement()
-        for name in names {
-            try {
-                el := desktopRoot.FindFirst({ Name: name, Type: "50011" })
-                if el
-                    return el
-            }
-        }
+        el := desktopRoot.FindElement(cond, 4, -1, 2)
+        if el
+            return el
     }
     return 0
 }
@@ -148,46 +147,51 @@ TeamsChat_AttachAndUploadFromDevice() {
     if !hwnd
         return
 
-    StandardLoadingBar_Show("⏳ Teams: Upload from device…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: hwnd })
+    ; Trigger Teams attach flyout immediately via native Alt+Shift+O (zero-delay start)
+    Send "!+o"
+
+    ; Show loading indicator only if the operation takes longer than 250ms (avoids flicker on fast path)
+    showLoading := () => StandardLoadingBar_Show("⏳ Teams: Upload from device…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: hwnd })
+    SetTimer(showLoading, -250)
+
     try {
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-    } catch {
         root := 0
-    }
+        try root := UIA.ElementFromHandle(hwnd)
+        if !root {
+            ShowCenteredOverlay_Utils("❌ TEAMS UIA FAILED", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
 
-            ; Check if "Upload from this device" menu item is already visible
+        ; Wait for "Upload from this device" menu item to appear
+        deadline := A_TickCount + 2000
+        uploadItem := 0
+        while (A_TickCount < deadline) {
             uploadItem := TeamsChat_FindUploadFromDevice(root)
-            if !uploadItem {
-                Send "!+o"
-                deadline := A_TickCount + 2000
-                while (A_TickCount < deadline) {
-                    Sleep 50
-                    uploadItem := TeamsChat_FindUploadFromDevice(root)
-                    if uploadItem
-                        break
-                }
-            }
+            if uploadItem
+                break
+            Sleep 25
+        }
 
-                if uploadItem {
-                    try {
-                        uploadItem.Click()
-                        return
-                    } catch {
-                        try {
-                            uploadItem.Invoke()
-                            return
-                        }
-                    }
+        if uploadItem {
+            try {
+                uploadItem.Click()
+                return
+            } catch {
+                try {
+                    uploadItem.Invoke()
+                    return
                 }
-
-                ShowCenteredOverlay_Utils("❌ UPLOAD FROM DEVICE NOT FOUND", 2000, BANNER_ACCENT_ERROR)
-            } catch as e {
-                ShowCenteredOverlay_Utils("❌ ATTACH FILE: " e.Message, 2000, BANNER_ACCENT_ERROR)
-            } finally {
-                StandardLoadingBar_Hide(0)
             }
         }
+
+        ShowCenteredOverlay_Utils("❌ UPLOAD FROM DEVICE NOT FOUND", 2000, BANNER_ACCENT_ERROR)
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ ATTACH FILE: " e.Message, 2000, BANNER_ACCENT_ERROR)
+    } finally {
+        SetTimer(showLoading, 0)
+        StandardLoadingBar_Hide(0)
+    }
+}
 
         ; =============================================================================
         ; Chat: Select "Quick Views" tree item in the chat rail
