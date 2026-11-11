@@ -326,3 +326,5 @@ TX331,2026-11-10,Service man,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX332,2026-11-10,New house,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX333,2026-09-22,Gas station,"4,07",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX334,2026-11-10,Invoice payment — Mercado Pago (partial),"4770,57",transfer,,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX335,2026-11-10,Construction worker,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX336,2026-11-10,transfer,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
