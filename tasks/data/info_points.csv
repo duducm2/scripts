@@ -1,8 +1,6 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at,edit_lock,birth_date
 INFO_0076,task,TASK_0042,We also had some problems with authentication along the way,We also had some problems with authentication along the way,ℹ️,,1550,2026-08-29 15:48:39,,
 INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 15:48:39,,
-INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.","Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.",ℹ️,,1610,2026-08-29 15:48:39,,
-INFO_0079,task,TASK_0045,"Minoxidil: 6/6, Revoc: 2/2 (60 pills)","Minoxidil: 6/6, Revoc: 2/2 (60 pills)",ℹ️,,1620,2026-08-29 15:48:39,,
 INFO_0089,project,PROJ_0044,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39,,
 INFO_0090,project,PROJ_0045,Maintain ongoing literature review,"Maintain ongoing literature review
 Confirm if committee members may ask about courses near defense
