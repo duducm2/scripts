@@ -84,7 +84,6 @@ TASK_0460,PROJ_0036,SEC_0195,Meeting 10.14,⏳,punctual,,,,Meetings,work,6330,,2
 TASK_0470,PROJ_0036,SEC_0195,Anotações da Reunião 10.14,⏳,punctual,,,,Meetings,work,6430,,2026-10-14 17:35:51,1,
 TASK_0471,PROJ_0034,SEC_0149,Cancel your overleaf subscription as soon as Hegina finishes to use it,🔲,punctual,,,,,personal,6850,,2026-10-15 14:52:09,1,
 TASK_0479,PROJ_0005,SEC_0005,Check if you need to do anything to your contribution dialogue,⏳,punctual,,,,,work,6950,,2026-10-16 09:36:06,1,
-TASK_0484,PROJ_0035,SEC_0165,Focus group script,⚡,punctual,,,,Phase 2: Understand context of use,work,6640,,2026-10-16 11:13:57,1,
 TASK_0486,PROJ_0035,SEC_0165,pesquisa por survey,⚡,punctual,,,,Phase 2: Understand context of use,work,6620,,2026-10-16 11:48:02,1,
 TASK_0488,PROJ_0035,SEC_0150,Kick off,✅,punctual,,,,,work,6610,,2026-10-16 12:11:37,1,IMP-20261016-121137
 TASK_0490,PROJ_0035,SEC_0150,Briefing,✅,punctual,,,,,work,6630,,2026-10-16 12:11:37,1,IMP-20261016-121137
@@ -112,7 +111,6 @@ TASK_0611,PROJ_0005,SEC_0005,Check if anti-gravity is now available for your GB 
 TASK_0613,PROJ_0036,SEC_0152,Adicionar KPIs de projetos passados,⏳,punctual,,,,,work,8040,,2026-10-20 15:27:01,1,
 TASK_0615,PROJ_0044,SEC_0180,🐕 Brush Moka's fur (Wood Brush),🔲,habitual,daily,2026-10-20,2026-10-20,,habits,7840,,2026-10-20 20:32:02,1,
 TASK_0616,PROJ_0045,SEC_0181,🐕 Deep brush Moka's undercoat,🔲,habitual,weekly,2026-10-20,2026-10-20,,habits,7850,,2026-10-20 20:32:02,1,
-TASK_0618,PROJ_0035,SEC_0150,Check if William already wrote you back with the sample names,⚡,punctual,,,,,work,8010,,2026-10-21 12:10:08,1,
 TASK_0633,PROJ_0035,SEC_0150,📷 Take pictures,🔲,punctual,,,,,work,6950,,2026-10-22 09:40:17,1,
 TASK_0646,PROJ_0043,SEC_0179,Pharmacological regimen interactions,⏳,punctual,,,,,habits,8140,,2026-10-22 14:54:29,1,
 TASK_0675,PROJ_0027,SEC_0131,"GitHub Pages: O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.",⚡,punctual,,,,,personal,8430,,2026-10-24 13:06:13,1,
@@ -146,3 +144,4 @@ TASK_0780,PROJ_0036,SEC_0195,meeting end of October,⏳,punctual,,,,Meetings,wor
 TASK_0781,PROJ_0035,SEC_0165,Record every breakout room in focus groups,⚡,punctual,,,,Phase 2: Understand context of use,work,9450,,2026-11-09 15:10:34,1,
 TASK_0782,PROJ_0035,SEC_0165,"Check if we can have three additional focus groups with customers of the platform, the dev team, and the engineering team",⚡,punctual,,,,Phase 2: Understand context of use,work,9460,,2026-11-10 11:02:01,1,
 TASK_0783,PROJ_0029,SEC_0194,?,⏳,punctual,,,,Flea and Tick prevention,personal,9470,,2026-11-10 22:06:51,1,
+TASK_0784,PROJ_0035,SEC_0150,Import the transcripts,⚡,punctual,,,,,work,9470,,2026-11-10 15:30:38,1,

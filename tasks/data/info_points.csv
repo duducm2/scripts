@@ -201,7 +201,6 @@ INFO_0505,task,TASK_0679,https://inside-docupedia.bosch.com/confluence/spaces/RC
 INFO_0509,task,TASK_0683,As for this admin row,,ℹ️,,10,2026-10-26 10:48:37,,
 INFO_0510,task,TASK_0683,IdM2BCD_SMCP_ffa0ec26-c502-44e5-be8e-0b563e8c6509_admin,,ℹ️,,20,2026-10-26 10:48:56,,
 INFO_0529,task,TASK_0682,Maybe we need to align that with Mark,,ℹ️,,10,2026-10-27 15:16:19,,
-INFO_0532,task,TASK_0484,Michael.Eisenbart@de.bosch.com (head),,ℹ️,,10,2026-10-28 12:48:05,,
 INFO_0556,task,TASK_0741,Treatment Duration,Give daily from now until she reaches 1 year of age.,ℹ️,Daily,5510,2026-10-29 17:12:51,,
 INFO_0557,task,TASK_0741,Correct Dosage (Condroplex 1000),1 capsule per day (ideal for her estimated 12 kg to 16 kg weight range). Do not buy the 500 strength anymore.,ℹ️,Daily,5520,2026-10-29 17:12:51,,
 INFO_0558,task,TASK_0741,Purchase Reminder,Buy more Condroplex 1000 on Mercado Livre before the current supply runs out.,ℹ️,Daily,5530,2026-10-29 17:12:51,,
@@ -313,3 +312,4 @@ task,Record every breakout room in focus groups,X-Tower,work,Access limits,""The
 ===END_FILE===
 
 Please copy the code block above and save it as TASK_PACK.txt to import the new task and notes into your project.",,ℹ️,,10,2026-11-09 15:11:56,,
+INFO_0651,task,TASK_0783,"""C:\Users\fie7ca\Desktop\X Tower Focus Group_ Product Owners 2.txt""",,ℹ️,,10,2026-11-10 15:30:43,,
