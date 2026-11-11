@@ -76,6 +76,7 @@ FinanceD_DisarmDoubleTap() {
         try ShowCenteredOverlay_Utils("🏰 Memory Palace", 1500, BANNER_ACCENT_INFO)
         catch {
         }
+        ; Launches or activates existing Memory Palace window (plays RPG book-open sound)
         Palace_LaunchApp()
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.

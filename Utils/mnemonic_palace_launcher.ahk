@@ -80,21 +80,31 @@ Palace_ServerPort() {
     return 8767
 }
 
+Palace_PlayOpenSound() {
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\book-open.wav")
+    catch {
+    }
+}
+
 Palace_LaunchApp() {
     Palace_EnsureData()
     existing := Palace_FindExistingWebHwnd()
     if (existing) {
         if (!Palace_IsServerRunning()) {
             if (!Palace_EnsureServer(false))
-                return
+            return false
         }
-        if (Palace_ActivateWeb(existing))
-            return
+        if (Palace_ActivateWeb(existing)) {
+            Palace_PlayOpenSound()
+            return true
+        }
         ; Cached HWND went stale — clear and fall through to open/re-find.
         Palace_WebHwndCacheClear()
         existing := Palace_FindExistingWebHwnd()
-        if (existing && Palace_ActivateWeb(existing))
-            return
+        if (existing && Palace_ActivateWeb(existing)) {
+            Palace_PlayOpenSound()
+            return true
+        }
     }
     try StandardLoadingBar_Show("⏳ Opening Memory Palace…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
@@ -103,7 +113,7 @@ Palace_LaunchApp() {
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        return
+        return false
     }
     ; Race: window may have appeared while the server was starting.
     existing := Palace_FindExistingWebHwnd()
@@ -111,8 +121,11 @@ Palace_LaunchApp() {
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        Palace_ActivateWeb(existing)
-        return
+        if (Palace_ActivateWeb(existing)) {
+            Palace_PlayOpenSound()
+            return true
+        }
+        return false
     }
     url := "http://127.0.0.1:" . Palace_ServerPort() . "/?t=" . A_TickCount
     try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
@@ -138,8 +151,12 @@ Palace_LaunchApp() {
         ; Absolute last: activate again so nothing after place keeps foreign FG.
         Palace_ForceActivatePicker(hwndFinal)
     }
-    if (!ok)
-        Palace_Notify("Chrome failed to open Memory Palace", 2500, BANNER_ACCENT_ERROR)
+        if (!ok) {
+            Palace_Notify("Chrome failed to open Memory Palace", 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
+    Palace_PlayOpenSound()
+    return true
 }
 
 Palace_PidPath() {
