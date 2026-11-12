@@ -226,8 +226,7 @@ D2C_CompanionTitleMatches(title, companion) {
         return CopilotWeb_TitleMatchesCopilot(title)
     if (companion = "chatgpt")
         return InStr(title, "chatgpt", false) > 0
-    return IsConsumerGeminiChromeTitle(title) || GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(
-        title) || InStr(title, "chatgpt", false) > 0
+    return IsConsumerGeminiChromeTitle(title) || GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(title) || InStr(title, "chatgpt", false) > 0
 }
 
 ; Generic/placeholder titles for fresh AI chats before they get renamed to a specific conversation topic.
@@ -557,7 +556,6 @@ class D2C_FlowManager {
             "G", this.OnSubmitG.Bind(this),
             "A", this.OnSubmitA.Bind(this),
             "T", this.OnSubmitT.Bind(this),
-            "D", this.OnSubmitD.Bind(this),
             "I", this.OnSubmitI.Bind(this),
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
@@ -584,7 +582,6 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
-            "[H] Here  [G] Grammar  [A] AI opt  [T] Tasks pack  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
             "[D] Display  [H] Here  [G] Grammar  [A] AI opt  [T] Tasks pack  [I] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
             true,
             true,
@@ -619,1342 +616,1331 @@ class D2C_FlowManager {
         this.ExecuteGeminiSubmit(true, "task_pack")
     }
 
+    OnSubmitI(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true, "finance_daily")
+    }
+
     OnSubmitD(*) {
-        OnSubmitI(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.ExecuteGeminiSubmit(true, "finance_daily")
-        }
+        this.OnSubmitH()
+    }
 
-        OnSubmitD(*) {
-            this.OnSubmitH()
-        }
+    OnSubmitY(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true)
+    }
 
-        OnSubmitY(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.ExecuteGeminiSubmit(true)
-        }
+    ; [D] Display / [H] Here: Same send as [Y]. When the reply is done, copy it back onto OriginHwnd
+    ; and show the full text in a banner. Skips the Response ready menu.
+    OnSubmitH(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ShowReplyHereAfterSend := true
+        this.ExecuteGeminiSubmit(true)
+    }
 
-        ; [H] Same send as [Y]. When the reply is done, copy it back onto OriginHwnd
-        ; and show the full text. Skips the Response ready menu. Not [D] (Finance daily).
-        ; [D] Display / [H] Here: Same send as [Y]. When the reply is done, copy it back onto OriginHwnd
-        ; and show the full text in a banner. Skips the Response ready menu.
-        OnSubmitH(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.ShowReplyHereAfterSend := true
-            this.ExecuteGeminiSubmit(true)
-        }
+    OnSubmitS(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(false)
+    }
 
-        OnSubmitS(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.ExecuteGeminiSubmit(false)
-        }
+    OnSubmitV(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.PasteDictationToActiveWindow()
+    }
 
-        OnSubmitV(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.PasteDictationToActiveWindow()
-        }
+    ; Shared pick step for #!+L / submit [W] / response paste-window keys / #!+p [W].
+    ; Returns { targetHwnd, autoSend } or false if picker or Y/N banner cancelled.
+    PickVisiblePasteTargetAndAutoSend(originHwnd := 0) {
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
+        targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
+        if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
+            return false
+        choice := PasteWindow_ShowAutoSendOptionsAndWait()
+        if (choice = "cancel" || choice = "")
+            return false
+        return { targetHwnd: targetHwnd, autoSend: (choice = "send") }
+    }
 
-        ; Shared pick step for #!+L / submit [W] / response paste-window keys / #!+p [W].
-        ; Returns { targetHwnd, autoSend } or false if picker or Y/N banner cancelled.
-        PickVisiblePasteTargetAndAutoSend(originHwnd := 0) {
-            if (!originHwnd)
-                try originHwnd := WinGetID("A")
-            targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
-            if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
-                return false
-            choice := PasteWindow_ShowAutoSendOptionsAndWait()
-            if (choice = "cancel" || choice = "")
-                return false
-            return { targetHwnd: targetHwnd, autoSend: (choice = "send") }
-        }
+    ; Shared by menu [W] and #!+L global hotkey.
+    ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
+    ; After pick: banner Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
+    ; If exe+title/url has a saved main field (paste_field_mappings.ini), focus it first.
+    ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
+    ; After paste (+ learn prompt), restores focus to originHwnd (window active before the picker).
+    PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
+        picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
+        if (!picked)
+            return false
+        SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend, originHwnd), -50)
+        return true
+    }
 
-        ; Shared by menu [W] and #!+L global hotkey.
-        ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
-        ; After pick: banner Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
-        ; If exe+title/url has a saved main field (paste_field_mappings.ini), focus it first.
-        ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
-        ; After paste (+ learn prompt), restores focus to originHwnd (window active before the picker).
-        PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
-            if (!originHwnd)
-                try originHwnd := WinGetID("A")
-            picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
-            if (!picked)
-                return false
-            SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend, originHwnd), -50)
-            return true
-        }
+    ; restoreHwnd: window that was active before the picker; restored after paste (+ learn prompt).
+    _FinishDeferredPaste(targetHwnd, onDone, autoSend := false, restoreHwnd := 0) {
+        mappingResult := { hasMapping: false, focused: false }
+        pasteCompleted := false
+        try {
+            if (!WinExist("ahk_id " targetHwnd)) {
+                StandardLoadingBar_Show("❌ Window not found", BANNER_ACCENT_ERROR, {
+                    passive: true,
+                    centerOnHwnd: 0,
+                    passiveBgColor: BANNER_ACCENT_ERROR
+                })
+                PasteWindow_FinishLoadingHold("❌ Window not found", 2000, BANNER_ACCENT_ERROR)
+            } else {
+                StandardLoadingBar_Show("⏳ Activating window...", BANNER_ACCENT_INTERMEDIATE, {
+                    passive: false,
+                    centerOnHwnd: targetHwnd
+                })
 
-        ; restoreHwnd: window that was active before the picker; restored after paste (+ learn prompt).
-        _FinishDeferredPaste(targetHwnd, onDone, autoSend := false, restoreHwnd := 0) {
-            mappingResult := { hasMapping: false, focused: false }
-            pasteCompleted := false
-            try {
-                if (!WinExist("ahk_id " targetHwnd)) {
-                    StandardLoadingBar_Show("❌ Window not found", BANNER_ACCENT_ERROR, {
-                        passive: true,
-                        centerOnHwnd: 0,
-                        passiveBgColor: BANNER_ACCENT_ERROR
-                    })
-                    PasteWindow_FinishLoadingHold("❌ Window not found", 2000, BANNER_ACCENT_ERROR)
-                } else {
-                    StandardLoadingBar_Show("⏳ Activating window...", BANNER_ACCENT_INTERMEDIATE, {
-                        passive: false,
-                        centerOnHwnd: targetHwnd
-                    })
-
-                    try WinActivate("ahk_id " targetHwnd)
-                    if (!WinActive("ahk_id " targetHwnd))
-                        WinWaitActive("ahk_id " targetHwnd, , 0.3)
-                    Sleep 60
-
-                    mappingResult := PasteField_FocusMappedField(targetHwnd)
-                    if (mappingResult.hasMapping) {
-                        StandardLoadingBar_Update("⏳ Focusing main field...", BANNER_ACCENT_INTERMEDIATE)
-                        if (!mappingResult.focused) {
-                            loop 2 {
-                                try WinActivate("ahk_id " targetHwnd)
-                                Sleep 40
-                                mappingResult := PasteField_FocusMappedField(targetHwnd)
-                                if (mappingResult.focused)
-                                    break
-                            }
-                        }
-                    }
-
-                    StandardLoadingBar_Update("⏳ Pasting...", BANNER_ACCENT_INTERMEDIATE)
-                    try WinActivate("ahk_id " targetHwnd)
-                    Sleep 40
-                    Send "^v"
-                    Sleep 120
-                    if (autoSend) {
-                        StandardLoadingBar_Update("⏳ Sending...", BANNER_ACCENT_INTERMEDIATE)
-                        Send "{Enter}"
-                        Sleep 180
-                    }
-                    pasteCompleted := true
-                }
-            } catch {
-                try StandardLoadingBar_Update("❌ Paste failed", BANNER_ACCENT_ERROR)
-                catch {
-                }
-                PasteWindow_FinishLoadingHold("❌ Paste failed", 2000, BANNER_ACCENT_ERROR)
-            }
-
-            if (pasteCompleted) {
-                needsLearn := !mappingResult.hasMapping
-                completion := PasteWindow_CompletionForPasteOutcome(autoSend, needsLearn)
-                PasteWindow_FinishLoadingHold(completion.state, completion.holdMs)
-                ; Capture focused-field signature while target still has focus.
-                if (needsLearn)
-                    PasteField_PromptSaveMainField(targetHwnd)
-                ; Return OS focus to the window that was active before the picker.
-                if (restoreHwnd && restoreHwnd != targetHwnd && WinExist("ahk_id " restoreHwnd)) {
-                    if (autoSend)
-                        Sleep CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS
-                    Handy_RestorePrevWindow(restoreHwnd, targetHwnd)
-                }
-            }
-
-            if (onDone)
-                onDone.Call()
-        }
-
-        ; [W] Pick a visible window, paste OS clipboard (^v), end flow.
-        OnSubmitW(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.CurrentPhase := "PickingVisiblePaste"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            onDone := this._OnSubmitWDone.Bind(this)
-            if (this.PasteClipboardToVisibleWindow(this.OriginHwnd, onDone)) {
-                return
-            }
-            ; Picker cancelled or post-pick Esc — restore submit menu; keep OriginHwnd.
-            this.PromptForGeminiSubmit()
-        }
-
-        _OnSubmitWDone() {
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
-        }
-
-        ; Paste dictated text into the field that is focused now, then end the D2C flow (menu [V]).
-        PasteDictationToActiveWindow() {
-            global g_D2C_DictationSubmitMenuCycleFinished
-
-            this.CurrentPhase := "PastingDictation"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            ; Release modifiers before Ctrl+V so a stuck Alt cannot become Clip Angel's Ctrl+Alt+V.
-            try UtilityShortcuts_ReleaseStuckModifiers()
-            catch {
-            }
-            text := Dictation_WaitForCompletedText(1500)
-            if (text = "") {
-                ShowCenteredOverlay_Utils("❌ Dictation text was not copied", 2000, BANNER_ACCENT_ERROR)
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-                return
-            }
-            try {
-                A_Clipboard := text
-                if !ClipWait(1)
-                    Sleep 50
-            } catch {
-            }
-            Send("^v")
-
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
-        }
-
-        ; Paste at the field that was focused when E was pressed, then Enter (no Gemini).
-        OnSubmitE(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            ; Lock target at keypress time: last text field the user selected before pressing E.
-            targetHwnd := 0
-            try targetHwnd := WinGetID("A")
-
-            this.CurrentPhase := "PastingSendHere"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
                 try WinActivate("ahk_id " targetHwnd)
                 if (!WinActive("ahk_id " targetHwnd))
-                    WinWaitActive("ahk_id " targetHwnd, , 0.2)
-            }
-            Sleep 60
-            Send("^v")
-            Sleep 150
-            Send("{Enter}")
+                    WinWaitActive("ahk_id " targetHwnd, , 0.3)
+                Sleep 60
 
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
-        }
-
-        ; [F] Mark newest Clip Angel clip (dictation) as favorite; no Gemini.
-        OnSubmitF(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-            try {
-                clipRaw := A_Clipboard
-                clip := Trim(clipRaw)
-                if (clip = "" || StrLen(clip) < 10) {
-                    ShowCenteredOverlay_Utils("❌ Nothing to favorite - clipboard empty or too short", 2000,
-                        BANNER_ACCENT_ERROR)
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                MarkLastClipAsFavorite("first", true)
-            } finally {
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; [O] Open Clip Angel (Row 0), then Edit text (F4). Shared with Copy-response [O].
-        OnSubmitO(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            StandardLoadingBar_CloseKeysOverlay()
-            HideDictationIndicator()
-            try {
-                this._OpenClipAngelEditForOrigin(this.OriginHwnd)
-            } finally {
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; Open Clip Angel on newest clip and Edit text (F4) — same path as #!+p [O] / HotkeyCopy_OnClipAngelEdit.
-        _OpenClipAngelEditForOrigin(originHwnd := 0) {
-            if !ClipAngel_TryAcquireAutomationLock()
-                return
-
-            StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
-            try {
-                if (!originHwnd)
-                    try originHwnd := WinGetID("A")
-                originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
-
-                ActivateClipAngelWithFocusCorrection(true, originMon, true)
-                clipHwnd := ClipAngel_MainHwnd()
-                if (!clipHwnd) {
-                    StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
-                    return
-                }
-
-                if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
-                    StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
-                    return
-                }
-
-                StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
-                ClipAngel_LeaveFavoritesFilter(clipHwnd)
-                priorSendLevel := A_SendLevel
-                SendLevel 0
-                SendInput "{Tab}"
-                Sleep 40
-                SendInput "^a"
-                Sleep 40
-                SendInput "^c"
-                try ClipWait(0.3)
-                catch {
-                }
-                SendInput "{F10}"
-                ClipAngel_UiaWaitPreviewFocused(clipHwnd, 150)
-                SendInput "{Up}"
-                Sleep 40
-                SendInput "{F4}"
-                SendLevel priorSendLevel
-
-                StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
-                TryMaximizeWindow(clipHwnd)
-                StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
-            } finally {
-                StandardLoadingBar_Hide(350)
-                ClipAngel_ReleaseAutomationLock()
-            }
-        }
-
-        OnSubmitN(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.DismissSubmitPromptInstantly()
-        }
-
-        ; N / Esc: close the Send dictation? menu immediately (no follow-up banner).
-        DismissSubmitPromptInstantly() {
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
-        }
-
-        ; [M] Prompt for Teams contact, jump to chat, paste dictated text (no Enter).
-        OnSubmitM(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            this.CurrentPhase := "PastingToTeams"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            messageText := A_Clipboard
-            clipSaved := ClipboardAll()
-
-            try {
-                ib := InputBox("Enter a Teams contact name:", "Jump to Chat")
-                contact := Trim(ib.Value)
-                if (ib.Result = "Cancel" || contact = "") {
-                    return
-                }
-
-                if (!TeamsJumpToChat(contact)) {
-                    return
-                }
-
-                hwnd := TeamsJump_ResolveChatHwnd()
-                if (hwnd <= 0 || !TeamsJump_ActivateWindowWithRetry(hwnd, 3, 300)) {
-                    ShowCenteredOverlay_Utils("❌ Could not activate Teams chat.", 2500, BANNER_ACCENT_ERROR)
-                    return
-                }
-                ; Focus composer + paste with verify/retry (replaces blind ^v).
-                TeamsJump_PasteAndVerify(hwnd, messageText)
-            } finally {
-                A_Clipboard := clipSaved
-                if (ClipWait(1)) {
-                }
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; [K] Activate Teams chat, UIA-focus composer, paste dictated text (no contact picker, no Enter).
-        OnSubmitK(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            this.CurrentPhase := "PastingToTeamsComposer"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            messageText := A_Clipboard
-            try {
-                TeamsJump_PasteToComposer(messageText)
-            } finally {
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; [Z] Prompt for WhatsApp contact, jump to chat, paste clipboard (no Enter).
-        ; Self-chat ("eu (" and close typos): 4s banner; Y pastes every format, waits 1s, then Enter.
-        OnSubmitZ(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            this.CurrentPhase := "PastingToWhatsApp"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            clipSaved := ClipboardAll()
-            sentSelf := false
-
-            try {
-                ib := InputBox("Enter a WhatsApp contact name:", "Jump to Chat")
-                contact := Trim(ib.Value)
-                if (ib.Result = "Cancel" || contact = "") {
-                    return
-                }
-
-                ; keepBarVisible so Loading Indication continues through paste.
-                jumped := WhatsAppJumpToChat(contact, true)
-                if (D2C_WhatsAppIsSelfContact(contact)) {
-                    ; Banner even when composer detection failed: the chat can still be open.
-                    WhatsAppJump_HideLoading()
-                    if (!D2C_WhatsAppSelfPaste_Confirm())
-                        return
-                    if (!D2C_WhatsAppPastePayload(clipSaved, true))
-                        return
-                    sentSelf := true
-                    return
-                }
-                if (!jumped)
-                    return
-
-                WhatsAppJump_UpdateLoading("⏳ Pasting message...")
-                if (!D2C_WhatsAppPastePayload(clipSaved, false)) {
-                    WhatsAppJump_HideLoading()
-                    return
-                }
-                StandardLoadingBar_Update("✅ Message ready in WhatsApp")
-                Sleep 400
-            } finally {
-                WhatsAppJump_HideLoading()
-                try A_Clipboard := clipSaved
-                if (ClipWait(1, 1)) {
-                }
-                if (sentSelf)
-                    ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp", 1500, BANNER_ACCENT_SUCCESS)
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; [R] Open Handy History and play the last recording.
-        OnSubmitR(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
-
-            HandyReplay_PlayLastRecording()
-        }
-
-        ; [B] Toggle Parakeet <-> Cohere, re-transcribe newest History entry, copy, re-open menu.
-        OnSubmitB(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            originHwnd := this.OriginHwnd
-            this.CurrentPhase := "Retranscribing"
-
-            try {
-                HandyRetranscribe_ToggleModelAndCopy()
-            } catch {
-                ShowCenteredOverlay_Utils("❌ Model toggle / re-transcribe failed.", 2200, BANNER_ACCENT_ERROR)
-            }
-
-            ; Keep origin for paste/send; do not mark cycle finished — menu continues.
-            this.OriginHwnd := originHwnd
-            this.PromptForGeminiSubmit()
-        }
-
-        ; [P] Open Spotify, Ctrl+K search, paste dictation, Enter, then immerse (play + fullscreen).
-        OnSubmitP(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            this.CurrentPhase := "PlayingOnSpotify"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            messageText := A_Clipboard
-
-            try {
-                SpotifyDictation_PlayFromClipboard(messageText)
-            } finally {
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; [C] New Chrome window, paste dictation into address bar, Enter.
-        OnSubmitC(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            this.CurrentPhase := "OpeningChromeNavigate"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            messageText := A_Clipboard
-
-            try {
-                ChromeDictation_NavigateFromClipboard(messageText)
-            } finally {
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        ; [L] Email note: new mail to both inboxes, dictated text as Subject.
-        OnSubmitL(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-
-            this.CurrentPhase := "CreatingEmailNote"
-            StandardLoadingBar_CloseKeysOverlay()
-            messageText := A_Clipboard
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            try {
-                EmailNote_Create(messageText)
-            } finally {
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-            }
-        }
-
-        OnSubmitTimeout(*) {
-            if (this.CurrentPhase != "PromptingSubmit")
-                return
-            this.CancelFlow(GetGlobalAIProviderLabel() . " submission cancelled")
-        }
-
-        ; --- Phase 2: Submit Execute ---
-
-        ; presetMode: "" = currentd clipboard; "grammar" | "aiopt" | "task_pack" | "finance_daily"
-        ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
-        ; Finance daily / registry presets: attach context files then paste prompt + dictation.
-        ; Finance daily sends only (no wait / download / import); user finishes manually.
-        ExecuteGeminiSubmit(autoSubmit := true, presetMode := "") {
-            this.CurrentPhase := "Submitting"
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            HideDictationIndicator()
-
-            optionalSnippet := ""
-            registryPrompt := false
-            useRegistryPastePath := false
-            contextEntries := []
-            attachCount := 0
-            dictation := ""
-            try dictation := A_Clipboard
-
-            if (presetMode = "finance_daily" || presetMode = "grammar" || presetMode = "aiopt"
-                || presetMode = "task_pack") {
-                PromptData_Load(true)
-                charKey := ""
-                if (presetMode = "finance_daily")
-                    charKey := "d"
-                else if (presetMode = "grammar")
-                    charKey := "1"
-                else if (presetMode = "aiopt")
-                    charKey := "3"
-                else if (presetMode = "task_pack")
-                    charKey := "k"
-                registryPrompt := PromptData_FindByChar(charKey)
-                if (presetMode = "finance_daily" && !IsObject(registryPrompt)) {
-                    ShowCenteredOverlay_Utils("⚠ Finance daily prompt not found (char d)", 2200, BANNER_ACCENT_ERROR)
-                    this.Reset()
-                    return
-                }
-                if (presetMode = "task_pack" && !IsObject(registryPrompt)) {
-                    ShowCenteredOverlay_Utils("⚠ Convert to Task pack prompt not found (char k)", 2200,
-                        BANNER_ACCENT_ERROR
-                    )
-                    this.Reset()
-                    return
-                }
-                presetBody := ""
-                if (IsObject(registryPrompt)) {
-                    presetBody := PromptData_PreparedBodyForSend(registryPrompt)
-                    if (presetBody = "") {
-                        this.Reset()
-                        return
-                    }
-                    useRegistryPastePath := true
-                } else if (presetMode = "grammar") {
-                    presetBody := GetGrammarPromptText()
-                } else if (presetMode = "aiopt") {
-                    presetBody := GetAioptPromptText()
-                }
-                optionalSnippet := D2C_CombinePresetWithDictation(presetBody, dictation)
-            }
-
-            this.CompanionId := ResolveGlobalAICompanion()
-            if (useRegistryPastePath) {
-                resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
-                if (resolved = false) {
-                    this.Reset()
-                    return
-                }
-                contextEntries := resolved.entries
-                attachCount := IsObject(contextEntries) ? contextEntries.Length : 0
-                ; Focus only (no ClipAngel paste). Attach Prompt Manager context, then paste once.
-                if (this.CompanionId = "enterprise") {
-                    GeminiEnterprise_OpenOrFocus()
-                    this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
-                } else if (this.CompanionId = "copilot") {
-                    CopilotWeb_OpenOrFocus()
-                    this.GeminiHwnd := GetCopilotWebWindowHwnd()
-                } else {
-                    SetTitleMatchMode(2)
-                    geminiHwnd := 0
-                    try {
-                        for hwnd in WinGetList("ahk_exe chrome.exe") {
-                            try {
-                                if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
-                                    geminiHwnd := hwnd
-                                    break
-                                }
-                            } catch {
-                            }
+                mappingResult := PasteField_FocusMappedField(targetHwnd)
+                if (mappingResult.hasMapping) {
+                    StandardLoadingBar_Update("⏳ Focusing main field...", BANNER_ACCENT_INTERMEDIATE)
+                    if (!mappingResult.focused) {
+                        loop 2 {
+                            try WinActivate("ahk_id " targetHwnd)
+                            Sleep 40
+                            mappingResult := PasteField_FocusMappedField(targetHwnd)
+                            if (mappingResult.focused)
+                                break
                         }
-                    } catch {
-                    }
-                    if (geminiHwnd) {
-                        WinActivate("ahk_id " geminiHwnd)
-                        WinWaitActive("ahk_id " geminiHwnd, , 2)
-                    } else {
-                        WinActivate("ahk_exe chrome.exe")
-                        WinWaitActive("ahk_exe chrome.exe", , 2)
-                        geminiHwnd := WinExist("A")
-                    }
-                    try {
-                        uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
-                        Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
-                    } catch {
-                    }
-                    this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
-                }
-                if (!this.GeminiHwnd)
-                    this.GeminiHwnd := WinExist("A")
-                if (presetMode = "finance_daily") {
-                    try StandardLoadingBar_Show("⏳ Attaching finance context…", BANNER_ACCENT_INTERMEDIATE, {
-                        passive: false,
-                        centerOnHwnd: this.GeminiHwnd
-                    })
-                    catch {
                     }
                 }
-                UtilitySelector_AttachPromptContextFiles(registryPrompt, contextEntries)
-                if (optionalSnippet != "")
-                    InsertText(optionalSnippet)
-            } else if (this.CompanionId = "enterprise") {
-                this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste(optionalSnippet, false)
-                if (!this.GeminiHwnd)
-                    this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
+
+                StandardLoadingBar_Update("⏳ Pasting...", BANNER_ACCENT_INTERMEDIATE)
+                try WinActivate("ahk_id " targetHwnd)
+                Sleep 40
+                Send "^v"
+                Sleep 120
+                if (autoSend) {
+                    StandardLoadingBar_Update("⏳ Sending...", BANNER_ACCENT_INTERMEDIATE)
+                    Send "{Enter}"
+                    Sleep 180
+                }
+                pasteCompleted := true
+            }
+        } catch {
+            try StandardLoadingBar_Update("❌ Paste failed", BANNER_ACCENT_ERROR)
+            catch {
+            }
+            PasteWindow_FinishLoadingHold("❌ Paste failed", 2000, BANNER_ACCENT_ERROR)
+        }
+
+        if (pasteCompleted) {
+            needsLearn := !mappingResult.hasMapping
+            completion := PasteWindow_CompletionForPasteOutcome(autoSend, needsLearn)
+            PasteWindow_FinishLoadingHold(completion.state, completion.holdMs)
+            ; Capture focused-field signature while target still has focus.
+            if (needsLearn)
+                PasteField_PromptSaveMainField(targetHwnd)
+            ; Return OS focus to the window that was active before the picker.
+            if (restoreHwnd && restoreHwnd != targetHwnd && WinExist("ahk_id " restoreHwnd)) {
+                if (autoSend)
+                    Sleep CURSOR_TRANSFER_POST_ENTER_BEFORE_RESTORE_MS
+                Handy_RestorePrevWindow(restoreHwnd, targetHwnd)
+            }
+        }
+
+        if (onDone)
+            onDone.Call()
+    }
+
+    ; [W] Pick a visible window, paste OS clipboard (^v), end flow.
+    OnSubmitW(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.CurrentPhase := "PickingVisiblePaste"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        onDone := this._OnSubmitWDone.Bind(this)
+        if (this.PasteClipboardToVisibleWindow(this.OriginHwnd, onDone)) {
+            return
+        }
+        ; Picker cancelled or post-pick Esc — restore submit menu; keep OriginHwnd.
+        this.PromptForGeminiSubmit()
+    }
+
+    _OnSubmitWDone() {
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+    }
+
+    ; Paste dictated text into the field that is focused now, then end the D2C flow (menu [V]).
+    PasteDictationToActiveWindow() {
+        global g_D2C_DictationSubmitMenuCycleFinished
+
+        this.CurrentPhase := "PastingDictation"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        ; Release modifiers before Ctrl+V so a stuck Alt cannot become Clip Angel's Ctrl+Alt+V.
+        try UtilityShortcuts_ReleaseStuckModifiers()
+        catch {
+        }
+        text := Dictation_WaitForCompletedText(1500)
+        if (text = "") {
+            ShowCenteredOverlay_Utils("❌ Dictation text was not copied", 2000, BANNER_ACCENT_ERROR)
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+            return
+        }
+        try {
+            A_Clipboard := text
+            if !ClipWait(1)
+                Sleep 50
+        } catch {
+        }
+        Send("^v")
+
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+    }
+
+    ; Paste at the field that was focused when E was pressed, then Enter (no Gemini).
+    OnSubmitE(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        ; Lock target at keypress time: last text field the user selected before pressing E.
+        targetHwnd := 0
+        try targetHwnd := WinGetID("A")
+
+        this.CurrentPhase := "PastingSendHere"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
+            try WinActivate("ahk_id " targetHwnd)
+            if (!WinActive("ahk_id " targetHwnd))
+                WinWaitActive("ahk_id " targetHwnd, , 0.2)
+        }
+        Sleep 60
+        Send("^v")
+        Sleep 150
+        Send("{Enter}")
+
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+    }
+
+    ; [F] Mark newest Clip Angel clip (dictation) as favorite; no Gemini.
+    OnSubmitF(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+        try {
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Nothing to favorite - clipboard empty or too short", 2000,
+                    BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            MarkLastClipAsFavorite("first", true)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [O] Open Clip Angel (Row 0), then Edit text (F4). Shared with Copy-response [O].
+    OnSubmitO(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        StandardLoadingBar_CloseKeysOverlay()
+        HideDictationIndicator()
+        try {
+            this._OpenClipAngelEditForOrigin(this.OriginHwnd)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; Open Clip Angel on newest clip and Edit text (F4) — same path as #!+p [O] / HotkeyCopy_OnClipAngelEdit.
+    _OpenClipAngelEditForOrigin(originHwnd := 0) {
+        if !ClipAngel_TryAcquireAutomationLock()
+            return
+
+        StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
+        try {
+            if (!originHwnd)
+                try originHwnd := WinGetID("A")
+            originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
+
+            ActivateClipAngelWithFocusCorrection(true, originMon, true)
+            clipHwnd := ClipAngel_MainHwnd()
+            if (!clipHwnd) {
+                StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
+                return
+            }
+
+            if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
+                StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
+                return
+            }
+
+            StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
+            ClipAngel_LeaveFavoritesFilter(clipHwnd)
+            priorSendLevel := A_SendLevel
+            SendLevel 0
+            SendInput "{Tab}"
+            Sleep 40
+            SendInput "^a"
+            Sleep 40
+            SendInput "^c"
+            try ClipWait(0.3)
+            catch {
+            }
+            SendInput "{F10}"
+            ClipAngel_UiaWaitPreviewFocused(clipHwnd, 150)
+            SendInput "{Up}"
+            Sleep 40
+            SendInput "{F4}"
+            SendLevel priorSendLevel
+
+            StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
+            TryMaximizeWindow(clipHwnd)
+            StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
+        } finally {
+            StandardLoadingBar_Hide(350)
+            ClipAngel_ReleaseAutomationLock()
+        }
+    }
+
+    OnSubmitN(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.DismissSubmitPromptInstantly()
+    }
+
+    ; N / Esc: close the Send dictation? menu immediately (no follow-up banner).
+    DismissSubmitPromptInstantly() {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+    }
+
+    ; [M] Prompt for Teams contact, jump to chat, paste dictated text (no Enter).
+    OnSubmitM(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PastingToTeams"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+        clipSaved := ClipboardAll()
+
+        try {
+            ib := InputBox("Enter a Teams contact name:", "Jump to Chat")
+            contact := Trim(ib.Value)
+            if (ib.Result = "Cancel" || contact = "") {
+                return
+            }
+
+            if (!TeamsJumpToChat(contact)) {
+                return
+            }
+
+            hwnd := TeamsJump_ResolveChatHwnd()
+            if (hwnd <= 0 || !TeamsJump_ActivateWindowWithRetry(hwnd, 3, 300)) {
+                ShowCenteredOverlay_Utils("❌ Could not activate Teams chat.", 2500, BANNER_ACCENT_ERROR)
+                return
+            }
+            ; Focus composer + paste with verify/retry (replaces blind ^v).
+            TeamsJump_PasteAndVerify(hwnd, messageText)
+        } finally {
+            A_Clipboard := clipSaved
+            if (ClipWait(1)) {
+            }
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [K] Activate Teams chat, UIA-focus composer, paste dictated text (no contact picker, no Enter).
+    OnSubmitK(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PastingToTeamsComposer"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+        try {
+            TeamsJump_PasteToComposer(messageText)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [Z] Prompt for WhatsApp contact, jump to chat, paste clipboard (no Enter).
+    ; Self-chat ("eu (" and close typos): 4s banner; Y pastes every format, waits 1s, then Enter.
+    OnSubmitZ(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PastingToWhatsApp"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        clipSaved := ClipboardAll()
+        sentSelf := false
+
+        try {
+            ib := InputBox("Enter a WhatsApp contact name:", "Jump to Chat")
+            contact := Trim(ib.Value)
+            if (ib.Result = "Cancel" || contact = "") {
+                return
+            }
+
+            ; keepBarVisible so Loading Indication continues through paste.
+            jumped := WhatsAppJumpToChat(contact, true)
+            if (D2C_WhatsAppIsSelfContact(contact)) {
+                ; Banner even when composer detection failed: the chat can still be open.
+                WhatsAppJump_HideLoading()
+                if (!D2C_WhatsAppSelfPaste_Confirm())
+                    return
+                if (!D2C_WhatsAppPastePayload(clipSaved, true))
+                    return
+                sentSelf := true
+                return
+            }
+            if (!jumped)
+                return
+
+            WhatsAppJump_UpdateLoading("⏳ Pasting message...")
+            if (!D2C_WhatsAppPastePayload(clipSaved, false)) {
+                WhatsAppJump_HideLoading()
+                return
+            }
+            StandardLoadingBar_Update("✅ Message ready in WhatsApp")
+            Sleep 400
+        } finally {
+            WhatsAppJump_HideLoading()
+            try A_Clipboard := clipSaved
+            if (ClipWait(1, 1)) {
+            }
+            if (sentSelf)
+                ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp", 1500, BANNER_ACCENT_SUCCESS)
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [R] Open Handy History and play the last recording.
+    OnSubmitR(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+
+        HandyReplay_PlayLastRecording()
+    }
+
+    ; [B] Toggle Parakeet <-> Cohere, re-transcribe newest History entry, copy, re-open menu.
+    OnSubmitB(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        originHwnd := this.OriginHwnd
+        this.CurrentPhase := "Retranscribing"
+
+        try {
+            HandyRetranscribe_ToggleModelAndCopy()
+        } catch {
+            ShowCenteredOverlay_Utils("❌ Model toggle / re-transcribe failed.", 2200, BANNER_ACCENT_ERROR)
+        }
+
+        ; Keep origin for paste/send; do not mark cycle finished — menu continues.
+        this.OriginHwnd := originHwnd
+        this.PromptForGeminiSubmit()
+    }
+
+    ; [P] Open Spotify, Ctrl+K search, paste dictation, Enter, then immerse (play + fullscreen).
+    OnSubmitP(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PlayingOnSpotify"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+
+        try {
+            SpotifyDictation_PlayFromClipboard(messageText)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [C] New Chrome window, paste dictation into address bar, Enter.
+    OnSubmitC(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "OpeningChromeNavigate"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+
+        try {
+            ChromeDictation_NavigateFromClipboard(messageText)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [L] Email note: new mail to both inboxes, dictated text as Subject.
+    OnSubmitL(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "CreatingEmailNote"
+        StandardLoadingBar_CloseKeysOverlay()
+        messageText := A_Clipboard
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        try {
+            EmailNote_Create(messageText)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    OnSubmitTimeout(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.CancelFlow(GetGlobalAIProviderLabel() . " submission cancelled")
+    }
+
+    ; --- Phase 2: Submit Execute ---
+
+    ; presetMode: "" = currentd clipboard; "grammar" | "aiopt" | "task_pack" | "finance_daily"
+    ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
+    ; Finance daily / registry presets: attach context files then paste prompt + dictation.
+    ; Finance daily sends only (no wait / download / import); user finishes manually.
+    ExecuteGeminiSubmit(autoSubmit := true, presetMode := "") {
+        this.CurrentPhase := "Submitting"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        optionalSnippet := ""
+        registryPrompt := false
+        useRegistryPastePath := false
+        contextEntries := []
+        attachCount := 0
+        dictation := ""
+        try dictation := A_Clipboard
+
+        if (presetMode = "finance_daily" || presetMode = "grammar" || presetMode = "aiopt"
+            || presetMode = "task_pack") {
+            PromptData_Load(true)
+            charKey := ""
+            if (presetMode = "finance_daily")
+                charKey := "d"
+            else if (presetMode = "grammar")
+                charKey := "1"
+            else if (presetMode = "aiopt")
+                charKey := "3"
+            else if (presetMode = "task_pack")
+                charKey := "k"
+            registryPrompt := PromptData_FindByChar(charKey)
+            if (presetMode = "finance_daily" && !IsObject(registryPrompt)) {
+                ShowCenteredOverlay_Utils("⚠ Finance daily prompt not found (char d)", 2200, BANNER_ACCENT_ERROR)
+                this.Reset()
+                return
+            }
+            if (presetMode = "task_pack" && !IsObject(registryPrompt)) {
+                ShowCenteredOverlay_Utils("⚠ Convert to Task pack prompt not found (char k)", 2200, BANNER_ACCENT_ERROR
+                )
+                this.Reset()
+                return
+            }
+            presetBody := ""
+            if (IsObject(registryPrompt)) {
+                presetBody := PromptData_PreparedBodyForSend(registryPrompt)
+                if (presetBody = "") {
+                    this.Reset()
+                    return
+                }
+                useRegistryPastePath := true
+            } else if (presetMode = "grammar") {
+                presetBody := GetGrammarPromptText()
+            } else if (presetMode = "aiopt") {
+                presetBody := GetAioptPromptText()
+            }
+            optionalSnippet := D2C_CombinePresetWithDictation(presetBody, dictation)
+        }
+
+        this.CompanionId := ResolveGlobalAICompanion()
+        if (useRegistryPastePath) {
+            resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
+            if (resolved = false) {
+                this.Reset()
+                return
+            }
+            contextEntries := resolved.entries
+            attachCount := IsObject(contextEntries) ? contextEntries.Length : 0
+            ; Focus only (no ClipAngel paste). Attach Prompt Manager context, then paste once.
+            if (this.CompanionId = "enterprise") {
+                GeminiEnterprise_OpenOrFocus()
+                this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
             } else if (this.CompanionId = "copilot") {
-                this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste(optionalSnippet, false)
-                if (!this.GeminiHwnd)
-                    this.GeminiHwnd := GetCopilotWebWindowHwnd()
+                CopilotWeb_OpenOrFocus()
+                this.GeminiHwnd := GetCopilotWebWindowHwnd()
             } else {
-                if (optionalSnippet != "")
-                    geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
-                else
-                    geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+                SetTitleMatchMode(2)
+                geminiHwnd := 0
+                try {
+                    for hwnd in WinGetList("ahk_exe chrome.exe") {
+                        try {
+                            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
+                                geminiHwnd := hwnd
+                                break
+                            }
+                        } catch {
+                        }
+                    }
+                } catch {
+                }
+                if (geminiHwnd) {
+                    WinActivate("ahk_id " geminiHwnd)
+                    WinWaitActive("ahk_id " geminiHwnd, , 2)
+                } else {
+                    WinActivate("ahk_exe chrome.exe")
+                    WinWaitActive("ahk_exe chrome.exe", , 2)
+                    geminiHwnd := WinExist("A")
+                }
+                try {
+                    uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
+                    Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+                } catch {
+                }
                 this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
             }
-
-            if (autoSubmit) {
-                ; Shared Prompt Manager path for all companions (upload idle / chips / Send / confirm).
-                ; Consumer Gemini without registry attaches keeps the classic content+submit helper.
-                ; Completion watches start only after ConfirmAfterEnter returns working.
-                if (this.CompanionId = "enterprise" || this.CompanionId = "copilot"
-                    || (useRegistryPastePath && attachCount > 0))
-                    submitted := PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
-                else
-                    submitted := Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
-                if (!submitted) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    this.Reset()
-                    return
-                }
-                if (presetMode = "finance_daily" || presetMode = "task_pack") {
-                    ; Send only. Download or copy the pack yourself, then import from
-                    ; Import Management. A failed import still sends the AI fix.
-                    ; Drop the response watch so it does not copy the reply.
-                    AiCompanion_DisarmResponseWatch()
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    global g_D2C_DictationSubmitMenuCycleFinished
-                    g_D2C_DictationSubmitMenuCycleFinished := true
-                    this.Reset()
-                    return
-                }
-                this.StartGeminiMonitor()
-            }
-
-            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                WinActivate("ahk_id " this.OriginHwnd)
-
-            if (!autoSubmit)
-                this.Reset()
-        }
-
-        ; --- Phase 3: Monitor ---
-
-        StartGeminiMonitor() {
-            ; A catalog Send click may already be watching this hwnd. Do not reset that timer.
-            if (this.CurrentPhase = "Monitoring" && this.GeminiHwnd && this.MonitorTimer != "")
-                return
-            this.CurrentPhase := "Monitoring"
-            this.MonitorRetryCount := 0
-            this.MonitorButtonEverFound := false
-            this.MonitorInitialTitle := ""
-            try {
-                if (this.GeminiHwnd && WinExist("ahk_id " this.GeminiHwnd))
-                    this.MonitorInitialTitle := WinGetTitle("ahk_id " this.GeminiHwnd)
-            } catch {
-            }
-            this.MonitorTimer := this.CheckGeminiCompletion.Bind(this)
-            SetTimer(this.MonitorTimer, 500)
-        }
-
-        IsCompanionTabSwitched(companion := "") {
-            if (!this.GeminiHwnd || !DllCall("IsWindow", "ptr", this.GeminiHwnd) || !WinExist("ahk_id " this.GeminiHwnd
-            ))
-                return true
-            currentTitle := ""
-            try currentTitle := WinGetTitle("ahk_id " this.GeminiHwnd)
-            catch
-                return true
-            if (currentTitle = "")
-                return true
-            if (companion = "")
-                companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-            if (!D2C_CompanionTitleMatches(currentTitle, companion))
-                return true
-            if (this.MonitorInitialTitle != "" && currentTitle != this.MonitorInitialTitle) {
-                if (D2C_IsGenericCompanionTitle(this.MonitorInitialTitle, companion))
-                    this.MonitorInitialTitle := currentTitle
-                else
-                    return true
-            } else if (this.MonitorInitialTitle = "") {
-                this.MonitorInitialTitle := currentTitle
-            }
-            return false
-        }
-
-        CheckGeminiCompletion() {
-            delta := this.MonitorLastCheckTick ? (A_TickCount - this.MonitorLastCheckTick) : -1
-            this.MonitorLastCheckTick := A_TickCount
-            if (this.CurrentPhase != "Monitoring") {
-                SetTimer(this.MonitorTimer, 0)
-                return
-            }
-
-            companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-
-            ; If user switched tabs on Chrome or navigated away, deliberately cancel the flow
-            ; without showing the "Response ready" banner. Fast title-only check (<10µs, no UIA).
-            if (this.IsCompanionTabSwitched(companion)) {
-                SetTimer(this.MonitorTimer, 0)
-                this.Reset()
-                return
-            }
-
-            this.MonitorRetryCount++
-            if (this.MonitorRetryCount > this.MonitorMaxRetries) {
-                SetTimer(this.MonitorTimer, 0)
-                this.Reset()
-                return
-            }
-
-            if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
-                this.MonitorButtonEverFound := true
-                return
-            }
-
-            if (this.MonitorButtonEverFound) {
-                ; Suspend timer to prevent re-entrancy during the 800ms Sleep block
-                SetTimer(this.MonitorTimer, 0)
-
-                isTrulyGone := true
-                loop 4 {
-                    Sleep 200
-                    if (this.IsCompanionTabSwitched(companion)) {
-                        this.Reset()
-                        return
-                    }
-                    if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
-                        isTrulyGone := false
-                        break
-                    }
-                }
-
-                if (isTrulyGone) {
-                    if (this.IsCompanionTabSwitched(companion)) {
-                        this.Reset()
-                        return
-                    }
-                    ; Timer is already stopped, proceed to next phase
-                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
-                    catch {
-                        ; Ignore chime failures
-                    }
-                    if (this.ShowReplyHereAfterSend) {
-                        ; Reuse [H] Here on the response menu: copy, restore origin, show banner.
-                        this.CurrentPhase := "PromptingAction"
-                        this.OnActionH()
-                    } else
-                        this.PromptForResponseAction()
-                } else {
-                    ; False alarm, the button is still there. Resume polling.
-                    SetTimer(this.MonitorTimer, 500)
+            if (!this.GeminiHwnd)
+                this.GeminiHwnd := WinExist("A")
+            if (presetMode = "finance_daily") {
+                try StandardLoadingBar_Show("⏳ Attaching finance context…", BANNER_ACCENT_INTERMEDIATE, {
+                    passive: false,
+                    centerOnHwnd: this.GeminiHwnd
+                })
+                catch {
                 }
             }
-        }
-
-        ; --- Phase 4: Action Prompt ---
-
-        PromptForResponseAction() {
-            ; Prevent duplicate banner spawns from timer re-entrancy
-            if (this.CurrentPhase = "PromptingAction") {
-                return
-            }
-            companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-            if (this.IsCompanionTabSwitched(companion)) {
-                this.Reset()
-                return
-            }
-            this.CurrentPhase := "PromptingAction"
-            ; Same destinations as #!+p. [D] Display shows the reply (same reader as #!+p [D]).
-            ; [H] Here stays: Send dictation's [H] skips this menu and lands on the same reader.
-            ; [D] on the earlier Send dictation menu is Finance daily; this menu is a different prompt.
-            ; [H] Here stays: Send dictation's [D] and [H] skip this menu and land on the same reader.
-            ; Send dictation now uses [I] for Finance daily.
-            ; Paste-window keys: pick target immediately → copy reply → paste (same as #!+p [W]).
-            ; To add another letter with this identical workflow, append it to pasteWindowKeys and
-            ; include it in the pk strip below.
-            pasteWindowKeys := ["W"]
-            keyCallbacks := Map(
-                "P", this.OnActionP.Bind(this),
-                "D", this.OnActionH.Bind(this),
-                "H", this.OnActionH.Bind(this),
-                "Y", this.OnActionY.Bind(this),
-                "F", this.OnActionF.Bind(this),
-                "I", this.OnActionI.Bind(this),
-                "O", this.OnActionO.Bind(this),
-                "N", this.OnActionN.Bind(this),
-                "Escape", this.OnActionN.Bind(this)
-            )
-            for k in pasteWindowKeys
-                keyCallbacks[k] := this.OnActionPasteWindow.Bind(this)
-            if (companion != "enterprise")
-                keyCallbacks["R"] := this.OnActionR.Bind(this)
-            if (companion = "enterprise")
-                pk :=
-                    "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
+            UtilitySelector_AttachPromptContextFiles(registryPrompt, contextEntries)
+            if (optionalSnippet != "")
+                InsertText(optionalSnippet)
+        } else if (this.CompanionId = "enterprise") {
+            this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste(optionalSnippet, false)
+            if (!this.GeminiHwnd)
+                this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
+        } else if (this.CompanionId = "copilot") {
+            this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste(optionalSnippet, false)
+            if (!this.GeminiHwnd)
+                this.GeminiHwnd := GetCopilotWebWindowHwnd()
+        } else {
+            if (optionalSnippet != "")
+                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
             else
-                pk :=
-                    "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [I] Import  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
-            StandardLoadingBar_ShowWithKeys(
-                "❓ Response ready — what next? (5s)",
-                keyCallbacks,
-                D2C_SUBMIT_MENU_TIMEOUT_MS,
-                0,
-                this.OnActionTimeout.Bind(this),
-                BANNER_ACCENT_INTERMEDIATE, 900, 17, "", true,
-                pk,
-                true,
-                true
-            )
+                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+            this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
         }
 
-        ; [Y] Copy reply then export last Clip Angel clip to Desktop (same as #!+p [Y]).
-        OnActionY(*) {
-            if (this.CurrentPhase != "PromptingAction")
-                return
-            this.CleanupActionPrompt()
-            try {
-                if (!this.DoCopyCore(false, false)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                clipRaw := A_Clipboard
-                clip := Trim(clipRaw)
-                if (clip = "" || StrLen(clip) < 10) {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                ClipAngel_WaitForClipboardIngest()
-                ClipAngel_ExportLastClipToDesktop()
-            } finally {
+        if (autoSubmit) {
+            ; Shared Prompt Manager path for all companions (upload idle / chips / Send / confirm).
+            ; Consumer Gemini without registry attaches keeps the classic content+submit helper.
+            ; Completion watches start only after ConfirmAfterEnter returns working.
+            if (this.CompanionId = "enterprise" || this.CompanionId = "copilot"
+                || (useRegistryPastePath && attachCount > 0))
+                submitted := PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
+            else
+                submitted := Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
+            if (!submitted) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
                 this.Reset()
+                return
             }
-        }
-
-        OnActionR(*) {
-            if (this.CurrentPhase != "PromptingAction")
-                return
-            this.ExecuteAction(true, false)
-        }
-
-        ; [P] Copy reply to clipboard only (same as #!+p [P]).
-        OnActionP(*) {
-            if (this.CurrentPhase != "PromptingAction")
-                return
-            this.CleanupActionPrompt()
-            try {
-                if (!this.DoCopyCore(false, false)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                ShowCenteredOverlay_Utils("✅ Copied", 800, BANNER_ACCENT_SUCCESS)
-            } finally {
+            if (presetMode = "finance_daily" || presetMode = "task_pack") {
+                ; Send only. Download or copy the pack yourself, then import from
+                ; Import Management. A failed import still sends the AI fix.
+                ; Drop the response watch so it does not copy the reply.
+                AiCompanion_DisarmResponseWatch()
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                global g_D2C_DictationSubmitMenuCycleFinished
+                g_D2C_DictationSubmitMenuCycleFinished := true
                 this.Reset()
-            }
-        }
-
-        ; [D] Display and [H] Here: copy reply, restore OriginHwnd, show the reading pane (same as #!+p [D]).
-        ; [H] remains so Send dictation's [H] Here, which skips this menu, still opens that pane.
-        OnActionH(*) {
-            if (this.CurrentPhase != "PromptingAction")
                 return
-            ; Prompt monitor first. Reset() below clears OriginHwnd, and the copy focuses the companion.
-            place := ShowCopiedResponse_CapturePromptWorkArea()
-            origin := this.OriginHwnd
-            this.CleanupActionPrompt()
-            bannerText := ""
-            showBanner := false
-            try {
-                if (!this.DoCopyCore(false, false)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                bannerText := A_Clipboard
-                clip := Trim(bannerText)
-                if (clip = "" || StrLen(clip) < 10) {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                showBanner := true
-            } finally {
-                this.Reset()
             }
-            ; Defer past KeyWrapper's post-callback CloseKeysOverlay (same pattern as #!+8 SetTimer).
-            if (showBanner) {
-                bt := bannerText
-                anchor := IsObject(place) ? place : origin
-                SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
-            }
+            this.StartGeminiMonitor()
         }
 
-        ; [I] Copy reply, then run Import Management on that clipboard (same as #!+p [I]).
-        OnActionI(*) {
-            if (this.CurrentPhase != "PromptingAction")
-                return
-            this.CleanupActionPrompt()
-            try {
-                if (!this.DoCopyCore(false, false)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                clip := Trim(A_Clipboard)
-                if (clip = "" || StrLen(clip) < 10) {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                ImportMgmt_RunClassifiedClipboard()
-            } catch as e {
-                ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
-                BANNER_ACCENT_ERROR)
-            } finally {
-                this.Reset()
-            }
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+            WinActivate("ahk_id " this.OriginHwnd)
+
+        if (!autoSubmit)
+            this.Reset()
+    }
+
+    ; --- Phase 3: Monitor ---
+
+    StartGeminiMonitor() {
+        ; A catalog Send click may already be watching this hwnd. Do not reset that timer.
+        if (this.CurrentPhase = "Monitoring" && this.GeminiHwnd && this.MonitorTimer != "")
+            return
+        this.CurrentPhase := "Monitoring"
+        this.MonitorRetryCount := 0
+        this.MonitorButtonEverFound := false
+        this.MonitorInitialTitle := ""
+        try {
+            if (this.GeminiHwnd && WinExist("ahk_id " this.GeminiHwnd))
+                this.MonitorInitialTitle := WinGetTitle("ahk_id " this.GeminiHwnd)
+        } catch {
+        }
+        this.MonitorTimer := this.CheckGeminiCompletion.Bind(this)
+        SetTimer(this.MonitorTimer, 500)
+    }
+
+    IsCompanionTabSwitched(companion := "") {
+        if (!this.GeminiHwnd || !DllCall("IsWindow", "ptr", this.GeminiHwnd) || !WinExist("ahk_id " this.GeminiHwnd))
+            return true
+        currentTitle := ""
+        try currentTitle := WinGetTitle("ahk_id " this.GeminiHwnd)
+        catch
+            return true
+        if (currentTitle = "")
+            return true
+        if (companion = "")
+            companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        if (!D2C_CompanionTitleMatches(currentTitle, companion))
+            return true
+        if (this.MonitorInitialTitle != "" && currentTitle != this.MonitorInitialTitle) {
+            if (D2C_IsGenericCompanionTitle(this.MonitorInitialTitle, companion))
+                this.MonitorInitialTitle := currentTitle
+            else
+                return true
+        } else if (this.MonitorInitialTitle = "") {
+            this.MonitorInitialTitle := currentTitle
+        }
+        return false
+    }
+
+    CheckGeminiCompletion() {
+        delta := this.MonitorLastCheckTick ? (A_TickCount - this.MonitorLastCheckTick) : -1
+        this.MonitorLastCheckTick := A_TickCount
+        if (this.CurrentPhase != "Monitoring") {
+            SetTimer(this.MonitorTimer, 0)
+            return
         }
 
-        ; [F] Copy reply, then mark newest Clip Angel clip as favorite (same as #!+p [F]).
-        OnActionF(*) {
-            if (this.CurrentPhase != "PromptingAction")
-                return
-            this.CleanupActionPrompt()
-            try {
-                if (!this.DoCopyCore(false, false)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                clipRaw := A_Clipboard
-                clip := Trim(clipRaw)
-                if (clip = "" || StrLen(clip) < 10) {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                MarkLastClipAsFavorite("first", true)
-            } finally {
-                this.Reset()
-            }
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+
+        ; If user switched tabs on Chrome or navigated away, deliberately cancel the flow
+        ; without showing the "Response ready" banner. Fast title-only check (<10µs, no UIA).
+        if (this.IsCompanionTabSwitched(companion)) {
+            SetTimer(this.MonitorTimer, 0)
+            this.Reset()
+            return
         }
 
-        ; [W] (and any pasteWindowKeys entry): pick window first, then copy reply, then paste.
-        ; Matches #!+p [W] (HotkeyCopy_WRunPickerThenCopy) — continuous pick → copy → paste flow.
-        OnActionW(*) {
-            this.OnActionPasteWindow()
+        this.MonitorRetryCount++
+        if (this.MonitorRetryCount > this.MonitorMaxRetries) {
+            SetTimer(this.MonitorTimer, 0)
+            this.Reset()
+            return
         }
 
-        OnActionPasteWindow(*) {
-            if (this.CurrentPhase != "PromptingAction")
-                return
-            this.CleanupActionPrompt()
-            this.CurrentPhase := "PickingVisiblePaste"
-            originHwnd := this.OriginHwnd
-            try {
-                picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
-                if (!picked) {
-                    if (originHwnd && WinExist("ahk_id " originHwnd))
-                        WinActivate("ahk_id " originHwnd)
+        if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
+            this.MonitorButtonEverFound := true
+            return
+        }
+
+        if (this.MonitorButtonEverFound) {
+            ; Suspend timer to prevent re-entrancy during the 800ms Sleep block
+            SetTimer(this.MonitorTimer, 0)
+
+            isTrulyGone := true
+            loop 4 {
+                Sleep 200
+                if (this.IsCompanionTabSwitched(companion)) {
                     this.Reset()
                     return
                 }
+                if (D2C_CompanionHasStop(this.GeminiHwnd, companion)) {
+                    isTrulyGone := false
+                    break
+                }
+            }
 
-                StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
-                if (!this.DoCopyCore(false, true)) {
-                    try StandardLoadingBar_Hide(0)
-                    catch {
-                    }
-                    if (originHwnd && WinExist("ahk_id " originHwnd))
-                        WinActivate("ahk_id " originHwnd)
+            if (isTrulyGone) {
+                if (this.IsCompanionTabSwitched(companion)) {
                     this.Reset()
                     return
                 }
-                clipRaw := A_Clipboard
-                clip := Trim(clipRaw)
-                if (clip = "" || StrLen(clip) < 10) {
-                    try StandardLoadingBar_Hide(0)
-                    catch {
-                    }
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                    if (originHwnd && WinExist("ahk_id " originHwnd))
-                        WinActivate("ahk_id " originHwnd)
-                    this.Reset()
-                    return
+                ; Timer is already stopped, proceed to next phase
+                try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
+                catch {
+                    ; Ignore chime failures
                 }
-                try A_Clipboard := clipRaw
+                if (this.ShowReplyHereAfterSend) {
+                    ; Reuse [H] Here on the response menu: copy, restore origin, show banner.
+                    this.CurrentPhase := "PromptingAction"
+                    this.OnActionH()
+                } else
+                    this.PromptForResponseAction()
+            } else {
+                ; False alarm, the button is still there. Resume polling.
+                SetTimer(this.MonitorTimer, 500)
+            }
+        }
+    }
+
+    ; --- Phase 4: Action Prompt ---
+
+    PromptForResponseAction() {
+        ; Prevent duplicate banner spawns from timer re-entrancy
+        if (this.CurrentPhase = "PromptingAction") {
+            return
+        }
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        if (this.IsCompanionTabSwitched(companion)) {
+            this.Reset()
+            return
+        }
+        this.CurrentPhase := "PromptingAction"
+        ; Same destinations as #!+p. [D] Display shows the reply (same reader as #!+p [D]).
+        ; [H] Here stays: Send dictation's [D] and [H] skip this menu and land on the same reader.
+        ; Send dictation now uses [I] for Finance daily.
+        ; Paste-window keys: pick target immediately → copy reply → paste (same as #!+p [W]).
+        ; To add another letter with this identical workflow, append it to pasteWindowKeys and
+        ; include it in the pk strip below.
+        pasteWindowKeys := ["W"]
+        keyCallbacks := Map(
+            "P", this.OnActionP.Bind(this),
+            "D", this.OnActionH.Bind(this),
+            "H", this.OnActionH.Bind(this),
+            "Y", this.OnActionY.Bind(this),
+            "F", this.OnActionF.Bind(this),
+            "I", this.OnActionI.Bind(this),
+            "O", this.OnActionO.Bind(this),
+            "N", this.OnActionN.Bind(this),
+            "Escape", this.OnActionN.Bind(this)
+        )
+        for k in pasteWindowKeys
+            keyCallbacks[k] := this.OnActionPasteWindow.Bind(this)
+        if (companion != "enterprise")
+            keyCallbacks["R"] := this.OnActionR.Bind(this)
+        if (companion = "enterprise")
+            pk :=
+                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
+        else
+            pk :=
+                "[P] Copy  [D] Display  [H] Here  [Y] Desktop  [F] Favorite  [I] Import  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+        StandardLoadingBar_ShowWithKeys(
+            "❓ Response ready — what next? (5s)",
+            keyCallbacks,
+            D2C_SUBMIT_MENU_TIMEOUT_MS,
+            0,
+            this.OnActionTimeout.Bind(this),
+            BANNER_ACCENT_INTERMEDIATE, 900, 17, "", true,
+            pk,
+            true,
+            true
+        )
+    }
+
+    ; [Y] Copy reply then export last Clip Angel clip to Desktop (same as #!+p [Y]).
+    OnActionY(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            ClipAngel_WaitForClipboardIngest()
+            ClipAngel_ExportLastClipToDesktop()
+        } finally {
+            this.Reset()
+        }
+    }
+
+    OnActionR(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.ExecuteAction(true, false)
+    }
+
+    ; [P] Copy reply to clipboard only (same as #!+p [P]).
+    OnActionP(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            ShowCenteredOverlay_Utils("✅ Copied", 800, BANNER_ACCENT_SUCCESS)
+        } finally {
+            this.Reset()
+        }
+    }
+
+    ; [D] Display and [H] Here: copy reply, restore OriginHwnd, show the reading pane (same as #!+p [D]).
+    ; [H] remains so Send dictation's [H] Here, which skips this menu, still opens that pane.
+    OnActionH(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        ; Prompt monitor first. Reset() below clears OriginHwnd, and the copy focuses the companion.
+        place := ShowCopiedResponse_CapturePromptWorkArea()
+        origin := this.OriginHwnd
+        this.CleanupActionPrompt()
+        bannerText := ""
+        showBanner := false
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            bannerText := A_Clipboard
+            clip := Trim(bannerText)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            showBanner := true
+        } finally {
+            this.Reset()
+        }
+        ; Defer past KeyWrapper's post-callback CloseKeysOverlay (same pattern as #!+8 SetTimer).
+        if (showBanner) {
+            bt := bannerText
+            anchor := IsObject(place) ? place : origin
+            SetTimer((*) => ShowCopiedResponseBanner(bt, anchor), -1)
+        }
+    }
+
+    ; [I] Copy reply, then run Import Management on that clipboard (same as #!+p [I]).
+    OnActionI(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            clip := Trim(A_Clipboard)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            ImportMgmt_RunClassifiedClipboard()
+        } catch as e {
+            ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
+            BANNER_ACCENT_ERROR)
+        } finally {
+            this.Reset()
+        }
+    }
+
+    ; [F] Copy reply, then mark newest Clip Angel clip as favorite (same as #!+p [F]).
+    OnActionF(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            MarkLastClipAsFavorite("first", true)
+        } finally {
+            this.Reset()
+        }
+    }
+
+    ; [W] (and any pasteWindowKeys entry): pick window first, then copy reply, then paste.
+    ; Matches #!+p [W] (HotkeyCopy_WRunPickerThenCopy) — continuous pick → copy → paste flow.
+    OnActionW(*) {
+        this.OnActionPasteWindow()
+    }
+
+    OnActionPasteWindow(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        this.CurrentPhase := "PickingVisiblePaste"
+        originHwnd := this.OriginHwnd
+        try {
+            picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
+            if (!picked) {
+                if (originHwnd && WinExist("ahk_id " originHwnd))
+                    WinActivate("ahk_id " originHwnd)
+                this.Reset()
+                return
+            }
+
+            StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
+            if (!this.DoCopyCore(false, true)) {
                 try StandardLoadingBar_Hide(0)
                 catch {
                 }
-                onDone := this._OnActionPasteWindowDone.Bind(this)
-                SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend, originHwnd), -
-                50)
-            } catch {
+                if (originHwnd && WinExist("ahk_id " originHwnd))
+                    WinActivate("ahk_id " originHwnd)
                 this.Reset()
-            }
-        }
-
-        _OnActionPasteWindowDone() {
-            this.Reset()
-        }
-
-        ; [O] Copy reply, then open Clip Angel Edit (same as #!+p [O]).
-        OnActionO(*) {
-            if (this.CurrentPhase != "PromptingAction")
                 return
-            this.CleanupActionPrompt()
-            try {
-                if (!this.DoCopyCore(false, true)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
+            }
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                try StandardLoadingBar_Hide(0)
+                catch {
                 }
-                clipRaw := A_Clipboard
-                clip := Trim(clipRaw)
-                if (clip = "" || StrLen(clip) < 10) {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return
-                }
-                ClipAngel_WaitForClipboardIngest()
-                this._OpenClipAngelEditForOrigin(this.OriginHwnd)
-            } finally {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (originHwnd && WinExist("ahk_id " originHwnd))
+                    WinActivate("ahk_id " originHwnd)
                 this.Reset()
-            }
-        }
-
-        OnActionN(*) {
-            if (this.CurrentPhase != "PromptingAction")
                 return
-            this.CleanupActionPrompt()
+            }
+            try A_Clipboard := clipRaw
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            onDone := this._OnActionPasteWindowDone.Bind(this)
+            SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend, originHwnd), -50)
+        } catch {
             this.Reset()
         }
+    }
 
-        OnActionTimeout(*) {
-            if (this.CurrentPhase != "PromptingAction")
+    _OnActionPasteWindowDone() {
+        this.Reset()
+    }
+
+    ; [O] Copy reply, then open Clip Angel Edit (same as #!+p [O]).
+    OnActionO(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, true)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
                 return
-            this.CleanupActionPrompt()
+            }
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            ClipAngel_WaitForClipboardIngest()
+            this._OpenClipAngelEditForOrigin(this.OriginHwnd)
+        } finally {
             this.Reset()
         }
+    }
 
-        CleanupActionPrompt() {
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
+    OnActionN(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        this.Reset()
+    }
+
+    OnActionTimeout(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        this.Reset()
+    }
+
+    CleanupActionPrompt() {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+    }
+
+    ExecuteAction(readAloud := false, skipRestoreFocus := false) {
+        this.CleanupActionPrompt()
+        try {
+            this.DoCopyCore(readAloud, skipRestoreFocus)
+        } finally {
+            this.Reset()
+        }
+    }
+
+    ; Returns true only when copy passed all quality gates (clipboard change + min length +
+    ; gemini_copy_result.txt = "1" for Gemini/Copilot IPC — same guarantee as #!+p / Bridge_CopyGemini).
+    DoCopyCore(readAloud := false, skipRestoreFocus := false) {
+        if (this.HasCopiedForThisResponse) {
+            return true
         }
 
-        ExecuteAction(readAloud := false, skipRestoreFocus := false) {
-            this.CleanupActionPrompt()
-            try {
-                this.DoCopyCore(readAloud, skipRestoreFocus)
-            } finally {
-                this.Reset()
-            }
+        aiLabel := GetGlobalAIProviderLabel()
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+
+        if (!WinExist("ahk_id " this.GeminiHwnd)) {
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                WinActivate("ahk_id " this.OriginHwnd)
+            return false
         }
 
-        ; Returns true only when copy passed all quality gates (clipboard change + min length +
-        ; gemini_copy_result.txt = "1" for Gemini/Copilot IPC — same guarantee as #!+p / Bridge_CopyGemini).
-        DoCopyCore(readAloud := false, skipRestoreFocus := false) {
-            if (this.HasCopiedForThisResponse) {
-                return true
-            }
-
-            aiLabel := GetGlobalAIProviderLabel()
-            companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-
-            if (!WinExist("ahk_id " this.GeminiHwnd)) {
+        ; By the time DoCopyCore runs, Gemini should already be active. If it is not, activate it.
+        if (!WinActive("ahk_id " this.GeminiHwnd)) {
+            try WinActivate("ahk_id " this.GeminiHwnd)
+            catch {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return false
             }
-
-            ; By the time DoCopyCore runs, Gemini should already be active. If it is not, activate it.
-            if (!WinActive("ahk_id " this.GeminiHwnd)) {
-                try WinActivate("ahk_id " this.GeminiHwnd)
-                catch {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return false
-                }
-                if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
-                    if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                        WinActivate("ahk_id " this.OriginHwnd)
-                    return false
-                }
-            }
-
-            ; ChatGPT copy/read live in Shift keys. Other hosts skip this branch.
-            if (companion = "chatgpt") {
-                clipOk := false
-                try clipOk := ChatGPT_CopyLastMessageToClipboard(this.GeminiHwnd)
-                catch
-                    clipOk := false
-                if (clipOk) {
-                    this.HasCopiedForThisResponse := true
-                    if (readAloud) {
-                        try ChatGPT_TriggerReadAloud(this.GeminiHwnd)
-                        catch
-                            ShowCenteredOverlay_Utils("❌ Read aloud failed", 3000, BANNER_ACCENT_ERROR)
-                    } else {
-                        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
-                    }
-                } else {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
-                }
-                if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
-                    .OriginHwnd)) {
+            if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
-                    if (!WinActive("ahk_id " this.OriginHwnd))
-                        WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
-                }
-                return clipOk
+                return false
             }
+        }
 
-            ; Enterprise: same in-process copy as #!+p (no Gemini.ahk IPC / result file).
-            if (companion = "enterprise") {
-                clipOk := false
-                try {
-                    clipOk := GeminiEnterprise_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false,
-                        alreadyActive: true }, this.GeminiHwnd)
-                } catch {
-                    clipOk := false
-                }
-                if (clipOk) {
-                    clip := Trim(A_Clipboard)
-                    clipOk := (clip != "" && StrLen(clip) >= 10)
-                }
-                if (!clipOk) {
-                    ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
-                } else {
-                    this.HasCopiedForThisResponse := true
-                    try {
-                        root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
-                        if (IsObject(root))
-                            GeminiEnterprise_FocusComposer(root, true)
-                    } catch {
-                    }
-                    if (!readAloud)
-                        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
-                }
-                if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
-                    .OriginHwnd
-                )) {
-                    WinActivate("ahk_id " this.OriginHwnd)
-                    if (!WinActive("ahk_id " this.OriginHwnd))
-                        WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
-                }
-                return clipOk
-            }
-
-            ; Y/F/C/R/W/O/P: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
-            clipBefore := A_Clipboard
-            seqBefore := Clipboard_GetSequenceNumber()
-            WM_COPY_LAST_GEMINI := 0x8001
-            WM_COPY_LAST_COPILOT := 0x8005
-            WM_TRIGGER_READ_ALOUD := 0x8004
-            WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
-            useCopilot := (companion = "copilot")
-            wmCopy := useCopilot ? WM_COPY_LAST_COPILOT : WM_COPY_LAST_GEMINI
-            wmRead := useCopilot ? WM_TRIGGER_COPILOT_READ_ALOUD : WM_TRIGGER_READ_ALOUD
-            targetHwnd := GetGeminiScriptMsgTargetHwnd()
-            sendOk := false
+        ; ChatGPT copy/read live in Shift keys. Other hosts skip this branch.
+        if (companion = "chatgpt") {
             clipOk := false
-            copyResultPath := A_ScriptDir "\.cursor\gemini_copy_result.txt"
-
-            if (targetHwnd) {
-                ; Guarantee layer: only accept a copy Gemini.ahk confirms via result file (same as #!+p bridge).
-                try {
-                    if (FileExist(copyResultPath))
-                        FileDelete(copyResultPath)
-                    FileAppend("0", copyResultPath)
-                } catch {
-                }
-                prevDH := A_DetectHiddenWindows
-                DetectHiddenWindows true
-                try {
-                    SendMessage(wmCopy, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
-                    sendOk := true
-                } catch {
-                } finally {
-                    DetectHiddenWindows prevDH
-                }
-                changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
-                clipNow := A_Clipboard
-                clipTrim := Trim(clipNow)
-                resultOk := false
-                try {
-                    resultOk := FileExist(copyResultPath) && Trim(FileRead(copyResultPath)) = "1"
-                } catch {
-                    resultOk := false
-                }
-                ; Quality gates: IPC ok + clipboard changed + non-empty min length + Gemini.ahk result file.
-                clipOk := sendOk && changed && clipNow != clipBefore && clipTrim != "" && StrLen(clipTrim) >= 10 &&
-                resultOk
-                if (!sendOk)
-                    ShowCenteredOverlay_Utils("❌ " . aiLabel . " copy timed out or IPC failed", 3500,
-                        BANNER_ACCENT_ERROR)
-                else if (!clipOk)
-                    ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty - try again", 3000, BANNER_ACCENT_ERROR
-                    )
-                else {
-                    this.HasCopiedForThisResponse := true
-                    if (readAloud) {
-                        DetectHiddenWindows true
-                        try {
-                            SendMessage(wmRead, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
-                        } catch {
-                            ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
-                        } finally {
-                            DetectHiddenWindows prevDH
-                        }
-                    } else
-                        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            try clipOk := ChatGPT_CopyLastMessageToClipboard(this.GeminiHwnd)
+            catch
+                clipOk := false
+            if (clipOk) {
+                this.HasCopiedForThisResponse := true
+                if (readAloud) {
+                    try ChatGPT_TriggerReadAloud(this.GeminiHwnd)
+                    catch
+                        ShowCenteredOverlay_Utils("❌ Read aloud failed", 3000, BANNER_ACCENT_ERROR)
+                } else {
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
                 }
             } else {
-                ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
             }
-
-            ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
             if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
-                .OriginHwnd
-            )) {
+                .OriginHwnd)) {
                 WinActivate("ahk_id " this.OriginHwnd)
-                ; Fast-path: avoid WinWaitActive if we are already active.
                 if (!WinActive("ahk_id " this.OriginHwnd))
                     WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
             }
             return clipOk
         }
 
-        ; --- Helpers ---
-
-        CancelFlow(message) {
-            StandardLoadingBar_CloseKeysOverlay()
-            StandardLoadingBar_Hide(0)
-            if (message != "")
-                ShowCenteredOverlay_Utils("⚠ " . message, 1500, BANNER_ACCENT_INTERMEDIATE)
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
+        ; Enterprise: same in-process copy as #!+p (no Gemini.ahk IPC / result file).
+        if (companion = "enterprise") {
+            clipOk := false
+            try {
+                clipOk := GeminiEnterprise_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false,
+                    alreadyActive: true }, this.GeminiHwnd)
+            } catch {
+                clipOk := false
+            }
+            if (clipOk) {
+                clip := Trim(A_Clipboard)
+                clipOk := (clip != "" && StrLen(clip) >= 10)
+            }
+            if (!clipOk) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
+            } else {
+                this.HasCopiedForThisResponse := true
+                try {
+                    root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
+                    if (IsObject(root))
+                        GeminiEnterprise_FocusComposer(root, true)
+                } catch {
+                }
+                if (!readAloud)
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            }
+            if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
+                .OriginHwnd
+            )) {
+                WinActivate("ahk_id " this.OriginHwnd)
+                if (!WinActive("ahk_id " this.OriginHwnd))
+                    WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+            }
+            return clipOk
         }
+
+        ; Y/F/C/R/W/O/P: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
+        clipBefore := A_Clipboard
+        seqBefore := Clipboard_GetSequenceNumber()
+        WM_COPY_LAST_GEMINI := 0x8001
+        WM_COPY_LAST_COPILOT := 0x8005
+        WM_TRIGGER_READ_ALOUD := 0x8004
+        WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
+        useCopilot := (companion = "copilot")
+        wmCopy := useCopilot ? WM_COPY_LAST_COPILOT : WM_COPY_LAST_GEMINI
+        wmRead := useCopilot ? WM_TRIGGER_COPILOT_READ_ALOUD : WM_TRIGGER_READ_ALOUD
+        targetHwnd := GetGeminiScriptMsgTargetHwnd()
+        sendOk := false
+        clipOk := false
+        copyResultPath := A_ScriptDir "\.cursor\gemini_copy_result.txt"
+
+        if (targetHwnd) {
+            ; Guarantee layer: only accept a copy Gemini.ahk confirms via result file (same as #!+p bridge).
+            try {
+                if (FileExist(copyResultPath))
+                    FileDelete(copyResultPath)
+                FileAppend("0", copyResultPath)
+            } catch {
+            }
+            prevDH := A_DetectHiddenWindows
+            DetectHiddenWindows true
+            try {
+                SendMessage(wmCopy, 0, this.GeminiHwnd, , "ahk_id " targetHwnd, , , , 20000)
+                sendOk := true
+            } catch {
+            } finally {
+                DetectHiddenWindows prevDH
+            }
+            changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
+            clipNow := A_Clipboard
+            clipTrim := Trim(clipNow)
+            resultOk := false
+            try {
+                resultOk := FileExist(copyResultPath) && Trim(FileRead(copyResultPath)) = "1"
+            } catch {
+                resultOk := false
+            }
+            ; Quality gates: IPC ok + clipboard changed + non-empty min length + Gemini.ahk result file.
+            clipOk := sendOk && changed && clipNow != clipBefore && clipTrim != "" && StrLen(clipTrim) >= 10 &&
+            resultOk
+            if (!sendOk)
+                ShowCenteredOverlay_Utils("❌ " . aiLabel . " copy timed out or IPC failed", 3500, BANNER_ACCENT_ERROR)
+            else if (!clipOk)
+                ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty - try again", 3000, BANNER_ACCENT_ERROR)
+            else {
+                this.HasCopiedForThisResponse := true
+                if (readAloud) {
+                    DetectHiddenWindows true
+                    try {
+                        SendMessage(wmRead, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
+                    } catch {
+                        ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
+                    } finally {
+                        DetectHiddenWindows prevDH
+                    }
+                } else
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            }
+        } else {
+            ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
+        }
+
+        ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
+        if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this.OriginHwnd
+        )) {
+            WinActivate("ahk_id " this.OriginHwnd)
+            ; Fast-path: avoid WinWaitActive if we are already active.
+            if (!WinActive("ahk_id " this.OriginHwnd))
+                WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+        }
+        return clipOk
     }
+
+    ; --- Helpers ---
+
+    CancelFlow(message) {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        if (message != "")
+            ShowCenteredOverlay_Utils("⚠ " . message, 1500, BANNER_ACCENT_INTERMEDIATE)
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+    }
+}
