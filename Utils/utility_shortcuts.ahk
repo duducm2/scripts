@@ -525,12 +525,6 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
         }
     }
 
-    clip := ""
-    try clip := A_Clipboard
-    if (Trim(clip) = "") {
-        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
     companionId := ResolveGlobalAICompanion()
     label := GetGlobalAIProviderLabel()
     hwnd := 0
@@ -583,12 +577,6 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
         }
     }
 
-    clip := ""
-    try clip := A_Clipboard
-    if (Trim(clip) = "") {
-        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
     mgr := D2C_FlowManager.GetInstance()
     ok := mgr.StartFromClipboard(originHwnd)
 

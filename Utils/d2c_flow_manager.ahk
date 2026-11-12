@@ -543,12 +543,6 @@ class D2C_FlowManager {
     }
 
     StartFromClipboard(originHwnd := 0) {
-        clip := ""
-        try clip := A_Clipboard
-        if (Trim(clip) = "") {
-            ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
         if (!originHwnd) {
             global g_UtilitySelectorRestoreHwnd
             try {
