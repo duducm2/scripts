@@ -573,22 +573,6 @@ class D2C_FlowManager {
         return true
     }
 
-    StartFromClipboard(originHwnd := 0) {
-        clip := ""
-        try clip := A_Clipboard
-        if (Trim(clip) = "") {
-            ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
-        this.Reset()
-        if (originHwnd && WinExist("ahk_id " originHwnd))
-            this.OriginHwnd := originHwnd
-        else
-            this.OriginHwnd := 0
-        this.ExecuteGeminiSubmit(true)
-        return true
-    }
-
     ; --- Phase 1: Submit Prompt ---
 
     PromptForGeminiSubmit() {
