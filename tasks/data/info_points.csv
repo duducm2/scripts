@@ -175,7 +175,6 @@ INFO_0445,task,TASK_0511,Decision Rule,"Only subscribe to OpenCode Go ($15-$20/m
 INFO_0446,task,TASK_0511,Chinese Providers via OpenRouter,Alternative overflow strategy: use models like DeepSeek-V3/R1 or Qwen 2.5 Coder 32B via OpenRouter. A $5 credit deposit can cover months of occasional spillover sessions at roughly $0.20 to $2.00/mo.,ℹ️,Alternatives,5110,2026-10-18 15:36:09,,
 INFO_0447,task,TASK_0511,OpenCode Setup Details,"OpenCode natively supports OpenRouter (via /connect command and OpenRouter API key) and includes out-of-the-box free Zen models (Big Pickle, GPT-5 Nano, Nemotron Super Free). Variant cycle (Ctrl+T) toggles reasoning effort or model presets.",ℹ️,Reference,5120,2026-10-18 15:36:09,,
 INFO_0449,task,TASK_0515,Objetivo da mudança,"O e-mail não deve ir direto para o Fábio Ferreira, mas sim para o Regional Lead usar como suporte e argumento para abrir conversas e gerar leads qualificados.",ℹ️,,5140,2026-10-19 09:22:38,,
-INFO_0454,task,TASK_0486,"Por mim esta ok, vou ver se tudo bem a gente mandar pra todos os cluster leader a survey",,ℹ️,,10,2026-10-19 11:31:33,,
 INFO_0456,task,TASK_0524,I need to eventually add the reports here,,ℹ️,,10,2026-10-19 14:25:48,,
 INFO_0457,task,TASK_0524,https://bosch.sharepoint.com/sites/msteams_5691328/Shared%20Documents/Forms/AllItems.aspx?d=wf5b173538d784692b7c3f7160bfb04e0&csf=1&web=1&e=SLZoWH&ovuser=0ae51e19%2D07c8%2D4e4b%2Dbb6d%2D648ee58410f4%2Cfie7ca%40bosch%2Ecom&TeamsCID=c0f6df40%2D40af%2D4f14%2Da869%2D72713066fffa&OR=Teams%2DHL&CT=1792430357943&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNjA5MTcxMjIyNiIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D&CID=997546a2%2Db06c%2D0001%2D7324%2D3f8de91bfde6&cidOR=SPO&FolderCTID=0x012000CF6A43B3DD5CDD47B05B322E0FFF923F&id=%2Fsites%2Fmsteams%5F5691328%2FShared%20Documents%2FGeneral%2FProjects%2FInternal%20Projects%2FOther%20Divisons%2FGS%2FGS%20%2D%20Suporte%20FTE%20Projeto%20XTOWER%2F01%5FInfos%20projeto,,ℹ️,,20,2026-10-19 14:25:55,,
 INFO_0464,task,TASK_0611,https://inside-docupedia.bosch.com/confluence2/spaces/AgenticAI/pages/1233448283/Antigravity,,ℹ️,,20,2026-10-20 14:25:48,,
@@ -235,8 +234,7 @@ INFO_0593,task,TASK_0766,Daily Limit & Usage Mechanics,"When authenticated via B
 INFO_0594,task,TASK_0766,Transition to Google Antigravity,"Gemini CLI and Gemini Code Assist sunset at the end of 2026. Bosch recommends migrating to Google Antigravity, which features a weekly pooled quota ($15/month equivalent per user) and faster access to new models.",ℹ️,Migration,5590,2026-11-04 10:25:27,,
 INFO_0595,task,TASK_0766,Official Bosch Documentation,AskBosch Tooling Docupedia: https://inside-docupedia.bosch.com/confluence2/pages/viewpage.action?pageId=976816515 | Antigravity FAQ & Licensing: https://inside-docupedia.bosch.com/confluence2/pages/viewpage.action?pageId=1233448283 | Best Practices Presentation: https://bosch.sharepoint.com/sites/ESWDiscussion/Shared%20Documents/AI%20%40%20XSW/Token%20Optimization%20for%20Agentic%20Software%20Development.pptx?web=1,ℹ️,Docs,5600,2026-11-04 10:25:27,,
 INFO_0596,task,TASK_0766,Best Practices & Quota Optimization,"Use '/clear' between tasks to avoid prompt snowballing from conversation history. Restrict file search/read scopes on large source files (e.g., avoid scanning 20k+ line files entirely) and maintain .geminiignore.",ℹ️,Best Practices,5610,2026-11-04 10:25:27,,
-INFO_0599,task,TASK_0769,"C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\02_UX_Projects\External GS\EXT_PS_X Tower\Screens\x-tower\management-report\phases-indicator-ok\phases-indicator-ok.png
-C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\02_UX_Projects\External GS\EXT_PS_X Tower\Screens\x-tower\management-report\people-registration-ok\people-registration-ok.png
+INFO_0599,task,TASK_0769,"C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\02_UX_Projects\External GS\EXT_PS_X Tower\Screens\x-tower\management-report\people-registration-ok\people-registration-ok.png
 C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\02_UX_Projects\External GS\EXT_PS_X Tower\Screens\x-tower\ideas-hub-ok\ideas-hub-ok.png",,ℹ️,,10,2026-11-05 17:28:57,,
 INFO_0601,task,TASK_0774,image.png,,ℹ️,,10,2026-11-07 14:51:15,,
 INFO_0602,task,TASK_0775,Liv Up Strategy,"Best for first order: Kit 20 Saudáveis is ~R$ 14.99/meal (R$ 299.80 total, free shipping > R$ 290). Uses superior ultracongelamento. Watch out for QC issues on subsequent orders (~R$ 18.49/meal).",ℹ️,,5620,2026-11-08 22:43:52,,
@@ -282,12 +280,6 @@ INFO_0640,task,TASK_0780,image.png,Attachments: image.png (attachments/20261028-
 INFO_0641,task,TASK_0780,image.png,Attachments: image.png (attachments/20261028-161624-INFO_0553-image.png),ℹ️,Meetings Notes,5990,2026-11-09 15:07:06,,
 INFO_0642,task,TASK_0780,Ter um botão para transformar de EURO e BRL,,ℹ️,Meetings Notes,6000,2026-11-09 15:07:06,,
 INFO_0643,task,TASK_0780,Mandar,,ℹ️,Meetings Notes,6010,2026-11-09 15:07:06,,
-INFO_0644,task,TASK_0781,Teams auto-record limitations,"Microsoft Teams does not automatically record conversations in breakout rooms, even if the main meeting is set to be recorded.",ℹ️,,6020,2026-11-09 15:10:34,,
-INFO_0645,task,TASK_0781,Manual recording required,"An organizer, co-organizer, or presenter must join each specific breakout room and manually click 'Start recording' from the meeting toolbar.",ℹ️,,6030,2026-11-09 15:10:34,,
-INFO_0646,task,TASK_0781,Use co-hosts,Assign a co-host or presenter to each room so they can start the recording for their respective group.,ℹ️,,6040,2026-11-09 15:10:34,,
-INFO_0647,task,TASK_0781,Hop between rooms,"If you are the only organizer, you must enter the first room, start the recording, exit, join the next room, start the recording, and repeat this for every room until they are all recording.",ℹ️,,6050,2026-11-09 15:10:34,,
-INFO_0648,task,TASK_0781,Recording files & Storage,"Each breakout room generates its own separate recording file, saved directly to the OneDrive of the specific person who clicked 'Start recording' in that room.",ℹ️,,6060,2026-11-09 15:10:34,,
-INFO_0649,task,TASK_0781,Access limits,"The recording is shared with the attendees of that specific room via the meeting chat, but if a student or guest started the recording, they might need to manually share it with you to ensure you have access.",ℹ️,,6070,2026-11-09 15:10:34,,
 INFO_0650,task,TASK_0767,"===PREVIEW===
 0 project(s) · 1 task(s) · 6 info · Created the focus group breakout room recording task with Teams limitations and instructions as info points.
 ===END_PREVIEW===
@@ -312,4 +304,26 @@ task,Record every breakout room in focus groups,X-Tower,work,Access limits,""The
 ===END_FILE===
 
 Please copy the code block above and save it as TASK_PACK.txt to import the new task and notes into your project.",,ℹ️,,10,2026-11-09 15:11:56,,
-INFO_0651,task,TASK_0783,"""C:\Users\fie7ca\Desktop\X Tower Focus Group_ Product Owners 2.txt""",,ℹ️,,10,2026-11-10 15:30:43,,
+INFO_0651,task,TASK_0789,"Idioma (mencionar o idioma e nível necessários): Inglês fluente mandatório
+Informática (quais softwares/ferramentas são necessários para desenvolvimento da atividade e nível de conhecimento):  Pacote Office, MS Teams, Figma e ferramenta de modelagem de processos
+Mandatório:  Pacote Office: Excel (intermediário), PowerPoint (avançado), Word; MS Teams; Figma; ferramenta de modelagem de processos (VSDiA, BPMN...).
+Desejável:  Conhecimento em UX (ex.: Design Thinking, UX Research) ou em gestão de processos (ex.: BPM, Lean). Power Platform (Power Apps, Power Automate, Power BI), SharePoint, Azure DevOps (boards), ferramentas de colaboração visual (Miro/Mural), Copilot e demais ferramentas de IA generativa (Copilot, Gemini).
+Experiência profissional desejada:
+Experiência comprovada em mapeamento e redesenho de processos (AS-IS / TO-BE), preferencialmente em áreas administrativas
+Experiência prática em UX: entrevistas com usuários, mapeamento de jornada, wireframes, protótipos e testes de usabilidade, com portfólio que demonstre o processo
+Vivência em projetos de transformação digital ou automação, atuando junto a times de desenvolvimento em metodologia ágil
+Conhecimento de Lean e melhoria contínua: já ter participado de kaizen, VSM ou workshops de melhoria.
+Perfil de colaborador desejado:
+Foco no usuário: defende as necessidades de quem usa a solução com base em dados e evidências, não em opinião
+Pensamento analítico e visão sistêmica, enxergando o processo de ponta a ponta antes de propor a solução
+Comunicação clara e assertiva com todos os níveis hierárquicos, traduzindo necessidades de negócio em requisitos para o time de desenvolvimento
+Autonomia para estruturar temas novos, sem depender de uma área de design ou processos já existente
+Pragmatismo e mentalidade ágil: entrega o suficiente para validar a PoC e evolui a partir do feedback
+Habilidade para trabalhar em equipe de maneira multifuncional
+Curiosidade por IA e novas tecnologias, acompanhando novas formas de interação (chatbots, copilotos, agentes)
+Descrever as principais atividades que serão desenvolvidas:
+Conduzir, junto às áreas de negócio, o mapeamento de processos atuais e futuros (AS-IS / TO-BE), identificando oportunidades de digitalização, automação e IA.
+Realizar entrevistas, observação e workshops com usuários para entender dores e necessidades, traduzindo os achados em jornadas, fluxos e requisitos para o time de desenvolvimento.
+Conduzir testes de usabilidade antes e depois das entregas e acompanhar a adoção das soluções em uso, propondo melhorias.
+Participar dos ritos ágeis do time (sprints, POC Demo) e apoiar a evolução das soluções desde a PoC até a escala.
+Disseminar boas práticas de processos e UX na organização através das plataformas atuais existentes.",,ℹ️,,10,2026-11-12 11:08:02,,

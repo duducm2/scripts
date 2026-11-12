@@ -1,5 +1,5 @@
 ﻿id,name,icon,initial_balance,current_balance
-ACC_MERCADOP,Mercado Pago (checking account),💳,"14658,50","1342,00"
+ACC_MERCADOP,Mercado Pago (checking account),💳,"14658,50","5029,95"
 ACC_MERCADOP2,Mercado Pago (short-term),💰,"39894,32","12301,83"
 ACC_NUBANKMA,Nubank (checking account),🟣,"112,45","50,44"
 ACC_TRANSITI,Nubank (short-term),🔄,"5037,62","5063,08"
@@ -7,5 +7,5 @@ ACC_BOSCHLIF,BoschLife,🏦,"13824,22","14510,22"
 ACC_FGTS,FGTS,🏛️,"54104,01","57096,69"
 ACC_MEALVOUC,Meal voucher,🍽️,"0,00","0,00"
 ACC_MELIDOLA,Meli dólares,💵,"0,00","138,05"
-ACC_MERCADOP3,Mercado Pago (long-term),📈,"43444,76","38455,07"
+ACC_MERCADOP3,Mercado Pago (long-term),📈,"43444,76","37635,07"
 ACC_99PAY,99 Pay (short-term),🍴,"0,00","5059,67"

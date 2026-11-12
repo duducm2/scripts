@@ -31,13 +31,7 @@
 ℹ️ R$ 600,00
 ℹ️ 20260301-203740.png
 
-⏳ Print the articles you published
-ℹ️ Update the "agradecimentos", removing Márcia and Creusa. Add CLeuza.
-ℹ️ Minoxidil: 6/6, Revoc: 2/2 (60 pills)
-
 ## Job Search
-
-⏳ Update your CV when you finish your master's degree at any new article if you have published
 
 ⚡ Check Job openings
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\web\start.bat
@@ -47,7 +41,7 @@
 ⚡ GitHub Pages: O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md
 
-🔲 At the Astra project with pictures and the tooling project to your portfolio
+⚡ Add the Astra project with pictures and the tooling project to your portfolio
 
 ⚡ Check all your resumes and portfolios if they're correct
 
@@ -77,23 +71,13 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 
 ### Dewormer
 
-🔲 Give dewormer - November 2026 (2026-11-10)
-
-⏳ Give dewormer - December 2026 (2026-12-10)
+🔲 Give dewormer - December 2026 (2026-12-10)
 
 ⏳ Give dewormer - January 2027 (2027-01-10)
 
 ⏳ Give dewormer - February 2027 (2027-02-10)
 
 ⏳ Give dewormer - March 2027 (2027-03-10)
-
-⏳ Give dewormer - April 2027 (2027-04-10)
-
-⏳ Give dewormer - May 2027 (2027-05-10)
-
-⏳ Give dewormer - June 2027 (2027-06-10)
-
-⏳ Give dewormer - July 2027 (2027-07-10)
 
 ### Flea and Tick prevention
 
@@ -102,8 +86,6 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 ⏳ How to store big vocabularies
 
 ⏳ You should check how to remember numbers, maybe with the SPA technique
-
-⚡ Check all characters and add the ones that are missing and you have emotional connection
 
 ## Piano
 
