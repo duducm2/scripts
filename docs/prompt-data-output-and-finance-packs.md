@@ -29,7 +29,7 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 
 | Trigger                                      | Canonical Desktop file |
 | -------------------------------------------- | ---------------------- |
-| Utility Prompts `[d]` / Send dictation `[D]` | `FINANCE_DAILY.txt`    |
+| Utility Prompts `[d]` / Send dictation `[I]` | `FINANCE_DAILY.txt`    |
 | Utility `[m]`                                | `FINANCE_MONTHLY.txt`  |
 | Utility `[4]` / `[a]`                        | `PALACE_PACK.txt`      |
 | Utility `[n]`                                | `PLAN_PACK.txt`        |
@@ -227,7 +227,7 @@ Change **Data output** in Prompt Manager (`#!+h` or `#!+U` → Prompts → Edit)
 Call sites:
 
 - [`Utils/prompt_render.ahk`](../Utils/prompt_render.ahk) — Utility Shortcuts paste / L-arm companion
-- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[D]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / **`k`** Convert to Task pack), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation.
+- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[I]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / **`k`** Convert to Task pack), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation.
 
 The long FILE DELIVERY PROTOCOL inside each `.txt` body is documentation/fallback; the injected block is the runtime authority for **file vs code**.
 

@@ -80,7 +80,7 @@ CATEGORIZATION
 - After the pack, optional one-line coverage note listing only items that used last resort or still had no good fit and why. Do not replace the pack with that note.
 - Do not invent category ids. If something is a poor fit, say so in the chat note after the file.
 
-CONTEXT FILES (attached by Utility Shortcuts → Prompts, or Send dictation [D])
+CONTEXT FILES (attached by Utility Shortcuts → Prompts, or Send dictation [I])
 - categories.csv — live category names with ids (authoritative for category_id; includes user-added categories)
 - accounts.csv — account names with ids
 - credit_cards.csv — card names with ids and linked accounts
