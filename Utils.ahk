@@ -384,7 +384,7 @@ catch {
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
 ; [Utils module] Main Repos status window (#!+Y 2×) -> Utils\utility_git_status.ahk
 #include %A_ScriptDir%\Utils\utility_git_status.ahk
-; [Utils module] Utility shortcuts #!+U / #!+W Macros and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
+; [Utils module] Utility shortcuts #!+U / #!+W Macros ([Q] companion paste, [A] companion send) and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 
 ; [Utils module] Reading Mode macro (#!+W → k) Left/Right→PgUp/PgDn + line highlight -> Utils\reading_mode.ahk

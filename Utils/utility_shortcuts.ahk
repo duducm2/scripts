@@ -507,6 +507,105 @@ RegisterMacro(MacroAICompanionQuickModel, "⚡ AI companion Quick / Fast model",
 RegisterMacro(MacroAICompanionDeepModel, "🔄 AI companion Deep model", "m")
 RegisterMacro(MacroAICompanionNewChat, "💬 New chat — AI companion (Shift+N)", "n")
 
+; Utility Shortcuts [Q] — paste OS clipboard to active / resolved AI companion (no submit)
+UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
+    if (!originHwnd) {
+        global g_UtilitySelectorRestoreHwnd
+        try {
+            if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+                originHwnd := g_UtilitySelectorRestoreHwnd
+        } catch {
+            originHwnd := 0
+        }
+    }
+    if (!originHwnd) {
+        try originHwnd := WinGetID("A")
+        catch {
+            originHwnd := 0
+        }
+    }
+
+    clip := ""
+    try clip := A_Clipboard
+    if (Trim(clip) = "") {
+        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    companionId := ResolveGlobalAICompanion()
+    label := GetGlobalAIProviderLabel()
+    hwnd := 0
+    try {
+        switch companionId {
+            case "enterprise":
+                hwnd := GeminiEnterprise_NavigateFocusAndPaste("", false)
+            case "copilot":
+                hwnd := CopilotWeb_NavigateFocusAndPaste("", false)
+            default:
+                hwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+        }
+    } catch as err {
+        ShowCenteredOverlay_Utils("❌ Error pasting to " . label . ": " . err.Message, 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if (!hwnd) {
+        ShowCenteredOverlay_Utils("❌ Could not open or focus " . label . ".", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    ; Return focus to the previously active window
+    if (originHwnd && WinExist("ahk_id " originHwnd)) {
+        Sleep 120
+        if (!Handy_RestorePrevWindow(originHwnd, hwnd)) {
+            Sleep 150
+            Handy_RestorePrevWindow(originHwnd, hwnd)
+        }
+    }
+
+    ShowCenteredOverlay_Utils("📋 Pasted to " . label, 1200, BANNER_ACCENT_SUCCESS)
+    return true
+}
+
+; Utility Shortcuts [A] — paste OS clipboard to AI companion, submit, and trigger D2C response ready flow
+UtilityShortcuts_AICompanionSend(originHwnd := 0) {
+    if (!originHwnd) {
+        global g_UtilitySelectorRestoreHwnd
+        try {
+            if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+                originHwnd := g_UtilitySelectorRestoreHwnd
+        } catch {
+            originHwnd := 0
+        }
+    }
+    if (!originHwnd) {
+        try originHwnd := WinGetID("A")
+        catch {
+            originHwnd := 0
+        }
+    }
+
+    clip := ""
+    try clip := A_Clipboard
+    if (Trim(clip) = "") {
+        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    mgr := D2C_FlowManager.GetInstance()
+    ok := mgr.StartFromClipboard(originHwnd)
+
+    ; Guarantee focus returns to the previously active window
+    if (originHwnd && WinExist("ahk_id " originHwnd)) {
+        Sleep 120
+        if (!Handy_RestorePrevWindow(originHwnd)) {
+            Sleep 150
+            Handy_RestorePrevWindow(originHwnd)
+        }
+    }
+    return ok
+}
+
+RegisterMacro(UtilityShortcuts_AICompanionPaste, "📋 AI companion paste clipboard", "")
+RegisterMacro(UtilityShortcuts_AICompanionSend, "🚀 AI companion send clipboard (response banner)", "")
+
 ; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()

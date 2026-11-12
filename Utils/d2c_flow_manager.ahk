@@ -226,7 +226,8 @@ D2C_CompanionTitleMatches(title, companion) {
         return CopilotWeb_TitleMatchesCopilot(title)
     if (companion = "chatgpt")
         return InStr(title, "chatgpt", false) > 0
-    return IsConsumerGeminiChromeTitle(title) || GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(title) || InStr(title, "chatgpt", false) > 0
+    return IsConsumerGeminiChromeTitle(title) || GeminiEnterprise_TitleMatches(title) || CopilotWeb_TitleMatchesCopilot(
+        title) || InStr(title, "chatgpt", false) > 0
 }
 
 ; Generic/placeholder titles for fresh AI chats before they get renamed to a specific conversation topic.
@@ -539,6 +540,53 @@ class D2C_FlowManager {
         this.Reset()
         this.OriginHwnd := WinActive("A")
         this.ExecuteGeminiSubmit(true)
+    }
+
+    StartFromClipboard(originHwnd := 0) {
+        clip := ""
+        try clip := A_Clipboard
+        if (Trim(clip) = "") {
+            ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        if (!originHwnd) {
+            global g_UtilitySelectorRestoreHwnd
+            try {
+                if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+                    originHwnd := g_UtilitySelectorRestoreHwnd
+            } catch {
+                originHwnd := 0
+            }
+        }
+        if (!originHwnd) {
+            try originHwnd := WinGetID("A")
+            catch {
+                originHwnd := 0
+            }
+        }
+        this.Reset()
+        if (originHwnd && WinExist("ahk_id " originHwnd))
+            this.OriginHwnd := originHwnd
+        else
+            this.OriginHwnd := 0
+        this.ExecuteGeminiSubmit(true)
+        return true
+    }
+
+    StartFromClipboard(originHwnd := 0) {
+        clip := ""
+        try clip := A_Clipboard
+        if (Trim(clip) = "") {
+            ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        this.Reset()
+        if (originHwnd && WinExist("ahk_id " originHwnd))
+            this.OriginHwnd := originHwnd
+        else
+            this.OriginHwnd := 0
+        this.ExecuteGeminiSubmit(true)
+        return true
     }
 
     ; --- Phase 1: Submit Prompt ---
@@ -1337,8 +1385,13 @@ class D2C_FlowManager {
             this.StartGeminiMonitor()
         }
 
-        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-            WinActivate("ahk_id " this.OriginHwnd)
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
+            Sleep 100
+            if (!Handy_RestorePrevWindow(this.OriginHwnd, this.GeminiHwnd)) {
+                Sleep 150
+                Handy_RestorePrevWindow(this.OriginHwnd, this.GeminiHwnd)
+            }
+        }
 
         if (!autoSubmit)
             this.Reset()

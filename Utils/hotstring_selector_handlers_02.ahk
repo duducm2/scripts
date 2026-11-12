@@ -50,6 +50,22 @@ UtilitySelector_SwitchToCategory(category) {
         Utility_GitSyncPush()
         return
     }
+    if (category = "AI Companion Paste") {
+        global g_UtilitySelectorRestoreHwnd
+        restoreHwnd := g_UtilitySelectorRestoreHwnd
+        CleanupHotstringSelector()
+        UtilityShortcuts_ReleaseStuckModifiers()
+        UtilityShortcuts_AICompanionPaste(restoreHwnd)
+        return
+    }
+    if (category = "AI Companion Send") {
+        global g_UtilitySelectorRestoreHwnd
+        restoreHwnd := g_UtilitySelectorRestoreHwnd
+        CleanupHotstringSelector()
+        UtilityShortcuts_ReleaseStuckModifiers()
+        UtilityShortcuts_AICompanionSend(restoreHwnd)
+        return
+    }
     ; Same as #!+C picker slots 1 / 3 (Parakeet Unified EN / Cohere Transcribe).
     ; Menu may be hosted outside AppLaunchers; the switch itself must run there.
     if (category = "Handy English" || category = "Handy Multilang") {
@@ -360,7 +376,7 @@ UtilitySelector_PromptNameMatches(name, query) {
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
-        return "Char = open category   [S] Sequences   [F] Finance   [N] Memory Palace   [T] Tasks   [J] Import Management   [G] Push   [K] Handy English   [L] Handy Multilang   Enter/double-click = open   Esc = close"
+        return "Char = open category   [S] Sequences   [F] Finance   [N] Tasks/Palace   [J] Import   [G] Push   [Q] AI Paste   [A] AI Send   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
         return "Filter by name, tags, path   Enter = paste first match   Shift+Enter = paste + clipboard   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
@@ -387,7 +403,8 @@ UtilitySelector_PopulateLv() {
         counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
         "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length,
         "Sequences", ClickSeqData_SequenceCount(), "Finance", 1, "Memory Palace", 1, "Tasks", 1,
-        "Import Management", 1, "Push", 1, "Handy English", 1, "Handy Multilang", 1)
+        "Import Management", 1, "Push", 1, "Handy English", 1, "Handy Multilang", 1,
+        "AI Companion Paste", 1, "AI Companion Send", 1)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById
             idByCat[cat] := id
