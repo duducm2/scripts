@@ -4786,7 +4786,7 @@
             toast("Select a task first");
             return;
           }
-          const sibling = followingTaskSibling(tid);
+          const fallback = adjacentNavTarget(tid);
           const r = await api(
             "/api/tasks/" + encodeURIComponent(tid) + "/emoji",
             {
@@ -4809,14 +4809,26 @@
             !patchTaskStatusDom(tid)
           ) {
             await afterEntitySave("task", r, () => {
-              if (filterMismatch) applyEmojiFilter(null);
               const t = taskRowById(tid);
               const gone =
                 !t ||
                 t.active === "0" ||
-                (t.kind !== "habitual" && stored === "✅");
-              if (gone && sibling) {
-                setSelection(sibling.kind, sibling.id, true);
+                (t.kind !== "habitual" && stored === "✅") ||
+                filterMismatch;
+              if (gone) {
+                const freshTargets = navTargets();
+                const valid = fallback
+                  ? freshTargets.find(
+                      (x) => x.kind === fallback.kind && x.id === fallback.id,
+                    )
+                  : null;
+                if (valid) {
+                  setSelection(valid.kind, valid.id, true);
+                } else if (freshTargets.length) {
+                  setSelection(freshTargets[0].kind, freshTargets[0].id, true);
+                } else {
+                  setSelection(null, null, false);
+                }
                 return;
               }
               const kind = t?.kind === "habitual" ? "habit" : "task";
@@ -5132,28 +5144,76 @@
           return null;
         }
 
-        function selectProjectAfterTaskDelete(projectId) {
-          if (!projectId) {
-            state.sel = null;
-            applySelection(false);
-            return;
-          }
-          const proj = (state.data.projects || []).find(
-            (p) => p.id === projectId,
+        function adjacentNavTarget(taskId) {
+          if (!taskId) return null;
+          const targets = navTargets();
+          const idx = targets.findIndex(
+            (t) => (t.kind === "task" || t.kind === "habit") && t.id === taskId,
           );
-          if (!proj || proj.active === "0") {
-            state.sel = null;
-            applySelection(false);
-            return;
+          if (idx < 0) return null;
+          const parent = taskListParent(targets[idx].el);
+          if (parent) {
+            for (let i = idx + 1; i < targets.length; i++) {
+              const next = targets[i];
+              if (
+                (next.kind === "task" || next.kind === "habit") &&
+                taskListParent(next.el) === parent
+              ) {
+                return { kind: next.kind, id: next.id };
+              }
+            }
           }
-          state.collapsedProjects.delete(projectId);
-          setSelection("project", projectId, true);
+          for (let i = idx + 1; i < targets.length; i++) {
+            const next = targets[i];
+            if (next.kind === "task" || next.kind === "habit") {
+              return { kind: next.kind, id: next.id };
+            }
+          }
+          for (let i = idx - 1; i >= 0; i--) {
+            const prev = targets[i];
+            if (prev.kind === "task" || prev.kind === "habit") {
+              return { kind: prev.kind, id: prev.id };
+            }
+          }
+          if (idx + 1 < targets.length) {
+            return { kind: targets[idx + 1].kind, id: targets[idx + 1].id };
+          }
+          if (idx - 1 >= 0) {
+            return { kind: targets[idx - 1].kind, id: targets[idx - 1].id };
+          }
+          return null;
         }
 
-        function focusAfterTaskRemoved(sibling, projectId) {
-          if (sibling?.id) {
-            setSelection(sibling.kind, sibling.id, true);
+        function selectProjectAfterTaskDelete(projectId) {
+          const targets = navTargets();
+          if (projectId) {
+            const valid = targets.find(
+              (t) => t.kind === "project" && t.id === projectId,
+            );
+            if (valid) {
+              state.collapsedProjects.delete(projectId);
+              setSelection("project", projectId, true);
+              return;
+            }
+          }
+          if (targets.length) {
+            setSelection(targets[0].kind, targets[0].id, true);
             return;
+          }
+          state.sel = null;
+          applySelection(false);
+        }
+
+        function focusAfterTaskRemoved(fallback, projectId) {
+          const freshTargets = navTargets();
+          if (fallback?.id) {
+            const valid = freshTargets.find(
+              (t) => t.kind === fallback.kind && t.id === fallback.id,
+            );
+            if (valid) {
+              setSelection(valid.kind, valid.id, true);
+              return;
+            }
           }
           selectProjectAfterTaskDelete(projectId);
         }
@@ -5228,7 +5288,7 @@
           if (state.sel.kind === "task" || state.sel.kind === "habit") {
             if (!confirm("Delete task and its info/attachments?")) return;
             const taskId = state.sel.id;
-            const sibling = followingTaskSibling(taskId);
+            const fallback = adjacentNavTarget(taskId);
             const task = (state.data.tasks || []).find((t) => t.id === taskId);
             const projectId = task?.project_id || "";
             await api("/api/tasks/" + encodeURIComponent(taskId), {
@@ -5237,7 +5297,7 @@
             toast("Deleted");
             if (TASK_SPA_FULL_REFRESH) await refresh();
             else dropTaskLocally(taskId);
-            focusAfterTaskRemoved(sibling, projectId);
+            focusAfterTaskRemoved(fallback, projectId);
           }
         }
 
@@ -7597,14 +7657,7 @@
               e.preventDefault();
               e.stopPropagation();
               if (!id) return;
-              const r = await api(
-                "/api/tasks/" + encodeURIComponent(id) + "/emoji",
-                {
-                  method: "POST",
-                  body: JSON.stringify({ key: "general" }),
-                },
-              );
-              await afterEntitySave("task", r);
+              await setTaskEmojiById(id, "general");
               return;
             }
             if (act === "clear-new") {
@@ -7624,7 +7677,7 @@
             }
             if (act === "del-task") {
               if (!confirm("Delete task and its info/attachments?")) return;
-              const sibling = followingTaskSibling(id);
+              const fallback = adjacentNavTarget(id);
               const task = (state.data.tasks || []).find((x) => x.id === id);
               const projectId = task?.project_id || "";
               await api("/api/tasks/" + encodeURIComponent(id), {
@@ -7633,7 +7686,7 @@
               toast("Deleted");
               if (TASK_SPA_FULL_REFRESH) await refresh();
               else dropTaskLocally(id);
-              focusAfterTaskRemoved(sibling, projectId);
+              focusAfterTaskRemoved(fallback, projectId);
               return;
             }
             if (act === "emoji") {
