@@ -1,0 +1,13 @@
+﻿===PREVIEW===
+3 row(s) · Includes 1 service expense for the new house, 1 transfer from long-term to checking, and 1 monthly salary income. No skips.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+Serviceman - new house,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1
+Transfer from long-term to checking,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+Salary payment,"3687,95",income,CAT_SALARIO,ACC_MERCADOP,,,1
+===END_FILE===
+
+Please copy the code block above and save it as FINANCE_DAILY.txt on your Desktop.
+
+Is there anything else I can help you with?
