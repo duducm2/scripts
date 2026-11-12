@@ -69,7 +69,8 @@ global BANNER_ACCENT_INTERMEDIATE := "F1C40F" ; Yellow: loading, actionable, neu
 global BANNER_ACCENT_INFO := "2980B9"         ; Blue: info / alternate mode
 
 ; Possible Gemini prompt field names (EN and PT) for work/personal env. Used by FindGeminiPromptField.
-global GEMINI_PROMPT_FIELD_NAMES := ["Ask Gemini", "Pergunte ao Gemini", "Enter a prompt for Gemini", "Enter a prompt here",
+global GEMINI_PROMPT_FIELD_NAMES := ["Ask Gemini", "Pergunte ao Gemini", "Enter a prompt for Gemini",
+    "Enter a prompt here",
     "Digite um prompt para o Gemini", "Digite um prompt aqui", "Ask anything", "Pergunte qualquer coisa"]
 global GEMINI_PROMPT_FOCUS_POLL_MS := 25
 global GEMINI_PROMPT_FOCUS_TIMEOUT_MS := 300
