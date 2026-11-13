@@ -1224,7 +1224,8 @@ class CopilotAsyncReadAloud {
         if (orig && orig != this.CopilotHwnd && WinExist("ahk_id " orig)) {
             try {
                 WinActivate("ahk_id " orig)
-                WinWaitActive("ahk_id " orig, , 0.5)
+                if WinWaitActive("ahk_id " orig, , 0.5)
+                    Utils_PlayAICompanionRestoredChime()
             } catch {
             }
         } else if (this.CopilotHwnd && WinActive("ahk_id " this.CopilotHwnd))
@@ -1296,7 +1297,8 @@ class CopilotAsyncTTS {
         try {
             if WinExist("ahk_id " origHwnd) {
                 WinActivate("ahk_id " origHwnd)
-                WinWaitActive("ahk_id " origHwnd, , 1)
+                if WinWaitActive("ahk_id " origHwnd, , 1)
+                    Utils_PlayAICompanionRestoredChime()
             }
         } catch {
         }
@@ -1394,7 +1396,8 @@ class CopilotAsyncLookup {
         try {
             if WinExist("ahk_id " origHwnd) {
                 WinActivate("ahk_id " origHwnd)
-                WinWaitActive("ahk_id " origHwnd, , 1)
+                if WinWaitActive("ahk_id " origHwnd, , 1)
+                    Utils_PlayAICompanionRestoredChime()
             }
         } catch {
         }
@@ -1445,6 +1448,7 @@ class CopilotAsyncLookup {
                 WinActivate("ahk_id " origHwnd)
                 if (!WinActive("ahk_id " origHwnd))
                     WinWaitActive("ahk_id " origHwnd, , 0.5)
+                Utils_PlayAICompanionRestoredChime()
             } catch {
             }
         }

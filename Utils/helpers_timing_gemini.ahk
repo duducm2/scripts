@@ -127,6 +127,24 @@ Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
     return true
 }
 
+; Play audible restored chime when returning focus from AI companion to the previous window.
+Utils_PlayAICompanionRestoredChime(minIntervalMs := 400) {
+    static lastRestoredTick := 0
+    if (!IsSoundEnabled())
+        return false
+    now := A_TickCount
+    if (lastRestoredTick && (now - lastRestoredTick) < minIntervalMs)
+        return false
+    lastRestoredTick := now
+    soundPath := A_ScriptDir . "\assets\sounds\ai-companion-restored.wav"
+    if (!FileExist(soundPath))
+        soundPath := A_ScriptDir . "\..\assets\sounds\ai-companion-restored.wav"
+    if (!FileExist(soundPath))
+        return false
+    ScriptSoundPlay(soundPath)
+    return true
+}
+
 Gemini_PollPromptKeyboardFocus(promptField, timeoutMs := 0, pollMs := 0) {
     if (timeoutMs <= 0)
         timeoutMs := GEMINI_PROMPT_FOCUS_TIMEOUT_MS

@@ -44,6 +44,19 @@ Handy_RestorePrevWindow(restoreHwnd, excludeHwnd := 0) {
     }
 }
 
+; Restores the previously active window after an AI companion automation handoff,
+; tracks active state, and triggers the focus-restored chime.
+AICompanion_RestoreOriginWindow(restoreHwnd, companionHwnd := 0, playChime := true, flowName := "") {
+    if (!restoreHwnd || (companionHwnd && restoreHwnd = companionHwnd))
+        return false
+    if !WinExist("ahk_id " restoreHwnd)
+        return false
+    ok := Handy_RestorePrevWindow(restoreHwnd, companionHwnd)
+    if (ok && playChime)
+        Utils_PlayAICompanionRestoredChime()
+    return ok
+}
+
 ; Main Handy hwnd (includes hidden / suppressed). Environment-aware exe path filter.
 Handy_MainHwnd() {
     expectedExePath := GetHandyProcessPath()

@@ -38,6 +38,7 @@ Fill in filenames you keep locally if they differ from the list.
 | `clipangel-open.wav`                              | After Alt+P / Alt+B open succeeds (`ClipAngel_OpenWithMarkFilter`; CC0 ack ding) |
 | `clipangel-restart-success.wav`                   | After hard restart succeeds (`ClipAngel_Restart`; CC0 complete ding)             |
 | `task-opened.wav`                                 | After Tasks is successfully launched or selected (`Task_LaunchApp`)              |
+| `ai-companion-restored.wav`                       | After AI companion automation handoff returns focus to previously active window   |
 | System `*16` / `*64`                              | Via `ScriptSoundPlaySystem` (gated)                                              |
 
 `quick-update-failure.wav` exists in tree; confirm whether any path plays it—if not, candidate for failed Quick Update.
@@ -68,6 +69,7 @@ Check boxes when you add an asset and wire it.
 
 ### Gemini & Cursor bridges
 
+- [x] Focus returned from AI companion — `ai-companion-restored.wav` after handoff restores origin window (`AICompanion_RestoreOriginWindow`, `GeminiRestoreWindow`, async flows).
 - [ ] Failed IPC / “Gemini not running” vs timeout vs empty clipboard (several `ShowCenteredOverlay_Utils` error branches in Utils/Gemini).
 - [ ] Dictation → Gemini confirm banner: Y / S / N / timeout (distinct optional; avoid noise).
 
