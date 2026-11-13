@@ -44,7 +44,8 @@ CycleWindowsOnMonitor(order) {
 
     if (activeIdx)
         pos := activeIdx + 1
-    else if (lastCycleNeedRetry && lastCycleIdx = idx && (A_TickCount - lastCycleTick) < 2000 && g_WindowCycleIndices.Has(idx))
+    else if (lastCycleNeedRetry && lastCycleIdx = idx && (A_TickCount - lastCycleTick) < 2000 && g_WindowCycleIndices.Has(
+        idx))
         pos := g_WindowCycleIndices[idx] + 1
     else
         pos := 1
