@@ -546,7 +546,10 @@ OpenCopilotChatHistory() {
 
 ; Click the VS Code Copilot model picker button in the chat input toolbar.
 ; Targets names like "Pick Model, Auto" and scopes to chat-input-toolbars.
+; In Antigravity IDE, delegates to Antigravity_ClickModelButton.
 ClickVSCodeCopilotModelButton() {
+    if (IsAntigravityActive())
+        return Antigravity_ClickModelButton()
     try {
         hwnd := WinExist("A")
         if (!hwnd)
@@ -1199,265 +1202,268 @@ ExecuteAIModelSelection(choice) {
 
 ; Shift + A : Switch AI models - AI
 +a:: {
-    if (IsCodeFamilyActive()) {
-        if (ClickVSCodeCopilotModelButton())
+        if (IsAntigravityActive()) {
+            if (Antigravity_ClickModelButton())
+                return
+        } else if (IsCodeActive()) {
+            if (ClickVSCodeCopilotModelButton())
+                return
+        }
+        Send "^;"
+    }
+
+    ; Shift+G freed (Git repos fold unused). Helper kept in hotif_scroll_ai.ahk.
+    ; +g:: FoldAllGitDirectoriesInCursor()
+
+    ; Global variable for commit selector target window
+    global gCommitTargetWin := 0
+
+    ; Function to get commit action by number
+    GetCommitActionByNumber(numberText) {
+        try number := Integer(numberText)
+        catch {
+            return ""
+        }
+        actionMap := Map()
+        actionMap[1] := "workspace"
+        actionMap[2] := "repository"
+        return (actionMap.Has(number)) ? actionMap[number] : ""
+    }
+
+    ; Function to execute commit action
+    ExecuteCommitAction(action) {
+        if (action = "")
             return
-    }
-    Send "^;"
-}
 
-; Shift+G freed (Git repos fold unused). Helper kept in hotif_scroll_ai.ahk.
-; +g:: FoldAllGitDirectoriesInCursor()
+        if (action = "workspace") {
+            ; Option 1: Commit and push from workspace (original behavior)
+            Send "{Right}"
+            Send "{Down}"
+            Send "{Tab 2}"
+            Send "{Enter}"
+            Sleep 1500
+            Send "{Tab 2}"
+            Send "{Enter}"
+            Send "{Up 2}"
+        }
+        else if (action = "repository") {
+            ; Option 2: Commit and push from repository (customize this section)
 
-; Global variable for commit selector target window
-global gCommitTargetWin := 0
+            ; Then execute the commit commands
+            Send "^+g"
+            Sleep 150
 
-; Function to get commit action by number
-GetCommitActionByNumber(numberText) {
-    try number := Integer(numberText)
-    catch {
-        return ""
-    }
-    actionMap := Map()
-    actionMap[1] := "workspace"
-    actionMap[2] := "repository"
-    return (actionMap.Has(number)) ? actionMap[number] : ""
-}
+            ; Click on the "Generate Commit Message (Ctrl+M)" button
+            ClickGenerateCommitMessageButton()
 
-; Function to execute commit action
-ExecuteCommitAction(action) {
-    if (action = "")
-        return
-
-    if (action = "workspace") {
-        ; Option 1: Commit and push from workspace (original behavior)
-        Send "{Right}"
-        Send "{Down}"
-        Send "{Tab 2}"
-        Send "{Enter}"
-        Sleep 1500
-        Send "{Tab 2}"
-        Send "{Enter}"
-        Send "{Up 2}"
-    }
-    else if (action = "repository") {
-        ; Option 2: Commit and push from repository (customize this section)
-
-        ; Then execute the commit commands
-        Send "^+g"
-        Sleep 150
-
-        ; Click on the "Generate Commit Message (Ctrl+M)" button
-        ClickGenerateCommitMessageButton()
-
-        Send "{Tab 3}"
-        Send "{Enter}"
-        Send "{Tab 2}"
-        Send "{Enter}"
-        Send "{Up 2}"
-    }
-}
-
-; Auto-submit function for commit selector
-AutoSubmitCommit(ctrl, *) {
-    currentValue := ctrl.Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        action := GetCommitActionByNumber(currentValue)
-        if (action != "") {
-            ctrl.Gui.Destroy()
-            ExecuteCommitAction(action)
+            Send "{Tab 3}"
+            Send "{Enter}"
+            Send "{Tab 2}"
+            Send "{Enter}"
+            Send "{Up 2}"
         }
     }
-}
 
-; Manual submit function for commit selector (backup)
-SubmitCommit(ctrl, *) {
-    currentValue := ctrl.Gui["CommitInput"].Text
-    if (currentValue != "" && IsInteger(currentValue)) {
-        action := GetCommitActionByNumber(currentValue)
-        if (action != "") {
-            ctrl.Gui.Destroy()
-            ExecuteCommitAction(action)
-        } else {
-            MsgBox "Invalid selection. Please choose 1-2.", "Commit Selector", "IconX"
-        }
-    }
-}
-
-; Cancel function for commit selector
-CancelCommit(ctrl, *) {
-    ctrl.Gui.Destroy()
-}
-
-; Ctrl+, / Ctrl+Q : Fold/Unfold all directories — disabled (UIA breaks VS Code/Cursor).
-; Functions kept in hotif_scroll_ai.ahk for possible reuse. Documented on cheat sheet only.
-
-; Alt+N freed (review next file unused). Body kept for possible reuse.
-Editor_ReviewNextFile_Unused(*) {
-
-    try {
-        win := WinExist("A")
-        if (!win) {
-            return
-        }
-        root := UIA.ElementFromHandle(win)
-        Sleep 100  ; Allow UI to update
-
-        savedReview := UiElements_TrySaved(root, Editor_UiElementAppKey(), "ReviewNext")
-        clickedSaved := false
-        if (savedReview) {
-            try {
-                if savedReview.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-                    savedReview.InvokePattern.Invoke()
-                else
-                    savedReview.Click()
-                clickedSaved := true
-            } catch {
-                try {
-                    savedReview.Click()
-                    clickedSaved := true
-                }
+    ; Auto-submit function for commit selector
+    AutoSubmitCommit(ctrl, *) {
+        currentValue := ctrl.Text
+        if (currentValue != "" && IsInteger(currentValue)) {
+            action := GetCommitActionByNumber(currentValue)
+            if (action != "") {
+                ctrl.Gui.Destroy()
+                ExecuteCommitAction(action)
             }
         }
-        if (clickedSaved)
-            return
+    }
 
-        ; Strategy 1: Scope to editor part (workbench.parts.editor), find "Review next file" Text, then click its parent Group (the button)
-        editorPart := ""
-        try editorPart := root.FindFirst({ AutomationId: "workbench.parts.editor", Type: 50026 })
-        if (editorPart) {
-            reviewText := ""
-            try reviewText := editorPart.FindFirst({ Name: "Review next file", Type: 50020 })
-            if (reviewText) {
+    ; Manual submit function for commit selector (backup)
+    SubmitCommit(ctrl, *) {
+        currentValue := ctrl.Gui["CommitInput"].Text
+        if (currentValue != "" && IsInteger(currentValue)) {
+            action := GetCommitActionByNumber(currentValue)
+            if (action != "") {
+                ctrl.Gui.Destroy()
+                ExecuteCommitAction(action)
+            } else {
+                MsgBox "Invalid selection. Please choose 1-2.", "Commit Selector", "IconX"
+            }
+        }
+    }
+
+    ; Cancel function for commit selector
+    CancelCommit(ctrl, *) {
+        ctrl.Gui.Destroy()
+    }
+
+    ; Ctrl+, / Ctrl+Q : Fold/Unfold all directories — disabled (UIA breaks VS Code/Cursor).
+    ; Functions kept in hotif_scroll_ai.ahk for possible reuse. Documented on cheat sheet only.
+
+    ; Alt+N freed (review next file unused). Body kept for possible reuse.
+    Editor_ReviewNextFile_Unused(*) {
+
+        try {
+            win := WinExist("A")
+            if (!win) {
+                return
+            }
+            root := UIA.ElementFromHandle(win)
+            Sleep 100  ; Allow UI to update
+
+            savedReview := UiElements_TrySaved(root, Editor_UiElementAppKey(), "ReviewNext")
+            clickedSaved := false
+            if (savedReview) {
                 try {
-                    parentBtn := UIA.TreeWalkerTrue.GetParentElement(reviewText)
-                    if (parentBtn) {
-                        try {
-                            if parentBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                                parentBtn.InvokePattern.Invoke()
-                            } else {
-                                parentBtn.Click()
+                    if savedReview.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+                        savedReview.InvokePattern.Invoke()
+                    else
+                        savedReview.Click()
+                    clickedSaved := true
+                } catch {
+                    try {
+                        savedReview.Click()
+                        clickedSaved := true
+                    }
+                }
+            }
+            if (clickedSaved)
+                return
+
+            ; Strategy 1: Scope to editor part (workbench.parts.editor), find "Review next file" Text, then click its parent Group (the button)
+            editorPart := ""
+            try editorPart := root.FindFirst({ AutomationId: "workbench.parts.editor", Type: 50026 })
+            if (editorPart) {
+                reviewText := ""
+                try reviewText := editorPart.FindFirst({ Name: "Review next file", Type: 50020 })
+                if (reviewText) {
+                    try {
+                        parentBtn := UIA.TreeWalkerTrue.GetParentElement(reviewText)
+                        if (parentBtn) {
+                            try {
+                                if parentBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                                    parentBtn.InvokePattern.Invoke()
+                                } else {
+                                    parentBtn.Click()
+                                }
+                                return
+                            } catch {
+                                try reviewText.Click()
+                                return
                             }
-                            return
-                        } catch {
-                            try reviewText.Click()
-                            return
                         }
+                    } catch {
+                        try reviewText.Click()
+                        return
+                    }
+                }
+            }
+
+            ; Strategy 2: Root-level find by Name "Review next file" or "Review" (Type 50020)
+            reviewEl := root.FindFirst({ Name: "Review next file", Type: 50020 })
+            if !reviewEl {
+                reviewEl := root.FindFirst({ Name: "Review", Type: 50020 })
+            }
+            if !reviewEl {
+                allTexts := root.FindAll({ Type: 50020 })
+                for text in allTexts {
+                    name := ""
+                    try name := text.Name
+                    if (name = "Review" || name = "Review next file" || InStr(name, "Review next file")) {
+                        reviewEl := text
+                        break
+                    }
+                }
+            }
+
+            if (reviewEl) {
+                ; Prefer clicking parent (the button Group) so the clickable area is used
+                try {
+                    parentBtn := UIA.TreeWalkerTrue.GetParentElement(reviewEl)
+                    if (parentBtn) {
+                        try parentBtn.Click()
+                        catch {
+                            try reviewEl.Click()
+                        }
+                        return
                     }
                 } catch {
-                    try reviewText.Click()
-                    return
                 }
-            }
-        }
-
-        ; Strategy 2: Root-level find by Name "Review next file" or "Review" (Type 50020)
-        reviewEl := root.FindFirst({ Name: "Review next file", Type: 50020 })
-        if !reviewEl {
-            reviewEl := root.FindFirst({ Name: "Review", Type: 50020 })
-        }
-        if !reviewEl {
-            allTexts := root.FindAll({ Type: 50020 })
-            for text in allTexts {
-                name := ""
-                try name := text.Name
-                if (name = "Review" || name = "Review next file" || InStr(name, "Review next file")) {
-                    reviewEl := text
-                    break
-                }
-            }
-        }
-
-        if (reviewEl) {
-            ; Prefer clicking parent (the button Group) so the clickable area is used
-            try {
-                parentBtn := UIA.TreeWalkerTrue.GetParentElement(reviewEl)
-                if (parentBtn) {
-                    try parentBtn.Click()
-                    catch {
-                        try reviewEl.Click()
+                try {
+                    if reviewEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                        reviewEl.InvokePattern.Invoke()
+                    } else {
+                        reviewEl.Click()
                     }
-                    return
+                } catch {
+                    try reviewEl.Click()
                 }
-            } catch {
             }
-            try {
-                if reviewEl.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-                    reviewEl.InvokePattern.Invoke()
-                } else {
-                    reviewEl.Click()
+        } catch Error as e {
+            ; If all else fails, silently fail (no fallback action defined)
+        }
+    }
+
+    ; Gemini (Chrome): scroll the conversation pane to the bottom (JS-first shared helper).
+    ; Trade-off / fallback documented in Lib/ChromeChatScroll.ahk.
+    GeminiScrollFeedToBottom_Chrome(hwnd) {
+        try {
+            preUia := 0
+            try preUia := UIA_Browser("ahk_id " hwnd)
+            pf := IsObject(preUia) ? FindGeminiPromptField(preUia) : 0
+            snapshot := ChromeChat_ComposerSnapshot(pf)
+
+            uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
+            if (!IsObject(uia))
+                uia := preUia
+
+            if (!IsObject(pf) && IsObject(uia))
+                pf := FindGeminiPromptField(uia)
+            if (pf) {
+                try pf.ScrollIntoView()
+                catch {
                 }
-            } catch {
-                try reviewEl.Click()
             }
+            ChromeChat_ComposerRestore(pf, snapshot)
+        } catch {
         }
-    } catch Error as e {
-        ; If all else fails, silently fail (no fallback action defined)
     }
-}
 
-; Gemini (Chrome): scroll the conversation pane to the bottom (JS-first shared helper).
-; Trade-off / fallback documented in Lib/ChromeChatScroll.ahk.
-GeminiScrollFeedToBottom_Chrome(hwnd) {
-    try {
-        preUia := 0
-        try preUia := UIA_Browser("ahk_id " hwnd)
-        pf := IsObject(preUia) ? FindGeminiPromptField(preUia) : 0
-        snapshot := ChromeChat_ComposerSnapshot(pf)
-
-        uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
-        if (!IsObject(uia))
-            uia := preUia
-
-        if (!IsObject(pf) && IsObject(uia))
-            pf := FindGeminiPromptField(uia)
-        if (pf) {
-            try pf.ScrollIntoView()
-            catch {
-            }
-        }
-        ChromeChat_ComposerRestore(pf, snapshot)
-    } catch {
+    ; Easy Selection
+    ; Alt + 1 : Easy Selection - 1st item
+    !1::
+    {
+        Send "{Enter}"
     }
-}
 
-; Easy Selection
-; Alt + 1 : Easy Selection - 1st item
-!1::
-{
-    Send "{Enter}"
-}
+    ; Alt + 2 : Easy Selection - 2nd item
+    !2::
+    {
+        Send "{Down}"
+        Send "{Enter}"
+    }
 
-; Alt + 2 : Easy Selection - 2nd item
-!2::
-{
-    Send "{Down}"
-    Send "{Enter}"
-}
+    ; Alt + 3 : Easy Selection - 3rd item
+    !3::
+    {
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Enter}"
+    }
 
-; Alt + 3 : Easy Selection - 3rd item
-!3::
-{
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+    ; Alt + 4 : Easy Selection - 4th item
+    !4::
+    {
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Enter}"
+    }
 
-; Alt + 4 : Easy Selection - 4th item
-!4::
-{
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Alt + 5 : Easy Selection - 5th item
-!5::
-{
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+    ; Alt + 5 : Easy Selection - 5th item
+    !5::
+    {
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Down}"
+        Send "{Enter}"
+    }

@@ -591,6 +591,72 @@ Antigravity_FocusMessageInput(hwnd := 0) {
     return false
 }
 
+; Click the Agent model picker button ("Select model, current: <Model>") in Antigravity IDE.
+; Opens the Agent sidebar if collapsed.
+Antigravity_ClickModelButton(hwnd := 0) {
+    try {
+        if (!hwnd)
+            hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+
+        root := Antigravity_EnsureAgentOpen(hwnd)
+        if (!root)
+            return false
+
+        savedModel := UiElements_TrySaved(root, "Antigravity IDE.exe", "PickModel")
+        btn := savedModel
+
+        if (!btn) {
+            try btn := root.FindFirst({ Type: 50000, Name: "Select model", matchmode: "Substring", cs: false })
+            if (!btn) {
+                try btn := root.FindFirst({ Name: "Select model", matchmode: "Substring", cs: false })
+            }
+        }
+
+        if (!btn) {
+            try {
+                inp := root.FindFirst({ Name: "Message input", matchmode: "Substring" })
+                if (inp && inp.Parent) {
+                    btn := inp.Parent.FindFirst({ Name: "Select model", matchmode: "Substring", cs: false })
+                }
+            } catch {
+            }
+        }
+
+        if (!btn)
+            return false
+
+        ; Try InvokePattern first if available, then Click, then physical click, then SetFocus + Enter
+        try {
+            if btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                btn.InvokePattern.Invoke()
+                return true
+            }
+        } catch {
+        }
+        try {
+            btn.Click()
+            return true
+        } catch {
+        }
+        try {
+            btn.Click("left")
+            return true
+        } catch {
+        }
+        try {
+            btn.SetFocus()
+            Sleep 40
+            Send "{Enter}"
+            return true
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
 ; Open Agent conversation history UI (icon links in agent header, then palette fallback).
 ; Header icons above Agent Conversation are nameless. History is the 2nd icon
 ; left-to-right after the conversation title (antigravity.md …,24,2 / 24,3).
