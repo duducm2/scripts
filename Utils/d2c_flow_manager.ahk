@@ -514,6 +514,7 @@ class D2C_FlowManager {
         this.HasCopiedForThisResponse := false
         this.ShowReplyHereAfterSend := false
         this.MonitorInitialTitle := ""
+        this.CdpReplyCountBefore := -1
     }
 
     ; --- Entry Points ---
@@ -1285,6 +1286,7 @@ class D2C_FlowManager {
                 return false
             }
             this.GeminiHwnd := res.hwnd ? res.hwnd : 1
+            this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
             if (autoSubmit) {
                 if (presetMode = "finance_daily" || presetMode = "task_pack") {
                     AiCompanion_DisarmResponseWatch()
@@ -1294,6 +1296,8 @@ class D2C_FlowManager {
                     return true
                 }
                 this.StartGeminiMonitor()
+                if (res.started)
+                    this.MonitorButtonEverFound := true
             } else {
                 this.Reset()
             }
@@ -1488,6 +1492,43 @@ class D2C_FlowManager {
         if (this.MonitorRetryCount > this.MonitorMaxRetries) {
             SetTimer(this.MonitorTimer, 0)
             this.Reset()
+            return
+        }
+
+        if (AiCompanionMode_IsCDP(companion)) {
+            st := AiCompanionCDP_Status(companion)
+            if (!st.ok)
+                return
+            if (st.generating) {
+                this.MonitorButtonEverFound := true
+                return
+            }
+            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore) : this.MonitorButtonEverFound
+            if (!hasNewReply)
+                return
+
+            SetTimer(this.MonitorTimer, 0)
+            isTrulyDone := true
+            loop 2 {
+                Sleep 300
+                st2 := AiCompanionCDP_Status(companion)
+                if (!st2.ok || st2.generating || (this.CdpReplyCountBefore >= 0 && st2.replyCount <= this.CdpReplyCountBefore)) {
+                    isTrulyDone := false
+                    break
+                }
+            }
+            if (isTrulyDone) {
+                try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
+                catch {
+                }
+                if (this.ShowReplyHereAfterSend) {
+                    this.CurrentPhase := "PromptingAction"
+                    this.OnActionH()
+                } else
+                    this.PromptForResponseAction()
+            } else {
+                SetTimer(this.MonitorTimer, 500)
+            }
             return
         }
 

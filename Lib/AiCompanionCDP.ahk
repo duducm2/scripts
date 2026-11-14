@@ -282,6 +282,7 @@ AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImag
     return {
         ok: res.ok,
         started: _AiCDP_JsonGetBool(res.raw, "started", false),
+        replyCountBefore: _AiCDP_JsonGetInt(res.raw, "reply_count_before", -1),
         hwnd: _AiCDP_JsonGetInt(res.raw, "hwnd", 0),
         error: res.error
     }

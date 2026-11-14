@@ -169,12 +169,28 @@ class CDPBridge:
         return bool(
             page.evaluate(
                 """() => {
+                    const sel =
+                        'button.send-button.stop, ' +
+                        'button[aria-label="Stop" i], ' +
+                        'button[aria-label="Stop response" i], ' +
+                        'button[aria-label="Stop generating" i], ' +
+                        'button[aria-label="Interromper" i], ' +
+                        'button[aria-label="Interromper resposta" i], ' +
+                        'button[aria-label="Interromper geração" i], ' +
+                        'mat-icon[data-mat-icon-name="stop"], ' +
+                        '[aria-label="Stop generating" i]';
+                    function isVisible(el) {
+                        const r = el.getBoundingClientRect();
+                        if (r.width <= 0 || r.height <= 0) return false;
+                        const cs = getComputedStyle(el);
+                        return cs.display !== 'none' && cs.visibility !== 'hidden';
+                    }
                     function check(root) {
                         if (!root) return false;
-                        if (root.querySelector(
-                            'button[aria-label*="Stop" i], button[aria-label*="Interromper" i], ' +
-                            'mat-icon[data-mat-icon-name="stop"], [aria-label*="Stop generating" i]'
-                        )) return true;
+                        for (const el of root.querySelectorAll(sel)) {
+                            if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                            if (isVisible(el)) return true;
+                        }
                         for (const el of root.querySelectorAll('*')) {
                             if (el.shadowRoot && check(el.shadowRoot)) return true;
                         }
@@ -345,6 +361,7 @@ class CDPBridge:
             time.sleep(0.12)
 
         if submit:
+            reply_count_before = len(self._get_response_texts(page, enterprise))
             page.keyboard.press("Enter")
             # Wait briefly to confirm generation started
             deadline = time.time() + 4.0
@@ -354,7 +371,13 @@ class CDPBridge:
                     started = True
                     break
                 time.sleep(0.15)
-            return {"ok": True, "submitted": True, "started": started, "hwnd": self._find_cdp_chrome_hwnd()}
+            return {
+                "ok": True,
+                "submitted": True,
+                "started": started,
+                "reply_count_before": reply_count_before,
+                "hwnd": self._find_cdp_chrome_hwnd(),
+            }
 
         return {"ok": True, "submitted": False, "hwnd": self._find_cdp_chrome_hwnd()}
 
