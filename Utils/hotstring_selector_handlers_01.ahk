@@ -1542,18 +1542,16 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         else
             HotstringGeminiBanner_Hide()
         if (!res.ok) {
-            try ShowCenteredOverlay_Utils("❌ CDP paste failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
-            catch {
-            }
+            AiCompanionCDP_NotifyError("Paste to " . aiLabel, res.error, companion)
             return
         }
         try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         catch {
         }
         if (shouldSubmit) {
-            if (res.started)
-                AiCompanion_ArmResponseWatch(res.hwnd ? res.hwnd : 1, companion)
-            try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP)", 1400, BANNER_ACCENT_SUCCESS)
+            rcBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
+            AiCompanion_ArmResponseWatch(res.hwnd ? res.hwnd : 1, companion, 0, rcBefore)
+            try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP) — waiting for reply…", 1300, BANNER_ACCENT_INFO)
             catch {
             }
         } else {

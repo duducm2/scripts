@@ -32,8 +32,10 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     if (AiCompanionMode_IsCDP("gemini")) {
         textToPaste := (optionalPromptText != "") ? optionalPromptText : A_Clipboard
         res := AiCompanionCDP_Paste("gemini", textToPaste, false)
-        if (!res.ok)
+        if (!res.ok) {
+            AiCompanionCDP_NotifyError("Paste to Gemini", res.error, "gemini")
             return 0
+        }
         ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         return res.hwnd ? res.hwnd : 1
     }

@@ -229,10 +229,62 @@ AiCompanionCDP_EnsureServer() {
     return false
 }
 
+global g_AiCompanionCDP_LastError := ""
+
+AiCompanionCDP_GetLastError() {
+    global g_AiCompanionCDP_LastError
+    return g_AiCompanionCDP_LastError
+}
+
+AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
+    err := Trim(rawErr)
+    if (err = "")
+        return "Unknown CDP error — check companion Chrome window"
+    low := StrLower(err)
+    compLabel := (StrLower(Trim(companionId)) = "enterprise") ? "Gemini Enterprise" : "Gemini"
+    if (InStr(low, "auth_required"))
+        return "Sign in required in CDP Chrome — open " . compLabel . " and log in"
+    if (InStr(low, "cdp_not_running") || InStr(low, "cdp_launch_failed") || InStr(low, "cdp_unreachable") || InStr(low, "econnrefused"))
+        return "CDP Chrome not reachable (port 9222) — reopen " . compLabel
+    if (InStr(low, "cdp server unavailable"))
+        return "CDP bridge failed to start — check Python / port 8768"
+    if (InStr(low, "composer_not_found"))
+        return compLabel . " prompt box not found — wait for page load or sign in"
+    if (InStr(low, "no_response_found"))
+        return "No AI reply found in this " . compLabel . " chat yet"
+    if (InStr(low, "model_not_found:")) {
+        mName := Trim(SubStr(err, InStr(low, "model_not_found:") + 16))
+        return "Model '" . mName . "' not found in " . compLabel . " picker"
+    }
+    if (InStr(low, "empty_model"))
+        return "No model configured for " . compLabel . " — press Shift+L to set one"
+    if (InStr(low, "read_aloud_not_found"))
+        return "Read aloud button not available on last reply"
+    if (InStr(low, "new_chat_not_found"))
+        return "Could not start a new chat in " . compLabel . " CDP tab"
+    if (InStr(low, "unsupported companion"))
+        return "Current AI companion does not support CDP mode"
+    return err
+}
+
+AiCompanionCDP_NotifyError(actionLabel, rawErr := "", companionId := "", durationMs := 2800) {
+    global g_AiCompanionCDP_LastError
+    err := (rawErr != "") ? rawErr : g_AiCompanionCDP_LastError
+    msg := "❌ " . actionLabel . ": " . AiCompanionCDP_FormatError(err, companionId)
+    try ShowCenteredOverlay_Utils(msg, durationMs, BANNER_ACCENT_ERROR)
+    catch {
+        try ToolTip(msg)
+        catch {
+        }
+    }
+}
+
 AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
-    global AI_COMPANION_CDP_PORT
-    if !AiCompanionCDP_EnsureServer()
+    global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError
+    if !AiCompanionCDP_EnsureServer() {
+        g_AiCompanionCDP_LastError := "CDP server unavailable"
         return { ok: false, raw: "", error: "CDP server unavailable" }
+    }
 
     body := _AiCDP_JsonEncode(payload)
     try {
@@ -245,8 +297,10 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
         raw := whr.ResponseText
         ok := _AiCDP_JsonGetBool(raw, "ok", false)
         err := _AiCDP_JsonGetStr(raw, "error", "")
+        g_AiCompanionCDP_LastError := ok ? "" : err
         return { ok: ok, raw: raw, error: err }
     } catch as e {
+        g_AiCompanionCDP_LastError := e.Message
         return { ok: false, raw: "", error: e.Message }
     }
 }
@@ -321,8 +375,11 @@ AiCompanionCDP_CopyLast(companionId := "", isCode := false, playChimeAndNotify :
     if (!res.ok)
         return false
     text := _AiCDP_JsonGetStr(res.raw, "text", "")
-    if (Trim(text) = "")
+    if (Trim(text) = "") {
+        global g_AiCompanionCDP_LastError
+        g_AiCompanionCDP_LastError := "NO_RESPONSE_FOUND"
         return false
+    }
     try A_Clipboard := text
     catch {
         return false

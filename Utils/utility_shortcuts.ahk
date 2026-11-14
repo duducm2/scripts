@@ -411,11 +411,14 @@ GlobalAICompanionOpenOrFocus() {
 ; (Macros menu restores the pre-selector window before calling us; #!q/#!m use the live foreground).
 GlobalAICompanionSelectRole(role) {
     if (AiCompanionMode_IsCDP()) {
-        ok := AiCompanionModels_SelectRole(GlobalAICompanionModelsId(), role)
+        compId := GlobalAICompanionModelsId()
+        ok := AiCompanionModels_SelectRole(compId, role)
         if (ok) {
             try ShowCenteredOverlay_Utils("⚡ Switched model (" . role . ") via CDP", 1200, BANNER_ACCENT_SUCCESS)
             catch {
             }
+        } else {
+            AiCompanionCDP_NotifyError("Switch model (" . role . ")", AiCompanionCDP_GetLastError(), compId)
         }
         return ok
     }
@@ -471,7 +474,7 @@ MacroAICompanionNewChat(*) {
         if (ok)
             AiCompanion_ShowNewChatBanner(GlobalAICompanionModelsId())
         else
-            ShowCenteredOverlay_Utils("❌ New chat failed via CDP.", 2000, BANNER_ACCENT_ERROR)
+            AiCompanionCDP_NotifyError("New chat", AiCompanionCDP_GetLastError(), companion)
         return ok
     }
     global g_UtilitySelectorRestoreHwnd
@@ -557,7 +560,7 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
         try clipText := A_Clipboard
         res := AiCompanionCDP_Paste(companionId, clipText, false)
         if (!res.ok) {
-            ShowCenteredOverlay_Utils("❌ CDP paste failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+            AiCompanionCDP_NotifyError("Paste to " . label, res.error, companionId)
             return false
         }
         ShowCenteredOverlay_Utils("📋 Pasted to " . label . " (CDP)", 1200, BANNER_ACCENT_SUCCESS)

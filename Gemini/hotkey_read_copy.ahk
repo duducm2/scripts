@@ -27,6 +27,8 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     if (AiCompanionMode_IsCDP("gemini")) {
         ok := AiCompanionCDP_CopyLast("gemini", false, playChimeAndNotify)
+        if (!ok && playChimeAndNotify)
+            AiCompanionCDP_NotifyError("Copy reply", AiCompanionCDP_GetLastError(), "gemini")
         GeminiPerfLog("copy", t0)
         return ok
     }
@@ -92,6 +94,8 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     if (AiCompanionMode_IsCDP("gemini")) {
         ok := AiCompanionCDP_CopyLast("gemini", true, playChimeAndNotify)
+        if (!ok && playChimeAndNotify)
+            AiCompanionCDP_NotifyError("Copy code", AiCompanionCDP_GetLastError(), "gemini")
         GeminiPerfLog("copy_code", t0)
         return ok
     }

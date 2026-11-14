@@ -1280,8 +1280,9 @@ class D2C_FlowManager {
             }
             textToSend := (optionalSnippet != "") ? optionalSnippet : dictation
             res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths)
+            aiLabel := GetGlobalAIProviderLabel()
             if (!res.ok) {
-                ShowCenteredOverlay_Utils("❌ CDP send failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+                AiCompanionCDP_NotifyError("Send to " . aiLabel, res.error, this.CompanionId)
                 this.Reset()
                 return false
             }
@@ -1290,15 +1291,24 @@ class D2C_FlowManager {
             if (autoSubmit) {
                 if (presetMode = "finance_daily" || presetMode = "task_pack") {
                     AiCompanion_DisarmResponseWatch()
+                    try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP)", 1400, BANNER_ACCENT_SUCCESS)
+                    catch {
+                    }
                     global g_D2C_DictationSubmitMenuCycleFinished
                     g_D2C_DictationSubmitMenuCycleFinished := true
                     this.Reset()
                     return true
                 }
+                try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP) — waiting for reply…", 1300, BANNER_ACCENT_INFO)
+                catch {
+                }
                 this.StartGeminiMonitor()
                 if (res.started)
                     this.MonitorButtonEverFound := true
             } else {
+                try ShowCenteredOverlay_Utils("📋 Pasted to " . aiLabel . " (CDP)", 1200, BANNER_ACCENT_SUCCESS)
+                catch {
+                }
                 this.Reset()
             }
             return true
@@ -1491,6 +1501,11 @@ class D2C_FlowManager {
         this.MonitorRetryCount++
         if (this.MonitorRetryCount > this.MonitorMaxRetries) {
             SetTimer(this.MonitorTimer, 0)
+            if (AiCompanionMode_IsCDP(companion)) {
+                try ShowCenteredOverlay_Utils("⏱ Timed out waiting for " . GetGlobalAIProviderLabel() . " reply (CDP) — open companion to check", 3000, BANNER_ACCENT_ERROR)
+                catch {
+                }
+            }
             this.Reset()
             return
         }
@@ -1901,12 +1916,12 @@ class D2C_FlowManager {
                 this.HasCopiedForThisResponse := true
                 if (readAloud) {
                     if (!AiCompanionCDP_ReadAloud(companion))
-                        ShowCenteredOverlay_Utils("❌ Read aloud failed", 3000, BANNER_ACCENT_ERROR)
+                        AiCompanionCDP_NotifyError("Read aloud", AiCompanionCDP_GetLastError(), companion)
                 } else {
                     try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
                 }
             } else {
-                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
+                AiCompanionCDP_NotifyError("Copy reply", AiCompanionCDP_GetLastError(), companion)
             }
             return clipOk
         }

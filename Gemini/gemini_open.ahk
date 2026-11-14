@@ -369,9 +369,13 @@ GeminiOpen_NewCompanionTab() {
     if (AiCompanionMode_IsCDP(companion)) {
         res := AiCompanionCDP_Ensure(companion, true, true)
         if (!res.ok)
-            ShowCenteredOverlay_Utils("❌ CDP new tab failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
-        else
+            AiCompanionCDP_NotifyError("Open new tab", res.error, companion)
+        else {
             Utils_PlayGeminiFocusedChime()
+            try ShowCenteredOverlay_Utils("🌐 Opened new " . (companion = "enterprise" ? "Enterprise" : "Gemini") . " tab (CDP)", 1200, BANNER_ACCENT_SUCCESS)
+            catch {
+            }
+        }
         return
     }
     hwnd := GeminiOpen_CompanionHwnd()
@@ -431,9 +435,13 @@ GeminiOpen_OpenOrFocus() {
     if (AiCompanionMode_IsCDP(companion)) {
         res := AiCompanionCDP_Ensure(companion, true, false)
         if (!res.ok)
-            ShowCenteredOverlay_Utils("❌ CDP open failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
-        else
+            AiCompanionCDP_NotifyError("Open companion", res.error, companion)
+        else {
             Utils_PlayGeminiFocusedChime()
+            try ShowCenteredOverlay_Utils("🌐 Focused " . (companion = "enterprise" ? "Enterprise" : "Gemini") . " (CDP)", 1000, BANNER_ACCENT_SUCCESS)
+            catch {
+            }
+        }
         return res.ok
     }
     if (companion = "enterprise")

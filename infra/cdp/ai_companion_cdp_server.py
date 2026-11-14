@@ -129,6 +129,19 @@ class CDPBridge:
         return None
 
     @staticmethod
+    def _is_auth_page(page) -> bool:
+        try:
+            url = (page.url or "").lower()
+            if any(k in url for k in ("accounts.google.com", "login.microsoftonline.com", "servicelogin", "/signin")):
+                return True
+            title = (page.title() or "").lower()
+            if any(k in title for k in ("sign in", "fazer login", "entrar")):
+                return True
+        except Exception:
+            pass
+        return False
+
+    @staticmethod
     def _find_cdp_chrome_hwnd(title_needle: str = "") -> int:
         user32 = ctypes.windll.user32
         matches: list[int] = []
@@ -341,6 +354,8 @@ class CDPBridge:
         page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
         composer = self._find_composer(page, timeout_s=12.0)
         if composer is None:
+            if self._is_auth_page(page):
+                return {"ok": False, "error": "AUTH_REQUIRED"}
             return {"ok": False, "error": f"COMPOSER_NOT_FOUND on {page.url}"}
 
         if image_gen:
@@ -383,10 +398,14 @@ class CDPBridge:
 
     def submit(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
+        enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         page = self._find_or_open_page(companion, launch_if_down=False)
         composer = self._find_composer(page, timeout_s=5.0)
+        if composer is None and self._is_auth_page(page):
+            return {"ok": False, "error": "AUTH_REQUIRED"}
         if composer is not None:
             composer.click()
+        reply_count_before = len(self._get_response_texts(page, enterprise))
         page.keyboard.press("Enter")
         deadline = time.time() + 4.0
         started = False
@@ -395,7 +414,7 @@ class CDPBridge:
                 started = True
                 break
             time.sleep(0.15)
-        return {"ok": True, "started": started}
+        return {"ok": True, "started": started, "reply_count_before": reply_count_before}
 
     def status(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
@@ -431,6 +450,8 @@ class CDPBridge:
     def new_chat(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        if self._is_auth_page(page):
+            return {"ok": False, "error": "AUTH_REQUIRED"}
         for sel in ['button:has-text("New chat")', 'button[aria-label*="New chat" i]', 'a[aria-label*="New chat" i]']:
             try:
                 btn = page.locator(sel).locator("visible=true").first
@@ -442,7 +463,9 @@ class CDPBridge:
                 pass
         page.keyboard.press("Control+Shift+O")
         time.sleep(0.3)
-        return {"ok": True}
+        if self._find_composer(page, timeout_s=2.0) is not None:
+            return {"ok": True}
+        return {"ok": False, "error": "NEW_CHAT_NOT_FOUND"}
 
     def select_model(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
@@ -450,6 +473,8 @@ class CDPBridge:
         if not model_name:
             return {"ok": False, "error": "EMPTY_MODEL"}
         page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        if self._is_auth_page(page):
+            return {"ok": False, "error": "AUTH_REQUIRED"}
         # Open model picker button
         for sel in [
             'button[aria-label*="Choose model" i]',

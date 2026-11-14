@@ -477,6 +477,8 @@ AiCompanion_StartNewChat(companion) {
         ok := AiCompanionCDP_NewChat(companion)
         if (ok)
             AiCompanion_ShowNewChatBanner(companion)
+        else
+            AiCompanionCDP_NotifyError("New chat", AiCompanionCDP_GetLastError(), companion)
         return ok
     }
     hwnd := WinExist("A")

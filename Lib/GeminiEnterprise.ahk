@@ -462,8 +462,10 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
     if (AiCompanionMode_IsCDP("enterprise")) {
         textToPaste := (optionalPromptText != "") ? optionalPromptText : A_Clipboard
         res := AiCompanionCDP_Paste("enterprise", textToPaste, autoSubmit)
-        if (!res.ok)
+        if (!res.ok) {
+            AiCompanionCDP_NotifyError("Paste to Gemini Enterprise", res.error, "enterprise")
             return 0
+        }
         GeminiEnterprise_PlayFocusedChime()
         return res.hwnd ? res.hwnd : 1
     }
@@ -1690,12 +1692,13 @@ class GeminiEnterpriseAsyncLookup {
             res := AiCompanionCDP_Paste("enterprise", fullPrompt, true)
             if (!res.ok) {
                 StandardLoadingBar_Hide(0)
-                ShowCenteredOverlay_Utils("❌ CDP lookup failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+                AiCompanionCDP_NotifyError("Enterprise lookup", res.error, "enterprise")
                 return
             }
             this.IsCDP := true
             this.RetryCount := 0
             this.ButtonEverFound := res.started
+            this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
             GeminiEnterpriseBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ENTERPRISE_ASYNC_POLL_MS)
             return
         }
@@ -1760,14 +1763,20 @@ class GeminiEnterpriseAsyncLookup {
             if (this.RetryCount > this.MaxRetries) {
                 GeminiEnterpriseBackgroundStopTimer(this)
                 StandardLoadingBar_Hide(0)
+                try ShowCenteredOverlay_Utils("⏱ Timed out waiting for Enterprise lookup (CDP) — open Enterprise to check", 3000, BANNER_ACCENT_ERROR)
+                catch {
+                }
                 return
             }
             st := AiCompanionCDP_Status("enterprise")
+            if (!st.ok)
+                return
             if (st.generating) {
                 this.ButtonEverFound := true
                 return
             }
-            if (this.ButtonEverFound || this.RetryCount >= 4) {
+            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore) : (this.ButtonEverFound || this.RetryCount >= 4)
+            if (hasNewReply) {
                 GeminiEnterpriseBackgroundStopTimer(this)
                 this.OnStreamingCompleted()
             }
@@ -1789,6 +1798,7 @@ class GeminiEnterpriseAsyncLookup {
         if (this.IsCDP) {
             if (!AiCompanionCDP_CopyLast("enterprise", false, false)) {
                 StandardLoadingBar_Hide(0)
+                AiCompanionCDP_NotifyError("Copy Enterprise lookup", AiCompanionCDP_GetLastError(), "enterprise")
                 return
             }
             bannerText := A_Clipboard

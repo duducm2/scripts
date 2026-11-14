@@ -61,12 +61,13 @@ class GeminiAsyncLookup {
             res := AiCompanionCDP_Paste("gemini", fullPrompt, true)
             if (!res.ok) {
                 StandardLoadingBar_Hide(0)
-                ShowCenteredOverlay_Utils("❌ CDP lookup failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+                AiCompanionCDP_NotifyError("Gemini lookup", res.error, "gemini")
                 return
             }
             this.IsCDP := true
             this.RetryCount := 0
             this.ButtonEverFound := res.started
+            this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
             GeminiBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ASYNC_POLL_MS)
             return
         }
@@ -142,14 +143,20 @@ class GeminiAsyncLookup {
             if (this.RetryCount > this.MaxRetries) {
                 GeminiBackgroundStopTimer(this)
                 StandardLoadingBar_Hide(0)
+                try ShowCenteredOverlay_Utils("⏱ Timed out waiting for Gemini lookup (CDP) — open Gemini to check", 3000, BANNER_ACCENT_ERROR)
+                catch {
+                }
                 return
             }
             st := AiCompanionCDP_Status("gemini")
+            if (!st.ok)
+                return
             if (st.generating) {
                 this.ButtonEverFound := true
                 return
             }
-            if (this.ButtonEverFound || this.RetryCount >= 4) {
+            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore) : (this.ButtonEverFound || this.RetryCount >= 4)
+            if (hasNewReply) {
                 GeminiBackgroundStopTimer(this)
                 this.OnStreamingCompleted()
             }
@@ -176,6 +183,7 @@ class GeminiAsyncLookup {
         if (this.IsCDP) {
             if (!AiCompanionCDP_CopyLast("gemini", false, false)) {
                 StandardLoadingBar_Hide(0)
+                AiCompanionCDP_NotifyError("Copy lookup", AiCompanionCDP_GetLastError(), "gemini")
                 return
             }
             bannerText := A_Clipboard

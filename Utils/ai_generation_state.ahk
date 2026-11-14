@@ -573,7 +573,7 @@ AiCompanion_FinishConfirmedSubmit(hwnd, companionId, originHwnd := 0) {
 
 ; One existing completion watch after a catalog Send click. No UIA and no Send search.
 ; Pack pipeline and an in-progress D2C watch keep their own timer.
-AiCompanion_ArmResponseWatch(hwnd, companionId, originHwnd := 0) {
+AiCompanion_ArmResponseWatch(hwnd, companionId, originHwnd := 0, replyCountBefore := -1) {
     global g_AiCompanionResponseWatchArmedBySend
     if (!AiCompanionMode_IsCDP(companionId) && (!hwnd || !WinExist("ahk_id " hwnd)))
         return false
@@ -589,6 +589,7 @@ AiCompanion_ArmResponseWatch(hwnd, companionId, originHwnd := 0) {
         return false
     flow.GeminiHwnd := hwnd
     flow.CompanionId := StrLower(Trim(companionId))
+    flow.CdpReplyCountBefore := replyCountBefore
     if (originHwnd && originHwnd != hwnd && WinExist("ahk_id " originHwnd))
         flow.OriginHwnd := originHwnd
     flow.StartGeminiMonitor()
