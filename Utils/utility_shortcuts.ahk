@@ -367,6 +367,8 @@ GlobalAICompanionHwndAndLabel(&hwnd, &label) {
 ; Open/focus the resolved companion (same peers as #!+I). Consumer Gemini may Send #!+i to Gemini.ahk.
 GlobalAICompanionOpenOrFocus() {
     companion := ResolveGlobalAICompanion()
+    if (AiCompanionMode_IsCDP(companion))
+        return !!AiCompanionCDP_Ensure(companion, true, false).ok
     if (companion = "enterprise")
         return !!GeminiEnterprise_OpenOrFocus()
     if (companion = "copilot")
@@ -408,6 +410,15 @@ GlobalAICompanionOpenOrFocus() {
 ; Captures the focused window first and reactivates it after the model switch
 ; (Macros menu restores the pre-selector window before calling us; #!q/#!m use the live foreground).
 GlobalAICompanionSelectRole(role) {
+    if (AiCompanionMode_IsCDP()) {
+        ok := AiCompanionModels_SelectRole(GlobalAICompanionModelsId(), role)
+        if (ok) {
+            try ShowCenteredOverlay_Utils("⚡ Switched model (" . role . ") via CDP", 1200, BANNER_ACCENT_SUCCESS)
+            catch {
+            }
+        }
+        return ok
+    }
     prevHwnd := 0
     try prevHwnd := WinGetID("A")
     catch {
@@ -454,6 +465,15 @@ MacroAICompanionDeepModel(*) {
 ; Macros [N] / #!+W → N: open resolved companion, then same New Chat as in-app Shift+N.
 ; After new chat, reactivate the window that was focused when #!+W opened Macros.
 MacroAICompanionNewChat(*) {
+    if (AiCompanionMode_IsCDP()) {
+        companion := ResolveGlobalAICompanion()
+        ok := AiCompanionCDP_NewChat(companion)
+        if (ok)
+            AiCompanion_ShowNewChatBanner(GlobalAICompanionModelsId())
+        else
+            ShowCenteredOverlay_Utils("❌ New chat failed via CDP.", 2000, BANNER_ACCENT_ERROR)
+        return ok
+    }
     global g_UtilitySelectorRestoreHwnd
     ; Prefer the hwnd captured at #!+W open — not whatever is foreground after menu teardown.
     prevHwnd := 0
@@ -532,6 +552,17 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
 
     companionId := ResolveGlobalAICompanion()
     label := GetGlobalAIProviderLabel()
+    if (AiCompanionMode_IsCDP(companionId)) {
+        clipText := ""
+        try clipText := A_Clipboard
+        res := AiCompanionCDP_Paste(companionId, clipText, false)
+        if (!res.ok) {
+            ShowCenteredOverlay_Utils("❌ CDP paste failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+            return false
+        }
+        ShowCenteredOverlay_Utils("📋 Pasted to " . label . " (CDP)", 1200, BANNER_ACCENT_SUCCESS)
+        return true
+    }
     hwnd := 0
     try {
         switch companionId {
@@ -590,8 +621,8 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
     mgr := D2C_FlowManager.GetInstance()
     ok := mgr.StartFromClipboard(originHwnd)
 
-    ; Guarantee focus returns to the previously active window
-    if (originHwnd && WinExist("ahk_id " originHwnd)) {
+    ; Guarantee focus returns to the previously active window (only needed in AHK UIA mode)
+    if (!AiCompanionMode_IsCDP() && originHwnd && WinExist("ahk_id " originHwnd)) {
         Sleep 120
         if (!AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionSend")) {
             Sleep 150
@@ -604,103 +635,12 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
 RegisterMacro(UtilityShortcuts_AICompanionPaste, "📋 AI companion paste clipboard", "")
 RegisterMacro(UtilityShortcuts_AICompanionSend, "🚀 AI companion send clipboard (response banner)", "")
 
-; Macros [T] — Test background CDP AI companion ("hi" -> display reply without focus/clipboard)
-global g_TestCDPCompanionBusy := false
-
-MacroTestCDPCompanion(*) {
-    global g_TestCDPCompanionBusy
-    if (g_TestCDPCompanionBusy) {
-        ShowCenteredOverlay_Utils("⏳ CDP test already running...", 1200, BANNER_ACCENT_INTERMEDIATE)
-        return
-    }
-    scriptPath := A_ScriptDir "\scratch\cdp_companion_test.py"
-    if (!FileExist(scriptPath)) {
-        ShowCenteredOverlay_Utils("❌ Missing scratch\cdp_companion_test.py", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    g_TestCDPCompanionBusy := true
-    isEnterprise := false
-    try isEnterprise := (ResolveGlobalAICompanion() = "enterprise")
-    catch {
-    }
-    ShowCenteredOverlay_Utils("🧪 Sending 'hi' via CDP (keep working)...", 1500, BANNER_ACCENT_INTERMEDIATE)
-
-    outFile := A_Temp "\ahk_cdp_test_" A_TickCount ".json"
-    extraArgs := isEnterprise ? " --enterprise" : ""
-    pyExe := ""
-    candidates := [
-        EnvGet("LOCALAPPDATA") "\Python\pythoncore-3.14-64\python.exe",
-        "C:\Users\fie7ca\AppData\Local\Python\pythoncore-3.14-64\python.exe",
-        A_WinDir "\py.exe"
-    ]
-    for candidate in candidates {
-        if (FileExist(candidate)) {
-            pyExe := candidate
-            break
-        }
-    }
-    if (pyExe = "")
-        pyExe := "py"
-    cmd := A_ComSpec ' /c ""' pyExe '" "' scriptPath '"' extraArgs ' > "' outFile '" 2>&1"'
-    pid := 0
-    try {
-        Run(cmd, A_ScriptDir, "Hide", &pid)
-    } catch as err {
-        g_TestCDPCompanionBusy := false
-        ShowCenteredOverlay_Utils("❌ Failed to run Python: " err.Message, 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    pollFn := MacroTestCDPCompanion_Poll.Bind(pid, outFile, A_TickCount, isEnterprise)
-    SetTimer(pollFn, 250)
+; Macros [T] — Toggle AI companion mode between CDP (background) and AHK UIA (foreground)
+MacroToggleAICompanionMode(*) {
+    AiCompanionMode_Toggle()
 }
 
-MacroTestCDPCompanion_Poll(pid, outFile, startTick, isEnterprise := false) {
-    global g_TestCDPCompanionBusy
-    if (ProcessExist(pid) && (A_TickCount - startTick) < 35000)
-        return
-
-    SetTimer(, 0)
-    g_TestCDPCompanionBusy := false
-
-    raw := ""
-    try {
-        if (FileExist(outFile)) {
-            raw := Trim(FileRead(outFile, "UTF-8"))
-            FileDelete(outFile)
-        }
-    } catch {
-    }
-
-    if (InStr(raw, '"CDP_NOT_RUNNING"')) {
-        targetUrl := isEnterprise ? GeminiEnterprise_GetLaunchUrl() : "https://gemini.google.com/app"
-        res := MsgBox(
-            "Chrome CDP on port 9222 is not running.`n`n"
-            . "Launch a minimized Chrome window with a dedicated GeminiCDP profile now?`n"
-            . "(First time only: restore it from the taskbar once to sign in.)",
-            "CDP AI Companion Test", "YesNo Icon?")
-        if (res = "Yes") {
-            profileDir := EnvGet("LOCALAPPDATA") "\GeminiCDP"
-            Run('chrome.exe --user-data-dir="' profileDir '" --remote-debugging-port=9222 --start-minimized "' targetUrl '"')
-        }
-        return
-    }
-
-    if (RegExMatch(raw, '"ok":\s*true,\s*"reply":\s*"((?:[^"\\]|\\.)*)"', &m)) {
-        reply := StrReplace(m[1], "\n", "`n")
-        reply := StrReplace(reply, '\"', '"')
-        reply := StrReplace(reply, "\\", "\")
-        preview := (StrLen(reply) > 220) ? SubStr(reply, 1, 220) "…" : reply
-        ShowCenteredOverlay_Utils("🤖 CDP Reply:`n" preview, 4500, BANNER_ACCENT_SUCCESS)
-        return
-    }
-
-    errMsg := raw != "" ? SubStr(raw, 1, 220) : "Unknown error (no output)"
-    ShowCenteredOverlay_Utils("❌ CDP Test failed:`n" errMsg, 3500, BANNER_ACCENT_ERROR)
-}
-
-RegisterMacro(MacroTestCDPCompanion, "🧪 Test CDP AI companion (background 'hi')", "t")
+RegisterMacro(MacroToggleAICompanionMode, "🔌 AI companion mode: CDP (background)", "t")
 
 ; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()

@@ -329,6 +329,8 @@ AiCompanionModels_Apply(companion, modelName) {
     modelName := Trim(modelName)
     if (modelName = "")
         return false
+    if (AiCompanionMode_IsCDP(companion))
+        return AiCompanionCDP_SelectModel(companion, modelName)
     if (companion = AI_COMPANION_GEMINI)
         return AiCompanionModels_ApplyGemini(modelName)
     if (companion = AI_COMPANION_ENTERPRISE)
@@ -432,7 +434,7 @@ AiCompanionModels_SelectRole(companion, role) {
         " model not configured — use Shift+L to set it", 2800, BANNER_ACCENT_INTERMEDIATE)
         return false
     }
-    if (companion = AI_COMPANION_ENTERPRISE) {
+    if (!AiCompanionMode_IsCDP(companion) && companion = AI_COMPANION_ENTERPRISE) {
         entHwnd := 0
         try entHwnd := GetGeminiEnterpriseWindowHwnd()
         catch {
@@ -471,6 +473,12 @@ AiCompanionModels_SelectRole(companion, role) {
 AiCompanion_StartNewChat(companion) {
     if !AiCompanionModels_IsValidCompanion(companion)
         return false
+    if (AiCompanionMode_IsCDP(companion)) {
+        ok := AiCompanionCDP_NewChat(companion)
+        if (ok)
+            AiCompanion_ShowNewChatBanner(companion)
+        return ok
+    }
     hwnd := WinExist("A")
     StandardLoadingBar_Show("⏳ New chat…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: hwnd, fontSize: 17 })
     ok := false

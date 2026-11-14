@@ -162,6 +162,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 #include %A_ScriptDir%\lib\CopilotWeb.ahk
 #include %A_ScriptDir%\lib\GeminiEnterprise.ahk
+#include %A_ScriptDir%\lib\AiCompanionCDP.ahk
 
 ; [Lib] Per-companion Fast/Deep/Models INI + apply helpers
 #include %A_ScriptDir%\lib\AiCompanionModels.ahk

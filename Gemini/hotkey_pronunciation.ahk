@@ -29,7 +29,7 @@ PronunciationHotkey_StartLookup(lang, selectedText) {
     modelReady := false
     try modelReady := MacroAICompanionQuickModel()
     finally HideSmallLoadingIndicator()
-    if !modelReady {
+    if (!modelReady && !AiCompanionMode_IsCDP()) {
         hwnd := 0
         label := ""
         GlobalAICompanionHwndAndLabel(&hwnd, &label)

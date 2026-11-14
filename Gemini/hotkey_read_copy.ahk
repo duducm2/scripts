@@ -25,6 +25,11 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    if (AiCompanionMode_IsCDP("gemini")) {
+        ok := AiCompanionCDP_CopyLast("gemini", false, playChimeAndNotify)
+        GeminiPerfLog("copy", t0)
+        return ok
+    }
     try {
         GeminiState.Invalidate()
         SetTitleMatchMode(2)
@@ -85,6 +90,11 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    if (AiCompanionMode_IsCDP("gemini")) {
+        ok := AiCompanionCDP_CopyLast("gemini", true, playChimeAndNotify)
+        GeminiPerfLog("copy_code", t0)
+        return ok
+    }
     try {
         GeminiState.Invalidate()
         SetTitleMatchMode(2)
@@ -180,7 +190,7 @@ HotkeyCopy_RunCopyLastMessage(gen := 0) {
         if (companion = "enterprise") {
             err := "Copy failed – ensure Gemini Enterprise is open and has a response"
             ok := GeminiEnterprise_CopyLastMessageToClipboard(opts)
-            if (ok) {
+            if (ok && !AiCompanionMode_IsCDP(companion)) {
                 if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
                     root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
                     if (IsObject(root))
@@ -196,7 +206,7 @@ HotkeyCopy_RunCopyLastMessage(gen := 0) {
             }
         } else {
             ok := CopyLastGeminiMessageToClipboard(opts)
-            if (ok) {
+            if (ok && !AiCompanionMode_IsCDP(companion)) {
                 if (hwnd := GetGeminiWindowHwnd())
                     FocusGeminiAskFieldForHwnd(hwnd, true)
             }
@@ -220,7 +230,7 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
         if (companion = "enterprise") {
             err := "No code snippet found – ensure Gemini Enterprise has a code block"
             ok := GeminiEnterprise_CopyLastCodeSnippetToClipboard(opts)
-            if (ok) {
+            if (ok && !AiCompanionMode_IsCDP(companion)) {
                 if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
                     root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
                     if (IsObject(root))
@@ -236,7 +246,7 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
             }
         } else {
             ok := CopyLastGeminiCodeSnippetToClipboard(opts)
-            if (ok) {
+            if (ok && !AiCompanionMode_IsCDP(companion)) {
                 if (hwnd := GetGeminiWindowHwnd())
                     FocusGeminiAskFieldForHwnd(hwnd, true)
             }

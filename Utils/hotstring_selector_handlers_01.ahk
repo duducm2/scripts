@@ -1514,6 +1514,55 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
     } else {
         HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
     }
+    if (AiCompanionMode_IsCDP(companion)) {
+        filePaths := []
+        if (doAttach && IsObject(contextEntries)) {
+            for entry in contextEntries {
+                if (IsObject(entry) && entry.HasProp("path") && entry.path != "")
+                    filePaths.Push(entry.path)
+            }
+        }
+        if (IsObject(extraAttachPaths)) {
+            for p in extraAttachPaths {
+                if (p != "")
+                    filePaths.Push(p)
+            }
+        }
+        fullText := ""
+        if (doPasteBody && expansion != "")
+            fullText := expansion
+        if (appendClip != "")
+            fullText := (fullText != "") ? (fullText . "`n" . appendClip) : appendClip
+        shouldSubmit := (pasteChoice = "send")
+        if (usedBusyBar)
+            PromptPaste_BusyEnsure(shouldSubmit ? "⏳ Sending via CDP…" : "⏳ Pasting via CDP…")
+        res := AiCompanionCDP_Paste(companion, fullText, shouldSubmit, filePaths, enableImageGen)
+        if (usedBusyBar)
+            PromptPaste_BusyHide(0)
+        else
+            HotstringGeminiBanner_Hide()
+        if (!res.ok) {
+            try ShowCenteredOverlay_Utils("❌ CDP paste failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+            catch {
+            }
+            return
+        }
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+        catch {
+        }
+        if (shouldSubmit) {
+            if (res.started)
+                AiCompanion_ArmResponseWatch(res.hwnd ? res.hwnd : 1, companion)
+            try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP)", 1400, BANNER_ACCENT_SUCCESS)
+            catch {
+            }
+        } else {
+            try ShowCenteredOverlay_Utils("📋 Pasted to " . aiLabel . " (CDP)", 1200, BANNER_ACCENT_SUCCESS)
+            catch {
+            }
+        }
+        return
+    }
     restoreFocus := ""
     playGeminiChime := false
     companionHwnd := 0

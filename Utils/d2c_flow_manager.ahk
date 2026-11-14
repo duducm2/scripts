@@ -279,6 +279,8 @@ D2C_CompanionHasStop(hwnd, companion) {
 }
 
 D2C_ProbeCompanionHasStop(hwnd, companion) {
+    if (AiCompanionMode_IsCDP(companion))
+        return AiCompanionCDP_Status(companion).generating
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     companion := StrLower(Trim(companion))
@@ -1262,6 +1264,41 @@ class D2C_FlowManager {
         }
 
         this.CompanionId := ResolveGlobalAICompanion()
+        if (AiCompanionMode_IsCDP(this.CompanionId)) {
+            filePaths := []
+            if (useRegistryPastePath) {
+                resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
+                if (resolved = false) {
+                    this.Reset()
+                    return false
+                }
+                for entry in resolved.entries {
+                    if (IsObject(entry) && entry.HasProp("path") && entry.path != "")
+                        filePaths.Push(entry.path)
+                }
+            }
+            textToSend := (optionalSnippet != "") ? optionalSnippet : dictation
+            res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths)
+            if (!res.ok) {
+                ShowCenteredOverlay_Utils("❌ CDP send failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+                this.Reset()
+                return false
+            }
+            this.GeminiHwnd := res.hwnd ? res.hwnd : 1
+            if (autoSubmit) {
+                if (presetMode = "finance_daily" || presetMode = "task_pack") {
+                    AiCompanion_DisarmResponseWatch()
+                    global g_D2C_DictationSubmitMenuCycleFinished
+                    g_D2C_DictationSubmitMenuCycleFinished := true
+                    this.Reset()
+                    return true
+                }
+                this.StartGeminiMonitor()
+            } else {
+                this.Reset()
+            }
+            return true
+        }
         if (useRegistryPastePath) {
             resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
             if (resolved = false) {
@@ -1402,6 +1439,10 @@ class D2C_FlowManager {
     }
 
     IsCompanionTabSwitched(companion := "") {
+        if (companion = "")
+            companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        if (AiCompanionMode_IsCDP(companion))
+            return false
         if (!this.GeminiHwnd || !DllCall("IsWindow", "ptr", this.GeminiHwnd) || !WinExist("ahk_id " this.GeminiHwnd))
             return true
         currentTitle := ""
@@ -1808,6 +1849,26 @@ class D2C_FlowManager {
 
         aiLabel := GetGlobalAIProviderLabel()
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+
+        if (AiCompanionMode_IsCDP(companion)) {
+            clipOk := AiCompanionCDP_CopyLast(companion, false, false)
+            if (clipOk) {
+                clip := Trim(A_Clipboard)
+                clipOk := (clip != "" && StrLen(clip) >= 10)
+            }
+            if (clipOk) {
+                this.HasCopiedForThisResponse := true
+                if (readAloud) {
+                    if (!AiCompanionCDP_ReadAloud(companion))
+                        ShowCenteredOverlay_Utils("❌ Read aloud failed", 3000, BANNER_ACCENT_ERROR)
+                } else {
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+                }
+            } else {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
+            }
+            return clipOk
+        }
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))

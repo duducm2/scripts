@@ -164,10 +164,33 @@ if (IS_WORK_ENVIRONMENT) {
 StandardLoadingBar_Update("⏳ Ensuring Clip Angel...")
 clipAngelOk := ClipAngel_EnsureRunning()
 
-; Open AI companion (same chord as Gemini/gemini_open.ahk #!+i).
-StandardLoadingBar_Update("⏳ Opening AI companion...")
-Sleep 3000  ; Gemini.ahk must finish auto-exec so #!+i is registered
-Send "#!+i"
+; Default AI companion mode to CDP (background) on Act startup and warm up the minimized CDP Chrome window.
+StandardLoadingBar_Update("⏳ Ensuring AI companion (CDP)...")
+try DirCreate(A_ScriptDir . "\assets\data")
+catch {
+}
+try IniWrite("cdp", A_ScriptDir . "\assets\data\ai_companion_mode.ini", "Mode", "Current")
+catch {
+}
+cdpUrl := IS_WORK_ENVIRONMENT
+    ? "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92?pli=1"
+    : "https://gemini.google.com/app"
+cdpProfile := EnvGet("LOCALAPPDATA") . "\GeminiCDP"
+try {
+    whr := ComObject("WinHttp.WinHttpRequest.5.1")
+    try whr.SetProxy(1)
+    whr.Open("GET", "http://127.0.0.1:9222/json/version", false)
+    whr.SetTimeouts(300, 300, 600, 600)
+    whr.Send()
+    cdpUp := (whr.Status = 200)
+} catch {
+    cdpUp := false
+}
+if (!cdpUp) {
+    try Run('chrome.exe --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --start-minimized "' . cdpUrl . '"', , "Min")
+    catch {
+    }
+}
 
 habitsFolder := notesFolder . "\habits"
 if (clipAngelOk)

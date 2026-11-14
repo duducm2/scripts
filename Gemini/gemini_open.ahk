@@ -365,6 +365,15 @@ GeminiOpen_FocusFreshPage(hwnd, companion, host, playChime := true) {
 
 ; New tab in the main companion window, loaded with a fresh companion page and a new chat.
 GeminiOpen_NewCompanionTab() {
+    companion := ResolveGlobalAICompanion()
+    if (AiCompanionMode_IsCDP(companion)) {
+        res := AiCompanionCDP_Ensure(companion, true, true)
+        if (!res.ok)
+            ShowCenteredOverlay_Utils("❌ CDP new tab failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+        else
+            Utils_PlayGeminiFocusedChime()
+        return
+    }
     hwnd := GeminiOpen_CompanionHwnd()
     if (!hwnd) {
         GeminiOpen_OpenOrFocus()
@@ -419,6 +428,14 @@ GeminiOpen_NewCompanionTab() {
 
 GeminiOpen_OpenOrFocus() {
     companion := ResolveGlobalAICompanion()
+    if (AiCompanionMode_IsCDP(companion)) {
+        res := AiCompanionCDP_Ensure(companion, true, false)
+        if (!res.ok)
+            ShowCenteredOverlay_Utils("❌ CDP open failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+        else
+            Utils_PlayGeminiFocusedChime()
+        return res.ok
+    }
     if (companion = "enterprise")
         return GeminiEnterprise_OpenOrFocus()
     if (companion = "copilot")

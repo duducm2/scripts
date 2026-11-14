@@ -459,6 +459,14 @@ GeminiEnterprise_FocusPromptOnly() {
 
 ; Navigate to Enterprise, focus composer, paste snippet (optional text or current clipboard).
 GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) {
+    if (AiCompanionMode_IsCDP("enterprise")) {
+        textToPaste := (optionalPromptText != "") ? optionalPromptText : A_Clipboard
+        res := AiCompanionCDP_Paste("enterprise", textToPaste, autoSubmit)
+        if (!res.ok)
+            return 0
+        GeminiEnterprise_PlayFocusedChime()
+        return res.hwnd ? res.hwnd : 1
+    }
     SetTitleMatchMode(2)
     hwnd := GetGeminiEnterpriseWindowHwnd()
     if (!hwnd) {
@@ -1295,6 +1303,8 @@ GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) 
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    if (AiCompanionMode_IsCDP("enterprise"))
+        return AiCompanionCDP_CopyLast("enterprise", false, playChimeAndNotify)
     try {
         SetTitleMatchMode(2)
         if (!enterpriseHwnd)
@@ -1343,6 +1353,8 @@ GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd :=
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    if (AiCompanionMode_IsCDP("enterprise"))
+        return AiCompanionCDP_CopyLast("enterprise", true, playChimeAndNotify)
     try {
         SetTitleMatchMode(2)
         if (!enterpriseHwnd)
@@ -1639,6 +1651,7 @@ class GeminiEnterpriseAsyncLookup {
         this.RetryCount := 0
         this.MaxRetries := GEMINI_ENTERPRISE_ASYNC_MAX_RETRIES
         this.ButtonEverFound := false
+        this.IsCDP := false
         if (selectedText != "")
             this.PreCopiedText := selectedText
     }
@@ -1659,6 +1672,31 @@ class GeminiEnterpriseAsyncLookup {
         if !clipOk {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Copy failed (no clipboard text).", 2400, BANNER_ACCENT_ERROR)
+            return
+        }
+        if (AiCompanionMode_IsCDP("enterprise")) {
+            selectedContent := A_Clipboard
+            promptName := this.Lang ? "pronunciation-lookup-" . this.Lang : "pronunciation-lookup"
+            lookupLangTitle := Map("pt", "Português brasileiro", "en", "English", "de", "Deutsch")
+            lead := ""
+            if (this.Lang != "" && lookupLangTitle.Has(this.Lang))
+                lead :=
+                    "Answer preamble (mandatory): The very first line of your reply must be exactly this language label (so the reader sees which lookup mode was used):`n"
+                    . lookupLangTitle[this.Lang]
+                    .
+                    "`nThe second line must be blank. After that, follow every instruction below—including the seven sections—with no section titles or markdown headings for those sections (this preamble is the only allowed title line).`n`n"
+            searchString := lead . RTrim(GetPromptText(promptName), "`r`n")
+            fullPrompt := searchString . "`n`nContent: " . selectedContent
+            res := AiCompanionCDP_Paste("enterprise", fullPrompt, true)
+            if (!res.ok) {
+                StandardLoadingBar_Hide(0)
+                ShowCenteredOverlay_Utils("❌ CDP lookup failed: " . res.error, 2200, BANNER_ACCENT_ERROR)
+                return
+            }
+            this.IsCDP := true
+            this.RetryCount := 0
+            this.ButtonEverFound := res.started
+            GeminiEnterpriseBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ENTERPRISE_ASYNC_POLL_MS)
             return
         }
         SetTitleMatchMode(2)
@@ -1717,6 +1755,24 @@ class GeminiEnterpriseAsyncLookup {
     }
 
     CheckCompletion() {
+        if (this.IsCDP) {
+            this.RetryCount++
+            if (this.RetryCount > this.MaxRetries) {
+                GeminiEnterpriseBackgroundStopTimer(this)
+                StandardLoadingBar_Hide(0)
+                return
+            }
+            st := AiCompanionCDP_Status("enterprise")
+            if (st.generating) {
+                this.ButtonEverFound := true
+                return
+            }
+            if (this.ButtonEverFound || this.RetryCount >= 4) {
+                GeminiEnterpriseBackgroundStopTimer(this)
+                this.OnStreamingCompleted()
+            }
+            return
+        }
         state := GeminiEnterprise_MonitorStreamingTransition(this, this.OnStreamingCompleted.Bind(this))
         if (state = "timeout")
             StandardLoadingBar_Hide(0)
@@ -1730,6 +1786,16 @@ class GeminiEnterpriseAsyncLookup {
     }
 
     RetrieveResponse() {
+        if (this.IsCDP) {
+            if (!AiCompanionCDP_CopyLast("enterprise", false, false)) {
+                StandardLoadingBar_Hide(0)
+                return
+            }
+            bannerText := A_Clipboard
+            StandardLoadingBar_Hide(0)
+            this.ShowResultBanner(bannerText)
+            return
+        }
         try WinActivate("ahk_id " this.EnterpriseHwnd)
         catch {
             StandardLoadingBar_Hide(0)

@@ -342,11 +342,13 @@ ImportWatcher_CompanionSubmitAiFixOnce(fixText) {
     try ImportMgmt_CloseIfOpen()
     catch {
     }
-    ; Leave focus on the AI companion window ("we start there").
-    try {
-        if (hwnd && WinExist("ahk_id " hwnd))
-            WinActivate("ahk_id " hwnd)
-    } catch {
+    ; Leave focus on the AI companion window ("we start there"), unless running in background CDP mode.
+    if (!AiCompanionMode_IsCDP(companionId)) {
+        try {
+            if (hwnd && WinExist("ahk_id " hwnd))
+                WinActivate("ahk_id " hwnd)
+        } catch {
+        }
     }
     return true
 }

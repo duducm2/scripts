@@ -11,6 +11,7 @@ try Hotkey("#!+X", "Off")
 #include %A_ScriptDir%\infra\ipc\WMIPC.ahk
 
 #include %A_ScriptDir%\infra\ipc\GeminiIPC.ahk
+#include %A_ScriptDir%\lib\AiCompanionCDP.ahk
 
 ; -----------------------------------------------------------------------------
 ; MODULE MAP - Gemini.ahk stays the runnable entry point and #includes each

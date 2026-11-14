@@ -14,12 +14,14 @@
 global WEB_WARMUP_TASK_PORT := 8766
 global WEB_WARMUP_PALACE_PORT := 8767
 global WEB_WARMUP_FINANCE_PORT := 8765
+global WEB_WARMUP_CDP_PORT := 8768
 ; Heartbeat interval — keep runtimes warm; RAM cost is acceptable.
 global WEB_WARMUP_HEARTBEAT_MS := 30000
 global WEB_WARMUP_HEALTH_PATHS := Map(
     8766, "/health",
     8767, "/health",
-    8765, "/health"
+    8765, "/health",
+    8768, "/health"
 )
 
 WebWarmup_ScriptsRoot() {
@@ -63,6 +65,16 @@ WebWarmup_FindPythonCmd() {
         }
     }
     localApps := EnvGet("LOCALAPPDATA")
+    explicitPaths := [
+        localApps . "\Python\pythoncore-3.14-64\python.exe",
+        "C:\Users\fie7ca\AppData\Local\Python\pythoncore-3.14-64\python.exe"
+    ]
+    for ep in explicitPaths {
+        if FileExist(ep) {
+            cached := '"' . ep . '"'
+            return cached
+        }
+    }
     pathGlobs := [
         localApps . "\Programs\Python\Python3*\python.exe",
         EnvGet("ProgramFiles") . "\Python3*\python.exe",
@@ -93,6 +105,7 @@ WebWarmup_HealthOk(port) {
     }
     try {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        try whr.SetProxy(1)
         whr.Open("GET", "http://127.0.0.1:" . port . path, false)
         whr.SetTimeouts(400, 400, 1200, 1200)
         whr.Send()
@@ -249,6 +262,26 @@ WebWarmup_StartFinanceServer() {
     return WebWarmup_WaitHealthy(port)
 }
 
+WebWarmup_StartCdpServer() {
+    global WEB_WARMUP_CDP_PORT
+    port := WEB_WARMUP_CDP_PORT
+    if (WebWarmup_HealthOk(port))
+        return true
+    root := WebWarmup_ScriptsRoot()
+    py := root . "\infra\cdp\ai_companion_cdp_server.py"
+    if (!FileExist(py))
+        return false
+    pyCmd := WebWarmup_FindPythonCmd()
+    if (pyCmd = "")
+        return false
+    cmd := pyCmd . ' -u "' . py . '"'
+    try Run(cmd, root, "Hide")
+    catch {
+        return false
+    }
+    return WebWarmup_WaitHealthy(port)
+}
+
 WebWarmup_EnsureAll() {
     ; Ctrl+Alt+Win+3 sets this so the heartbeat does not bring the servers back.
     ; Each launcher still starts its own server when you open that app.
@@ -257,6 +290,7 @@ WebWarmup_EnsureAll() {
     WebWarmup_StartTaskServer()
     WebWarmup_StartPalaceServer()
     WebWarmup_StartFinanceServer()
+    WebWarmup_StartCdpServer()
 }
 
 WebWarmup_Heartbeat(*) {

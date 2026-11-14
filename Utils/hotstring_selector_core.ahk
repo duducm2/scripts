@@ -144,6 +144,11 @@ UtilitySelector_MacroRows() {
             title := AICompanionNewChatMacroTitle(providerLabel)
         else if (ch = "4")
             title := PinnedQuickLink_MacroTitle()
+        else if (ch = "t") {
+            try title := AiCompanionMode_MacroTitle()
+            catch {
+            }
+        }
 
         rows.Push({ char: ch, title: title, func: macro.func })
     }
