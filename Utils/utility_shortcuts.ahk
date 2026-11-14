@@ -628,7 +628,21 @@ MacroTestCDPCompanion(*) {
 
     outFile := A_Temp "\ahk_cdp_test_" A_TickCount ".json"
     extraArgs := isEnterprise ? " --enterprise" : ""
-    cmd := A_ComSpec ' /c python "' scriptPath '"' extraArgs ' > "' outFile '" 2>&1'
+    pyExe := ""
+    candidates := [
+        EnvGet("LOCALAPPDATA") "\Python\pythoncore-3.14-64\python.exe",
+        "C:\Users\fie7ca\AppData\Local\Python\pythoncore-3.14-64\python.exe",
+        A_WinDir "\py.exe"
+    ]
+    for candidate in candidates {
+        if (FileExist(candidate)) {
+            pyExe := candidate
+            break
+        }
+    }
+    if (pyExe = "")
+        pyExe := "py"
+    cmd := A_ComSpec ' /c ""' pyExe '" "' scriptPath '"' extraArgs ' > "' outFile '" 2>&1"'
     pid := 0
     try {
         Run(cmd, A_ScriptDir, "Hide", &pid)
