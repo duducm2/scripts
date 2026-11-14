@@ -620,10 +620,15 @@ MacroTestCDPCompanion(*) {
     }
 
     g_TestCDPCompanionBusy := true
+    isEnterprise := false
+    try isEnterprise := (ResolveGlobalAICompanion() = "enterprise")
+    catch {
+    }
     ShowCenteredOverlay_Utils("🧪 Sending 'hi' via CDP (keep working)...", 1500, BANNER_ACCENT_INTERMEDIATE)
 
     outFile := A_Temp "\ahk_cdp_test_" A_TickCount ".json"
-    cmd := A_ComSpec ' /c python "' scriptPath '" > "' outFile '" 2>&1'
+    extraArgs := isEnterprise ? " --enterprise" : ""
+    cmd := A_ComSpec ' /c python "' scriptPath '"' extraArgs ' > "' outFile '" 2>&1'
     pid := 0
     try {
         Run(cmd, A_ScriptDir, "Hide", &pid)
@@ -633,11 +638,11 @@ MacroTestCDPCompanion(*) {
         return
     }
 
-    pollFn := MacroTestCDPCompanion_Poll.Bind(pid, outFile, A_TickCount)
+    pollFn := MacroTestCDPCompanion_Poll.Bind(pid, outFile, A_TickCount, isEnterprise)
     SetTimer(pollFn, 250)
 }
 
-MacroTestCDPCompanion_Poll(pid, outFile, startTick) {
+MacroTestCDPCompanion_Poll(pid, outFile, startTick, isEnterprise := false) {
     global g_TestCDPCompanionBusy
     if (ProcessExist(pid) && (A_TickCount - startTick) < 35000)
         return
@@ -655,14 +660,15 @@ MacroTestCDPCompanion_Poll(pid, outFile, startTick) {
     }
 
     if (InStr(raw, '"CDP_NOT_RUNNING"')) {
+        targetUrl := isEnterprise ? GeminiEnterprise_GetLaunchUrl() : "https://gemini.google.com/app"
         res := MsgBox(
             "Chrome CDP on port 9222 is not running.`n`n"
             . "Launch a minimized Chrome window with a dedicated GeminiCDP profile now?`n"
-            . "(First time only: restore it from the taskbar once to sign in to Gemini.)",
+            . "(First time only: restore it from the taskbar once to sign in.)",
             "CDP AI Companion Test", "YesNo Icon?")
         if (res = "Yes") {
             profileDir := EnvGet("LOCALAPPDATA") "\GeminiCDP"
-            Run('chrome.exe --user-data-dir="' profileDir '" --remote-debugging-port=9222 --start-minimized https://gemini.google.com/app')
+            Run('chrome.exe --user-data-dir="' profileDir '" --remote-debugging-port=9222 --start-minimized "' targetUrl '"')
         }
         return
     }
