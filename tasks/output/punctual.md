@@ -30,15 +30,6 @@ Show things that were big deliverables that are still active and not dead.
 
 🔲 guarde dinheiro adicional no cofrinho da virada do Mercado Livre. Você já colocou mil reais, faltam quatro mil para atingir o limite de cinco mil.
 
-## Dissertation
-
-ℹ️ Your last day for submitting your dissertation is November 23
-
-⏳ Close anything that might generate costs on your Azure, the tools used for your dissertation
-ℹ️ We also had some problems with authentication along the way
-ℹ️ R$ 600,00
-ℹ️ 20260301-203740.png
-
 ## Job Search
 
 ⚡ Check Job openings

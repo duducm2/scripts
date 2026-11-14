@@ -1,13 +1,10 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at,edit_lock,birth_date
-INFO_0076,task,TASK_0042,We also had some problems with authentication along the way,We also had some problems with authentication along the way,ℹ️,,1550,2026-08-29 15:48:39,,
-INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 15:48:39,,
 INFO_0089,project,PROJ_0044,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39,,
 INFO_0090,project,PROJ_0045,Maintain ongoing literature review,"Maintain ongoing literature review
 Confirm if committee members may ask about courses near defense
 Add DOI to your research and PPT presentation base (if applicable)
 Check if your student subscription is generating any cost
 Monitor storage usage (keep under 5 GB)",ℹ️,Weekly,1990,2026-08-29 15:48:39,,
-INFO_0112,task,TASK_0042,20260301-203740.png,,ℹ️,,3940,2026-08-30 12:03:36,,
 INFO_0117,task,TASK_0212,"ℹ️ Check your PowerPoint confidenciality level
 
 ℹ️ Send Customer Feedback
@@ -225,7 +222,6 @@ INFO_0580,task,TASK_0747,Yellow Fever: 14/10/2022,,🩺,,2520,2026-08-29 15:48:3
 INFO_0581,task,TASK_0747,Hepatitis A: 2016 (series considered fine),,🩺,,2530,2026-08-29 15:48:39,,
 INFO_0582,task,TASK_0747,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",,🩺,,2540,2026-08-29 15:48:39,,
 INFO_0583,task,TASK_0747,Varicella (catapora): history of disease in childhood; no vaccine needed,,🩺,,2550,2026-08-29 15:48:39,,
-INFO_0584,project,PROJ_0026,Your last day for submitting your dissertation is November 23,,ℹ️,,10,2026-10-31 16:12:28,,
 INFO_0591,task,TASK_0754,https://outset.ai/,,ℹ️,,10,2026-11-03 15:18:28,,
 INFO_0592,task,TASK_0766,Cost & Licensing Coverage,"Under the AskBosch powered by Gemini Enterprise Advanced subscription, tokens and model requests consumed in Gemini CLI via project 'rbprj-100397' are 100% covered with no extra charge to the cost center.",ℹ️,Quota,5570,2026-11-04 10:25:27,,
 INFO_0593,task,TASK_0766,Daily Limit & Usage Mechanics,"When authenticated via Bosch Code Assist Enterprise, quota is capped at 2,000 requests/user/day (shared across Gemini CLI and VS Code Code Assist agent mode). Each tool execution (ReadFile, SearchText) in YOLO mode triggers model calls that consume this quota. Check stats inside the CLI with '/stats model'.",ℹ️,Quota,5580,2026-11-04 10:25:27,,
