@@ -58,15 +58,19 @@ def get_response_texts(page, enterprise: bool) -> list[str]:
         )
 
     # Enterprise (Vertex AI Search / AskBosch) uses custom web components / shadow DOM.
-    # Walk open shadow roots recursively to find response/markdown blocks.
+    # Walk open shadow roots recursively to find actual markdown/answer text (excluding buttons/toolbars).
     return page.evaluate(
         """() => {
             function collect(root, out) {
                 if (!root) return;
-                const els = root.querySelectorAll('ucs-markdown, .markdown, [data-testid*="response" i], [class*="answer" i], [class*="response" i], message-content');
+                const els = root.querySelectorAll('ucs-markdown, ucs-response-markdown, .markdown, .markdown-content, [class*="markdown" i], message-content');
                 for (const el of els) {
+                    if (el.closest('button, [role="button"], .ProseMirror')) continue;
                     const t = (el.innerText || '').trim();
-                    if (t) out.push(t);
+                    if (!t) continue;
+                    const low = t.toLowerCase();
+                    if (low === 'thumb up' || low === 'thumb down' || low === 'thumb_up' || low === 'thumb_down') continue;
+                    out.push(t);
                 }
                 for (const el of root.querySelectorAll('*')) {
                     if (el.shadowRoot) collect(el.shadowRoot, out);
