@@ -12,8 +12,6 @@
 
 ⏳ You need to transfer your voting place to Nova Odessa and change our photo
 
-🔲 Cancel your overleaf subscription as soon as Hegina finishes to use it
-
 ⏳ 🕒 Review your habitual activities
 
 🔲 By a VIVO chip and then register in a prepaid plan
@@ -23,6 +21,14 @@
 ℹ️ image.png
 
 ⏳ Buy 3 frames do add your and Leo's diplomas
+ℹ️ Show big processes mapped
+Show that these big processes that you mapped (e.g. from X-Tower) are key deliverables.
+ℹ️ Add that you are a memorist
+Incorporate details about being a memorist (referencing Art of Memory) into the portfolio.
+ℹ️ Show ongoing big deliverables
+Show things that were big deliverables that are still active and not dead.
+
+🔲 guarde dinheiro adicional no cofrinho da virada do Mercado Livre. Você já colocou mil reais, faltam quatro mil para atingir o limite de cinco mil.
 
 ## Dissertation
 
@@ -38,14 +44,14 @@
 ⚡ Check Job openings
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\web\start.bat
 
-⏳ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
+⚡ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
 
 ⚡ GitHub Pages: O que é uma espécie de aplicação web? Muito simples, no estilo Landing Page, onde você apresenta todas as aplicações que você já construiu. É como se fosse seu portfólio clicado.
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\GITHUB-PAGES.md
 
-⚡ Add the Astra project with pictures and the tooling project to your portfolio
-
 ⚡ Check all your resumes and portfolios if they're correct
+
+🔲 Add more deliverables to fififolio
 
 ### Alumni Unicamp
 
@@ -58,16 +64,42 @@
 🔲 Review Resume - UX Researcher & Design Technologist
 
 🔲 Review Portfolio - UX Researcher & Design Technologist
+ℹ️ O problema que queremos resolver
+ 
+O xTower está fortemente acoplado a conceitos específicos de projetos.
+Novos processos ou funis exigem alterações no código.
+O legado dificulta mudanças maiores e integrações.
+Correções podem gerar efeitos colaterais.
+A arquitetura atual dificulta desenvolvimento paralelo.
+People Registration, gestão de esforço, gestão de recursos e workflow estão 
+misturados ou fortemente dependentes.
+A implementação de capacidades de IA e automações agentic fica limitada pela estrutura existente.
 
 🔲 Review Resume - Digital Solution Architect
+ℹ️ O outcome 
+ 
+Criar uma fundação que permita configurar novos funis, entidades, etapas e formulários sem transformar cada necessidade de negócio em um novo projeto de desenvolvimento.
+ 
+ 
+Aonde quero chegar 
+Para cada nova demanda, a pergunta deve ser:
+Pode ser atendida por configuração?
+Pode ser atendida por extensão ou integração?
+Apenas se as duas respostas forem negativas deve haver alteração do core.
+Isso evita reconstruir o monólito com uma tecnologia ou interface nova.
 
 🔲 Review Portfolio - Digital Solution Architect
 
 🔲 Review Resume - Data Analyst
+ℹ️ É novo de empresa e desenvolvedor do X-Tower
+ℹ️ desenvolve o x-tower msm
+ℹ️ ele disse que o leandro não aponta horas por alguma razão
 
 🔲 Review Portfolio - Data Analyst
+ℹ️ PMO
 
 🔲 Review Resume - Product Owner
+ℹ️ quer ter um backlog saudável para 6 meses 1 ano, para ajudar a conseguir negociações ,capacidade para o futuro, etc.
 
 🔲 Review Portfolio - Product Owner
 
@@ -85,13 +117,9 @@
 
 ### Vaccination Timetable
 
-⏳ 4th Dose V10 + Raiva (2026-12-10)
+🔲 4th Dose V10 + Raiva (2026-11-31)
 ℹ️ Outdoor Walks
 She will be fully protected and ready for public outdoor walks 15 days after this final round.
-
-🔲 3rd Dose V10 (2026-11-10)
-ℹ️ Socialization
-Safe socialization can be done by carrying her outside so she can observe environments without touching the ground.
 
 ### Dewormer
 
@@ -107,7 +135,7 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 
 ## Art of Memory
 
-⏳ How to store big vocabularies
+🔲 How to store big vocabularies
 
 ⏳ You should check how to remember numbers, maybe with the SPA technique
 
@@ -120,3 +148,11 @@ Safe socialization can be done by carrying her outside so she can observe enviro
 ⏳ Waiting analysis
 
 ## Notes
+
+## New Home
+
+⚡ We need to give a feedback to the service man regarding the next steps
+
+⚡ Organize the next steps with Leo
+
+⚡ We paid nine thousand eight hundred and forty to the mason already calculate what is left

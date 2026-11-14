@@ -16,7 +16,7 @@
 ⏳ Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable
 ⏳ Exercise long session (≥60–90 minutes) or two shorter sessions
 🔲 Check your grocery list
-🔲 🐕 Deep brush Moka's undercoat
+⏳ 🐕 Deep brush Moka's undercoat
 🩺 Review body recomposition progress (photos, measurements, gym performance)
 
 ## Monthly
@@ -26,7 +26,7 @@
 ⏳ Health check-up (self-check; schedule visit if concerns)
 🔲 🐕 Apply tick and flea prevention to German Shepherd
 🔲 🐈 Apply tick and flea prevention to cats
-🔲 🐕 Give dewormer to Maka
+🔲 🐕 Give dewormer to Moka
 🔲 Buy monthly frozen meals (marmitas)
 
 ## Quarterly
@@ -76,7 +76,7 @@
 ### General
 
 ⏳ Prevent heartworm when traveling to coast with pets
-⏳ Pharmacological regimen interactions
+🔲 Pharmacological regimen interactions
 ⏳ Medication Monitoring (Fluvoxamina)
 ⏳ Vaccination Plan (Follow-up, from 2025 onward)
 ⏳ Notes from Your Records (Prior Vaccines)

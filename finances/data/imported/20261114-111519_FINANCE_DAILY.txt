@@ -1,0 +1,15 @@
+﻿content = """===PREVIEW===
+5 row(s) · Processed construction materials, printing, groceries, food, and serviceman.
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+"construction materials","500","card_expense","CAT_NEWHOUSE","ACC_MERCADOP","CARD_MP","",1
+"print diploma","11","card_expense","CAT_EDUCACAO","ACC_MERCADOP","CARD_MP","",1
+"groceries","140","card_expense","CAT_MERCADO","ACC_MERCADOP","CARD_MP","",1
+"food","75,79","card_expense","CAT_ALIMENTA","ACC_MERCADOP","CARD_MP","",1
+"serviceman new house","820","card_expense","CAT_NEWHOUSE","ACC_MERCADOP","CARD_MP","",1
+===END_FILE==="""
+
+with open("FINANCE_DAILY.txt", "w", encoding="utf-8") as f:
+    f.write(content)
