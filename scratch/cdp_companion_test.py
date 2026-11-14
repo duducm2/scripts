@@ -117,19 +117,32 @@ def main() -> int:
         context = browser.contexts[0]
         page = find_or_open_page(context, args.enterprise)
 
-        # Playwright locators pierce open Shadow DOM automatically
+        # Playwright locators pierce open Shadow DOM automatically; check main page + frames
         composer_sel = (
+            '#agent-search-prosemirror-editor, '
+            '.ProseMirror[contenteditable="true"], '
             'div.ql-editor[contenteditable="true"], '
             'rich-textarea [contenteditable="true"], '
             '[role="textbox"][contenteditable="true"], '
             'textarea[aria-label], '
             'textarea'
         )
-        try:
-            composer = page.locator(composer_sel).first
-            composer.wait_for(state="visible", timeout=15000)
-        except Exception:
-            print(json.dumps({"ok": False, "error": "COMPOSER_NOT_FOUND (check if signed in)"}))
+        composer = None
+        deadline_find = time.time() + 15.0
+        while time.time() < deadline_find and composer is None:
+            for target in [page, *page.frames]:
+                try:
+                    loc = target.locator(composer_sel).locator("visible=true").first
+                    if loc.count() > 0:
+                        composer = loc
+                        break
+                except Exception:
+                    pass
+            if composer is None:
+                time.sleep(0.3)
+
+        if composer is None:
+            print(json.dumps({"ok": False, "error": f"COMPOSER_NOT_FOUND on {page.url}"}))
             return 4
 
         before_count = len(get_response_texts(page, args.enterprise))
