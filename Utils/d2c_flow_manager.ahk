@@ -1267,6 +1267,8 @@ class D2C_FlowManager {
         this.CompanionId := ResolveGlobalAICompanion()
         if (AiCompanionMode_IsCDP(this.CompanionId)) {
             filePaths := []
+            tempFiles := []
+            textToSend := (optionalSnippet != "") ? optionalSnippet : dictation
             if (useRegistryPastePath) {
                 resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
                 if (resolved = false) {
@@ -1274,9 +1276,27 @@ class D2C_FlowManager {
                     return false
                 }
                 filePaths := UtilitySelector_ResolveCdpAttachFilePaths(registryPrompt, resolved.entries)
+            } else if (textToSend = "") {
+                staged := AiCompanion_StageClipboardForCdp(&textToSend, &tempFiles)
+                if (staged = false) {
+                    ShowCenteredOverlay_Utils("❌ Could not read clipboard image/text for CDP send.", 2000, BANNER_ACCENT_ERROR)
+                    this.Reset()
+                    return false
+                }
+                filePaths := staged
             }
-            textToSend := (optionalSnippet != "") ? optionalSnippet : dictation
-            res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths)
+            res := { ok: false, error: "CDP paste failed" }
+            try {
+                res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths)
+            } finally {
+                for tmp in tempFiles {
+                    try {
+                        if (FileExist(tmp))
+                            FileDelete(tmp)
+                    } catch {
+                    }
+                }
+            }
             aiLabel := GetGlobalAIProviderLabel()
             if (!res.ok) {
                 AiCompanionCDP_NotifyError("Send to " . aiLabel, res.error, this.CompanionId)

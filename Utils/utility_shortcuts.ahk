@@ -557,8 +557,24 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
     label := GetGlobalAIProviderLabel()
     if (AiCompanionMode_IsCDP(companionId)) {
         clipText := ""
-        try clipText := A_Clipboard
-        res := AiCompanionCDP_Paste(companionId, clipText, false)
+        tempFiles := []
+        filePaths := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
+        if (filePaths = false) {
+            ShowCenteredOverlay_Utils("❌ Could not read clipboard image/text for CDP paste.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        res := { ok: false, error: "CDP paste failed" }
+        try {
+            res := AiCompanionCDP_Paste(companionId, clipText, false, filePaths)
+        } finally {
+            for tmp in tempFiles {
+                try {
+                    if (FileExist(tmp))
+                        FileDelete(tmp)
+                } catch {
+                }
+            }
+        }
         if (!res.ok) {
             AiCompanionCDP_NotifyError("Paste to " . label, res.error, companionId)
             return false

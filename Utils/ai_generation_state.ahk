@@ -327,6 +327,65 @@ AiCompanion_GetClipboardPastePayload(&kind := "", &text := "") {
     return false
 }
 
+; Extract existing file paths from CF_HDROP (clipboard format 15), if present.
+AiCompanion_ReadClipboardDropFiles() {
+    files := []
+    if (!DllCall("IsClipboardFormatAvailable", "UInt", 15, "Int"))
+        return files
+    if (!DllCall("OpenClipboard", "Ptr", 0, "Int"))
+        return files
+    try {
+        hDrop := DllCall("GetClipboardData", "UInt", 15, "Ptr")
+        if (hDrop) {
+            cnt := DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", 0xFFFFFFFF, "Ptr", 0, "UInt", 0, "UInt")
+            loop cnt {
+                idx := A_Index - 1
+                len := DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", idx, "Ptr", 0, "UInt", 0, "UInt")
+                if (len > 0) {
+                    buf := Buffer((len + 1) * 2, 0)
+                    DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", idx, "Ptr", buf.Ptr, "UInt", len + 1, "UInt")
+                    p := StrGet(buf.Ptr, "UTF-16")
+                    if (p != "" && FileExist(p) && !InStr(FileExist(p), "D"))
+                        files.Push(p)
+                }
+            }
+        }
+    } finally {
+        DllCall("CloseClipboard")
+    }
+    return files
+}
+
+; Stage OS clipboard (text, CF_HDROP files, or bitmap image) for AiCompanionCDP_Paste.
+; Returns filePaths array on success (empty for text-only), or false if clipboard could not be read.
+; Caller should delete any paths in tempFilesOut in a finally block after CDP paste/upload finishes.
+AiCompanion_StageClipboardForCdp(&textOut := "", &tempFilesOut := "") {
+    textOut := ""
+    tempFilesOut := []
+    filePaths := []
+    kind := ""
+    rawText := ""
+    if (!AiCompanion_GetClipboardPastePayload(&kind, &rawText))
+        return false
+    if (kind = "text") {
+        textOut := rawText
+        return filePaths
+    }
+    dropFiles := AiCompanion_ReadClipboardDropFiles()
+    if (dropFiles.Length) {
+        for p in dropFiles
+            filePaths.Push(p)
+        return filePaths
+    }
+    tmpPng := A_Temp . "\cdp_clip_" . A_TickCount . ".png"
+    if (Task_SaveClipboardImage(tmpPng)) {
+        filePaths.Push(tmpPng)
+        tempFilesOut.Push(tmpPng)
+        return filePaths
+    }
+    return false
+}
+
 AiCompanion_FocusComposerForUia(uia, companionId) {
     if (!IsObject(uia))
         return false
