@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -23,7 +24,9 @@ PROMPT_TEXT = "hi"
 
 def is_cdp_reachable() -> bool:
     try:
-        with urllib.request.urlopen(f"{CDP_URL}/json/version", timeout=1.5) as resp:
+        # Bypass corporate system proxy (e.g. Bosch ProxyMode=system) for localhost
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(f"{CDP_URL}/json/version", timeout=1.5) as resp:
             return resp.status == 200
     except Exception:
         return False
@@ -94,6 +97,8 @@ def has_stop_button(page) -> bool:
 
 
 def main() -> int:
+    os.environ["NO_PROXY"] = "127.0.0.1,localhost"
+    os.environ["no_proxy"] = "127.0.0.1,localhost"
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
     parser.add_argument("--enterprise", action="store_true")
