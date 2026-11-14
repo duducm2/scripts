@@ -31,15 +31,18 @@ FindGeminiPromptField(uia) {
     } catch {
     }
 
+    ; 1. Fast path: Find by name in document / root
     ; 1. Fast path: Find Edit control by name in document / root (Type 50004 avoids static placeholder text)
     for name in GEMINI_PROMPT_FIELD_NAMES {
         try {
+            promptField := doc.FindFirst({ Name: name, matchmode: 2, casesense: false })
             promptField := doc.FindFirst({ Name: name, Type: 50004, matchmode: 2, casesense: false })
             if (promptField)
                 return promptField
         } catch {
         }
         try {
+            promptField := uia.FindFirst({ Name: name, matchmode: 2, casesense: false })
             promptField := uia.FindFirst({ Name: name, Type: 50004, matchmode: 2, casesense: false })
             if (promptField)
                 return promptField
@@ -262,6 +265,7 @@ Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
         catch {
         }
 
+        if (Gemini_PollPromptKeyboardFocus(promptField)) {
         if (Gemini_PollPromptKeyboardFocus(promptField, 150)) {
             outPhase := "direct_focus"
             if (playChime)
@@ -269,6 +273,9 @@ Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
             return promptField
         }
 
+        try
+            promptField.Click()
+        catch {
         clicked := false
         try {
             loc := promptField.Location
@@ -293,6 +300,11 @@ Gemini_FocusPromptWithChime(uia, options := "", &outPhase := "") {
             return promptField
         }
 
+        ; Element was found and clicked/focused; even if UIA HasKeyboardFocus lags in Chromium, focus is set
+        outPhase := "direct_focus"
+        if (playChime)
+            Utils_PlayGeminiFocusedChime()
+        return promptField
         ; If UIA still reports no keyboard focus and anchor fallback is enabled, try Shift+Tab from upload anchor
         if (useAnchorFallback) {
             anchorButton := Gemini_FindUploadAnchorButton(uia)

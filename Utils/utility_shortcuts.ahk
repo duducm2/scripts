@@ -549,6 +549,7 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
         return false
     }
     if (!hwnd) {
+        ShowCenteredOverlay_Utils("❌ Could not open or focus " . label . ".", 2000, BANNER_ACCENT_ERROR)
         if (originHwnd && WinExist("ahk_id " originHwnd))
             AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionPasteFail")
         ShowCenteredOverlay_Utils("❌ Failed to paste to " . label . " (composer did not receive clipboard).", 2200, BANNER_ACCENT_ERROR)
