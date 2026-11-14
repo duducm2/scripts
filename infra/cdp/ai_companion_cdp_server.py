@@ -106,9 +106,19 @@ class CDPBridge:
         context = browser.contexts[0]
 
         if not new_tab:
+            fallback_page = None
+            is_consumer = (needle == "gemini.google.com")
             for page in context.pages:
-                if needle in (page.url or "").lower():
+                u = (page.url or "").lower()
+                if needle not in u:
+                    continue
+                if not is_consumer or "/app" in u or "/gem/" in u:
                     return page
+                if fallback_page is None:
+                    fallback_page = page
+            if fallback_page is not None:
+                fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
+                return fallback_page
 
         page = context.new_page()
         page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
@@ -184,14 +194,12 @@ class CDPBridge:
                 """() => {
                     const sel =
                         'button.send-button.stop, ' +
-                        'button[aria-label="Stop" i], ' +
-                        'button[aria-label="Stop response" i], ' +
-                        'button[aria-label="Stop generating" i], ' +
-                        'button[aria-label="Interromper" i], ' +
-                        'button[aria-label="Interromper resposta" i], ' +
-                        'button[aria-label="Interromper geração" i], ' +
+                        'button[aria-label^="Stop" i], ' +
+                        'button[aria-label^="Interromper" i], ' +
                         'mat-icon[data-mat-icon-name="stop"], ' +
-                        '[aria-label="Stop generating" i]';
+                        '[aria-label="Stop streaming" i], ' +
+                        '[aria-label="Stop generating" i], ' +
+                        '[aria-label="Interromper transmissão" i]';
                     function isVisible(el) {
                         const r = el.getBoundingClientRect();
                         if (r.width <= 0 || r.height <= 0) return false;
@@ -319,7 +327,7 @@ class CDPBridge:
         valid = [f for f in files if f and os.path.isfile(f)]
         if not valid:
             return True
-        # Try direct hidden input[type=file] first
+        # 1. Try direct hidden input[type=file] or hidden-local-file-upload-button
         try:
             inp = page.locator('input[type="file"]').first
             if inp.count() > 0:
@@ -328,19 +336,84 @@ class CDPBridge:
                 return True
         except Exception:
             pass
-        # Otherwise trigger upload menu + file chooser
-        for sel in ['button[aria-label*="Upload" i]', 'button[aria-label*="Add file" i]', 'button[aria-label*="Open upload" i]']:
+        # 2. Try 2-step "Upload & tools" (+) menu -> "Upload files" (Consumer Gemini)
+        for trigger_sel in ['button[aria-label*="Upload & tools" i]', 'button[aria-label*="Open upload" i]', 'button[aria-label*="Add file" i]']:
             try:
-                btn = page.locator(sel).locator("visible=true").first
+                trig = page.locator(trigger_sel).locator("visible=true").first
+                if trig.count() > 0:
+                    trig.click()
+                    time.sleep(0.25)
+                    for item_sel in ['button[aria-label*="Upload files" i]', 'button:has-text("Upload files")', '[role="menuitem"]:has-text("Upload files")']:
+                        item = page.locator(item_sel).locator("visible=true").first
+                        if item.count() > 0:
+                            with page.expect_file_chooser(timeout=3000) as fc_info:
+                                item.click()
+                            fc_info.value.set_files(valid)
+                            time.sleep(0.5)
+                            return True
+            except Exception:
+                pass
+        # 3. Direct upload button fallback (Enterprise / older UI)
+        for sel in ['button.hidden-local-file-upload-button', 'button[aria-label*="Upload" i]', 'button[aria-label*="Add file" i]']:
+            try:
+                btn = page.locator(sel).first
                 if btn.count() > 0:
                     with page.expect_file_chooser(timeout=3000) as fc_info:
-                        btn.click()
+                        btn.click(force=True)
                     fc_info.value.set_files(valid)
                     time.sleep(0.5)
                     return True
             except Exception:
                 pass
         return False
+
+    @staticmethod
+    def _wait_for_upload_ready(page, timeout_s: float = 8.0) -> None:
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            busy = False
+            try:
+                busy = bool(
+                    page.evaluate(
+                        """() => {
+                            const spinners = document.querySelectorAll('input-container mat-progress-spinner, input-container [role="progressbar"], .input-area mat-progress-spinner, .input-area [role="progressbar"]');
+                            for (const s of spinners) {
+                                const r = s.getBoundingClientRect();
+                                if (r.width > 0 && r.height > 0) return true;
+                            }
+                            return false;
+                        }"""
+                    )
+                )
+            except Exception:
+                busy = False
+            if not busy:
+                return
+            time.sleep(0.25)
+
+    def _submit_and_confirm_start(self, page, enterprise: bool) -> tuple[bool, int]:
+        reply_count_before = len(self._get_response_texts(page, enterprise))
+        page.keyboard.press("Enter")
+        deadline = time.time() + 1.2
+        while time.time() < deadline:
+            if self._has_stop_button(page):
+                return True, reply_count_before
+            time.sleep(0.15)
+        # Fallback: click an enabled visible Send/Submit button if Enter did not trigger generation
+        for sel in ['button.send-button:not([disabled])', 'button[aria-label^="Send" i]:not([disabled])', 'button[aria-label^="Enviar" i]:not([disabled])', 'button[aria-label="Submit" i]:not([disabled])']:
+            try:
+                btn = page.locator(sel).locator("visible=true").first
+                if btn.count() > 0:
+                    btn.click()
+                    break
+            except Exception:
+                pass
+        deadline = time.time() + 2.8
+        while time.time() < deadline:
+            if self._has_stop_button(page):
+                return True, reply_count_before
+            time.sleep(0.15)
+        return False, reply_count_before
 
     def paste(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
@@ -363,7 +436,8 @@ class CDPBridge:
             time.sleep(0.2)
 
         if files:
-            self._attach_files(page, files)
+            if not self._attach_files(page, files):
+                return {"ok": False, "error": "FILE_ATTACH_FAILED"}
 
         composer.click()
         if clear:
@@ -376,16 +450,9 @@ class CDPBridge:
             time.sleep(0.12)
 
         if submit:
-            reply_count_before = len(self._get_response_texts(page, enterprise))
-            page.keyboard.press("Enter")
-            # Wait briefly to confirm generation started
-            deadline = time.time() + 4.0
-            started = False
-            while time.time() < deadline:
-                if self._has_stop_button(page):
-                    started = True
-                    break
-                time.sleep(0.15)
+            if files:
+                self._wait_for_upload_ready(page, timeout_s=8.0)
+            started, reply_count_before = self._submit_and_confirm_start(page, enterprise)
             return {
                 "ok": True,
                 "submitted": True,
@@ -405,15 +472,7 @@ class CDPBridge:
             return {"ok": False, "error": "AUTH_REQUIRED"}
         if composer is not None:
             composer.click()
-        reply_count_before = len(self._get_response_texts(page, enterprise))
-        page.keyboard.press("Enter")
-        deadline = time.time() + 4.0
-        started = False
-        while time.time() < deadline:
-            if self._has_stop_button(page):
-                started = True
-                break
-            time.sleep(0.15)
+        started, reply_count_before = self._submit_and_confirm_start(page, enterprise)
         return {"ok": True, "started": started, "reply_count_before": reply_count_before}
 
     def status(self, data: dict) -> dict:
@@ -433,6 +492,7 @@ class CDPBridge:
             "ok": True,
             "generating": generating,
             "reply_count": len(replies),
+            "last_reply_len": len(replies[-1]) if replies else 0,
             "composer_text": composer_text,
             "title": page.title(),
         }

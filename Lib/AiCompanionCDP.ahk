@@ -262,6 +262,8 @@ AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
         return "Read aloud button not available on last reply"
     if (InStr(low, "new_chat_not_found"))
         return "Could not start a new chat in " . compLabel . " CDP tab"
+    if (InStr(low, "file_attach_failed"))
+        return "Could not attach context file(s) in " . compLabel . " CDP Chrome"
     if (InStr(low, "unsupported companion"))
         return "Current AI companion does not support CDP mode"
     return err
@@ -353,12 +355,13 @@ AiCompanionCDP_Submit(companionId := "") {
 AiCompanionCDP_Status(companionId := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
-        return { ok: false, generating: false, replyCount: 0, composerText: "", title: "" }
+        return { ok: false, generating: false, replyCount: 0, lastReplyLen: 0, composerText: "", title: "" }
     res := AiCompanionCDP_Post("/status", Map("companion", comp), 8000)
     return {
         ok: res.ok,
         generating: _AiCDP_JsonGetBool(res.raw, "generating", false),
         replyCount: _AiCDP_JsonGetInt(res.raw, "reply_count", 0),
+        lastReplyLen: _AiCDP_JsonGetInt(res.raw, "last_reply_len", 0),
         composerText: _AiCDP_JsonGetStr(res.raw, "composer_text", ""),
         title: _AiCDP_JsonGetStr(res.raw, "title", "")
     }

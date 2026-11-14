@@ -245,6 +245,18 @@ ImportWatcher_CompanionPasteFixText(fixText) {
         return false
     companionId := ImportWatcher_CompanionResolveTarget()
     label := ImportWatcher_CompanionLabel(companionId)
+    if (AiCompanionMode_IsCDP(companionId)) {
+        res := AiCompanionCDP_Paste(companionId, fixText, false)
+        if (!res.ok) {
+            AiCompanionCDP_NotifyError("Paste AI fix to " . label, res.error, companionId)
+            return false
+        }
+        try ShowCenteredOverlay_Utils("📋 AI fix pasted to " . label . " (CDP)", 1800, BANNER_ACCENT_INFO)
+        catch {
+            TrayTip("Import", "AI fix pasted to " . label)
+        }
+        return true
+    }
     hwnd := 0
     try {
         switch companionId {
@@ -279,6 +291,27 @@ ImportWatcher_CompanionSubmitAiFixOnce(fixText) {
         return true
     companionId := ImportWatcher_CompanionResolveTarget()
     label := ImportWatcher_CompanionLabel(companionId)
+    if (AiCompanionMode_IsCDP(companionId)) {
+        res := AiCompanionCDP_Paste(companionId, fixText, true)
+        if (!res.ok) {
+            ImportWatcher_CompanionReleaseAiFixGate()
+            AiCompanionCDP_NotifyError("Send AI fix to " . label, res.error, companionId)
+            return false
+        }
+        hwnd := res.hwnd ? res.hwnd : 1
+        ImportWatcher_CompanionNoteAiFixSent(fixText, hwnd, companionId)
+        try ShowCenteredOverlay_Utils("🚀 AI fix sent to " . label . " (CDP) — waiting for reply…", 1800, BANNER_ACCENT_INFO)
+        catch {
+            TrayTip("Import", "AI fix sent to " . label)
+        }
+        try ImportMgmt_CloseIfOpen()
+        catch {
+        }
+        try AiCompanion_ArmResponseWatch(hwnd, companionId, 0, res.HasProp("replyCountBefore") ? res.replyCountBefore : -1)
+        catch {
+        }
+        return true
+    }
     hwnd := 0
     submitted := false
     try {

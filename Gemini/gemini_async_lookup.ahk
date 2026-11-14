@@ -155,10 +155,14 @@ class GeminiAsyncLookup {
                 this.ButtonEverFound := true
                 return
             }
-            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore) : (this.ButtonEverFound || this.RetryCount >= 4)
+            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore && st.lastReplyLen > 0) : ((this.ButtonEverFound || this.RetryCount >= 4) && st.lastReplyLen > 0)
             if (hasNewReply) {
-                GeminiBackgroundStopTimer(this)
-                this.OnStreamingCompleted()
+                Sleep 300
+                st2 := AiCompanionCDP_Status("gemini")
+                if (st2.ok && !st2.generating && st2.lastReplyLen > 0 && st2.lastReplyLen = st.lastReplyLen) {
+                    GeminiBackgroundStopTimer(this)
+                    this.OnStreamingCompleted()
+                }
             }
             return
         }

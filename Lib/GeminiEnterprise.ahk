@@ -1775,10 +1775,14 @@ class GeminiEnterpriseAsyncLookup {
                 this.ButtonEverFound := true
                 return
             }
-            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore) : (this.ButtonEverFound || this.RetryCount >= 4)
+            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore && st.lastReplyLen > 0) : ((this.ButtonEverFound || this.RetryCount >= 4) && st.lastReplyLen > 0)
             if (hasNewReply) {
-                GeminiEnterpriseBackgroundStopTimer(this)
-                this.OnStreamingCompleted()
+                Sleep 300
+                st2 := AiCompanionCDP_Status("enterprise")
+                if (st2.ok && !st2.generating && st2.lastReplyLen > 0 && st2.lastReplyLen = st.lastReplyLen) {
+                    GeminiEnterpriseBackgroundStopTimer(this)
+                    this.OnStreamingCompleted()
+                }
             }
             return
         }

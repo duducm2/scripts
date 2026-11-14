@@ -1273,10 +1273,7 @@ class D2C_FlowManager {
                     this.Reset()
                     return false
                 }
-                for entry in resolved.entries {
-                    if (IsObject(entry) && entry.HasProp("path") && entry.path != "")
-                        filePaths.Push(entry.path)
-                }
+                filePaths := UtilitySelector_ResolveCdpAttachFilePaths(registryPrompt, resolved.entries)
             }
             textToSend := (optionalSnippet != "") ? optionalSnippet : dictation
             res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths)
@@ -1289,16 +1286,6 @@ class D2C_FlowManager {
             this.GeminiHwnd := res.hwnd ? res.hwnd : 1
             this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
             if (autoSubmit) {
-                if (presetMode = "finance_daily" || presetMode = "task_pack") {
-                    AiCompanion_DisarmResponseWatch()
-                    try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP)", 1400, BANNER_ACCENT_SUCCESS)
-                    catch {
-                    }
-                    global g_D2C_DictationSubmitMenuCycleFinished
-                    g_D2C_DictationSubmitMenuCycleFinished := true
-                    this.Reset()
-                    return true
-                }
                 try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP) — waiting for reply…", 1300, BANNER_ACCENT_INFO)
                 catch {
                 }
@@ -1405,18 +1392,6 @@ class D2C_FlowManager {
                 this.Reset()
                 return false
             }
-            if (presetMode = "finance_daily" || presetMode = "task_pack") {
-                ; Send only. Download or copy the pack yourself, then import from
-                ; Import Management. A failed import still sends the AI fix.
-                ; Drop the response watch so it does not copy the reply.
-                AiCompanion_DisarmResponseWatch()
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    AICompanion_RestoreOriginWindow(this.OriginHwnd, this.GeminiHwnd, true, "D2C_PresetExit")
-                global g_D2C_DictationSubmitMenuCycleFinished
-                g_D2C_DictationSubmitMenuCycleFinished := true
-                this.Reset()
-                return true
-            }
             this.StartGeminiMonitor()
         }
 
@@ -1518,16 +1493,19 @@ class D2C_FlowManager {
                 this.MonitorButtonEverFound := true
                 return
             }
-            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore) : this.MonitorButtonEverFound
+            hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore && st.lastReplyLen > 0) : (this.MonitorButtonEverFound && st.lastReplyLen > 0)
             if (!hasNewReply)
                 return
 
             SetTimer(this.MonitorTimer, 0)
             isTrulyDone := true
+            prevLen := st.lastReplyLen
             loop 2 {
-                Sleep 300
+                Sleep 350
                 st2 := AiCompanionCDP_Status(companion)
-                if (!st2.ok || st2.generating || (this.CdpReplyCountBefore >= 0 && st2.replyCount <= this.CdpReplyCountBefore)) {
+                if (!st2.ok || st2.generating || st2.lastReplyLen <= 0
+                    || (this.CdpReplyCountBefore >= 0 && st2.replyCount <= this.CdpReplyCountBefore)
+                    || st2.lastReplyLen != prevLen) {
                     isTrulyDone := false
                     break
                 }

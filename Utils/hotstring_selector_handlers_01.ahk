@@ -171,7 +171,7 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
         ; Y from any other window does the same: focus the companion and send.
         ; N and H still paste where the user is and do not send.
         ; Reply download/copy stays manual; import is Import Management.
-        if (pasteChoice = "send" && (PackPipeline_IsCatalogPrompt(prompt) || !UtilitySelector_OriginIsCompanionWindow()))
+        if (pasteChoice = "send" && (AiCompanionMode_IsCDP() || PackPipeline_IsCatalogPrompt(prompt) || !UtilitySelector_OriginIsCompanionWindow()))
             useGemini := true
         PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
         clip := ""
@@ -277,6 +277,34 @@ UtilitySelector_AttachPromptContextFiles(prompt, entries := "") {
     }
     PromptPaste_BusyUpdate("⏳ Waiting for uploads…")
     PromptContext_WaitForAttachUploadIdle(attachPaths.Length)
+}
+
+UtilitySelector_ResolveCdpAttachFilePaths(prompt, entries := "") {
+    if (!IsObject(prompt))
+        return []
+    if (entries = "")
+        entries := PromptData_ContextEntriesForCurrentEnv(prompt)
+    if (!IsObject(entries) || entries.Length = 0)
+        return []
+    existing := []
+    missing := []
+    for e in entries {
+        p := PromptData_ContextEntryPath(e)
+        if (Clipboard_PathIsExistingFile(p))
+            existing.Push(e)
+        else
+            missing.Push(p)
+    }
+    if (missing.Length > 0) {
+        label := missing.Length = 1 ? missing[1] : (missing.Length . " context files")
+        try ShowCenteredOverlay_Utils("⚠ Missing context file(s): " . label, 2200, BANNER_ACCENT_ERROR)
+        catch {
+        }
+    }
+    if (existing.Length = 0)
+        return []
+    asTxt := PromptData_AttachAsTxt(prompt)
+    return PromptContext_ResolveAttachPaths(existing, asTxt)
 }
 
 PromptContext_CmdQuote(s) {
@@ -1446,7 +1474,7 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
                 PromptPaste_BusyUpdate("⏳ Confirming…")
                 confirmState := AiCompanion_ConfirmAfterEnter(hwnd, companionId, sentText, 3000, snapStatus = "ok")
                 ok := (confirmState = "working")
-                if (ok && catalogSendClicked)
+                if (ok)
                     AiCompanion_ArmResponseWatch(hwnd, companionId)
             }
         } else {
@@ -1516,12 +1544,8 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
     }
     if (AiCompanionMode_IsCDP(companion)) {
         filePaths := []
-        if (doAttach && IsObject(contextEntries)) {
-            for entry in contextEntries {
-                if (IsObject(entry) && entry.HasProp("path") && entry.path != "")
-                    filePaths.Push(entry.path)
-            }
-        }
+        if (doAttach && IsObject(prompt))
+            filePaths := UtilitySelector_ResolveCdpAttachFilePaths(prompt, contextEntries)
         if (IsObject(extraAttachPaths)) {
             for p in extraAttachPaths {
                 if (p != "")
