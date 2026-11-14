@@ -6,6 +6,7 @@ import csv
 import io
 import re
 import shutil
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -136,8 +137,9 @@ def parse_csv_body(body: str) -> list[dict[str, str]]:
     return rows
 
 
-def write_fix_file(error: str, extra: str = "") -> str:
-    desk = desktop_dir() / "TASK_AI_FIX.txt"
+def write_fix_file(error: str, extra: str = "", fix_dir: Path | None = None) -> str:
+    target_dir = fix_dir if fix_dir is not None else desktop_dir()
+    desk = target_dir / "TASK_AI_FIX.txt"
     body = (
         "The Desktop Tasks importer rejected my last TASK_PACK.txt. Fix and re-deliver.\r\n\r\n"
         f"IMPORT ERROR\r\n{error}\r\n\r\n"
@@ -156,21 +158,29 @@ def write_fix_file(error: str, extra: str = "") -> str:
     return str(desk)
 
 
-def preview_pack(store: TaskStore) -> dict[str, Any]:
-    src = newest_match(["TASK_PACK*.txt", "TASK_PACK*.csv", "gemini-code*.txt"])
-    if not src:
-        write_fix_file("No TASK_PACK file on Desktop")
-        return {"ok": False, "error": "No TASK_PACK file on Desktop"}
-    path = normalize_pack(src)
+def preview_pack(
+    store: TaskStore, pack_path: Path | None = None, fix_dir: Path | None = None
+) -> dict[str, Any]:
+    if pack_path is not None:
+        if not pack_path.is_file():
+            write_fix_file(f"TASK_PACK file not found: {pack_path}", fix_dir=fix_dir)
+            return {"ok": False, "error": f"TASK_PACK file not found: {pack_path}"}
+        path = pack_path
+    else:
+        src = newest_match(["TASK_PACK*.txt", "TASK_PACK*.csv", "gemini-code*.txt"])
+        if not src:
+            write_fix_file("No TASK_PACK file on Desktop", fix_dir=fix_dir)
+            return {"ok": False, "error": "No TASK_PACK file on Desktop"}
+        path = normalize_pack(src)
     text = path.read_text(encoding="utf-8", errors="replace")
     if not text.strip():
-        write_fix_file("TASK_PACK is empty")
+        write_fix_file("TASK_PACK is empty", fix_dir=fix_dir)
         return {"ok": False, "error": "TASK_PACK is empty"}
     projects = parse_csv_body(extract_section(text, "TASK_PROJECTS.csv"))
     tasks = parse_csv_body(extract_section(text, "TASK_TASKS.csv"))
     infos = parse_csv_body(extract_section(text, "TASK_INFO.csv"))
     if not projects and not tasks and not infos:
-        write_fix_file("No usable rows in TASK_PACK")
+        write_fix_file("No usable rows in TASK_PACK", fix_dir=fix_dir)
         return {"ok": False, "error": "No usable rows in TASK_PACK"}
     return {
         "ok": True,
@@ -471,9 +481,14 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
     store.save("info_points", infos)
     store.migrate_sections()
 
-    # archive pack
+    # archive pack (skip temp-staged packs)
     path = Path(pack.get("path") or desktop_dir() / "TASK_PACK.txt")
-    if path.is_file():
+    is_temp_pack = False
+    try:
+        is_temp_pack = path.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve())
+    except OSError:
+        is_temp_pack = False
+    if path.is_file() and not is_temp_pack:
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         dest = store.imported_dir / f"TASK_PACK-{stamp}.txt"
         try:
@@ -487,7 +502,8 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
 
     errors = list(dict.fromkeys(errors))
     if errors:
-        write_fix_file("Partial import — some rows failed", "\n".join(errors))
+        fix_dir = Path(tempfile.gettempdir()) if is_temp_pack else None
+        write_fix_file("Partial import — some rows failed", "\n".join(errors), fix_dir=fix_dir)
     hint_filter = ""
     hint_project = ""
     if hint_filter_counts:
@@ -640,6 +656,12 @@ def _cli_main(argv: list[str] | None = None) -> int:
         "preview", help="Discover Desktop TASK_PACK and write preview files"
     )
     p_prev.add_argument(
+        "--pack", default="", help="Optional explicit TASK_PACK path (e.g. A_Temp)"
+    )
+    p_prev.add_argument(
+        "--fix-dir", default="", help="Optional directory for TASK_AI_FIX.txt"
+    )
+    p_prev.add_argument(
         "--json-out", required=True, help="Write full preview JSON here"
     )
     p_prev.add_argument(
@@ -662,7 +684,9 @@ def _cli_main(argv: list[str] | None = None) -> int:
     store = TaskStore(Path(args.data_dir))
 
     if args.cmd == "preview":
-        result = preview_pack(store)
+        pack_arg = Path(args.pack) if getattr(args, "pack", "") else None
+        fix_arg = Path(args.fix_dir) if getattr(args, "fix_dir", "") else None
+        result = preview_pack(store, pack_path=pack_arg, fix_dir=fix_arg)
         json_path = Path(args.json_out)
         labels_path = Path(args.labels_out)
         json_path.write_text(

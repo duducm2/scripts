@@ -42,7 +42,7 @@ Collectible_JsonField(text, key) {
     return m[1]
 }
 
-Collectible_WriteAiFix(errorMsg, extraNotes := "") {
+Collectible_WriteAiFix(errorMsg, extraNotes := "", fixDir := "") {
     errorMsg := Trim(errorMsg)
     if (errorMsg = "")
         return ""
@@ -73,7 +73,8 @@ Collectible_WriteAiFix(errorMsg, extraNotes := "") {
         . "- Re-deliver using the exact canonical filename (COLLECTIBLE_PACK.txt).`r`n"
         . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
         . "After you fix it, I will save COLLECTIBLE_PACK.txt to Desktop and run Import Management [C] again.`r`n"
-    path := A_Desktop . "\COLLECTIBLE_AI_FIX.txt"
+    dir := (fixDir != "") ? fixDir : A_Desktop
+    path := dir . "\COLLECTIBLE_AI_FIX.txt"
     try {
         Palace_WriteUtf8(path, body)
         return path
@@ -82,8 +83,8 @@ Collectible_WriteAiFix(errorMsg, extraNotes := "") {
     }
 }
 
-Collectible_Fail(errorMsg, extraNotes := "") {
-    path := Collectible_WriteAiFix(errorMsg, extraNotes)
+Collectible_Fail(errorMsg, extraNotes := "", fixDir := "") {
+    path := Collectible_WriteAiFix(errorMsg, extraNotes, fixDir)
     if (path != "") {
         ImportMgmt_OnAiFixReady(path, "COLLECTIBLE_AI_FIX.txt")
         return true
@@ -97,10 +98,13 @@ Collectible_Fail(errorMsg, extraNotes := "") {
 }
 
 ; Import Management [C] and the Desktop watcher.
-Collectible_ImportFromDesktop(*) {
+Collectible_ImportFromDesktop(path := "", *) {
     Palace_EnsureData()
-    path := Collectible_DesktopPackPath()
-    if (path = "") {
+    isTemp := (path != "" && InStr(path, A_Temp) = 1)
+    fixDir := isTemp ? A_Temp : ""
+    if (path = "")
+        path := Collectible_DesktopPackPath()
+    if (path = "" || !FileExist(path)) {
         ImportMgmt_PlayOutcomeChime(false)
         Palace_Notify("No COLLECTIBLE_PACK.txt on Desktop", 2800, BANNER_ACCENT_ERROR)
         Palace_ReturnAfterImport(true)
@@ -109,7 +113,7 @@ Collectible_ImportFromDesktop(*) {
     py := Palace_PythonDir() . "\collectibles.py"
     pyCmd := Palace_FindPythonCmd()
     if (!FileExist(py) || pyCmd = "") {
-        Collectible_Fail("Collectible importer is missing (collectibles.py).")
+        Collectible_Fail("Collectible importer is missing (collectibles.py).", "", fixDir)
         Palace_ReturnAfterImport(true)
         return false
     }
@@ -121,7 +125,7 @@ Collectible_ImportFromDesktop(*) {
     . '" --pack "' . path . '" --desktop "' . A_Desktop . '" > "' . outPath . '" 2>&1'
     try RunWait(A_ComSpec . " /c " . cmd, Palace_PythonDir(), "Hide")
     catch as e {
-        Collectible_Fail("Could not run the collectible importer: " . e.Message)
+        Collectible_Fail("Could not run the collectible importer: " . e.Message, "", fixDir)
         Palace_ReturnAfterImport(hubClosed)
         return false
     }
@@ -130,7 +134,7 @@ Collectible_ImportFromDesktop(*) {
         err := Collectible_JsonField(out, "error")
         if (err = "")
             err := Trim(out) != "" ? Trim(out) : "COLLECTIBLE_PACK could not be imported."
-        Collectible_Fail(err)
+        Collectible_Fail(err, "", fixDir)
         Palace_ReturnAfterImport(hubClosed)
         return false
     }

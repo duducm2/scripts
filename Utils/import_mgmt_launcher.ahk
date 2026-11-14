@@ -474,15 +474,15 @@ ImportMgmt_RunClassifiedClipboard() {
 
 ImportMgmt_RunClassifiedHit(hit) {
     placeReason := ""
-    placed := false
-    try placed := ImportMgmt_TryPlaceClipboardPack(hit["fileName"], &placeReason)
+    stagedPath := ""
+    try stagedPath := ImportMgmt_StageClipboardPackToTemp(hit["fileName"], &placeReason)
     catch {
-        placed := false
+        stagedPath := ""
         if (placeReason = "")
-            placeReason := "Could not write pack to Desktop"
+            placeReason := "Could not stage pack to temp"
     }
-    if (!placed) {
-        msg := placeReason != "" ? placeReason : "Could not write pack to Desktop"
+    if (stagedPath = "") {
+        msg := placeReason != "" ? placeReason : "Could not stage pack to temp"
         ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils("❌ " msg, 2800, BANNER_ACCENT_ERROR)
         catch {
@@ -494,7 +494,7 @@ ImportMgmt_RunClassifiedHit(hit) {
     catch {
     }
     result := false
-    try result := hit["run"].Call()
+    try result := hit["run"].Call(stagedPath)
     catch as e {
         ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils("❌ Import failed: " (e.Message ? e.Message : "unknown"), 2800,
@@ -504,8 +504,8 @@ ImportMgmt_RunClassifiedHit(hit) {
         result := false
     } finally {
         try {
-            for p in ClipAngelExport_SameNameDesktopPaths(hit["fileName"])
-                ImportWatcher_ClaimPath(p)
+            if (stagedPath != "" && FileExist(stagedPath))
+                FileDelete(stagedPath)
         } catch {
         }
         try ImportMgmt_CloseIfOpen()
@@ -602,6 +602,42 @@ ImportMgmt_TryPlaceClipboardPack(fileName, &reasonOut := "") {
     return false
 }
 
+; Stage a matching clipboard pack to A_Temp so clipboard imports never touch Desktop.
+; Returns the temp file path on success, or "" on failure (reasonOut explains why).
+ImportMgmt_StageClipboardPackToTemp(fileName, &reasonOut := "") {
+    reasonOut := ""
+    if (fileName = "") {
+        reasonOut := "No pack file name"
+        return ""
+    }
+    errMsg := ""
+    body := ""
+    try body := ClipAngelExport_ClipboardAsPackText(&errMsg)
+    catch {
+        reasonOut := "Clipboard unavailable"
+        return ""
+    }
+    if (body = "") {
+        reasonOut := (errMsg != "") ? errMsg : "Clipboard empty"
+        return ""
+    }
+    if (!ImportMgmt_ClipboardPackMatches(body, fileName)) {
+        reasonOut := "Clipboard is not a pack"
+        return ""
+    }
+    outPath := A_Temp . "\import_mgmt_" . A_TickCount . "_" . fileName
+    try ClipAngelExport_OverwriteUtf8(outPath, body)
+    catch {
+        reasonOut := "Could not stage pack to temp"
+        return ""
+    }
+    if (!FileExist(outPath)) {
+        reasonOut := "Could not stage pack to temp"
+        return ""
+    }
+    return outPath
+}
+
 ; Clipboard image → next PALACE_QUICK_IMAGE*.png. False keeps the current Desktop image.
 ImportMgmt_TryPlaceClipboardImage() {
     hasImage := false
@@ -629,15 +665,15 @@ ImportMgmt_TryPlaceClipboardImage() {
 ; Place clipboard pack when present, else use existing Desktop file; toast if neither is available.
 ; The hub closes after the attempt, whether the import saved, failed, or the confirm was cancelled.
 ImportMgmt_RunPreferClipboard(fileName, runFn) {
-    placed := false
+    stagedPath := ""
     placeReason := ""
-    try placed := ImportMgmt_TryPlaceClipboardPack(fileName, &placeReason)
+    try stagedPath := ImportMgmt_StageClipboardPackToTemp(fileName, &placeReason)
     catch {
-        placed := false
+        stagedPath := ""
         if (placeReason = "")
-            placeReason := "Clipboard pack place failed"
+            placeReason := "Clipboard pack stage failed"
     }
-    if (!placed && !ImportMgmt_DesktopPackAvailable(fileName)) {
+    if (stagedPath = "" && !ImportMgmt_DesktopPackAvailable(fileName)) {
         msg := (placeReason != "") ? placeReason : "Clipboard empty"
         ImportMgmt_PlayOutcomeChime(false)
         try ShowCenteredOverlay_Utils(msg, 2800, BANNER_ACCENT_ERROR)
@@ -648,10 +684,16 @@ ImportMgmt_RunPreferClipboard(fileName, runFn) {
         return false
     }
     result := false
-    try result := runFn.Call()
+    try result := runFn.Call(stagedPath)
     catch {
         ImportMgmt_PlayOutcomeChime(false)
         result := false
+    } finally {
+        try {
+            if (stagedPath != "" && FileExist(stagedPath))
+                FileDelete(stagedPath)
+        } catch {
+        }
     }
     ImportMgmt_CloseIfOpen()
     return result

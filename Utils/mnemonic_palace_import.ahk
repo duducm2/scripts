@@ -99,6 +99,8 @@ Palace_DesktopNextQuickImagePath() {
 }
 
 Palace_ArchiveImported(path) {
+    if (path = "" || InStr(path, A_Temp) = 1 || !FileExist(path))
+        return
     destDir := Palace_DataDir() . "\imported"
     if (!DirExist(destDir))
         DirCreate(destDir)
@@ -503,7 +505,9 @@ Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         . "- Re-deliver using the exact canonical filename (PALACE_PACK.txt). Overwrite any prior Desktop copy.`r`n"
         . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
         . "After you fix it, I will save PALACE_PACK.txt to Desktop and run Import Management [P] again.`r`n"
-    path := A_Desktop . "\PALACE_AI_FIX.txt"
+    global g_PalaceAiFixDir
+    fixDir := (IsSet(g_PalaceAiFixDir) && g_PalaceAiFixDir != "") ? g_PalaceAiFixDir : A_Desktop
+    path := fixDir . "\PALACE_AI_FIX.txt"
     try {
         Palace_WriteUtf8(path, body)
         return path
@@ -577,7 +581,9 @@ Palace_HasRecentAiFix() {
 ; Write Desktop AI fix note, copy to clipboard, ≥5s toast, close Import Manager if open.
 ; Returns true (skip launch) so callers never open the Memory Palace app.
 Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
+    global g_PalaceAiFixDir
     path := Palace_WriteAiCompanionImportError(errorMsg, extraNotes)
+    g_PalaceAiFixDir := ""
     if (path != "") {
         ImportMgmt_OnAiFixReady(path, "PALACE_AI_FIX.txt")
         return true
@@ -1448,16 +1454,23 @@ Palace_ResolveDesktopPlanPackPath() {
 }
 
 ; Import Management [L]: PLAN_PACK only.
-Palace_ImportPlanPackFromDesktop(*) {
+Palace_ImportPlanPackFromDesktop(path := "", *) {
+    global g_PalaceAiFixDir
     Palace_EnsureData()
-    pathPlanPack := Palace_ResolveDesktopPlanPackPath()
-    if (pathPlanPack = "") {
-        ImportMgmt_PlayOutcomeChime(false)
-        Palace_Notify("No PLAN_PACK / gemini-code (PLANS.csv) on Desktop", 2800, BANNER_ACCENT_ERROR)
-        Palace_ReturnAfterImport()
-        return false
+    isTemp := (path != "" && InStr(path, A_Temp) = 1)
+    g_PalaceAiFixDir := isTemp ? A_Temp : ""
+    try {
+        pathPlanPack := (path != "") ? path : Palace_ResolveDesktopPlanPackPath()
+        if (pathPlanPack = "" || !FileExist(pathPlanPack)) {
+            ImportMgmt_PlayOutcomeChime(false)
+            Palace_Notify("No PLAN_PACK / gemini-code (PLANS.csv) on Desktop", 2800, BANNER_ACCENT_ERROR)
+            Palace_ReturnAfterImport()
+            return false
+        }
+        return Palace_ImportPlansFromDesktop(pathPlanPack)
+    } finally {
+        g_PalaceAiFixDir := ""
     }
-    return Palace_ImportPlansFromDesktop(pathPlanPack)
 }
 
 ; Canon ids for a pack's beast rows. A beast row's own id always wins: a later
@@ -1576,11 +1589,14 @@ Palace_PreflightAtomCoverage(atomRows, plan) {
 }
 
 ; Import Management [P]: mnemonic PALACE packs only (never PLAN_PACK).
-Palace_ImportMnemonicsFromDesktop(*) {
+Palace_ImportMnemonicsFromDesktop(path := "", *) {
+    global g_PalaceAiFixDir
     Palace_EnsureData()
-    pathPalaces := Palace_ResolveDesktopPalacesPath()
-    pathBeasts := Palace_DesktopNewestCsvOrTxt("PALACE_BEASTS")
-    pathAtoms := Palace_DesktopNewestCsvOrTxt("PALACE_ATOMS")
+    isTemp := (path != "" && InStr(path, A_Temp) = 1)
+    g_PalaceAiFixDir := isTemp ? A_Temp : ""
+    pathPalaces := (path != "") ? "" : Palace_ResolveDesktopPalacesPath()
+    pathBeasts := (path != "") ? "" : Palace_DesktopNewestCsvOrTxt("PALACE_BEASTS")
+    pathAtoms := (path != "") ? "" : Palace_DesktopNewestCsvOrTxt("PALACE_ATOMS")
     pathPack := ""
     packPreview := ""
     palaceRows := []
@@ -1589,8 +1605,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
     csvNotes := []
 
     if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
-        pathPack := Palace_DesktopNewestPackPath()
-        if (pathPack = "") {
+        pathPack := (path != "") ? path : Palace_DesktopNewestPackPath()
+        if (pathPack = "" || !FileExist(pathPack)) {
+            g_PalaceAiFixDir := ""
             ImportMgmt_PlayOutcomeChime(false)
             Palace_Notify("No PALACE_PACK / PALACE_*.txt|.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
             Palace_ReturnAfterImport(true)
@@ -2215,6 +2232,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         return false
     }
 
+    g_PalaceAiFixDir := ""
     if (pathPack != "")
         Palace_ArchiveImported(pathPack)
     else {

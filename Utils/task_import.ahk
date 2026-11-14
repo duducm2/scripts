@@ -119,7 +119,7 @@ Task_ImportReadLabels(path) {
     return labels
 }
 
-Task_WriteAiFix(errorMsg, extraNotes := "") {
+Task_WriteAiFix(errorMsg, extraNotes := "", fixDir := "") {
     errorMsg := Trim(errorMsg)
     if (errorMsg = "")
         errorMsg := "TASK_PACK rejected"
@@ -134,7 +134,7 @@ Task_WriteAiFix(errorMsg, extraNotes := "") {
         . "DELIVERY RULES (mandatory)`r`n"
         . "- Deliver one complete TASK_PACK.txt.`r`n"
         . "- Include ===PREVIEW=== and FILE sections for TASK_PROJECTS / TASK_TASKS / TASK_INFO.`r`n"
-    path := Task_ImportAiFixPath()
+    path := (fixDir != "") ? (fixDir . "\TASK_AI_FIX.txt") : Task_ImportAiFixPath()
     try {
         f := FileOpen(path, "w", "UTF-8")
         if (f) {
@@ -147,10 +147,10 @@ Task_WriteAiFix(errorMsg, extraNotes := "") {
     return ""
 }
 
-Task_ImportFailAi(errorMsg := "") {
-    path := Task_ImportAiFixPath()
+Task_ImportFailAi(errorMsg := "", fixDir := "") {
+    path := (fixDir != "") ? (fixDir . "\TASK_AI_FIX.txt") : Task_ImportAiFixPath()
     if (!FileExist(path) && errorMsg != "")
-        path := Task_WriteAiFix(errorMsg)
+        path := Task_WriteAiFix(errorMsg, "", fixDir)
     if (path != "" && FileExist(path))
         return ImportMgmt_OnAiFixReady(path, "TASK_AI_FIX.txt")
     ImportMgmt_PlayOutcomeChime(false)
@@ -163,8 +163,10 @@ Task_ImportFailAi(errorMsg := "") {
 }
 
 ; Import Management [T]: preview → confirm → commit (no browser).
-Task_ImportPackFromDesktop(*) {
+Task_ImportPackFromDesktop(path := "", *) {
     Task_EnsureData()
+    isTemp := (path != "" && InStr(path, A_Temp) = 1)
+    fixDir := isTemp ? A_Temp : ""
     pyCmd := Task_FindPythonCmd()
     if (pyCmd = "") {
         ImportMgmt_PlayOutcomeChime(false)
@@ -190,6 +192,10 @@ Task_ImportPackFromDesktop(*) {
 
     cmdPrev := pyCmd . ' "' . script . '" --data-dir "' . dataDir
         . '" preview --json-out "' . jsonOut . '" --labels-out "' . labelsOut . '"'
+    if (path != "")
+        cmdPrev .= ' --pack "' . path . '"'
+    if (fixDir != "")
+        cmdPrev .= ' --fix-dir "' . fixDir . '"'
     try StandardLoadingBar_Show("⏳ Previewing TASK_PACK…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
@@ -208,7 +214,7 @@ Task_ImportPackFromDesktop(*) {
     }
 
     if (exitPrev != 0 || !FileExist(jsonOut)) {
-        Task_ImportFailAi("TASK_PACK preview failed")
+        Task_ImportFailAi("TASK_PACK preview failed", fixDir)
         return false
     }
 
@@ -255,13 +261,14 @@ Task_ImportPackFromDesktop(*) {
             3600,
             BANNER_ACCENT_INTERMEDIATE
         )
-        if (FileExist(Task_ImportAiFixPath()))
-            ImportMgmt_OnAiFixReady(Task_ImportAiFixPath(), "TASK_AI_FIX.txt")
+        fixPath := (fixDir != "") ? (fixDir . "\TASK_AI_FIX.txt") : Task_ImportAiFixPath()
+        if (FileExist(fixPath))
+            ImportMgmt_OnAiFixReady(fixPath, "TASK_AI_FIX.txt")
         else
             ImportMgmt_OnImportSuccess()
         return true
     }
-    Task_ImportFailAi("TASK_PACK commit failed")
+    Task_ImportFailAi("TASK_PACK commit failed", fixDir)
     return false
 }
 

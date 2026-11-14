@@ -19,7 +19,7 @@ Finance_DesktopNewest(pattern) {
 
 ; Write Desktop AI-companion fix note when finance AI import fails. Overwrites prior file.
 ; kind: "daily" | "monthly". Returns path written, or "".
-Finance_WriteAiCompanionImportError(errorMsg, kind := "daily", extraNotes := "") {
+Finance_WriteAiCompanionImportError(errorMsg, kind := "daily", extraNotes := "", fixDir := "") {
     errorMsg := Trim(errorMsg)
     if (errorMsg = "")
         return ""
@@ -44,7 +44,8 @@ Finance_WriteAiCompanionImportError(errorMsg, kind := "daily", extraNotes := "")
         . "- Re-deliver using the exact canonical filename (" . packName . "). Overwrite any prior Desktop copy.`r`n"
         . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
         . "After you fix it, I will save " . packName . " to Desktop and re-import.`r`n"
-    path := A_Desktop . "\FINANCE_AI_FIX.txt"
+    dir := (fixDir != "") ? fixDir : A_Desktop
+    path := dir . "\FINANCE_AI_FIX.txt"
     try {
         Finance_WriteUtf8(path, body)
         return path
@@ -90,8 +91,8 @@ Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
 
 ; Write Desktop AI fix note, copy to clipboard, ≥5s toast, close Import Manager if open.
 ; Returns true if the hub was closed (caller should skip domain menus).
-Finance_FailAiImport(errorMsg, kind := "daily", notifyMs := 2200, extraNotes := "") {
-    path := Finance_WriteAiCompanionImportError(errorMsg, kind, extraNotes)
+Finance_FailAiImport(errorMsg, kind := "daily", notifyMs := 2200, extraNotes := "", fixDir := "") {
+    path := Finance_WriteAiCompanionImportError(errorMsg, kind, extraNotes, fixDir)
     if (path != "")
         return ImportMgmt_OnAiFixReady(path, "FINANCE_AI_FIX.txt")
     ms := notifyMs < 5000 ? 5000 : notifyMs
@@ -702,12 +703,14 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
     }
 }
 
-Finance_ImportDaily(*) {
-    return Finance_ImportDailyFromPath("", false)
+Finance_ImportDaily(path := "", *) {
+    return Finance_ImportDailyFromPath(path, false)
 }
 
 ; path empty = discover on Desktop. autoConfirm skips the confirm dialog.
 Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
+    isTemp := (path != "" && InStr(path, A_Temp) = 1)
+    fixDir := isTemp ? A_Temp : ""
     if (path = "") {
         path := Finance_DesktopNewest("FINANCE_DAILY*.txt")
         if (path = "")
@@ -718,13 +721,15 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             path := Finance_DesktopNewestDailyCodeDump()
     }
     if (path = "" || !FileExist(path)) {
-        Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000)
+        Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000, "", fixDir)
         return false
     }
-    path := PackImport_NormalizeDesktopSource(path, "FINANCE_DAILY.txt")
-    if (path = "" || !FileExist(path)) {
-        Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000)
-        return false
+    if (!isTemp) {
+        path := PackImport_NormalizeDesktopSource(path, "FINANCE_DAILY.txt")
+        if (path = "" || !FileExist(path)) {
+            Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000, "", fixDir)
+            return false
+        }
     }
     sourcePath := path
     csvPath := Finance_MaterializeAiCsv(path, "FINANCE_DAILY.csv")
@@ -735,7 +740,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         }
     }
     if (!rows.Length) {
-        Finance_FailAiImport("File has no data rows", "daily", 2200)
+        Finance_FailAiImport("File has no data rows", "daily", 2200, "", fixDir)
         return false
     }
     cats := Finance_Load("categories")
@@ -784,7 +789,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         ))
     }
     if (!parsed.Length) {
-        Finance_FailAiImport("No rows to import", "daily", 2200)
+        Finance_FailAiImport("No rows to import", "daily", 2200, "", fixDir)
         return false
     }
     if (!autoConfirm && !Finance_ImportConfirmEditable("Import daily transactions", parsed))
@@ -821,7 +826,8 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     Finance_Save("credit_cards", cards)
     Finance_Save("transactions", txs)
     Finance_AfterDailyImport(imported, autoConfirm)
-    Finance_ArchiveImported(sourcePath)
+    if (!isTemp)
+        Finance_ArchiveImported(sourcePath)
     Finance_Notify("Imported " . imported.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
     ImportMgmt_OnImportSuccess()
     return true
@@ -870,22 +876,28 @@ Finance_AfterDailyImport(parsed, autoConfirm) {
         Finance_ShowTransactions(false)  ; keep month chosen for the imported rows
 }
 
-Finance_ImportMonthly(*) {
-    path := Finance_DesktopNewest("FINANCE_MONTHLY*.txt")
-    if (path = "")
-        path := Finance_DesktopNewest("FINANCE_MONTHLY*.csv")
-    if (path = "")
-        path := Finance_DesktopNewest("FINANCE_MONTHLY*.ini")
-    if (path = "")
-        path := Finance_DesktopNewestMonthlyCodeDump()
+Finance_ImportMonthly(path := "", *) {
+    isTemp := (path != "" && InStr(path, A_Temp) = 1)
+    fixDir := isTemp ? A_Temp : ""
     if (path = "") {
-        Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
+        path := Finance_DesktopNewest("FINANCE_MONTHLY*.txt")
+        if (path = "")
+            path := Finance_DesktopNewest("FINANCE_MONTHLY*.csv")
+        if (path = "")
+            path := Finance_DesktopNewest("FINANCE_MONTHLY*.ini")
+        if (path = "")
+            path := Finance_DesktopNewestMonthlyCodeDump()
+    }
+    if (path = "" || !FileExist(path)) {
+        Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000, "", fixDir)
         return false
     }
-    path := PackImport_NormalizeDesktopSource(path, "FINANCE_MONTHLY.txt")
-    if (path = "" || !FileExist(path)) {
-        Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
-        return false
+    if (!isTemp) {
+        path := PackImport_NormalizeDesktopSource(path, "FINANCE_MONTHLY.txt")
+        if (path = "" || !FileExist(path)) {
+            Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000, "", fixDir)
+            return false
+        }
     }
     sourcePath := path
     csvPath := Finance_MaterializeAiCsv(path, "FINANCE_MONTHLY.csv")
@@ -896,7 +908,7 @@ Finance_ImportMonthly(*) {
         }
     }
     if (!rows.Length) {
-        Finance_FailAiImport("File has no data rows", "monthly", 2200)
+        Finance_FailAiImport("File has no data rows", "monthly", 2200, "", fixDir)
         return false
     }
     accs := Finance_Load("accounts")
@@ -931,7 +943,7 @@ Finance_ImportMonthly(*) {
             nReady += 1
     }
     if (!nReady) {
-        Finance_FailAiImport("0 monthly adjustments applied — check entity_type/entity_id", "monthly", 2800)
+        Finance_FailAiImport("0 monthly adjustments applied — check entity_type/entity_id", "monthly", 2800, "", fixDir)
         return false
     }
     if (!Finance_ImportConfirm("Import monthly adjustments", previewRows))
@@ -988,7 +1000,8 @@ Finance_ImportMonthly(*) {
     Finance_Save("goals", goals)
     Finance_Save("transactions", txs)
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
-    Finance_ArchiveImported(sourcePath)
+    if (!isTemp)
+        Finance_ArchiveImported(sourcePath)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
     if (ImportMgmt_IsOpen())
         ImportMgmt_OnImportSuccess()
