@@ -326,6 +326,15 @@ MoveWinToMonitor(mon) {
     try {
         WMAutomation_SuppressCursorCentering("move_window_to_monitor", 800)
 
+        ; Break any 50/50 snap-pair / F11-restore link before moving so
+        ; AutoSlot_OnLocationChange cannot drag the former partner to destMon.
+        try {
+            AutoSlot_PairSuppressMark(hwnd)
+            AutoSlot_ClearPairMaxPending(hwnd)
+            AutoSlot_UnregisterSnapPair(hwnd)
+        } catch {
+        }
+
         ; Obtain monitor work area
         MonitorGet mon, &left, &top, &right, &bottom
 
@@ -339,11 +348,13 @@ MoveWinToMonitor(mon) {
         width := right - left
         height := bottom - top
 
-        ; First try the native WinMove (returns 1 on success, 0 on failure)
-        ok := 0
-        try ok := WinMove(hwnd, left, top, width, height)
-        catch {
-            ok := 0
+        ; First try the native WinMove (AHK v2: WinMove(X, Y, W, H, WinTitle))
+        ok := false
+        try {
+            WinMove(left, top, width, height, hwnd)
+            ok := true
+        } catch {
+            ok := false
         }
 
         ; Fallback to MoveWindow API if WinMove fails
@@ -353,6 +364,10 @@ MoveWinToMonitor(mon) {
 
         ; Finally maximise so Windows treats it as maximised on that monitor
         WinMaximize hwnd
+
+        try AutoSlot_RememberHwndMon(hwnd)
+        catch {
+        }
 
         ; Heal source companion and ensure moved window is foreground + cursor centered.
         WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1)

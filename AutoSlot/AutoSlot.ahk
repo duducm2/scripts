@@ -2777,15 +2777,21 @@ AutoSlot_ApplyPairCrude(a, b, aPane, bPane, monIdx) {
     }
     okB := false
     okA := false
-    try okB := !!WinMove(b, bR[1], bR[2], bR[3] - bR[1], bR[4] - bR[2])
-    catch
+    try {
+        WinMove(bR[1], bR[2], bR[3] - bR[1], bR[4] - bR[2], b)
+        okB := true
+    } catch {
         okB := false
+    }
     if (!okB)
         okB := !!DllCall("MoveWindow", "ptr", b, "int", bR[1], "int", bR[2], "int", bR[3] - bR[1], "int", bR[4] - bR[2],
             "int", true)
-    try okA := !!WinMove(a, aR[1], aR[2], aR[3] - aR[1], aR[4] - aR[2])
-    catch
+    try {
+        WinMove(aR[1], aR[2], aR[3] - aR[1], aR[4] - aR[2], a)
+        okA := true
+    } catch {
         okA := false
+    }
     if (!okA)
         okA := !!DllCall("MoveWindow", "ptr", a, "int", aR[1], "int", aR[2], "int", aR[3] - aR[1], "int", aR[4] - aR[2],
             "int", true)
