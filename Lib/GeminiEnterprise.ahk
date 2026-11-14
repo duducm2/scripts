@@ -473,20 +473,11 @@ GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := f
     if (!hwnd)
         return 0
     WinActivate("ahk_id " hwnd)
-    WinWaitActive("ahk_id " hwnd, , 2)
-    Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
-    try {
-        uia := UIA_Browser("ahk_id " hwnd)
-        Sleep 80
-        GeminiEnterprise_FocusComposer(uia, false)
-    } catch {
+    if !WinWaitActive("ahk_id " hwnd, , 2)
         return 0
-    }
-    if (optionalPromptText != "")
-        InsertText(optionalPromptText)
-    else
-        PasteClipboard()
-    Sleep 250
+    Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+    if (!AiCompanion_PasteWithQualityGate(hwnd, "enterprise", optionalPromptText))
+        return 0
     GeminiEnterprise_PlayFocusedChime()
     if (autoSubmit) {
         Sleep 1000

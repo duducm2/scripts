@@ -525,6 +525,11 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
         }
     }
 
+    if (!AiCompanion_GetClipboardPastePayload()) {
+        ShowCenteredOverlay_Utils("❌ Clipboard is empty — nothing to paste.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
     companionId := ResolveGlobalAICompanion()
     label := GetGlobalAIProviderLabel()
     hwnd := 0
@@ -538,11 +543,15 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
                 hwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
         }
     } catch as err {
+        if (originHwnd && WinExist("ahk_id " originHwnd))
+            AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionPasteErr")
         ShowCenteredOverlay_Utils("❌ Error pasting to " . label . ": " . err.Message, 2000, BANNER_ACCENT_ERROR)
         return false
     }
     if (!hwnd) {
-        ShowCenteredOverlay_Utils("❌ Could not open or focus " . label . ".", 2000, BANNER_ACCENT_ERROR)
+        if (originHwnd && WinExist("ahk_id " originHwnd))
+            AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionPasteFail")
+        ShowCenteredOverlay_Utils("❌ Failed to paste to " . label . " (composer did not receive clipboard).", 2200, BANNER_ACCENT_ERROR)
         return false
     }
 

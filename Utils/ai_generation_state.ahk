@@ -292,6 +292,129 @@ AiCompanion_SnapshotComposer(hwnd, companionId, &status) {
     return text
 }
 
+; Inspect the OS clipboard before switching to an AI companion.
+; Sets kind to "text", "binary" (image/files), or "empty".
+AiCompanion_GetClipboardPastePayload(&kind := "", &text := "") {
+    kind := "empty"
+    text := ""
+    hasTextFormat := false
+    hasBinaryFormat := false
+    try {
+        hasTextFormat := !!(DllCall("IsClipboardFormatAvailable", "UInt", 13, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 1, "Int"))
+        hasBinaryFormat := !!(DllCall("IsClipboardFormatAvailable", "UInt", 8, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 15, "Int"))
+    } catch {
+        hasTextFormat := true
+    }
+    if (hasTextFormat) {
+        raw := ""
+        try raw := A_Clipboard
+        catch
+            raw := ""
+        if (Type(raw) = "String" && Trim(raw) != "") {
+            kind := "text"
+            text := raw
+            return true
+        }
+    }
+    if (hasBinaryFormat) {
+        kind := "binary"
+        return true
+    }
+    return false
+}
+
+AiCompanion_FocusComposerForUia(uia, companionId) {
+    if (!IsObject(uia))
+        return false
+    companionId := StrLower(Trim(companionId))
+    try {
+        if (companionId = "enterprise")
+            return !!GeminiEnterprise_FocusComposer(uia, false)
+        if (companionId = "copilot")
+            return !!CopilotWeb_FocusComposer(uia, false)
+        return !!Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+    } catch {
+    }
+    return false
+}
+
+; Quality-gated paste into an AI companion composer:
+;   1. Ensures the target window is active.
+;   2. Ensures non-empty payload (optionalPromptText or OS clipboard).
+;   3. Focuses the composer element (never pastes blindly if focus fails).
+;   4. Pastes, then verifies text landed in the composer (retries once if dropped).
+AiCompanion_PasteWithQualityGate(hwnd, companionId, optionalPromptText := "", maxAttempts := 2) {
+    companionId := StrLower(Trim(companionId))
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+
+    payloadKind := "text"
+    expectedText := optionalPromptText
+    if (expectedText = "") {
+        if (!AiCompanion_GetClipboardPastePayload(&payloadKind, &expectedText))
+            return false
+    }
+
+    loop maxAttempts {
+        if (!WinExist("ahk_id " hwnd))
+            return false
+        if (!WinActive("ahk_id " hwnd)) {
+            try WinActivate("ahk_id " hwnd)
+            catch {
+                return false
+            }
+            if (!WinWaitActive("ahk_id " hwnd, , 2)) {
+                if (A_Index < maxAttempts) {
+                    Sleep 150
+                    continue
+                }
+                return false
+            }
+            Sleep 80
+        }
+
+        uia := 0
+        try uia := UIA_Browser("ahk_id " hwnd)
+        catch {
+            uia := 0
+        }
+        if (!AiCompanion_FocusComposerForUia(uia, companionId)) {
+            if (A_Index < maxAttempts) {
+                Sleep 200
+                continue
+            }
+            return false
+        }
+
+        if (optionalPromptText != "")
+            InsertText(optionalPromptText)
+        else
+            PasteClipboard()
+
+        Sleep 250
+
+        if (payloadKind = "binary")
+            return true
+
+        composerText := ""
+        AiCompanion_ReadComposer(hwnd, companionId, &composerText)
+        ; Enterprise/Copilot clipboard fallback uses ^a^c; collapse selection to the end.
+        if (companionId = "enterprise" || companionId = "copilot") {
+            try SendInput "{Right}"
+        }
+        if (AiCompanion_ComposerHolds(composerText, expectedText))
+            return true
+
+        if (A_Index < maxAttempts)
+            Sleep 180
+    }
+    return false
+}
+
 AiCompanion_IsGenerating(hwnd, companionId) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false

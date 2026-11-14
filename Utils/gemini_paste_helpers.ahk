@@ -67,12 +67,15 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
 
         if (geminiHwnd) {
             WinActivate("ahk_id " geminiHwnd)
-            WinWaitActive("ahk_id " geminiHwnd, , 2)
+            if !WinWaitActive("ahk_id " geminiHwnd, , 2)
+                return 0
             Sleep 350
         } else {
             WinActivate("ahk_exe chrome.exe")
-            WinWaitActive("ahk_exe chrome.exe", , 2)
+            if !WinWaitActive("ahk_exe chrome.exe", , 2)
+                return 0
             Sleep 350
+            geminiHwnd := WinExist("A")
         }
 
         if (switchToFirstTab) {
@@ -80,21 +83,12 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
             Sleep 280
         }
 
-        try {
-            uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
-            Sleep 80
-            Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
-        } catch {
-        }
+        targetHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
+        if (!AiCompanion_PasteWithQualityGate(targetHwnd, "gemini", optionalPromptText))
+            return 0
 
-        if (optionalPromptText != "") {
-            InsertText(optionalPromptText)
-        } else {
-            PasteClipboard()
-        }
-        Sleep 250
         ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
-        return geminiHwnd ? geminiHwnd : WinExist("A")
+        return targetHwnd
     } finally {
         SetTitleMatchMode(prevTitleMatchMode)
     }

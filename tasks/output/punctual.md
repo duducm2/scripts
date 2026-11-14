@@ -12,11 +12,9 @@
 
 ⏳ You need to transfer your voting place to Nova Odessa and change our photo
 
-⏳ 🕒 Review your habitual activities
-
 🔲 By a VIVO chip and then register in a prepaid plan
 
-⚡ Fix bosch powertool
+🔲 Fix bosch powertool
 ℹ️ image.png
 ℹ️ image.png
 
@@ -27,6 +25,8 @@ Show that these big processes that you mapped (e.g. from X-Tower) are key delive
 Incorporate details about being a memorist (referencing Art of Memory) into the portfolio.
 ℹ️ Show ongoing big deliverables
 Show things that were big deliverables that are still active and not dead.
+
+⏳ 🕒 Review your habitual activities
 
 🔲 guarde dinheiro adicional no cofrinho da virada do Mercado Livre. Você já colocou mil reais, faltam quatro mil para atingir o limite de cinco mil.
 
@@ -61,7 +61,7 @@ Show things that were big deliverables that are still active and not dead.
 
 ### Review
 
-🔲 Review Resume - UX Researcher & Design Technologist
+⏳ Review Resume - UX Researcher & Design Technologist
 
 🔲 Review Portfolio - UX Researcher & Design Technologist
 ℹ️ O problema que queremos resolver

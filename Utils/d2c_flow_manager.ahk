@@ -558,13 +558,16 @@ class D2C_FlowManager {
                 originHwnd := 0
             }
         }
+        if (!AiCompanion_GetClipboardPastePayload()) {
+            ShowCenteredOverlay_Utils("❌ Clipboard is empty — nothing to send.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
         this.Reset()
         if (originHwnd && WinExist("ahk_id " originHwnd))
             this.OriginHwnd := originHwnd
         else
             this.OriginHwnd := 0
-        this.ExecuteGeminiSubmit(true)
-        return true
+        return this.ExecuteGeminiSubmit(true)
     }
 
     ; --- Phase 1: Submit Prompt ---
@@ -1319,18 +1322,21 @@ class D2C_FlowManager {
                 InsertText(optionalSnippet)
         } else if (this.CompanionId = "enterprise") {
             this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste(optionalSnippet, false)
-            if (!this.GeminiHwnd)
-                this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
         } else if (this.CompanionId = "copilot") {
             this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste(optionalSnippet, false)
-            if (!this.GeminiHwnd)
-                this.GeminiHwnd := GetCopilotWebWindowHwnd()
         } else {
             if (optionalSnippet != "")
-                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
+                this.GeminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
             else
-                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
-            this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
+                this.GeminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+        }
+
+        if (!useRegistryPastePath && !this.GeminiHwnd) {
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                AICompanion_RestoreOriginWindow(this.OriginHwnd, , true, "D2C_PasteFail")
+            ShowCenteredOverlay_Utils("❌ Paste quality gate failed — composer did not receive clipboard.", 2200, BANNER_ACCENT_ERROR)
+            this.Reset()
+            return false
         }
 
         if (autoSubmit) {
@@ -1346,7 +1352,7 @@ class D2C_FlowManager {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 this.Reset()
-                return
+                return false
             }
             if (presetMode = "finance_daily" || presetMode = "task_pack") {
                 ; Send only. Download or copy the pack yourself, then import from
@@ -1358,7 +1364,7 @@ class D2C_FlowManager {
                 global g_D2C_DictationSubmitMenuCycleFinished
                 g_D2C_DictationSubmitMenuCycleFinished := true
                 this.Reset()
-                return
+                return true
             }
             this.StartGeminiMonitor()
         }
@@ -1373,6 +1379,7 @@ class D2C_FlowManager {
 
         if (!autoSubmit)
             this.Reset()
+        return true
     }
 
     ; --- Phase 3: Monitor ---

@@ -739,20 +739,11 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
     if (!copilotHwnd)
         return 0
     WinActivate("ahk_id " copilotHwnd)
-    WinWaitActive("ahk_id " copilotHwnd, , 2)
-    Sleep COPILOT_WEB_TAB_SETTLE_MS
-    try {
-        uia := UIA_Browser("ahk_id " copilotHwnd)
-        Sleep 80
-        CopilotWeb_FocusComposer(uia, false)
-    } catch {
+    if !WinWaitActive("ahk_id " copilotHwnd, , 2)
         return 0
-    }
-    if (optionalPromptText != "")
-        InsertText(optionalPromptText)
-    else
-        PasteClipboard()
-    Sleep 250
+    Sleep COPILOT_WEB_TAB_SETTLE_MS
+    if (!AiCompanion_PasteWithQualityGate(copilotHwnd, "copilot", optionalPromptText))
+        return 0
     CopilotWeb_PlayFocusedChime()
     if (autoSubmit) {
         Sleep 1000
