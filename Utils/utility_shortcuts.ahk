@@ -604,6 +604,84 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
 RegisterMacro(UtilityShortcuts_AICompanionPaste, "📋 AI companion paste clipboard", "")
 RegisterMacro(UtilityShortcuts_AICompanionSend, "🚀 AI companion send clipboard (response banner)", "")
 
+; Macros [T] — Test background CDP AI companion ("hi" -> display reply without focus/clipboard)
+global g_TestCDPCompanionBusy := false
+
+MacroTestCDPCompanion(*) {
+    global g_TestCDPCompanionBusy
+    if (g_TestCDPCompanionBusy) {
+        ShowCenteredOverlay_Utils("⏳ CDP test already running...", 1200, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+    scriptPath := A_ScriptDir "\scratch\cdp_companion_test.py"
+    if (!FileExist(scriptPath)) {
+        ShowCenteredOverlay_Utils("❌ Missing scratch\cdp_companion_test.py", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    g_TestCDPCompanionBusy := true
+    ShowCenteredOverlay_Utils("🧪 Sending 'hi' via CDP (keep working)...", 1500, BANNER_ACCENT_INTERMEDIATE)
+
+    outFile := A_Temp "\ahk_cdp_test_" A_TickCount ".json"
+    cmd := A_ComSpec ' /c python "' scriptPath '" > "' outFile '" 2>&1'
+    pid := 0
+    try {
+        Run(cmd, A_ScriptDir, "Hide", &pid)
+    } catch as err {
+        g_TestCDPCompanionBusy := false
+        ShowCenteredOverlay_Utils("❌ Failed to run Python: " err.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    pollFn := MacroTestCDPCompanion_Poll.Bind(pid, outFile, A_TickCount)
+    SetTimer(pollFn, 250)
+}
+
+MacroTestCDPCompanion_Poll(pid, outFile, startTick) {
+    global g_TestCDPCompanionBusy
+    if (ProcessExist(pid) && (A_TickCount - startTick) < 35000)
+        return
+
+    SetTimer(, 0)
+    g_TestCDPCompanionBusy := false
+
+    raw := ""
+    try {
+        if (FileExist(outFile)) {
+            raw := Trim(FileRead(outFile, "UTF-8"))
+            FileDelete(outFile)
+        }
+    } catch {
+    }
+
+    if (InStr(raw, '"CDP_NOT_RUNNING"')) {
+        res := MsgBox(
+            "Chrome CDP on port 9222 is not running.`n`n"
+            . "Launch a minimized Chrome window with a dedicated GeminiCDP profile now?`n"
+            . "(First time only: restore it from the taskbar once to sign in to Gemini.)",
+            "CDP AI Companion Test", "YesNo Icon?")
+        if (res = "Yes") {
+            profileDir := EnvGet("LOCALAPPDATA") "\GeminiCDP"
+            Run('chrome.exe --user-data-dir="' profileDir '" --remote-debugging-port=9222 --start-minimized https://gemini.google.com/app')
+        }
+        return
+    }
+
+    if (RegExMatch(raw, '"ok":\s*true,\s*"reply":\s*"((?:[^"\\]|\\.)*)"', &m)) {
+        reply := StrReplace(m[1], "\n", "`n")
+        reply := StrReplace(reply, '\"', '"')
+        reply := StrReplace(reply, "\\", "\")
+        preview := (StrLen(reply) > 220) ? SubStr(reply, 1, 220) "…" : reply
+        ShowCenteredOverlay_Utils("🤖 CDP Reply:`n" preview, 4500, BANNER_ACCENT_SUCCESS)
+        return
+    }
+
+    errMsg := raw != "" ? SubStr(raw, 1, 220) : "Unknown error (no output)"
+    ShowCenteredOverlay_Utils("❌ CDP Test failed:`n" errMsg, 3500, BANNER_ACCENT_ERROR)
+}
+
+RegisterMacro(MacroTestCDPCompanion, "🧪 Test CDP AI companion (background 'hi')", "t")
+
 ; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
