@@ -8,9 +8,10 @@
 ; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
-global g_ImportWatcherEnabled := true
+global g_ImportWatcherEnabled := false
 global g_ImportWatcherBusy := false
 global g_ImportWatcherSeen := Map()       ; lowerPath → "mtime|size"
+global g_ImportWatcherSeenSize := Map()   ; lowerPath → size (prevents OneDrive mtime-bump loops on cancel)
 global g_ImportWatcherPending := Map()    ; lowerPath → { mtime, size, stable }
 global g_ImportWatcherTimerArmed := false
 global g_ImportWatcherPollMs := 5000
@@ -43,7 +44,7 @@ ImportWatcher_PollMs() {
 ImportWatcher_DefaultEnabled() {
     if (IsSet(IMPORT_WATCHER_ENABLED))
         return !!IMPORT_WATCHER_ENABLED
-    return true
+    return false
 }
 
 ; Catalog: pattern → { id, label, canonical, run }
@@ -118,7 +119,7 @@ ImportWatcher_NameMatches(name, pat) {
 }
 
 ImportWatcher_ScanCandidates() {
-    global g_ImportWatcherSeen, g_ImportWatcherPending, IMPORT_WATCHER_STABLE_POLLS, IMPORT_WATCHER_USE_INDEX
+    global g_ImportWatcherSeen, g_ImportWatcherSeenSize, g_ImportWatcherPending, IMPORT_WATCHER_STABLE_POLLS, IMPORT_WATCHER_USE_INDEX
     ready := []
     desktop := ImportWatcher_ResolveDesktopPath()
     if (desktop = "")
@@ -141,14 +142,15 @@ ImportWatcher_ScanCandidates() {
                     continue
                 key := ImportWatcher_LowerPath(full)
                 foundKeys[key] := true
-                if (g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp) {
+                parts := StrSplit(stamp, "|")
+                mtime := parts.Length >= 1 ? parts[1] : ""
+                size := parts.Length >= 2 ? parts[2] : "0"
+                if ((g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp)
+                    || (g_ImportWatcherSeenSize.Has(key) && g_ImportWatcherSeenSize[key] = size)) {
                     if (g_ImportWatcherPending.Has(key))
                         g_ImportWatcherPending.Delete(key)
                     continue
                 }
-                parts := StrSplit(stamp, "|")
-                mtime := parts.Length >= 1 ? parts[1] : ""
-                size := parts.Length >= 2 ? parts[2] : "0"
                 if (!g_ImportWatcherPending.Has(key)
                 || g_ImportWatcherPending[key].mtime != mtime
                 || g_ImportWatcherPending[key].size != size) {
@@ -172,8 +174,11 @@ ImportWatcher_ScanCandidates() {
                     stamp := ImportWatcher_FileStamp(path)
                     if (stamp = "")
                         continue
-                    ; Already processed at this exact stamp.
-                    if (g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp) {
+                    ; Already processed at this exact stamp (or same size after cancel/OneDrive mtime bump).
+                    _iwParts := StrSplit(stamp, "|")
+                    _iwSize := _iwParts.Length >= 2 ? _iwParts[2] : "0"
+                    if ((g_ImportWatcherSeen.Has(key) && g_ImportWatcherSeen[key] = stamp)
+                        || (g_ImportWatcherSeenSize.Has(key) && g_ImportWatcherSeenSize[key] = _iwSize)) {
                         if (g_ImportWatcherPending.Has(key))
                             g_ImportWatcherPending.Delete(key)
                         continue
@@ -210,9 +215,13 @@ ImportWatcher_ScanCandidates() {
 }
 
 ImportWatcher_MarkSeen(key, stamp) {
-    global g_ImportWatcherSeen, g_ImportWatcherPending
-    if (key != "" && stamp != "")
+    global g_ImportWatcherSeen, g_ImportWatcherSeenSize, g_ImportWatcherPending
+    if (key != "" && stamp != "") {
         g_ImportWatcherSeen[key] := stamp
+        parts := StrSplit(stamp, "|")
+        if (parts.Length >= 2)
+            g_ImportWatcherSeenSize[key] := parts[2]
+    }
     if (key != "" && g_ImportWatcherPending.Has(key))
         g_ImportWatcherPending.Delete(key)
 }

@@ -502,9 +502,15 @@ ImportMgmt_RunClassifiedHit(hit) {
         catch {
         }
         result := false
-    }
-    try ImportMgmt_CloseIfOpen()
-    catch {
+    } finally {
+        try {
+            for p in ClipAngelExport_SameNameDesktopPaths(hit["fileName"])
+                ImportWatcher_ClaimPath(p)
+        } catch {
+        }
+        try ImportMgmt_CloseIfOpen()
+        catch {
+        }
     }
     return result
 }
