@@ -1716,7 +1716,8 @@ class GeminiEnterpriseAsyncLookup {
         try {
             if WinExist("ahk_id " origHwnd) {
                 WinActivate("ahk_id " origHwnd)
-                WinWaitActive("ahk_id " origHwnd, , 1)
+                if WinWaitActive("ahk_id " origHwnd, , 1)
+                    Utils_PlayAICompanionRestoredChime()
             }
         } catch {
         }
@@ -1767,6 +1768,7 @@ class GeminiEnterpriseAsyncLookup {
                 WinActivate("ahk_id " origHwnd)
                 if (!WinActive("ahk_id " origHwnd))
                     WinWaitActive("ahk_id " origHwnd, , 0.5)
+                Utils_PlayAICompanionRestoredChime()
             } catch {
             }
         }

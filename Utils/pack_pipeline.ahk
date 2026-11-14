@@ -163,20 +163,30 @@ PackPipeline_RestoreUserHwnd() {
                 WinRestore("ahk_id " userHwnd)
         } catch {
         }
-        if (WinActive("ahk_id " userHwnd))
+        if (WinActive("ahk_id " userHwnd)) {
+            Utils_PlayAICompanionRestoredChime()
             return true
+        }
         WinActivate("ahk_id " userHwnd)
-        if (WinWaitActive("ahk_id " userHwnd, , 1))
+        if (WinWaitActive("ahk_id " userHwnd, , 1)) {
+            Utils_PlayAICompanionRestoredChime()
             return true
+        }
         Sleep 100
         WinActivate("ahk_id " userHwnd)
-        if (WinWaitActive("ahk_id " userHwnd, , 1))
+        if (WinWaitActive("ahk_id " userHwnd, , 1)) {
+            Utils_PlayAICompanionRestoredChime()
             return true
+        }
         try DllCall("SetForegroundWindow", "ptr", userHwnd)
         catch {
         }
         Sleep 80
-        return !!WinActive("ahk_id " userHwnd)
+        if (WinActive("ahk_id " userHwnd)) {
+            Utils_PlayAICompanionRestoredChime()
+            return true
+        }
+        return false
     } catch {
     }
     return false

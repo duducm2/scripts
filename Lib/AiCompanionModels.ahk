@@ -21,7 +21,7 @@ AiCompanionModels_IsValidCompanion(companion) {
 
 AiCompanionModels_DefaultConfig(companion) {
     if (companion = AI_COMPANION_GEMINI)
-        return { fast: "1.5 Flash-Lite", deep: "1.5 Pro", models: ["1.5 Flash", "Extended thinking"] }
+        return { fast: "4 Hydrogen", deep: "3.1 Pro", models: ["3.5 Flash-Lite", "4 Argon", "Extended thinking"] }
     if (companion = AI_COMPANION_ENTERPRISE)
         return { fast: "", deep: "3.1 Pro", models: [] }
     if (companion = AI_COMPANION_COPILOT)

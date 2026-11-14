@@ -22,6 +22,8 @@
 ℹ️ image.png
 ℹ️ image.png
 
+⏳ Buy 3 frames do add your and Leo's diplomas
+
 ## Dissertation
 
 ℹ️ Your last day for submitting your dissertation is November 23
@@ -50,6 +52,28 @@
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
 ℹ️ https://unicamp-alumni.org.br/directory
 ℹ️ image.png
+
+### Review
+
+🔲 Review Resume - UX Researcher & Design Technologist
+
+🔲 Review Portfolio - UX Researcher & Design Technologist
+
+🔲 Review Resume - Digital Solution Architect
+
+🔲 Review Portfolio - Digital Solution Architect
+
+🔲 Review Resume - Data Analyst
+
+🔲 Review Portfolio - Data Analyst
+
+🔲 Review Resume - Product Owner
+
+🔲 Review Portfolio - Product Owner
+
+🔲 Review Resume - General
+
+🔲 Review Portfolio - General
 
 ## Dog
 

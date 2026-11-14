@@ -97,11 +97,14 @@ class GeminiAsyncLookup {
         try {
             if WinExist("ahk_id " origHwnd) {
                 WinActivate("ahk_id " origHwnd)
-                WinWaitActive("ahk_id " origHwnd, , 1)
+                if WinWaitActive("ahk_id " origHwnd, , 1)
+                    Utils_PlayAICompanionRestoredChime()
             }
         } catch {
-            if (WinExist("ahk_id " origHwnd))
+            if (WinExist("ahk_id " origHwnd)) {
                 WinActivate("ahk_id " origHwnd)
+                Utils_PlayAICompanionRestoredChime()
+            }
         }
         this.RetryCount := 0
         GeminiBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ASYNC_POLL_MS)
@@ -165,9 +168,12 @@ class GeminiAsyncLookup {
                 WinActivate("ahk_id " origHwnd)
                 if (!WinActive("ahk_id " origHwnd))
                     WinWaitActive("ahk_id " origHwnd, , 0.5)
+                Utils_PlayAICompanionRestoredChime()
             } catch {
-                if (WinExist("ahk_id " origHwnd))
+                if (WinExist("ahk_id " origHwnd)) {
                     try WinActivate("ahk_id " origHwnd)
+                    Utils_PlayAICompanionRestoredChime()
+                }
             }
         }
         StandardLoadingBar_Hide(0)

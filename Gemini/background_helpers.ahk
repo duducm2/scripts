@@ -85,11 +85,15 @@ GeminiActivateWindow(hwnd, waitMs := GEMINI_ACTIVATE_WAIT_MS) {
     return !!WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
 }
 
-GeminiRestoreWindow(hwnd, waitMs := 1000) {
+GeminiRestoreWindow(hwnd, waitMs := 1000, playChime := true) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     GeminiBeginAutomationSwitch("gemini_restore_window", waitMs + 1000)
-    return GeminiActivateWindow(hwnd, waitMs)
+    ok := GeminiActivateWindow(hwnd, waitMs)
+    if (ok && playChime) {
+        try Utils_PlayAICompanionRestoredChime()
+    }
+    return ok
 }
 
 GeminiGetStreamingButtonNames() {

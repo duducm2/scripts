@@ -11,6 +11,7 @@
 ; =============================================================================
 CycleWindowsOnMonitor(order) {
     global g_WindowCycleIndices
+    static lastCycleIdx := 0, lastCycleTick := 0, lastCycleNeedRetry := false
     idx := GetMonitorIndexByOrder(order)
     if (!idx) {
         ShowNotification_WM("Monitor " order " not available (only " MonitorGetCount() " detected).")
@@ -30,10 +31,9 @@ CycleWindowsOnMonitor(order) {
         hwndCur := 0
     }
     ; Next window is the one after whatever is actually in front, when that
-    ; window is on this monitor. If it is not (focus still on another monitor,
-    ; or the last target never took focus), advance the stored index. Deleting
-    ; that index and always restarting at windows[1] left the cycle stuck on
-    ; the first window until a trip to another monitor made activation stick.
+    ; window is on this monitor. When coming from another monitor, always start at
+    ; windows[1] (top-most row, left-most window). Only advance the stored index
+    ; when the immediately preceding cycle on this same monitor failed to take focus.
     activeIdx := 0
     loop windows.Length {
         if (windows[A_Index].hwnd = hwndCur) {
@@ -44,7 +44,8 @@ CycleWindowsOnMonitor(order) {
 
     if (activeIdx)
         pos := activeIdx + 1
-    else if (g_WindowCycleIndices.Has(idx))
+    else if (lastCycleNeedRetry && lastCycleIdx = idx && (A_TickCount - lastCycleTick) < 2000 && g_WindowCycleIndices.Has(
+        idx))
         pos := g_WindowCycleIndices[idx] + 1
     else
         pos := 1
@@ -67,9 +68,13 @@ CycleWindowsOnMonitor(order) {
     }
 
     g_WindowCycleIndices.Set(idx, pos)
+    lastCycleIdx := idx
+    lastCycleTick := A_TickCount
+    lastCycleNeedRetry := false
     target := windows[pos]
     try WinActivate "ahk_id " target.hwnd
     catch {
+        lastCycleNeedRetry := true
         ShowNotification_WM("Error: Target window not found.")
         return
     }
@@ -77,7 +82,8 @@ CycleWindowsOnMonitor(order) {
     ; (common when the previous foreground is on another monitor).
     if !WinWaitActive("ahk_id " target.hwnd, , 0.05)
         Cycle_ForceForeground(target.hwnd)
-    WinWaitActive "ahk_id " target.hwnd, , 0.2
+    if !WinWaitActive("ahk_id " target.hwnd, , 0.2)
+        lastCycleNeedRetry := true
     ; Draw the square now. MoveMouseToCenter ignores a second call for this hwnd
     ; within 500ms, so the foreground timer does not flash again.
     MoveMouseToCenter(target.hwnd)

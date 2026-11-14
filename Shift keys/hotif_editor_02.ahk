@@ -546,7 +546,10 @@ OpenCopilotChatHistory() {
 
 ; Click the VS Code Copilot model picker button in the chat input toolbar.
 ; Targets names like "Pick Model, Auto" and scopes to chat-input-toolbars.
+; In Antigravity IDE, delegates to Antigravity_ClickModelButton.
 ClickVSCodeCopilotModelButton() {
+    if (IsAntigravityActive())
+        return Antigravity_ClickModelButton()
     try {
         hwnd := WinExist("A")
         if (!hwnd)
@@ -1199,7 +1202,10 @@ ExecuteAIModelSelection(choice) {
 
 ; Shift + A : Switch AI models - AI
 +a:: {
-    if (IsCodeFamilyActive()) {
+    if (IsAntigravityActive()) {
+        if (Antigravity_ClickModelButton())
+            return
+    } else if (IsCodeActive()) {
         if (ClickVSCodeCopilotModelButton())
             return
     }

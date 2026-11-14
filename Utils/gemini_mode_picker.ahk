@@ -9,8 +9,10 @@
 ; UI tree reference: gemini-no-context-menu.md
 ; Family matching absorbs renames (1.5 / 3.1 / plain Flash-Lite, Pro Extended, etc.).
 
-global GEMINI_MODEL_CANONICAL_NAMES := ["1.5 Flash-Lite", "1.5 Flash", "1.5 Pro", "Extended thinking",
-    "3.1 Flash-Lite", "3.5 Flash", "3.1 Pro", "Thinking level"]
+global GEMINI_MODEL_CANONICAL_NAMES := [
+    "3.5 Flash-Lite", "4 Hydrogen", "3.1 Pro", "4 Argon", "4 Carbon",
+    "1.5 Flash-Lite", "1.5 Flash", "1.5 Pro", "Extended thinking", "Thinking level"
+]
 global GEMINI_MODE_PICKER_NAME_SUBSTR := "Open mode picker"
 global GEMINI_MODE_MENU_WAIT_MS := 450
 global GEMINI_MODE_MENU_POLL_MS := 40
@@ -253,16 +255,22 @@ GeminiGetActiveModelFromPickerElement(picker) {
     return GeminiNormalizeModelLabel(label)
 }
 
-; Stable family key for version-tolerant compares (flash-lite / flash / pro / extended-thinking).
+; Stable family key for version-tolerant compares (flash-lite / flash / pro / extended-thinking / hydrogen / argon / carbon).
 GeminiModelFamily(name) {
     name := Trim(name)
     if (name = "")
         return ""
     if RegExMatch(name, "i)extended\s*thinking|thinking\s*level")
         return "extended-thinking"
-    if RegExMatch(name, "i)Flash-Lite|Flash Lite")
+    if RegExMatch(name, "i)Flash-Lite|Flash Lite|quick\s*answers")
         return "flash-lite"
-    if RegExMatch(name, "i)\bPro\b")
+    if RegExMatch(name, "i)\bHydrogen\b|everyday\s*help")
+        return "hydrogen"
+    if RegExMatch(name, "i)\bArgon\b|code\s*&\s*analysis|code\s*and\s*analysis")
+        return "argon"
+    if RegExMatch(name, "i)\bCarbon\b|most\s*complex")
+        return "carbon"
+    if RegExMatch(name, "i)\bPro\b|detailed\s*research")
         return "pro"
     if RegExMatch(name, "i)\bFlash\b")
         return "flash"
@@ -274,21 +282,42 @@ GeminiModelsMatch(a, b) {
     b := Trim(b)
     if (a = "" || b = "")
         return false
-    ; Exact (case-insensitive) — never use loose InStr (Flash ⊆ Flash-Lite).
+    ; Exact (case-insensitive)
     if (StrLower(a) = StrLower(b))
         return true
+
     fa := GeminiModelFamily(a)
     fb := GeminiModelFamily(b)
-    if (fa = "" || fb = "" || fa != fb)
-        return false
-    ; Both versioned (3.6 Flash vs 3.5 Flash): versions must agree.
-    hasVa := RegExMatch(a, "(\d+\.\d+)", &va)
-    hasVb := RegExMatch(b, "(\d+\.\d+)", &vb)
-    if (hasVa && hasVb)
-        return va[1] = vb[1]
-    ; Picker often shows short labels ("Flash", "Pro Extended") without the version —
-    ; same family is enough once Flash-Lite vs Flash is already separated above.
-    return true
+    if (fa != "" && fb != "") {
+        if (fa != fb)
+            return false
+        ; Both in same family. If both have versions, check if versions agree.
+        hasVa := RegExMatch(a, "(\b\d+(\.\d+)?\b)", &va)
+        hasVb := RegExMatch(b, "(\b\d+(\.\d+)?\b)", &vb)
+        if (hasVa && hasVb && va[1] != vb[1])
+            return false
+        return true
+    }
+
+    ; Flexible substring fallback (absorbs UI titles like "Everyday help 4 Hydrogen" vs "4 Hydrogen" or "Hydrogen")
+    la := StrLower(a)
+    lb := StrLower(b)
+    if (InStr(la, lb) || InStr(lb, la)) {
+        isFlashA := RegExMatch(la, "i)\bflash\b") && !RegExMatch(la, "i)\bflash[-\s]?lite\b")
+        isFlashLiteB := RegExMatch(lb, "i)\bflash[-\s]?lite\b")
+        isFlashB := RegExMatch(lb, "i)\bflash\b") && !RegExMatch(lb, "i)\bflash[-\s]?lite\b")
+        isFlashLiteA := RegExMatch(la, "i)\bflash[-\s]?lite\b")
+        if ((isFlashA && isFlashLiteB) || (isFlashB && isFlashLiteA))
+            return false
+
+        hasVa := RegExMatch(a, "(\b\d+(\.\d+)?\b)", &va)
+        hasVb := RegExMatch(b, "(\b\d+(\.\d+)?\b)", &vb)
+        if (hasVa && hasVb && va[1] != vb[1])
+            return false
+        return true
+    }
+
+    return false
 }
 
 GeminiMenuItemMatchesTarget(itemName, targetName) {
@@ -393,17 +422,39 @@ GeminiModelMenuNeedles(modelName) {
         return needles
     ; Exact INI/UI string first — never bare "Flash" (matches Flash-Lite).
     needles.Push(raw)
+
+    ; If input has a version prefix (e.g. "4 Hydrogen"), also push bare name ("Hydrogen")
+    if RegExMatch(raw, "i)^\d+(\.\d+)?\s+(.+)$", &m) {
+        if (m[2] != "")
+            needles.Push(m[2])
+    }
+
     family := GeminiModelFamily(raw)
     if (family = "flash-lite") {
-        if (StrLower(raw) != "flash-lite")
-            needles.Push("Flash-Lite")
+        needles.Push("3.5 Flash-Lite")
+        needles.Push("Flash-Lite")
+        needles.Push("Quick answers")
+    } else if (family = "hydrogen") {
+        needles.Push("4 Hydrogen")
+        needles.Push("Hydrogen")
+        needles.Push("Everyday help")
+    } else if (family = "pro") {
+        needles.Push("3.1 Pro")
+        needles.Push("Pro")
+        needles.Push("Detailed research")
+    } else if (family = "argon") {
+        needles.Push("4 Argon")
+        needles.Push("Argon")
+        needles.Push("Code & analysis")
+    } else if (family = "carbon") {
+        needles.Push("4 Carbon")
+        needles.Push("Carbon")
+        needles.Push("Most complex work")
     } else if (family = "extended-thinking") {
-        if (StrLower(raw) != "extended thinking")
-            needles.Push("Extended thinking")
-        if (StrLower(raw) != "thinking level")
-            needles.Push("Thinking level")
+        needles.Push("Extended thinking")
+        needles.Push("Thinking level")
     }
-    ; flash / pro: exact raw only (no cross-version aliases).
+
     out := []
     seen := Map()
     for n in needles {
@@ -465,7 +516,7 @@ GeminiPickerShowsModel(uia, expected) {
 GeminiPickerFamilyCompatible(uia, expected) {
     expectedFam := GeminiModelFamily(expected)
     if (expectedFam = "")
-        return false
+        return GeminiPickerShowsModel(uia, expected)
     picker := FindGeminiModePickerButton(uia)
     if !picker
         return false
@@ -486,12 +537,18 @@ GeminiNormalizeModelLabel(name) {
     if (fam = "extended-thinking")
         return "Extended thinking"
     if (fam = "flash-lite")
-        return "1.5 Flash-Lite"
+        return RegExMatch(name, "(\d+(\.\d+)?)\s*Flash-Lite", &v) ? v[1] . " Flash-Lite" : "3.5 Flash-Lite"
+    if (fam = "hydrogen")
+        return RegExMatch(name, "(\d+(\.\d+)?)\s*Hydrogen", &v) ? v[1] . " Hydrogen" : "4 Hydrogen"
     if (fam = "pro")
-        return "1.5 Pro"
+        return RegExMatch(name, "(\d+(\.\d+)?)\s*Pro", &v) ? v[1] . " Pro" : "3.1 Pro"
+    if (fam = "argon")
+        return RegExMatch(name, "(\d+(\.\d+)?)\s*Argon", &v) ? v[1] . " Argon" : "4 Argon"
+    if (fam = "carbon")
+        return RegExMatch(name, "(\d+(\.\d+)?)\s*Carbon", &v) ? v[1] . " Carbon" : "4 Carbon"
     if (fam = "flash")
-        return "1.5 Flash"
-    return ""
+        return RegExMatch(name, "(\d+(\.\d+)?)\s*Flash", &v) ? v[1] . " Flash" : "1.5 Flash"
+    return Trim(name)
 }
 
 ; Click a menu item: prefer Invoke, then mouse/ControlClick stack.
@@ -631,11 +688,9 @@ EnsureGeminiModelViaMenu(expected, geminiHwnd := 0) {
     if (GeminiModelFamily(expected) = "extended-thinking")
         return EnsureGeminiExtendedThinkingToggle(geminiHwnd)
 
-    ; Keep the INI/UI string (e.g. "3.6 Flash"); do not fold versions to "1.5 Flash".
+    ; Keep the INI/UI string (e.g. "3.6 Flash", "4 Hydrogen", "Hydrogen").
     target := Trim(expected)
     if (target = "")
-        return false
-    if (GeminiModelFamily(target) = "" && GeminiNormalizeModelLabel(target) = "")
         return false
 
     uia := GeminiAttachBrowser(geminiHwnd)

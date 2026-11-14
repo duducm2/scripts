@@ -1,0 +1,33 @@
+﻿===PREVIEW===
+
+0 project(s) · 10 task(s) · 0 info · Added 10 tasks (resume and portfolio review) across 5 career paths under Job Search / Review.
+
+===END_PREVIEW===
+
+
+
+===FILE: TASK_TASKS.csv===
+
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+
+Job Search,personal,Review Resume - UX Researcher & Design Technologist,general,punctual,,,,Review
+
+Job Search,personal,Review Portfolio - UX Researcher & Design Technologist,general,punctual,,,,Review
+
+Job Search,personal,Review Resume - Digital Solution Architect,general,punctual,,,,Review
+
+Job Search,personal,Review Portfolio - Digital Solution Architect,general,punctual,,,,Review
+
+Job Search,personal,Review Resume - Data Analyst,general,punctual,,,,Review
+
+Job Search,personal,Review Portfolio - Data Analyst,general,punctual,,,,Review
+
+Job Search,personal,Review Resume - Product Owner,general,punctual,,,,Review
+
+Job Search,personal,Review Portfolio - Product Owner,general,punctual,,,,Review
+
+Job Search,personal,Review Resume - General,general,punctual,,,,Review
+
+Job Search,personal,Review Portfolio - General,general,punctual,,,,Review
+
+===END_FILE===

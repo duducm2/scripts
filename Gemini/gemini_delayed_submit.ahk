@@ -129,12 +129,8 @@ class GeminiDelayedSubmitMonitor {
         } else if (WinActive("ahk_id " this.GeminiHwnd))
             FocusGeminiAskFieldForHwnd(this.GeminiHwnd, false)
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
-        if (!skipRestoreFocus && !readAloud && WinExist("ahk_id " this.OriginalHwnd) && !WinActive("ahk_id " this.OriginalHwnd
-        )) {
-            WinActivate("ahk_id " this.OriginalHwnd)
-            ; Fast-path: avoid WinWaitActive if we are already active.
-            if (!WinActive("ahk_id " this.OriginalHwnd))
-                WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
+        if (!skipRestoreFocus && !readAloud && WinExist("ahk_id " this.OriginalHwnd)) {
+            GeminiRestoreWindow(this.OriginalHwnd, 1000, true)
         }
         return copied
     }

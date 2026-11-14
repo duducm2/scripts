@@ -1354,7 +1354,7 @@ class D2C_FlowManager {
                 ; Drop the response watch so it does not copy the reply.
                 AiCompanion_DisarmResponseWatch()
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
+                    AICompanion_RestoreOriginWindow(this.OriginHwnd, this.GeminiHwnd, true, "D2C_PresetExit")
                 global g_D2C_DictationSubmitMenuCycleFinished
                 g_D2C_DictationSubmitMenuCycleFinished := true
                 this.Reset()
@@ -1365,9 +1365,9 @@ class D2C_FlowManager {
 
         if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
             Sleep 100
-            if (!Handy_RestorePrevWindow(this.OriginHwnd, this.GeminiHwnd)) {
+            if (!AICompanion_RestoreOriginWindow(this.OriginHwnd, this.GeminiHwnd, true, "D2C_Submit")) {
                 Sleep 150
-                Handy_RestorePrevWindow(this.OriginHwnd, this.GeminiHwnd)
+                AICompanion_RestoreOriginWindow(this.OriginHwnd, this.GeminiHwnd, true, "D2C_Submit")
             }
         }
 
@@ -1953,12 +1953,8 @@ class D2C_FlowManager {
         }
 
         ; Gemini/Clipboard → Original: return transitions are immediate (no warning).
-        if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this.OriginHwnd
-        )) {
-            WinActivate("ahk_id " this.OriginHwnd)
-            ; Fast-path: avoid WinWaitActive if we are already active.
-            if (!WinActive("ahk_id " this.OriginHwnd))
-                WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+        if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
+            AICompanion_RestoreOriginWindow(this.OriginHwnd, , true, "D2C_ExecuteAction")
         }
         return clipOk
     }

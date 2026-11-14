@@ -421,7 +421,7 @@ GlobalAICompanionSelectRole(role) {
         return false
     }
     ok := AiCompanionModels_SelectRole(GlobalAICompanionModelsId(), role)
-    Handy_RestorePrevWindow(prevHwnd, hwnd)
+    AICompanion_RestoreOriginWindow(prevHwnd, hwnd, true, "RoleSelect")
     return ok
 }
 
@@ -480,7 +480,7 @@ MacroAICompanionNewChat(*) {
     StandardLoadingBar_Hide(0)
     if (!opened) {
         ShowCenteredOverlay_Utils("❌ Could not open " . label . ".", 2000, BANNER_ACCENT_ERROR)
-        Handy_RestorePrevWindow(prevHwnd)
+        AICompanion_RestoreOriginWindow(prevHwnd, , true, "NewChatFailed")
         return false
     }
     companionHwnd := 0
@@ -492,9 +492,9 @@ MacroAICompanionNewChat(*) {
     ok := AiCompanion_StartNewChat(GlobalAICompanionModelsId())
     ; Companion UIA (ReturnToComposer) can steal focus after click — settle, then restore origin.
     Sleep 80
-    if (!Handy_RestorePrevWindow(prevHwnd, companionHwnd)) {
+    if (!AICompanion_RestoreOriginWindow(prevHwnd, companionHwnd, true, "NewChat")) {
         Sleep 120
-        Handy_RestorePrevWindow(prevHwnd, companionHwnd)
+        AICompanion_RestoreOriginWindow(prevHwnd, companionHwnd, true, "NewChat")
     }
     return ok
 }
@@ -549,9 +549,9 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
     ; Return focus to the previously active window
     if (originHwnd && WinExist("ahk_id " originHwnd)) {
         Sleep 120
-        if (!Handy_RestorePrevWindow(originHwnd, hwnd)) {
+        if (!AICompanion_RestoreOriginWindow(originHwnd, hwnd, true, "CompanionPaste")) {
             Sleep 150
-            Handy_RestorePrevWindow(originHwnd, hwnd)
+            AICompanion_RestoreOriginWindow(originHwnd, hwnd, true, "CompanionPaste")
         }
     }
 
@@ -583,9 +583,9 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
     ; Guarantee focus returns to the previously active window
     if (originHwnd && WinExist("ahk_id " originHwnd)) {
         Sleep 120
-        if (!Handy_RestorePrevWindow(originHwnd)) {
+        if (!AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionSend")) {
             Sleep 150
-            Handy_RestorePrevWindow(originHwnd)
+            AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionSend")
         }
     }
     return ok
