@@ -67,7 +67,6 @@ INFO_0255,task,TASK_0339,Ana Carolina Castro,,ℹ️,person,240,2026-10-01 15:49
 INFO_0256,task,TASK_0339,Rafaella Bensuaski,,ℹ️,person contacted,250,2026-10-01 16:12:21,,
 INFO_0257,task,TASK_0339,Silva Jorge (GS/HRS3-LA GS/HRZ5),,ℹ️,person contacted,260,2026-10-01 16:32:05,,
 INFO_0259,task,TASK_0339,Yuri Cardoso,,ℹ️,,270,2026-10-04 20:34:40,,
-INFO_0260,task,TASK_0346,"""C:\Users\fie7ca\OneDrive - Bosch Group\02 - Atividades\59 - Dissertation\presentation.pptx""",,ℹ️,,10,2026-10-05 14:32:32,,
 INFO_0289,task,TASK_0397,PSO/BDO,,ℹ️,,4160,2026-10-06 09:51:01,,
 INFO_0290,task,TASK_0397,image.png,,ℹ️,,4170,2026-10-06 09:51:01,,
 INFO_0291,task,TASK_0397,Quando fecham um projeto de digilitalização para PS-BDO,,ℹ️,,4180,2026-10-06 09:51:01,,
@@ -325,3 +324,36 @@ Realizar entrevistas, observação e workshops com usuários para entender dores
 Conduzir testes de usabilidade antes e depois das entregas e acompanhar a adoção das soluções em uso, propondo melhorias.
 Participar dos ritos ágeis do time (sprints, POC Demo) e apoiar a evolução das soluções desde a PoC até a escala.
 Disseminar boas práticas de processos e UX na organização através das plataformas atuais existentes.",,ℹ️,,10,2026-11-12 11:08:02,,
+INFO_0652,task,TASK_0790,Show big processes mapped,Show that these big processes that you mapped (e.g. from X-Tower) are key deliverables.,ℹ️,,6020,2026-11-13 08:04:36,,
+INFO_0653,task,TASK_0790,Add that you are a memorist,Incorporate details about being a memorist (referencing Art of Memory) into the portfolio.,ℹ️,,6030,2026-11-13 08:04:36,,
+INFO_0654,task,TASK_0790,Show ongoing big deliverables,Show things that were big deliverables that are still active and not dead.,ℹ️,,6040,2026-11-13 08:04:36,,
+INFO_0655,task,TASK_0792,"O problema que queremos resolver
+ 
+O xTower está fortemente acoplado a conceitos específicos de projetos.
+Novos processos ou funis exigem alterações no código.
+O legado dificulta mudanças maiores e integrações.
+Correções podem gerar efeitos colaterais.
+A arquitetura atual dificulta desenvolvimento paralelo.
+People Registration, gestão de esforço, gestão de recursos e workflow estão 
+misturados ou fortemente dependentes.
+A implementação de capacidades de IA e automações agentic fica limitada pela estrutura existente.",,ℹ️,,10,2026-11-13 10:14:13,,
+INFO_0656,task,TASK_0793,"O outcome 
+ 
+Criar uma fundação que permita configurar novos funis, entidades, etapas e formulários sem transformar cada necessidade de negócio em um novo projeto de desenvolvimento.
+ 
+ 
+Aonde quero chegar 
+Para cada nova demanda, a pergunta deve ser:
+Pode ser atendida por configuração?
+Pode ser atendida por extensão ou integração?
+Apenas se as duas respostas forem negativas deve haver alteração do core.
+Isso evita reconstruir o monólito com uma tecnologia ou interface nova.",,ℹ️,,10,2026-11-13 10:14:28,,
+INFO_0657,task,TASK_0491,https://apps-p-p3-outsystems.de.bosch.com/OneSolution/,,ℹ️,,4850,2026-11-13 10:24:14,,
+INFO_0658,task,TASK_0491,https://rb-xorder.bosch.com/,,ℹ️,,4860,2026-11-13 10:24:18,,
+INFO_0659,task,TASK_0491,"xOrder, OneSolution e Home",,ℹ️,,4840,2026-11-13 10:24:50,,
+INFO_0660,task,TASK_0491,por que não usou o xOrder? Por que foi criado? Este é exclusivo do process flow.,,ℹ️,,4870,2026-11-13 10:26:07,,
+INFO_0661,task,TASK_0795,É novo de empresa e desenvolvedor do X-Tower,,ℹ️,,10,2026-11-13 10:29:16,,
+INFO_0662,task,TASK_0796,PMO,,ℹ️,,10,2026-11-13 10:30:13,,
+INFO_0663,task,TASK_0797,"quer ter um backlog saudável para 6 meses 1 ano, para ajudar a conseguir negociações ,capacidade para o futuro, etc.",,ℹ️,,10,2026-11-13 10:30:51,,
+INFO_0664,task,TASK_0795,desenvolve o x-tower msm,,ℹ️,,20,2026-11-13 10:35:08,,
+INFO_0665,task,TASK_0795,ele disse que o leandro não aponta horas por alguma razão,,ℹ️,,30,2026-11-13 10:35:43,,

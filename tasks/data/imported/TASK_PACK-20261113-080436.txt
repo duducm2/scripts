@@ -1,0 +1,23 @@
+﻿===PREVIEW===
+0 project(s) · 1 task(s) · 3 info · Added task to update fififolio with big processes mapped, memorist profile, and ongoing big deliverables.
+===END_PREVIEW===
+
+===FILE: TASK_PROJECTS.csv===
+title,filter,section_path
+===END_FILE===
+
+===FILE: TASK_TASKS.csv===
+project_title,filter,title,emoji,kind,recurrence,due_date,next_due,section_path
+Job Search,personal,Add more deliverables to fififolio,general,punctual,,,,
+===END_FILE===
+
+===FILE: TASK_INFO.csv===
+attach_to,parent_title,project_title,filter,title,body,section_path
+task,Add more deliverables to fififolio,Job Search,personal,Show big processes mapped,Show that these big processes that you mapped (e.g. from X-Tower) are key deliverables.,
+task,Add more deliverables to fififolio,Job Search,personal,Add that you are a memorist,Incorporate details about being a memorist (referencing Art of Memory) into the portfolio.,
+task,Add more deliverables to fififolio,Job Search,personal,Show ongoing big deliverables,Show things that were big deliverables that are still active and not dead.,
+===END_FILE===
+
+Please click on the download link above to download TASK_PACK.txt or copy the text block above to save it as TASK_PACK.txt on your Desktop.
+
+Is there anything else I can help you with today?

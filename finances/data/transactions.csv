@@ -331,3 +331,4 @@ TX336,2026-11-10,transfer,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX337,2026-11-11,Serviceman - new house,"820,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX338,2026-11-11,Transfer from long-term to checking,"820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
 TX339,2026-11-11,Salary payment,"3687,95",income,CAT_SALARIO,ACC_MERCADOP,,,1,1,,0
+TX341,2026-11-12,Groceries,"361,86",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0

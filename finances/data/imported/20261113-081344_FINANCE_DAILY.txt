@@ -1,0 +1,14 @@
+﻿I am calling the file and coding agent to read the uploaded reference files and identify the correct IDs for the accounts and categories mentioned in your dictation.```text
+===PREVIEW===
+2 row(s) · Cover transfer and groceries purchase. No skips.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
+"Transfer from long-term to checking account","820,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1
+"Groceries","361,86",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1
+===END_FILE===
+
+
+Please copy the code block above and save it as `FINANCE_DAILY.txt` on your Desktop to import your transactions.
+
+Is there anything else I can help you with today?
