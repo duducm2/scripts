@@ -432,7 +432,7 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
     catch {
     }
     try {
-        StandardLoadingBar_Show("⏳ Pasting clips in Gemini…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        StandardLoadingBar_Show("⏳ Pasting clips in Gemini…", BANNER_ACCENT_INTERMEDIATE, { passive: true,
             centerOnHwnd: 0,
             fontSize: 17 })
     } catch {
@@ -678,7 +678,7 @@ ExecuteSequentialPaste(actionCount) {
     if (!priorHwnd || !WinExist("ahk_id " priorHwnd))
         priorHwnd := ClipAngel_ResolvePriorHwnd(0)
     try {
-        StandardLoadingBar_Show("⏳ Pasting from clipboard…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
+        StandardLoadingBar_Show("⏳ Pasting from clipboard…", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0,
             fontSize: 17 })
     } catch {
     }

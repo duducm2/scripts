@@ -1892,7 +1892,7 @@ HotkeyCopy_YTryFinishExport() {
     savedClip := ClipboardAll()
     savedOk := false
     try {
-        StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
+        StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE, { passive: true, fontSize: 17 })
         ClipAngel_WaitForClipboardIngest()
         errMsg := ""
         outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
@@ -2181,7 +2181,7 @@ ClipAngel_ExportLastClipToDesktop() {
     savedOk := false
     savedBaseName := ""
     try {
-        StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
+        StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE, { passive: true, fontSize: 17 })
         outPath := ""
         errMsg := ""
         clipboardFirst := true

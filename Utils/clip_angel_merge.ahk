@@ -13,7 +13,7 @@
 MergeNonFavoriteClips() {
     try {
         StandardLoadingBar_Show("⏳ Merging non-favorite clips...", BANNER_ACCENT_INTERMEDIATE, {
-            passive: false,
+            passive: true,
             fontSize: 17
         })
         payload := ClipAngelDb_MergePayload()
@@ -141,31 +141,35 @@ MergeNonFavoriteClips_ViaUI() {
                     if (currentTitle = favoriteClipTitle) {
                         foundMatch := true
                         StandardLoadingBar_Update("⏳ Merging...", BANNER_ACCENT_INTERMEDIATE)
-                        ClipAngel_ReleaseChordModifiersForSend()
-                        priorSendLevel := A_SendLevel
-                        SendLevel 0
-                        SendInput "{Up}"
-                        ; Brief poll for selection change rather than fixed 150 ms.
+                        ClipAngel_SendToHwnd(hwnd, "{Up}")
                         Sleep 40
-                        SendInput "^+{Home}"
-                        deadline := A_TickCount + 200
-                        while (A_TickCount < deadline)
-                            Sleep 15
-                        SendInput "^!j"
-                        deadline := A_TickCount + 400
-                        while (A_TickCount < deadline)
-                            Sleep 20
-                        SendInput "{Tab}"
-                        Sleep 40
-                        SendInput "^a"
-                        try ClipWait(0.3)
-                        catch {
+                        ClipAngel_SendToHwnd(hwnd, "^+{Home}")
+                        Sleep 150
+                        ClipAngel_SendToHwnd(hwnd, "^!j")
+                        Sleep 300
+                        previewText := ""
+                        try {
+                            previewEl := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
+                            if previewEl
+                                previewText := previewEl.Value
+                        } catch {
+                            previewText := ""
                         }
-                        SendInput "^c"
-                        try ClipWait(0.4)
-                        catch {
+                        if (Trim(previewText) != "") {
+                            A_Clipboard := previewText
+                            try ClipWait(0.4)
+                            catch {
+                            }
+                        } else {
+                            ClipAngel_SendToHwnd(hwnd, "{Tab}")
+                            Sleep 40
+                            ClipAngel_SendToHwnd(hwnd, "^a")
+                            Sleep 40
+                            ClipAngel_SendToHwnd(hwnd, "^c")
+                            try ClipWait(0.4)
+                            catch {
+                            }
                         }
-                        SendLevel priorSendLevel
                         try StandardLoadingBar_Hide(0)
                         catch {
                         }
@@ -174,8 +178,7 @@ MergeNonFavoriteClips_ViaUI() {
                     }
                 }
             }
-            ClipAngel_ReleaseChordModifiersForSend()
-            SendInput "{Down}"
+            ClipAngel_SendToHwnd(hwnd, "{Down}")
             Sleep 30
             ; Re-resolve grid if elements go stale after Down.
             if (Mod(A_Index, 5) = 0) {
