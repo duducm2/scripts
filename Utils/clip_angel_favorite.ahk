@@ -344,12 +344,19 @@ ClipAngel_UiaInvokeElement(el) {
         }
     } catch {
     }
-    if !g_ClipAngelFavoriteSuppressActive {
-        try {
-            el.Click()
+    try {
+        if el.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable) {
+            el.LegacyIAccessiblePattern.DoDefaultAction()
             return true
-        } catch {
         }
+    } catch {
+    }
+    if g_ClipAngelFavoriteSuppressActive
+        return false
+    try {
+        el.Click()
+        return true
+    } catch {
     }
     try {
         el.SetFocus()
@@ -2129,19 +2136,20 @@ ClipAngel_SendUnmarkFavoriteAltW(hwnd) {
     return false
 }
 
-; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
-ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
-    ; Check language-independent AutomationId first, then localized display names.
-    item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
-    if item
-        return item
-    names := ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
-        "Desmarcar favorito"]
-    deadline := A_TickCount + timeoutMs
-    loop {
-        item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: "resetFavouriteToolStripMenuItem" })
+; Shared Clip menu item lookup by AutomationId then localized display names.
+ClipAngel_UiaWaitMenuItemByIdOrNames(searchRoots, automationId, names, timeoutMs := 200) {
+    if (automationId != "") {
+        item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: automationId })
         if item
             return item
+    }
+    deadline := A_TickCount + timeoutMs
+    loop {
+        if (automationId != "") {
+            item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, AutomationId: automationId })
+            if item
+                return item
+        }
         for name in names {
             item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: name })
             if item
@@ -2154,7 +2162,15 @@ ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
     return 0
 }
 
-ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
+; Clip > Unmark as favorite. Alt+W is the Window menu key and leaves the ribbon focused.
+ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
+    return ClipAngel_UiaWaitMenuItemByIdOrNames(searchRoots, "resetFavouriteToolStripMenuItem",
+        ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
+        "Desmarcar favorito"], timeoutMs)
+}
+
+ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root := 0) {
+    global g_ClipAngelFavoriteSuppressActive
     if !hwnd
         return false
     try {
@@ -2171,14 +2187,19 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
         if !clipMenu
             clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if clipMenu {
-            if !ClipAngel_UiaInvokeElement(clipMenu)
+            if !ClipAngel_UiaInvokeElement(clipMenu) {
+                if g_ClipAngelFavoriteSuppressActive
+                    return false
                 ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+            }
         } else {
+            if g_ClipAngelFavoriteSuppressActive
+                return false
             ClipAngel_OpenClipMenuViaKeyboard(hwnd)
         }
-        item := ClipAngel_TrySavedMenu(root, "UnmarkFavorite")
+        item := ClipAngel_TrySavedMenu(root, savedId)
         if !item
-            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([root], 150)
+            item := ClipAngel_UiaWaitMenuItemByIdOrNames([root], automationId, names, 150)
         if !item {
             ; Check any popup/dropdown window belonging to ClipAngel (fast, isolated to ClipAngel)
             prevDetect := A_DetectHiddenWindows
@@ -2188,7 +2209,7 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
                     if (popHwnd != hwnd) {
                         try {
                             popRoot := UIA.ElementFromHandle(popHwnd)
-                            item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([popRoot], 150)
+                            item := ClipAngel_UiaWaitMenuItemByIdOrNames([popRoot], automationId, names, 150)
                             if item
                                 break
                         }
@@ -2204,20 +2225,33 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
             catch {
             }
             if desktop {
-                item := ClipAngel_TrySavedMenu(desktop, "UnmarkFavorite")
+                item := ClipAngel_TrySavedMenu(desktop, savedId)
                 if !item
-                    item := ClipAngel_UiaWaitUnmarkFavoriteMenuItem([desktop], 150)
+                    item := ClipAngel_UiaWaitMenuItemByIdOrNames([desktop], automationId, names, 150)
             }
         }
         if !item {
-            ClipAngel_ReleaseChordModifiersForSend()
-            ClipAngel_SendToHwnd(hwnd, "{Escape}")
+            if !g_ClipAngelFavoriteSuppressActive {
+                ClipAngel_ReleaseChordModifiersForSend()
+                ClipAngel_SendToHwnd(hwnd, "{Escape}")
+            }
             return false
         }
         return ClipAngel_UiaInvokeElement(item)
     } catch {
         return false
     }
+}
+
+ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
+    return ClipAngel_InvokeClipMenuFavoriteItem(hwnd, "MarkFavorite", "setFavouriteToolStripMenuItem",
+        ["Mark as favorite", "Mark favorite", "Marcar como favorito"], root)
+}
+
+ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
+    return ClipAngel_InvokeClipMenuFavoriteItem(hwnd, "UnmarkFavorite", "resetFavouriteToolStripMenuItem",
+        ["Unmark as favorite", "Unmark favorite", "Remove favorite", "Desmarcar como favorito",
+        "Desmarcar favorito"], root)
 }
 
 ; Unmark the selected clip as favorite via multiple reliable strategies:
@@ -2278,26 +2312,48 @@ ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
     return false
 }
 
-; Try background UIA invoke on toolStripButtonMarkFavorite without WinActivate/Send.
+; Try background UIA mark favorite (toolbar button, then Clip > Mark as favorite menu) without WinActivate/Send.
 ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId := 0) {
     if (!hwnd || !IsObject(root))
         return false
     favBtn := 0
-    try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
-    catch {
-        favBtn := 0
+    try {
+        for child in root.FindAll({ Scope: 2 }) {
+            if (child.AutomationId = "toolStripTop") {
+                for btn in child.FindAll({ Scope: 2 }) {
+                    if (btn.AutomationId = "toolStripButtonMarkFavorite") {
+                        favBtn := btn
+                        break
+                    }
+                }
+                break
+            }
+        }
+    } catch {
     }
-    if (!favBtn)
-        return false
-    if (!ClipAngel_UiaInvokeElement(favBtn))
-        return false
-    if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 400) = true)
-        return true
-    return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+    if (!favBtn) {
+        try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
+        catch {
+            favBtn := 0
+        }
+    }
+    if (favBtn && ClipAngel_UiaInvokeElement(favBtn)) {
+        if ((newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 250) = true)
+            || ClipAngel_Row0TitleLooksFavorited(hwnd, root))
+            return true
+    }
+    if (ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)) {
+        if ((newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 500) = true)
+            || ClipAngel_Row0TitleLooksFavorited(hwnd, root))
+            return true
+    }
+    OutputDebug("[ClipAngel] Background UIA mark favorite failed: newestId=" newestId " favBtn=" (favBtn ? 1 : 0))
+    return false
 }
 
-; Row 0: Try background UIA invoke first (no focus steal); fall back to Alt+Q only if needed.
+; Row 0: Try background UIA invoke first (no focus steal); fall back to Alt+Q only if not suppressed.
 ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
+    global g_ClipAngelFavoriteSuppressActive
     if !hwnd
         return false
     if !root {
@@ -2315,6 +2371,8 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
         newestId := newest["id"]
     if ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId)
         return true
+    if g_ClipAngelFavoriteSuppressActive
+        return false
     if !ClipAngel_SendMarkFavoriteAltQ(hwnd)
         return false
     if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 400) = true)
@@ -2427,7 +2485,7 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
             StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
                 centerOnHwnd: priorHwnd,
                 fontSize: 17,
-                passive: false
+                passive: true
             })
             try {
                 if (target = "last") {

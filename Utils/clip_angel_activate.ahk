@@ -130,7 +130,24 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
     wantAll := (mode = "all" || mode = "")
     outHwnd := 0
     outRoot := 0
+    priorFg := 0
+    try priorFg := WinGetID("A")
+    catch {
+        priorFg := 0
+    }
     hwnd := ClipAngel_MainHwnd()
+    if !hwnd && ProcessExist("ClipAngel.exe") {
+        loop 2 {
+            priorSendLevel := A_SendLevel
+            SendLevel 0
+            ClipAngel_ReleaseChordModifiersForSend()
+            SendInput("!p")
+            SendLevel priorSendLevel
+            hwnd := ClipAngel_WaitForMainHwnd(1000)
+            if hwnd
+                break
+        }
+    }
     if !hwnd
         hwnd := ClipAngel_WaitForMainHwnd()
     if !hwnd
@@ -138,6 +155,8 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
     if suppressVisual {
         ClipAngel_BeginFavoriteSuppress(hwnd)
         ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false, true)
+        if (priorFg && !WinActive("ahk_id " priorFg))
+            ClipAngel_RestorePriorFocus(priorFg)
     } else {
         if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false)
             return false

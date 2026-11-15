@@ -122,13 +122,16 @@
       }
       .top-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 16px;
       }
       @media (max-width: 900px) {
         .top-row {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
+      }
+      .column {
+        min-width: 0;
       }
       .column h2,
       .section-title {
@@ -143,6 +146,8 @@
         background: #252528;
         position: relative;
         z-index: 0;
+        min-width: 0;
+        max-width: 100%;
       }
       .project:hover,
       .project.kb-selected {
@@ -877,7 +882,7 @@
         display: none !important;
       }
       .top-row.section-solo {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
       /* Solo category: cards are only as tall as their contents. packBento() then
          sets the next project into the shortest column so leftover space stays filled. */
@@ -3637,7 +3642,10 @@
                 !el.classList.contains("search-hidden") &&
                 !el.classList.contains("emoji-hidden"),
             );
-            const width = grid.clientWidth;
+            const cs = getComputedStyle(grid);
+            const padL = parseFloat(cs.paddingLeft) || 0;
+            const padR = parseFloat(cs.paddingRight) || 0;
+            const width = Math.max(0, grid.clientWidth - padL - padR);
             const gap = 14;
             const minCol = width >= 1400 ? 360 : 340;
             const cols =
@@ -3655,18 +3663,24 @@
               }
               return;
             }
+            const colW = (width - gap * (cols - 1)) / cols;
+            const wpx = `${colW}px`;
             const widthKey = String(Math.round(width));
             const sameFrame =
               grid.classList.contains("bento-packed") &&
               grid.dataset.bentoCols === String(cols) &&
               grid.dataset.bentoW === widthKey;
-            if (!sameFrame) {
-              grid.classList.remove("bento-packed");
-              grid.style.height = "";
-              grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-              all.forEach(clearBentoCard);
+            grid.classList.add("bento-packed");
+            grid.style.gridTemplateColumns = "";
+            const placed = new Set(cards);
+            all.forEach((card) => {
+              if (!placed.has(card)) clearBentoCard(card);
+            });
+            for (const card of cards) {
+              if (card.style.position !== "absolute")
+                card.style.position = "absolute";
+              if (card.style.width !== wpx) card.style.width = wpx;
             }
-            const colW = cards[0].getBoundingClientRect().width;
             const heights = cards.map((card) => card.offsetHeight);
             const colH = Array(cols).fill(0);
             const placements = [];
@@ -3677,7 +3691,7 @@
               }
               placements.push({
                 card: cards[i],
-                left: best * (colW + gap),
+                left: padL + best * (colW + gap),
                 top: colH[best],
                 h: heights[i],
               });
@@ -3691,17 +3705,8 @@
             grid.dataset.bentoSig = sig;
             grid.dataset.bentoCols = String(cols);
             grid.dataset.bentoW = widthKey;
-            grid.classList.add("bento-packed");
-            grid.style.gridTemplateColumns = "";
             grid.style.height = `${Math.round(height)}px`;
-            const placed = new Set(placements.map((p) => p.card));
-            all.forEach((card) => {
-              if (!placed.has(card)) clearBentoCard(card);
-            });
-            const wpx = `${colW}px`;
             for (const p of placements) {
-              p.card.style.position = "absolute";
-              p.card.style.width = wpx;
               p.card.style.left = `${p.left}px`;
               p.card.style.top = `${p.top}px`;
             }
