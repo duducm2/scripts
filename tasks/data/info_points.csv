@@ -96,8 +96,6 @@ INFO_0320,task,TASK_0415,C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU
 INFO_0346,task,TASK_0339,PS/BDO,,ℹ️,,280,2026-10-07 14:51:40,,
 INFO_0347,task,TASK_0420,https://inside-docupedia.bosch.com/confluence/spaces/PSBDO/pages/5779009962/XTower+Project+Funnel+and%E2%80%8B+Resource+Management,,ℹ️,,10,2026-10-07 16:02:45,,
 INFO_0349,task,TASK_0424,image.png,,ℹ️,,10,2026-10-08 13:13:09,,
-INFO_0353,task,TASK_0432,IMG_20261010_125211.jpg,,ℹ️,,20,2026-10-10 15:04:08,,
-INFO_0354,task,TASK_0432,IMG_20261010_125128.jpg,,ℹ️,,30,2026-10-10 15:04:12,,
 INFO_0357,task,TASK_0438,"Your credentials
 Api key: cf3387c41e2c4126968b355fe9e95393
 The API key must be send as a custom request header in the following form: genaiplatform-farm-subscription-key=<your-api-key>

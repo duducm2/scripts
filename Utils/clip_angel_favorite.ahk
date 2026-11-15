@@ -622,6 +622,9 @@ ClipAngel_SendToHwnd(hwnd, keys) {
 ; F10 toggles list vs preview — only send when preview pane has focus, not when grid already focused.
 ; No ribbon Window-menu recovery on this path (AHK Alt+P/B open must not touch MainMenu).
 ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
+    global g_ClipAngelFavoriteSuppressActive
+    if g_ClipAngelFavoriteSuppressActive
+        return true
     if !dataGrid
         return false
     try dataGrid.SetFocus()
@@ -713,24 +716,29 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false, root := 0) {
         if ClipAngel_UiaTryLegacySelectRow(row0) && ClipAngel_UiaWaitRow0Selected(row0, dataGrid,
             CLIPANGEL_ROW0_SELECT_WAIT_MS)
             return true
+        global g_ClipAngelFavoriteSuppressActive
         try {
             if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
                 row0.SelectionItemPattern.Select()
         } catch {
-            try row0.SetFocus()
+            if !g_ClipAngelFavoriteSuppressActive {
+                try row0.SetFocus()
+            }
         }
         if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
             return true
-        ; SelectionItem / ^{Home} only — no Window ribbon click (Alt menu steal recovery removed).
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
-        ClipAngel_ReleaseChordModifiersForSend()
-        ClipAngel_SendToHwnd(hwnd, "^{Home}")
-        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
-            return true
-        ClipAngel_ReleaseChordModifiersForSend()
-        ClipAngel_SendToHwnd(hwnd, "{Home}")
-        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
-            return true
+        if !g_ClipAngelFavoriteSuppressActive {
+            ; SelectionItem / ^{Home} only — no Window ribbon click (Alt menu steal recovery removed).
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+            ClipAngel_ReleaseChordModifiersForSend()
+            ClipAngel_SendToHwnd(hwnd, "^{Home}")
+            if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+                return true
+            ClipAngel_ReleaseChordModifiersForSend()
+            ClipAngel_SendToHwnd(hwnd, "{Home}")
+            if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+                return true
+        }
         rn := ""
         try rn := row0.Name
         catch {
@@ -743,15 +751,17 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false, root := 0) {
             try {
                 if titleCell.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable)
                     titleCell.LegacyIAccessiblePattern.Select(3)
-                else
+                else if !g_ClipAngelFavoriteSuppressActive
                     titleCell.Click()
                 if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
                     return true
             } catch {
             }
         }
-        try row0.SetFocus()
-        catch {
+        if !g_ClipAngelFavoriteSuppressActive {
+            try row0.SetFocus()
+            catch {
+            }
         }
         return ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
     } catch {
@@ -1199,7 +1209,7 @@ ClipAngel_BeginFavoriteSuppress(hwnd) {
     try {
         mm := WinGetMinMax("ahk_id " hwnd)
         if (mm = -1 || mm = 1)
-            WinRestore("ahk_id " hwnd)
+            DllCall("ShowWindow", "ptr", hwnd, "int", 4)  ; SW_SHOWNOACTIVATE
     } catch {
     }
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
@@ -1207,7 +1217,7 @@ ClipAngel_BeginFavoriteSuppress(hwnd) {
     catch {
     }
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    try WinShow("ahk_id " hwnd)
+    try DllCall("ShowWindow", "ptr", hwnd, "int", 8)  ; SW_SHOWNA
     catch {
     }
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
@@ -1789,10 +1799,25 @@ ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root := 0) {
     if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
         return true
     global g_ClipAngelFavoriteSuppressActive
-    if !g_ClipAngelFavoriteSuppressActive {
-        if !WinActive("ahk_id " hwnd)
-            ClipAngel_EnsureWindowActive(hwnd, 200)
+    if g_ClipAngelFavoriteSuppressActive {
+        keys := wantAll ? "^1" : "^2"
+        try ControlSend(keys, , "ahk_id " hwnd)
+        catch {
+        }
+        deadline := A_TickCount + 150
+        while (A_TickCount < deadline) {
+            if !mf
+                mf := ClipAngel_UiaGetMarkFilterElement(hwnd, root)
+            if ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
+                return true
+            Sleep CLIPANGEL_UIA_POLL_MS
+        }
+        if ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root)
+            return true
+        return ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
     }
+    if !WinActive("ahk_id " hwnd)
+        ClipAngel_EnsureWindowActive(hwnd, 200)
     try {
         dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if dataGrid
@@ -1888,6 +1913,8 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     global g_ClipAngelFavoriteSuppressActive
     if !hwnd
         return false
+    if g_ClipAngelFavoriteSuppressActive
+        return ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
     if !root {
         try root := UIA.ElementFromHandle(hwnd)
         catch
@@ -1982,15 +2009,17 @@ ClipAngel_PrepareFavoriteAltQ(hwnd, root := 0) {
         }
     }
     ClipAngel_UiaEnsureRow0Selected(hwnd, false, root)
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    if dataGrid {
-        row0 := ClipAngel_UiaResolveRow0(dataGrid)
-        if row0 {
-            try row0.SetFocus()
-            catch {
+    if !g_ClipAngelFavoriteSuppressActive {
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if dataGrid {
+            row0 := ClipAngel_UiaResolveRow0(dataGrid)
+            if row0 {
+                try row0.SetFocus()
+                catch {
+                }
             }
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
         }
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
     }
     if g_ClipAngelFavoriteSuppressActive
         ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
@@ -2249,7 +2278,25 @@ ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
     return false
 }
 
-; Row 0: Alt+Q only. The Clip menu is not opened.
+; Try background UIA invoke on toolStripButtonMarkFavorite without WinActivate/Send.
+ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId := 0) {
+    if (!hwnd || !IsObject(root))
+        return false
+    favBtn := 0
+    try favBtn := root.FindFirst({ AutomationId: "toolStripButtonMarkFavorite" })
+    catch {
+        favBtn := 0
+    }
+    if (!favBtn)
+        return false
+    if (!ClipAngel_UiaInvokeElement(favBtn))
+        return false
+    if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 400) = true)
+        return true
+    return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+}
+
+; Row 0: Try background UIA invoke first (no focus steal); fall back to Alt+Q only if needed.
 ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
     if !hwnd
         return false
@@ -2266,6 +2313,8 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
     newest := ClipAngelDb_Newest()
     if (newest)
         newestId := newest["id"]
+    if ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId)
+        return true
     if !ClipAngel_SendMarkFavoriteAltQ(hwnd)
         return false
     if (newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 400) = true)
@@ -2440,7 +2489,8 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
     } finally {
         hwndEnd := ClipAngel_MainHwnd()
         ClipAngel_EndFavoriteSuppress(hwndEnd)
-        ClipAngel_RestorePriorFocus(priorHwnd)
+        if (priorHwnd && !WinActive("ahk_id " priorHwnd))
+            ClipAngel_RestorePriorFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
     if (resultKind = "success")

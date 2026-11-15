@@ -42,8 +42,6 @@ Show things that were big deliverables that are still active and not dead.
 
 ⚡ Check all your resumes and portfolios if they're correct
 
-🔲 Add more deliverables to fififolio
-
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
@@ -102,10 +100,6 @@ Isso evita reconstruir o monólito com uma tecnologia ou interface nova.
 
 ## Dog
 
-⏳ Cartão de vacina
-ℹ️ IMG_20261010_125211.jpg
-ℹ️ IMG_20261010_125128.jpg
-
 ⏳ Castrar a Moka
 
 ### Vaccination Timetable
@@ -148,4 +142,4 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 ⚡ Organize the next steps with Leo
 
-⚡ We paid nine thousand eight hundred and forty to the mason already calculate what is left
+🔲 It is lasting one thousand seven hundred ten to send to the Mason (1710)
