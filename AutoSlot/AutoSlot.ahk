@@ -1076,10 +1076,31 @@ AutoSlot_ExpandUnderfilledAfterFill() {
     return expanded
 }
 
+AutoSlot_GetExcludedAiCompanionCdpPids() {
+    try {
+        if (!AiCompanionMode_IsCDP())
+            return Map()
+        return AiCompanionCDP_GetProcessPids()
+    } catch {
+        return Map()
+    }
+}
+
+AutoSlot_IsHwndInPidSet(hwnd, pidSet) {
+    if (!hwnd || !IsObject(pidSet) || pidSet.Count = 0)
+        return false
+    pid := 0
+    try pid := Integer(WinGetPID("ahk_id " hwnd))
+    catch
+        return false
+    return pid > 0 && pidSet.Has(pid)
+}
+
 ; Fill candidates: same hidden pool as Ctrl+Alt+Win+Y first, then visible unslotted floats.
 ; Hidden/Y-list rows are never dropped for "slotted" (list is the stay-put boundary for visible
 ; occupants only). Pick still rejects currently slotted hwnds as defense.
 AutoSlot_CollectFillCandidates() {
+    cdpPids := AutoSlot_GetExcludedAiCompanionCdpPids()
     hiddenRows := []
     try hiddenRows := WM_CollectBackgroundWindows()
     catch
@@ -1093,6 +1114,8 @@ AutoSlot_CollectFillCandidates() {
         catch
             continue
         if (!hwnd || seen.Has(hwnd))
+            continue
+        if (AutoSlot_IsHwndInPidSet(hwnd, cdpPids))
             continue
         seen[hwnd] := true
         rows.Push(row)
@@ -1113,6 +1136,8 @@ AutoSlot_CollectFillCandidates() {
             if (foreHwnd && hwnd = foreHwnd)
                 continue
             if (slotted.Has(hwnd))
+                continue
+            if (AutoSlot_IsHwndInPidSet(hwnd, cdpPids))
                 continue
             if (!AutoSlot_IsOccupancyCandidate(hwnd))
                 continue
@@ -3392,10 +3417,12 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
     }
     slotted := AutoSlot_BuildSlottedHwndSet()
     rows := []
+    cdpPids := Map()
     reuseY := g_AutoSlotYBgActive && IsObject(g_AutoSlotYBgRows)
     if (reuseY)
         rows := g_AutoSlotYBgRows
     else {
+        cdpPids := AutoSlot_GetExcludedAiCompanionCdpPids()
         try rows := WM_CollectBackgroundWindows()
         catch
             return 0
@@ -3420,6 +3447,10 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
                 continue
             }
             if (occupied.Has(hwnd) || slotted.Has(hwnd)) {
+                i++
+                continue
+            }
+            if (!reuseY && AutoSlot_IsHwndInPidSet(hwnd, cdpPids)) {
                 i++
                 continue
             }

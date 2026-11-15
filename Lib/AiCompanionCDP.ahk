@@ -309,6 +309,23 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
 
 ; --- High-level Companion Operations -----------------------------------------
 
+AiCompanionCDP_GetProcessPids() {
+    pids := Map()
+    try {
+        wmi := ComObjGet("winmgmts:")
+        procs := wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE Name='chrome.exe' AND (CommandLine LIKE '%GeminiCDP%' OR CommandLine LIKE '%remote-debugging-port=9222%')")
+        for proc in procs {
+            try pid := Integer(proc.ProcessId)
+            catch
+                continue
+            if (pid > 0)
+                pids[pid] := true
+        }
+    } catch {
+    }
+    return pids
+}
+
 AiCompanionCDP_FindWindowHwnd(preferredHwnd := 0, companionId := "") {
     if (preferredHwnd && WinExist("ahk_id " preferredHwnd))
         return preferredHwnd

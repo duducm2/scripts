@@ -64,7 +64,7 @@ People Registration, gestão de esforço, gestão de recursos e workflow estão
 misturados ou fortemente dependentes.
 A implementação de capacidades de IA e automações agentic fica limitada pela estrutura existente.
 
-🔲 Review Resume - Digital Solution Architect
+⏳ Review Resume - Digital Solution Architect
 ℹ️ O outcome 
  
 Criar uma fundação que permita configurar novos funis, entidades, etapas e formulários sem transformar cada necessidade de negócio em um novo projeto de desenvolvimento.
@@ -77,9 +77,9 @@ Pode ser atendida por extensão ou integração?
 Apenas se as duas respostas forem negativas deve haver alteração do core.
 Isso evita reconstruir o monólito com uma tecnologia ou interface nova.
 
-🔲 Review Portfolio - Digital Solution Architect
+⏳ Review Portfolio - Digital Solution Architect
 
-🔲 Review Resume - Data Analyst
+⏳ Review Resume - Data Analyst
 ℹ️ É novo de empresa e desenvolvedor do X-Tower
 ℹ️ desenvolve o x-tower msm
 ℹ️ ele disse que o leandro não aponta horas por alguma razão
@@ -87,14 +87,10 @@ Isso evita reconstruir o monólito com uma tecnologia ou interface nova.
 🔲 Review Portfolio - Data Analyst
 ℹ️ PMO
 
-🔲 Review Resume - Product Owner
+⏳ Review Resume - Product Owner
 ℹ️ quer ter um backlog saudável para 6 meses 1 ano, para ajudar a conseguir negociações ,capacidade para o futuro, etc.
 
 🔲 Review Portfolio - Product Owner
-
-🔲 Review Resume - General
-
-🔲 Review Portfolio - General
 
 ### Docs
 
@@ -138,9 +134,9 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 ## New Home
 
-⚡ We need to give a feedback to the service man regarding the next steps
+🔲 We need to give a feedback to the service man regarding the next steps
 
-⚡ Organize the next steps with Leo
+🔲 Organize the next steps with Leo
 
 🔲 It is lasting one thousand seven hundred ten to send to the Mason (1710)
 
@@ -174,7 +170,7 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 🔲 Azuleijo em volta do tanque
 
-⚡ Dar acabamento na antiga mureta (chorar com o sr. Rubens)
+🔲 Dar acabamento na antiga mureta (chorar com o sr. Rubens)
 
 ### Outros
 
