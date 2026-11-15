@@ -817,7 +817,7 @@ ClipAngel_WaitForRestartUiReady(hwnd, timeoutMs := 0) {
 }
 
 ; Full post-restart quality gate. Sets failReason on false.
-ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason) {
+ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason, backgroundVerify := false) {
     failReason := ""
     if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd) {
         failReason := "no window"
@@ -847,7 +847,7 @@ ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason) {
         failReason := "not responding"
         return false
     }
-    if !ClipAngel_IsRestartLayoutOk(hwnd) {
+    if (!backgroundVerify && !ClipAngel_IsRestartLayoutOk(hwnd)) {
         failReason := "layout/foreground not ready"
         return false
     }
@@ -868,7 +868,7 @@ ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason) {
 }
 
 ; One kill→launch→verify cycle. Returns true on success; failReason on false.
-ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason) {
+ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify := false) {
     failReason := ""
     baselinePid := oldPid
     label := (CLIPANGEL_RESTART_MAX_ATTEMPTS > 1)
@@ -911,34 +911,49 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason) {
         return false
     }
 
-    StandardLoadingBar_Update("⏳ Activating Clip Angel…" label)
-    ; silent + skipRow0: keep StandardLoadingBar as the only indicator; UIA list gate comes next.
-    if !ActivateClipAngelWithFocusCorrection(true, 0, true, true) {
-        failReason := "window not found after start"
-        return false
-    }
+    suppressStarted := false
+    try {
+        if (backgroundVerify) {
+            StandardLoadingBar_Update("⏳ Preparing Clip Angel in background…" label)
+            suppressStarted := ClipAngel_BeginFavoriteSuppress(hwnd)
+            if (!suppressStarted) {
+                failReason := "background suppress failed"
+                return false
+            }
+        } else {
+            StandardLoadingBar_Update("⏳ Activating Clip Angel…" label)
+            ; silent + skipRow0: keep StandardLoadingBar as the only indicator; UIA list gate comes next.
+            if !ActivateClipAngelWithFocusCorrection(true, 0, true, true) {
+                failReason := "window not found after start"
+                return false
+            }
+        }
 
-    StandardLoadingBar_Update("⏳ Verifying Clip Angel is responsive…" label)
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd || !ClipAngel_WaitUntilResponsive(hwnd, CLIPANGEL_RESTART_POST_ACTIVATE_RESPONSIVE_MS) {
-        failReason := "not responding after activate"
-        return false
-    }
+        StandardLoadingBar_Update("⏳ Verifying Clip Angel is responsive…" label)
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd || !ClipAngel_WaitUntilResponsive(hwnd, CLIPANGEL_RESTART_POST_ACTIVATE_RESPONSIVE_MS) {
+            failReason := "not responding after activate"
+            return false
+        }
 
-    StandardLoadingBar_Update("⏳ Waiting for Clip Angel list…" label)
-    if !ClipAngel_WaitForRestartUiReady(hwnd, CLIPANGEL_RESTART_LIST_WAIT_MS) {
-        failReason := "clip list not ready"
-        return false
-    }
+        StandardLoadingBar_Update("⏳ Waiting for Clip Angel list…" label)
+        if !ClipAngel_WaitForRestartUiReady(hwnd, CLIPANGEL_RESTART_LIST_WAIT_MS) {
+            failReason := "clip list not ready"
+            return false
+        }
 
-    StandardLoadingBar_Update("⏳ Confirming restart quality…" label)
-    hwnd := ClipAngel_MainHwnd()
-    if !ClipAngel_RestartQualityOk(hwnd, exePath, baselinePid, &failReason) {
-        if (failReason = "")
-            failReason := "quality gate failed"
-        return false
+        StandardLoadingBar_Update("⏳ Confirming restart quality…" label)
+        hwnd := ClipAngel_MainHwnd()
+        if !ClipAngel_RestartQualityOk(hwnd, exePath, baselinePid, &failReason, backgroundVerify) {
+            if (failReason = "")
+                failReason := "quality gate failed"
+            return false
+        }
+        return true
+    } finally {
+        if (suppressStarted)
+            ClipAngel_EndFavoriteSuppress(hwnd)
     }
-    return true
 }
 
 ; Macros [R] — hard restart when Clip Angel is stuck.
@@ -946,7 +961,7 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason) {
 ; Returns true on success (also used by Act.ahk / ClipAngel_EnsureRunning).
 ClipAngel_RestartHard(*) {
     global g_ClipAngelAutomationBusy
-    StandardLoadingBar_Show("⏳ Restarting Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    StandardLoadingBar_Show("⏳ Restarting Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     g_ClipAngelAutomationBusy := true
     failReason := ""
     try {
@@ -968,7 +983,7 @@ ClipAngel_RestartHard(*) {
         }
 
         loop CLIPANGEL_RESTART_MAX_ATTEMPTS {
-            if ClipAngel_RestartAttempt(exePath, oldPid, A_Index, &failReason) {
+            if ClipAngel_RestartAttempt(exePath, oldPid, A_Index, &failReason, true) {
                 StandardLoadingBar_Hide(0)
                 ShowCenteredOverlay_Utils("✅ Clip Angel restarted", 1500, BANNER_ACCENT_SUCCESS)
                 try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-restart-success.wav")
@@ -1000,22 +1015,24 @@ ClipAngel_RestartHard(*) {
     }
 }
 
-; Soft open when already healthy; otherwise same kill→launch→verify as Macros [R].
-; Used by Act.ahk after launching hosts so Clip Angel is guaranteed up.
+; Soft verify in background when already healthy; otherwise kill→launch→verify in background.
+; Used by Act.ahk after launching hosts so Clip Angel is guaranteed up without stealing focus.
 ClipAngel_EnsureRunning(*) {
     global g_ClipAngelAutomationBusy
     hwnd := ClipAngel_MainHwnd()
     if (hwnd && ClipAngel_IsMainWindowIdentity(hwnd) && ClipAngel_IsWindowResponsive(hwnd)) {
-        StandardLoadingBar_Show("⏳ Ensuring Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        StandardLoadingBar_Show("⏳ Ensuring Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
         g_ClipAngelAutomationBusy := true
+        suppressStarted := false
         try {
-            if ActivateClipAngelWithFocusCorrection(true, 0, true, true) {
+            suppressStarted := ClipAngel_BeginFavoriteSuppress(hwnd)
+            if (suppressStarted) {
                 hwnd := ClipAngel_MainHwnd()
                 if (hwnd && ClipAngel_WaitUntilResponsive(hwnd, CLIPANGEL_RESTART_POST_ACTIVATE_RESPONSIVE_MS)
                 && ClipAngel_WaitForRestartUiReady(hwnd, CLIPANGEL_RESTART_LIST_WAIT_MS)) {
                     failReason := ""
                     exePath := ClipAngel_ResolveExePath()
-                    if ClipAngel_RestartQualityOk(hwnd, exePath, 0, &failReason) {
+                    if ClipAngel_RestartQualityOk(hwnd, exePath, 0, &failReason, true) {
                         StandardLoadingBar_Hide(0)
                         ShowCenteredOverlay_Utils("✅ Clip Angel ready", 1200, BANNER_ACCENT_SUCCESS)
                         return true
@@ -1024,6 +1041,8 @@ ClipAngel_EnsureRunning(*) {
             }
         } catch {
         } finally {
+            if (suppressStarted)
+                ClipAngel_EndFavoriteSuppress(hwnd)
             g_ClipAngelAutomationBusy := false
         }
         try StandardLoadingBar_Hide(0)

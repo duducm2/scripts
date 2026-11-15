@@ -30,7 +30,7 @@ ToggleOutlookAndTeams() {
             ShowCenteredOverlay_Utils("📤 Closing apps to free RAM...", 1500, BANNER_ACCENT_INTERMEDIATE)
         } else {
             StandardLoadingBar_Show("⏳ Opening Outlook and Teams...", BANNER_ACCENT_INTERMEDIATE, {
-                passive: false,
+                passive: true,
                 centerOnHwnd: 0,
                 textWidth: 560,
                 fontSize: 17,

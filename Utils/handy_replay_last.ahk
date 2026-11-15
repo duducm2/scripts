@@ -296,9 +296,12 @@ HandyReplay_ClickElementWithCursor(el, hwnd) {
 
 ; One explicit click strategy (invoke / control / legacy / uiaLeft / cursor).
 HandyReplay_ApplyClickStrategy(el, hwnd, method) {
+    global g_HandySuppressActive
     if !el
         return false
     if (method = "cursor" || method = "mouse") {
+        if (g_HandySuppressActive)
+            return false
         return HandyReplay_ClickElementWithCursor(el, hwnd)
     }
     if (method = "invoke") {
@@ -322,6 +325,8 @@ HandyReplay_ApplyClickStrategy(el, hwnd, method) {
         return false
     }
     if (method = "uiaLeft") {
+        if (g_HandySuppressActive)
+            return false
         try {
             el.Click("left")
             return true
@@ -351,16 +356,18 @@ HandyReplay_ClickWithStrategies(el, hwnd) {
 
 ; Switch to History from General (or any tab); verify-after-each strategy attempt.
 HandyReplay_EnsureHistoryTab(hwnd) {
-    global UIA
+    global UIA, g_HandySuppressActive
     try {
         if !hwnd || !WinExist("ahk_id " hwnd)
             return false
 
         HandyReplay_PrepareUia(hwnd)
-        try WinActivate("ahk_id " hwnd)
-        if !WinActive("ahk_id " hwnd) {
-            if !WinWaitActive("ahk_id " hwnd, , 2)
-                return false
+        if (!g_HandySuppressActive) {
+            try WinActivate("ahk_id " hwnd)
+            if !WinActive("ahk_id " hwnd) {
+                if !WinWaitActive("ahk_id " hwnd, , 2)
+                    return false
+            }
         }
 
         el := UIA.ElementFromHandle(hwnd)
@@ -409,12 +416,13 @@ HandyReplay_EnsureHistoryTab(hwnd) {
 
 ; First Play/Reproduzir in tree order whose click point lies inside Handy (newest entry).
 HandyReplay_FindBestPlay(el, hwnd) {
+    global g_HandySuppressActive
     if !el || !hwnd
         return 0
     for nm in ["Play", "Reproduzir"] {
         try {
             for btn in el.FindAll({ Type: 50000, Name: nm }) {
-                if !HandyReplay_ElementIsOnScreen(btn)
+                if (!g_HandySuppressActive && !HandyReplay_ElementIsOnScreen(btn))
                     continue
                 cx := 0
                 cy := 0
@@ -426,6 +434,8 @@ HandyReplay_FindBestPlay(el, hwnd) {
         } catch {
         }
     }
+    if (g_HandySuppressActive)
+        return HandyReplay_FindFirstPlay(el)
     return 0
 }
 
@@ -462,10 +472,11 @@ HandyReplay_ClickFirstPlay(hwnd) {
     return HandyReplay_ClickWithStrategies(play, hwnd)
 }
 
-; End-to-end: activate/launch Handy → History → first Play. Leaves Handy open.
+; End-to-end: ensure Handy in background → History → first Play without stealing focus.
 HandyReplay_PlayLastRecording() {
+    priorHwnd := WinExist("A")
     try {
-        hwnd := Handy_ActivateOrLaunch()
+        hwnd := Handy_EnsureForAutomation(2500)
         if (!hwnd) {
             ShowCenteredOverlay_Utils("❌ Could not open Handy.", 2000, BANNER_ACCENT_ERROR)
             return false
@@ -484,6 +495,9 @@ HandyReplay_PlayLastRecording() {
             return false
         }
 
+        Handy_BeginSuppress(hwnd)
+        if (priorHwnd && WinExist("ahk_id " priorHwnd) && !WinActive("ahk_id " priorHwnd))
+            Handy_RestorePrevWindow(priorHwnd, hwnd)
         ShowCenteredOverlay_Utils("✅ Playing last recording", 1500, BANNER_ACCENT_SUCCESS)
         return true
     } catch {

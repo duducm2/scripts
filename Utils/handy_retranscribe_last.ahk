@@ -174,13 +174,14 @@ HandyRetranscribe_ElementIsOnScreen(el) {
 }
 
 HandyRetranscribe_IsTranscribingUiVisible(el) {
+    global g_HandySuppressActive
     if !el
         return false
     needles := ["Transcribing", "Transcrevendo"]
     for nm in needles {
         try {
             found := el.FindFirst({ Type: 50020, Name: nm })
-            if (found && HandyRetranscribe_ElementIsOnScreen(found))
+            if (found && (g_HandySuppressActive || HandyRetranscribe_ElementIsOnScreen(found)))
                 return true
         } catch {
         }
@@ -197,7 +198,7 @@ HandyRetranscribe_IsTranscribingUiVisible(el) {
                 continue
             if !(InStr(low, "transcribing") || InStr(low, "transcrevendo"))
                 continue
-            if !HandyRetranscribe_ElementIsOnScreen(found)
+            if (!g_HandySuppressActive && !HandyRetranscribe_ElementIsOnScreen(found))
                 continue
             return true
         } catch {
@@ -298,7 +299,8 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
 
     StandardLoadingBar_Show("⏳ Re-transcribing — please wait...", BANNER_ACCENT_INTERMEDIATE, {
         fontSize: 17,
-        trackActiveMonitor: true
+        trackActiveMonitor: true,
+        passive: true
     })
     barOwned := true
     try {
@@ -385,26 +387,28 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
     }
 }
 
-; End-to-end for Send dictation? [B]: toggle model (keep open) → re-transcribe → copy → minimize Handy.
-; Minimize (not WinClose): language switch keeps Handy warm via suppress, so closing is wrong.
+; End-to-end for Send dictation? [B]: toggle model → re-transcribe → copy in background without stealing focus.
 HandyRetranscribe_ToggleModelAndCopy() {
+    priorHwnd := WinExist("A")
     targetSlot := Handy_GetDictationToggleTargetSlot()
 
-    if (!ExecuteHandyAiModelSelection(targetSlot, true)) {
+    if (!ExecuteHandyAiModelSelection(targetSlot, false, priorHwnd)) {
         ShowCenteredOverlay_Utils("❌ Could not switch Handy model.", 2200, BANNER_ACCENT_ERROR)
         return false
     }
 
-    hwnd := Handy_ActivateOrLaunch()
+    hwnd := Handy_EnsureForAutomation(2500)
     if (!hwnd) {
         ShowCenteredOverlay_Utils("❌ Could not open Handy.", 2000, BANNER_ACCENT_ERROR)
         return false
     }
 
     ok := HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd)
+    Handy_BeginSuppress(hwnd)
+    if (priorHwnd && WinExist("ahk_id " priorHwnd) && !WinActive("ahk_id " priorHwnd))
+        Handy_RestorePrevWindow(priorHwnd, hwnd)
     if (ok) {
         try StandardLoadingBar_Hide(0)
-        try WinMinimize("ahk_id " . hwnd)
     }
     return ok
 }

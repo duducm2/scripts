@@ -196,7 +196,7 @@ Task_ImportPackFromDesktop(path := "", *) {
         cmdPrev .= ' --pack "' . path . '"'
     if (fixDir != "")
         cmdPrev .= ' --fix-dir "' . fixDir . '"'
-    try StandardLoadingBar_Show("⏳ Previewing TASK_PACK…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try StandardLoadingBar_Show("⏳ Previewing TASK_PACK…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     catch {
     }
     exitPrev := 1
@@ -230,7 +230,7 @@ Task_ImportPackFromDesktop(path := "", *) {
         . '" commit --pack-json "' . jsonOut . '"'
     if (excludeCsv != "")
         cmdCommit .= ' --exclude "' . excludeCsv . '"'
-    try StandardLoadingBar_Show("⏳ Importing TASK_PACK…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try StandardLoadingBar_Show("⏳ Importing TASK_PACK…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     catch {
     }
     exitCommit := 1

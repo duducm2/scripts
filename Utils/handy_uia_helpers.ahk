@@ -35,6 +35,8 @@ Handy_RestorePrevWindow(restoreHwnd, excludeHwnd := 0) {
         return false
     if !WinExist("ahk_id " restoreHwnd)
         return false
+    if (WinActive("ahk_id " restoreHwnd))
+        return true
     try {
         WinActivate("ahk_id " restoreHwnd)
         WinWaitActive("ahk_id " restoreHwnd, , 1)
@@ -163,7 +165,7 @@ Handy_BeginSuppress(hwnd) {
     try {
         mm := WinGetMinMax("ahk_id " hwnd)
         if (mm = -1 || mm = 1)
-            WinRestore("ahk_id " hwnd)
+            DllCall("ShowWindow", "ptr", hwnd, "int", 4) ; SW_SHOWNOACTIVATE
     } catch {
     }
     Handy_ApplySuppressOpacity(hwnd)
@@ -171,7 +173,7 @@ Handy_BeginSuppress(hwnd) {
     catch {
     }
     Handy_ApplySuppressOpacity(hwnd)
-    try WinShow("ahk_id " hwnd)
+    try DllCall("ShowWindow", "ptr", hwnd, "int", 8) ; SW_SHOWNA
     catch {
     }
     Handy_ApplySuppressOpacity(hwnd)
@@ -370,13 +372,13 @@ Handy_SuppressMonitorFallback(hwnd) {
         try {
             mm := WinGetMinMax("ahk_id " hwnd)
             if (mm = -1 || mm = 1)
-                WinRestore("ahk_id " hwnd)
+                DllCall("ShowWindow", "ptr", hwnd, "int", 4) ; SW_SHOWNOACTIVATE
         } catch {
         }
         try WinMove(x, y, HANDY_SUPPRESS_OFFSCREEN_W, HANDY_SUPPRESS_OFFSCREEN_H, "ahk_id " hwnd)
         catch {
         }
-        try WinShow("ahk_id " hwnd)
+        try DllCall("ShowWindow", "ptr", hwnd, "int", 8) ; SW_SHOWNA
         catch {
         }
         Handy_ApplySuppressOpacity(hwnd)
@@ -547,6 +549,58 @@ Handy_GeneralTabVisible(el) {
     }
 }
 
+; Invoke a UIA element without stealing focus or moving the mouse when Handy is suppressed.
+Handy_UiaInvokeBackground(el) {
+    global g_HandySuppressActive
+    if !el
+        return false
+    try {
+        pat := el.GetCurrentPatternAs("InvokePattern")
+        if (pat) {
+            pat.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Invoke()
+        return true
+    } catch {
+    }
+    try {
+        leg := el.GetCurrentPatternAs("LegacyIAccessiblePattern")
+        if (leg) {
+            leg.DoDefaultAction()
+            return true
+        }
+    } catch {
+    }
+    try {
+        sel := el.GetCurrentPatternAs("SelectionItemPattern")
+        if (sel) {
+            sel.Select()
+            return true
+        }
+    } catch {
+    }
+    try {
+        tog := el.GetCurrentPatternAs("TogglePattern")
+        if (tog) {
+            tog.Toggle()
+            return true
+        }
+    } catch {
+    }
+    if (!g_HandySuppressActive) {
+        try {
+            el.Click()
+            return true
+        } catch {
+        }
+    }
+    return false
+}
+
 ; Click sidebar "General" so COHERE SETTINGS is shown (needed from Models/About/etc.).
 Handy_EnsureGeneralTab(hwnd) {
     el := UIA.ElementFromHandle(hwnd)
@@ -560,10 +614,7 @@ Handy_EnsureGeneralTab(hwnd) {
         if !gen
             gen := el.FindFirst({ Type: 50020, Name: "General" })
         if gen {
-            try gen.Click()
-            catch {
-                try gen.Invoke()
-            }
+            Handy_UiaInvokeBackground(gen)
             Sleep 220
             el2 := UIA.ElementFromHandle(hwnd)
             return Handy_GeneralTabVisible(el2)
@@ -630,19 +681,36 @@ Handy_OpenCohereLanguageDropdown(hwnd) {
     langBtn := Handy_FindHandyLanguageButton(el)
     if !langBtn
         return false
-    try langBtn.Click()
-    catch {
-        try langBtn.Invoke()
-    }
+    if !Handy_UiaInvokeBackground(langBtn)
+        return false
     Sleep 200
     return true
 }
 
-; With language dropdown open: focus search, type langName, choose row or Enter.
+; With language dropdown open: pick matching row via UIA in background (or filter via ValuePattern when needed).
 Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
+    global g_HandySuppressActive
     el := UIA.ElementFromHandle(hwnd)
     if !el
         return false
+    ; Fast background path: find the language option button directly in the open dropdown.
+    try {
+        for btn in el.FindAll({ Type: 50000 }) {
+            n := ""
+            try n := btn.Name
+            if (n != langName)
+                continue
+            cn := ""
+            try cn := btn.ClassName
+            if (InStr(cn, "w-full px-3 py-2 text-left") || InStr(cn, "w-full px-3 py-2 text-start")) {
+                if (Handy_UiaInvokeBackground(btn)) {
+                    Sleep 80
+                    return true
+                }
+            }
+        }
+    } catch {
+    }
     searchEl := 0
     try {
         for ed in el.FindAll({ Type: UIA.Type.Edit }) {
@@ -652,16 +720,34 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
     } catch {
     }
     if (searchEl) {
+        setOk := false
         try {
-            searchEl.SetFocus()
+            valPat := searchEl.GetCurrentPatternAs("ValuePattern")
+            if (valPat) {
+                valPat.SetValue(langName)
+                setOk := true
+            }
         } catch {
-            try searchEl.Click()
         }
-        Sleep 50
+        if !setOk {
+            try {
+                searchEl.Value := langName
+                setOk := true
+            } catch {
+            }
+        }
+        if (!setOk && !g_HandySuppressActive) {
+            try {
+                searchEl.SetFocus()
+            } catch {
+                try searchEl.Click()
+            }
+            Sleep 50
+            Send "^a"
+            SendText langName
+        }
+        Sleep 120
     }
-    Send "^a"
-    SendText langName
-    Sleep 120
     picked := false
     try {
         for btn in el.FindAll({ Type: 50000 }) {
@@ -672,15 +758,21 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
             cn := ""
             try cn := btn.ClassName
             if (InStr(cn, "w-full px-3 py-2 text-left") || InStr(cn, "w-full px-3 py-2 text-start")) {
-                try btn.Click()
-                picked := true
-                break
+                if (Handy_UiaInvokeBackground(btn)) {
+                    picked := true
+                    break
+                }
             }
         }
     } catch {
     }
-    if !picked
-        Send "{Enter}"
+    if !picked {
+        if (g_HandySuppressActive) {
+            try ControlSend("{Enter}", , "ahk_id " hwnd)
+        } else {
+            Send "{Enter}"
+        }
+    }
     Sleep 80
     return true
 }
@@ -688,6 +780,7 @@ Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName) {
 ; Set Cohere transcription language on General tab (explicit list pick, not Auto Detect).
 ; Retries with verify-after-pick until correct or max attempts (slots 3–4 / English & Portuguese).
 Handy_SetCohereLanguage(hwnd, langName) {
+    global g_HandySuppressActive
     if !hwnd || langName = ""
         return false
     if !Handy_EnsureGeneralTab(hwnd)
@@ -698,7 +791,11 @@ Handy_SetCohereLanguage(hwnd, langName) {
     maxAttempts := 3
     loop maxAttempts {
         if (A_Index > 1) {
-            Send "{Escape}"
+            if (g_HandySuppressActive) {
+                try ControlSend("{Escape}", , "ahk_id " hwnd)
+            } else {
+                Send "{Escape}"
+            }
             Sleep 80
             if !Handy_EnsureGeneralTab(hwnd)
                 continue
@@ -708,7 +805,11 @@ Handy_SetCohereLanguage(hwnd, langName) {
         Handy_SetCohereLanguage_PickFromOpenDropdown(hwnd, langName)
         if (Handy_WaitCohereLanguage(hwnd, langName))
             return true
-        Send "{Escape}"
+        if (g_HandySuppressActive) {
+            try ControlSend("{Escape}", , "ahk_id " hwnd)
+        } else {
+            Send "{Escape}"
+        }
         Sleep 80
     }
     return false
@@ -722,25 +823,18 @@ Handy_OpenAiModelMenu(hwnd) {
         return false
     }
 
-    ; Preferred: click the active model selector button (handy.md header button).
+    ; Preferred: invoke the active model selector button in the background (handy.md header button).
     modelBtn := Handy_FindActiveAiModelButton(el)
     if (modelBtn) {
-        try modelBtn.Click()
-        catch {
-            try modelBtn.Invoke()
-            catch {
-                modelBtn := 0
-            }
-        }
-        if (modelBtn && Handy_WaitForAiModelMenuOpen(hwnd, 1800))
+        if (Handy_UiaInvokeBackground(modelBtn) && Handy_WaitForAiModelMenuOpen(hwnd, 1800))
             return true
     }
 
-    ; Fallback: anchor + Shift+Tab + Enter (needs foreground focus).
+    ; Fallback: anchor + Shift+Tab + Enter (never activate or steal focus while suppressed).
     global g_HandySuppressActive
     if (g_HandySuppressActive) {
-        ; Re-assert suppress after any accidental activate from fallback prep.
         Handy_BeginSuppress(hwnd)
+        return false
     }
     try WinActivate("ahk_id " . hwnd)
     catch {
@@ -864,13 +958,8 @@ Handy_ClickAiModel(hwnd, modelName) {
     if (!modelBtn)
         return false
 
-    ; Click the model button
-    try {
-        modelBtn.Click()
-        return true
-    } catch as e {
-        return false
-    }
+    ; Invoke the model button without stealing focus when suppressed.
+    return Handy_UiaInvokeBackground(modelBtn)
 }
 
 ; Active model selector button in Handy header (not menu row).
@@ -932,14 +1021,18 @@ Handy_DismissOpenUi(hwnd) {
     global g_HandySuppressActive
     try ControlSend("{Escape}", , "ahk_id " hwnd)
     catch {
-        try WinActivate("ahk_id " . hwnd)
-        Sleep 40
-        Send "{Escape}"
+        if (!g_HandySuppressActive) {
+            try WinActivate("ahk_id " . hwnd)
+            Sleep 40
+            Send "{Escape}"
+        }
     }
     Sleep 40
     try ControlSend("{Escape}", , "ahk_id " hwnd)
-    catch
-        Send "{Escape}"
+    catch {
+        if (!g_HandySuppressActive)
+            Send "{Escape}"
+    }
     Sleep 40
     if (g_HandySuppressActive)
         Handy_BeginSuppress(hwnd)

@@ -272,7 +272,7 @@ ImportWatcher_ApplyClaims() {
 
 ImportWatcher_ShowDetected(label) {
     try StandardLoadingBar_Show("📥 Detected " . label . " pack on Desktop…", BANNER_ACCENT_INFO, {
-        passive: false
+        passive: true
     })
     catch {
     }
@@ -282,7 +282,7 @@ ImportWatcher_ShowPreparing(label) {
     try StandardLoadingBar_Update("⏳ Preparing " . label . " preview…", BANNER_ACCENT_INTERMEDIATE)
     catch {
         try StandardLoadingBar_Show("⏳ Preparing " . label . " preview…", BANNER_ACCENT_INTERMEDIATE, {
-            passive: false
+            passive: true
         })
         catch {
         }

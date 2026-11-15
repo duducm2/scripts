@@ -16,7 +16,7 @@ PromptPaste_BusyShow(state := "⏳ Preparing prompt…", centerOnHwnd := 0) {
     g_PromptPasteBusyActive := true
     g_PromptPasteBusyPaused := false
     try StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, {
-        passive: false,
+        passive: true,
         centerOnHwnd: centerOnHwnd,
         trackActiveMonitor: true
     })
@@ -59,7 +59,7 @@ PromptPaste_BusyResume(state := "⏳ Preparing prompt…", centerOnHwnd := 0) {
         return
     g_PromptPasteBusyPaused := false
     try StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, {
-        passive: false,
+        passive: true,
         centerOnHwnd: centerOnHwnd,
         trackActiveMonitor: true
     })

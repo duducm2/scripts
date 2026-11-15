@@ -476,7 +476,7 @@ PackPipeline_MonitorTick(*) {
 PackPipeline_OnGenerationComplete(*) {
     if (!PackPipeline_IsActive())
         return
-    try StandardLoadingBar_Show("⏳ Extracting pack…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try StandardLoadingBar_Show("⏳ Extracting pack…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     catch {
     }
     clipBefore := ""
@@ -903,7 +903,7 @@ PackPipeline_WriteAndImport(text) {
     catch {
         path := A_Desktop . "\" . canonical
     }
-    try StandardLoadingBar_Show("⏳ Saving " . canonical . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try StandardLoadingBar_Show("⏳ Saving " . canonical . "…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     catch {
     }
     ; Prevent Desktop watcher from double-importing this write.
