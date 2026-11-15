@@ -213,6 +213,7 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0, &outRoot := 0) {
 ; Internal helper: Performs clipboard cleanup in the background without stealing focus.
 ; sessionId: macro session from CleanClipboard_ShowCountdown; 0 = dictation legacy path (no session guard)
 CleanClipboardInternal(sessionId := 0) {
+    global g_ClipAngelAutomationBusy
     Sleep 150
     if (CleanClipboard_ShouldAbort(sessionId)) {
         CleanClipboard_UnwindClipAngel()
@@ -220,50 +221,73 @@ CleanClipboardInternal(sessionId := 0) {
     }
 
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
-    StandardLoadingBar_Show("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE, {
-        passive: true,
-        centerOnHwnd: priorHwnd,
-        fontSize: 17
-    })
-    root := 0
-    hwnd := CleanClipboard_ActivateClipAngelForCleanup(sessionId, &root)
-    if (!hwnd || CleanClipboard_ShouldAbort(sessionId)) {
-        StandardLoadingBar_Hide(0)
-        CleanClipboard_UnwindClipAngel(hwnd)
-        return
-    }
-
-    StandardLoadingBar_Update("⏳ Preparing clip list...", BANNER_ACCENT_INTERMEDIATE)
-    ClipAngel_LeaveFavoritesFilter(hwnd)
-    if (CleanClipboard_ShouldAbort(sessionId)) {
-        StandardLoadingBar_Hide(0)
-        CleanClipboard_UnwindClipAngel(hwnd)
-        return
-    }
-
-    StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
-    triggered := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
-    if (!triggered) {
-        try {
-            ControlSend("^!k", , "ahk_id " hwnd)
-            triggered := true
-        } catch {
-            triggered := false
+    ; Fast DB-direct path: deletes non-favorites without opening, moving, or focusing ClipAngel.
+    if (ClipAngelDb_ExePath() != "") {
+        deletedCount := 0
+        if (ClipAngelDb_DeleteNonFav(&deletedCount)) {
+            if (CleanClipboard_ShouldAbort(sessionId))
+                return
+            PlayCleaningDesktopSound()
+            StandardLoadingBar_Show("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS, {
+                passive: true,
+                centerOnHwnd: priorHwnd,
+                fontSize: 17
+            })
+            StandardLoadingBar_Hide(500)
+            return
         }
     }
-    if (CleanClipboard_ShouldAbort(sessionId)) {
-        StandardLoadingBar_Hide(0)
-        CleanClipboard_UnwindClipAngel(hwnd)
-        return
-    }
 
-    if (triggered)
-        ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1200)
-    Sleep 200
-    CleanClipboard_UnwindClipAngel(hwnd)
-    if (priorHwnd && !WinActive("ahk_id " priorHwnd))
-        ClipAngel_RestorePriorFocus(priorHwnd)
-    PlayCleaningDesktopSound()
-    StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
-    StandardLoadingBar_Hide(500)
+    prevBusy := g_ClipAngelAutomationBusy
+    g_ClipAngelAutomationBusy := true
+    try {
+        StandardLoadingBar_Show("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE, {
+            passive: true,
+            centerOnHwnd: priorHwnd,
+            fontSize: 17
+        })
+        root := 0
+        hwnd := CleanClipboard_ActivateClipAngelForCleanup(sessionId, &root)
+        if (!hwnd || CleanClipboard_ShouldAbort(sessionId)) {
+            StandardLoadingBar_Hide(0)
+            CleanClipboard_UnwindClipAngel(hwnd)
+            return
+        }
+
+        StandardLoadingBar_Update("⏳ Preparing clip list...", BANNER_ACCENT_INTERMEDIATE)
+        ClipAngel_LeaveFavoritesFilter(hwnd)
+        if (CleanClipboard_ShouldAbort(sessionId)) {
+            StandardLoadingBar_Hide(0)
+            CleanClipboard_UnwindClipAngel(hwnd)
+            return
+        }
+
+        StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
+        triggered := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
+        if (!triggered) {
+            try {
+                ControlSend("^!k", , "ahk_id " hwnd)
+                triggered := true
+            } catch {
+                triggered := false
+            }
+        }
+        if (CleanClipboard_ShouldAbort(sessionId)) {
+            StandardLoadingBar_Hide(0)
+            CleanClipboard_UnwindClipAngel(hwnd)
+            return
+        }
+
+        if (triggered)
+            ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1200)
+        Sleep 200
+        CleanClipboard_UnwindClipAngel(hwnd)
+        if (priorHwnd)
+            ClipAngel_RestorePriorFocus(priorHwnd, true)
+        PlayCleaningDesktopSound()
+        StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(500)
+    } finally {
+        g_ClipAngelAutomationBusy := prevBusy
+    }
 }

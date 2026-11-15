@@ -135,40 +135,81 @@ ClipAngel_FavoriteCellIsOn(cell) {
     return false
 }
 
+ClipAngel_IsHwndVisibleWin32(hwnd) {
+    if !hwnd
+        return false
+    return DllCall("user32\IsWindowVisible", "ptr", hwnd) != 0
+}
+
+; True when ClipAngel is parked off-screen by FastWindowOpen (Top = -10000) or suppress (-32000).
+ClipAngel_IsParkedOffScreen(hwnd) {
+    if !hwnd
+        return true
+    rect := Buffer(16, 0)
+    if !DllCall("user32\GetWindowRect", "ptr", hwnd, "ptr", rect.Ptr)
+        return true
+    left := NumGet(rect, 0, "int")
+    top := NumGet(rect, 4, "int")
+    right := NumGet(rect, 8, "int")
+    bottom := NumGet(rect, 12, "int")
+    if (left <= -9000 || top <= -9000)
+        return true
+    if (right <= left || bottom <= top)
+        return true
+    return false
+}
+
 ClipAngel_MainHwnd() {
-    h := WinExist("ClipAngel")
-    if h
-        return h
-    return WinExist("ahk_exe ClipAngel.exe")
+    prevDetect := A_DetectHiddenWindows
+    try {
+        DetectHiddenWindows false
+        for cand in WinGetList("ahk_exe ClipAngel.exe") {
+            if ClipAngel_IsMainWindowIdentity(cand)
+                return cand
+        }
+        DetectHiddenWindows true
+        for cand in WinGetList("ahk_exe ClipAngel.exe") {
+            if ClipAngel_IsMainWindowIdentity(cand)
+                return cand
+        }
+    } catch {
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    return 0
 }
 
 ClipAngel_IsWindowShown(hwnd) {
-    if !hwnd || !WinExist("ahk_id " hwnd)
+    if !hwnd || !DllCall("user32\IsWindow", "ptr", hwnd)
         return false
-    try {
-        if WinGetMinMax("ahk_id " hwnd) = -1
-            return false
-    } catch {
+    if !ClipAngel_IsHwndVisibleWin32(hwnd)
         return false
-    }
-    if DllCall("IsIconic", "ptr", hwnd)
+    if DllCall("user32\IsIconic", "ptr", hwnd)
         return false
-    return DllCall("IsWindowVisible", "ptr", hwnd)
+    if ClipAngel_IsParkedOffScreen(hwnd)
+        return false
+    return true
 }
 
-; True when minimized, invisible, or shrunk to a tiny bar (Alt+P toggle can leave a 1px-sized window).
+; True when minimized, invisible, parked off-screen, missing caption, or shrunk to a tiny bar.
 ClipAngel_NeedsLayoutCorrection(hwnd) {
-    if !hwnd || !WinExist("ahk_id " hwnd)
+    if !hwnd || !DllCall("user32\IsWindow", "ptr", hwnd)
         return false
     if !ClipAngel_IsWindowShown(hwnd)
         return true
     try {
-        WinGetPos(, , &w, &h, "ahk_id " hwnd)
-        if (w > 0 && h > 0 && (w < CLIPANGEL_MIN_LAYOUT_WIDTH || h < CLIPANGEL_MIN_LAYOUT_HEIGHT))
+        style := DllCall("user32\GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
+        if !(style & 0x00C00000)  ; WS_CAPTION stripped by FastWindowOpen FormBorderStyle.None
             return true
     } catch {
-        return true
     }
+    rect := Buffer(16, 0)
+    if !DllCall("user32\GetWindowRect", "ptr", hwnd, "ptr", rect.Ptr)
+        return true
+    w := NumGet(rect, 8, "int") - NumGet(rect, 0, "int")
+    h := NumGet(rect, 12, "int") - NumGet(rect, 4, "int")
+    if (w > 0 && h > 0 && (w < CLIPANGEL_MIN_LAYOUT_WIDTH || h < CLIPANGEL_MIN_LAYOUT_HEIGHT))
+        return true
     return false
 }
 
@@ -181,14 +222,20 @@ ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true, keepTra
         ClipAngel_BeginFavoriteSuppress(hwnd)
         return true
     }
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
     try {
-        mm := WinGetMinMax("ahk_id " hwnd)
-        if (mm = -1 || mm = 1)
-            WinRestore("ahk_id " hwnd)
-    } catch {
-    }
-    try WinShow("ahk_id " hwnd)
-    catch {
+        try {
+            mm := WinGetMinMax("ahk_id " hwnd)
+            if (mm = -1 || mm = 1)
+                WinRestore("ahk_id " hwnd)
+        } catch {
+        }
+        try WinShow("ahk_id " hwnd)
+        catch {
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
     }
     if ClipAngel_NeedsLayoutCorrection(hwnd)
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
@@ -203,23 +250,38 @@ ClipAngel_ShowWindow(hwnd) {
     return ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
 }
 
-; Minimize Clip Angel (process stays running; no native Alt+P / WinClose).
+; Minimize Clip Angel without letting FastWindowOpen's Main_FormClosing yank foreground focus.
 ClipAngel_HideWindow(hwnd) {
-    if !hwnd || !WinExist("ahk_id " hwnd)
+    if !hwnd || !DllCall("user32\IsWindow", "ptr", hwnd)
         return false
+    fgBefore := DllCall("user32\GetForegroundWindow", "ptr")
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
     try {
-        WinMinimize("ahk_id " hwnd)
-    } catch {
-        return false
+        try WinMinimize("ahk_id " hwnd)
+        catch {
+            return false
+        }
+        ok := ClipAngel_WaitUntilHidden(hwnd, 120)
+        if !ok {
+            try WinMinimize("ahk_id " hwnd)
+            catch {
+                return false
+            }
+            ok := ClipAngel_WaitUntilHidden(hwnd, 120)
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
     }
-    if ClipAngel_WaitUntilHidden(hwnd, 100)
-        return true
-    try {
-        WinMinimize("ahk_id " hwnd)
-    } catch {
-        return false
+    if (fgBefore && fgBefore != hwnd && DllCall("user32\IsWindow", "ptr", fgBefore)) {
+        fgAfter := DllCall("user32\GetForegroundWindow", "ptr")
+        if (fgAfter != fgBefore) {
+            try DllCall("user32\SetForegroundWindow", "ptr", fgBefore)
+            catch {
+            }
+        }
     }
-    return ClipAngel_WaitUntilHidden(hwnd, 100)
+    return ok
 }
 
 ; Poll until minimized/hidden (replaces fixed Sleep 50 after WinMinimize).
@@ -453,6 +515,24 @@ ClipAngel_InvokePasteEnter(hwnd := 0) {
         clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
         if !clipMenu
             clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if !clipMenu {
+            try {
+                ms := root.FindFirst({ AutomationId: "menuStrip1" })
+                if ms {
+                    for mi in ms.FindAll({ Scope: 2 }) {
+                        aid := ""
+                        nm := ""
+                        try aid := mi.AutomationId
+                        try nm := mi.Name
+                        if (aid = "clipToolStripMenuItem" || nm = "Clip" || nm = "Recortar") {
+                            clipMenu := mi
+                            break
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
         if !clipMenu
             return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         if !ClipAngel_UiaInvokeElement(clipMenu)
@@ -508,6 +588,24 @@ ClipAngel_InvokeImportClips(hwnd := 0) {
         clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
         if !clipMenu
             clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if !clipMenu {
+            try {
+                ms := root.FindFirst({ AutomationId: "menuStrip1" })
+                if ms {
+                    for mi in ms.FindAll({ Scope: 2 }) {
+                        aid := ""
+                        nm := ""
+                        try aid := mi.AutomationId
+                        try nm := mi.Name
+                        if (aid = "clipToolStripMenuItem" || nm = "Clip" || nm = "Recortar") {
+                            clipMenu := mi
+                            break
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
         if !clipMenu
             return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         if !ClipAngel_UiaInvokeElement(clipMenu)
@@ -962,6 +1060,24 @@ ClipAngel_IsTinyLayout(hwnd) {
 ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
     if !hwnd
         return false
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        try WinSetExStyle("-0x08000000", "ahk_id " hwnd)
+        catch {
+        }
+        try WinSetTransparent("Off", "ahk_id " hwnd)
+        catch {
+        }
+        try {
+            style := DllCall("user32\GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
+            if !(style & 0x00C00000)
+                WinSetStyle("+0x00CF0000", "ahk_id " hwnd)
+        } catch {
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
     if (!targetMon || targetMon < 1 || targetMon > MonitorGetCount()) {
         try targetMon := GetAhkMonitorIndexFromHwnd(WinGetID("A"))
         catch
@@ -972,11 +1088,14 @@ ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
         catch
             targetMon := 1
     }
+    parkedOffScreen := ClipAngel_IsParkedOffScreen(hwnd)
     curMon := 0
-    try curMon := GetAhkMonitorIndexFromHwnd(hwnd)
-    catch
-        curMon := 0
-    sameMon := (curMon >= 1 && curMon = targetMon)
+    if !parkedOffScreen {
+        try curMon := GetAhkMonitorIndexFromHwnd(hwnd)
+        catch
+            curMon := 0
+    }
+    sameMon := (!parkedOffScreen && curMon >= 1 && curMon = targetMon)
     mm := 0
     try mm := WinGetMinMax("ahk_id " hwnd)
     catch
@@ -1115,7 +1234,9 @@ ClipAngel_IsExcludedPasteTarget(hwnd) {
     return false
 }
 
-ClipAngel_RestorePriorFocus(priorHwnd) {
+ClipAngel_RestorePriorFocus(priorHwnd, onlyIfClipAngelActive := false) {
+    if (onlyIfClipAngelActive && !WinActive("ahk_exe ClipAngel.exe"))
+        return
     if (!priorHwnd || !WinExist("ahk_id " priorHwnd))
         return
     if WinActive("ahk_id " priorHwnd)
@@ -1165,8 +1286,8 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
         ClipAngel_EndFavoriteSuppress(hwnd)
     else if (hwnd)
         ClipAngel_HideWindow(hwnd)
-    if (priorHwnd && !WinActive("ahk_id " priorHwnd))
-        ClipAngel_RestorePriorFocus(priorHwnd)
+    if (priorHwnd)
+        ClipAngel_RestorePriorFocus(priorHwnd, true)
 }
 
 ; Temporary translucency while marking a favorite (mirrors DesktopToRecycle WinSetTransparent).
@@ -1196,7 +1317,12 @@ ClipAngel_BeginFavoriteSuppress(hwnd) {
     global g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH
     if !hwnd
         return false
+    prevActive := 0
+    try prevActive := WinExist("A")
     g_ClipAngelFavoriteSuppressActive := true
+    try WinSetExStyle("+0x08000000", "ahk_id " hwnd) ; WS_EX_NOACTIVATE
+    catch {
+    }
     ; Opacity first while still minimized when possible (avoids opaque paint).
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     if !g_ClipAngelFavoriteHadSavedPos {
@@ -1221,10 +1347,6 @@ ClipAngel_BeginFavoriteSuppress(hwnd) {
         w := CLIPANGEL_FAVORITE_OFFSCREEN_W
     if (h < CLIPANGEL_FAVORITE_OFFSCREEN_H)
         h := CLIPANGEL_FAVORITE_OFFSCREEN_H
-    ; Park while still iconic when possible so restore never paints on a visible monitor.
-    try WinMove(CLIPANGEL_FAVORITE_OFFSCREEN_X, CLIPANGEL_FAVORITE_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
-    catch {
-    }
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     try {
         mm := WinGetMinMax("ahk_id " hwnd)
@@ -1233,54 +1355,52 @@ ClipAngel_BeginFavoriteSuppress(hwnd) {
     } catch {
     }
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    try WinMove(CLIPANGEL_FAVORITE_OFFSCREEN_X, CLIPANGEL_FAVORITE_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
-    catch {
-    }
-    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     try DllCall("ShowWindow", "ptr", hwnd, "int", 8)  ; SW_SHOWNA
     catch {
     }
     ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    ; Re-assert off-screen — maximize/AutoSlot races can pull the window back.
-    try WinMove(CLIPANGEL_FAVORITE_OFFSCREEN_X, CLIPANGEL_FAVORITE_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
-    catch {
-    }
-    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    if (prevActive && prevActive != hwnd && WinActive("ahk_id " hwnd))
+        ClipAngel_RestorePriorFocus(prevActive, true)
     return true
 }
 
-; Minimize first; clear opacity only once hidden; restore saved geometry while iconic.
+; Minimize first; always clear opacity and no-activate styles afterward so ClipAngel is never stranded invisible.
 ClipAngel_EndFavoriteSuppress(hwnd := 0) {
     global g_ClipAngelFavoriteSuppressActive, g_ClipAngelFavoriteHadSavedPos
     global g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY
     global g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH
     if !hwnd
         hwnd := ClipAngel_MainHwnd()
-    if (hwnd) {
-        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-        ClipAngel_HideWindow(hwnd)
-        ClipAngel_WaitUntilHidden(hwnd, 250)
-        if g_ClipAngelFavoriteHadSavedPos {
-            try {
-                ; Restore size/pos while minimized so next normal open is not off-screen.
-                WinMove(g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY,
-                    g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH, "ahk_id " hwnd)
-            } catch {
-            }
-        }
-        if !ClipAngel_IsWindowShown(hwnd)
-            ClipAngel_ClearFavoriteSessionOpacity(hwnd)
-        else {
-            ; Still visible — keep transparent rather than flashing opaque.
+    try {
+        if (hwnd) {
             ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
             ClipAngel_HideWindow(hwnd)
-            ClipAngel_WaitUntilHidden(hwnd, 200)
-            if !ClipAngel_IsWindowShown(hwnd)
-                ClipAngel_ClearFavoriteSessionOpacity(hwnd)
+            ClipAngel_WaitUntilHidden(hwnd, 250)
+            if g_ClipAngelFavoriteHadSavedPos {
+                try {
+                    ; Restore size/pos while hidden so next normal open is not off-screen.
+                    WinMove(g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY,
+                        g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH, "ahk_id " hwnd)
+                } catch {
+                }
+            }
         }
+    } finally {
+        if (hwnd) {
+            prevDetect := A_DetectHiddenWindows
+            DetectHiddenWindows true
+            try {
+                try WinSetExStyle("-0x08000000", "ahk_id " hwnd)
+                catch {
+                }
+                ClipAngel_ClearFavoriteSessionOpacity(hwnd)
+            } finally {
+                DetectHiddenWindows prevDetect
+            }
+        }
+        g_ClipAngelFavoriteSuppressActive := false
+        g_ClipAngelFavoriteHadSavedPos := false
     }
-    g_ClipAngelFavoriteSuppressActive := false
-    g_ClipAngelFavoriteHadSavedPos := false
 }
 
 ; True when Enter on the clip list pastes into the prior app (not filter combo / preview edit).
@@ -1832,6 +1952,12 @@ ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root := 0) {
                 return true
             Sleep CLIPANGEL_UIA_POLL_MS
         }
+        if wantAll {
+            if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root)
+                return true
+        } else if ClipAngel_UiaSetMarkFilterFavorites(hwnd, root) {
+            return true
+        }
         if ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root)
             return true
         return ClipAngel_MarkFilterMatchesMode(wantAll, mfVal())
@@ -2208,6 +2334,24 @@ ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root :=
             clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Recortar" })
         if !clipMenu
             clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if !clipMenu {
+            try {
+                ms := root.FindFirst({ AutomationId: "menuStrip1" })
+                if ms {
+                    for mi in ms.FindAll({ Scope: 2 }) {
+                        aid := ""
+                        nm := ""
+                        try aid := mi.AutomationId
+                        try nm := mi.Name
+                        if (aid = "clipToolStripMenuItem" || nm = "Clip" || nm = "Recortar") {
+                            clipMenu := mi
+                            break
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
         if clipMenu {
             if !ClipAngel_UiaInvokeElement(clipMenu) {
                 if g_ClipAngelFavoriteSuppressActive
@@ -2371,10 +2515,24 @@ ClipAngel_UnmarkSelectedClip(hwnd, root := 0, dataGrid := 0) {
     return false
 }
 
-; Try background UIA mark favorite (toolbar button, then Clip > Mark as favorite menu) without WinActivate/Send.
+; Try background UIA mark favorite (toolbar button, Clip > Mark as favorite menu, then ControlSend Alt+Q) without WinActivate.
 ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId := 0) {
     if (!hwnd || !IsObject(root))
         return false
+    ClipAngel_UiaEnsureRow0Selected(hwnd, false, root)
+    liveNewest := ClipAngelDb_Newest()
+    verifyId := (liveNewest && liveNewest["id"] > 0) ? liveNewest["id"] : newestId
+    confirmSaved() {
+        if (verifyId > 0) {
+            dbRes := ClipAngel_WaitDbFavoriteOn(verifyId, 600)
+            if (dbRes = true)
+                return true
+            if (dbRes = false)
+                return false
+        }
+        return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+    }
+
     favBtn := 0
     try {
         for child in root.FindAll({ Scope: 2 }) {
@@ -2397,16 +2555,26 @@ ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId := 0) {
         }
     }
     if (favBtn && ClipAngel_UiaInvokeElement(favBtn)) {
-        if ((newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 250) = true)
-            || ClipAngel_Row0TitleLooksFavorited(hwnd, root))
+        if (confirmSaved())
             return true
     }
-    if (ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)) {
-        if ((newestId > 0 && ClipAngel_WaitDbFavoriteOn(newestId, 500) = true)
-            || ClipAngel_Row0TitleLooksFavorited(hwnd, root))
-            return true
+    loop 2 {
+        if (ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)) {
+            if (confirmSaved())
+                return true
+        }
+        if (A_Index = 1) {
+            Sleep 80
+            try root := UIA.ElementFromHandle(hwnd)
+            catch {
+            }
+        }
     }
-    OutputDebug("[ClipAngel] Background UIA mark favorite failed: newestId=" newestId " favBtn=" (favBtn ? 1 : 0))
+    ; Background ControlSend fallback (works even if window juggling closes a ToolStripDropDown popup).
+    ClipAngel_SendToHwnd(hwnd, "!q")
+    if (confirmSaved())
+        return true
+    OutputDebug("[ClipAngel] Background UIA mark favorite failed: verifyId=" verifyId " favBtn=" (favBtn ? 1 : 0))
     return false
 }
 
@@ -2422,8 +2590,6 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
         }
     }
     ClipAngel_PrepareFavoriteAltQ(hwnd, root)
-    if ClipAngel_Row0TitleLooksFavorited(hwnd, root)
-        return true
     newestId := 0
     newest := ClipAngelDb_Newest()
     if (newest)
@@ -2522,6 +2688,7 @@ ClipAngel_WaitDbFavoriteOn(id, timeoutMs := 400) {
 }
 
 MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) {
+    global g_ClipAngelFavoriteSuppressActive
     if waitForIngest
         ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
     if !ClipAngel_TryAcquireAutomationLock()
@@ -2529,18 +2696,45 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
     resultKind := ""
     resultMsg := ""
+    didSuppress := false
     try {
-        ; DB pre-check: skip entire window dance when newest is already favorite.
+        ; Fast DB-direct path (zero window manipulation, immune to typing / window juggling).
         alreadyFav := false
-        if (target != "last") {
+        dbHandled := false
+        if (target != "last" && ClipAngelDb_ExePath() != "") {
             newest := ClipAngelDb_Newest()
             if (newest && newest["favorite"]) {
-                alreadyFav := true
-                resultKind := "success"
-                resultMsg := "✅ Newest clip is already a favorite."
+                clipText := ""
+                try clipText := A_Clipboard
+                catch
+                    clipText := ""
+                clipNorm := RegExReplace(Trim(clipText), "\s+", " ")
+                titleNorm := RegExReplace(Trim(newest["title"]), "\s+", " ")
+                matchesClipboard := (clipNorm = "" || (titleNorm != ""
+                    && (InStr(clipNorm, SubStr(titleNorm, 1, 25)) || InStr(titleNorm, SubStr(clipNorm, 1, 25)))))
+                if (matchesClipboard) {
+                    alreadyFav := true
+                    dbHandled := true
+                    resultKind := "success"
+                    resultMsg := "✅ Newest clip is already a favorite."
+                } else {
+                    ClipAngel_WaitForClipboardIngest(600, newest["id"])
+                    newest := ClipAngelDb_Newest()
+                }
+            }
+            if !alreadyFav {
+                favId := 0
+                if ClipAngelDb_FavNewest(1, &favId) {
+                    dbHandled := true
+                    try ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+                    catch {
+                    }
+                    resultKind := "success"
+                    resultMsg := "✅ Marked focused clip as favorite."
+                }
             }
         }
-        if !alreadyFav {
+        if !alreadyFav && !dbHandled {
             StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
                 centerOnHwnd: priorHwnd,
                 fontSize: 17,
@@ -2548,8 +2742,10 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
             })
             try {
                 if (target = "last") {
+                    didSuppress := true
                     MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
                 } else {
+                    didSuppress := true
                     targetMon := 0
                     if (priorHwnd) {
                         try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
@@ -2576,18 +2772,23 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
                             catch
                                 root := 0
                         }
+                        newestAfter := ClipAngelDb_Newest()
+                        if (newestAfter && newestAfter["id"] > 0)
+                            newestId := newestAfter["id"]
                         ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root)
                         if ok {
-                            ; Prefer DB Favorite bit confirm when id known.
-                            dbOk := newestId > 0 ? ClipAngel_WaitDbFavoriteOn(newestId, 400) : ""
+                            ; Authoritative DB verification: never report success if DB IsFavorite is 0.
+                            dbOk := newestId > 0 ? ClipAngel_WaitDbFavoriteOn(newestId, 500) : ""
                             if (dbOk = false)
-                                ok := ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+                                ok := false
+                        }
+                        if ok {
                             ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
                             resultKind := "success"
                             resultMsg := "✅ Marked focused clip as favorite."
                         } else {
                             resultKind := "error"
-                            resultMsg := "❌ Could not mark favorite (menu/list focus)."
+                            resultMsg := "❌ Could not mark favorite (not saved in Clip Angel)."
                         }
                     }
                 }
@@ -2604,10 +2805,12 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
         resultKind := "error"
         resultMsg := "❌ Mark favorite failed: " . e.Message
     } finally {
-        hwndEnd := ClipAngel_MainHwnd()
-        ClipAngel_EndFavoriteSuppress(hwndEnd)
-        if (priorHwnd && !WinActive("ahk_id " priorHwnd))
-            ClipAngel_RestorePriorFocus(priorHwnd)
+        if (didSuppress || g_ClipAngelFavoriteSuppressActive) {
+            hwndEnd := ClipAngel_MainHwnd()
+            ClipAngel_EndFavoriteSuppress(hwndEnd)
+            if (priorHwnd)
+                ClipAngel_RestorePriorFocus(priorHwnd, true)
+        }
         ClipAngel_ReleaseAutomationLock()
     }
     if (resultKind = "success")
@@ -2763,7 +2966,8 @@ ClipAngel_FocusUnfavoriteAllConfirmYes() {
 ; Confirm → suppress Clip Angel + restore prior focus → favorites filter (Ctrl+2) → select all → unmark in background.
 ClipAngel_UnfavoriteAllClips() {
     hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
+    hasDb := (ClipAngelDb_ExePath() != "")
+    if (!hwnd && !hasDb) {
         ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
         return false
     }
@@ -2774,12 +2978,13 @@ ClipAngel_UnfavoriteAllClips() {
         return false
 
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+    wasShown := hwnd && ClipAngel_IsWindowShown(hwnd)
     ok := false
     errMsg := ""
     loadingShown := false
     suppressed := false
     try {
-        ownerOpt := " Owner" . hwnd
+        ownerOpt := wasShown ? (" Owner" . hwnd) : ""
         ; Default1 + timer focus so Enter confirms without Tab.
         SetTimer(ClipAngel_FocusUnfavoriteAllConfirmYes, -50)
         response := MsgBox(
@@ -2792,44 +2997,54 @@ ClipAngel_UnfavoriteAllClips() {
         catch {
         }
         if (response != "Yes") {
-            ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
+            if (wasShown)
+                ClipAngel_ReassertFocusAfterDialog(hwnd, 600)
             return false
         }
 
-        ClipAngel_WaitChordModifiersReleased()
-        ClipAngel_BeginFavoriteSuppress(hwnd)
-        suppressed := true
-        if (priorHwnd && !WinActive("ahk_id " priorHwnd))
-            ClipAngel_RestorePriorFocus(priorHwnd)
-
-        StandardLoadingBar_Show("⏳ Removing all favorites...", BANNER_ACCENT_INTERMEDIATE, {
-            passive: true,
-            centerOnHwnd: priorHwnd,
-            fontSize: 17
-        })
-        loadingShown := true
-
-        root := 0
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-
-        StandardLoadingBar_Update("⏳ Opening favorites...", BANNER_ACCENT_INTERMEDIATE)
-        if !ClipAngel_ApplyMarkFilterMode(false, hwnd, root) {
-            errMsg := "❌ Could not open favorites filter."
-            return false
-        }
-
-        StandardLoadingBar_Update("⏳ Unfavoriting all...", BANNER_ACCENT_INTERMEDIATE)
-        try ControlSend("^a", , "ahk_id " hwnd)
-        catch {
-        }
-        Sleep 80
-        if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
-            errMsg := "❌ Could not unmark the selected clips."
-            ok := false
-        } else {
+        clearedCount := 0
+        if (hasDb && ClipAngelDb_UnfavAll(&clearedCount)) {
             ok := true
+        } else {
+            if !hwnd {
+                errMsg := "❌ Clip Angel window not found."
+                return false
+            }
+            ClipAngel_WaitChordModifiersReleased()
+            ClipAngel_BeginFavoriteSuppress(hwnd)
+            suppressed := true
+            if (priorHwnd)
+                ClipAngel_RestorePriorFocus(priorHwnd, true)
+
+            StandardLoadingBar_Show("⏳ Removing all favorites...", BANNER_ACCENT_INTERMEDIATE, {
+                passive: true,
+                centerOnHwnd: priorHwnd,
+                fontSize: 17
+            })
+            loadingShown := true
+
+            root := 0
+            try root := UIA.ElementFromHandle(hwnd)
+            catch
+                root := 0
+
+            StandardLoadingBar_Update("⏳ Opening favorites...", BANNER_ACCENT_INTERMEDIATE)
+            if !ClipAngel_ApplyMarkFilterMode(false, hwnd, root) {
+                errMsg := "❌ Could not open favorites filter."
+                return false
+            }
+
+            StandardLoadingBar_Update("⏳ Unfavoriting all...", BANNER_ACCENT_INTERMEDIATE)
+            try ControlSend("^a", , "ahk_id " hwnd)
+            catch {
+            }
+            Sleep 80
+            if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+                errMsg := "❌ Could not unmark the selected clips."
+                ok := false
+            } else {
+                ok := true
+            }
         }
     } catch Error as e {
         errMsg := "❌ Unfavorite all failed: " . e.Message

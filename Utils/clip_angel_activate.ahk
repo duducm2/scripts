@@ -126,6 +126,72 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
 ; Shared open for paste / export / merge / suppress paths: show+layout, MarkFilter, Row 0.
 ; suppressVisual: park off-screen (favorite/paste/merge/export) — no foreground activate / loading bar.
 ; Returns true and sets &outHwnd / &outRoot when provided.
+; Confirm Clip Angel startup hotkey registration dialogs (#32770 for Alt+P / Alt+B)
+; in the background without stealing focus so the main window can finish opening.
+ClipAngel_DismissStartupHotkeyDialogs(newPid := 0) {
+    dismissed := 0
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for dlgHwnd in WinGetList("ahk_exe ClipAngel.exe ahk_class #32770") {
+            if (newPid) {
+                try {
+                    if (WinGetPID("ahk_id " dlgHwnd) != newPid)
+                        continue
+                } catch {
+                    continue
+                }
+            }
+            txt := ""
+            try txt := StrLower(WinGetText("ahk_id " dlgHwnd))
+            catch {
+                txt := ""
+            }
+            isHotkeyDlg := (txt = ""
+                || InStr(txt, "hotkey") || InStr(txt, "shortcut") || InStr(txt, "atalho")
+                || InStr(txt, "alt") || InStr(txt, "register") || InStr(txt, "attribute")
+                || InStr(txt, "could not") || InStr(txt, "failed") || !ClipAngel_MainHwnd())
+            if (!isHotkeyDlg)
+                continue
+            try WinSetTransparent(0, "ahk_id " dlgHwnd)
+            catch {
+            }
+            clicked := false
+            try {
+                ControlClick("Button1", "ahk_id " dlgHwnd, , "Left", 1, "NA")
+                clicked := true
+            } catch {
+                clicked := false
+            }
+            if !clicked {
+                try {
+                    PostMessage(0x00F5, 0, 0, "Button1", "ahk_id " dlgHwnd) ; BM_CLICK
+                    clicked := true
+                } catch {
+                    clicked := false
+                }
+            }
+            if !clicked {
+                try PostMessage(0x0112, 0xF060, 0, , "ahk_id " dlgHwnd) ; WM_CLOSE
+                catch {
+                }
+            }
+            dismissed += 1
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    return dismissed
+}
+
+ClipAngel_HasMainWindowChildren(hwnd) {
+    if !hwnd
+        return false
+    try return WinGetControlsHwnd("ahk_id " hwnd).Length > 0
+    catch
+        return false
+}
+
 ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0) {
     wantAll := (mode = "all" || mode = "")
     outHwnd := 0
@@ -135,14 +201,17 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
     catch {
         priorFg := 0
     }
+    ClipAngel_DismissStartupHotkeyDialogs()
     hwnd := ClipAngel_MainHwnd()
     if !hwnd && ProcessExist("ClipAngel.exe") {
         loop 2 {
-            priorSendLevel := A_SendLevel
-            SendLevel 0
-            ClipAngel_ReleaseChordModifiersForSend()
-            SendInput("!p")
-            SendLevel priorSendLevel
+            if !ClipAngel_PostHotkey("p", "a") {
+                priorSendLevel := A_SendLevel
+                SendLevel 0
+                ClipAngel_ReleaseChordModifiersForSend()
+                SendInput("!p")
+                SendLevel priorSendLevel
+            }
             hwnd := ClipAngel_WaitForMainHwnd(1000)
             if hwnd
                 break
@@ -150,13 +219,17 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
     }
     if !hwnd
         hwnd := ClipAngel_WaitForMainHwnd()
+    if !hwnd {
+        if (ClipAngel_RecoverProcessForAutomation(suppressVisual))
+            hwnd := ClipAngel_MainHwnd()
+    }
     if !hwnd
         return false
     if suppressVisual {
         ClipAngel_BeginFavoriteSuppress(hwnd)
         ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false, true)
-        if (priorFg && !WinActive("ahk_id " priorFg))
-            ClipAngel_RestorePriorFocus(priorFg)
+        if (priorFg && WinActive("ahk_exe ClipAngel.exe"))
+            ClipAngel_RestorePriorFocus(priorFg, true)
     } else {
         if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false)
             return false
@@ -164,12 +237,27 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
         if !hwnd
             return false
     }
+    ; Wait briefly for WinForms child controls (MarkFilter / dataGridView) to initialize after wake.
+    childDeadline := A_TickCount + 350
+    while (A_TickCount < childDeadline) {
+        if ClipAngel_HasMainWindowChildren(hwnd)
+            break
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
     root := 0
     try root := UIA.ElementFromHandle(hwnd)
     catch
         root := 0
-    if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root)
-        return false
+    if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root) {
+        Sleep 100
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+        if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root) {
+            if !(wantAll && ClipAngel_UiaGetDataGrid(hwnd, root))
+                return false
+        }
+    }
     ClipAngel_FastEnsureRow0(hwnd, root)
     outHwnd := hwnd
     outRoot := root
@@ -188,8 +276,17 @@ ClipAngel_OpenNative(letter) {
         return false
     }
     g_ClipAngelFavoriteSuppressActive := false
-    try WinSetTransparent("Off", "ahk_id " hwnd)
-    catch {
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        try WinSetExStyle("-0x08000000", "ahk_id " hwnd)
+        catch {
+        }
+        try WinSetTransparent("Off", "ahk_id " hwnd)
+        catch {
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
     }
     alreadyHere := WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd)
     ClipAngel_ReleaseChordModifiersForSend()
@@ -233,6 +330,7 @@ ClipAngel_MarkFilterMatchesMode(wantAll, val) {
 }
 
 ClipAngel_OpenWithMarkFilter(mode) {
+    global g_ClipAngelAutomationBusy
     wantAll := (mode = "all")
     loadMsg := wantAll ? "⏳ Opening Clip Angel (all marks)..." : "⏳ Opening Clip Angel (favorites)..."
     doneMsg := wantAll ? "✅ Clip Angel — all marks" : "✅ Clip Angel — favorites"
@@ -245,6 +343,8 @@ ClipAngel_OpenWithMarkFilter(mode) {
         ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
         return false
     }
+    prevBusy := g_ClipAngelAutomationBusy
+    g_ClipAngelAutomationBusy := true
     StandardLoadingBar_Show(loadMsg, BANNER_ACCENT_INTERMEDIATE, {
         passive: false,
         centerOnHwnd: priorHwnd,
@@ -283,6 +383,8 @@ ClipAngel_OpenWithMarkFilter(mode) {
         }
         ShowCenteredOverlay_Utils("❌ Clip Angel open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return false
+    } finally {
+        g_ClipAngelAutomationBusy := prevBusy
     }
 }
 
@@ -458,8 +560,10 @@ ClipAngel_ForegroundHookProc(hHook, event, hwnd, idObject, idChild, idEventThrea
 }
 
 ClipAngel_ShouldSkipAutoMinimize() {
-    global g_ClipAngelAutomationBusy, g_ClipAngelFilterSelectorActive
+    global g_ClipAngelAutomationBusy, g_ClipAngelFilterSelectorActive, g_ClipAngelFavoriteSuppressActive
     if (g_ClipAngelAutomationBusy)
+        return true
+    if (g_ClipAngelFavoriteSuppressActive)
         return true
     if (g_ClipAngelFilterSelectorActive)
         return true
@@ -739,8 +843,12 @@ ClipAngel_WaitForNewProcess(oldPid, expectedExe := "", timeoutMs := 0) {
 ClipAngel_WaitForRestartHwnd(newPid := 0, timeoutMs := 0) {
     if (!timeoutMs)
         timeoutMs := CLIPANGEL_RESTART_HWND_WAIT_MS
-    deadline := A_TickCount + timeoutMs
+    startTick := A_TickCount
+    deadline := startTick + timeoutMs
+    lastWakeTick := 0
     while (A_TickCount < deadline) {
+        if (ClipAngel_DismissStartupHotkeyDialogs(newPid) > 0)
+            Sleep 60
         hwnd := ClipAngel_MainHwnd()
         if (hwnd && ClipAngel_IsMainWindowIdentity(hwnd)) {
             if (!newPid)
@@ -749,6 +857,18 @@ ClipAngel_WaitForRestartHwnd(newPid := 0, timeoutMs := 0) {
                 if (WinGetPID("ahk_id " hwnd) = newPid)
                     return hwnd
             } catch {
+            }
+        }
+        ; ClipAngel can start minimized to tray (HWND = 0); nudge with Alt+P after startup settle.
+        elapsed := A_TickCount - startTick
+        if (elapsed >= 1500 && (lastWakeTick = 0 || (A_TickCount - lastWakeTick) >= 2000)) {
+            if (!newPid || ProcessExist(newPid)) {
+                lastWakeTick := A_TickCount
+                priorSendLevel := A_SendLevel
+                SendLevel 0
+                ClipAngel_ReleaseChordModifiersForSend()
+                SendInput("!p")
+                SendLevel priorSendLevel
             }
         }
         Sleep CLIPANGEL_RESTART_QUALITY_POLL_MS
@@ -868,7 +988,7 @@ ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason, backgroundVer
 }
 
 ; One kill→launch→verify cycle. Returns true on success; failReason on false.
-ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify := false) {
+ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify := false, keepSuppressed := false) {
     failReason := ""
     baselinePid := oldPid
     label := (CLIPANGEL_RESTART_MAX_ATTEMPTS > 1)
@@ -885,7 +1005,8 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify
     }
 
     StandardLoadingBar_Update("⏳ Opening Clip Angel…" label)
-    try Run('"' exePath '"')
+    SplitPath(exePath, , &exeDir)
+    try Run('"' exePath '"', exeDir)
     catch as e {
         failReason := "failed to start: " e.Message
         return false
@@ -951,8 +1072,28 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify
         }
         return true
     } finally {
-        if (suppressStarted)
+        if (suppressStarted && !keepSuppressed)
             ClipAngel_EndFavoriteSuppress(hwnd)
+    }
+}
+
+; Auto-recover a stuck/windowless ClipAngel.exe inside an already-locked automation flow
+; (does not touch g_ClipAngelAutomationBusy so the caller's lock stays intact).
+ClipAngel_RecoverProcessForAutomation(backgroundVerify := true) {
+    oldPid := ProcessExist("ClipAngel.exe")
+    exePath := ClipAngel_ResolveExePath()
+    if (exePath = "" || !FileExist(exePath))
+        return false
+    StandardLoadingBar_Show("⏳ Recovering Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true })
+    failReason := ""
+    try {
+        return ClipAngel_RestartAttempt(exePath, oldPid, 1, &failReason, backgroundVerify, backgroundVerify)
+    } catch {
+        return false
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
     }
 }
 
@@ -1019,6 +1160,7 @@ ClipAngel_RestartHard(*) {
 ; Used by Act.ahk after launching hosts so Clip Angel is guaranteed up without stealing focus.
 ClipAngel_EnsureRunning(*) {
     global g_ClipAngelAutomationBusy
+    ClipAngel_DismissStartupHotkeyDialogs()
     hwnd := ClipAngel_MainHwnd()
     if (hwnd && ClipAngel_IsMainWindowIdentity(hwnd) && ClipAngel_IsWindowResponsive(hwnd)) {
         StandardLoadingBar_Show("⏳ Ensuring Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: true })

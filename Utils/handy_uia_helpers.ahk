@@ -37,6 +37,9 @@ Handy_RestorePrevWindow(restoreHwnd, excludeHwnd := 0) {
         return false
     if (WinActive("ahk_id " restoreHwnd))
         return true
+    ; Only restore if Handy itself stole focus — never yank the user away from another window they switched to.
+    if (excludeHwnd ? !WinActive("ahk_id " excludeHwnd) : !WinActive("ahk_exe handy.exe"))
+        return false
     try {
         WinActivate("ahk_id " restoreHwnd)
         WinWaitActive("ahk_id " restoreHwnd, , 1)

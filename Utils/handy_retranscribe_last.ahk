@@ -405,7 +405,7 @@ HandyRetranscribe_ToggleModelAndCopy() {
 
     ok := HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd)
     Handy_BeginSuppress(hwnd)
-    if (priorHwnd && WinExist("ahk_id " priorHwnd) && !WinActive("ahk_id " priorHwnd))
+    if (priorHwnd && WinActive("ahk_exe handy.exe"))
         Handy_RestorePrevWindow(priorHwnd, hwnd)
     if (ok) {
         try StandardLoadingBar_Hide(0)

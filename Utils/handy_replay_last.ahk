@@ -496,7 +496,7 @@ HandyReplay_PlayLastRecording() {
         }
 
         Handy_BeginSuppress(hwnd)
-        if (priorHwnd && WinExist("ahk_id " priorHwnd) && !WinActive("ahk_id " priorHwnd))
+        if (priorHwnd && WinActive("ahk_exe handy.exe"))
             Handy_RestorePrevWindow(priorHwnd, hwnd)
         ShowCenteredOverlay_Utils("✅ Playing last recording", 1500, BANNER_ACCENT_SUCCESS)
         return true

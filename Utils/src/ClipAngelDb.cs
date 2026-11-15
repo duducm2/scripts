@@ -1,4 +1,4 @@
-// ClipAngelDb — read-only queries against ClipAngel's live SQLite DB.
+// ClipAngelDb — SQLite read/write helper for ClipAngel's live SQLite DB.
 // Must be compiled x86 (System.Data.SQLite.dll from ClipAngel is 32-bit).
 // Password is ClipAngel's hardcoded SQLite key (Main.cs Reputation = "Magic67234784").
 // Exit 0 = ok, 1 = bad args, 2 = DB unavailable / query failure.
@@ -19,7 +19,7 @@ internal static class Program
     {
         if (args == null || args.Length < 1)
         {
-            Console.Error.WriteLine("usage: ClipAngelDb <maxid|waitnew|newest|isfav|mergepayload> ...");
+            Console.Error.WriteLine("usage: ClipAngelDb <maxid|waitnew|newest|isfav|mergepayload|setfav|favnewest|unfavall|deletenonfav> ...");
             return 1;
         }
 
@@ -48,6 +48,19 @@ internal static class Program
                     return CmdIsFav(ParseLong(args[1]));
                 case "mergepayload":
                     return CmdMergePayload();
+                case "setfav":
+                    if (args.Length < 3)
+                    {
+                        Console.Error.WriteLine("usage: ClipAngelDb setfav <id> <0|1>");
+                        return 1;
+                    }
+                    return CmdSetFav(ParseLong(args[1]), ParseInt(args[2]) != 0 ? 1 : 0);
+                case "favnewest":
+                    return CmdFavNewest(args.Length >= 2 ? (ParseInt(args[1]) != 0 ? 1 : 0) : 1);
+                case "unfavall":
+                    return CmdUnfavAll();
+                case "deletenonfav":
+                    return CmdDeleteNonFav();
                 default:
                     Console.Error.WriteLine("unknown command: " + cmd);
                     return 1;
@@ -95,6 +108,31 @@ internal static class Program
         var con = new SQLiteConnection(cs);
         con.Open();
         return con;
+    }
+
+    static SQLiteConnection OpenWrite()
+    {
+        string path = ResolveDbPath();
+        if (!File.Exists(path))
+            throw new FileNotFoundException("ClipAngel DB not found: " + path);
+        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=3000;";
+        var con = new SQLiteConnection(cs);
+        con.Open();
+        return con;
+    }
+
+    static int ExecuteNonQuery(SQLiteConnection con, string sql, params SQLiteParameter[] parms)
+    {
+        using (var cmd = con.CreateCommand())
+        {
+            cmd.CommandText = sql;
+            if (parms != null)
+            {
+                foreach (var p in parms)
+                    cmd.Parameters.Add(p);
+            }
+            return cmd.ExecuteNonQuery();
+        }
     }
 
     static object Scalar(SQLiteConnection con, string sql, params SQLiteParameter[] parms)
@@ -243,6 +281,82 @@ internal static class Program
             // Header: boundaryId, totalCount (clips above favorite), skippedNonText
             Console.WriteLine(boundaryId + "\t" + total + "\t" + skipped);
             Console.Write(string.Join("\n", texts.ToArray()));
+            return 0;
+        }
+    }
+
+    static int CmdSetFav(long id, int fav)
+    {
+        using (var con = OpenWrite())
+        {
+            int rows = ExecuteNonQuery(con,
+                "UPDATE Clips SET Favorite = @fav WHERE Id = @id",
+                new SQLiteParameter("@fav", fav != 0),
+                new SQLiteParameter("@id", id));
+            Console.Write(rows + "\t" + id + "\t" + fav);
+            return rows > 0 ? 0 : 2;
+        }
+    }
+
+    static int CmdFavNewest(int fav)
+    {
+        using (var con = OpenWrite())
+        {
+            using (var tx = con.BeginTransaction())
+            {
+                long id = 0;
+                string title = "";
+                using (var cmd = con.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText =
+                        "SELECT Id, COALESCE(NULLIF(Title,''), SUBSTR(COALESCE(Text,''),1,120)) " +
+                        "FROM Clips ORDER BY Id DESC LIMIT 1";
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (!r.Read())
+                        {
+                            tx.Rollback();
+                            Console.Write("0\t0\t");
+                            return 2;
+                        }
+                        id = Convert.ToInt64(r.GetValue(0));
+                        title = r.IsDBNull(1) ? "" : SanitizeOneLine(Convert.ToString(r.GetValue(1)));
+                    }
+                }
+                using (var cmd = con.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText = "UPDATE Clips SET Favorite = @fav WHERE Id = @id";
+                    cmd.Parameters.Add(new SQLiteParameter("@fav", fav != 0));
+                    cmd.Parameters.Add(new SQLiteParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                }
+                tx.Commit();
+                Console.Write(id + "\t" + fav + "\t" + title);
+                return 0;
+            }
+        }
+    }
+
+    static int CmdUnfavAll()
+    {
+        using (var con = OpenWrite())
+        {
+            int rows = ExecuteNonQuery(con,
+                "UPDATE Clips SET Favorite = 0 WHERE Favorite = 1");
+            Console.Write(rows.ToString());
+            return 0;
+        }
+    }
+
+    static int CmdDeleteNonFav()
+    {
+        using (var con = OpenWrite())
+        {
+            int rows = ExecuteNonQuery(con,
+                "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
+            Console.Write(rows.ToString());
             return 0;
         }
     }

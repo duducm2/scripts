@@ -1,8 +1,8 @@
 ; =============================================================================
 ; Utils module: clip_angel_db.ahk
-; Read-only ClipAngel SQLite helper (ClipAngelDb.exe). Failure => "" / false so
-; callers fall back to UIA. Loaded via #include into Utils.ahk before favorite/
-; merge modules that call these helpers.
+; SQLite read/write helper (ClipAngelDb.exe). Failure => "" / false / 0 so
+; callers can fall back to UIA when needed. Loaded via #include into Utils.ahk
+; before favorite/merge modules that call these helpers.
 ; =============================================================================
 
 CLIPANGEL_DB_EXE_REL := "Utils\bin\ClipAngelDb.exe"
@@ -130,4 +130,48 @@ ClipAngelDb_MergePayload() {
         "skipped", Integer(hp[3]),
         "text", body
     )
+}
+
+; Sets Favorite = 1/0 on a specific clip Id. Returns true on success.
+ClipAngelDb_SetFav(id, isFav := 1) {
+    if !(id is Integer) && !IsInteger(id)
+        return false
+    fav := isFav ? 1 : 0
+    out := ClipAngelDb_Run("setfav " Integer(id) " " fav, 3500)
+    if (out = "")
+        return false
+    parts := StrSplit(out, "`t")
+    return parts.Length >= 1 && IsInteger(parts[1]) && Integer(parts[1]) > 0
+}
+
+; Marks the newest clip Favorite = 1/0 atomically. Returns true on success.
+ClipAngelDb_FavNewest(isFav := 1, &clipId := 0, &title := "") {
+    fav := isFav ? 1 : 0
+    out := ClipAngelDb_Run("favnewest " fav, 3500)
+    if (out = "")
+        return false
+    parts := StrSplit(out, "`t")
+    if (parts.Length < 2 || !IsInteger(parts[1]) || Integer(parts[1]) <= 0)
+        return false
+    clipId := Integer(parts[1])
+    title := parts.Length >= 3 ? parts[3] : ""
+    return true
+}
+
+; Clears Favorite = 0 on all favorited clips. Returns true on success.
+ClipAngelDb_UnfavAll(&count := 0) {
+    out := ClipAngelDb_Run("unfavall", 4000)
+    if (out = "" || !IsInteger(out))
+        return false
+    count := Integer(out)
+    return true
+}
+
+; Deletes all non-favorite clips from ClipAngel's SQLite DB. Returns true on success.
+ClipAngelDb_DeleteNonFav(&count := 0) {
+    out := ClipAngelDb_Run("deletenonfav", 5000)
+    if (out = "" || !IsInteger(out))
+        return false
+    count := Integer(out)
+    return true
 }

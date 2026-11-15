@@ -69,6 +69,9 @@ MergeNonFavoriteClips_ViaDb(payload) {
 
 ; Extract title from first favorite under favorites filter, then merge non-favorites above it in all-marks.
 MergeNonFavoriteClips_ViaUI() {
+    global g_ClipAngelAutomationBusy
+    prevBusy := g_ClipAngelAutomationBusy
+    g_ClipAngelAutomationBusy := true
     try {
         hwnd := 0
         root := 0
@@ -204,6 +207,7 @@ MergeNonFavoriteClips_ViaUI() {
         }
         ShowCenteredOverlay_Utils("❌ Merge failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     } finally {
+        g_ClipAngelAutomationBusy := prevBusy
         ClipAngel_CloseAndRestoreFocus(0)
     }
 }
