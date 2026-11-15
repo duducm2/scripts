@@ -103,6 +103,37 @@ The **Win+Alt+Shift+7** TTS-from-selection workflow (`GeminiAsyncTTS` in `Gemini
 
 ---
 
+## 5. Suppressed Off-Screen UIA Automation (Desktop Apps & WebView2)
+
+When automating desktop applications in the background while the user keeps working elsewhere (e.g. **Clip Angel** WinForms and **Handy** Tauri/WebView2), follow these 7 patterns to prevent focus stealing, UI stalls, false positives, and lost triggers:
+
+1. **Show passive, non-activating feedback immediately (`0ms`)**:
+   - Call `StandardLoadingBar_Show(..., { passive: true, noActivate: true })` at the very start of the hotkey handler—immediately after acquiring the automation lock, *before* DB checks, ingest waits, or window/process recovery.
+   - Instant visual feedback prevents the user from assuming the shortcut was ignored and re-triggering stacked runs.
+2. **Non-activating window suppression (`WS_EX_NOACTIVATE` + `ShowWindow`)**:
+   - Never call `WinRestore` or `WinShow` on a suppressed window (both activate and steal focus).
+   - Move the window off-screen (`-32000, -32000`), set `WinSetTransparent(0)`, apply `WS_EX_NOACTIVATE` (`+0x08000000`), and reveal with `DllCall("ShowWindow", "ptr", hwnd, "int", 4)` (`SW_SHOWNOACTIVATE`) or `8` (`SW_SHOWNA`). Remove `WS_EX_NOACTIVATE` when ending suppression.
+   - Examples: `ClipAngel_BeginFavoriteSuppress` (`Utils/clip_angel_favorite.ahk`), `Handy_SuppressOffscreen` (`Utils/handy_uia_helpers.ahk`).
+3. **Never yank focus when the user switches windows**:
+   - Capture `priorHwnd` at start, but **only** restore `priorHwnd` if the target automation app itself currently holds foreground focus (`WinActive("ahk_exe ClipAngel.exe")` / `WinActive("ahk_exe handy.exe")`).
+   - If the user intentionally Alt+Tabbed or clicked another window while the macro ran, leave them where they are (`ClipAngel_RestorePriorFocus`, `Handy_RestorePrevWindow`).
+4. **WebView2 / Chromium immediate focus snap-back**:
+   - Calling UIA `InvokePattern.Invoke()` or `LegacyIAccessiblePattern.DoDefaultAction()` inside WebView2/Tauri (`handy.exe`) can internally trigger `SetFocus()`.
+   - Snapshot `prevActive := WinExist("A")` right before the UIA invoke and immediately restore it right after if the target app grabbed focus—do not wait until the end of a multi-second flow (`Handy_UiaInvokeBackground` in `Utils/handy_uia_helpers.ahk`).
+   - Never fall back to `.Click()`, `.SetFocus()`, or foreground `Send` while suppressed; use `ValuePattern` or `ControlSend`.
+5. **WinForms tray apps, popup menus, startup dialogs, and mid-flow recovery**:
+   - **Hidden HWNDs:** WinForms tray apps like `ClipAngel.exe` may hide or recreate HWNDs; check with `DetectHiddenWindows true` and window identity validation (`ClipAngel_MainHwnd` / `ClipAngel_IsMainWindowIdentity` in `Utils/clip_angel_activate.ahk`) before falling back to `SendInput("!p")`.
+   - **Popup menus:** `ToolStripDropDown` popup menus close immediately if the user switches windows. Never rely solely on a popup menu staying open in the background; keep toolbar / `ControlSend` fallbacks and retry with a refreshed UIA root.
+   - **Modal startup dialogs:** Auto-dismiss modal `#32770` startup warnings (such as hotkey-registration dialogs for `Alt+P` / `Alt+B`) silently in the background via `WinSetTransparent(0)` + `ControlClick("Button1", ..., "NA")` / `BM_CLICK` (`ClipAngel_DismissStartupHotkeyDialogs`).
+   - **Mid-flow recovery:** When recovering a stuck/windowless process mid-flow (`ClipAngel_RecoverProcessForAutomation`), pass `keepSuppressed := true` into the restart helper (`ClipAngel_RestartAttempt`) so the recovered window stays suppressed for the caller instead of being minimized in `finally`.
+6. **Never trust stale pre-checks or ignore verification failures**:
+   - When DB pre-checking `"already done"` (e.g. `ClipAngelDb_Newest()`), verify the DB record actually matches current state (such as `A_Clipboard`) before skipping.
+   - Re-read the target clip ID *after* ingest/open, treat explicit DB verification `0` (`dbOk = false`) as an authoritative failure (`ok := false`), and never fall through to success sound/banner when `ok` is `false` (`MarkLastClipAsFavorite` in `Utils/clip_angel_favorite.ahk`).
+7. **Keep background pipelines `passive: true`**:
+   - Background file, HTTP, and CDP operations (`PromptPaste_BusyShow`, `pack_pipeline.ahk`, `task_import.ahk`, `import_watcher.ahk`, `toggle_outlook_teams.ahk`) must pass `passive: true` (and `noActivate: true` on non-interactive overlays) to `StandardLoadingBar_Show`.
+
+---
+
 ## Summary
 
 | Concern                  | Guideline                                                                                                                                                    |
@@ -111,3 +142,4 @@ The **Win+Alt+Shift+7** TTS-from-selection workflow (`GeminiAsyncTTS` in `Gemini
 | **Context retention**    | Store source and external HWNDs at start; use them for all restore and targeting.                                                                            |
 | **State monitoring**     | Timer-driven polling only; use APIs that do not activate the window (e.g. `UIA.ElementFromHandle` + tree search).                                            |
 | **Ping-pong prevention** | One focus switch to external and one back per phase; no delayed restores; no activation during monitoring; single activation and single return in retrieval. |
+| **Suppressed UIA**       | `0ms` passive/noActivate banner; `WS_EX_NOACTIVATE` + `ShowWindow(4/8)`; conditional focus restore; WebView2 immediate snap-back; authoritative DB checks.    |

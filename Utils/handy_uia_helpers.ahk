@@ -570,12 +570,14 @@ Handy_GeneralTabVisible(el) {
 }
 
 ; Invoke a UIA element without stealing focus or moving the mouse when Handy is suppressed.
-Handy_UiaInvokeBackground(el) {
+; snapFocusBack: pass false when opening a transient dropdown that will be clicked immediately after,
+; so restoring focus doesn't blur WebView2 and close the dropdown before the item click runs.
+Handy_UiaInvokeBackground(el, snapFocusBack := true) {
     global g_HandySuppressActive
     if !el
         return false
     prevActive := 0
-    if (g_HandySuppressActive) {
+    if (g_HandySuppressActive && snapFocusBack) {
         try prevActive := WinExist("A")
     }
     invoked := false
@@ -632,7 +634,7 @@ Handy_UiaInvokeBackground(el) {
         }
     }
     ; WebView2/Tauri may internally call SetFocus() on Invoke/DoDefaultAction; snap focus back immediately.
-    if (g_HandySuppressActive && prevActive && WinExist("ahk_id " prevActive) && !WinActive("ahk_id " prevActive))
+    if (snapFocusBack && g_HandySuppressActive && prevActive && WinExist("ahk_id " prevActive) && !WinActive("ahk_id " prevActive))
         Handy_RestorePrevWindow(prevActive)
     return invoked
 }
@@ -717,7 +719,7 @@ Handy_OpenCohereLanguageDropdown(hwnd) {
     langBtn := Handy_FindHandyLanguageButton(el)
     if !langBtn
         return false
-    if !Handy_UiaInvokeBackground(langBtn)
+    if !Handy_UiaInvokeBackground(langBtn, false)
         return false
     Sleep 200
     return true
@@ -859,10 +861,11 @@ Handy_OpenAiModelMenu(hwnd) {
         return false
     }
 
-    ; Preferred: invoke the active model selector button in the background (handy.md header button).
+    ; Preferred: invoke the active model selector button in the background (do not snap focus back
+    ; before clicking the dropdown item, otherwise blurring WebView2 closes the dropdown menu).
     modelBtn := Handy_FindActiveAiModelButton(el)
     if (modelBtn) {
-        if (Handy_UiaInvokeBackground(modelBtn) && Handy_WaitForAiModelMenuOpen(hwnd, 1800))
+        if (Handy_UiaInvokeBackground(modelBtn, false) && Handy_WaitForAiModelMenuOpen(hwnd, 1800))
             return true
     }
 
@@ -1042,10 +1045,22 @@ Handy_VerifyAiModelActive(hwnd, modelName) {
 }
 
 ; Open menu, click model, wait for load — all must succeed.
+; Retries the open+click pair in case window juggling blurs the WebView2 dropdown mid-click.
 Handy_TrySelectAiModel(hwnd, modelClickName, maxWaitMs := 20000) {
-    if !Handy_OpenAiModelMenu(hwnd)
-        return false
-    if !Handy_ClickAiModel(hwnd, modelClickName)
+    picked := false
+    loop 3 {
+        if (A_Index > 1) {
+            Handy_DismissOpenUi(hwnd)
+            Sleep 60
+        }
+        if !Handy_OpenAiModelMenu(hwnd)
+            continue
+        if (Handy_ClickAiModel(hwnd, modelClickName)) {
+            picked := true
+            break
+        }
+    }
+    if (!picked)
         return false
     return Handy_WaitForModelReady(hwnd, maxWaitMs)
 }

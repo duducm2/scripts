@@ -151,6 +151,8 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
 
             AiModelBanner_Show((attempt > 1 ? "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": " : "")
             . "Selecting " . modelDisplayName . "...")
+            if (attempt > 1 && Handy_IsParkedOffscreen(handyHwnd))
+                Handy_SuppressMonitorFallback(handyHwnd)
             if (!Handy_TrySelectAiModel(handyHwnd, modelClickName)) {
                 Handy_DismissOpenUi(handyHwnd)
                 if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS) {
