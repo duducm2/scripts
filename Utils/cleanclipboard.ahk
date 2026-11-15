@@ -68,7 +68,6 @@ CleanClipboard_ShowCountdown() {
     catch {
     }
     StandardLoadingBar_Hide(0)
-    Sleep 50
 
     state := "❓ Clean the clipboard? (removes stored clips, 4s)`nPress [Y] to clean now, or [N] within 4s to cancel."
     keyCallbacks := Map("N", CleanClipboard_OnCancel, "Y", CleanClipboard_OnYConfirm, "*Escape",

@@ -197,9 +197,6 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0, &outRoot := 0) {
     if (CleanClipboard_ShouldAbort(sessionId))
         return 0
 
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-
     hwnd := 0
     if (!ClipAngel_OpenForAutomation("all", 0, true, &hwnd, &outRoot) || !hwnd) {
         if (!CleanClipboard_ShouldAbort(sessionId))
@@ -254,17 +251,8 @@ CleanClipboardInternal(sessionId := 0) {
             return
         }
 
-        StandardLoadingBar_Update("⏳ Preparing clip list...", BANNER_ACCENT_INTERMEDIATE)
-        ClipAngel_LeaveFavoritesFilter(hwnd)
-        if (CleanClipboard_ShouldAbort(sessionId)) {
-            StandardLoadingBar_Hide(0)
-            CleanClipboard_UnwindClipAngel(hwnd)
-            return
-        }
-
         StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
-        ClipAngel_DismissOpenMenus(hwnd)
-        Sleep 40
+        try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE: 0ms menu-close guard
         triggered := false
         try {
             ControlSend("^!k", , "ahk_id " hwnd)
@@ -279,7 +267,7 @@ CleanClipboardInternal(sessionId := 0) {
         }
 
         confirmed := triggered ? ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500) : false
-        Sleep 150
+        Sleep 50
         CleanClipboard_UnwindClipAngel(hwnd)
         if (priorHwnd)
             ClipAngel_RestorePriorFocus(priorHwnd, true)
