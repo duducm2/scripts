@@ -9,7 +9,7 @@
 ; Status Banner Functions (non-blocking; use standard loading indicator)
 ; =============================================================================
 AiModelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 450, fontSize: 17,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, noActivate: true, centerOnHwnd: 0, textWidth: 450, fontSize: 17,
         passiveBgColor: bgColor, alpha: 200 })
 }
 
@@ -46,7 +46,7 @@ LanguageFlag_GetImagePath(slot) {
 
 ; Small banner for Clip Angel (uses standard loading indicator).
 ClipAngelBanner_Show(text, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 200, fontSize: 17,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, noActivate: true, centerOnHwnd: 0, textWidth: 200, fontSize: 17,
         passiveBgColor: bgColor, alpha: 220 })
 }
 

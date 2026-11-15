@@ -134,7 +134,12 @@ Handy_BeginSuppress(hwnd) {
     global g_HandySuppressSavedW, g_HandySuppressSavedH
     if !hwnd
         return false
+    prevActive := 0
+    try prevActive := WinExist("A")
     g_HandySuppressActive := true
+    try WinSetExStyle("+0x08000000", "ahk_id " hwnd)
+    catch {
+    }
     Handy_ApplySuppressOpacity(hwnd)
     if !g_HandySuppressHadSavedPos {
         try {
@@ -181,6 +186,8 @@ Handy_BeginSuppress(hwnd) {
     catch {
     }
     Handy_ApplySuppressOpacity(hwnd)
+    if (prevActive && prevActive != hwnd && WinActive("ahk_id " hwnd))
+        Handy_RestorePrevWindow(prevActive, hwnd)
     return true
 }
 
@@ -193,6 +200,9 @@ Handy_EndSuppress(hwnd := 0, showNormal := false) {
     if !hwnd
         hwnd := Handy_MainHwnd()
     if (hwnd) {
+        try WinSetExStyle("-0x08000000", "ahk_id " hwnd)
+        catch {
+        }
         Handy_ApplySuppressOpacity(hwnd)
         restored := false
         if g_HandySuppressHadSavedPos {
@@ -344,7 +354,12 @@ Handy_SuppressMonitorFallback(hwnd) {
     if !hwnd
         return false
     global g_HandySuppressActive
+    prevActive := 0
+    try prevActive := WinExist("A")
     g_HandySuppressActive := true
+    try WinSetExStyle("+0x08000000", "ahk_id " hwnd)
+    catch {
+    }
     Handy_ApplySuppressOpacity(hwnd)
     CoordMode "Mouse", "Screen"
     MouseGetPos &mx, &my
@@ -382,6 +397,8 @@ Handy_SuppressMonitorFallback(hwnd) {
         catch {
         }
         Handy_ApplySuppressOpacity(hwnd)
+        if (prevActive && prevActive != hwnd && WinActive("ahk_id " hwnd))
+            Handy_RestorePrevWindow(prevActive, hwnd)
         return true
     } catch {
         return false
@@ -554,51 +571,67 @@ Handy_UiaInvokeBackground(el) {
     global g_HandySuppressActive
     if !el
         return false
+    prevActive := 0
+    if (g_HandySuppressActive) {
+        try prevActive := WinExist("A")
+    }
+    invoked := false
     try {
         pat := el.GetCurrentPatternAs("InvokePattern")
         if (pat) {
             pat.Invoke()
-            return true
+            invoked := true
         }
     } catch {
     }
-    try {
-        el.Invoke()
-        return true
-    } catch {
-    }
-    try {
-        leg := el.GetCurrentPatternAs("LegacyIAccessiblePattern")
-        if (leg) {
-            leg.DoDefaultAction()
-            return true
-        }
-    } catch {
-    }
-    try {
-        sel := el.GetCurrentPatternAs("SelectionItemPattern")
-        if (sel) {
-            sel.Select()
-            return true
-        }
-    } catch {
-    }
-    try {
-        tog := el.GetCurrentPatternAs("TogglePattern")
-        if (tog) {
-            tog.Toggle()
-            return true
-        }
-    } catch {
-    }
-    if (!g_HandySuppressActive) {
+    if (!invoked) {
         try {
-            el.Click()
-            return true
+            el.Invoke()
+            invoked := true
         } catch {
         }
     }
-    return false
+    if (!invoked) {
+        try {
+            leg := el.GetCurrentPatternAs("LegacyIAccessiblePattern")
+            if (leg) {
+                leg.DoDefaultAction()
+                invoked := true
+            }
+        } catch {
+        }
+    }
+    if (!invoked) {
+        try {
+            sel := el.GetCurrentPatternAs("SelectionItemPattern")
+            if (sel) {
+                sel.Select()
+                invoked := true
+            }
+        } catch {
+        }
+    }
+    if (!invoked) {
+        try {
+            tog := el.GetCurrentPatternAs("TogglePattern")
+            if (tog) {
+                tog.Toggle()
+                invoked := true
+            }
+        } catch {
+        }
+    }
+    if (!invoked && !g_HandySuppressActive) {
+        try {
+            el.Click()
+            invoked := true
+        } catch {
+        }
+    }
+    ; WebView2/Tauri may internally call SetFocus() on Invoke/DoDefaultAction; snap focus back immediately.
+    if (g_HandySuppressActive && prevActive && WinExist("ahk_id " prevActive) && !WinActive("ahk_id " prevActive))
+        Handy_RestorePrevWindow(prevActive)
+    return invoked
 }
 
 ; Click sidebar "General" so COHERE SETTINGS is shown (needed from Models/About/etc.).

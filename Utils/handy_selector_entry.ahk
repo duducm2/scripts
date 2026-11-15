@@ -29,7 +29,7 @@ SelectAiModelInHandy() {
 ; =============================================================================
 ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
     ; centerOnHwnd 0 = foreground monitor (GetActiveMonitorWorkArea_StandardBar); same intent as prior WinGetID("A") path.
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
+    StandardLoadingBar_Show(text, bgColor, { passive: true, noActivate: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })
     if (duration < 1)
         duration := 1
