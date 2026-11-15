@@ -155,10 +155,15 @@ class CDPBridge:
     def _find_cdp_chrome_hwnd(title_needle: str = "") -> int:
         user32 = ctypes.windll.user32
         matches: list[int] = []
+        chrome_fallback: list[int] = []
 
         @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
         def enum_cb(hwnd, _lparam):
             if not user32.IsWindowVisible(hwnd):
+                return True
+            cls_buf = ctypes.create_unicode_buffer(64)
+            user32.GetClassNameW(hwnd, cls_buf, 64)
+            if cls_buf.value != "Chrome_WidgetWin_1":
                 return True
             length = user32.GetWindowTextLengthW(hwnd)
             if length <= 0:
@@ -166,16 +171,40 @@ class CDPBridge:
             buf = ctypes.create_unicode_buffer(length + 1)
             user32.GetWindowTextW(hwnd, buf, length + 1)
             title = buf.value
-            if "Chrome" not in title and "Gemini" not in title and "AskBosch" not in title and "Vertex" not in title:
-                return True
             if title_needle and title_needle.lower() in title.lower():
                 matches.insert(0, int(hwnd))
-            elif "Gemini" in title or "AskBosch" in title or "Vertex AI Search" in title:
+            elif "Gemini" in title or "AskBosch" in title or "Vertex" in title:
                 matches.append(int(hwnd))
+            elif "Chrome" in title:
+                chrome_fallback.append(int(hwnd))
             return True
 
         user32.EnumWindows(enum_cb, 0)
-        return matches[0] if matches else 0
+        if matches:
+            return matches[0]
+        return chrome_fallback[0] if chrome_fallback else 0
+
+    @staticmethod
+    def _restore_window_via_cdp(page) -> None:
+        cdp = None
+        try:
+            cdp = page.context.new_cdp_session(page)
+            info = cdp.send("Browser.getWindowForTarget")
+            win_id = info.get("windowId")
+            bounds = info.get("bounds", {})
+            if win_id is not None and bounds.get("windowState") == "minimized":
+                cdp.send(
+                    "Browser.setWindowBounds",
+                    {"windowId": win_id, "bounds": {"windowState": "normal"}},
+                )
+        except Exception:
+            pass
+        finally:
+            if cdp is not None:
+                try:
+                    cdp.detach()
+                except Exception:
+                    pass
 
     @staticmethod
     def _activate_hwnd(hwnd: int) -> None:
@@ -286,6 +315,7 @@ class CDPBridge:
         new_tab = bool(data.get("new_tab", False))
         page = self._find_or_open_page(companion, launch_if_down=True, new_tab=new_tab, minimized=not activate)
         if activate:
+            self._restore_window_via_cdp(page)
             try:
                 page.bring_to_front()
             except Exception:

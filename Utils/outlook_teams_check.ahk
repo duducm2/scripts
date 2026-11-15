@@ -214,25 +214,28 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0, &outRoot := 0) {
 ; sessionId: macro session from CleanClipboard_ShowCountdown; 0 = dictation legacy path (no session guard)
 CleanClipboardInternal(sessionId := 0) {
     global g_ClipAngelAutomationBusy
-    Sleep 150
     if (CleanClipboard_ShouldAbort(sessionId)) {
         CleanClipboard_UnwindClipAngel()
         return
     }
 
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+    StandardLoadingBar_Show("⏳ Cleaning clipboard in background...", BANNER_ACCENT_INTERMEDIATE, {
+        passive: true,
+        noActivate: true,
+        centerOnHwnd: priorHwnd,
+        fontSize: 17
+    })
     ; Fast DB-direct path: deletes non-favorites without opening, moving, or focusing ClipAngel.
     if (ClipAngelDb_ExePath() != "") {
         deletedCount := 0
         if (ClipAngelDb_DeleteNonFav(&deletedCount)) {
-            if (CleanClipboard_ShouldAbort(sessionId))
+            if (CleanClipboard_ShouldAbort(sessionId)) {
+                StandardLoadingBar_Hide(0)
                 return
+            }
             PlayCleaningDesktopSound()
-            StandardLoadingBar_Show("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS, {
-                passive: true,
-                centerOnHwnd: priorHwnd,
-                fontSize: 17
-            })
+            StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
             StandardLoadingBar_Hide(500)
             return
         }
@@ -241,11 +244,7 @@ CleanClipboardInternal(sessionId := 0) {
     prevBusy := g_ClipAngelAutomationBusy
     g_ClipAngelAutomationBusy := true
     try {
-        StandardLoadingBar_Show("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE, {
-            passive: true,
-            centerOnHwnd: priorHwnd,
-            fontSize: 17
-        })
+        StandardLoadingBar_Update("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
         root := 0
         hwnd := CleanClipboard_ActivateClipAngelForCleanup(sessionId, &root)
         if (!hwnd || CleanClipboard_ShouldAbort(sessionId)) {
@@ -263,8 +262,26 @@ CleanClipboardInternal(sessionId := 0) {
         }
 
         StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
-        triggered := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
-        if (!triggered) {
+        triggered := false
+        loop 2 {
+            if (CleanClipboard_ShouldAbort(sessionId))
+                break
+            freshRoot := (A_Index = 1 && root) ? root : 0
+            if (!freshRoot) {
+                try freshRoot := UIA.ElementFromHandle(hwnd)
+                catch
+                    freshRoot := 0
+            }
+            if (ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, freshRoot)) {
+                triggered := true
+                break
+            }
+            try ControlSend("{Escape}", , "ahk_id " hwnd)
+            Sleep 50
+        }
+        if (!triggered && !CleanClipboard_ShouldAbort(sessionId)) {
+            try ControlSend("{Escape}", , "ahk_id " hwnd)
+            Sleep 40
             try {
                 ControlSend("^!k", , "ahk_id " hwnd)
                 triggered := true
@@ -278,15 +295,19 @@ CleanClipboardInternal(sessionId := 0) {
             return
         }
 
-        if (triggered)
-            ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1200)
-        Sleep 200
+        confirmed := triggered ? ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500) : false
+        Sleep 150
         CleanClipboard_UnwindClipAngel(hwnd)
         if (priorHwnd)
             ClipAngel_RestorePriorFocus(priorHwnd, true)
-        PlayCleaningDesktopSound()
-        StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
-        StandardLoadingBar_Hide(500)
+        if (confirmed) {
+            PlayCleaningDesktopSound()
+            StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
+            StandardLoadingBar_Hide(500)
+        } else {
+            StandardLoadingBar_Update("❌ Could not clean clipboard", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(1500)
+        }
     } finally {
         g_ClipAngelAutomationBusy := prevBusy
     }

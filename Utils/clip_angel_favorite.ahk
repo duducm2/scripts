@@ -2397,7 +2397,9 @@ ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root :=
             }
         }
         if !item {
-            if !g_ClipAngelFavoriteSuppressActive {
+            if (g_ClipAngelFavoriteSuppressActive) {
+                try ControlSend("{Escape}", , "ahk_id " hwnd)
+            } else {
                 ClipAngel_ReleaseChordModifiersForSend()
                 ClipAngel_SendToHwnd(hwnd, "{Escape}")
             }

@@ -119,7 +119,12 @@ CleanClipboard_Proceed(sessionId := 0) {
         try StandardLoadingBar_CloseKeysOverlay()
         catch {
         }
-        StandardLoadingBar_Hide(0)
+        StandardLoadingBar_Show("⏳ Cleaning clipboard in background...", BANNER_ACCENT_INTERMEDIATE, {
+            passive: true,
+            noActivate: true,
+            centerOnHwnd: 0,
+            fontSize: 17
+        })
         CleanClipboard_SetAbortHotkeys(true)
         CleanClipboardInternal(sessionId)
     } finally {

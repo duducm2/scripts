@@ -309,6 +309,67 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
 
 ; --- High-level Companion Operations -----------------------------------------
 
+AiCompanionCDP_FindWindowHwnd(preferredHwnd := 0, companionId := "") {
+    if (preferredHwnd && WinExist("ahk_id " preferredHwnd))
+        return preferredHwnd
+
+    ; 1. Prefer the Chrome process launched with the dedicated GeminiCDP profile / port 9222.
+    try {
+        wmi := ComObjGet("winmgmts:")
+        procs := wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE Name='chrome.exe' AND (CommandLine LIKE '%GeminiCDP%' OR CommandLine LIKE '%remote-debugging-port=9222%')")
+        for proc in procs {
+            pid := Integer(proc.ProcessId)
+            for hwnd in WinGetList("ahk_pid " pid " ahk_class Chrome_WidgetWin_1") {
+                title := ""
+                try title := WinGetTitle("ahk_id " hwnd)
+                if (title != "")
+                    return hwnd
+            }
+        }
+    } catch {
+    }
+
+    ; 2. Fallback: match visible Chrome_WidgetWin_1 windows by companion title.
+    comp := AiCompanionCDP_NormalizeCompanion(companionId)
+    for hwnd in WinGetList("ahk_exe chrome.exe ahk_class Chrome_WidgetWin_1") {
+        title := ""
+        try title := WinGetTitle("ahk_id " hwnd)
+        if (title = "")
+            continue
+        if (comp = "enterprise") {
+            if (InStr(title, "Vertex AI Search") || InStr(title, "AskBosch") || InStr(title, "Gemini Enterprise"))
+                return hwnd
+        } else if (InStr(title, "Gemini")) {
+            return hwnd
+        }
+    }
+    return 0
+}
+
+AiCompanionCDP_ActivateWindow(preferredHwnd := 0, companionId := "") {
+    hwnd := AiCompanionCDP_FindWindowHwnd(preferredHwnd, companionId)
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return 0
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1) {
+            WinRestore("ahk_id " hwnd)
+            Sleep 60
+        }
+        if !WinActive("ahk_id " hwnd) {
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 1.5)
+        }
+        if !WinActive("ahk_id " hwnd) {
+            DllCall("User32\ShowWindow", "Ptr", hwnd, "Int", 9)
+            DllCall("User32\SetForegroundWindow", "Ptr", hwnd)
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 1.0)
+        }
+    } catch {
+    }
+    return hwnd
+}
+
 AiCompanionCDP_Ensure(companionId := "", activate := false, newTab := false) {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
@@ -319,17 +380,8 @@ AiCompanionCDP_Ensure(companionId := "", activate := false, newTab := false) {
         "new_tab", newTab ? true : false
     ), 25000)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
-    if (res.ok && activate && hwnd && WinExist("ahk_id " hwnd)) {
-        try {
-            if (WinGetMinMax("ahk_id " hwnd) = -1)
-                WinRestore("ahk_id " hwnd)
-            if !WinActive("ahk_id " hwnd) {
-                WinActivate("ahk_id " hwnd)
-                WinWaitActive("ahk_id " hwnd, , 1.5)
-            }
-        } catch {
-        }
-    }
+    if (res.ok && activate)
+        hwnd := AiCompanionCDP_ActivateWindow(hwnd, comp)
     return { ok: res.ok, hwnd: hwnd, error: res.error }
 }
 
