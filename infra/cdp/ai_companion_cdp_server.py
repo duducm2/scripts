@@ -290,7 +290,12 @@ class CDPBridge:
                 page.bring_to_front()
             except Exception:
                 pass
-            hwnd = self._find_cdp_chrome_hwnd()
+            page_title = ""
+            try:
+                page_title = page.title() or ""
+            except Exception:
+                pass
+            hwnd = self._find_cdp_chrome_hwnd(page_title)
             self._activate_hwnd(hwnd)
             composer = self._find_composer(page, timeout_s=6.0)
             if composer:
@@ -299,7 +304,12 @@ class CDPBridge:
                 except Exception:
                     pass
         else:
-            hwnd = self._find_cdp_chrome_hwnd()
+            page_title = ""
+            try:
+                page_title = page.title() or ""
+            except Exception:
+                pass
+            hwnd = self._find_cdp_chrome_hwnd(page_title)
         return {"ok": True, "url": page.url, "title": page.title(), "hwnd": hwnd}
 
     def _toggle_image_gen(self, page, enterprise: bool) -> bool:

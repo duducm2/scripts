@@ -319,6 +319,17 @@ AiCompanionCDP_Ensure(companionId := "", activate := false, newTab := false) {
         "new_tab", newTab ? true : false
     ), 25000)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
+    if (res.ok && activate && hwnd && WinExist("ahk_id " hwnd)) {
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1)
+                WinRestore("ahk_id " hwnd)
+            if !WinActive("ahk_id " hwnd) {
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 1.5)
+            }
+        } catch {
+        }
+    }
     return { ok: res.ok, hwnd: hwnd, error: res.error }
 }
 
