@@ -160,6 +160,7 @@ CleanClipboard_UnwindClipAngel(hwnd := 0) {
     global g_ClipAngelFavoriteSuppressActive
     if (!hwnd)
         hwnd := ClipAngel_MainHwnd()
+    ClipAngel_DismissOpenMenus(hwnd)
     if (g_ClipAngelFavoriteSuppressActive) {
         ClipAngel_EndFavoriteSuppress(hwnd)
         return
@@ -262,32 +263,14 @@ CleanClipboardInternal(sessionId := 0) {
         }
 
         StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
+        ClipAngel_DismissOpenMenus(hwnd)
+        Sleep 40
         triggered := false
-        loop 2 {
-            if (CleanClipboard_ShouldAbort(sessionId))
-                break
-            freshRoot := (A_Index = 1 && root) ? root : 0
-            if (!freshRoot) {
-                try freshRoot := UIA.ElementFromHandle(hwnd)
-                catch
-                    freshRoot := 0
-            }
-            if (ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, freshRoot)) {
-                triggered := true
-                break
-            }
-            try ControlSend("{Escape}", , "ahk_id " hwnd)
-            Sleep 50
-        }
-        if (!triggered && !CleanClipboard_ShouldAbort(sessionId)) {
-            try ControlSend("{Escape}", , "ahk_id " hwnd)
-            Sleep 40
-            try {
-                ControlSend("^!k", , "ahk_id " hwnd)
-                triggered := true
-            } catch {
-                triggered := false
-            }
+        try {
+            ControlSend("^!k", , "ahk_id " hwnd)
+            triggered := true
+        } catch {
+            triggered := false
         }
         if (CleanClipboard_ShouldAbort(sessionId)) {
             StandardLoadingBar_Hide(0)

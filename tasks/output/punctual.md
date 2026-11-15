@@ -143,3 +143,60 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 ⚡ Organize the next steps with Leo
 
 🔲 It is lasting one thousand seven hundred ten to send to the Mason (1710)
+
+### Trabalhos restantes do seu Rubens
+
+🔲 Terminar o reboque do muro direito
+
+🔲 Terminar o reboque no muro do fundo
+
+🔲 Terminar o muro da frente com um portão
+
+🔲 Fazer o contrapiso do corredor atrás da casa
+
+🔲 Corrigir as infiltrações internas
+
+🔲 Colocar a caixa de energia interna
+
+🔲 Resolver o buraco do poste
+
+### Não cotado com seu Rubens
+
+🔲 Troca de tabeiras
+
+🔲 Troca de cumerias
+
+🔲 Troca de telhas quebradas
+
+🔲 Quebrar o contrapiso do fundo
+
+🔲 Tomadas internas
+
+🔲 Azuleijo em volta do tanque
+
+⚡ Dar acabamento na antiga mureta (chorar com o sr. Rubens)
+
+### Outros
+
+🔲 Retirar a lona que está à direita da casa
+
+🔲 Entender o que fazer com as madeiras que estão jogadas
+
+### Organização
+
+🔲 Contagem de tomadas por cômodo
+
+🔲 Agendamento da CPFL para desligamento da energia (dias úteis)
+
+🔲 2 dias para ligar e desligar a energia
+ℹ️ Pedreiro
+
+🔲 Essa semana: seu Rubens termina os serviços externos (até quarta-feira)
+
+🔲 Seu Rubens reboca e faz as tomadas dos 3 cômodos
+
+🔲 Seu Rubens faz as tomadas dos cômodos restantes
+
+🔲 Agendamento da CPFL (outra segunda-feira)
+
+🔲 Caçamba para amanhã

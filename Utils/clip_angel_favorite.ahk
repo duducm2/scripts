@@ -2397,17 +2397,46 @@ ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root :=
             }
         }
         if !item {
-            if (g_ClipAngelFavoriteSuppressActive) {
-                try ControlSend("{Escape}", , "ahk_id " hwnd)
-            } else {
-                ClipAngel_ReleaseChordModifiersForSend()
-                ClipAngel_SendToHwnd(hwnd, "{Escape}")
-            }
+            ClipAngel_DismissOpenMenus(hwnd)
             return false
         }
         return ClipAngel_UiaInvokeElement(item)
     } catch {
+        ClipAngel_DismissOpenMenus(hwnd)
         return false
+    }
+}
+
+; Guarantee any open Clip Angel WinForms menu/dropdown (e.g. Clip ribbon tab) is closed without stealing focus.
+ClipAngel_DismissOpenMenus(hwnd := 0) {
+    global g_ClipAngelFavoriteSuppressActive
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for popHwnd in WinGetList("ahk_exe ClipAngel.exe") {
+            if (popHwnd != hwnd) {
+                try PostMessage(0x001F, 0, 0, , "ahk_id " popHwnd) ; WM_CANCELMODE
+                catch {
+                }
+            }
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    if (hwnd) {
+        try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE
+        catch {
+        }
+        if (g_ClipAngelFavoriteSuppressActive) {
+            try ControlSend("{Escape}", , "ahk_id " hwnd)
+            catch {
+            }
+        } else {
+            ClipAngel_ReleaseChordModifiersForSend()
+            ClipAngel_SendToHwnd(hwnd, "{Escape}")
+        }
     }
 }
 
