@@ -2689,15 +2689,21 @@ ClipAngel_WaitDbFavoriteOn(id, timeoutMs := 400) {
 
 MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) {
     global g_ClipAngelFavoriteSuppressActive
-    if waitForIngest
-        ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
     if !ClipAngel_TryAcquireAutomationLock()
         return
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+    StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
+        centerOnHwnd: priorHwnd,
+        fontSize: 17,
+        passive: true,
+        noActivate: true
+    })
     resultKind := ""
     resultMsg := ""
     didSuppress := false
     try {
+        if waitForIngest
+            ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
         ; Fast DB-direct path (zero window manipulation, immune to typing / window juggling).
         alreadyFav := false
         dbHandled := false
@@ -2735,11 +2741,6 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
             }
         }
         if !alreadyFav && !dbHandled {
-            StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
-                centerOnHwnd: priorHwnd,
-                fontSize: 17,
-                passive: true
-            })
             try {
                 if (target = "last") {
                     didSuppress := true

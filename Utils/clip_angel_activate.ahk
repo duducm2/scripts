@@ -212,13 +212,11 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
                 SendInput("!p")
                 SendLevel priorSendLevel
             }
-            hwnd := ClipAngel_WaitForMainHwnd(1000)
+            hwnd := ClipAngel_WaitForMainHwnd(500)
             if hwnd
                 break
         }
     }
-    if !hwnd
-        hwnd := ClipAngel_WaitForMainHwnd()
     if !hwnd {
         if (ClipAngel_RecoverProcessForAutomation(suppressVisual))
             hwnd := ClipAngel_MainHwnd()
@@ -861,7 +859,7 @@ ClipAngel_WaitForRestartHwnd(newPid := 0, timeoutMs := 0) {
         }
         ; ClipAngel can start minimized to tray (HWND = 0); nudge with Alt+P after startup settle.
         elapsed := A_TickCount - startTick
-        if (elapsed >= 1500 && (lastWakeTick = 0 || (A_TickCount - lastWakeTick) >= 2000)) {
+        if (elapsed >= 700 && (lastWakeTick = 0 || (A_TickCount - lastWakeTick) >= 1200)) {
             if (!newPid || ProcessExist(newPid)) {
                 lastWakeTick := A_TickCount
                 priorSendLevel := A_SendLevel
@@ -988,9 +986,14 @@ ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason, backgroundVer
 }
 
 ; One kill→launch→verify cycle. Returns true on success; failReason on false.
-ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify := false, keepSuppressed := false) {
+ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify := false, keepSuppressed := false,
+    hwndWaitMs := 0, listWaitMs := 0) {
     failReason := ""
     baselinePid := oldPid
+    if (hwndWaitMs <= 0)
+        hwndWaitMs := CLIPANGEL_RESTART_HWND_WAIT_MS
+    if (listWaitMs <= 0)
+        listWaitMs := CLIPANGEL_RESTART_LIST_WAIT_MS
     label := (CLIPANGEL_RESTART_MAX_ATTEMPTS > 1)
         ? " (attempt " attempt "/" CLIPANGEL_RESTART_MAX_ATTEMPTS ")"
         : ""
@@ -1020,7 +1023,7 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify
     }
 
     StandardLoadingBar_Update("⏳ Waiting for Clip Angel window…" label)
-    hwnd := ClipAngel_WaitForRestartHwnd(newPid, CLIPANGEL_RESTART_HWND_WAIT_MS)
+    hwnd := ClipAngel_WaitForRestartHwnd(newPid, hwndWaitMs)
     if (!hwnd) {
         failReason := "main window did not appear"
         return false
@@ -1058,7 +1061,7 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason, backgroundVerify
         }
 
         StandardLoadingBar_Update("⏳ Waiting for Clip Angel list…" label)
-        if !ClipAngel_WaitForRestartUiReady(hwnd, CLIPANGEL_RESTART_LIST_WAIT_MS) {
+        if !ClipAngel_WaitForRestartUiReady(hwnd, listWaitMs) {
             failReason := "clip list not ready"
             return false
         }
@@ -1087,7 +1090,7 @@ ClipAngel_RecoverProcessForAutomation(backgroundVerify := true) {
     StandardLoadingBar_Show("⏳ Recovering Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true })
     failReason := ""
     try {
-        return ClipAngel_RestartAttempt(exePath, oldPid, 1, &failReason, backgroundVerify, backgroundVerify)
+        return ClipAngel_RestartAttempt(exePath, oldPid, 1, &failReason, backgroundVerify, backgroundVerify, 6000, 4000)
     } catch {
         return false
     } finally {
