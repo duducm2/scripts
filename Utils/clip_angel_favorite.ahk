@@ -2610,7 +2610,7 @@ ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId := 0) {
 }
 
 ; Row 0: Try background UIA invoke first (no focus steal); fall back to Alt+Q only if not suppressed.
-ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
+ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0, knownNewestId := 0) {
     global g_ClipAngelFavoriteSuppressActive
     if !hwnd
         return false
@@ -2621,10 +2621,12 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
         }
     }
     ClipAngel_PrepareFavoriteAltQ(hwnd, root)
-    newestId := 0
-    newest := ClipAngelDb_Newest()
-    if (newest)
-        newestId := newest["id"]
+    newestId := knownNewestId
+    if (newestId <= 0) {
+        newest := ClipAngelDb_Newest()
+        if (newest)
+            newestId := newest["id"]
+    }
     if ClipAngel_TryMarkFavoriteBackgroundUia(hwnd, root, newestId)
         return true
     if g_ClipAngelFavoriteSuppressActive
@@ -2787,14 +2789,8 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
                     hwnd := 0
                     root := 0
                     newestId := 0
-                    newest := ClipAngelDb_Newest()
-                    if (newest)
-                        newestId := newest["id"]
                     ; One suppress + open + all-marks + Row 0 (shared automation core).
                     if !ClipAngel_OpenForAutomation("all", targetMon, true, &hwnd, &root) {
-                        resultKind := "error"
-                        resultMsg := "❌ Clip Angel did not open."
-                    } else if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, true) {
                         resultKind := "error"
                         resultMsg := "❌ Clip Angel did not open."
                     } else {
@@ -2807,7 +2803,7 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) 
                         newestAfter := ClipAngelDb_Newest()
                         if (newestAfter && newestAfter["id"] > 0)
                             newestId := newestAfter["id"]
-                        ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root)
+                        ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root, newestId)
                         if ok {
                             ; Authoritative DB verification: never report success if DB IsFavorite is 0.
                             dbOk := newestId > 0 ? ClipAngel_WaitDbFavoriteOn(newestId, 500) : ""

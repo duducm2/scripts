@@ -198,7 +198,7 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0, &outRoot := 0) {
         return 0
 
     hwnd := 0
-    if (!ClipAngel_OpenForAutomation("all", 0, true, &hwnd, &outRoot) || !hwnd) {
+    if (!ClipAngel_OpenForAutomation("all", 0, true, &hwnd, &outRoot, true) || !hwnd) {
         if (!CleanClipboard_ShouldAbort(sessionId))
             ShowCenteredOverlay_Utils("❌ Clip Angel not found — is it running?", 2500, BANNER_ACCENT_ERROR)
         return 0
@@ -267,7 +267,6 @@ CleanClipboardInternal(sessionId := 0) {
         }
 
         confirmed := triggered ? ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500) : false
-        Sleep 50
         CleanClipboard_UnwindClipAngel(hwnd)
         if (priorHwnd)
             ClipAngel_RestorePriorFocus(priorHwnd, true)

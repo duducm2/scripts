@@ -192,7 +192,7 @@ ClipAngel_HasMainWindowChildren(hwnd) {
         return false
 }
 
-ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0) {
+ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0, skipFilterAndRow0 := false) {
     wantAll := (mode = "all" || mode = "")
     outHwnd := 0
     outRoot := 0
@@ -225,7 +225,6 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
         return false
     if suppressVisual {
         ClipAngel_BeginFavoriteSuppress(hwnd)
-        ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false, true)
         if (priorFg && WinActive("ahk_exe ClipAngel.exe"))
             ClipAngel_RestorePriorFocus(priorFg, true)
     } else {
@@ -241,6 +240,11 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
         if ClipAngel_HasMainWindowChildren(hwnd)
             break
         Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    if (skipFilterAndRow0) {
+        outHwnd := hwnd
+        outRoot := 0
+        return true
     }
     root := 0
     try root := UIA.ElementFromHandle(hwnd)

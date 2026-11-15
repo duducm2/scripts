@@ -20,42 +20,107 @@ ClipAngelDb_ExePath() {
     return ""
 }
 
+; Direct CreateProcessW + anonymous stdout pipe (no cmd.exe, no temp files).
+ClipAngelDb_ExecCapture(exe, args, workDir, timeoutMs, &exitCode) {
+    exitCode := 1
+    sa := Buffer(A_PtrSize = 8 ? 24 : 12, 0)
+    NumPut("UInt", sa.Size, sa, 0)
+    NumPut("Int", 1, sa, A_PtrSize = 8 ? 16 : 8) ; bInheritHandle = TRUE
+    hRead := 0, hWrite := 0
+    if !DllCall("CreatePipe", "Ptr*", &hRead, "Ptr*", &hWrite, "Ptr", sa, "UInt", 0)
+        return ""
+    DllCall("SetHandleInformation", "Ptr", hRead, "UInt", 1, "UInt", 0) ; clear HANDLE_FLAG_INHERIT
+
+    hNull := DllCall("CreateFileW", "WStr", "NUL", "UInt", 0x40000000, "UInt", 3, "Ptr", sa, "UInt", 3, "UInt", 0, "Ptr", 0, "Ptr")
+    if (hNull = -1)
+        hNull := 0
+
+    siSize := (A_PtrSize = 8) ? 104 : 68
+    si := Buffer(siSize, 0)
+    NumPut("UInt", siSize, si, 0)
+    NumPut("UInt", 0x101, si, (A_PtrSize = 8) ? 60 : 44) ; STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW
+    NumPut("UShort", 0, si, (A_PtrSize = 8) ? 64 : 48)    ; SW_HIDE
+    NumPut("Ptr", 0, si, (A_PtrSize = 8) ? 80 : 56)       ; hStdInput
+    NumPut("Ptr", hWrite, si, (A_PtrSize = 8) ? 88 : 60)  ; hStdOutput
+    NumPut("Ptr", hNull ? hNull : hWrite, si, (A_PtrSize = 8) ? 96 : 64) ; hStdError
+
+    pi := Buffer((A_PtrSize = 8) ? 24 : 16, 0)
+    cmdLine := '"' exe '"' (args != "" ? " " args : "")
+    ok := DllCall("CreateProcessW", "Ptr", 0, "WStr", cmdLine, "Ptr", 0, "Ptr", 0,
+        "Int", 1, "UInt", 0x08000000, "Ptr", 0, "WStr", workDir, "Ptr", si, "Ptr", pi)
+
+    DllCall("CloseHandle", "Ptr", hWrite)
+    if (hNull)
+        DllCall("CloseHandle", "Ptr", hNull)
+    if (!ok) {
+        DllCall("CloseHandle", "Ptr", hRead)
+        return ""
+    }
+
+    hProc := NumGet(pi, 0, "Ptr")
+    hThread := NumGet(pi, A_PtrSize, "Ptr")
+    DllCall("CloseHandle", "Ptr", hThread)
+
+    raw := Buffer(0)
+    rawLen := 0
+    chunk := Buffer(4096)
+    deadline := A_TickCount + timeoutMs
+    timedOut := false
+    loop {
+        avail := 0
+        while DllCall("PeekNamedPipe", "Ptr", hRead, "Ptr", 0, "UInt", 0, "Ptr", 0, "UInt*", &avail, "Ptr", 0) && avail > 0 {
+            toRead := Min(avail, chunk.Size)
+            bytesRead := 0
+            if !DllCall("ReadFile", "Ptr", hRead, "Ptr", chunk, "UInt", toRead, "UInt*", &bytesRead, "Ptr", 0) || bytesRead = 0
+                break
+            oldLen := rawLen
+            rawLen += bytesRead
+            raw.Size := rawLen
+            DllCall("RtlMoveMemory", "Ptr", raw.Ptr + oldLen, "Ptr", chunk.Ptr, "UPtr", bytesRead)
+        }
+        waitRes := DllCall("WaitForSingleObject", "Ptr", hProc, "UInt", 10, "UInt")
+        if (waitRes = 0)
+            break
+        if (A_TickCount >= deadline) {
+            timedOut := true
+            DllCall("TerminateProcess", "Ptr", hProc, "UInt", 1)
+            break
+        }
+    }
+    if (!timedOut) {
+        avail := 0
+        while DllCall("PeekNamedPipe", "Ptr", hRead, "Ptr", 0, "UInt", 0, "Ptr", 0, "UInt*", &avail, "Ptr", 0) && avail > 0 {
+            toRead := Min(avail, chunk.Size)
+            bytesRead := 0
+            if !DllCall("ReadFile", "Ptr", hRead, "Ptr", chunk, "UInt", toRead, "UInt*", &bytesRead, "Ptr", 0) || bytesRead = 0
+                break
+            oldLen := rawLen
+            rawLen += bytesRead
+            raw.Size := rawLen
+            DllCall("RtlMoveMemory", "Ptr", raw.Ptr + oldLen, "Ptr", chunk.Ptr, "UPtr", bytesRead)
+        }
+        ec := 1
+        DllCall("GetExitCodeProcess", "Ptr", hProc, "UInt*", &ec)
+        exitCode := ec
+    }
+    DllCall("CloseHandle", "Ptr", hRead)
+    DllCall("CloseHandle", "Ptr", hProc)
+    if (timedOut || rawLen = 0)
+        return ""
+    return StrGet(raw, rawLen, "UTF-8")
+}
+
 ; Run helper; returns stdout (trimmed) on exit 0, else "".
 ; waitnew may exit 2 on timeout — still returns stdout id when present; caller checks.
 ClipAngelDb_Run(args, timeoutMs := 3000, allowExit2 := false) {
     exe := ClipAngelDb_ExePath()
     if (exe = "" || !FileExist(exe))
         return ""
-    stamp := A_TickCount "_" Random(1000, 9999)
-    outFile := A_Temp "\clipangeldb_" stamp ".txt"
-    errFile := A_Temp "\clipangeldb_err_" stamp ".txt"
-    try {
-        ; cmd.exe /c with nested quotes for paths that contain spaces.
-        full := A_ComSpec ' /c ""' exe '" ' args ' >"' outFile '" 2>"' errFile '""'
-        exitCode := 1
-        try exitCode := RunWait(full, A_ScriptDir, "Hide")
-        catch
-            return ""
-        if (exitCode != 0 && !(allowExit2 && exitCode = 2))
-            return ""
-        if !FileExist(outFile)
-            return ""
-        text := ""
-        try text := FileRead(outFile, "UTF-8")
-        catch {
-            try text := FileRead(outFile)
-            catch
-                text := ""
-        }
-        return RTrim(text, "`r`n")
-    } finally {
-        try FileDelete(outFile)
-        catch {
-        }
-        try FileDelete(errFile)
-        catch {
-        }
-    }
+    exitCode := 1
+    text := ClipAngelDb_ExecCapture(exe, args, A_ScriptDir, timeoutMs, &exitCode)
+    if (exitCode != 0 && !(allowExit2 && exitCode = 2))
+        return ""
+    return RTrim(text, "`r`n")
 }
 
 ClipAngelDb_MaxId() {
