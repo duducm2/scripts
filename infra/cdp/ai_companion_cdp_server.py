@@ -434,16 +434,38 @@ class CDPBridge:
     def _submit_and_confirm_start(self, page, enterprise: bool) -> tuple[bool, int]:
         reply_count_before = len(self._get_response_texts(page, enterprise))
         page.keyboard.press("Enter")
-        deadline = time.time() + 1.2
+        deadline = time.time() + 1.5
         while time.time() < deadline:
             if self._has_stop_button(page):
                 return True, reply_count_before
+            if len(self._get_response_texts(page, enterprise)) > reply_count_before:
+                return True, reply_count_before
             time.sleep(0.15)
-        # Fallback: click an enabled visible Send/Submit button if Enter did not trigger generation
-        for sel in ['button.send-button:not([disabled])', 'button[aria-label^="Send" i]:not([disabled])', 'button[aria-label^="Enviar" i]:not([disabled])', 'button[aria-label="Submit" i]:not([disabled])']:
+        # If Enter already cleared the composer, do not click Send (it may be transitioning into Stop).
+        composer_now = (self._get_composer_text(page, enterprise) or "").strip()
+        if not composer_now:
+            extra_deadline = time.time() + 1.5
+            while time.time() < extra_deadline:
+                if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
+                    return True, reply_count_before
+                time.sleep(0.15)
+        # Fallback: click an enabled visible Send/Submit button if Enter did not trigger generation.
+        # Never match .stop or a Stop aria-label (Gemini reuses button.send-button for Stop).
+        for sel in [
+            'button.send-button:not(.stop):not([disabled])',
+            'button[aria-label^="Send" i]:not([disabled])',
+            'button[aria-label^="Enviar" i]:not([disabled])',
+            'button[aria-label="Submit" i]:not([disabled])',
+        ]:
+            if self._has_stop_button(page):
+                return True, reply_count_before
             try:
                 btn = page.locator(sel).locator("visible=true").first
                 if btn.count() > 0:
+                    cls = (btn.get_attribute("class") or "").lower()
+                    lbl = (btn.get_attribute("aria-label") or "").strip().lower()
+                    if "stop" in cls.split() or lbl.startswith("stop") or lbl.startswith("interromper"):
+                        return True, reply_count_before
                     btn.click()
                     break
             except Exception:
