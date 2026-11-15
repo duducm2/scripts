@@ -431,6 +431,97 @@ class CDPBridge:
                 return
             time.sleep(0.25)
 
+    def _atomic_click_send_if_idle(self, page, enterprise: bool) -> str:
+        """Click Send/Submit atomically in JS only if not already generating and composer is non-empty."""
+        return str(
+            page.evaluate(
+                """(enterprise) => {
+                    function isVisible(el) {
+                        const r = el.getBoundingClientRect();
+                        if (r.width <= 0 || r.height <= 0) return false;
+                        const cs = getComputedStyle(el);
+                        return cs.display !== 'none' && cs.visibility !== 'hidden';
+                    }
+                    const stopSel =
+                        'button.send-button.stop, ' +
+                        'button[aria-label^="Stop" i], ' +
+                        'button[aria-label^="Interromper" i], ' +
+                        'mat-icon[data-mat-icon-name="stop"], ' +
+                        '[aria-label="Stop streaming" i], ' +
+                        '[aria-label="Stop generating" i], ' +
+                        '[aria-label="Interromper transmissão" i]';
+                    function hasStop(root) {
+                        if (!root) return false;
+                        for (const el of root.querySelectorAll(stopSel)) {
+                            if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                            if (isVisible(el)) return true;
+                        }
+                        for (const el of root.querySelectorAll('*')) {
+                            if (el.shadowRoot && hasStop(el.shadowRoot)) return true;
+                        }
+                        return false;
+                    }
+                    if (hasStop(document)) return 'already_generating';
+
+                    // If composer is already empty, Enter already submitted — never click Send/Stop.
+                    let composerText = '';
+                    if (!enterprise) {
+                        const comp = document.querySelector('rich-textarea .ql-editor, div[contenteditable="true"][role="textbox"], textarea');
+                        if (comp) composerText = (comp.innerText || comp.value || '').trim();
+                    } else {
+                        function findText(root) {
+                            if (!root) return '';
+                            const ed = root.querySelector('.ProseMirror, div[contenteditable="true"], textarea');
+                            if (ed) return (ed.innerText || ed.value || '').trim();
+                            for (const el of root.querySelectorAll('*')) {
+                                if (el.shadowRoot) {
+                                    const t = findText(el.shadowRoot);
+                                    if (t) return t;
+                                }
+                            }
+                            return '';
+                        }
+                        composerText = findText(document);
+                    }
+                    if (!composerText) return 'composer_empty';
+
+                    const sendSels = [
+                        'button.send-button:not(.stop):not([disabled])',
+                        'button[aria-label^="Send" i]:not([disabled])',
+                        'button[aria-label^="Enviar" i]:not([disabled])',
+                        'button[aria-label="Submit" i]:not([disabled])',
+                    ];
+                    function findAndClick(root) {
+                        if (!root) return '';
+                        for (const sel of sendSels) {
+                            for (const btn of root.querySelectorAll(sel)) {
+                                if (!isVisible(btn)) continue;
+                                const cls = (btn.className || '').toString().toLowerCase().split(/\\s+/);
+                                const lbl = (btn.getAttribute('aria-label') || '').trim().toLowerCase();
+                                if (cls.includes('stop') || lbl.startsWith('stop') || lbl.startsWith('interromper')) {
+                                    return 'stop_found';
+                                }
+                                if (btn.querySelector('mat-icon[data-mat-icon-name="stop"]')) {
+                                    return 'stop_found';
+                                }
+                                btn.click();
+                                return 'clicked';
+                            }
+                        }
+                        for (const el of root.querySelectorAll('*')) {
+                            if (el.shadowRoot) {
+                                const res = findAndClick(el.shadowRoot);
+                                if (res) return res;
+                            }
+                        }
+                        return '';
+                    }
+                    return findAndClick(document) || 'not_found';
+                }""",
+                enterprise,
+            )
+        )
+
     def _submit_and_confirm_start(self, page, enterprise: bool) -> tuple[bool, int]:
         reply_count_before = len(self._get_response_texts(page, enterprise))
         page.keyboard.press("Enter")
@@ -441,40 +532,25 @@ class CDPBridge:
             if len(self._get_response_texts(page, enterprise)) > reply_count_before:
                 return True, reply_count_before
             time.sleep(0.15)
-        # If Enter already cleared the composer, do not click Send (it may be transitioning into Stop).
+        # If Enter already cleared the composer, never click Send (it may be transitioning into Stop).
         composer_now = (self._get_composer_text(page, enterprise) or "").strip()
         if not composer_now:
-            extra_deadline = time.time() + 1.5
+            extra_deadline = time.time() + 2.5
             while time.time() < extra_deadline:
                 if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
                     return True, reply_count_before
                 time.sleep(0.15)
-        # Fallback: click an enabled visible Send/Submit button if Enter did not trigger generation.
-        # Never match .stop or a Stop aria-label (Gemini reuses button.send-button for Stop).
-        for sel in [
-            'button.send-button:not(.stop):not([disabled])',
-            'button[aria-label^="Send" i]:not([disabled])',
-            'button[aria-label^="Enviar" i]:not([disabled])',
-            'button[aria-label="Submit" i]:not([disabled])',
-        ]:
-            if self._has_stop_button(page):
-                return True, reply_count_before
-            try:
-                btn = page.locator(sel).locator("visible=true").first
-                if btn.count() > 0:
-                    cls = (btn.get_attribute("class") or "").lower()
-                    lbl = (btn.get_attribute("aria-label") or "").strip().lower()
-                    if "stop" in cls.split() or lbl.startswith("stop") or lbl.startswith("interromper"):
-                        return True, reply_count_before
-                    btn.click()
-                    break
-            except Exception:
-                pass
-        deadline = time.time() + 2.8
-        while time.time() < deadline:
-            if self._has_stop_button(page):
-                return True, reply_count_before
-            time.sleep(0.15)
+            return True, reply_count_before
+        # Fallback: atomically click Send in JS only if still idle and composer still has text.
+        click_res = self._atomic_click_send_if_idle(page, enterprise)
+        if click_res in ("already_generating", "stop_found", "composer_empty"):
+            return True, reply_count_before
+        if click_res == "clicked":
+            deadline = time.time() + 2.8
+            while time.time() < deadline:
+                if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
+                    return True, reply_count_before
+                time.sleep(0.15)
         return False, reply_count_before
 
     def paste(self, data: dict) -> dict:
