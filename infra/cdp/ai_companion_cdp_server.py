@@ -39,6 +39,7 @@ class CDPBridge:
     def __init__(self) -> None:
         self._pw = None
         self._browser = None
+        self._active_pages: dict[str, object] = {}
 
     def _is_cdp_up(self) -> bool:
         try:
@@ -98,7 +99,103 @@ class CDPBridge:
             return "vertexaisearch.cloud.google.com", ENTERPRISE_URL
         return "gemini.google.com", CONSUMER_URL
 
+    @staticmethod
+    def _get_hwnd_title(hwnd: int) -> str:
+        if not hwnd:
+            return ""
+        user32 = ctypes.windll.user32
+        length = user32.GetWindowTextLengthW(hwnd)
+        if length <= 0:
+            return ""
+        buf = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, buf, length + 1)
+        return buf.value
+
+    @staticmethod
+    def _get_mru_target_ids() -> list[str]:
+        try:
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            with opener.open(f"{CDP_URL}/json/list", timeout=1.0) as resp:
+                items = json.loads(resp.read().decode("utf-8"))
+            return [
+                str(item["id"])
+                for item in items
+                if item.get("type") == "page" and item.get("id")
+            ]
+        except Exception:
+            return []
+
+    @staticmethod
+    def _get_page_target_id(page) -> str:
+        cdp = None
+        try:
+            cdp = page.context.new_cdp_session(page)
+            info = cdp.send("Target.getTargetInfo")
+            return str(info.get("targetInfo", {}).get("targetId", ""))
+        except Exception:
+            return ""
+        finally:
+            if cdp is not None:
+                try:
+                    cdp.detach()
+                except Exception:
+                    pass
+
+    def _pick_current_page(self, comp: str, matching_pages: list) -> object:
+        if len(matching_pages) == 1:
+            self._active_pages[comp] = matching_pages[0]
+            return matching_pages[0]
+
+        # 1. Chrome's /json/list returns page targets in MRU/active-tab order (index 0 = current tab),
+        #    unlike Playwright's context.pages (creation order) or visibilityState (forced 'visible' by CDP).
+        mru_ids = self._get_mru_target_ids()
+        if mru_ids:
+            rank = {tid: idx for idx, tid in enumerate(mru_ids)}
+            best_page = None
+            best_rank = len(mru_ids) + 1
+            for p in matching_pages:
+                tid = self._get_page_target_id(p)
+                if tid in rank and rank[tid] < best_rank:
+                    best_rank = rank[tid]
+                    best_page = p
+            if best_page is not None:
+                self._active_pages[comp] = best_page
+                return best_page
+
+        # 2. When minimized/fallback, match the Chrome window title against tab titles.
+        win_title = self._get_hwnd_title(self._find_cdp_chrome_hwnd())
+        for suffix in (" - Google Chrome", " - Chromium"):
+            if win_title.endswith(suffix):
+                win_title = win_title[: -len(suffix)].strip()
+                break
+        if win_title:
+            title_matches = []
+            for p in matching_pages:
+                try:
+                    t = (p.title() or "").strip()
+                    if t and (t == win_title or win_title.startswith(t)):
+                        title_matches.append(p)
+                except Exception:
+                    pass
+            if len(title_matches) == 1:
+                self._active_pages[comp] = title_matches[0]
+                return title_matches[0]
+            if len(title_matches) > 1:
+                tracked = self._active_pages.get(comp)
+                if tracked in title_matches:
+                    return tracked
+                self._active_pages[comp] = title_matches[-1]
+                return title_matches[-1]
+
+        # 3. Fall back to the last tracked active page for this companion, or newest tab.
+        tracked = self._active_pages.get(comp)
+        if tracked in matching_pages:
+            return tracked
+        self._active_pages[comp] = matching_pages[-1]
+        return matching_pages[-1]
+
     def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True):
+        comp = (companion or "gemini").strip().lower()
         needle, target_url = self._companion_meta(companion)
         browser = self._connect(launch_if_down=launch_if_down, target_url=target_url, minimized=minimized)
         if not browser.contexts:
@@ -106,6 +203,7 @@ class CDPBridge:
         context = browser.contexts[0]
 
         if not new_tab:
+            matching_pages = []
             fallback_page = None
             is_consumer = (needle == "gemini.google.com")
             for page in context.pages:
@@ -113,15 +211,23 @@ class CDPBridge:
                 if needle not in u:
                     continue
                 if not is_consumer or "/app" in u or "/gem/" in u:
-                    return page
-                if fallback_page is None:
+                    matching_pages.append(page)
+                elif fallback_page is None:
                     fallback_page = page
+            if matching_pages:
+                return self._pick_current_page(comp, matching_pages)
             if fallback_page is not None:
                 fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
+                self._active_pages[comp] = fallback_page
                 return fallback_page
 
         page = context.new_page()
         page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
+        try:
+            page.bring_to_front()
+        except Exception:
+            pass
+        self._active_pages[comp] = page
         return page
 
     @staticmethod
