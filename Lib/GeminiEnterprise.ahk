@@ -1848,6 +1848,12 @@ class GeminiEnterpriseAsyncLookup {
             return
         ShowCopiedResponseBanner(bannerText, origHwnd)
     }
+
+    ShowResultBanner(text) {
+        if (!text || StrLen(Trim(text)) = 0)
+            return
+        ShowCopiedResponseBanner(text, this.OriginalHwnd)
+    }
 }
 
 ; Pronunciation #!+8 language picker lives in Gemini\hotkey_pronunciation.ahk
