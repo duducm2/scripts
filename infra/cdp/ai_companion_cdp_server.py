@@ -256,8 +256,10 @@ class CDPBridge:
     def _is_auth_page(page) -> bool:
         try:
             url = (page.url or "").lower()
-            if any(k in url for k in ("accounts.google.com", "login.microsoftonline.com", "servicelogin", "/signin")):
+            if any(k in url for k in ("accounts.google.com", "login.microsoftonline.com", "login.live.com", "servicelogin", "/signin")):
                 return True
+            if "gemini.google.com" in url or "vertexaisearch.cloud.google.com" in url:
+                return False
             title = (page.title() or "").lower()
             if any(k in title for k in ("sign in", "fazer login", "entrar")):
                 return True
@@ -812,14 +814,26 @@ class CDPBridge:
     def new_chat(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
-        if self._is_auth_page(page):
+        composer = self._find_composer(page, timeout_s=6.0)
+        if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
-        for sel in ['button:has-text("New chat")', 'button[aria-label*="New chat" i]', 'a[aria-label*="New chat" i]']:
+        for sel in [
+            'button:has-text("New chat")',
+            'button[aria-label*="New chat" i]',
+            'a[aria-label*="New chat" i]',
+            'button[aria-label*="New conversation" i]',
+            'button:has-text("New conversation")',
+            'button[aria-label*="Novo chat" i]',
+            'button:has-text("Novo chat")',
+        ]:
             try:
                 btn = page.locator(sel).locator("visible=true").first
                 if btn.count() > 0:
-                    btn.click()
-                    time.sleep(0.3)
+                    try:
+                        btn.evaluate("el => el.click()")
+                    except Exception:
+                        btn.click()
+                    time.sleep(0.25)
                     return {"ok": True}
             except Exception:
                 pass
@@ -835,7 +849,8 @@ class CDPBridge:
         if not model_name:
             return {"ok": False, "error": "EMPTY_MODEL"}
         page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
-        if self._is_auth_page(page):
+        composer = self._find_composer(page, timeout_s=6.0)
+        if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
         # Open model picker button
         for sel in [
