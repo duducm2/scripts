@@ -50,6 +50,8 @@ global g_StandardLoadingBarKeysPollCallbacks := Map()
 global g_StandardLoadingBarHideTimerArmed := false
 global g_StandardLoadingBarForceHideTimerArmed := false
 global STANDARD_LOADING_BAR_FORCE_HIDE_MS := 5000
+global STANDARD_LOADING_BAR_DEFAULT_MAX_MS := 30000
+global g_StandardLoadingBarGen := 0
 
 ; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
 GetWorkAreaForWindow_StandardBar(hwnd) {
@@ -200,127 +202,138 @@ StandardLoadingBar_TrackActiveMonitorTick() {
 
 StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERMEDIATE, options := "") {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
-        g_StandardLoadingBarBorderGui
-    ; Capture prior HWNDs so a failed Hide cannot leave an AlwaysOnTop orphan under a new banner.
-    oldGuiHwnd := 0
-    oldBorderHwnd := 0
+        g_StandardLoadingBarBorderGui, g_StandardLoadingBarGen, STANDARD_LOADING_BAR_DEFAULT_MAX_MS
+    Critical "On"
     try {
-        if IsObject(g_StandardLoadingBarGui)
-            oldGuiHwnd := Integer(g_StandardLoadingBarGui.Hwnd)
-    } catch {
-    }
-    try {
-        if IsObject(g_StandardLoadingBarBorderGui)
-            oldBorderHwnd := Integer(g_StandardLoadingBarBorderGui.Hwnd)
-    } catch {
-    }
-    try StandardLoadingBar_CloseKeysOverlay()
-    ; Hide(0) also cancels replaceable hide / force-hide watchdogs from a prior banner.
-    try StandardLoadingBar_Hide(0)
-    for hwndKill in [oldGuiHwnd, oldBorderHwnd] {
-        if (hwndKill && WinExist("ahk_id " hwndKill)) {
-            try WinHide("ahk_id " hwndKill)
-            catch {
-            }
-            try DllCall("user32\DestroyWindow", "ptr", hwndKill)
-            catch {
-            }
+        g_StandardLoadingBarGen += 1
+        ; Capture prior HWNDs so a failed Hide cannot leave an AlwaysOnTop orphan under a new banner.
+        oldGuiHwnd := 0
+        oldBorderHwnd := 0
+        try {
+            if IsObject(g_StandardLoadingBarGui)
+                oldGuiHwnd := Integer(g_StandardLoadingBarGui.Hwnd)
+        } catch {
         }
-    }
-    g_StandardLoadingBarGui := 0
-    g_StandardLoadingBarBorderGui := 0
-    passive := options && options.HasProp("passive") && options.passive
-    centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
-    textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0
-    fontSize := options && options.HasProp("fontSize") ? options.fontSize : 17
-    alpha := options && options.HasProp("alpha") ? options.alpha : 235
-    passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
-    noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
-    promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
-    trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
-    manualProgress := options && options.HasProp("manualProgress") && options.manualProgress
-    overlayBgColor := options && options.HasProp("overlayBgColor") && options.overlayBgColor != "" ? options.overlayBgColor :
-        "1E1E2E"
+        try {
+            if IsObject(g_StandardLoadingBarBorderGui)
+                oldBorderHwnd := Integer(g_StandardLoadingBarBorderGui.Hwnd)
+        } catch {
+        }
+        try StandardLoadingBar_CloseKeysOverlay()
+        ; Hide(0) also cancels replaceable hide / force-hide watchdogs from a prior banner.
+        try StandardLoadingBar_Hide(0)
+        for hwndKill in [oldGuiHwnd, oldBorderHwnd] {
+            if (hwndKill && WinExist("ahk_id " hwndKill))
+                StandardLoadingBar_ForceDestroyHwnd(hwndKill)
+        }
+        g_StandardLoadingBarGui := 0
+        g_StandardLoadingBarBorderGui := 0
+        passive := options && options.HasProp("passive") && options.passive
+        centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
+        textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0
+        fontSize := options && options.HasProp("fontSize") ? options.fontSize : 17
+        alpha := options && options.HasProp("alpha") ? options.alpha : 235
+        passiveBgColor := options && options.HasProp("passiveBgColor") ? options.passiveBgColor : ""
+        noBorder := options && options.HasProp("noBorder") ? options.noBorder : false
+        promptKeys := options && options.HasProp("promptKeys") ? options.promptKeys : ""
+        trackActiveMonitor := options && options.HasProp("trackActiveMonitor") && options.trackActiveMonitor
+        manualProgress := options && options.HasProp("manualProgress") && options.manualProgress
+        overlayBgColor := options && options.HasProp("overlayBgColor") && options.overlayBgColor != "" ? options.overlayBgColor :
+            "1E1E2E"
+        maxDurationMs := (options && options.HasProp("maxDurationMs"))
+            ? Integer(options.maxDurationMs)
+            : STANDARD_LOADING_BAR_DEFAULT_MAX_MS
 
-    if (centerOnHwnd) {
-        workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
-        if (workArea != "") {
-            ml := workArea.left
-            mt := workArea.top
-            mr := workArea.right
-            mb := workArea.bottom
+        if (centerOnHwnd) {
+            workArea := GetWorkAreaForWindow_StandardBar(centerOnHwnd)
+            if (workArea != "") {
+                ml := workArea.left
+                mt := workArea.top
+                mr := workArea.right
+                mb := workArea.bottom
+            } else
+                GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
         } else
             GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
-    } else
-        GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
-    monitorWidth := mr - ml
-    monitorHeight := mb - mt
-    barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
-    guiOpt := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
-    if (options && options.HasProp("noActivate") && options.noActivate)
-        guiOpt .= " +E0x08000000"
-    overlayGui := Gui(guiOpt)
-    overlayGui.BackColor := overlayBgColor
-    overlayGui.MarginX := 16
-    overlayGui.MarginY := 10
-    overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
-    overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap Center" : " Center"), state)
-    if (promptKeys != "") {
+        monitorWidth := mr - ml
+        monitorHeight := mb - mt
+        barWidth := textWidth > 0 ? textWidth : Min(900, Max(360, Floor(monitorWidth * 0.6)))
+        guiOpt := "+AlwaysOnTop -Caption +ToolWindow -DPIScale"
+        if (options && options.HasProp("noActivate") && options.noActivate)
+            guiOpt .= " +E0x08000000"
+        overlayGui := Gui(guiOpt)
+        try StandardLoadingBar_RememberHwnd(overlayGui.Hwnd)
+        catch {
+        }
+        overlayGui.BackColor := overlayBgColor
+        overlayGui.MarginX := 16
+        overlayGui.MarginY := 10
         overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
-        ; Wrap so long key strips (e.g. Gemini Copy response? + [F]) are not clipped at fixed width.
-        overlayGui.Add("Text", "xm w" . barWidth . " Center Wrap", promptKeys)
-    }
-    if (!passive) {
-        progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
-        overlayGui.Add("Progress", progressOpts, 0)
-    }
-    overlayGui.Show("AutoSize Hide")
-    overlayGui.GetPos(, , &gw, &gh)
-    guiX := Round(ml + (monitorWidth - gw) / 2)
-    if (guiX < ml)
-        guiX := ml
-    if (guiX + gw > mr)
-        guiX := mr - gw
-    guiY := mt + 40
+        overlayGui.Add("Text", "w" . barWidth . (passive ? " Wrap Center" : " Center"), state)
+        if (promptKeys != "") {
+            overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
+            ; Wrap so long key strips (e.g. Gemini Copy response? + [F]) are not clipped at fixed width.
+            overlayGui.Add("Text", "xm w" . barWidth . " Center Wrap", promptKeys)
+        }
+        if (!passive) {
+            progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vOverlayProg"
+            overlayGui.Add("Progress", progressOpts, 0)
+        }
+        overlayGui.Show("AutoSize Hide")
+        overlayGui.GetPos(, , &gw, &gh)
+        guiX := Round(ml + (monitorWidth - gw) / 2)
+        if (guiX < ml)
+            guiX := ml
+        if (guiX + gw > mr)
+            guiX := mr - gw
+        guiY := mt + 40
 
-    ; Create border frame behind the overlay for visibility (optional; skip when noBorder to show a single banner). Accent color when passiveBgColor set, else yellow.
-    if (!noBorder) {
-        borderWidth := 6
-        try {
-            if IsObject(g_StandardLoadingBarBorderGui)
-                g_StandardLoadingBarBorderGui.Destroy()
-        } catch {
+        ; Create border frame behind the overlay for visibility (optional; skip when noBorder to show a single banner). Accent color when passiveBgColor set, else yellow.
+        if (!noBorder) {
+            borderWidth := 6
+            try {
+                if IsObject(g_StandardLoadingBarBorderGui)
+                    g_StandardLoadingBarBorderGui.Destroy()
+            } catch {
+            }
+            borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+            try StandardLoadingBar_RememberHwnd(borderGui.Hwnd)
+            catch {
+            }
+            borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : BANNER_ACCENT_INTERMEDIATE
+            borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
+            " h" .
+            (gh + 2 * borderWidth))
+            g_StandardLoadingBarBorderGui := borderGui
+        } else {
+            try {
+                if IsObject(g_StandardLoadingBarBorderGui)
+                    g_StandardLoadingBarBorderGui.Destroy()
+            } catch {
+            }
+            g_StandardLoadingBarBorderGui := 0
         }
-        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
-        borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : BANNER_ACCENT_INTERMEDIATE
-        borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
-        " h" .
-        (gh + 2 * borderWidth))
-        g_StandardLoadingBarBorderGui := borderGui
-    } else {
+        overlayGui.Show("x" . guiX . " y" . guiY . " NA")
         try {
-            if IsObject(g_StandardLoadingBarBorderGui)
-                g_StandardLoadingBarBorderGui.Destroy()
-        } catch {
+            hwnd := overlayGui.Hwnd
+            if (hwnd)
+                DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
+                )
         }
-        g_StandardLoadingBarBorderGui := 0
-    }
-    overlayGui.Show("x" . guiX . " y" . guiY . " NA")
-    try {
-        hwnd := overlayGui.Hwnd
-        if (hwnd)
-            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0, "UInt", 0x0015
-            )
-    }
-    WinSetTransparent(alpha, overlayGui)
-    g_StandardLoadingBarGui := overlayGui
-    g_StandardLoadingBarValue := 0
-    if (!passive && !manualProgress)
-        SetTimer(StandardLoadingBar_Tick, 40)
-    if (trackActiveMonitor) {
-        StandardLoadingBar_StopActiveMonitorTracking()
-        g_StandardLoadingBarLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
-        g_StandardLoadingBarTrackTimer := SetTimer(StandardLoadingBar_TrackActiveMonitorTick, 115)
+        WinSetTransparent(alpha, overlayGui)
+        g_StandardLoadingBarGui := overlayGui
+        g_StandardLoadingBarValue := 0
+        if (!passive && !manualProgress)
+            SetTimer(StandardLoadingBar_Tick, 40)
+        if (trackActiveMonitor) {
+            StandardLoadingBar_StopActiveMonitorTracking()
+            g_StandardLoadingBarLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
+            g_StandardLoadingBarTrackTimer := SetTimer(StandardLoadingBar_TrackActiveMonitorTick, 115)
+        }
+        if (maxDurationMs > 0)
+            StandardLoadingBar_ArmForceHide(maxDurationMs)
+    } finally {
+        Critical "Off"
     }
 }
 
@@ -437,7 +450,8 @@ StandardLoadingBar_HideNow(*) {
 
 ; Hard-max dismiss for any banner that missed its normal hide (passive or keys).
 StandardLoadingBar_ForceHideWatchdog(*) {
-    global g_StandardLoadingBarForceHideTimerArmed, g_StandardLoadingBarGui, g_StandardLoadingBarIsKeysOverlay
+    global g_StandardLoadingBarForceHideTimerArmed, g_StandardLoadingBarGui, g_StandardLoadingBarIsKeysOverlay,
+        g_StandardLoadingBarBorderGui, g_StandardLoadingBarOwnedHwnds
     g_StandardLoadingBarForceHideTimerArmed := false
     if (g_StandardLoadingBarIsKeysOverlay) {
         try StandardLoadingBar_CloseKeysOverlay()
@@ -445,7 +459,8 @@ StandardLoadingBar_ForceHideWatchdog(*) {
         }
         return
     }
-    if (!IsObject(g_StandardLoadingBarGui) && !IsObject(g_StandardLoadingBarBorderGui))
+    if (!IsObject(g_StandardLoadingBarGui) && !IsObject(g_StandardLoadingBarBorderGui)
+        && g_StandardLoadingBarOwnedHwnds.Length = 0)
         return
     StandardLoadingBar_Hide(0)
 }
@@ -464,7 +479,8 @@ StandardLoadingBar_ArmForceHide(maxMs := 0) {
 
 StandardLoadingBar_Hide(delayMs := 0) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
-        g_StandardLoadingBarBorderGui, g_StandardLoadingBarHideTimerArmed, STANDARD_LOADING_BAR_FORCE_HIDE_MS
+        g_StandardLoadingBarBorderGui, g_StandardLoadingBarHideTimerArmed, STANDARD_LOADING_BAR_FORCE_HIDE_MS,
+        g_StandardLoadingBarForceHideTimerArmed
     if (delayMs > 0) {
         try SetTimer(StandardLoadingBar_HideNow, 0)
         catch {
@@ -478,66 +494,70 @@ StandardLoadingBar_Hide(delayMs := 0) {
         StandardLoadingBar_ArmForceHide(forceMs)
         return
     }
-    ; Cancel HideNow only first — keep force-hide until destroy succeeds (re-armed on failure).
-    try SetTimer(StandardLoadingBar_HideNow, 0)
-    catch {
-    }
-    g_StandardLoadingBarHideTimerArmed := false
-    StandardLoadingBar_StopActiveMonitorTracking()
-    StandardLoadingBar_StopTimedProgress()
-    if (g_StandardLoadingBarIsKeysOverlay) {
-        StandardLoadingBar_CloseKeysOverlay()
-        return
-    }
-    SetTimer(StandardLoadingBar_Tick, 0)
-    guiObj := g_StandardLoadingBarGui
-    borderObj := g_StandardLoadingBarBorderGui
-    guiHwnd := 0
-    borderHwnd := 0
+    Critical "On"
     try {
-        if IsObject(guiObj)
-            guiHwnd := Integer(guiObj.Hwnd)
-    } catch {
+        ; Cancel HideNow only first — keep force-hide until destroy succeeds (re-armed on failure).
+        try SetTimer(StandardLoadingBar_HideNow, 0)
+        catch {
+        }
+        g_StandardLoadingBarHideTimerArmed := false
+        StandardLoadingBar_StopActiveMonitorTracking()
+        StandardLoadingBar_StopTimedProgress()
+        if (g_StandardLoadingBarIsKeysOverlay) {
+            StandardLoadingBar_CloseKeysOverlay()
+            return
+        }
+        SetTimer(StandardLoadingBar_Tick, 0)
+        guiObj := g_StandardLoadingBarGui
+        borderObj := g_StandardLoadingBarBorderGui
+        guiHwnd := 0
+        borderHwnd := 0
+        try {
+            if IsObject(guiObj)
+                guiHwnd := Integer(guiObj.Hwnd)
+        } catch {
+        }
+        try {
+            if IsObject(borderObj)
+                borderHwnd := Integer(borderObj.Hwnd)
+        } catch {
+        }
+        ; Hide the accent frame before the text window. The frame is a solid rectangle
+        ; behind the text; if the text window closes first, Esc leaves a yellow block.
+        if (borderHwnd)
+            StandardLoadingBar_ForceDestroyHwnd(borderHwnd)
+        if (guiHwnd)
+            StandardLoadingBar_ForceDestroyHwnd(guiHwnd)
+        try {
+            if IsObject(guiObj)
+                guiObj.Destroy()
+        } catch {
+        }
+        try {
+            if IsObject(borderObj)
+                borderObj.Destroy()
+        } catch {
+        }
+        stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd)) || (borderHwnd && WinExist("ahk_id " borderHwnd))
+        if !StandardLoadingBar_DestroyOwnedHwnds()
+            stillLive := true
+        if (stillLive) {
+            ; Keep references and retry — do not orphan an AlwaysOnTop window.
+            g_StandardLoadingBarGui := guiObj
+            g_StandardLoadingBarBorderGui := borderObj
+            StandardLoadingBar_ArmForceHide(1000)
+            return
+        }
+        try SetTimer(StandardLoadingBar_ForceHideWatchdog, 0)
+        catch {
+        }
+        g_StandardLoadingBarForceHideTimerArmed := false
+        g_StandardLoadingBarGui := 0
+        g_StandardLoadingBarValue := 0
+        g_StandardLoadingBarBorderGui := 0
+    } finally {
+        Critical "Off"
     }
-    try {
-        if IsObject(borderObj)
-            borderHwnd := Integer(borderObj.Hwnd)
-    } catch {
-    }
-    ; Hide the accent frame before the text window. The frame is a solid rectangle
-    ; behind the text; if the text window closes first, Esc leaves a yellow block.
-    if (borderHwnd)
-        StandardLoadingBar_ForceDestroyHwnd(borderHwnd)
-    if (guiHwnd)
-        StandardLoadingBar_ForceDestroyHwnd(guiHwnd)
-    try {
-        if IsObject(guiObj)
-            guiObj.Destroy()
-    } catch {
-    }
-    try {
-        if IsObject(borderObj)
-            borderObj.Destroy()
-    } catch {
-    }
-    stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd)) || (borderHwnd && WinExist("ahk_id " borderHwnd))
-    if !StandardLoadingBar_DestroyOwnedHwnds()
-        stillLive := true
-    if (stillLive) {
-        ; Keep references and retry — do not orphan an AlwaysOnTop window.
-        g_StandardLoadingBarGui := guiObj
-        g_StandardLoadingBarBorderGui := borderObj
-        StandardLoadingBar_ArmForceHide(1000)
-        return
-    }
-    try SetTimer(StandardLoadingBar_ForceHideWatchdog, 0)
-    catch {
-    }
-    global g_StandardLoadingBarForceHideTimerArmed
-    g_StandardLoadingBarForceHideTimerArmed := false
-    g_StandardLoadingBarGui := 0
-    g_StandardLoadingBarValue := 0
-    g_StandardLoadingBarBorderGui := 0
 }
 
 ; Unregister keys and timeout timer for the "ShowWithKeys" overlay, then hide. Idempotent.

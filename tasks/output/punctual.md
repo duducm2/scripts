@@ -26,8 +26,6 @@ Show things that were big deliverables that are still active and not dead.
 
 ⏳ 🕒 Review your habitual activities
 
-🔲 guarde dinheiro adicional no cofrinho da virada do Mercado Livre. Você já colocou mil reais, faltam quatro mil para atingir o limite de cinco mil.
-
 ## Job Search
 
 ⚡ Check Job openings
@@ -65,7 +63,7 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 ## Art of Memory
 
-🔲 How to store big vocabularies
+⏳ How to store big vocabularies
 
 ⏳ You should check how to remember numbers, maybe with the SPA technique
 
@@ -74,8 +72,6 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 ⏳ Play the songs that are highlighted with stars from one to six
 
 ## Tarefas para Submissão do Artigo (Revista JIS)
-
-⏳ Waiting analysis
 
 ## Notes
 

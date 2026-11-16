@@ -946,7 +946,6 @@ PromptData_MigrateNameEmojis() {
     }
     ; Known prompts not in DefaultEntries (added later in live INI).
     defaultsByBase["finance-daily-transactions.txt"] := "💳"
-    defaultsByBase["finance-monthly-investments.txt"] := "📈"
     defaultsByBase["finance-evaluate-advice.txt"] := "💹"
     dirty := false
     for i, prompt in list {

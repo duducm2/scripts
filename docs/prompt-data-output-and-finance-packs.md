@@ -214,7 +214,6 @@ ListView **Out** column: blank, `txt·file`, or `txt·code`.
 **Seeded `ExpectsDataOutput=1`:**
 
 - `finance-daily-transactions.txt` (char `d`) — `DataOutputFormat=code`
-- `finance-monthly-investments.txt` (char `m`) — `DataOutputFormat=code`
 - `concept-curation-prompt.txt` (char `6`) — `DataOutputFormat=code` (grab-able Markdown fence)
 - `story-prompt.txt`, `story-reduction-prompt.txt`, `plan-prompt.txt` — typically `file` unless changed in the editor
 
@@ -311,7 +310,6 @@ Char / Enter / double-click run the selected workflow. After a hub import: succe
 Files (prefer download; if attach fails, one marked fence; never fake disk save):
 
 - [`assets/prompt/finance-daily-transactions.txt`](../assets/prompt/finance-daily-transactions.txt)
-- [`assets/prompt/finance-monthly-investments.txt`](../assets/prompt/finance-monthly-investments.txt)
 - [`assets/prompt/convert-to-task.txt`](../assets/prompt/convert-to-task.txt) — Utility Prompts **`[k]`**; dictation **`[T]`** (TASK_PACK).
 - [`mnemonics/technique/prompts/story-prompt.txt`](../mnemonics/technique/prompts/story-prompt.txt)
 - [`mnemonics/technique/prompts/story-reduction-prompt.txt`](../mnemonics/technique/prompts/story-reduction-prompt.txt)

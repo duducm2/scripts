@@ -76,7 +76,7 @@ if (!scriptsFolder) {
     ExitApp
 }
 
-StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENT_INTERMEDIATE)
+StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENT_INTERMEDIATE, { maxDurationMs: 0 })
 SetWorkingDir(scriptsFolder)
 GitInRepoOrFail(scriptsFolder, "fetch --prune", 900000)
 GitInRepoOrFail(scriptsFolder, "pull", 900000)

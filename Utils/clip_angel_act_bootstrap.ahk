@@ -18,12 +18,11 @@ ScriptSoundPlay(path, wait := false) {
 
 ; Same helper as Utils\handy_selector_entry.ahk (avoid pulling Handy selector).
 ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
-        passiveBgColor: bgColor })
     if (duration < 1)
         duration := 1
+    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
+        passiveBgColor: bgColor, maxDurationMs: duration + 2000 })
     StandardLoadingBar_Hide(duration)
-    StandardLoadingBar_ArmForceHide()
 }
 
 ; Monitor/layout helpers used by ClipAngel_ApplyLayoutOnMonitor (from peek_pdf_study_03).
