@@ -893,6 +893,15 @@ class CDPBridge:
         return {"ok": False, "error": "READ_ALOUD_NOT_FOUND"}
 
 
+def _file_sig() -> tuple[int, int]:
+    try:
+        st = os.stat(__file__)
+        return (int(st.st_size), int(st.st_mtime))
+    except Exception:
+        return (0, 0)
+
+
+_STARTUP_FILE_SIG = _file_sig()
 BRIDGE = CDPBridge()
 
 
@@ -910,11 +919,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            self._send_json(200, {"ok": True})
+            self._send_json(200, {"ok": True, "stale": _file_sig() != _STARTUP_FILE_SIG})
             return
         self._send_json(404, {"ok": False, "error": "NOT_FOUND"})
 
     def do_POST(self):
+        if self.path == "/shutdown":
+            self._send_json(200, {"ok": True})
+            os._exit(0)
         length = int(self.headers.get("Content-Length", "0") or "0")
         raw = self.rfile.read(length) if length > 0 else b"{}"
         try:

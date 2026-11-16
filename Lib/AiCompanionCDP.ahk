@@ -248,7 +248,21 @@ AiCompanionCDP_HealthOk() {
         whr.Open("GET", "http://127.0.0.1:" . AI_COMPANION_CDP_PORT . "/health", false)
         whr.SetTimeouts(400, 400, 1000, 1000)
         whr.Send()
-        return whr.Status = 200
+        if (whr.Status != 200)
+            return false
+        if (_AiCDP_JsonGetBool(whr.ResponseText, "stale", false)) {
+            try {
+                shut := ComObject("WinHttp.WinHttpRequest.5.1")
+                try shut.SetProxy(1)
+                shut.Open("POST", "http://127.0.0.1:" . AI_COMPANION_CDP_PORT . "/shutdown", false)
+                shut.SetTimeouts(300, 300, 500, 500)
+                shut.Send("{}")
+            } catch {
+            }
+            Sleep 150
+            return false
+        }
+        return true
     } catch {
         return false
     }
@@ -288,7 +302,7 @@ AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
     low := StrLower(err)
     compLabel := (StrLower(Trim(companionId)) = "enterprise") ? "Gemini Enterprise" : "Gemini"
     if (InStr(low, "auth_required"))
-        return "Sign in required in CDP Chrome — open " . compLabel . " and log in"
+        return "Sign in required in CDP Chrome — press Win+Alt+Shift+I to open " . compLabel . " (CDP) and log in"
     if (InStr(low, "cdp_not_running") || InStr(low, "cdp_launch_failed") || InStr(low, "cdp_unreachable") || InStr(low, "econnrefused"))
         return "CDP Chrome not reachable (port 9222) — reopen " . compLabel
     if (InStr(low, "cdp server unavailable"))
