@@ -174,8 +174,53 @@ _AiCDP_JsonGetInt(raw, key, defaultVal := 0) {
 }
 
 _AiCDP_JsonGetStr(raw, key, defaultVal := "") {
-    if RegExMatch(raw, '"' . key . '"\s*:\s*"((?:[^"\\]|\\.)*)"', &m)
-        return _AiCDP_JsonUnescape(m[1])
+    if !RegExMatch(raw, '"' . key . '"\s*:\s*"', &m)
+        return defaultVal
+    pos := m.Pos + m.Len
+    len := StrLen(raw)
+    out := ""
+    while (pos <= len) {
+        nextQuote := InStr(raw, '"', , pos)
+        nextSlash := InStr(raw, '\', , pos)
+        if (!nextQuote)
+            return defaultVal
+        if (!nextSlash || nextQuote < nextSlash) {
+            out .= SubStr(raw, pos, nextQuote - pos)
+            return out
+        }
+        if (nextSlash > pos)
+            out .= SubStr(raw, pos, nextSlash - pos)
+        if (nextSlash >= len)
+            return defaultVal
+        esc := SubStr(raw, nextSlash + 1, 1)
+        if (esc = '"')
+            out .= '"'
+        else if (esc = "\")
+            out .= "\"
+        else if (esc = "n")
+            out .= "`n"
+        else if (esc = "r")
+            out .= "`r"
+        else if (esc = "t")
+            out .= "`t"
+        else if (esc = "/")
+            out .= "/"
+        else if (esc = "b")
+            out .= "`b"
+        else if (esc = "f")
+            out .= "`f"
+        else if (esc = "u" && nextSlash + 5 <= len) {
+            hex := SubStr(raw, nextSlash + 2, 4)
+            try out .= Chr(Integer("0x" . hex))
+            catch
+                out .= "\u" . hex
+            pos := nextSlash + 6
+            continue
+        } else {
+            out .= esc
+        }
+        pos := nextSlash + 2
+    }
     return defaultVal
 }
 
