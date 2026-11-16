@@ -88,25 +88,42 @@ AiCompanionModels_ModelsToPipe(models) {
     return out
 }
 
+global g_AiCompanionModelsCacheMtime := Map()
+
+AiCompanionModels_GetIniMtime(iniPath) {
+    try {
+        if FileExist(iniPath)
+            return FileGetTime(iniPath, "M")
+    } catch {
+    }
+    return ""
+}
+
 AiCompanionModels_InvalidateCache(companion := "") {
-    global g_AiCompanionModelsCache
+    global g_AiCompanionModelsCache, g_AiCompanionModelsCacheMtime
     if (companion = "") {
         g_AiCompanionModelsCache := Map()
+        g_AiCompanionModelsCacheMtime := Map()
         return
     }
     if g_AiCompanionModelsCache.Has(companion)
         g_AiCompanionModelsCache.Delete(companion)
+    if g_AiCompanionModelsCacheMtime.Has(companion)
+        g_AiCompanionModelsCacheMtime.Delete(companion)
 }
 
 AiCompanionModels_Load(companion) {
-    global g_AiCompanionModelsCache
+    global g_AiCompanionModelsCache, g_AiCompanionModelsCacheMtime
     if !AiCompanionModels_IsValidCompanion(companion)
         return AiCompanionModels_DefaultConfig(companion)
-    if g_AiCompanionModelsCache.Has(companion)
+    iniPath := AiCompanionModels_GetIniPath()
+    curMtime := AiCompanionModels_GetIniMtime(iniPath)
+    if (g_AiCompanionModelsCache.Has(companion)
+        && g_AiCompanionModelsCacheMtime.Has(companion)
+        && g_AiCompanionModelsCacheMtime[companion] = curMtime)
         return g_AiCompanionModelsCache[companion]
 
     defaults := AiCompanionModels_DefaultConfig(companion)
-    iniPath := AiCompanionModels_GetIniPath()
     fast := ""
     deep := ""
     modelsRaw := ""
@@ -147,11 +164,12 @@ AiCompanionModels_Load(companion) {
     }
     cfg := { fast: Trim(fast), deep: Trim(deep), models: models }
     g_AiCompanionModelsCache[companion] := cfg
+    g_AiCompanionModelsCacheMtime[companion] := AiCompanionModels_GetIniMtime(iniPath)
     return cfg
 }
 
 AiCompanionModels_Save(companion, fast, deep, models) {
-    global g_AiCompanionModelsCache
+    global g_AiCompanionModelsCache, g_AiCompanionModelsCacheMtime
     if !AiCompanionModels_IsValidCompanion(companion)
         return false
     iniPath := AiCompanionModels_GetIniPath()
@@ -167,6 +185,7 @@ AiCompanionModels_Save(companion, fast, deep, models) {
     }
     cfg := { fast: Trim(fast), deep: Trim(deep), models: IsObject(models) ? models : [] }
     g_AiCompanionModelsCache[companion] := cfg
+    g_AiCompanionModelsCacheMtime[companion] := AiCompanionModels_GetIniMtime(iniPath)
     return true
 }
 
