@@ -2,8 +2,6 @@
 
 ## Personal inbox
 
-⏳ Start look at investing in other countries instead of only brazil
-
 ⏳ Check if other companies can offer it for a better price for your bruxismo  guard
 
 ⏳ Limpar o túmulo da mãe

@@ -34,6 +34,7 @@
 🔲 We need to eventually clean our coffee machine.
 🔲 Clean your keyboard.
 🔲 Update your lattes curriculum
+🔲 Transfer R$ 1,000 to US Broker
 
 ## Bi-yearly (Every 6 months)
 
@@ -43,6 +44,7 @@
 🔲 Reler as anotações dos seus livros pertinentes
 🔲 Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança
 🔲 Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025
+🔲 Transfer and invest US Treasury allocation
 
 ## Yearly
 
@@ -88,6 +90,7 @@
 🔲 You need to check if you made something good to add to your my personal repo just for historical purposes
 ⏳ Start paying OpenCode Go if weekly limit overflows by midweek
 🔲 Add R$350 to your private pension plan and R$50 for any emergency
+🔲 Portfolio Allocation Strategy
 ### Bi-yearly (Every 6 months)
 
 🩺 Tomar vermífugo
@@ -114,3 +117,5 @@ Confirm if committee members may ask about courses near defense
 Add DOI to your research and PPT presentation base (if applicable)
 Check if your student subscription is generating any cost
 Monitor storage usage (keep under 5 GB)
+
+ℹ️ He also mentioned that bi-yearly I should send the money to the states treasure we should also add a task here with the things we discussed
