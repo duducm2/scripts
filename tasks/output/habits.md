@@ -2,60 +2,60 @@
 
 ## Daily
 
-⏳ Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake
-⏳ Physical activity: at least 30 minutes moderate movement
-⏳ Medications (daily adherence):
-⏳ Sleep: target 7–9 hours; fixed wake time
-⏳ Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)
-⏳ Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)
+⏳ 🥗 Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake
+⏳ 🏋️ Physical activity: at least 30 minutes moderate movement
+⏳ 💊 Medications (daily adherence):
+⏳ 😴 Sleep: target 7–9 hours; fixed wake time
+⏳ 🧠 Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)
+⏳ 🥗 Track daily nutrition targets (2,500 kcal, 165g P, 80g F, 280g C)
 🔲 🐕 Brush Moka's fur (Wood Brush)
 🔲 🐕 Give Condroplex 1000 to puppy
 
 ## Weekly
 
-⏳ Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable
-⏳ Exercise long session (≥60–90 minutes) or two shorter sessions
-🔲 Check your grocery list
+⏳ 🧠 Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable
+⏳ 🏋️ Exercise long session (≥60–90 minutes) or two shorter sessions
+🔲 🥗 Check your grocery list
 ⏳ 🐕 Deep brush Moka's undercoat
 🩺 Review body recomposition progress (photos, measurements, gym performance)
 
 ## Monthly
 
-⏳ Medication logistics: refill meds; adherence check; pillbox setup
-⏳ Weight/BP log; note any fluvoxamina changes
-⏳ Health check-up (self-check; schedule visit if concerns)
+⏳ 💊 Medication logistics: refill meds; adherence check; pillbox setup
+⏳ 🩺 Weight/BP log; note any fluvoxamina changes
+⏳ 🩺 Health check-up (self-check; schedule visit if concerns)
 🔲 🐕 Apply tick and flea prevention to German Shepherd
 🔲 🐈 Apply tick and flea prevention to cats
 🔲 🐕 Give dewormer to Moka
-🔲 Buy monthly frozen meals (marmitas)
+🔲 🥗 Buy monthly frozen meals (marmitas)
 
 ## Quarterly
 
-🔲 We need to eventually clean our coffee machine.
-🔲 Clean your keyboard.
-🔲 Update your lattes curriculum
-🔲 Transfer R$ 1,000 to US Broker
+🔲 🧹 We need to eventually clean our coffee machine.
+🔲 🧹 Clean your keyboard.
+🔲 💼 Update your lattes curriculum
+🔲 💰 Transfer R$ 1,000 to US Broker
 
 ## Bi-yearly (Every 6 months)
 
 🩺 Dental check-up and cleaning (suggest Jan and Jul each year)
 🩺 Consulta com tricologista (hair health)
-🔲 Levar projetos importantes ao LinkedIn
-🔲 Reler as anotações dos seus livros pertinentes
-🔲 Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança
-🔲 Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025
-🔲 Transfer and invest US Treasury allocation
+🔲 💼 Levar projetos importantes ao LinkedIn
+🔲 📚 Reler as anotações dos seus livros pertinentes
+🔲 🧠 Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança
+🔲 💻 Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025
+🔲 💰 Transfer and invest US Treasury allocation
 
 ## Yearly
 
 🩺 Vaccines: Influenza (seasonal, typically Apr–Jun availability) and COVID-19 booster (seasonal availability)
 🩺 Dermatology full-body skin exam
 🩺 Comprehensive physical exam (primary care) (september)
-🔲 Checar validade dos documentos (RG, passaporte, CNH, vistos)
-🔲 Imposto de Renda (IRPF)
-🔲 Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas)
-🔲 Imprimir as fotos do último ano
-🔲 Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail
+🔲 📄 Checar validade dos documentos (RG, passaporte, CNH, vistos)
+🔲 💰 Imposto de Renda (IRPF)
+🔲 💰 Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas)
+🔲 📷 Imprimir as fotos do último ano
+🔲 💼 Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail
 
 ## Every 2 years
 
@@ -71,26 +71,26 @@
 
 ## Every 10 years
 
-🔲 Renovar RG após emissão (até 60 anos); acompanhar pela data de emissão
+🔲 📄 Renovar RG após emissão (até 60 anos); acompanhar pela data de emissão
 
 ## Projects
 
 ### General
 
-⏳ Prevent heartworm when traveling to coast with pets
-🔲 Pharmacological regimen interactions
-⏳ Medication Monitoring (Fluvoxamina)
-⏳ Vaccination Plan (Follow-up, from 2025 onward)
-⏳ Notes from Your Records (Prior Vaccines)
+⏳ 🐾 Prevent heartworm when traveling to coast with pets
+🔲 💊 Pharmacological regimen interactions
+⏳ 💊 Medication Monitoring (Fluvoxamina)
+⏳ 🩺 Vaccination Plan (Follow-up, from 2025 onward)
+⏳ 🩺 Notes from Your Records (Prior Vaccines)
 ### Daily
 
 🔲 🐕 Moka has to sunbath every day
 ### Monthly
 
-🔲 You need to check if you made something good to add to your my personal repo just for historical purposes
-⏳ Start paying OpenCode Go if weekly limit overflows by midweek
-🔲 Add R$350 to your private pension plan and R$50 for any emergency
-🔲 Portfolio Allocation Strategy
+🔲 💻 You need to check if you made something good to add to your my personal repo just for historical purposes
+⏳ 💻 Start paying OpenCode Go if weekly limit overflows by midweek
+🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
+🔲 💰 Portfolio Allocation Strategy
 ### Bi-yearly (Every 6 months)
 
 🩺 Tomar vermífugo

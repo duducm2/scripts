@@ -72,6 +72,13 @@ class CDPBridge:
         return False
 
     def _connect(self, launch_if_down: bool = False, target_url: str = CONSUMER_URL, minimized: bool = True):
+        if self._browser is not None:
+            try:
+                if self._browser.is_connected() and self._browser.contexts:
+                    return self._browser
+            except Exception:
+                self._browser = None
+
         if not self._is_cdp_up():
             self._browser = None
             if not launch_if_down:
@@ -81,13 +88,6 @@ class CDPBridge:
 
         if self._pw is None:
             self._pw = sync_playwright().start()
-
-        if self._browser is not None:
-            try:
-                if self._browser.is_connected() and self._browser.contexts:
-                    return self._browser
-            except Exception:
-                self._browser = None
 
         self._browser = self._pw.chromium.connect_over_cdp(CDP_URL)
         return self._browser
@@ -234,14 +234,22 @@ class CDPBridge:
     def _find_composer(page, timeout_s: float = 12.0):
         deadline = time.time() + timeout_s
         while time.time() < deadline:
-            for target in [page, *page.frames]:
+            try:
+                loc = page.locator(COMPOSER_SEL).locator("visible=true").first
+                if loc.count() > 0:
+                    return loc
+            except Exception:
+                pass
+            for frame in page.frames:
+                if frame == page.main_frame:
+                    continue
                 try:
-                    loc = target.locator(COMPOSER_SEL).locator("visible=true").first
+                    loc = frame.locator(COMPOSER_SEL).locator("visible=true").first
                     if loc.count() > 0:
                         return loc
                 except Exception:
                     pass
-            time.sleep(0.25)
+            time.sleep(0.1)
         return None
 
     @staticmethod
@@ -628,35 +636,90 @@ class CDPBridge:
             )
         )
 
+    @staticmethod
+    def _insert_text_in_composer(page, composer, text: str, clear: bool = False) -> None:
+        inserted = False
+        try:
+            inserted = bool(
+                composer.evaluate(
+                    """(el, payload) => {
+                        const { text, clear } = payload;
+                        el.focus();
+                        const isInput = el.tagName === 'TEXTAREA' || el.tagName === 'INPUT';
+                        if (clear) {
+                            if (isInput) {
+                                el.value = '';
+                                el.dispatchEvent(new Event('input', { bubbles: true }));
+                            } else {
+                                const sel = window.getSelection();
+                                const range = document.createRange();
+                                range.selectNodeContents(el);
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                                document.execCommand('delete', false, null);
+                            }
+                        }
+                        if (!text) return true;
+                        if (isInput) {
+                            const start = el.selectionStart ?? el.value.length;
+                            const end = el.selectionEnd ?? el.value.length;
+                            el.setRangeText(text, start, end, 'end');
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            return (el.value || '').trim().length > 0;
+                        }
+                        const sel = window.getSelection();
+                        const range = document.createRange();
+                        range.selectNodeContents(el);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        document.execCommand('insertText', false, text);
+                        return ((el.innerText || el.textContent || '').trim().length > 0);
+                    }""",
+                    {"text": text, "clear": clear},
+                )
+            )
+        except Exception:
+            inserted = False
+
+        if not inserted and (text or clear):
+            try:
+                composer.click()
+            except Exception:
+                pass
+            if clear:
+                page.keyboard.press("Control+A")
+                page.keyboard.press("Backspace")
+                time.sleep(0.03)
+            if text:
+                page.keyboard.insert_text(text)
+
     def _submit_and_confirm_start(self, page, enterprise: bool) -> tuple[bool, int]:
         reply_count_before = len(self._get_response_texts(page, enterprise))
+
+        # Prefer atomic JS Send-button click first: works reliably even when Chrome is minimized/unfocused.
+        click_res = "not_found"
+        btn_deadline = time.time() + 0.45
+        while time.time() < btn_deadline:
+            click_res = self._atomic_click_send_if_idle(page, enterprise)
+            if click_res in ("already_generating", "stop_found", "composer_empty"):
+                return True, reply_count_before
+            if click_res == "clicked":
+                deadline = time.time() + 2.5
+                while time.time() < deadline:
+                    if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
+                        return True, reply_count_before
+                    time.sleep(0.08)
+                return True, reply_count_before
+            time.sleep(0.04)
+
+        # Fallback: keyboard Enter (e.g. if a UI variant uses a non-matching Send button).
         page.keyboard.press("Enter")
         deadline = time.time() + 1.5
         while time.time() < deadline:
-            if self._has_stop_button(page):
+            if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
                 return True, reply_count_before
-            if len(self._get_response_texts(page, enterprise)) > reply_count_before:
-                return True, reply_count_before
-            time.sleep(0.15)
-        # If Enter already cleared the composer, never click Send (it may be transitioning into Stop).
-        composer_now = (self._get_composer_text(page, enterprise) or "").strip()
-        if not composer_now:
-            extra_deadline = time.time() + 2.5
-            while time.time() < extra_deadline:
-                if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
-                    return True, reply_count_before
-                time.sleep(0.15)
-            return True, reply_count_before
-        # Fallback: atomically click Send in JS only if still idle and composer still has text.
-        click_res = self._atomic_click_send_if_idle(page, enterprise)
-        if click_res in ("already_generating", "stop_found", "composer_empty"):
-            return True, reply_count_before
-        if click_res == "clicked":
-            deadline = time.time() + 2.8
-            while time.time() < deadline:
-                if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
-                    return True, reply_count_before
-                time.sleep(0.15)
+            time.sleep(0.1)
         return False, reply_count_before
 
     def paste(self, data: dict) -> dict:
@@ -683,15 +746,7 @@ class CDPBridge:
             if not self._attach_files(page, files):
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
 
-        composer.click()
-        if clear:
-            page.keyboard.press("Control+A")
-            page.keyboard.press("Backspace")
-            time.sleep(0.05)
-
-        if text:
-            page.keyboard.insert_text(text)
-            time.sleep(0.12)
+        self._insert_text_in_composer(page, composer, text, clear=clear)
 
         if submit:
             if files:
@@ -715,7 +770,10 @@ class CDPBridge:
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
         if composer is not None:
-            composer.click()
+            try:
+                composer.evaluate("el => el.focus()")
+            except Exception:
+                pass
         started, reply_count_before = self._submit_and_confirm_start(page, enterprise)
         return {"ok": True, "started": started, "reply_count_before": reply_count_before}
 
