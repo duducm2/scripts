@@ -39,11 +39,10 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     catch {
     }
 
+    holdMs := IsSet(CLIPANGEL_WAS7_HOLD_MS) ? CLIPANGEL_WAS7_HOLD_MS : 200
     pressTime := A_TickCount
-    KeyWait "7", "T" . (CLIPANGEL_WAS7_HOLD_MS / 1000)
-    isHold := (A_TickCount - pressTime) >= CLIPANGEL_WAS7_HOLD_MS
-    if isHold
-        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+    KeyWait "7", "T" . (holdMs / 1000)
+    isHold := (A_TickCount - pressTime) >= holdMs
 
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -96,7 +95,9 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     try ShowCenteredOverlay_Utils("📎 Paste clip → " destLabel, 1500, BANNER_ACCENT_INFO)
     catch {
     }
-    if !ClipAngelExport_PasteFirstClipToActiveTarget(priorHwnd) {
+    if ClipAngelExport_PasteFirstClipToActiveTarget(priorHwnd) {
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\clip-paste-desktop.mp3")
+    } else {
         try ShowCenteredOverlay_Utils("❌ Paste file failed", 2000, BANNER_ACCENT_ERROR)
         catch {
         }
