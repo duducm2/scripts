@@ -347,36 +347,41 @@ ClipAngelExport_SaveClipboardToDesktop(&errMsg := "") {
             }
             return outPath
         }
-        if Clipboard_HasFileDrop() {
+        hasDrop := false
+        try hasDrop := Clipboard_HasFileDrop()
+        catch {
+            hasDrop := false
+        }
+        if (hasDrop) {
             paths := Clipboard_GetFilePaths()
             if (!paths || paths.Length < 1) {
                 errMsg := "No file in clipboard"
                 return ""
             }
-            src := paths[1]
-            if (src = "" || !FileExist(src)) {
-                errMsg := "Clipboard file not found"
-                return ""
+            firstDest := ""
+            for src in paths {
+                if (src = "" || !FileExist(src))
+                    continue
+                dest := DesktopCutNewest_UniqueDestPath(desktopPath, src)
+                if (dest = "")
+                    continue
+                try {
+                    if DirExist(src)
+                        DirCopy(src, dest)
+                    else
+                        FileCopy(src, dest)
+                    if (FileExist(dest) || DirExist(dest)) {
+                        if (firstDest = "")
+                            firstDest := dest
+                    }
+                } catch {
+                }
             }
-            dest := DesktopCutNewest_UniqueDestPath(desktopPath, src)
-            if (dest = "") {
-                errMsg := "Could not build Desktop path"
-                return ""
-            }
-            try {
-                if DirExist(src)
-                    DirCopy(src, dest)
-                else
-                    FileCopy(src, dest)
-            } catch {
+            if (firstDest = "") {
                 errMsg := "Failed to copy file to Desktop"
                 return ""
             }
-            if !FileExist(dest) {
-                errMsg := "Copy verify failed"
-                return ""
-            }
-            return dest
+            return firstDest
         }
         content := Trim(A_Clipboard)
         if (content != "") {
@@ -552,33 +557,30 @@ ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd) {
     return true
 }
 
-; Paste top clip into focused Explorer / Desktop / Cursor·VS Code Files Explorer.
-; Unsupported focus falls back to Desktop silently via ClipAngelExport_SaveClipboardToDesktop
-; (no Explorer focus steal), falling back to Desktop Explorer only if clipboard save fails.
+; Paste top clip into focused Explorer / Cursor·VS Code Files Explorer, or silently to Desktop.
+; Desktop (including Progman/WorkerW) writes directly in the background without stealing focus.
 ClipAngelExport_PasteFirstClipToActiveTarget(targetHwnd := 0) {
-    if (targetHwnd && ClipAngelExport_IsPasteFileTarget(targetHwnd)) {
+    isDesktopShell := false
+    if (targetHwnd) {
+        try {
+            cls := WinGetClass("ahk_id " targetHwnd)
+            isDesktopShell := (cls = "Progman" || cls = "WorkerW")
+        } catch {
+            isDesktopShell := false
+        }
+    }
+
+    if (targetHwnd && !isDesktopShell && ClipAngelExport_IsPasteFileTarget(targetHwnd)) {
         pasteHwnd := ClipAngelExport_PreparePasteTarget(targetHwnd)
         if (!pasteHwnd)
             return false
         return ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd)
     }
 
-    ; Desktop fallback: write directly to Desktop in the background without focusing Explorer.
+    ; Desktop target/fallback: write directly to Desktop in the background without activating Explorer.
     errMsg := ""
     outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
-    if (outPath != "")
-        return true
-
-    pasteHwnd := ClipAngelExport_ActivateDesktopForPaste()
-    if (!pasteHwnd)
-        return false
-    ok := ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd)
-    if (targetHwnd && targetHwnd != pasteHwnd && WinExist("ahk_id " targetHwnd)) {
-        try WinActivate("ahk_id " targetHwnd)
-        catch {
-        }
-    }
-    return ok
+    return (outPath != "")
 }
 
 ; ClipAngel Clip > Paste > Paste file onto Desktop; returns path or "".
@@ -586,18 +588,31 @@ ClipAngelExport_PasteFirstClipToDesktop() {
     desktopPath := AiQuickDownload_ResolveDesktopPath()
     if (desktopPath = "" || !DirExist(desktopPath))
         return ""
+    prevHwnd := 0
+    try prevHwnd := WinGetID("A")
+    catch {
+        prevHwnd := 0
+    }
     desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
     if (!desktopHwnd)
         return ""
-    beforeSnap := AiQuickDownload_SnapshotDesktop(desktopPath)
-    if !ClipAngelExport_PasteFirstClipIntoHwnd(desktopHwnd)
-        return ""
-    outPath := ""
-    try outPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforeSnap)
-    catch {
+    try {
+        beforeSnap := AiQuickDownload_SnapshotDesktop(desktopPath)
+        if !ClipAngelExport_PasteFirstClipIntoHwnd(desktopHwnd)
+            return ""
         outPath := ""
+        try outPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforeSnap)
+        catch {
+            outPath := ""
+        }
+        return (outPath != "" && FileExist(outPath)) ? outPath : ""
+    } finally {
+        if (prevHwnd && prevHwnd != desktopHwnd && WinExist("ahk_id " prevHwnd)) {
+            try WinActivate("ahk_id " prevHwnd)
+            catch {
+            }
+        }
     }
-    return (outPath != "" && FileExist(outPath)) ? outPath : ""
 }
 
 ClipAngelExport_CenterGui(guiObj, w := 420, h := 420) {
