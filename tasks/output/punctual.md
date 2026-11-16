@@ -48,52 +48,6 @@ Show things that were big deliverables that are still active and not dead.
 ℹ️ https://unicamp-alumni.org.br/directory
 ℹ️ image.png
 
-### Review
-
-⏳ Review Resume - UX Researcher & Design Technologist
-
-⏳ Review Portfolio - UX Researcher & Design Technologist
-ℹ️ O problema que queremos resolver
- 
-O xTower está fortemente acoplado a conceitos específicos de projetos.
-Novos processos ou funis exigem alterações no código.
-O legado dificulta mudanças maiores e integrações.
-Correções podem gerar efeitos colaterais.
-A arquitetura atual dificulta desenvolvimento paralelo.
-People Registration, gestão de esforço, gestão de recursos e workflow estão 
-misturados ou fortemente dependentes.
-A implementação de capacidades de IA e automações agentic fica limitada pela estrutura existente.
-
-⏳ Review Resume - Digital Solution Architect
-ℹ️ O outcome 
- 
-Criar uma fundação que permita configurar novos funis, entidades, etapas e formulários sem transformar cada necessidade de negócio em um novo projeto de desenvolvimento.
- 
- 
-Aonde quero chegar 
-Para cada nova demanda, a pergunta deve ser:
-Pode ser atendida por configuração?
-Pode ser atendida por extensão ou integração?
-Apenas se as duas respostas forem negativas deve haver alteração do core.
-Isso evita reconstruir o monólito com uma tecnologia ou interface nova.
-
-⏳ Review Portfolio - Digital Solution Architect
-
-⏳ Review Resume - Data Analyst
-ℹ️ É novo de empresa e desenvolvedor do X-Tower
-ℹ️ desenvolve o x-tower msm
-ℹ️ ele disse que o leandro não aponta horas por alguma razão
-
-🔲 Review Portfolio - Data Analyst
-ℹ️ PMO
-
-⏳ Review Resume - Product Owner
-ℹ️ quer ter um backlog saudável para 6 meses 1 ano, para ajudar a conseguir negociações ,capacidade para o futuro, etc.
-
-🔲 Review Portfolio - Product Owner
-
-### Docs
-
 ## Dog
 
 ⏳ Castrar a Moka
