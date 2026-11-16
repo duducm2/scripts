@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-11-10",
+    "generated_at": "2026-11-16",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "549 beasts / 178 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 72 beasts with adj"
+    "catalog_scope": "553 beasts / 179 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 75 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -5326,6 +5326,46 @@
       "adjective": "dark",
       "adj_filename": "adj_dark.png",
       "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_31_Dl": {
+      "label": "Dark lion",
+      "peg_code": "Dl",
+      "filename": "lion.png",
+      "url": "/assets/beast-thumbs/lion.png",
+      "source_slug": "lion",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_31_Dm": {
+      "label": "Dark marmoset",
+      "peg_code": "Dm",
+      "filename": "marmoset.png",
+      "url": "/assets/beast-thumbs/marmoset.png",
+      "source_slug": "marmoset",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_31_Dn": {
+      "label": "Dark Neanderthal",
+      "peg_code": "Dn",
+      "filename": "neanderthal.png",
+      "url": "/assets/beast-thumbs/neanderthal.png",
+      "source_slug": "neanderthal",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_31_Do": {
+      "label": "dolphin",
+      "peg_code": "Do",
+      "filename": "dolphin.png",
+      "url": "/assets/beast-thumbs/dolphin.png",
+      "source_slug": "dolphin",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
     }
   }
 }

@@ -1,6 +1,89 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Olympic Podium Champagne Shower on Medallion Architecture Data Layers</strong> · Memory Palace 31: Medallion Architecture Data Layers · Character: — · 4 beasts · 4 atoms</summary>
+
+![Memory Palace 31](images/data-analyst/31.png)
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Do] dolphin
+
+<img src="../../web/assets/beast-thumbs/dolphin.png" alt="dolphin" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Gold Layer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGold%20Layer%5D&color=9fd4ff" />(gold bar) to <img alt="[deliver]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdeliver%5D&color=ffd966" />(truck)] [<img alt="[grouped]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgrouped%5D&color=ffd966" />(basket) metrics] [shaped for <img alt="[fast]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfast%5D&color=ffd966" />(stopwatch)] [business <img alt="[reporting]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Breporting%5D&color=ffd966" />(chart).] — Note: Uses fast layouts like star schemas with fact and dimension tables for dashboards and daily summaries.
+
+**Quote**
+“The Gold layer contains highly refined and aggregated data tailored for specific business use cases and reporting.”
+
+**Character**
+Auric Goldfinger
+
+**Justification**
+Auric Goldfinger is the iconic James Bond villain obsessed with hoarding solid gold bars and raiding the Fort Knox bullion vault.
+
+### [Dn] Dark Neanderthal
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/neanderthal.png" alt="Dark Neanderthal" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Silver Layer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSilver%20Layer%5D&color=9fd4ff" />(silver mirror) to <img alt="[clean]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bclean%5D&color=ffd966" />(soap)] [<img alt="[raw]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Braw%5D&color=ffd966" />(ore) data] [into one <img alt="[filtered]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiltered%5D&color=ffd966" />(sieve)] [<img alt="[shared]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bshared%5D&color=ffd966" />(bridge) source] [of <img alt="[truth]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btruth%5D&color=ffd966" />(compass).] — Note: Enforces data types, removes duplicates, parses and joins tables, and quarantines bad records for data science and machine learning.
+
+**Quote**
+“The Silver layer is where the data is filtered, cleaned, and standardized to create an enterprise-wide "single source of truth."”
+
+**Character**
+Evil Queen
+
+**Justification**
+The Evil Queen from Snow White is famous for consulting her ornate magic silver mirror every day to demand the single truth.
+
+### [Dm] Dark marmoset
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/marmoset.png" alt="Dark marmoset" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Bronze Layer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BBronze%20Layer%5D&color=9fd4ff" />(bronze coin) to <img alt="[store]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstore%5D&color=ffd966" />(vault)] [incoming <img alt="[raw]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Braw%5D&color=ffd966" />(meat) data] [<img alt="[unchanged]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bunchanged%5D&color=ffd966" />(padlock) from] [source <img alt="[systems]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bsystems%5D&color=ffd966" />(pipe).] — Note: Acts as an unchangeable archive that keeps original formats like JSON, CSV, or Parquet plus duplicates or missing values so failed steps can replay safely.
+
+**Quote**
+“The Bronze layer is the landing zone for raw, unprocessed data exactly as it comes from your source systems (e.g., APIs, IoT devices, CRM databases).”
+
+**Character**
+Charon
+
+**Justification**
+Charon is the ferryman of Greek myth who demands a bronze coin placed in the mouth of the dead as payment for passage.
+
+### [Dl] Dark lion
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/lion.png" alt="Dark lion" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Medallion Architecture]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BMedallion%20Architecture%5D&color=9fd4ff" />(gold medal) to <img alt="[move]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmove%5D&color=ffd966" />(forklift)] [data in a <img alt="[lakehouse]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blakehouse%5D&color=ffd966" />(cabin)] [from raw <img alt="[Bronze]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BBronze%5D&color=ffd966" />(bronze shield)] [through clean <img alt="[Silver]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSilver%5D&color=ffd966" />(silver tray)] [to ready <img alt="[Gold]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGold%5D&color=ffd966" />(gold crown).] — Note: Commonly used in data lakes and lakehouses like Databricks.
+
+**Quote**
+“The Medallion Architecture is a pipeline that moves data from raw and messy (Bronze) to reliable and structured (Silver), and finally to business-ready and aggregated (Gold).”
+
+**Character**
+Michael Phelps
+
+**Justification**
+Michael Phelps is the most decorated Olympian in history and is famously pictured wearing stacks of heavy gold medals around his neck.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Table Restoration Carpenter Glue Mess</strong> · Memory Palace 30: Delta Table Restoration · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 30](images/data-analyst/30.png)
