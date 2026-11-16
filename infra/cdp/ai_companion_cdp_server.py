@@ -979,27 +979,48 @@ class CDPBridge:
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
         # Open model picker button
+        opt_sel = (
+            f'button:has-text("{model_name}"), '
+            f'[role="menuitem"]:has-text("{model_name}"), '
+            f'[role="menuitemradio"]:has-text("{model_name}"), '
+            f'[role="option"]:has-text("{model_name}")'
+        )
         for sel in [
             'button[aria-label*="Choose model" i]',
             'button[aria-label*="model" i]',
+            'button[aria-label*="modelo" i]',
             '[data-test-id="bard-mode-menu-button"]',
             'button:has-text("Pro")',
             'button:has-text("Flash")',
+            'button:has-text("Fast")',
+            'button:has-text("Thinking")',
+            'button:has-text("Auto")',
             'button:has-text("Hydrogen")',
             'button:has-text("Argon")',
+            'button:has-text("Gemini")',
         ]:
             try:
                 btn = page.locator(sel).locator("visible=true").first
                 if btn.count() > 0:
-                    btn.click()
+                    try:
+                        btn.evaluate("el => el.click()")
+                    except Exception:
+                        btn.click()
                     time.sleep(0.25)
                     opt = page.locator(f'text="{model_name}"').locator("visible=true").first
                     if opt.count() == 0:
-                        opt = page.locator(f'button:has-text("{model_name}"), [role="menuitem"]:has-text("{model_name}"), [role="option"]:has-text("{model_name}")').locator("visible=true").first
+                        opt = page.locator(opt_sel).locator("visible=true").first
                     if opt.count() > 0:
-                        opt.click()
+                        try:
+                            opt.evaluate("el => el.click()")
+                        except Exception:
+                            opt.click()
                         time.sleep(0.2)
                         return {"ok": True, "model": model_name}
+                    try:
+                        page.keyboard.press("Escape")
+                    except Exception:
+                        pass
             except Exception:
                 pass
         return {"ok": False, "error": f"MODEL_NOT_FOUND:{model_name}"}
