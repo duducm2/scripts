@@ -524,71 +524,143 @@ class CDPBridge:
         return False
 
     @staticmethod
-    def _wait_for_upload_ready(page, timeout_s: float = 25.0) -> None:
-        # Give the web app time after set_input_files to mount upload spinners/chips.
-        time.sleep(0.6)
-        deadline = time.time() + timeout_s
-        while time.time() < deadline:
-            ready = False
-            try:
-                ready = bool(
-                    page.evaluate(
-                        """() => {
-                            function isVisible(el) {
-                                const r = el.getBoundingClientRect();
-                                if (r.width <= 0 || r.height <= 0) return false;
-                                const cs = getComputedStyle(el);
-                                return cs.display !== 'none' && cs.visibility !== 'hidden';
+    def _count_attachment_chips(page) -> int:
+        try:
+            return int(
+                page.evaluate(
+                    """() => {
+                        function isVisible(el) {
+                            const r = el.getBoundingClientRect();
+                            if (r.width <= 0 || r.height <= 0) return false;
+                            const cs = getComputedStyle(el);
+                            return cs.display !== 'none' && cs.visibility !== 'hidden';
+                        }
+                        const chipSel =
+                            'button[aria-label*="Remove" i], button[aria-label*="Remover" i], ' +
+                            'button[aria-label*="Delete attachment" i], button[aria-label*="Remove file" i], ' +
+                            'ucs-file-chip, ucs-attachment, .file-preview, .attachment-chip, ' +
+                            '[data-test-id*="file-preview" i], [data-test-id*="attachment" i]';
+                        let count = 0;
+                        function scan(root) {
+                            if (!root) return;
+                            for (const el of root.querySelectorAll(chipSel)) {
+                                if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                                if (isVisible(el)) count++;
                             }
-                            const busySel =
-                                'mat-progress-spinner, mat-progress-bar, mat-spinner, ' +
-                                'md-circular-progress, md-linear-progress, ' +
-                                '[role="progressbar"], [aria-busy="true"], .uploading, ' +
-                                '[class*="spinner" i], [class*="progressbar" i]';
-                            function hasBusy(root) {
-                                if (!root) return false;
-                                for (const el of root.querySelectorAll(busySel)) {
-                                    if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
-                                    if (isVisible(el)) return true;
-                                }
-                                for (const el of root.querySelectorAll('*')) {
-                                    if (el.shadowRoot && hasBusy(el.shadowRoot)) return true;
-                                }
-                                return false;
+                            for (const el of root.querySelectorAll('*')) {
+                                if (el.shadowRoot) scan(el.shadowRoot);
                             }
-                            if (hasBusy(document)) return false;
+                        }
+                        scan(document);
+                        return count;
+                    }"""
+                )
+            )
+        except Exception:
+            return 0
 
-                            const sendSels = [
-                                'button.send-button:not(.stop)',
-                                'button[aria-label^="Send" i]',
-                                'button[aria-label^="Enviar" i]',
-                                'button[aria-label="Submit" i]',
-                            ];
-                            let sawSend = false;
-                            let sawDisabledSend = false;
-                            function scanSend(root) {
-                                if (!root) return;
-                                for (const sel of sendSels) {
-                                    for (const btn of root.querySelectorAll(sel)) {
-                                        if (!isVisible(btn)) continue;
-                                        sawSend = true;
-                                        if (btn.disabled || btn.getAttribute('aria-disabled') === 'true')
-                                            sawDisabledSend = true;
-                                    }
-                                }
-                                for (const el of root.querySelectorAll('*')) {
-                                    if (el.shadowRoot) scanSend(el.shadowRoot);
+    @staticmethod
+    def _wait_for_upload_ready(page, before_chips: int = 0, timeout_s: float = 25.0) -> None:
+        # Wait through the initial gap where the web app hasn't mounted the upload chip/spinner yet,
+        # then wait until any upload spinners clear and the Send button is enabled.
+        time.sleep(0.5)
+        deadline = time.time() + timeout_s
+        appear_deadline = time.time() + min(5.0, timeout_s)
+        saw_activity = False
+
+        while time.time() < deadline:
+            state = None
+            try:
+                state = page.evaluate(
+                    """() => {
+                        function isVisible(el) {
+                            const r = el.getBoundingClientRect();
+                            if (r.width <= 0 || r.height <= 0) return false;
+                            const cs = getComputedStyle(el);
+                            return cs.display !== 'none' && cs.visibility !== 'hidden';
+                        }
+                        const busySel =
+                            'mat-progress-spinner, mat-progress-bar, mat-spinner, ' +
+                            'md-circular-progress, md-linear-progress, ' +
+                            '[role="progressbar"], [aria-busy="true"], .uploading, ' +
+                            '[class*="spinner" i], [class*="progressbar" i]';
+                        function hasBusy(root) {
+                            if (!root) return false;
+                            for (const el of root.querySelectorAll(busySel)) {
+                                if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                                if (isVisible(el)) return true;
+                            }
+                            for (const el of root.querySelectorAll('*')) {
+                                if (el.shadowRoot && hasBusy(el.shadowRoot)) return true;
+                            }
+                            return false;
+                        }
+                        const chipSel =
+                            'button[aria-label*="Remove" i], button[aria-label*="Remover" i], ' +
+                            'button[aria-label*="Delete attachment" i], button[aria-label*="Remove file" i], ' +
+                            'ucs-file-chip, ucs-attachment, .file-preview, .attachment-chip, ' +
+                            '[data-test-id*="file-preview" i], [data-test-id*="attachment" i]';
+                        let chips = 0;
+                        function scanChips(root) {
+                            if (!root) return;
+                            for (const el of root.querySelectorAll(chipSel)) {
+                                if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                                if (isVisible(el)) chips++;
+                            }
+                            for (const el of root.querySelectorAll('*')) {
+                                if (el.shadowRoot) scanChips(el.shadowRoot);
+                            }
+                        }
+                        scanChips(document);
+
+                        const sendSels = [
+                            'button.send-button:not(.stop)',
+                            'button[aria-label^="Send" i]',
+                            'button[aria-label^="Enviar" i]',
+                            'button[aria-label="Submit" i]',
+                        ];
+                        let sawSend = false;
+                        let sawDisabledSend = false;
+                        function scanSend(root) {
+                            if (!root) return;
+                            for (const sel of sendSels) {
+                                for (const btn of root.querySelectorAll(sel)) {
+                                    if (!isVisible(btn)) continue;
+                                    sawSend = true;
+                                    if (btn.disabled || btn.getAttribute('aria-disabled') === 'true')
+                                        sawDisabledSend = true;
                                 }
                             }
-                            scanSend(document);
-                            return sawSend && !sawDisabledSend;
-                        }"""
-                    )
+                            for (const el of root.querySelectorAll('*')) {
+                                if (el.shadowRoot) scanSend(el.shadowRoot);
+                            }
+                        }
+                        scanSend(document);
+                        return {
+                            busy: hasBusy(document),
+                            chips: chips,
+                            sawSend: sawSend,
+                            sawDisabledSend: sawDisabledSend,
+                        };
+                    }"""
                 )
             except Exception:
-                ready = True
-            if ready:
                 return
+
+            busy = bool(state.get("busy"))
+            chips = int(state.get("chips") or 0)
+            saw_send = bool(state.get("sawSend"))
+            saw_disabled_send = bool(state.get("sawDisabledSend"))
+
+            if busy or saw_disabled_send or chips > before_chips:
+                saw_activity = True
+
+            if not busy and saw_send and not saw_disabled_send:
+                if chips > before_chips or (saw_activity and time.time() >= appear_deadline) or time.time() >= appear_deadline:
+                    # Brief stability check so we don't fire between back-to-back upload phases.
+                    time.sleep(0.3)
+                    return
+
             time.sleep(0.25)
 
     def _atomic_click_send_if_idle(self, page, enterprise: bool, allow_empty_text: bool = False) -> str:
@@ -790,7 +862,9 @@ class CDPBridge:
             self._toggle_image_gen(page, enterprise)
             time.sleep(0.2)
 
+        before_chips = 0
         if files:
+            before_chips = self._count_attachment_chips(page)
             if not self._attach_files(page, files):
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
 
@@ -798,7 +872,7 @@ class CDPBridge:
 
         if submit:
             if files:
-                self._wait_for_upload_ready(page, timeout_s=25.0)
+                self._wait_for_upload_ready(page, before_chips=before_chips, timeout_s=25.0)
             started, reply_count_before = self._submit_and_confirm_start(page, enterprise, has_attachments=bool(files))
             return {
                 "ok": True,
