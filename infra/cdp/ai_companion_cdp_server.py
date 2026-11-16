@@ -524,9 +524,9 @@ class CDPBridge:
         return False
 
     @staticmethod
-    def _wait_for_upload_ready(page, timeout_s: float = 20.0) -> None:
-        # Give the web app a brief moment after set_input_files to mount upload spinners/chips.
-        time.sleep(0.25)
+    def _wait_for_upload_ready(page, timeout_s: float = 25.0) -> None:
+        # Give the web app time after set_input_files to mount upload spinners/chips.
+        time.sleep(0.6)
         deadline = time.time() + timeout_s
         while time.time() < deadline:
             ready = False
@@ -541,8 +541,10 @@ class CDPBridge:
                                 return cs.display !== 'none' && cs.visibility !== 'hidden';
                             }
                             const busySel =
-                                'mat-progress-spinner, mat-spinner, md-circular-progress, ' +
-                                '[role="progressbar"], [aria-busy="true"], .uploading';
+                                'mat-progress-spinner, mat-progress-bar, mat-spinner, ' +
+                                'md-circular-progress, md-linear-progress, ' +
+                                '[role="progressbar"], [aria-busy="true"], .uploading, ' +
+                                '[class*="spinner" i], [class*="progressbar" i]';
                             function hasBusy(root) {
                                 if (!root) return false;
                                 for (const el of root.querySelectorAll(busySel)) {
@@ -562,21 +564,24 @@ class CDPBridge:
                                 'button[aria-label^="Enviar" i]',
                                 'button[aria-label="Submit" i]',
                             ];
-                            function hasDisabledSend(root) {
-                                if (!root) return false;
+                            let sawSend = false;
+                            let sawDisabledSend = false;
+                            function scanSend(root) {
+                                if (!root) return;
                                 for (const sel of sendSels) {
                                     for (const btn of root.querySelectorAll(sel)) {
                                         if (!isVisible(btn)) continue;
+                                        sawSend = true;
                                         if (btn.disabled || btn.getAttribute('aria-disabled') === 'true')
-                                            return true;
+                                            sawDisabledSend = true;
                                     }
                                 }
                                 for (const el of root.querySelectorAll('*')) {
-                                    if (el.shadowRoot && hasDisabledSend(el.shadowRoot)) return true;
+                                    if (el.shadowRoot) scanSend(el.shadowRoot);
                                 }
-                                return false;
                             }
-                            return !hasDisabledSend(document);
+                            scanSend(document);
+                            return sawSend && !sawDisabledSend;
                         }"""
                     )
                 )
@@ -584,7 +589,7 @@ class CDPBridge:
                 ready = True
             if ready:
                 return
-            time.sleep(0.2)
+            time.sleep(0.25)
 
     def _atomic_click_send_if_idle(self, page, enterprise: bool, allow_empty_text: bool = False) -> str:
         """Click Send/Submit atomically in JS only if not already generating and composer/attachments are non-empty."""
@@ -742,7 +747,7 @@ class CDPBridge:
 
         # Prefer atomic JS Send-button click first: works reliably even when Chrome is minimized/unfocused.
         click_res = "not_found"
-        btn_deadline = time.time() + (1.5 if has_attachments else 0.45)
+        btn_deadline = time.time() + (4.0 if has_attachments else 0.45)
         while time.time() < btn_deadline:
             click_res = self._atomic_click_send_if_idle(page, enterprise, allow_empty_text=has_attachments)
             if click_res in ("already_generating", "stop_found", "composer_empty"):
@@ -793,7 +798,7 @@ class CDPBridge:
 
         if submit:
             if files:
-                self._wait_for_upload_ready(page, timeout_s=20.0)
+                self._wait_for_upload_ready(page, timeout_s=25.0)
             started, reply_count_before = self._submit_and_confirm_start(page, enterprise, has_attachments=bool(files))
             return {
                 "ok": True,
