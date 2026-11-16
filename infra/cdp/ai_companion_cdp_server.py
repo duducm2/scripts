@@ -567,6 +567,7 @@ class CDPBridge:
         deadline = time.time() + timeout_s
         appear_deadline = time.time() + min(5.0, timeout_s)
         saw_activity = False
+        stable_since = 0.0
 
         while time.time() < deadline:
             state = None
@@ -656,10 +657,15 @@ class CDPBridge:
                 saw_activity = True
 
             if not busy and saw_send and not saw_disabled_send:
-                if chips > before_chips or (saw_activity and time.time() >= appear_deadline) or time.time() >= appear_deadline:
-                    # Brief stability check so we don't fire between back-to-back upload phases.
-                    time.sleep(0.3)
-                    return
+                if chips > before_chips or time.time() >= appear_deadline:
+                    if stable_since <= 0.0:
+                        stable_since = time.time()
+                    elif time.time() - stable_since >= 0.4:
+                        return
+                else:
+                    stable_since = 0.0
+            else:
+                stable_since = 0.0
 
             time.sleep(0.25)
 

@@ -250,6 +250,21 @@ AiCompanionCDP_HealthOk() {
         whr.Send()
         if (whr.Status != 200)
             return false
+        if (!InStr(whr.ResponseText, '"stale"')) {
+            ; Legacy CDP server without /health stale detection: terminate via WMI so EnsureServer starts the updated script.
+            try {
+                wmi := ComObjGet("winmgmts:")
+                procs := wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE CommandLine LIKE '%ai_companion_cdp_server.py%'")
+                for proc in procs {
+                    try ProcessClose(Integer(proc.ProcessId))
+                    catch {
+                    }
+                }
+            } catch {
+            }
+            Sleep 150
+            return false
+        }
         if (_AiCDP_JsonGetBool(whr.ResponseText, "stale", false)) {
             try {
                 shut := ComObject("WinHttp.WinHttpRequest.5.1")
