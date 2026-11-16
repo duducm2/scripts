@@ -33,7 +33,7 @@ Show things that were big deliverables that are still active and not dead.
 ⚡ Check Job openings
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\web\start.bat
 
-⚡ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
+⏳ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
 
 ### Alumni Unicamp
 
@@ -82,8 +82,6 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 ## New Home
 
 🔲 We need to give a feedback to the service man regarding the next steps
-
-🔲 Organize the next steps with Leo
 
 🔲 It is lasting one thousand seven hundred ten to send to the Mason (1710)
 
