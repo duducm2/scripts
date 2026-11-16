@@ -524,34 +524,74 @@ class CDPBridge:
         return False
 
     @staticmethod
-    def _wait_for_upload_ready(page, timeout_s: float = 8.0) -> None:
+    def _wait_for_upload_ready(page, timeout_s: float = 20.0) -> None:
+        # Give the web app a brief moment after set_input_files to mount upload spinners/chips.
+        time.sleep(0.25)
         deadline = time.time() + timeout_s
         while time.time() < deadline:
-            busy = False
+            ready = False
             try:
-                busy = bool(
+                ready = bool(
                     page.evaluate(
                         """() => {
-                            const spinners = document.querySelectorAll('input-container mat-progress-spinner, input-container [role="progressbar"], .input-area mat-progress-spinner, .input-area [role="progressbar"]');
-                            for (const s of spinners) {
-                                const r = s.getBoundingClientRect();
-                                if (r.width > 0 && r.height > 0) return true;
+                            function isVisible(el) {
+                                const r = el.getBoundingClientRect();
+                                if (r.width <= 0 || r.height <= 0) return false;
+                                const cs = getComputedStyle(el);
+                                return cs.display !== 'none' && cs.visibility !== 'hidden';
                             }
-                            return false;
+                            const busySel =
+                                'mat-progress-spinner, mat-spinner, md-circular-progress, ' +
+                                '[role="progressbar"], [aria-busy="true"], .uploading';
+                            function hasBusy(root) {
+                                if (!root) return false;
+                                for (const el of root.querySelectorAll(busySel)) {
+                                    if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                                    if (isVisible(el)) return true;
+                                }
+                                for (const el of root.querySelectorAll('*')) {
+                                    if (el.shadowRoot && hasBusy(el.shadowRoot)) return true;
+                                }
+                                return false;
+                            }
+                            if (hasBusy(document)) return false;
+
+                            const sendSels = [
+                                'button.send-button:not(.stop)',
+                                'button[aria-label^="Send" i]',
+                                'button[aria-label^="Enviar" i]',
+                                'button[aria-label="Submit" i]',
+                            ];
+                            function hasDisabledSend(root) {
+                                if (!root) return false;
+                                for (const sel of sendSels) {
+                                    for (const btn of root.querySelectorAll(sel)) {
+                                        if (!isVisible(btn)) continue;
+                                        if (btn.disabled || btn.getAttribute('aria-disabled') === 'true')
+                                            return true;
+                                    }
+                                }
+                                for (const el of root.querySelectorAll('*')) {
+                                    if (el.shadowRoot && hasDisabledSend(el.shadowRoot)) return true;
+                                }
+                                return false;
+                            }
+                            return !hasDisabledSend(document);
                         }"""
                     )
                 )
             except Exception:
-                busy = False
-            if not busy:
+                ready = True
+            if ready:
                 return
-            time.sleep(0.25)
+            time.sleep(0.2)
 
-    def _atomic_click_send_if_idle(self, page, enterprise: bool) -> str:
-        """Click Send/Submit atomically in JS only if not already generating and composer is non-empty."""
+    def _atomic_click_send_if_idle(self, page, enterprise: bool, allow_empty_text: bool = False) -> str:
+        """Click Send/Submit atomically in JS only if not already generating and composer/attachments are non-empty."""
         return str(
             page.evaluate(
-                """(enterprise) => {
+                """(args) => {
+                    const { enterprise, allowEmptyText } = args;
                     function isVisible(el) {
                         const r = el.getBoundingClientRect();
                         if (r.width <= 0 || r.height <= 0) return false;
@@ -579,7 +619,7 @@ class CDPBridge:
                     }
                     if (hasStop(document)) return 'already_generating';
 
-                    // If composer is already empty, Enter already submitted — never click Send/Stop.
+                    // If composer is already empty (and no attachments), Enter already submitted — never click Send/Stop.
                     let composerText = '';
                     if (!enterprise) {
                         const comp = document.querySelector('rich-textarea .ql-editor, div[contenteditable="true"][role="textbox"], textarea');
@@ -599,7 +639,7 @@ class CDPBridge:
                         }
                         composerText = findText(document);
                     }
-                    if (!composerText) return 'composer_empty';
+                    if (!composerText && !allowEmptyText) return 'composer_empty';
 
                     const sendSels = [
                         'button.send-button:not(.stop):not([disabled])',
@@ -612,6 +652,7 @@ class CDPBridge:
                         for (const sel of sendSels) {
                             for (const btn of root.querySelectorAll(sel)) {
                                 if (!isVisible(btn)) continue;
+                                if (btn.disabled || btn.getAttribute('aria-disabled') === 'true') continue;
                                 const cls = (btn.className || '').toString().toLowerCase().split(/\\s+/);
                                 const lbl = (btn.getAttribute('aria-label') || '').trim().toLowerCase();
                                 if (cls.includes('stop') || lbl.startsWith('stop') || lbl.startsWith('interromper')) {
@@ -634,7 +675,7 @@ class CDPBridge:
                     }
                     return findAndClick(document) || 'not_found';
                 }""",
-                enterprise,
+                {"enterprise": enterprise, "allowEmptyText": allow_empty_text},
             )
         )
 
@@ -696,14 +737,14 @@ class CDPBridge:
             if text:
                 page.keyboard.insert_text(text)
 
-    def _submit_and_confirm_start(self, page, enterprise: bool) -> tuple[bool, int]:
+    def _submit_and_confirm_start(self, page, enterprise: bool, has_attachments: bool = False) -> tuple[bool, int]:
         reply_count_before = len(self._get_response_texts(page, enterprise))
 
         # Prefer atomic JS Send-button click first: works reliably even when Chrome is minimized/unfocused.
         click_res = "not_found"
-        btn_deadline = time.time() + 0.45
+        btn_deadline = time.time() + (1.5 if has_attachments else 0.45)
         while time.time() < btn_deadline:
-            click_res = self._atomic_click_send_if_idle(page, enterprise)
+            click_res = self._atomic_click_send_if_idle(page, enterprise, allow_empty_text=has_attachments)
             if click_res in ("already_generating", "stop_found", "composer_empty"):
                 return True, reply_count_before
             if click_res == "clicked":
@@ -752,8 +793,8 @@ class CDPBridge:
 
         if submit:
             if files:
-                self._wait_for_upload_ready(page, timeout_s=8.0)
-            started, reply_count_before = self._submit_and_confirm_start(page, enterprise)
+                self._wait_for_upload_ready(page, timeout_s=20.0)
+            started, reply_count_before = self._submit_and_confirm_start(page, enterprise, has_attachments=bool(files))
             return {
                 "ok": True,
                 "submitted": True,

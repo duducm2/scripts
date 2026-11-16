@@ -473,7 +473,7 @@ AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImag
         "submit", submit ? true : false,
         "clear", clear ? true : false,
         "image_gen", enableImageGen ? true : false
-    ), 30000)
+    ), 45000)
     return {
         ok: res.ok,
         started: _AiCDP_JsonGetBool(res.raw, "started", false),

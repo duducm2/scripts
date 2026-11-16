@@ -1269,6 +1269,11 @@ class D2C_FlowManager {
             filePaths := []
             tempFiles := []
             textToSend := (optionalSnippet != "") ? optionalSnippet : dictation
+            hasClipDrop := false
+            try hasClipDrop := Clipboard_HasFileDrop()
+            catch {
+                hasClipDrop := false
+            }
             if (useRegistryPastePath) {
                 resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
                 if (resolved = false) {
@@ -1276,14 +1281,17 @@ class D2C_FlowManager {
                     return false
                 }
                 filePaths := UtilitySelector_ResolveCdpAttachFilePaths(registryPrompt, resolved.entries)
-            } else if (textToSend = "") {
-                staged := AiCompanion_StageClipboardForCdp(&textToSend, &tempFiles)
+            } else if (textToSend = "" || (optionalSnippet = "" && hasClipDrop)) {
+                clipText := ""
+                staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
                 if (staged = false) {
                     ShowCenteredOverlay_Utils("❌ Could not read clipboard image/text for CDP send.", 2000, BANNER_ACCENT_ERROR)
                     this.Reset()
                     return false
                 }
                 filePaths := staged
+                if (optionalSnippet = "")
+                    textToSend := clipText
             }
             res := { ok: false, error: "CDP paste failed" }
             try {
