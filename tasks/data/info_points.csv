@@ -336,3 +336,29 @@ INFO_0675,task,TASK_0838,Strategy Reminder,"Batching this every 6 months minimiz
 INFO_0676,task,TASK_0839,Action,"Transfer R$ 1,000 to an international broker (e.g., Avenue, Inter, Nomad) to buy US Treasury ETFs (like SGOV).",ℹ️,,6130,2026-11-15 22:24:00,,
 INFO_0677,task,TASK_0839,Strategy (Dollar-Cost Averaging),"This divides the initial R$ 4,000 (20% of your R$ 20k savings) into four smaller transfers across 2027 to avoid exchanging a large lump sum on a day with a poor BRL/USD rate.",ℹ️,,6140,2026-11-15 22:24:00,,
 INFO_0678,task,TASK_0839,Why We Batch,"Sending R$ 1,000 at once minimizes brokerage spreads, allows buying whole ETF shares, and simplifies the IRPF tax tracking compared to tiny monthly remissions.",ℹ️,,6150,2026-11-15 22:24:00,,
+INFO_0679,task,TASK_0806,"O problema que queremos resolver
+ 
+O xTower está fortemente acoplado a conceitos específicos de projetos.
+Novos processos ou funis exigem alterações no código.
+O legado dificulta mudanças maiores e integrações.
+Correções podem gerar efeitos colaterais.
+A arquitetura atual dificulta desenvolvimento paralelo.
+People Registration, gestão de esforço, gestão de recursos e workflow estão 
+misturados ou fortemente dependentes.
+A implementação de capacidades de IA e automações agentic fica limitada pela estrutura existente.
+ 
+O outcome 
+ 
+Criar uma fundação que permita configurar novos funis, entidades, etapas e formulários sem transformar cada necessidade de negócio em um novo projeto de desenvolvimento.
+ 
+ 
+Aonde quero chegar 
+Para cada nova demanda, a pergunta deve ser:
+Pode ser atendida por configuração?
+Pode ser atendida por extensão ou integração?
+Apenas se as duas respostas forem negativas deve haver alteração do core.
+Isso evita reconstruir o monólito com uma tecnologia ou interface nova.
+ 
+xOrder 
+ 
+OneSolution",,ℹ️,,10,2026-11-16 11:27:20,,
