@@ -553,19 +553,32 @@ ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd) {
 }
 
 ; Paste top clip into focused Explorer / Desktop / Cursor·VS Code Files Explorer.
-; Unsupported focus falls back to Desktop Explorer. Returns true/false.
+; Unsupported focus falls back to Desktop silently via ClipAngelExport_SaveClipboardToDesktop
+; (no Explorer focus steal), falling back to Desktop Explorer only if clipboard save fails.
 ClipAngelExport_PasteFirstClipToActiveTarget(targetHwnd := 0) {
-    pasteHwnd := 0
     if (targetHwnd && ClipAngelExport_IsPasteFileTarget(targetHwnd)) {
         pasteHwnd := ClipAngelExport_PreparePasteTarget(targetHwnd)
         if (!pasteHwnd)
             return false
-    } else {
-        pasteHwnd := ClipAngelExport_ActivateDesktopForPaste()
+        return ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd)
     }
+
+    ; Desktop fallback: write directly to Desktop in the background without focusing Explorer.
+    errMsg := ""
+    outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
+    if (outPath != "")
+        return true
+
+    pasteHwnd := ClipAngelExport_ActivateDesktopForPaste()
     if (!pasteHwnd)
         return false
-    return ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd)
+    ok := ClipAngelExport_PasteFirstClipIntoHwnd(pasteHwnd)
+    if (targetHwnd && targetHwnd != pasteHwnd && WinExist("ahk_id " targetHwnd)) {
+        try WinActivate("ahk_id " targetHwnd)
+        catch {
+        }
+    }
+    return ok
 }
 
 ; ClipAngel Clip > Paste > Paste file onto Desktop; returns path or "".

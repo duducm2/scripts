@@ -52,7 +52,7 @@ Show things that were big deliverables that are still active and not dead.
 
 ⏳ Review Resume - UX Researcher & Design Technologist
 
-🔲 Review Portfolio - UX Researcher & Design Technologist
+⏳ Review Portfolio - UX Researcher & Design Technologist
 ℹ️ O problema que queremos resolver
  
 O xTower está fortemente acoplado a conceitos específicos de projetos.
