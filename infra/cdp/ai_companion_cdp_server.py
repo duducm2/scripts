@@ -11,10 +11,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
 import urllib.request
+import winreg
 
 from playwright.sync_api import sync_playwright
 
@@ -49,11 +51,35 @@ class CDPBridge:
         except Exception:
             return False
 
+    @staticmethod
+    def _find_chrome_exe() -> str:
+        found = shutil.which("chrome.exe")
+        if found:
+            return found
+        candidates = [
+            os.path.join(os.environ.get("PROGRAMFILES", r"C:\Program Files"), "Google", "Chrome", "Application", "chrome.exe"),
+            os.path.join(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"), "Google", "Chrome", "Application", "chrome.exe"),
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        ]
+        for path in candidates:
+            if path and os.path.isfile(path):
+                return path
+        for root in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+            try:
+                with winreg.OpenKey(root, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe") as key:
+                    val, _ = winreg.QueryValueEx(key, "")
+                    if val and os.path.isfile(val):
+                        return val
+            except Exception:
+                pass
+        return "chrome.exe"
+
     def _launch_cdp_chrome(self, target_url: str, minimized: bool = True) -> bool:
         local_app = os.environ.get("LOCALAPPDATA", "")
         profile_dir = str(Path(local_app) / "GeminiCDP") if local_app else "GeminiCDP"
+        chrome_exe = self._find_chrome_exe()
         args = [
-            "chrome.exe",
+            chrome_exe,
             f"--user-data-dir={profile_dir}",
             "--remote-debugging-port=9222",
         ]
@@ -61,7 +87,8 @@ class CDPBridge:
             args.append("--start-minimized")
         args.append(target_url)
         try:
-            subprocess.Popen(args, shell=True)
+            creation_flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            subprocess.Popen(args, shell=False, creationflags=creation_flags)
         except Exception:
             return False
         deadline = time.time() + 12.0

@@ -433,12 +433,19 @@ GeminiOpen_NewCompanionTab() {
 GeminiOpen_OpenOrFocus() {
     companion := ResolveGlobalAICompanion()
     if (AiCompanionMode_IsCDP(companion)) {
+        compLabel := (companion = "enterprise" ? "Enterprise" : "Gemini")
+        try StandardLoadingBar_Show("🌐 Opening " . compLabel . " (CDP)…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
         res := AiCompanionCDP_Ensure(companion, true, false)
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         if (!res.ok)
             AiCompanionCDP_NotifyError("Open companion", res.error, companion)
         else {
             Utils_PlayGeminiFocusedChime()
-            try ShowCenteredOverlay_Utils("🌐 Focused " . (companion = "enterprise" ? "Enterprise" : "Gemini") . " (CDP)", 1000, BANNER_ACCENT_SUCCESS)
+            try ShowCenteredOverlay_Utils("🌐 Focused " . compLabel . " (CDP)", 1000, BANNER_ACCENT_SUCCESS)
             catch {
             }
         }
