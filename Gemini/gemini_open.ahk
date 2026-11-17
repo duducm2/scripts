@@ -505,7 +505,7 @@ GeminiOpen_OpenOrFocus() {
     }
 }
 
-:: {
+#!+i:: {
     global g_GeminiOpen_DoubleTapArmed, g_GeminiOpen_LastPressTick, g_GeminiOpen_DoubleTapTimer
 
     ; Programmatic / synthetic trigger (SendInput or Send): open/focus companion directly

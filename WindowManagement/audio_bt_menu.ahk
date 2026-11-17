@@ -932,10 +932,15 @@ AudioBt_Run(action, id := "") {
     if (id != "")
         cmd .= ' -Id "' id '"'
     cmd .= ' -OutFile "' outFile '"'
-    exitCode := 1
-    try exitCode := RunWait(cmd, , "Hide")
+    pid := 0
+    try Run(cmd, , "Hide", &pid)
     catch {
-        exitCode := 1
+        pid := 0
+    }
+    if (pid) {
+        deadline := A_TickCount + 25000
+        while (ProcessExist(pid) && A_TickCount < deadline)
+            Sleep 30
     }
     text := ""
     try {
@@ -946,8 +951,8 @@ AudioBt_Run(action, id := "") {
     try FileDelete(outFile)
     catch {
     }
-    ok := (exitCode = 0 && text != "" && SubStr(text, 1, 4) != "ERR`t")
-    return { ok: ok, text: text, exitCode: exitCode }
+    ok := (text != "" && SubStr(text, 1, 4) != "ERR`t")
+    return { ok: ok, text: text, exitCode: ok ? 0 : 1 }
 }
 
 AudioBt_ParseList(text) {
@@ -1952,29 +1957,50 @@ AudioBt_IsolateProfileSide(spec, &row) {
     return AudioBt_IsolateResolved(bt)
 }
 
+global g_AudioBtProfileRunning := false
+
+AudioBt_ProfileFailAndReopen(profLabel, errMsg) {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    try AudioBt_Show()
+    catch {
+    }
+    try ShowCenteredOverlay_Utils("❌ " . profLabel . ": " . errMsg, 3000, BANNER_ACCENT_ERROR)
+    catch {
+    }
+}
+
 AudioBt_OnProfile(profileKey, *) {
-    global g_AudioBtActive, g_AudioBtBusy
-    if (!g_AudioBtActive || g_AudioBtBusy)
+    global g_AudioBtActive, g_AudioBtBusy, g_AudioBtProfileRunning
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtProfileRunning)
         return
     prof := AudioBt_ProfileByKey(profileKey)
     if (!IsObject(prof))
         return
-    g_AudioBtBusy := true
+    g_AudioBtProfileRunning := true
+    ; Close the modal immediately so the user can continue working while Bluetooth/audio switches in parallel.
+    AudioBt_Cleanup()
+    SetTimer((*) => AudioBt_RunProfileParallel(prof), -1)
+}
+
+AudioBt_RunProfileParallel(prof) {
+    global g_AudioBtProfileRunning
     outRow := ""
     inRow := ""
     outResult := ""
     inResult := ""
+    errMsg := ""
     try {
-        AudioBt_BusyShow("⏳ " . prof.label . "…")
+        StandardLoadingBar_Show("⏳ " . prof.label . "…", BANNER_ACCENT_INTERMEDIATE, { passive: true,
+            noActivate: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17 })
         btDropped := []
         btFailed := []
         AudioBt_DisconnectAllBluetooth(&btDropped, &btFailed)
-        g_AudioBtBusy := true
         if (!AudioBt_FetchAll(false)) {
-            ShowNotification_WM("❌ " . prof.label . ": could not list audio devices")
+            errMsg := "could not list audio devices"
             return
         }
-        g_AudioBtBusy := true
         outRow := AudioBt_ResolveProfileTarget(prof.output)
         inRow := AudioBt_ResolveProfileTarget(prof.input)
         if (!IsObject(outRow) || !IsObject(inRow)) {
@@ -1983,53 +2009,48 @@ AudioBt_OnProfile(profileKey, *) {
                 missing .= "output " . AudioBt_ProfileTargetLabel(prof.output)
             if (!IsObject(inRow))
                 missing .= (missing = "" ? "" : " and ") . "input " . AudioBt_ProfileTargetLabel(prof.input)
-            ShowNotification_WM("❌ " . prof.label . ": no " . missing)
+            errMsg := "no " . missing
             return
         }
-        AudioBt_BusyShow("⏳ Isolating output " . outRow.name . "…")
+        StandardLoadingBar_Update("⏳ Isolating output " . outRow.name . "…")
         outResult := AudioBt_IsolateProfileSide(prof.output, &outRow)
         if (!IsObject(outResult) || !outResult.ok) {
-            ShowNotification_WM("❌ " . prof.label . " output: " . AudioBt_ProfileFailText(outResult))
-            AudioBt_FetchAll(false)
-            AudioBt_ProfileRefreshUi()
+            errMsg := "output: " . AudioBt_ProfileFailText(outResult)
             return
         }
         if (!AudioBt_FetchAll(false)) {
-            ShowNotification_WM("❌ " . prof.label . ": output switched, then the device list failed")
+            errMsg := "output switched, then the device list failed"
             return
         }
-        g_AudioBtBusy := true
         freshOut := AudioBt_ResolveProfileTarget(prof.output)
         if (IsObject(freshOut))
             outRow := freshOut
         inRow := AudioBt_ResolveProfileTarget(prof.input)
         if (!IsObject(inRow)) {
-            ShowNotification_WM("❌ " . prof.label . ": output switched, input "
-                . AudioBt_ProfileTargetLabel(prof.input) . " was not found")
-            AudioBt_ProfileRefreshUi()
+            errMsg := "output switched, input " . AudioBt_ProfileTargetLabel(prof.input) . " was not found"
             return
         }
-        AudioBt_BusyShow("⏳ Isolating input " . inRow.name . "…")
+        StandardLoadingBar_Update("⏳ Isolating input " . inRow.name . "…")
         inResult := AudioBt_IsolateProfileSide(prof.input, &inRow)
         if (!IsObject(inResult) || !inResult.ok) {
-            ShowNotification_WM("❌ " . prof.label . " input: " . AudioBt_ProfileFailText(inResult))
-            AudioBt_FetchAll(false)
-            AudioBt_ProfileRefreshUi()
+            errMsg := "input: " . AudioBt_ProfileFailText(inResult)
             return
         }
     } catch Error as err {
-        ShowNotification_WM("❌ " . prof.label . ": " . err.Message)
-        return
+        errMsg := err.Message
     } finally {
-        g_AudioBtBusy := false
-        AudioBt_BusyHide()
-        if (g_AudioBtActive)
-            AudioBt_RefocusLv()
+        g_AudioBtProfileRunning := false
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+    if (errMsg != "") {
+        AudioBt_ProfileFailAndReopen(prof.label, errMsg)
+        return
     }
     if (IsObject(outResult) && outResult.ok && IsObject(inResult) && inResult.ok) {
         ShowCenteredOverlay_Utils("✅ " . prof.label . ": " . inRow.name . " + " . outRow.name, 1800,
             BANNER_ACCENT_SUCCESS)
-        AudioBt_Cleanup()
     }
 }
 

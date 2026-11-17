@@ -126,7 +126,8 @@ If the **instruction** is missing or ambiguous, ask one short question and do no
    - Do **not** walk the file from peg `A` / palace 1.
 4. **Context** — read-only inventory of ids, concepts, keywords, and quotes from the focus palace through the last street. Use later streets only to pull beasts forward, or when the instruction names them. Do not re-emit a later palace you left unchanged.
 5. **Bestiary** — `studies/technique/bestiary.json`.
-6. **README** — `studies/technique/README.md`. Cite `README §<Section Name>`. `README §One atom per beast` still holds: a merge ends as one atom on one beast, not several atoms on zones. The instruction, not a fixed REMOVE/SMASH mode, decides the edit.
+6. **PAO Character List** — `mnemonics/data/pao_characters.csv` (the closed, canonical list of allowed characters for Knowledge Atom `character` attribution).
+7. **README** — `studies/technique/README.md`. Cite `README §<Section Name>`. `README §One atom per beast` still holds: a merge ends as one atom on one beast, not several atoms on zones. The instruction, not a fixed REMOVE/SMASH mode, decides the edit.
 
 **study_id:** keep the **exact** study id from the attached pack / `studies.csv` (violin test: `STUDY_VIOLIN`; long names are truncated to a 12-char slug, e.g. `STUDY_COMMUNICATIO` for Communication, `STUDY_DATASCIENTIS` for Data Scientist). Do not use the full unsliced name such as `STUDY_DATA_SCIENTIST`; the importer may resolve it, but exact matches are safer and avoid routing ambiguity. Do not invent study IDs. The importer also accepts full-word aliases. Quote CSV fields that contain commas (especially `concept` / `quote` / `image_prompt`). Leave `story` empty when the column is present.
 
@@ -186,10 +187,12 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character
 - CSV `keywords` is SSOT (not required in PREVIEW). Do not silently wipe or normalize keywords on an atom whose concept was copied.
 - **character and justification:**
   - For an atom the instruction leaves alone, copy `character` and `justification` **byte-for-byte**.
-  - For any newly authored or merged concept: assign `character` strictly based on the atom's **primary (first) keyword** (the tangible Keyword anchor on the left of pair 1 in `keywords`). Choose an iconic figure (from pop-culture, cinema, cartoons/games, anime, mythology, history, or the user's PAO catalog) that vividly embodies that specific primary keyword.
-  - **No-Repetition Proximity Rule (Window of at least ±6 Memory Palaces - HARD MANDATE):** A character assigned to a Knowledge Atom must **NOT** appear in any memory palace within **at least six memory palaces** of the current one (neither within the current palace across different atoms, nor in the 6 preceding palaces in the attached inventory, nor within any palace in this pack within 6 palaces). This prevents character repetition fatigue. Always verify the characters used in the preceding 6 palaces before selecting.
-  - **Always Assign / Best Judgment Rule (Never leave empty - HARD MANDATE):** Every Knowledge Atom MUST have an assigned character. If a direct or obvious connection to the primary keyword is not immediately obvious, the AI MUST make its best creative/associative judgment to find an iconic character and articulate the connection in `justification`. NEVER leave `character` blank, null, or marked as "(unassigned)". There must ALWAYS be a character.
-  - The `justification` must be 1–2 concise sentences explaining why this character relates to or embodies that specific primary keyword.
+  - For any newly authored or merged concept:
+    - **Closed List Only (HARD MANDATE):** Select `character` **exclusively from the attached PAO character list (`pao_characters.csv`, `name` column)**. **NEVER** invent, pull from the web, or pick any character outside that attached list.
+    - **Attribution Logic (HARD MANDATE):** Choose a character from `pao_characters.csv` strictly based on the atom's **primary (first) keyword** (the tangible Keyword anchor on the left of pair 1 in `keywords`), matching against the character's `characteristics`, `action`, or `object` in `pao_characters.csv`.
+    - **No-Repetition Proximity Rule (Window of at least ±6 Memory Palaces - HARD MANDATE):** A character assigned to a Knowledge Atom must **NOT** appear in any memory palace within **at least six memory palaces** of the current one (neither within the current palace across different atoms, nor in the 6 preceding palaces in the attached inventory, nor within any palace in this pack within 6 palaces). This prevents character repetition fatigue. Always verify the characters used in the preceding 6 palaces before selecting.
+    - **Always Assign / Best Judgment & Random Fallback Rule (Never leave empty - HARD MANDATE):** Every Knowledge Atom MUST have an assigned character from `pao_characters.csv`. First, use your best creative/associative judgment to find a character **in `pao_characters.csv`** that connects to the primary keyword. **If you do not find any character in `pao_characters.csv` that matches or connects well to the primary keyword, randomly choose any eligible character from `pao_characters.csv` (respecting the ±6 Memory Palaces proximity rule) — NEVER take a character outside `pao_characters.csv`.** NEVER leave `character` blank, null, or marked as "(unassigned)". There must ALWAYS be a character.
+    - The `justification` must be 1–2 concise sentences explaining why this character from `pao_characters.csv` relates to or embodies that specific primary keyword—or, if chosen via the random fallback because no match was found in `pao_characters.csv`, briefly state that no direct keyword match was found in the list and note the character's `characteristics`/`action`/`object` from `pao_characters.csv`.
   - **Interaction Rule (STRICT):** Do **NOT** generate or simulate any narrative interaction between the character and the beast; simply output the character's name and justification.
 - **Quote:** keep the verbatim transcript excerpt intact. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
 - **story:** do **not** author or rewrite a narrative. Omit the column. If a legacy header still has `story`, leave every cell empty. Keywords remain the recall cue; the user writes the story later.
@@ -224,6 +227,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character
 - NEVER pull beasts from earlier palaces, and NEVER keep an old beast name when the peg letter changes.
 - NEVER restart peg letters at `A` for a scoped reduction when earlier out-of-scope pegs already occupy `A…`.
 - NEVER assign two characters to one palace or zero characters after collapse.
+- NEVER assign a character in `PALACE_ATOMS.csv` that is not in the attached `pao_characters.csv` list (never pull characters from the web or outside the list; if no character in the list matches the primary keyword, randomly choose an eligible character from `pao_characters.csv` instead).
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving **in-scope** palaces.
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
@@ -301,6 +305,8 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 [ATTACH OR PASTE]
 
 📎 Bestiary (`@studies/technique/bestiary.json`)
+
+📎 PAO Character List (`@mnemonics/data/pao_characters.csv`)
 
 📎 README (`@studies/technique/README.md`)
 

@@ -138,6 +138,7 @@ Confirm every required item. If any is missing, ask before generating.
 2. **Existing inventory** (preferred) — attached practice `.md` and/or `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` for the target study. **Read-only:** skip already-known concepts; use highest palace_number / last peg only. Never re-emit existing palaces or top them up. Do not emit Markdown as output.
 3. **Bestiary** — `studies/technique/bestiary.json`.
 4. **README** — `studies/technique/README.md` (framework rules). Cite as `README §<Section Name>`.
+5. **PAO Character List** — `mnemonics/data/pao_characters.csv` (the closed, canonical list of allowed characters for Knowledge Atom `character` attribution).
 
 **study_id (mandatory):**
 - Violin test: use `STUDY_VIOLIN` and attach that study’s context pack when available.
@@ -226,11 +227,12 @@ Rules:
   - **story** — do **not** author a narrative. Omit the column. If a legacy header still has `story`, leave every cell empty. The user writes the story later from the keywords.
   - **ipa** ← German IPA when needed; else empty
   - **character** ← Name of the specific Character attributed to this Knowledge Atom.
-    - **Attribution Logic (HARD MANDATE):** You must choose this character based **strictly on the atom's primary (first) keyword** (the tangible Keyword anchor on the left of pair 1 in `keywords`). Choose an iconic figure (from pop-culture, cinema, cartoons/games, anime, mythology, history, or the user's PAO catalog) that vividly embodies that specific primary keyword.
+    - **Closed List Only (HARD MANDATE):** You MUST select `character` **exclusively from the attached PAO character list (`pao_characters.csv`, `name` column)**. **NEVER** invent, pull from the web, or pick any character outside that attached list (no outside pop-culture, cinema, anime, mythology, history, or celebrity names that are not in `pao_characters.csv`).
+    - **Attribution Logic (HARD MANDATE):** Choose a character from `pao_characters.csv` based **strictly on the atom's primary (first) keyword** (the tangible Keyword anchor on the left of pair 1 in `keywords`), matching against the character's `characteristics`, `action`, or `object` in `pao_characters.csv`.
     - **No-Repetition Proximity Rule (Window of at least ±6 Memory Palaces - HARD MANDATE):** A character assigned to a Knowledge Atom must **NOT** appear in any memory palace within **at least six memory palaces** of the current one (neither within the current palace across different atoms, nor in the 6 preceding palaces in the attached inventory, nor within any palace in this pack within 6 palaces). This prevents character repetition fatigue. Always verify the characters used in the preceding 6 palaces before selecting.
-    - **Always Assign / Best Judgment Rule (Never leave empty - HARD MANDATE):** Every Knowledge Atom MUST have an assigned character. If a direct or obvious connection to the primary keyword is not immediately obvious, the AI MUST make its best creative/associative judgment to find an iconic character and articulate the connection in `justification`. NEVER leave `character` blank, null, or marked as "(unassigned)". There must ALWAYS be a character.
+    - **Always Assign / Best Judgment & Random Fallback Rule (Never leave empty - HARD MANDATE):** Every Knowledge Atom MUST have an assigned character from `pao_characters.csv`. First, use your best creative/associative judgment to find a character **in `pao_characters.csv`** that connects to the primary keyword. **If you do not find any character in `pao_characters.csv` that matches or connects well to the primary keyword, randomly choose any eligible character from `pao_characters.csv` (respecting the ±6 Memory Palaces proximity rule) — NEVER take a character outside `pao_characters.csv`.** NEVER leave `character` blank, null, or marked as "(unassigned)". There must ALWAYS be a character.
     - **Interaction Rule (STRICT):** Do **NOT** generate or simulate any narrative interaction between the character and the beast. Output only the character's name.
-  - **justification** ← 1–2 concise sentences explaining why this specific character directly relates to or embodies the primary (first) keyword. Do not describe beast interactions. Never leave empty.
+  - **justification** ← 1–2 concise sentences explaining why this specific character from `pao_characters.csv` relates to or embodies the primary (first) keyword—or, if chosen via the random fallback because no match was found in `pao_characters.csv`, briefly state that no direct keyword match was found in the list and note the character's `characteristics`/`action`/`object` from `pao_characters.csv`. Do not describe beast interactions. Never leave empty.
 - Leave `id` empty if unknown (`ATOM_####` assigned on import).
 
 ---
@@ -286,7 +288,8 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 - NEVER dump the whole practice `.md` / study into PREVIEW or FILE sections.
 - NEVER assign two+ characters to one palace or reuse a character already used (inventory + this pack).
 - NEVER reuse a character in a Knowledge Atom if that character appeared in any of the 6 surrounding memory palaces (at least 6 palaces before or within this pack).
-- NEVER leave a Knowledge Atom's `character` or `justification` field empty or unassigned; always make your best creative judgment to find an iconic character.
+- NEVER assign a character in `PALACE_ATOMS.csv` that is not in the attached `pao_characters.csv` list (never pull characters from the web or outside the list; if no character in the list matches the primary keyword, randomly choose an eligible character from `pao_characters.csv` instead).
+- NEVER leave a Knowledge Atom's `character` or `justification` field empty or unassigned; always use your best creative judgment within `pao_characters.csv`, or randomly choose an eligible character from `pao_characters.csv` if none matches.
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached inventory ids used for continuity + this pack’s new rows.
 - NEVER use numeric pegs or cross-beast narrative dependency.
 - NEVER under-fill a **pack** palace (1–4 beasts) when ≥5 new beasts remain to place in this pack.
@@ -338,6 +341,8 @@ Do **not** attach a separate mnemonic theory paste — the README below is canon
 📎 Existing inventory (practice `.md`) — Prompt Manager story picker. **Read-only:** skip already-known concepts; use only for next palace_number / next peg. Do **not** re-encode inventory atoms or top up existing under-filled palaces. CSV context packs are also accepted if attached manually.
 
 📎 Bestiary (`@studies/technique/bestiary.json` or paste)
+
+📎 PAO Character List (`@mnemonics/data/pao_characters.csv` or paste)
 
 📎 README (`@studies/technique/README.md` or paste)
 
