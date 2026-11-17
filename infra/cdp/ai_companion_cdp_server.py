@@ -14,6 +14,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import urllib.request
 import winreg
@@ -42,6 +43,7 @@ class CDPBridge:
         self._pw = None
         self._browser = None
         self._active_pages: dict[str, object] = {}
+        self._connect_lock = threading.Lock()
 
     def _is_cdp_up(self) -> bool:
         try:
@@ -91,7 +93,7 @@ class CDPBridge:
             subprocess.Popen(args, shell=False, creationflags=creation_flags)
         except Exception:
             return False
-        deadline = time.time() + 12.0
+        deadline = time.time() + 25.0
         while time.time() < deadline:
             if self._is_cdp_up():
                 return True
@@ -99,25 +101,38 @@ class CDPBridge:
         return False
 
     def _connect(self, launch_if_down: bool = False, target_url: str = CONSUMER_URL, minimized: bool = True):
-        if self._browser is not None:
-            try:
-                if self._browser.is_connected() and self._browser.contexts:
-                    return self._browser
-            except Exception:
+        with self._connect_lock:
+            if self._browser is not None:
+                try:
+                    if self._browser.is_connected() and self._browser.contexts:
+                        return self._browser
+                except Exception:
+                    self._browser = None
+
+            if not self._is_cdp_up():
                 self._browser = None
+                if not launch_if_down:
+                    raise RuntimeError("CDP_NOT_RUNNING")
+                if not self._launch_cdp_chrome(target_url, minimized=minimized):
+                    raise RuntimeError("CDP_LAUNCH_FAILED")
 
-        if not self._is_cdp_up():
-            self._browser = None
-            if not launch_if_down:
-                raise RuntimeError("CDP_NOT_RUNNING")
-            if not self._launch_cdp_chrome(target_url, minimized=minimized):
-                raise RuntimeError("CDP_LAUNCH_FAILED")
+            if self._pw is None:
+                self._pw = sync_playwright().start()
 
-        if self._pw is None:
-            self._pw = sync_playwright().start()
-
-        self._browser = self._pw.chromium.connect_over_cdp(CDP_URL)
-        return self._browser
+            last_exc = None
+            deadline = time.time() + 6.0
+            while time.time() < deadline:
+                try:
+                    browser = self._pw.chromium.connect_over_cdp(CDP_URL)
+                    if browser.contexts:
+                        self._browser = browser
+                        return self._browser
+                except Exception as exc:
+                    last_exc = exc
+                time.sleep(0.25)
+            if last_exc is not None:
+                raise last_exc
+            raise RuntimeError("NO_BROWSER_CONTEXT")
 
     @staticmethod
     def _companion_meta(companion: str) -> tuple[str, str]:
@@ -986,7 +1001,7 @@ class CDPBridge:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         kind = (data.get("kind") or "message").strip().lower()
-        page = self._find_or_open_page(companion, launch_if_down=False)
+        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
         items = self._get_code_texts(page) if kind == "code" else self._get_response_texts(page, enterprise)
         if not items:
             return {"ok": False, "error": "NO_RESPONSE_FOUND"}
@@ -1113,7 +1128,7 @@ class CDPBridge:
 
     def read_aloud(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
-        page = self._find_or_open_page(companion, launch_if_down=False)
+        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
         for sel in ['button[aria-label*="Listen" i]', 'button[aria-label*="Read aloud" i]']:
             try:
                 btns = page.locator(sel).locator("visible=true")
@@ -1425,7 +1440,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            self._send_json(200, {"ok": True, "stale": _file_sig() != _STARTUP_FILE_SIG})
+            self._send_json(200, {
+                "ok": True,
+                "stale": _file_sig() != _STARTUP_FILE_SIG,
+                "cdp_up": BRIDGE._is_cdp_up(),
+            })
             return
         self._send_json(404, {"ok": False, "error": "NOT_FOUND"})
 

@@ -190,8 +190,9 @@ AiCompanionCDP_FindPythonExe() {
     return "py"
 }
 
-AiCompanionCDP_HealthOk() {
+AiCompanionCDP_HealthOk(&cdpUp := false) {
     global AI_COMPANION_CDP_PORT
+    cdpUp := false
     try {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
         try whr.SetProxy(1)
@@ -227,14 +228,15 @@ AiCompanionCDP_HealthOk() {
             Sleep 150
             return false
         }
+        cdpUp := _AiCDP_JsonGetBool(whr.ResponseText, "cdp_up", true)
         return true
     } catch {
         return false
     }
 }
 
-AiCompanionCDP_EnsureServer() {
-    if AiCompanionCDP_HealthOk()
+AiCompanionCDP_EnsureServer(&cdpUp := false) {
+    if AiCompanionCDP_HealthOk(&cdpUp)
         return true
     py := A_ScriptDir . "\infra\cdp\ai_companion_cdp_server.py"
     if !FileExist(py)
@@ -244,9 +246,9 @@ AiCompanionCDP_EnsureServer() {
     catch {
         return false
     }
-    deadline := A_TickCount + 5000
+    deadline := A_TickCount + 8000
     while (A_TickCount < deadline) {
-        if AiCompanionCDP_HealthOk()
+        if AiCompanionCDP_HealthOk(&cdpUp)
             return true
         Sleep 150
     }
@@ -309,28 +311,66 @@ AiCompanionCDP_NotifyError(actionLabel, rawErr := "", companionId := "", duratio
 
 AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
     global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError
-    if !AiCompanionCDP_EnsureServer() {
+    cdpUp := false
+    if !AiCompanionCDP_EnsureServer(&cdpUp) {
         g_AiCompanionCDP_LastError := "CDP server unavailable"
         return { ok: false, raw: "", error: "CDP server unavailable" }
     }
 
-    body := _AiCDP_JsonEncode(payload)
-    try {
-        whr := ComObject("WinHttp.WinHttpRequest.5.1")
-        try whr.SetProxy(1)
-        whr.Open("POST", "http://127.0.0.1:" . AI_COMPANION_CDP_PORT . endpoint, false)
-        whr.SetRequestHeader("Content-Type", "application/json; charset=utf-8")
-        whr.SetTimeouts(2000, 2000, timeoutMs, timeoutMs)
-        whr.Send(body)
-        raw := whr.ResponseText
-        ok := _AiCDP_JsonGetBool(raw, "ok", false)
-        err := _AiCDP_JsonGetStr(raw, "error", "")
-        g_AiCompanionCDP_LastError := ok ? "" : err
-        return { ok: ok, raw: raw, error: err }
-    } catch as e {
-        g_AiCompanionCDP_LastError := e.Message
-        return { ok: false, raw: "", error: e.Message }
+    isPassivePoll := (endpoint = "/status" || endpoint = "/close_tab")
+    effectiveTimeout := timeoutMs
+    shownColdNotice := false
+    if (!cdpUp && !isPassivePoll) {
+        if (effectiveTimeout < 60000)
+            effectiveTimeout := 60000
+        try {
+            StandardLoadingBar_Show("⏳ CDP Chrome is closed — starting it now (first run may take longer)…",
+                BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, centerOnHwnd: 0 })
+            shownColdNotice := true
+        } catch {
+        }
     }
+
+    body := _AiCDP_JsonEncode(payload)
+    maxAttempts := isPassivePoll ? 1 : 2
+    lastRes := { ok: false, raw: "", error: "CDP request failed" }
+    loop maxAttempts {
+        try {
+            whr := ComObject("WinHttp.WinHttpRequest.5.1")
+            try whr.SetProxy(1)
+            whr.Open("POST", "http://127.0.0.1:" . AI_COMPANION_CDP_PORT . endpoint, false)
+            whr.SetRequestHeader("Content-Type", "application/json; charset=utf-8")
+            whr.SetTimeouts(2000, 2000, effectiveTimeout, effectiveTimeout)
+            whr.Send(body)
+            raw := whr.ResponseText
+            ok := _AiCDP_JsonGetBool(raw, "ok", false)
+            err := _AiCDP_JsonGetStr(raw, "error", "")
+            g_AiCompanionCDP_LastError := ok ? "" : err
+            lastRes := { ok: ok, raw: raw, error: err }
+            if (ok)
+                break
+            lowErr := StrLower(err)
+            if (A_Index < maxAttempts && (InStr(lowErr, "cdp_launch_failed") || InStr(lowErr, "cdp_not_running") || InStr(lowErr, "no_browser_context"))) {
+                Sleep 800
+                continue
+            }
+            break
+        } catch as e {
+            g_AiCompanionCDP_LastError := e.Message
+            lastRes := { ok: false, raw: "", error: e.Message }
+            if (A_Index < maxAttempts && !cdpUp) {
+                Sleep 800
+                continue
+            }
+            break
+        }
+    }
+    if (shownColdNotice) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+    return lastRes
 }
 
 ; --- High-level Companion Operations -----------------------------------------

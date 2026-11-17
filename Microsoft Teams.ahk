@@ -562,7 +562,7 @@ RunTeams() {
 ; =============================================================================
 global Teams_R_DoubleTapArmed := false
 global Teams_R_LastPressTick := 0
-global Teams_R_DoubleTapThresholdMs := 400  ; Matches ZMK tapping-term-ms for tap-dance
+global Teams_R_DoubleTapThresholdMs := 500
 global Teams_R_DoubleTapTimer := 0
 global Teams_R_DoubleTapOverlayGui := ""
 
@@ -598,14 +598,218 @@ Teams_R_DoubleTap_HideOverlay() {
 
 class Teams_R_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
-        global Teams_R_DoubleTapArmed, Teams_R_DoubleTapTimer
+        global Teams_R_DoubleTapArmed, Teams_R_DoubleTapTimer, Teams_R_LastPressTick
         if (!Teams_R_DoubleTapArmed)
             return
         Teams_R_DoubleTapArmed := false
+        Teams_R_LastPressTick := 0
         Teams_R_DoubleTapTimer := 0
         Teams_R_DoubleTap_HideOverlay()
-        Teams_StartNewConversationJump()
+        SetTimer((*) => Teams_StartNewConversationJump(), -1)
     }
+}
+
+global g_ChatFavGui := 0
+global g_ChatFavGuiHwnd := 0
+global g_ChatFavEditCtrl := 0
+global g_ChatFavRowCtrls := []
+global g_ChatFavAppKey := ""
+global g_ChatFavResult := ""
+global g_ChatFavDone := false
+
+ChatFav_IniPath() {
+    return A_ScriptDir . "\assets\data\chat_favorites.ini"
+}
+
+ChatFav_Load(appKey) {
+    ini := ChatFav_IniPath()
+    favs := []
+    loop 5 {
+        val := ""
+        if FileExist(ini) {
+            try val := Trim(IniRead(ini, appKey, String(A_Index), ""))
+            catch {
+                val := ""
+            }
+        }
+        favs.Push(val)
+    }
+    return favs
+}
+
+ChatFav_Save(appKey, slot, name) {
+    ini := ChatFav_IniPath()
+    SplitPath ini, , &dir
+    if (dir != "" && !DirExist(dir))
+        DirCreate(dir)
+    IniWrite(Trim(name), ini, appKey, String(slot))
+}
+
+ChatFav_ShouldInterceptDigit(*) {
+    global g_ChatFavGuiHwnd, g_ChatFavEditCtrl
+    if (!g_ChatFavGuiHwnd || !WinActive("ahk_id " g_ChatFavGuiHwnd))
+        return false
+    if (!IsObject(g_ChatFavEditCtrl))
+        return false
+    try return (Trim(g_ChatFavEditCtrl.Value) = "")
+    catch {
+        return false
+    }
+}
+
+ChatFav_IsPickerActive(*) {
+    global g_ChatFavGuiHwnd
+    return (g_ChatFavGuiHwnd && WinActive("ahk_id " g_ChatFavGuiHwnd))
+}
+
+ChatFav_RefreshRows() {
+    global g_ChatFavAppKey, g_ChatFavRowCtrls
+    favs := ChatFav_Load(g_ChatFavAppKey)
+    loop 5 {
+        if (A_Index <= g_ChatFavRowCtrls.Length && IsObject(g_ChatFavRowCtrls[A_Index])) {
+            lbl := (favs[A_Index] != "") ? favs[A_Index] : "(empty — Shift+" . A_Index . " to set)"
+            g_ChatFavRowCtrls[A_Index].Text := "[" . A_Index . "]  " . lbl
+        }
+    }
+}
+
+ChatFav_EditSlot(slot, *) {
+    global g_ChatFavAppKey, g_ChatFavGui, g_ChatFavGuiHwnd
+    if (!g_ChatFavGuiHwnd)
+        return
+    favs := ChatFav_Load(g_ChatFavAppKey)
+    cur := favs[slot]
+    try g_ChatFavGui.Opt("-AlwaysOnTop")
+    catch {
+    }
+    ib := InputBox("Enter favorite #" . slot . " for " . g_ChatFavAppKey . " (leave blank to clear):",
+        "Edit Favorite #" . slot, , cur)
+    try g_ChatFavGui.Opt("+AlwaysOnTop")
+    catch {
+    }
+    if (ib.Result = "Cancel") {
+        try WinActivate("ahk_id " g_ChatFavGuiHwnd)
+        catch {
+        }
+        return
+    }
+    ChatFav_Save(g_ChatFavAppKey, slot, Trim(ib.Value))
+    ChatFav_RefreshRows()
+    try WinActivate("ahk_id " g_ChatFavGuiHwnd)
+    catch {
+    }
+}
+
+ChatFav_PickSlot(slot, *) {
+    global g_ChatFavAppKey, g_ChatFavResult, g_ChatFavDone
+    favs := ChatFav_Load(g_ChatFavAppKey)
+    name := favs[slot]
+    if (name = "") {
+        ChatFav_EditSlot(slot)
+        favs := ChatFav_Load(g_ChatFavAppKey)
+        name := favs[slot]
+        if (name = "")
+            return
+    }
+    g_ChatFavResult := name
+    g_ChatFavDone := true
+}
+
+ChatFav_SetHotkeys(enable) {
+    try {
+        HotIf(ChatFav_ShouldInterceptDigit)
+        loop 5 {
+            n := A_Index
+            if (enable)
+                Hotkey(String(n), ChatFav_PickSlot.Bind(n), "On")
+            else
+                try Hotkey(String(n), "Off")
+        }
+        HotIf(ChatFav_IsPickerActive)
+        loop 5 {
+            n := A_Index
+            if (enable)
+                Hotkey("+" . n, ChatFav_EditSlot.Bind(n), "On")
+            else
+                try Hotkey("+" . n, "Off")
+        }
+    } finally {
+        try HotIf()
+        catch {
+        }
+    }
+}
+
+ChatFav_PromptContact(appLabel, appKey) {
+    global g_ChatFavGui, g_ChatFavGuiHwnd, g_ChatFavEditCtrl, g_ChatFavRowCtrls
+    global g_ChatFavAppKey, g_ChatFavResult, g_ChatFavDone
+
+    g_ChatFavAppKey := appKey
+    g_ChatFavResult := ""
+    g_ChatFavDone := false
+    g_ChatFavRowCtrls := []
+
+    g := Gui("+AlwaysOnTop +ToolWindow", "Jump to Chat — " . appLabel)
+    g.SetFont("s10", "Segoe UI")
+    g.BackColor := "1E1E1E"
+    g.MarginX := 16
+    g.MarginY := 12
+
+    g.SetFont("s10 cWhite", "Segoe UI")
+    g.Add("Text", "w380", "Enter a " . appLabel . " contact name, or press 1–5 for a favorite:")
+    g.SetFont("s11 cBlack", "Segoe UI")
+    ed := g.Add("Edit", "w380 vContactInput")
+
+    g.SetFont("s10 cF1C40F Bold", "Segoe UI")
+    g.Add("Text", "w380 y+10", "Favorites (1–5 jump  ·  Shift+1–5 edit)")
+    g.SetFont("s10 cE0E0E0 Norm", "Segoe UI")
+
+    favs := ChatFav_Load(appKey)
+    loop 5 {
+        idx := A_Index
+        lbl := (favs[idx] != "") ? favs[idx] : "(empty — Shift+" . idx . " to set)"
+        row := g.Add("Text", "w380 h24 y+4 Background2A2A2A +0x200", "  [" . idx . "]  " . lbl)
+        row.OnEvent("Click", ChatFav_PickSlot.Bind(idx))
+        g_ChatFavRowCtrls.Push(row)
+    }
+
+    btnOk := g.Add("Button", "Default w90 y+12", "Go")
+    btnCancel := g.Add("Button", "x+8 w90", "Cancel")
+
+    onSubmit := (*) => (
+        g_ChatFavResult := Trim(ed.Value),
+        g_ChatFavDone := true
+    )
+    onCancel := (*) => (
+        g_ChatFavResult := "",
+        g_ChatFavDone := true
+    )
+    btnOk.OnEvent("Click", onSubmit)
+    btnCancel.OnEvent("Click", onCancel)
+    g.OnEvent("Close", onCancel)
+    g.OnEvent("Escape", onCancel)
+
+    g_ChatFavGui := g
+    g_ChatFavEditCtrl := ed
+    g.Show("AutoSize Center")
+    g_ChatFavGuiHwnd := g.Hwnd
+    ed.Focus()
+    ChatFav_SetHotkeys(true)
+
+    try {
+        while (!g_ChatFavDone && DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd))
+            Sleep 30
+    } finally {
+        ChatFav_SetHotkeys(false)
+        g_ChatFavGuiHwnd := 0
+        g_ChatFavEditCtrl := 0
+        g_ChatFavRowCtrls := []
+        try g.Destroy()
+        catch {
+        }
+        g_ChatFavGui := 0
+    }
+    return g_ChatFavResult
 }
 
 Teams_RunDesktopJump(contact, forceColdStart := false) {
@@ -634,9 +838,8 @@ Teams_StartNewConversationJump() {
         if (!CheckAndOpenOutlookTeams(false, true, 0))
             return
     }
-    ib := InputBox("Enter a Teams contact name:", "Jump to Chat")
-    contact := Trim(ib.Value)
-    if (ib.Result = "Cancel" || contact = "")
+    contact := ChatFav_PromptContact("Teams", "Teams")
+    if (contact = "")
         return
     if (useCdp) {
         StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
@@ -650,9 +853,8 @@ Teams_StartNewConversationJump() {
 }
 
 WhatsApp_StartNewConversationJump() {
-    ib := InputBox("Enter a WhatsApp contact name:", "Jump to Chat")
-    contact := Trim(ib.Value)
-    if (ib.Result = "Cancel" || contact = "")
+    contact := ChatFav_PromptContact("WhatsApp", "WhatsApp")
+    if (contact = "")
         return
     if (ChatCDP_IsEnabled("whatsapp")) {
         isSelf := D2C_WhatsAppIsSelfContact(contact)
@@ -726,13 +928,17 @@ WhatsApp_StartNewConversationJump() {
             Teams_R_DoubleTapTimer := 0
         }
         Teams_R_DoubleTap_HideOverlay()
-        WhatsApp_StartNewConversationJump()
+        SetTimer((*) => WhatsApp_StartNewConversationJump(), -1)
         return
     }
 
-    Teams_R_LastPressTick := now
-    Teams_R_DoubleTapArmed := true
+    if (Teams_R_DoubleTapTimer) {
+        SetTimer(Teams_R_DoubleTapTimer, 0)
+        Teams_R_DoubleTapTimer := 0
+    }
     Teams_R_DoubleTap_ShowOverlay()
+    Teams_R_LastPressTick := A_TickCount
+    Teams_R_DoubleTapArmed := true
     Teams_R_DoubleTapTimer := ObjBindMethod(Teams_R_DoubleTapTimerObj, "OnSingleTapTimeout")
     SetTimer(Teams_R_DoubleTapTimer, -Teams_R_DoubleTapThresholdMs)
 }
