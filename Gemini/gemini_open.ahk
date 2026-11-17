@@ -367,7 +367,7 @@ GeminiOpen_FocusFreshPage(hwnd, companion, host, playChime := true) {
 GeminiOpen_NewCompanionTab() {
     companion := ResolveGlobalAICompanion()
     if (AiCompanionMode_IsCDP(companion)) {
-        res := AiCompanionCDP_Ensure(companion, true, true)
+        res := AiCompanionCDP_Ensure(companion, false, true)
         if (!res.ok)
             AiCompanionCDP_NotifyError("Open new tab", res.error, companion)
         else {
