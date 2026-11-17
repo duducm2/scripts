@@ -20,18 +20,22 @@ Task_LaunchApp() {
     Task_EnsureData()
     existing := Task_FindExistingDashboardHwnd()
     if (existing) {
-        if (!Task_IsServerRunning()) {
-            if (!Task_EnsureServer(false))
-                return
-        }
+        ; Activate existing window immediately while ensuring server health in parallel.
         Task_ActivateDashboard(existing)
         try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\task-opened.wav")
         catch {
         }
+        SetTimer((*) => Task_EnsureServer(false), -1)
         return
     }
     try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
+    }
+    ; Pre-warm Chrome in parallel while the Python server boots.
+    if (!ProcessExist("chrome.exe")) {
+        try Run("chrome.exe --no-startup-window")
+        catch {
+        }
     }
     if (!Task_EnsureServer(false)) {
         try StandardLoadingBar_Hide(0)
@@ -281,9 +285,11 @@ Task_EnsureServer(forceRestart := false) {
     }
 
     loop 2 {
-        Task_StopServer(port)
-        if (Task_PortIsListening(port) || Task_IsServerRunning(port))
-            Sleep 150
+        if (forceRestart || A_Index > 1 || Task_PortIsListening(port) || Task_PidRead() > 0) {
+            Task_StopServer(port)
+            if (Task_PortIsListening(port) || Task_IsServerRunning(port))
+                Sleep 150
+        }
         if (!FileExist(Task_PythonDir() . "\task_server.py")) {
             Task_Notify("task_server.py not found", 2200, BANNER_ACCENT_ERROR)
             return false
@@ -306,7 +312,7 @@ Task_EnsureServer(forceRestart := false) {
                     Task_PidWrite(runPid)
                 return true
             }
-            Sleep 150
+            Sleep 60
         }
     }
     Task_Notify("Tasks server did not start", 2800, BANNER_ACCENT_ERROR)
@@ -486,9 +492,6 @@ Task_OpenInChrome(url) {
     }
     if (newHwnd) {
         Task_DashboardHwndCacheSet(newHwnd)
-        try WinActivate("ahk_id " newHwnd)
-        catch {
-        }
         return true
     }
     return true

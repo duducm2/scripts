@@ -90,12 +90,9 @@ Palace_LaunchApp() {
     Palace_EnsureData()
     existing := Palace_FindExistingWebHwnd()
     if (existing) {
-        if (!Palace_IsServerRunning()) {
-            if (!Palace_EnsureServer(false))
-            return false
-        }
         if (Palace_ActivateWeb(existing)) {
             Palace_PlayOpenSound()
+            SetTimer((*) => Palace_EnsureServer(false), -1)
             return true
         }
         ; Cached HWND went stale — clear and fall through to open/re-find.
@@ -103,11 +100,18 @@ Palace_LaunchApp() {
         existing := Palace_FindExistingWebHwnd()
         if (existing && Palace_ActivateWeb(existing)) {
             Palace_PlayOpenSound()
+            SetTimer((*) => Palace_EnsureServer(false), -1)
             return true
         }
     }
     try StandardLoadingBar_Show("⏳ Opening Memory Palace…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
+    }
+    ; Pre-warm Chrome in parallel while the Python server boots.
+    if (!ProcessExist("chrome.exe")) {
+        try Run("chrome.exe --no-startup-window")
+        catch {
+        }
     }
     if (!Palace_EnsureServer(false)) {
         try StandardLoadingBar_Hide(0)
@@ -138,9 +142,6 @@ Palace_LaunchApp() {
     }
     hwndFinal := Palace_WebHwndCacheGet()
     if (hwndFinal) {
-        Palace_ForceActivatePicker(hwndFinal)
-        Palace_FocusPickerDocument(hwndFinal)
-        Palace_ForceActivatePicker(hwndFinal)
         ; Never re-apply picker geometry after study selection (title left the picker needle).
         if (Palace_ChromeTitleLooksLikePicker(hwndFinal)) {
             global g_PalacePickerPlaceX, g_PalacePickerPlaceY, g_PalacePickerPlaceW, g_PalacePickerPlaceH
@@ -148,8 +149,6 @@ Palace_LaunchApp() {
                 Palace_PickerForceMoveHwnd(hwndFinal, g_PalacePickerPlaceX, g_PalacePickerPlaceY,
                     g_PalacePickerPlaceW, g_PalacePickerPlaceH)
         }
-        ; Absolute last: activate again so nothing after place keeps foreign FG.
-        Palace_ForceActivatePicker(hwndFinal)
     }
         if (!ok) {
             Palace_Notify("Chrome failed to open Memory Palace", 2500, BANNER_ACCENT_ERROR)
@@ -376,9 +375,11 @@ Palace_EnsureServer(forceRestart := false) {
     }
 
     loop 2 {
-        Palace_StopServer(port)
-        if (Palace_PortIsListening(port) || Palace_IsServerRunning(port))
-            Sleep 200
+        if (forceRestart || A_Index > 1 || Palace_PortIsListening(port) || Palace_PidRead() > 0) {
+            Palace_StopServer(port)
+            if (Palace_PortIsListening(port) || Palace_IsServerRunning(port))
+                Sleep 200
+        }
         if (!FileExist(Palace_PythonDir() . "\palace_server.py")) {
             Palace_Notify("palace_server.py not found", 2200, BANNER_ACCENT_ERROR)
             return false
@@ -401,7 +402,7 @@ Palace_EnsureServer(forceRestart := false) {
                     Palace_PidWrite(runPid)
                 return true
             }
-            Sleep 150
+            Sleep 60
         }
     }
     Palace_Notify("Palace server did not start", 2800, BANNER_ACCENT_ERROR)
