@@ -608,6 +608,19 @@ class Teams_R_DoubleTapTimerObj {
     }
 }
 
+Teams_RunDesktopJump(contact) {
+    clipSaved := ClipboardAll()
+    StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
+    try {
+        TeamsJumpToChat(contact)
+    } finally {
+        StandardLoadingBar_Hide(0)
+        A_Clipboard := clipSaved
+        if (ClipWait(1)) {
+        }
+    }
+}
+
 Teams_StartNewConversationJump() {
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
     if contact = ""
@@ -622,14 +635,7 @@ Teams_StartNewConversationJump() {
     }
     if (!CheckAndOpenOutlookTeams(false, true))
         return
-    clipSaved := ClipboardAll()
-    try {
-        TeamsJumpToChat(contact)
-    } finally {
-        A_Clipboard := clipSaved
-        if (ClipWait(1)) {
-        }
-    }
+    SetTimer((*) => Teams_RunDesktopJump(contact), -1)
 }
 
 WhatsApp_StartNewConversationJump() {

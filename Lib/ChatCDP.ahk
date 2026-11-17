@@ -11,16 +11,20 @@ ChatCDP_IniPath() {
 ChatCDP_IsEnabled(app := "") {
     if (AiCompanionMode_Get() != "cdp")
         return false
+    appNorm := StrLower(Trim(app))
+    ; Teams uses the native desktop app (ms-teams.exe) by default, not teams.microsoft.com in CDP browser.
+    defaultVal := (appNorm = "teams") ? "off" : "cdp"
     path := ChatCDP_IniPath()
     if FileExist(path) {
         try {
-            val := StrLower(Trim(IniRead(path, "Mode", app != "" ? StrLower(Trim(app)) : "Enabled", "cdp")))
+            val := StrLower(Trim(IniRead(path, "Mode", appNorm != "" ? appNorm : "Enabled", defaultVal)))
             if (val = "off" || val = "0" || val = "ahk" || val = "false")
                 return false
+            return true
         } catch {
         }
     }
-    return true
+    return defaultVal != "off"
 }
 
 ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate := false) {
