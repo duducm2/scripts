@@ -350,7 +350,8 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
             if (ok)
                 break
             lowErr := StrLower(err)
-            if (A_Index < maxAttempts && (InStr(lowErr, "cdp_launch_failed") || InStr(lowErr, "cdp_not_running") || InStr(lowErr, "no_browser_context"))) {
+            isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "only_one_tab")
+            if (A_Index < maxAttempts && !isFatal && (!cdpUp || InStr(lowErr, "cdp_launch_failed") || InStr(lowErr, "cdp_not_running") || InStr(lowErr, "no_browser_context"))) {
                 Sleep 800
                 continue
             }

@@ -286,12 +286,12 @@ class CDPBridge:
             if matching_pages:
                 return self._pick_current_page(comp, matching_pages, active_title=active_title)
             if fallback_page is not None:
-                fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
+                fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
                 self._active_pages[comp] = fallback_page
                 return fallback_page
 
         page = context.new_page()
-        page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
+        page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
         try:
             page.bring_to_front()
         except Exception:
