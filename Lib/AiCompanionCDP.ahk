@@ -504,11 +504,14 @@ AiCompanionCDP_CopyLast(companionId := "", isCode := false, playChimeAndNotify :
     return true
 }
 
-AiCompanionCDP_NewChat(companionId := "") {
+AiCompanionCDP_NewChat(companionId := "", activeTitle := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return false
-    res := AiCompanionCDP_Post("/new_chat", Map("companion", comp), 15000)
+    payload := Map("companion", comp)
+    if (Trim(activeTitle) != "")
+        payload["active_title"] := Trim(activeTitle)
+    res := AiCompanionCDP_Post("/new_chat", payload, 15000)
     return res.ok
 }
 

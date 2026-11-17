@@ -487,14 +487,29 @@ AiCompanion_StartNewChat(companion) {
     if !AiCompanionModels_IsValidCompanion(companion)
         return false
     if (AiCompanionMode_IsCDP(companion)) {
-        ok := AiCompanionCDP_NewChat(companion)
+        activeTitle := ""
+        try {
+            hwndA := WinExist("A")
+            if (hwndA && StrLower(WinGetProcessName("ahk_id " hwndA)) = "chrome.exe")
+                activeTitle := WinGetTitle("ahk_id " hwndA)
+        } catch {
+        }
+        ok := AiCompanionCDP_NewChat(companion, activeTitle)
         if (ok)
             AiCompanion_ShowNewChatBanner(companion)
         else
             AiCompanionCDP_NotifyError("New chat", AiCompanionCDP_GetLastError(), companion)
         return ok
     }
-    hwnd := WinExist("A")
+    return AiCompanion_StartNewChatInWindow(WinExist("A"), companion)
+}
+
+; In-window UIA/keyboard New Chat on a specific Chrome HWND (used by non-CDP mode or non-CDP Chrome tabs).
+AiCompanion_StartNewChatInWindow(hwnd, companion) {
+    if !AiCompanionModels_IsValidCompanion(companion)
+        return false
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        hwnd := WinExist("A")
     StandardLoadingBar_Show("⏳ New chat…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: hwnd, fontSize: 17 })
     ok := false
     try {

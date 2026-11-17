@@ -172,13 +172,65 @@ class CDPBridge:
                 except Exception:
                     pass
 
-    def _pick_current_page(self, comp: str, matching_pages: list) -> object:
+    @staticmethod
+    def _strip_chrome_title_suffix(title: str) -> str:
+        t = (title or "").strip()
+        for suffix in (" - Google Chrome", " - Chromium"):
+            if t.endswith(suffix):
+                return t[: -len(suffix)].strip()
+        return t
+
+    @staticmethod
+    def _page_has_focus(page) -> bool:
+        try:
+            return bool(page.evaluate("() => document.hasFocus()"))
+        except Exception:
+            return False
+
+    def _pick_current_page(self, comp: str, matching_pages: list, active_title: str = "") -> object:
         if len(matching_pages) == 1:
             self._active_pages[comp] = matching_pages[0]
             return matching_pages[0]
 
-        # 1. Chrome's /json/list returns page targets in MRU/active-tab order (index 0 = current tab),
-        #    unlike Playwright's context.pages (creation order) or visibilityState (forced 'visible' by CDP).
+        # 1. Active Chrome window title always reflects the currently selected tab.
+        win_title = self._strip_chrome_title_suffix(active_title) or self._strip_chrome_title_suffix(
+            self._get_hwnd_title(self._find_cdp_chrome_hwnd())
+        )
+        if win_title:
+            title_matches = []
+            for p in matching_pages:
+                try:
+                    t = (p.title() or "").strip()
+                    if t and (t == win_title or win_title.startswith(t)):
+                        title_matches.append(p)
+                except Exception:
+                    pass
+            if len(title_matches) == 1:
+                self._active_pages[comp] = title_matches[0]
+                return title_matches[0]
+            if len(title_matches) > 1:
+                for p in title_matches:
+                    if self._page_has_focus(p):
+                        self._active_pages[comp] = p
+                        return p
+                tracked = self._active_pages.get(comp)
+                if tracked in title_matches:
+                    return tracked
+                self._active_pages[comp] = title_matches[-1]
+                return title_matches[-1]
+
+        # 2. If Chrome is focused on an AI tab whose title differs slightly, document.hasFocus() wins.
+        for p in matching_pages:
+            if self._page_has_focus(p):
+                self._active_pages[comp] = p
+                return p
+
+        # 3. Last tracked active page for this companion.
+        tracked = self._active_pages.get(comp)
+        if tracked in matching_pages:
+            return tracked
+
+        # 4. Fallback: /json/list order, then newest tab.
         mru_ids = self._get_mru_target_ids()
         if mru_ids:
             rank = {tid: idx for idx, tid in enumerate(mru_ids)}
@@ -193,39 +245,10 @@ class CDPBridge:
                 self._active_pages[comp] = best_page
                 return best_page
 
-        # 2. When minimized/fallback, match the Chrome window title against tab titles.
-        win_title = self._get_hwnd_title(self._find_cdp_chrome_hwnd())
-        for suffix in (" - Google Chrome", " - Chromium"):
-            if win_title.endswith(suffix):
-                win_title = win_title[: -len(suffix)].strip()
-                break
-        if win_title:
-            title_matches = []
-            for p in matching_pages:
-                try:
-                    t = (p.title() or "").strip()
-                    if t and (t == win_title or win_title.startswith(t)):
-                        title_matches.append(p)
-                except Exception:
-                    pass
-            if len(title_matches) == 1:
-                self._active_pages[comp] = title_matches[0]
-                return title_matches[0]
-            if len(title_matches) > 1:
-                tracked = self._active_pages.get(comp)
-                if tracked in title_matches:
-                    return tracked
-                self._active_pages[comp] = title_matches[-1]
-                return title_matches[-1]
-
-        # 3. Fall back to the last tracked active page for this companion, or newest tab.
-        tracked = self._active_pages.get(comp)
-        if tracked in matching_pages:
-            return tracked
         self._active_pages[comp] = matching_pages[-1]
         return matching_pages[-1]
 
-    def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True):
+    def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True, active_title: str = ""):
         comp = (companion or "gemini").strip().lower()
         needle, target_url = self._companion_meta(companion)
         browser = self._connect(launch_if_down=launch_if_down, target_url=target_url, minimized=minimized)
@@ -246,7 +269,7 @@ class CDPBridge:
                 elif fallback_page is None:
                     fallback_page = page
             if matching_pages:
-                return self._pick_current_page(comp, matching_pages)
+                return self._pick_current_page(comp, matching_pages, active_title=active_title)
             if fallback_page is not None:
                 fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=25000)
                 self._active_pages[comp] = fallback_page
@@ -971,7 +994,8 @@ class CDPBridge:
 
     def new_chat(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        active_title = (data.get("active_title") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True, active_title=active_title)
         composer = self._find_composer(page, timeout_s=6.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}

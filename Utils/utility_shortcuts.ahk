@@ -429,18 +429,23 @@ MacroAICompanionDeepModel(*) {
     GlobalAICompanionSelectRole("deep")
 }
 
-; Macros [N] / #!+W → N: open resolved companion, then same New Chat as in-app Shift+N.
-; After new chat, reactivate the window that was focused when #!+W opened Macros.
+; Detect AI companion id from a Chrome window title, or "" if not an AI companion tab.
+UtilityShortcuts_DetectAICompanionFromTitle(title) {
+    t := StrLower(Trim(title))
+    if (t = "")
+        return ""
+    if (InStr(t, "gemini enterprise"))
+        return AI_COMPANION_ENTERPRISE
+    if (InStr(t, "copilot"))
+        return AI_COMPANION_COPILOT
+    if (InStr(t, "gemini"))
+        return AI_COMPANION_GEMINI
+    return ""
+}
+
+; Macros [N] / #!+W → N: start a new chat in the current active AI companion Chrome tab when one is active,
+; otherwise in the resolved AI companion.
 MacroAICompanionNewChat(*) {
-    if (AiCompanionMode_IsCDP()) {
-        companion := ResolveGlobalAICompanion()
-        ok := AiCompanionCDP_NewChat(companion)
-        if (ok)
-            AiCompanion_ShowNewChatBanner(GlobalAICompanionModelsId())
-        else
-            AiCompanionCDP_NotifyError("New chat", AiCompanionCDP_GetLastError(), companion)
-        return ok
-    }
     global g_UtilitySelectorRestoreHwnd
     ; Prefer the hwnd captured at #!+W open — not whatever is foreground after menu teardown.
     prevHwnd := 0
@@ -456,6 +461,57 @@ MacroAICompanionNewChat(*) {
             prevHwnd := 0
         }
     }
+
+    isChromeTab := false
+    prevTitle := ""
+    tabCompanion := ""
+    if (prevHwnd && WinExist("ahk_id " prevHwnd)) {
+        try {
+            if (StrLower(WinGetProcessName("ahk_id " prevHwnd)) = "chrome.exe") {
+                prevTitle := WinGetTitle("ahk_id " prevHwnd)
+                tabCompanion := UtilityShortcuts_DetectAICompanionFromTitle(prevTitle)
+                isChromeTab := (tabCompanion != "")
+            }
+        } catch {
+        }
+    }
+
+    if (AiCompanionMode_IsCDP()) {
+        if (isChromeTab) {
+            cdpHwnd := AiCompanionCDP_FindWindowHwnd(0, tabCompanion)
+            if (cdpHwnd && prevHwnd != cdpHwnd) {
+                try {
+                    WinActivate("ahk_id " prevHwnd)
+                    WinWaitActive("ahk_id " prevHwnd, , 1.0)
+                } catch {
+                }
+                return AiCompanion_StartNewChatInWindow(prevHwnd, tabCompanion)
+            }
+            ok := AiCompanionCDP_NewChat(tabCompanion, prevTitle)
+            if (ok)
+                AiCompanion_ShowNewChatBanner(tabCompanion)
+            else
+                AiCompanionCDP_NotifyError("New chat", AiCompanionCDP_GetLastError(), tabCompanion)
+            return ok
+        }
+        companion := ResolveGlobalAICompanion()
+        ok := AiCompanionCDP_NewChat(companion)
+        if (ok)
+            AiCompanion_ShowNewChatBanner(GlobalAICompanionModelsId())
+        else
+            AiCompanionCDP_NotifyError("New chat", AiCompanionCDP_GetLastError(), companion)
+        return ok
+    }
+
+    if (isChromeTab) {
+        try {
+            WinActivate("ahk_id " prevHwnd)
+            WinWaitActive("ahk_id " prevHwnd, , 1.0)
+        } catch {
+        }
+        return AiCompanion_StartNewChatInWindow(prevHwnd, tabCompanion)
+    }
+
     label := GetGlobalAIProviderLabel()
     StandardLoadingBar_Show("⏳ Opening " . label . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
