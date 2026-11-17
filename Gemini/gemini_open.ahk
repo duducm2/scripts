@@ -387,7 +387,7 @@ GeminiOpen_OpenOrFocus() {
     catch {
     }
     res := AiCompanionCDP_Ensure(companion, true, false)
-    try StandardLoadingBar_Hide(0)
+    try StandardLoadingBar_Hide(0) 
     catch {
     }
     if (!res.ok)
