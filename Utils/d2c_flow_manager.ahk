@@ -1010,7 +1010,7 @@ class D2C_FlowManager {
                 StandardLoadingBar_Show("⏳ Sending to Teams (" . contact . ") via CDP…", BANNER_ACCENT_INTERMEDIATE)
                 res := { ok: false, error: "CDP failed" }
                 try {
-                    res := ChatCDP_Jump("teams", contact, clipText, filePaths, false, false)
+                    res := ChatCDP_Jump("teams", contact, clipText, filePaths, false, true)
                 } finally {
                     for tmp in tempFiles {
                         try {
@@ -1101,7 +1101,7 @@ class D2C_FlowManager {
                 StandardLoadingBar_Show("⏳ Sending to WhatsApp (" . contact . ") via CDP…", BANNER_ACCENT_INTERMEDIATE)
                 res := { ok: false, error: "CDP failed" }
                 try {
-                    res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, isSelf, false)
+                    res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, isSelf, !isSelf)
                 } finally {
                     for tmp in tempFiles {
                         try {
