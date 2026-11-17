@@ -363,11 +363,6 @@ TeamsJumpToChat(contact, backgroundOnly := false) {
             return false
         }
 
-        if (backgroundOnly && !gotoAlreadyOpen) {
-            if (TeamsJump_SearchAndSelectViaUia(hwndTeams, contact))
-                return true
-        }
-
         if (!gotoAlreadyOpen && !TeamsJump_ActivateWindowWithRetry(hwndTeams, 3, 300)) {
             ShowCenteredOverlay_Utils("❌ Could not activate Teams window.", 2500, BANNER_ACCENT_ERROR)
             return false

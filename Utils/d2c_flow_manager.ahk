@@ -1028,7 +1028,7 @@ class D2C_FlowManager {
                 return
             }
 
-            if (!TeamsJumpToChat(contact, true)) {
+            if (!TeamsJumpToChat(contact, false)) {
                 return
             }
 
@@ -1037,9 +1037,14 @@ class D2C_FlowManager {
                 ShowCenteredOverlay_Utils("❌ Could not find Teams chat.", 2500, BANNER_ACCENT_ERROR)
                 return
             }
-            ; Background UIA paste with verify/retry; restores caller focus if fallback ^v was needed.
-            if (TeamsJump_PasteAndVerify(hwnd, messageText, 3, true))
+            if (TeamsJump_PasteAndVerify(hwnd, messageText, 3, false)) {
+                if (this.OriginHwnd && this.OriginHwnd != hwnd && WinExist("ahk_id " this.OriginHwnd)) {
+                    try WinActivate("ahk_id " this.OriginHwnd)
+                    catch {
+                    }
+                }
                 ShowCenteredOverlay_Utils("✅ Message ready in Teams", 1400, BANNER_ACCENT_SUCCESS)
+            }
         } finally {
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
