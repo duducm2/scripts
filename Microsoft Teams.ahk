@@ -608,11 +608,11 @@ class Teams_R_DoubleTapTimerObj {
     }
 }
 
-Teams_RunDesktopJump(contact) {
+Teams_RunDesktopJump(contact, forceColdStart := false) {
     clipSaved := ClipboardAll()
     StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
     try {
-        if (TeamsJumpToChat(contact, true)) {
+        if (TeamsJumpToChat(contact, false, forceColdStart)) {
             hwnd := TeamsJump_ResolveChatHwnd()
             if (hwnd > 0)
                 TeamsJump_ActivateWindowWithRetry(hwnd, 2, 250)
@@ -626,8 +626,9 @@ Teams_RunDesktopJump(contact) {
 }
 
 Teams_StartNewConversationJump() {
-    contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
-    if contact = ""
+    ib := InputBox("Enter a Teams contact name:", "Jump to Chat")
+    contact := Trim(ib.Value)
+    if (ib.Result = "Cancel" || contact = "")
         return
     if (ChatCDP_IsEnabled("teams")) {
         StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
@@ -637,9 +638,10 @@ Teams_StartNewConversationJump() {
             ChatCDP_NotifyError("teams", res.error)
         return
     }
+    teamsWasClosed := !ProcessExist("ms-teams.exe")
     if (!CheckAndOpenOutlookTeams(false, true))
         return
-    SetTimer((*) => Teams_RunDesktopJump(contact), -1)
+    SetTimer((*) => Teams_RunDesktopJump(contact, teamsWasClosed), -1)
 }
 
 WhatsApp_StartNewConversationJump() {

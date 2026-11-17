@@ -95,9 +95,30 @@ TeamsJump_NameIsComposer(text) {
     return false
 }
 
+; True when focused element name/id looks like Teams search or Go-To bar.
+TeamsJump_IsSearchOrGoToElement(fe) {
+    name := ""
+    aid := ""
+    try name := StrLower(fe.Name)
+    catch {
+    }
+    try aid := StrLower(fe.AutomationId)
+    catch {
+    }
+    for knownAid in ["ms-searchux-input", "search-box-input", "searchinput"] {
+        if (aid = knownAid)
+            return true
+    }
+    for kw in ["search", "pesquisar", "go to", "ir para", "ctrl+g", "ctrl+e"] {
+        if (InStr(name, kw))
+            return true
+    }
+    return false
+}
+
 ; One focused element. No tree walk. isGoTo when focus is an Edit/ComboBox and not the composer.
 TeamsJump_ReadFocus() {
-    info := { id: "", isGoTo: false }
+    info := { id: "", isGoTo: false, isNamedSearch: false }
     fe := 0
     try fe := UIA.GetFocusedElement()
     catch
@@ -120,26 +141,31 @@ TeamsJump_ReadFocus() {
     if (TeamsJump_NameIsComposer(name))
         return info
     info.isGoTo := true
+    info.isNamedSearch := TeamsJump_IsSearchOrGoToElement(fe)
     return info
 }
 
-; Ctrl+G once. True when focus moved onto the go-to field.
+; Ctrl+G once. True when focus moved onto the go-to field (or is already on the named search/go-to field).
 TeamsJump_ProbeGoToField() {
     before := TeamsJump_ReadFocus()
+    if (before.isGoTo && before.isNamedSearch)
+        return true
     Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
     Send "^g"
     Sleep 300
     after := TeamsJump_ReadFocus()
     if (!after.isGoTo)
         return false
+    if (after.isNamedSearch)
+        return true
     if (before.id != "" && after.id = before.id)
-        return false
+        return before.isGoTo
     return true
 }
 
-; Cold start after the open prompt. gotoAlreadyOpen: Ctrl+G already focused the field, do not send it again.
-; Returns false only when no Teams window appeared. A window that never confirms the field still returns true.
-TeamsJump_WaitUntilGoToReady(&hwnd, &gotoAlreadyOpen, timeoutMs := 20000) {
+; Gate 2: Cold start after the open prompt. gotoAlreadyOpen: Ctrl+G already focused the field, do not send it again.
+; Returns true only when a Teams window is present AND Ctrl+G focus probe succeeded.
+TeamsJump_WaitUntilGoToReady(&hwnd, &gotoAlreadyOpen, timeoutMs := 30000) {
     gotoAlreadyOpen := false
     TeamsJump_WaitUntilOpenPromptClosed()
     start := A_TickCount
@@ -174,7 +200,7 @@ TeamsJump_WaitUntilGoToReady(&hwnd, &gotoAlreadyOpen, timeoutMs := 20000) {
             }
             Sleep 400
         }
-        return hwnd > 0 && WinExist("ahk_id " hwnd)
+        return false
     } finally {
         if (shown) {
             try StandardLoadingBar_Hide(0)
@@ -316,10 +342,122 @@ TeamsJump_SearchAndSelectViaUia(hwndTeams, contact) {
     return false
 }
 
-TeamsJumpToChat(contact, backgroundOnly := false) {
-    ; Closed means no ms-teams.exe, which is when CheckAndOpenOutlookTeams asks
-    ; "Teams is closed. Do you want to open it?" Nothing below runs until that returns.
-    teamsWasClosed := !ProcessExist("ms-teams.exe")
+; Gate 3: Ensure Teams is active and focus is actually in the Go-To / Search box before pasting.
+TeamsJump_EnsureGoToFocused(hwndTeams, gotoAlreadyOpen := false, attempts := 4) {
+    if (!hwndTeams || !WinExist("ahk_id " hwndTeams))
+        return false
+    if (gotoAlreadyOpen && WinActive("ahk_id " hwndTeams) && TeamsJump_ReadFocus().isGoTo)
+        return true
+    loop attempts {
+        if (!WinActive("ahk_id " hwndTeams)) {
+            if (!TeamsJump_ActivateWindowWithRetry(hwndTeams, 2, 300)) {
+                Sleep 150
+                continue
+            }
+        }
+        if (TeamsJump_ReadFocus().isGoTo)
+            return true
+        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+        Send "^g"
+        deadline := A_TickCount + 700
+        while (A_TickCount < deadline) {
+            if (TeamsJump_ReadFocus().isGoTo)
+                return true
+            Sleep 100
+        }
+    }
+    return TeamsJump_ReadFocus().isGoTo
+}
+
+; Gate 4: Wait for search results to populate and click/invoke the matching contact item.
+TeamsJump_SelectSearchResult(hwndTeams, contact, timeoutMs := 5000) {
+    if (!hwndTeams || Trim(contact) = "")
+        return false
+    root := TeamsJump_AttachUiaRoot(hwndTeams)
+    if (!root)
+        return false
+    tokens := StrSplit(StrLower(Trim(contact)), " ")
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        for ct in ["ListItem", "MenuItem", "Option", "TreeItem"] {
+            try {
+                items := root.FindAll({ ControlType: ct })
+                for item in items {
+                    nm := ""
+                    try nm := StrLower(item.Name)
+                    if (nm = "")
+                        continue
+                    allMatch := true
+                    for tok in tokens {
+                        if (tok != "" && !InStr(nm, tok)) {
+                            allMatch := false
+                            break
+                        }
+                    }
+                    if (allMatch) {
+                        try {
+                            item.Invoke()
+                            return true
+                        } catch {
+                            try {
+                                item.Select()
+                                return true
+                            } catch {
+                                try {
+                                    item.Click()
+                                    return true
+                                } catch {
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+        Sleep 100
+    }
+    return false
+}
+
+; Gate 5: Confirm Teams actually navigated to the contact's chat (Go-To closed, title or composer ready).
+TeamsJump_WaitUntilChatOpened(hwndTeams, contact, timeoutMs := 3500) {
+    firstTok := ""
+    for tok in StrSplit(StrLower(Trim(contact)), " ") {
+        if (tok != "") {
+            firstTok := tok
+            break
+        }
+    }
+    deadline := A_TickCount + timeoutMs
+    sentFallbackEnter := false
+    while (A_TickCount < deadline) {
+        try {
+            title := StrLower(WinGetTitle("ahk_id " hwndTeams))
+            if ((InStr(title, "chat |") || InStr(title, "bate-papo |")) && (firstTok = "" || InStr(title, firstTok)))
+                return true
+        } catch {
+        }
+        focusInfo := TeamsJump_ReadFocus()
+        if (!focusInfo.isGoTo && TeamsJump_FindComposer(hwndTeams))
+            return true
+        if (!sentFallbackEnter && focusInfo.isGoTo && (deadline - A_TickCount) < (timeoutMs - 800)) {
+            sentFallbackEnter := true
+            try {
+                if (WinActive("ahk_id " hwndTeams))
+                    Send "{Enter}"
+            } catch {
+            }
+        }
+        Sleep 150
+    }
+    return false
+}
+
+TeamsJumpToChat(contact, backgroundOnly := false, forceColdStart := false) {
+    ; Gate 1: Closed means no ms-teams.exe (or caller saw it closed before CheckAndOpenOutlookTeams),
+    ; or no main Teams window exists yet. Nothing below runs until the open prompt is resolved.
+    teamsWasClosed := forceColdStart || !ProcessExist("ms-teams.exe")
     prevHwnd := 0
     try prevHwnd := WinGetID("A")
     catch {
@@ -340,13 +478,17 @@ TeamsJumpToChat(contact, backgroundOnly := false) {
         SetControlDelay 0
 
         hwndTeams := TeamsJump_ResolveMainHwnd()
-        if (hwndTeams <= 0)
-            TeamsJump_Run()
+        if (hwndTeams <= 0) {
+            teamsWasClosed := true
+            if (!ProcessExist("ms-teams.exe"))
+                TeamsJump_Run()
+        }
 
+        ; Gate 2: Wait for main window + UIA-verified Ctrl+G readiness on cold start.
         gotoAlreadyOpen := false
         if (teamsWasClosed) {
-            if (!TeamsJump_WaitUntilGoToReady(&hwndTeams, &gotoAlreadyOpen)) {
-                try ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+            if (!TeamsJump_WaitUntilGoToReady(&hwndTeams, &gotoAlreadyOpen, 30000)) {
+                try ShowCenteredOverlay_Utils("❌ Teams did not become ready in time.", 2500, BANNER_ACCENT_ERROR)
                 return false
             }
         } else if (hwndTeams <= 0) {
@@ -369,12 +511,13 @@ TeamsJumpToChat(contact, backgroundOnly := false) {
         }
 
         TeamsJump_WaitUntilOpenPromptClosed()
-        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
 
-        if (!gotoAlreadyOpen) {
-            Send "^g"
-            Sleep 100
+        ; Gate 3: Verify focus is in the Go-To / Search input before pasting the contact name.
+        if (!TeamsJump_EnsureGoToFocused(hwndTeams, gotoAlreadyOpen)) {
+            ShowCenteredOverlay_Utils("❌ Could not focus Teams Go-To search bar.", 2500, BANNER_ACCENT_ERROR)
+            return false
         }
+
         loop 5 {
             A_Clipboard := ""
             A_Clipboard := contact
@@ -386,10 +529,24 @@ TeamsJumpToChat(contact, backgroundOnly := false) {
             }
             Sleep 100
         }
+        Send "^a"
+        Sleep 40
         Send "^v"
-        Sleep 200
-        Sleep 600
-        Send "{Enter}"
+
+        ; Gate 4: Wait for matching contact result to appear and invoke/click it; Enter fallback if UIA misses.
+        selected := TeamsJump_SelectSearchResult(hwndTeams, contact, teamsWasClosed ? 6000 : 3500)
+        if (!selected) {
+            if (TeamsJump_ReadFocus().isGoTo)
+                Send "{Enter}"
+        }
+
+        ; Gate 5: Confirm navigation landed in the chat before returning or restoring focus.
+        opened := TeamsJump_WaitUntilChatOpened(hwndTeams, contact, 3500)
+        if (!opened && !selected) {
+            ShowCenteredOverlay_Utils("❌ Could not select contact in Teams: " . contact, 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
+
         if (backgroundOnly && prevHwnd && prevHwnd != hwndTeams && WinExist("ahk_id " prevHwnd)) {
             try WinActivate("ahk_id " prevHwnd)
             catch {
