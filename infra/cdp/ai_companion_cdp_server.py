@@ -124,6 +124,10 @@ class CDPBridge:
         comp = (companion or "gemini").strip().lower()
         if comp in ("enterprise", "geminienterprise"):
             return "vertexaisearch.cloud.google.com", ENTERPRISE_URL
+        if comp in ("whatsapp", "wa"):
+            return "web.whatsapp.com", "https://web.whatsapp.com"
+        if comp in ("teams", "msteams"):
+            return "teams.microsoft.com", "https://teams.microsoft.com"
         return "gemini.google.com", CONSUMER_URL
 
     @staticmethod
@@ -1066,6 +1070,243 @@ class CDPBridge:
                 pass
         return {"ok": False, "error": "READ_ALOUD_NOT_FOUND"}
 
+    @staticmethod
+    def _find_first_visible(page, selectors: list[str], timeout_s: float = 6.0):
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            for sel in selectors:
+                try:
+                    loc = page.locator(sel).locator("visible=true").first
+                    if loc.count() > 0:
+                        return loc
+                except Exception:
+                    pass
+            time.sleep(0.12)
+        return None
+
+    def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
+        search_loc = self._find_first_visible(
+            page,
+            [
+                'div[contenteditable="true"][data-tab="3"]',
+                'div[role="textbox"][aria-label*="Search" i]',
+                'div[role="textbox"][aria-label*="Pesquisar" i]',
+                'input[aria-label*="Search" i]',
+            ],
+            timeout_s=8.0,
+        )
+        if search_loc is None:
+            try:
+                if page.locator('canvas[aria-label*="Scan" i], div[data-ref]').count() > 0 or self._is_auth_page(page):
+                    return {"ok": False, "error": "AUTH_REQUIRED"}
+            except Exception:
+                pass
+            return {"ok": False, "error": "WHATSAPP_SEARCH_NOT_FOUND"}
+
+        self._insert_text_in_composer(page, search_loc, contact, clear=True)
+        time.sleep(0.4)
+
+        # Wait for search results in #pane-side and click the best token-matched chat row.
+        clicked = False
+        click_deadline = time.time() + 5.0
+        while time.time() < click_deadline:
+            try:
+                clicked = bool(
+                    page.evaluate(
+                        """(contact) => {
+                            const pane = document.querySelector('#pane-side');
+                            if (!pane) return false;
+                            const tokens = contact.toLowerCase().split(/\\s+/).filter(Boolean);
+                            const rows = Array.from(pane.querySelectorAll('[role="listitem"], [role="row"]'));
+                            let best = null;
+                            for (const row of rows) {
+                                const titleEl = row.querySelector('span[title]');
+                                const label = ((titleEl && titleEl.getAttribute('title')) || row.innerText || '').toLowerCase();
+                                if (!label) continue;
+                                if (tokens.every(t => label.includes(t))) {
+                                    best = titleEl || row.querySelector('[role="gridcell"]') || row;
+                                    break;
+                                }
+                            }
+                            if (!best && rows.length > 0) {
+                                const firstTitle = rows[0].querySelector('span[title]');
+                                best = firstTitle || rows[0].querySelector('[role="gridcell"]') || rows[0];
+                            }
+                            if (!best) return false;
+                            for (const evt of ['mousedown', 'mouseup', 'click']) {
+                                best.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
+                            }
+                            return true;
+                        }""",
+                        contact,
+                    )
+                )
+            except Exception:
+                clicked = False
+            if clicked:
+                break
+            time.sleep(0.15)
+
+        if not clicked:
+            return {"ok": False, "error": f"CONTACT_NOT_FOUND:{contact}"}
+
+        composer = self._find_first_visible(
+            page,
+            [
+                'footer div[contenteditable="true"][data-tab="10"]',
+                'footer div[role="textbox"][contenteditable="true"]',
+                'footer div[contenteditable="true"]',
+            ],
+            timeout_s=2.5,
+        )
+        if composer is None:
+            try:
+                search_loc.press("Enter")
+            except Exception:
+                pass
+            composer = self._find_first_visible(
+                page,
+                [
+                    'footer div[contenteditable="true"][data-tab="10"]',
+                    'footer div[role="textbox"][contenteditable="true"]',
+                    'footer div[contenteditable="true"]',
+                ],
+                timeout_s=3.5,
+            )
+        if composer is None:
+            return {"ok": False, "error": "WHATSAPP_COMPOSER_NOT_FOUND"}
+
+        if files:
+            if not self._attach_files(page, files):
+                return {"ok": False, "error": "FILE_ATTACH_FAILED"}
+            time.sleep(0.4)
+        if text:
+            self._insert_text_in_composer(page, composer, text, clear=False)
+            time.sleep(0.1)
+
+        if submit and (text or files):
+            send_btn = self._find_first_visible(
+                page,
+                ['button[aria-label="Send" i]', 'button[aria-label="Enviar" i]', 'span[data-icon="send"]'],
+                timeout_s=2.0,
+            )
+            if send_btn is not None:
+                try:
+                    send_btn.evaluate("el => el.click()")
+                except Exception:
+                    send_btn.click()
+            else:
+                page.keyboard.press("Enter")
+        return {"ok": True}
+
+    def _chat_jump_teams(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
+        search_loc = self._find_first_visible(
+            page,
+            [
+                'input[id*="search" i]',
+                '[data-tid="search-box"] input',
+                'input[placeholder*="Search" i]',
+                'input[placeholder*="Pesquisar" i]',
+            ],
+            timeout_s=8.0,
+        )
+        if search_loc is None:
+            if self._is_auth_page(page):
+                return {"ok": False, "error": "AUTH_REQUIRED"}
+            return {"ok": False, "error": "TEAMS_SEARCH_NOT_FOUND"}
+
+        self._insert_text_in_composer(page, search_loc, contact, clear=True)
+        time.sleep(0.4)
+
+        result_loc = self._find_first_visible(
+            page,
+            [
+                '[data-tid*="search" i] [role="option"]',
+                '[role="listbox"] [role="option"]',
+                '[data-tid*="autosuggest" i] [role="listitem"]',
+            ],
+            timeout_s=5.0,
+        )
+        if result_loc is not None:
+            try:
+                result_loc.evaluate("el => el.click()")
+            except Exception:
+                result_loc.click()
+        else:
+            page.keyboard.press("ArrowDown")
+            page.keyboard.press("Enter")
+
+        composer = self._find_first_visible(
+            page,
+            [
+                '[data-tid="ckeditor"]',
+                'div[role="textbox"][contenteditable="true"]',
+            ],
+            timeout_s=5.0,
+        )
+        if composer is None:
+            return {"ok": False, "error": "TEAMS_COMPOSER_NOT_FOUND"}
+
+        if files:
+            if not self._attach_files(page, files):
+                return {"ok": False, "error": "FILE_ATTACH_FAILED"}
+            time.sleep(0.4)
+        if text:
+            self._insert_text_in_composer(page, composer, text, clear=False)
+            time.sleep(0.1)
+
+        if submit and (text or files):
+            send_btn = self._find_first_visible(
+                page,
+                ['button[data-tid="newMessageCommands-send"]', 'button[aria-label="Send" i]', 'button[aria-label="Enviar" i]'],
+                timeout_s=2.0,
+            )
+            if send_btn is not None:
+                try:
+                    send_btn.evaluate("el => el.click()")
+                except Exception:
+                    send_btn.click()
+            else:
+                page.keyboard.press("Enter")
+        return {"ok": True}
+
+    def chat_jump(self, data: dict) -> dict:
+        app = (data.get("app") or "").strip().lower()
+        contact = (data.get("contact") or "").strip()
+        text = data.get("text", "") or ""
+        files = data.get("files") or []
+        submit = bool(data.get("submit", False))
+        activate = bool(data.get("activate", False))
+        if app not in ("whatsapp", "teams"):
+            return {"ok": False, "error": f"UNSUPPORTED_CHAT_APP:{app}"}
+        if not contact:
+            return {"ok": False, "error": "EMPTY_CONTACT"}
+
+        page = self._find_or_open_page(app, launch_if_down=True, new_tab=False, minimized=not activate)
+        res = (
+            self._chat_jump_whatsapp(page, contact, text, files, submit)
+            if app == "whatsapp"
+            else self._chat_jump_teams(page, contact, text, files, submit)
+        )
+        if not res.get("ok"):
+            return res
+
+        hwnd = 0
+        if activate:
+            self._restore_window_via_cdp(page)
+            try:
+                page.bring_to_front()
+            except Exception:
+                pass
+            page_title = ""
+            try:
+                page_title = page.title() or ""
+            except Exception:
+                pass
+            hwnd = self._find_cdp_chrome_hwnd(page_title)
+            self._activate_hwnd(hwnd)
+        return {"ok": True, "hwnd": hwnd}
+
 
 def _file_sig() -> tuple[int, int]:
     try:
@@ -1118,6 +1359,7 @@ class Handler(BaseHTTPRequestHandler):
             "/new_chat": BRIDGE.new_chat,
             "/select_model": BRIDGE.select_model,
             "/read_aloud": BRIDGE.read_aloud,
+            "/chat/jump": BRIDGE.chat_jump,
         }
         fn = routes.get(self.path)
         if fn is None:

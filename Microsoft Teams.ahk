@@ -381,7 +381,46 @@ GetCameraState(hwndTeams, maxRetries := 3) {
 ; =============================================================================
 ; Meeting: Toggle Screen Share  (Win Alt Shift T)
 ; =============================================================================
+global g_TeamsSharePollState := 0
+
+Teams_FinishShareToggle(prev, hwndTeams) {
+    try {
+        if (prev && WinExist("ahk_id " prev))
+            WinActivate("ahk_id " prev)
+    } catch {
+    }
+    PlayMicrophoneBeep()
+    ShowCenteredOverlay(prev ? prev : hwndTeams, "🖥 SHARING TOGGLED")
+}
+
+Teams_SharePollTick() {
+    global g_TeamsSharePollState
+    st := g_TeamsSharePollState
+    if (!IsObject(st)) {
+        SetTimer(Teams_SharePollTick, 0)
+        return
+    }
+    try {
+        if (li := FindListItemByNames(st.root, st.texts)) {
+            SetTimer(Teams_SharePollTick, 0)
+            g_TeamsSharePollState := 0
+            try li.Invoke()
+            catch {
+            }
+            Teams_FinishShareToggle(st.prev, st.hwndTeams)
+            return
+        }
+    } catch {
+    }
+    if (A_TickCount >= st.deadline) {
+        SetTimer(Teams_SharePollTick, 0)
+        g_TeamsSharePollState := 0
+        Teams_FinishShareToggle(st.prev, st.hwndTeams)
+    }
+}
+
 #!+t:: {
+    global g_TeamsSharePollState
     ; Check if Teams is closed and prompt to open if needed
     if (!CheckAndOpenOutlookTeams(false, true)) {
         return  ; User cancelled opening Teams
@@ -396,42 +435,30 @@ GetCameraState(hwndTeams, maxRetries := 3) {
     if !root
         return
 
-    ; --- perform the normal sharing workflow ---
     windowListTexts := ["Opens list of", "Abre a lista de"]
     listItem := FindListItemByNames(root, windowListTexts)
     if listItem {
         listItem.Invoke()
-    } else {
-        shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
-        if !shareBtn {
-            for pattern in ["Share", "Share content", "Share screen", "Start sharing", "Compartilhar",
-                "Compartilhar conteúdo", "Compartilhar tela", "Iniciar compartilhamento", "Present", "Present screen",
-                "Apresentar", "Apresentar tela"] {
-                shareBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
-                if shareBtn
-                    break
-            }
+        Teams_FinishShareToggle(prev, hwndTeams)
+        return
+    }
+
+    shareBtn := root.FindFirst(UIA.CreateCondition({ AutomationId: "share-button" }))
+    if !shareBtn {
+        for pattern in ["Share", "Share content", "Share screen", "Start sharing", "Compartilhar",
+            "Compartilhar conteúdo", "Compartilhar tela", "Iniciar compartilhamento", "Present", "Present screen",
+            "Apresentar", "Apresentar tela"] {
+            shareBtn := root.FindFirst(UIA.CreateCondition({ Name: pattern }))
+            if shareBtn
+                break
         }
-        if !shareBtn
-            return
-        shareBtn.Invoke()
-        Sleep 1000
-        if li := WaitListItemByNames(root, windowListTexts)
-            li.Invoke()
     }
+    if !shareBtn
+        return
+    shareBtn.Invoke()
 
-    ; --- Wait for the action to complete and ensure Teams window is activated ---
-    Sleep 2000  ; Give Teams time to process the sharing toggle
-
-    ; Re-activate the Teams window while preserving its size
-    if ActivateWindowWithRetry(hwndTeams, 3, 300) {
-        PlayMicrophoneBeep()
-        ShowCenteredOverlay(hwndTeams, "🖥 SHARING TOGGLED")
-    } else {
-        ; Fallback: show overlay on previous window if Teams activation fails
-        PlayMicrophoneBeep()
-        ShowCenteredOverlay(prev, "🖥 SHARING TOGGLED")
-    }
+    g_TeamsSharePollState := { root: root, texts: windowListTexts, prev: prev, hwndTeams: hwndTeams, deadline: A_TickCount + 1500 }
+    SetTimer(Teams_SharePollTick, 80)
 }
 
 ; =============================================================================
@@ -582,10 +609,18 @@ class Teams_R_DoubleTapTimerObj {
 }
 
 Teams_StartNewConversationJump() {
-    if (!CheckAndOpenOutlookTeams(false, true))
-        return
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
     if contact = ""
+        return
+    if (ChatCDP_IsEnabled("teams")) {
+        StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
+        res := ChatCDP_Jump("teams", contact, "", "", false, true)
+        StandardLoadingBar_Hide(0)
+        if (!res.ok)
+            ChatCDP_NotifyError("teams", res.error)
+        return
+    }
+    if (!CheckAndOpenOutlookTeams(false, true))
         return
     clipSaved := ClipboardAll()
     try {
@@ -602,6 +637,41 @@ WhatsApp_StartNewConversationJump() {
     contact := Trim(ib.Value)
     if (ib.Result = "Cancel" || contact = "")
         return
+    if (ChatCDP_IsEnabled("whatsapp")) {
+        isSelf := D2C_WhatsAppIsSelfContact(contact)
+        if (isSelf) {
+            if (!D2C_WhatsAppSelfPaste_Confirm())
+                return
+            clipText := ""
+            tempFiles := []
+            staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
+            filePaths := (staged != false) ? staged : []
+            StandardLoadingBar_Show("⏳ WhatsApp: sending to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
+            res := { ok: false, error: "CDP failed" }
+            try res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, true, false)
+            finally {
+                for tmp in tempFiles {
+                    try {
+                        if (FileExist(tmp))
+                            FileDelete(tmp)
+                    } catch {
+                    }
+                }
+                StandardLoadingBar_Hide(0)
+            }
+            if (res.ok)
+                ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp (CDP)", 1500, BANNER_ACCENT_SUCCESS)
+            else
+                ChatCDP_NotifyError("whatsapp", res.error)
+            return
+        }
+        StandardLoadingBar_Show("⏳ WhatsApp: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
+        res := ChatCDP_Jump("whatsapp", contact, "", "", false, true)
+        StandardLoadingBar_Hide(0)
+        if (!res.ok)
+            ChatCDP_NotifyError("whatsapp", res.error)
+        return
+    }
     ; Full clipboard (text, image, or other formats) captured before search overwrites it.
     clipSaved := ClipboardAll()
     sentSelf := false

@@ -1000,6 +1000,34 @@ class D2C_FlowManager {
                 return
             }
 
+            if (ChatCDP_IsEnabled("teams")) {
+                clipText := ""
+                tempFiles := []
+                staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
+                filePaths := (staged != false) ? staged : []
+                if (clipText = "" && !filePaths.Length)
+                    clipText := messageText
+                StandardLoadingBar_Show("⏳ Sending to Teams (" . contact . ") via CDP…", BANNER_ACCENT_INTERMEDIATE)
+                res := { ok: false, error: "CDP failed" }
+                try {
+                    res := ChatCDP_Jump("teams", contact, clipText, filePaths, false, false)
+                } finally {
+                    for tmp in tempFiles {
+                        try {
+                            if (FileExist(tmp))
+                                FileDelete(tmp)
+                        } catch {
+                        }
+                    }
+                    StandardLoadingBar_Hide(0)
+                }
+                if (res.ok)
+                    ShowCenteredOverlay_Utils("✅ Message ready in Teams (CDP)", 1400, BANNER_ACCENT_SUCCESS)
+                else
+                    ChatCDP_NotifyError("teams", res.error)
+                return
+            }
+
             if (!TeamsJumpToChat(contact)) {
                 return
             }
@@ -1059,6 +1087,39 @@ class D2C_FlowManager {
             ib := InputBox("Enter a WhatsApp contact name:", "Jump to Chat")
             contact := Trim(ib.Value)
             if (ib.Result = "Cancel" || contact = "") {
+                return
+            }
+
+            if (ChatCDP_IsEnabled("whatsapp")) {
+                isSelf := D2C_WhatsAppIsSelfContact(contact)
+                if (isSelf && !D2C_WhatsAppSelfPaste_Confirm())
+                    return
+                clipText := ""
+                tempFiles := []
+                staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
+                filePaths := (staged != false) ? staged : []
+                StandardLoadingBar_Show("⏳ Sending to WhatsApp (" . contact . ") via CDP…", BANNER_ACCENT_INTERMEDIATE)
+                res := { ok: false, error: "CDP failed" }
+                try {
+                    res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, isSelf, false)
+                } finally {
+                    for tmp in tempFiles {
+                        try {
+                            if (FileExist(tmp))
+                                FileDelete(tmp)
+                        } catch {
+                        }
+                    }
+                    StandardLoadingBar_Hide(0)
+                }
+                if (res.ok) {
+                    if (isSelf)
+                        sentSelf := true
+                    else
+                        ShowCenteredOverlay_Utils("✅ Message ready in WhatsApp (CDP)", 1400, BANNER_ACCENT_SUCCESS)
+                } else {
+                    ChatCDP_NotifyError("whatsapp", res.error)
+                }
                 return
             }
 
