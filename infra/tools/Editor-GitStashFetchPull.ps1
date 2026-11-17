@@ -8,7 +8,7 @@ param(
     [string]$RepoDir,
     [Parameter(Mandatory = $true)]
     [string]$ResultPath,
-    [int]$TimeoutSec = 120,
+    [int]$TimeoutSec = 45,
     [switch]$SkipPull,
     [switch]$Robot
 )
@@ -23,6 +23,7 @@ $stashMsg = "alt+s-auto-$(Get-Date -Format 'yyyyMMddHHmmss')-$PID"
 $result = [ordered]@{
     ok                   = $false
     didStash             = $false
+    pulledUpdated        = $false
     stashRestoredOnError = $false
     stashPopWarning      = $false
     failedStep           = ''
@@ -100,6 +101,11 @@ function Restore-StashOnFailure {
             return
         }
         $pop = Invoke-GitRaw "stash pop $ref"
+        if (-not $pop.Ok) {
+            # If Google Drive left a tracked file dirty during stash push, reset tracked files to HEAD and retry pop.
+            Invoke-GitRaw 'checkout -f HEAD' | Out-Null
+            $pop = Invoke-GitRaw "stash pop $ref"
+        }
         if ($pop.Ok) {
             $result.stashRestoredOnError = $true
             Add-Step 'stash-restore-on-error' $true "restored $ref"
@@ -115,7 +121,7 @@ function Restore-StashOnFailure {
 
 function Fail-Step {
     param([string]$Step, [string]$ErrorText)
-    if ($Step -ne 'StashPop' -and $Step -ne 'Stash') {
+    if ($Step -ne 'StashPop') {
         Restore-StashOnFailure
     }
     $result.failedStep = $Step
@@ -135,7 +141,7 @@ function Invoke-GitRaw {
     param([string]$GitArgs)
     if ($Robot) {
         Write-Host ("git " + $GitArgs) -ForegroundColor DarkGray
-        $output = cmd.exe /c "git -C `"$RepoDir`" $GitArgs 2>&1"
+        $output = cmd.exe /c "git -c core.fsmonitor=false -C `"$RepoDir`" $GitArgs 2>&1"
         $code = $LASTEXITCODE
         $text = if ($null -eq $output) { '' } else { ($output | Out-String).Trim() }
         return [pscustomobject]@{
@@ -145,35 +151,41 @@ function Invoke-GitRaw {
             StdOut   = $text
         }
     }
-    $psi = New-Object System.Diagnostics.ProcessStartInfo
-    $psi.FileName = 'git'
-    $psi.Arguments = "-C `"$RepoDir`" $GitArgs"
-    $psi.UseShellExecute = $false
-    $psi.CreateNoWindow = $true
-    $psi.RedirectStandardOutput = $true
-    $psi.RedirectStandardError = $true
-    $psi.RedirectStandardInput = $true
-    $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
-    $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'Never'
-    $psi.EnvironmentVariables['GIT_PAGER'] = 'cat'
-    $p = New-Object System.Diagnostics.Process
-    $p.StartInfo = $psi
-    $null = $p.Start()
-    try { $p.StandardInput.Close() } catch {}
-    $ms = [Math]::Max(1000, $TimeoutSec * 1000)
-    if (-not $p.WaitForExit($ms)) {
-        try { $p.Kill() } catch {}
-        return [pscustomobject]@{ Ok = $false; ExitCode = 124; Output = "Timed out after ${TimeoutSec}s"; StdOut = '' }
-    }
-    $stdout = $p.StandardOutput.ReadToEnd()
-    $stderr = $p.StandardError.ReadToEnd()
-    $combined = ($stdout + "`n" + $stderr).Trim()
-    $code = $p.ExitCode
-    return [pscustomobject]@{
-        Ok       = ($code -eq 0)
-        ExitCode = $code
-        Output   = $combined
-        StdOut   = $stdout.Trim()
+    $id = [guid]::NewGuid().ToString('N')
+    $outFile = Join-Path $env:TEMP "git-raw-out-$PID-$id.txt"
+    $errFile = Join-Path $env:TEMP "git-raw-err-$PID-$id.txt"
+    try {
+        $cmdLine = "/c `"git -c core.fsmonitor=false -C `"$RepoDir`" $GitArgs 1>`"$outFile`" 2>`"$errFile`"`""
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = 'cmd.exe'
+        $psi.Arguments = $cmdLine
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardOutput = $false
+        $psi.RedirectStandardError = $false
+        $psi.RedirectStandardInput = $false
+        $p = New-Object System.Diagnostics.Process
+        $p.StartInfo = $psi
+        $null = $p.Start()
+        $ms = [Math]::Max(1000, $TimeoutSec * 1000)
+        if (-not $p.WaitForExit($ms)) {
+            try { $p.Kill() } catch {}
+            return [pscustomobject]@{ Ok = $false; ExitCode = 124; Output = "Timed out after ${TimeoutSec}s"; StdOut = '' }
+        }
+        $p.WaitForExit()
+        $code = $p.ExitCode
+        $stdout = if (Test-Path -LiteralPath $outFile) { [IO.File]::ReadAllText($outFile, [Text.Encoding]::UTF8) } else { '' }
+        $stderr = if (Test-Path -LiteralPath $errFile) { [IO.File]::ReadAllText($errFile, [Text.Encoding]::UTF8) } else { '' }
+        $combined = ($stdout + "`n" + $stderr).Trim()
+        return [pscustomobject]@{
+            Ok       = ($code -eq 0)
+            ExitCode = $code
+            Output   = $combined
+            StdOut   = $stdout.Trim()
+        }
+    } finally {
+        try { if (Test-Path -LiteralPath $outFile) { Remove-Item -LiteralPath $outFile -Force -ErrorAction SilentlyContinue } } catch {}
+        try { if (Test-Path -LiteralPath $errFile) { Remove-Item -LiteralPath $errFile -Force -ErrorAction SilentlyContinue } } catch {}
     }
 }
 
@@ -202,7 +214,10 @@ function Get-Porcelain {
 }
 
 function Test-HasStashableChanges {
-    Invoke-GitRaw 'update-index --refresh' | Out-Null
+    $ref = Invoke-GitRaw 'update-index --refresh'
+    if ($ref.ExitCode -eq 124) {
+        Fail-Step 'Status' $ref.Output
+    }
     $wt = Invoke-GitRaw 'diff --quiet --ignore-submodules=dirty HEAD'
     if ($wt.ExitCode -eq 124) {
         Fail-Step 'Status' $wt.Output
@@ -242,19 +257,26 @@ function Wait-IndexLock {
 }
 
 function Wait-WorkingTreePullable {
-    param([int]$WaitSec = 30)
+    param([int]$WaitSec = 15)
     $deadline = [datetime]::UtcNow.AddSeconds($WaitSec)
     $last = ''
+    $triedCheckoutReset = $false
     while ($true) {
         Wait-IndexLock
         $last = Get-Porcelain
         if (-not (Test-HasStashableChanges)) {
             return $last
         }
+        if (-not $triedCheckoutReset -and $script:didStashNeedsRestore) {
+            $triedCheckoutReset = $true
+            Invoke-GitRaw 'checkout -f HEAD' | Out-Null
+            Start-Sleep -Milliseconds 150
+            continue
+        }
         if ([datetime]::UtcNow -ge $deadline) {
             Fail-Step 'Stash' "working tree still not pullable after stash: $last"
         }
-        Start-Sleep -Milliseconds 500
+        Start-Sleep -Milliseconds 300
     }
 }
 
@@ -274,7 +296,13 @@ function Get-StashLineCount {
 
 function Update-AheadBehind {
     $behind = Invoke-GitRaw 'rev-list --count HEAD..@{upstream}'
+    if ($behind.ExitCode -eq 124) {
+        Fail-Step 'Status' $behind.Output
+    }
     $ahead = Invoke-GitRaw 'rev-list --count @{upstream}..HEAD'
+    if ($ahead.ExitCode -eq 124) {
+        Fail-Step 'Status' $ahead.Output
+    }
     if ($behind.Ok -and $behind.StdOut -match '^\d+$') {
         $result.behindCount = [int]$behind.StdOut
     } else {
@@ -384,26 +412,30 @@ function Test-BehindGatePass {
     return ($result.behindCount -eq 0)
 }
 
+$headBeforePull = (Invoke-GitRaw 'rev-parse HEAD').StdOut
+
 Write-Robot 'pull'
 $pull = Invoke-PullOnce 'pull'
-if (-not (Test-BehindGatePass)) {
+if ((-not $pull.Ok) -or (-not (Test-BehindGatePass))) {
     $retry = Invoke-GitStep 'fetch-retry' 'fetch'
     if (-not $retry.Ok) {
         Fail-Step 'Fetch' $(if ($retry.Output) { $retry.Output } else { 'git fetch retry failed' })
     }
     $pull = Invoke-PullOnce 'pull-retry'
-    if (-not (Test-BehindGatePass)) {
+    if ((-not $pull.Ok) -or (-not (Test-BehindGatePass))) {
         $why = if ($SkipPull) {
             "still behind $($result.behindCount) (pull skipped)"
         } elseif ($pull.Output) {
-            "still behind $($result.behindCount): $($pull.Output)"
+            "pull failed (behind=$($result.behindCount)): $($pull.Output)"
         } else {
-            "still behind $($result.behindCount) after pull --ff-only"
+            "pull --ff-only failed (behind=$($result.behindCount))"
         }
         Fail-Step 'Pull' $why
     }
 }
-Add-Step 'pull-gate' $true "behind=$($result.behindCount) ahead=$($result.aheadCount)"
+$headAfterPull = (Invoke-GitRaw 'rev-parse HEAD').StdOut
+$result.pulledUpdated = [bool]($headBeforePull -and $headAfterPull -and ($headBeforePull -ne $headAfterPull))
+Add-Step 'pull-gate' $true "behind=$($result.behindCount) ahead=$($result.aheadCount) updated=$($result.pulledUpdated)"
 
 if ($result.didStash) {
     Write-Robot 'stash pop'

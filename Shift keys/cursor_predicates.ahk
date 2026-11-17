@@ -984,27 +984,80 @@ Editor_PickGitRootByBasename(candidates, basename) {
     return ""
 }
 
+; Fast pure-AHK check for .git directory/file walking up parent directories (avoids spawning PowerShell).
+Editor_FastFindGitRoot(dirPath) {
+    cur := RTrim(Trim(dirPath), "\/")
+    while (cur != "" && DirExist(cur)) {
+        if FileExist(cur "\.git")
+            return cur
+        SplitPath cur, , &parentDir
+        if (parentDir = "" || parentDir = cur)
+            break
+        cur := parentDir
+    }
+    return ""
+}
+
 Editor_ResolveGitRepoDir(editorHwnd := 0) {
+    global g_Projects
     if !editorHwnd
         editorHwnd := WinExist("A")
     if !editorHwnd
         return ""
+    ; 1. Fast path: match active editor window title / process against projects.ini.
+    try ProjectData_Load()
+    catch {
+    }
+    title := ""
+    try title := WinGetTitle("ahk_id " editorHwnd)
+    catch {
+    }
+    idx := 0
+    try idx := CursorTransfer_GetMatchingProjectIndex(editorHwnd, title)
+    catch {
+    }
+    if (idx > 0 && IsSet(g_Projects) && IsObject(g_Projects) && idx <= g_Projects.Length) {
+        project := g_Projects[idx]
+        if IsObject(project) {
+            for key in ["path", "workPath"] {
+                p := ""
+                try {
+                    if project.HasProp(key)
+                        p := project.%key%
+                } catch {
+                }
+                if (p != "" && DirExist(p)) {
+                    root := Editor_FastFindGitRoot(p)
+                    if (root != "")
+                        return root
+                }
+            }
+        }
+    }
+    ; 2. Fast path: folder paths directly on the editor process command line.
     cmdLine := Editor_GetEditorProcessCommandLine(editorHwnd)
-    candidates := Editor_ExtractFolderPathsFromCmdLine(cmdLine)
+    cmdCandidates := Editor_ExtractFolderPathsFromCmdLine(cmdLine)
+    for p in cmdCandidates {
+        root := Editor_FastFindGitRoot(p)
+        if (root != "")
+            return root
+    }
+    ; 3. Fallback: status bar SCM basename + full project registry.
+    candidates := cmdCandidates.Clone()
     Editor_AppendProjectRegistryPaths(&candidates)
     candidates := Editor_DeduplicatePaths(candidates)
     basename := Editor_GetScmRepoBasenameFromStatusBar(editorHwnd)
     if !candidates.Length
         return ""
     if (candidates.Length = 1)
-        return GitCli_RevParseTopLevel(candidates[1])
+        return Editor_FastFindGitRoot(candidates[1]) || GitCli_RevParseTopLevel(candidates[1])
     if basename {
         picked := Editor_PickGitRootByBasename(candidates, basename)
         if picked
             return picked
     }
     for p in candidates {
-        top := GitCli_RevParseTopLevel(p)
+        top := Editor_FastFindGitRoot(p) || GitCli_RevParseTopLevel(p)
         if top
             return top
     }
@@ -1023,20 +1076,30 @@ Editor_GitQuotePs(s) {
     return "'" StrReplace(s, "'", "''") "'"
 }
 
-; Thin launcher: run the on-disk gated flow hidden in the background (no terminal/SendText).
+; Thin launcher: copy flow script to A_Temp so PowerShell never locks a file inside the repo during stash/pull.
 Editor_GitWriteRobotScript(repoDir, resultPath, useRobotText := false) {
     flowPs1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
     if !FileExist(flowPs1)
         return ""
+    tick := A_TickCount
+    tempFlowPs1 := A_Temp "\editor-git-flow-" tick ".ps1"
+    try FileCopy(flowPs1, tempFlowPs1, 1)
+    catch {
+        tempFlowPs1 := flowPs1
+    }
     repoArg := (repoDir != "") ? repoDir : "."
-    script := "& " Editor_GitQuotePs(flowPs1)
+    script := "try {`r`n"
+    script .= "    & " Editor_GitQuotePs(tempFlowPs1)
     script .= " -RepoDir " Editor_GitQuotePs(repoArg)
     script .= " -ResultPath " Editor_GitQuotePs(resultPath)
-    script .= " -TimeoutSec 300"
+    script .= " -TimeoutSec 45"
     if (useRobotText)
         script .= " -Robot"
-    script .= "`r`n"
-    ps1Path := A_Temp "\editor-git-robot-" A_TickCount ".ps1"
+    script .= "`r`n} finally {`r`n"
+    if (tempFlowPs1 != flowPs1)
+        script .= "    Remove-Item -LiteralPath " Editor_GitQuotePs(tempFlowPs1) " -Force -ErrorAction SilentlyContinue`r`n"
+    script .= "}`r`n"
+    ps1Path := A_Temp "\editor-git-robot-" tick ".ps1"
     try FileDelete(ps1Path)
     FileAppend(script, ps1Path, "UTF-8-RAW")
     return ps1Path
@@ -1080,9 +1143,22 @@ Editor_FormatGitJsonFailure(raw) {
 
 Editor_GitPlayPullSuccessSound() {
     try {
-        soundPath := A_ScriptDir "\assets\sounds\pull-successful.wav"
+        soundPath := A_ScriptDir "\assets\sounds\git-pull-success.wav"
+        if !FileExist(soundPath)
+            soundPath := A_ScriptDir "\assets\sounds\pull-successful.wav"
         if FileExist(soundPath)
-            ScriptSoundPlay(soundPath, true)
+            ScriptSoundPlay(soundPath, false)
+    } catch {
+    }
+}
+
+Editor_GitPlayPullErrorSound() {
+    try {
+        soundPath := A_ScriptDir "\assets\sounds\git-pull-error.wav"
+        if !FileExist(soundPath)
+            soundPath := A_ScriptDir "\assets\sounds\quick-update-failure.wav"
+        if FileExist(soundPath)
+            ScriptSoundPlay(soundPath, false)
     } catch {
     }
 }
@@ -1106,19 +1182,20 @@ Editor_GitRobotStopPoll() {
     g_EditorGitRobotExitSeenTick := 0
 }
 
-Editor_GitRobotStartPoll(resultPath, ps1Path := "", psPid := 0) {
+Editor_GitRobotStartPoll(resultPath, ps1Path := "", psPid := 0, doQuickUpdate := false) {
     global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, EDITOR_GIT_ROBOT_TIMEOUT_MS, g_EditorGitRobotPs1Path
-    global g_EditorGitRobotPid, g_EditorGitRobotExitSeenTick
+    global g_EditorGitRobotPid, g_EditorGitRobotExitSeenTick, g_EditorGitRobotQuickUpdate
     Editor_GitRobotStopPoll()
     g_EditorGitRobotResultPath := resultPath
     g_EditorGitRobotPs1Path := ps1Path
     g_EditorGitRobotPid := psPid
     g_EditorGitRobotExitSeenTick := 0
+    g_EditorGitRobotQuickUpdate := doQuickUpdate
     g_EditorGitRobotDeadline := A_TickCount + EDITOR_GIT_ROBOT_TIMEOUT_MS
-    SetTimer(Editor_GitRobotPollResult, 250)
+    SetTimer(Editor_GitRobotPollResult, 200)
 }
 
-Editor_GitShowFinalBanner(msg, bgColor, durationMs := 2200) {
+Editor_GitShowFinalBanner(msg, bgColor, durationMs := 2600) {
     try StandardLoadingBar_Hide(0)
     catch {
     }
@@ -1157,14 +1234,16 @@ Editor_GitRobotPollResult(*) {
             }
             if ((A_TickCount - g_EditorGitRobotExitSeenTick) >= 500) {
                 Editor_GitRobotStopPoll()
-                Editor_GitShowFinalBanner("❌ Git failed: background pull exited without a result", BANNER_ACCENT_ERROR, 3500)
+                Editor_GitPlayPullErrorSound()
+                Editor_GitShowFinalBanner("❌ Git pull failed: background process exited without a result", BANNER_ACCENT_ERROR, 4000)
                 return
             }
             return
         }
         if (A_TickCount > g_EditorGitRobotDeadline) {
             Editor_GitRobotStopPoll()
-            Editor_GitShowFinalBanner("❌ Git failed: timed out waiting for stash/pull", BANNER_ACCENT_ERROR, 3500)
+            Editor_GitPlayPullErrorSound()
+            Editor_GitShowFinalBanner("❌ Git pull failed: timed out waiting for stash/pull", BANNER_ACCENT_ERROR, 4000)
             return
         }
         return
@@ -1174,16 +1253,22 @@ Editor_GitRobotPollResult(*) {
     Editor_GitRobotStopPoll()
     if (outcome = "ok") {
         Editor_GitPlayPullSuccessSound()
-        if (doQuickUpdate) {
-            Editor_GitShowFinalBanner("✅ Pull complete — restarting scripts…", BANNER_ACCENT_SUCCESS, 1200)
-            SetTimer((*) => QuickUpdateScripts(), -900)
+        pulledUpdated := RegExMatch(raw, '"pulledUpdated"\s*:\s*true')
+        didStash := RegExMatch(raw, '"didStash"\s*:\s*true')
+        if (doQuickUpdate && pulledUpdated) {
+            Editor_GitShowFinalBanner("✅ Pull complete (new changes) — restarting scripts…", BANNER_ACCENT_SUCCESS, 1400)
+            SetTimer((*) => QuickUpdateScripts(), -1000)
             return
         }
-        Editor_GitShowFinalBanner("✅ Pull complete", BANNER_ACCENT_SUCCESS, 2200)
+        suffix := pulledUpdated ? " (new changes pulled)" : " (already up to date)"
+        if (didStash)
+            suffix .= " · stash restored"
+        Editor_GitShowFinalBanner("✅ Pull complete" . suffix, BANNER_ACCENT_SUCCESS, 2800)
         return
     }
+    Editor_GitPlayPullErrorSound()
     failDetail := (SubStr(Trim(raw), 1, 1) = "{") ? Editor_FormatGitJsonFailure(raw) : "stash/pull failed"
-    Editor_GitShowFinalBanner("❌ Git failed: " . failDetail, BANNER_ACCENT_ERROR, 3500)
+    Editor_GitShowFinalBanner("❌ Git pull failed: " . failDetail, BANNER_ACCENT_ERROR, 4000)
 }
 
 Editor_GitStashAndPull() {
@@ -1191,9 +1276,13 @@ Editor_GitStashAndPull() {
     if !hwnd
         return
     if !IsEditorActive() {
+        Editor_GitPlayPullErrorSound()
         Editor_GitFlowFail("Git", "active window is not Cursor, VS Code, or Antigravity")
         return
     }
+    ; Save active editor buffer so unsaved edits are written to disk before git stash runs.
+    Send "^s"
+    Sleep 120
     repoDir := Editor_ResolveGitRepoDir(hwnd)
     if (repoDir = "")
         repoDir := A_WorkingDir
@@ -1201,22 +1290,24 @@ Editor_GitStashAndPull() {
     try FileDelete(resultPath)
     ps1Path := Editor_GitWriteRobotScript(repoDir, resultPath, false)
     if (ps1Path = "") {
+        Editor_GitPlayPullErrorSound()
         Editor_GitFlowFail("Git", "Editor-GitStashFetchPull.ps1 not found")
         return
     }
+    doQuickUpdate := Editor_IsThisScriptsRepo(hwnd, repoDir)
     psPid := 0
     try {
         Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' . ps1Path . '"', repoDir, "Hide", &psPid)
     } catch as e {
         try FileDelete(ps1Path)
+        Editor_GitPlayPullErrorSound()
         Editor_GitFlowFail("Git", "failed to launch background pull: " . e.Message)
         return
     }
-    global g_EditorGitRobotQuickUpdate
-    Editor_GitRobotStartPoll(resultPath, ps1Path, psPid)
-    g_EditorGitRobotQuickUpdate := Editor_IsThisScriptsRepo(hwnd, repoDir)
-    ; Non-blocking notification so user can immediately continue working while git runs in parallel.
-    Editor_GitShowFinalBanner("⏳ Git: stashing & pulling in background…", BANNER_ACCENT_INTERMEDIATE, 1200)
+    try ScriptSoundPlay(A_ScriptDir "\assets\sounds\commit-start.wav", false)
+    catch {
+    }
+    Editor_GitRobotStartPoll(resultPath, ps1Path, psPid, doQuickUpdate)
 }
 
 ; ---------------------------------------------------------------------------
