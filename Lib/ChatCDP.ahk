@@ -9,8 +9,6 @@ ChatCDP_IniPath() {
 }
 
 ChatCDP_IsEnabled(app := "") {
-    if (AiCompanionMode_Get() != "cdp")
-        return false
     appNorm := StrLower(Trim(app))
     ; Teams uses the native desktop app (ms-teams.exe) by default, not teams.microsoft.com in CDP browser.
     defaultVal := (appNorm = "teams") ? "off" : "cdp"

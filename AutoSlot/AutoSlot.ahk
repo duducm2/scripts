@@ -1078,8 +1078,6 @@ AutoSlot_ExpandUnderfilledAfterFill() {
 
 AutoSlot_GetExcludedAiCompanionCdpPids() {
     try {
-        if (!AiCompanionMode_IsCDP())
-            return Map()
         return AiCompanionCDP_GetProcessPids()
     } catch {
         return Map()

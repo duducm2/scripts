@@ -171,7 +171,7 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
         ; Y from any other window does the same: focus the companion and send.
         ; N and H still paste where the user is and do not send.
         ; Reply download/copy stays manual; import is Import Management.
-        if (pasteChoice = "send" && (AiCompanionMode_IsCDP() || PackPipeline_IsCatalogPrompt(prompt) || !UtilitySelector_OriginIsCompanionWindow()))
+        if (pasteChoice = "send")
             useGemini := true
         PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
         clip := ""

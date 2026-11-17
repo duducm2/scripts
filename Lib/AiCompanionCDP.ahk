@@ -1,62 +1,14 @@
 ; =============================================================================
 ; Lib: AiCompanionCDP.ahk
-; Dual-mode AI Companion manager (CDP background mode vs AHK UIA foreground mode)
+; Always-on CDP AI Companion manager
 ; and WinHttp client for infra/cdp/ai_companion_cdp_server.py (127.0.0.1:8768).
 ; Included from Utils.ahk and Gemini.ahk.
 ; =============================================================================
 
 global AI_COMPANION_CDP_PORT := 8768
 
-AiCompanionMode_IniPath() {
-    return A_ScriptDir . "\assets\data\ai_companion_mode.ini"
-}
-
 AiCompanionMode_Get() {
-    path := AiCompanionMode_IniPath()
-    mode := "cdp"
-    try {
-        if FileExist(path)
-            mode := StrLower(Trim(IniRead(path, "Mode", "Current", "cdp")))
-    } catch {
-        mode := "cdp"
-    }
-    return (mode = "ahk") ? "ahk" : "cdp"
-}
-
-AiCompanionMode_Set(mode) {
-    m := (StrLower(Trim(mode)) = "ahk") ? "ahk" : "cdp"
-    path := AiCompanionMode_IniPath()
-    try DirCreate(A_ScriptDir . "\assets\data")
-    catch {
-    }
-    try IniWrite(m, path, "Mode", "Current")
-    catch {
-    }
-    return m
-}
-
-AiCompanionMode_MacroTitle() {
-    if (AiCompanionMode_Get() = "cdp")
-        return "🔌 AI companion mode: CDP (background) — toggle to AHK"
-    return "🖱 AI companion mode: AHK (foreground) — toggle to CDP"
-}
-
-AiCompanionMode_Toggle() {
-    next := (AiCompanionMode_Get() = "cdp") ? "ahk" : "cdp"
-    AiCompanionMode_Set(next)
-    if (next = "cdp") {
-        try ShowCenteredOverlay_Utils("🔌 AI Companion Mode: CDP (Background)", 1800, BANNER_ACCENT_SUCCESS)
-        catch {
-        }
-        try SetTimer(() => AiCompanionCDP_Ensure("", false, false), -50)
-        catch {
-        }
-    } else {
-        try ShowCenteredOverlay_Utils("🖱 AI Companion Mode: AHK (Foreground)", 1800, BANNER_ACCENT_INFO)
-        catch {
-        }
-    }
-    return next
+    return "cdp"
 }
 
 AiCompanionCDP_NormalizeCompanion(companionId := "") {
@@ -75,8 +27,6 @@ AiCompanionCDP_NormalizeCompanion(companionId := "") {
 }
 
 AiCompanionMode_IsCDP(companionId := "") {
-    if (AiCompanionMode_Get() != "cdp")
-        return false
     return AiCompanionCDP_NormalizeCompanion(companionId) != ""
 }
 

@@ -164,14 +164,8 @@ if (IS_WORK_ENVIRONMENT) {
 StandardLoadingBar_Update("⏳ Ensuring Clip Angel...")
 clipAngelOk := ClipAngel_EnsureRunning()
 
-; Default AI companion mode to CDP (background) on Act startup and warm up the minimized CDP Chrome window.
+; Warm up the minimized CDP Chrome window on Act startup.
 StandardLoadingBar_Update("⏳ Ensuring AI companion (CDP)...")
-try DirCreate(A_ScriptDir . "\assets\data")
-catch {
-}
-try IniWrite("cdp", A_ScriptDir . "\assets\data\ai_companion_mode.ini", "Mode", "Current")
-catch {
-}
 cdpUrl := IS_WORK_ENVIRONMENT
     ? "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92?pli=1"
     : "https://gemini.google.com/app"

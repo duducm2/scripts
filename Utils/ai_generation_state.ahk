@@ -634,7 +634,7 @@ AiCompanion_FinishConfirmedSubmit(hwnd, companionId, originHwnd := 0) {
 ; Pack pipeline and an in-progress D2C watch keep their own timer.
 AiCompanion_ArmResponseWatch(hwnd, companionId, originHwnd := 0, replyCountBefore := -1) {
     global g_AiCompanionResponseWatchArmedBySend
-    if (!AiCompanionMode_IsCDP(companionId) && (!hwnd || !WinExist("ahk_id " hwnd)))
+    if (StrLower(Trim(companionId)) = "copilot" && (!hwnd || !WinExist("ahk_id " hwnd)))
         return false
     try {
         if (PackPipeline_IsActive())

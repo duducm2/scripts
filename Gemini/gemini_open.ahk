@@ -366,143 +366,39 @@ GeminiOpen_FocusFreshPage(hwnd, companion, host, playChime := true) {
 ; New tab in the main companion window, loaded with a fresh companion page and a new chat.
 GeminiOpen_NewCompanionTab() {
     companion := ResolveGlobalAICompanion()
-    if (AiCompanionMode_IsCDP(companion)) {
-        res := AiCompanionCDP_Ensure(companion, false, true)
-        if (!res.ok)
-            AiCompanionCDP_NotifyError("Open new tab", res.error, companion)
-        else {
-            Utils_PlayGeminiFocusedChime()
-            try ShowCenteredOverlay_Utils("🌐 Opened new " . (companion = "enterprise" ? "Enterprise" : "Gemini") . " tab (CDP)", 1200, BANNER_ACCENT_SUCCESS)
-            catch {
-            }
+    res := AiCompanionCDP_Ensure(companion, false, true)
+    if (!res.ok)
+        AiCompanionCDP_NotifyError("Open new tab", res.error, companion)
+    else {
+        Utils_PlayGeminiFocusedChime()
+        try ShowCenteredOverlay_Utils("🌐 Opened new " . (companion = "enterprise" ? "Enterprise" : "Gemini") . " tab (CDP)", 1200, BANNER_ACCENT_SUCCESS)
+        catch {
         }
-        return
     }
-    hwnd := GeminiOpen_CompanionHwnd()
-    if (!hwnd) {
-        GeminiOpen_OpenOrFocus()
-        return
-    }
-    url := GeminiOpen_LaunchUrl()
-    host := GeminiOpen_UrlHost(url)
-    if (url = "" || host = "") {
-        ShowCenteredOverlay_Utils("❌ Error: Companion URL unavailable.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    try {
-        if !WinActive("ahk_id " hwnd) {
-            WinActivate("ahk_id " hwnd)
-            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000) {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
-                    BANNER_ACCENT_ERROR)
-                return
-            }
-        }
-    } catch {
-        ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    label := "Gemini"
-    try label := GetGlobalAIProviderLabel()
-    StandardLoadingBar_Show("📤 New " . label . " tab...", BANNER_ACCENT_INTERMEDIATE)
-    GeminiOpen_WaitChordUp()
-    companion := ResolveGlobalAICompanion()
-    try {
-        if (!GeminiOpen_OpenBlankTab(hwnd) || !GeminiOpen_CommitUrl(hwnd, url, host)) {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ New companion tab did not open.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-        focused := GeminiOpen_FocusFreshPage(hwnd, companion, host, false)
-        StandardLoadingBar_Hide(0)
-        if (focused) {
-            try AiCompanion_StartNewChat(GlobalAICompanionModelsId())
-            catch {
-            }
-            GeminiOpen_FocusFreshPage(hwnd, companion, host, true)
-        } else {
-            GeminiOpen_FocusFreshPage(hwnd, companion, host, true)
-        }
-    } catch {
-        StandardLoadingBar_Hide(0)
-        ShowCenteredOverlay_Utils("❌ New companion tab did not open.", 2000, BANNER_ACCENT_ERROR)
-    }
+    return res.ok
 }
 
 GeminiOpen_OpenOrFocus() {
     companion := ResolveGlobalAICompanion()
-    if (AiCompanionMode_IsCDP(companion)) {
-        compLabel := (companion = "enterprise" ? "Enterprise" : "Gemini")
-        try StandardLoadingBar_Show("🌐 Opening " . compLabel . " (CDP)…", BANNER_ACCENT_INTERMEDIATE)
-        catch {
-        }
-        res := AiCompanionCDP_Ensure(companion, true, false)
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        if (!res.ok)
-            AiCompanionCDP_NotifyError("Open companion", res.error, companion)
-        else {
-            Utils_PlayGeminiFocusedChime()
-            try ShowCenteredOverlay_Utils("🌐 Focused " . compLabel . " (CDP)", 1000, BANNER_ACCENT_SUCCESS)
-            catch {
-            }
-        }
-        return res.ok
-    }
-    if (companion = "enterprise")
-        return GeminiEnterprise_OpenOrFocus()
     if (companion = "copilot")
         return CopilotWeb_OpenOrFocus()
-    t0 := A_TickCount
-    SetTitleMatchMode(2)
-    if hwnd := GetGeminiWindowHwnd() {
-        alreadyActive := false
-        try
-            alreadyActive := WinActive("ahk_id " hwnd)
-        catch {
-        }
-        if (!alreadyActive) {
-            try {
-                WinActivate("ahk_id " hwnd)
-            } catch {
-                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000,
-                    BANNER_ACCENT_ERROR)
-                return
-            }
-            if !WinWaitActive("ahk_id " hwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000)
-                return
-        }
-
-        if (alreadyActive && GEMINI_OPEN_FAST_SETTLE_MS > 0)
-            Sleep GEMINI_OPEN_FAST_SETTLE_MS
-
-        try
-            uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-            ShowCenteredOverlay_Utils("❌ Error: Could not attach to Gemini window.", 2000,
-                BANNER_ACCENT_ERROR)
-            return
-        }
-
-        Gemini_WaitForPromptFieldDiscoverable(uia)
-
-        focusPhase := ""
-        promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase)
-        if (!promptField) {
-            deadline := A_TickCount + 2000
-            while (A_TickCount < deadline) {
-                Sleep 50
-                if (promptField := Gemini_FocusPromptWithChime(uia, "", &focusPhase))
-                    break
-            }
-        }
-        GeminiPerfLog(focusPhase != "" ? focusPhase : "focus_failed", t0)
-        GeminiPerfLog("activation", t0)
-    } else {
-        InitializeGeminiFirstTime()
+    compLabel := (companion = "enterprise" ? "Enterprise" : "Gemini")
+    try StandardLoadingBar_Show("🌐 Opening " . compLabel . " (CDP)…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
     }
+    res := AiCompanionCDP_Ensure(companion, true, false)
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    if (!res.ok)
+        AiCompanionCDP_NotifyError("Open companion", res.error, companion)
+    else {
+        Utils_PlayGeminiFocusedChime()
+        try ShowCenteredOverlay_Utils("🌐 Focused " . compLabel . " (CDP)", 1000, BANNER_ACCENT_SUCCESS)
+        catch {
+        }
+    }
+    return res.ok
 }
 
 #!+i:: {

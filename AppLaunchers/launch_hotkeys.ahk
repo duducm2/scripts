@@ -117,13 +117,13 @@ LaunchF_OpenChrome() {
 ; =============================================================================
 LaunchZ_OpenWhatsAppCDP() {
     StandardLoadingBar_Show("⏳ Opening WhatsApp (CDP)…", BANNER_ACCENT_INTERMEDIATE)
-    res := ChatCDP_OpenOrFocus("whatsapp", true)
+    res := ChatCDP_OpenOrFocus("whatsapp", false)
     StandardLoadingBar_Hide(0)
     if (!res.ok) {
         ChatCDP_NotifyError("whatsapp", res.error)
         return
     }
-    CenterMouse()
+    ShowCenteredOverlay_Utils("✅ WhatsApp ready (CDP)", 1200, BANNER_ACCENT_SUCCESS)
 }
 
 #!+z::

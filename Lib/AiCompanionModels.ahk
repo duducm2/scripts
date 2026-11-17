@@ -343,20 +343,14 @@ AiCompanionModels_FocusHwnd(hwnd) {
     return !!WinWaitActive("ahk_id " hwnd, , 2)
 }
 
-; Apply a model by exact UIA-visible name for the companion window (focused first).
+; Apply a model via CDP for Gemini / Enterprise (Copilot falls back to CopilotWeb).
 AiCompanionModels_Apply(companion, modelName) {
     modelName := Trim(modelName)
     if (modelName = "")
         return false
-    if (AiCompanionMode_IsCDP(companion))
-        return AiCompanionCDP_SelectModel(companion, modelName)
-    if (companion = AI_COMPANION_GEMINI)
-        return AiCompanionModels_ApplyGemini(modelName)
-    if (companion = AI_COMPANION_ENTERPRISE)
-        return AiCompanionModels_ApplyEnterprise(modelName)
     if (companion = AI_COMPANION_COPILOT)
         return AiCompanionModels_ApplyCopilot(modelName)
-    return false
+    return AiCompanionCDP_SelectModel(companion, modelName)
 }
 
 AiCompanionModels_ApplyGemini(modelName) {

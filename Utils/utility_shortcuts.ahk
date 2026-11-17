@@ -364,51 +364,15 @@ GlobalAICompanionHwndAndLabel(&hwnd, &label) {
     }
 }
 
-; Open/focus the resolved companion (same peers as #!+I). Consumer Gemini may Send #!+i to Gemini.ahk.
+; Open/focus the resolved companion via CDP (Copilot falls back to CopilotWeb).
 GlobalAICompanionOpenOrFocus() {
     companion := ResolveGlobalAICompanion()
-    if (AiCompanionMode_IsCDP(companion))
-        return !!AiCompanionCDP_Ensure(companion, true, false).ok
-    if (companion = "enterprise")
-        return !!GeminiEnterprise_OpenOrFocus()
     if (companion = "copilot")
         return !!CopilotWeb_OpenOrFocus()
-    hwnd := FindGeminiChromeHwnd()
-    if (hwnd) {
-        try {
-            if !WinActive("ahk_id " hwnd) {
-                WinActivate("ahk_id " hwnd)
-                if !WinWaitActive("ahk_id " hwnd, , 2)
-                    return false
-            }
-        } catch {
-            return false
-        }
-        return true
-    }
-    ; Gemini.ahk owns first-time open (#\!+I). Wait until consumer Gemini appears.
-    Send "#!+i"
-    deadline := A_TickCount + 12000
-    while (A_TickCount < deadline) {
-        hwnd := FindGeminiChromeHwnd()
-        if (hwnd) {
-            try {
-                if WinActive("ahk_id " hwnd)
-                    return true
-                WinActivate("ahk_id " hwnd)
-                if WinWaitActive("ahk_id " hwnd, , 2)
-                    return true
-            } catch {
-            }
-        }
-        Sleep 200
-    }
-    return false
+    return !!AiCompanionCDP_Ensure(companion, true, false).ok
 }
 
-; Global Fast / Deep — same as in-app Shift+Q / Shift+M via AiCompanionModels_SelectRole.
-; Captures the focused window first and reactivates it after the model switch
-; (Macros menu restores the pre-selector window before calling us; #!q/#!m use the live foreground).
+; Global Fast / Deep — via CDP (Copilot falls back to CopilotWeb).
 GlobalAICompanionSelectRole(role) {
     if (AiCompanionMode_IsCDP()) {
         compId := GlobalAICompanionModelsId()
@@ -428,7 +392,7 @@ GlobalAICompanionSelectRole(role) {
         prevHwnd := 0
     }
     hwnd := 0
-    label := "Gemini"
+    label := "Copilot"
     GlobalAICompanionHwndAndLabel(&hwnd, &label)
     if (!hwnd) {
         ShowCenteredOverlay_Utils("❌ " . label . " is not open.", 1800, BANNER_ACCENT_ERROR)
@@ -718,28 +682,11 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
     }
 
     mgr := D2C_FlowManager.GetInstance()
-    ok := mgr.StartFromClipboard(originHwnd)
-
-    ; Guarantee focus returns to the previously active window (only needed in AHK UIA mode)
-    if (!AiCompanionMode_IsCDP() && originHwnd && WinExist("ahk_id " originHwnd)) {
-        Sleep 120
-        if (!AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionSend")) {
-            Sleep 150
-            AICompanion_RestoreOriginWindow(originHwnd, , true, "CompanionSend")
-        }
-    }
-    return ok
+    return mgr.StartFromClipboard(originHwnd)
 }
 
 RegisterMacro(UtilityShortcuts_AICompanionPaste, "📋 AI companion paste clipboard", "")
 RegisterMacro(UtilityShortcuts_AICompanionSend, "🚀 AI companion send clipboard (response banner)", "")
-
-; Macros [T] — Toggle AI companion mode between CDP (background) and AHK UIA (foreground)
-MacroToggleAICompanionMode(*) {
-    AiCompanionMode_Toggle()
-}
-
-RegisterMacro(MacroToggleAICompanionMode, "🔌 AI companion mode: CDP (background)", "t")
 
 ; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()

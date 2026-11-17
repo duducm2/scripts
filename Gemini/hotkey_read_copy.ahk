@@ -194,13 +194,6 @@ HotkeyCopy_RunCopyLastMessage(gen := 0) {
         if (companion = "enterprise") {
             err := "Copy failed – ensure Gemini Enterprise is open and has a response"
             ok := GeminiEnterprise_CopyLastMessageToClipboard(opts)
-            if (ok && !AiCompanionMode_IsCDP(companion)) {
-                if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
-                    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
-                    if (IsObject(root))
-                        GeminiEnterprise_FocusComposer(root, true, false)
-                }
-            }
         } else if (companion = "copilot") {
             err := "Copy failed – ensure Copilot is open and has a response"
             ok := CopilotWeb_CopyLastMessageToClipboard(opts)
@@ -210,10 +203,6 @@ HotkeyCopy_RunCopyLastMessage(gen := 0) {
             }
         } else {
             ok := CopyLastGeminiMessageToClipboard(opts)
-            if (ok && !AiCompanionMode_IsCDP(companion)) {
-                if (hwnd := GetGeminiWindowHwnd())
-                    FocusGeminiAskFieldForHwnd(hwnd, true)
-            }
         }
         GeminiPerfLog("hotkey_copy", t0)
     } catch as e {
@@ -234,13 +223,6 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
         if (companion = "enterprise") {
             err := "No code snippet found – ensure Gemini Enterprise has a code block"
             ok := GeminiEnterprise_CopyLastCodeSnippetToClipboard(opts)
-            if (ok && !AiCompanionMode_IsCDP(companion)) {
-                if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
-                    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
-                    if (IsObject(root))
-                        GeminiEnterprise_FocusComposer(root, true, false)
-                }
-            }
         } else if (companion = "copilot") {
             err := "No code snippet found – ensure Copilot has a code block"
             ok := CopilotWeb_CopyLastCodeSnippetToClipboard(opts)
@@ -250,10 +232,6 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
             }
         } else {
             ok := CopyLastGeminiCodeSnippetToClipboard(opts)
-            if (ok && !AiCompanionMode_IsCDP(companion)) {
-                if (hwnd := GetGeminiWindowHwnd())
-                    FocusGeminiAskFieldForHwnd(hwnd, true)
-            }
         }
         GeminiPerfLog("hotkey_copy_code", t0)
     } catch as e {
