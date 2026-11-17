@@ -1023,8 +1023,8 @@ Editor_GitQuotePs(s) {
     return "'" StrReplace(s, "'", "''") "'"
 }
 
-; Thin launcher: run the on-disk gated flow (later .ps1 fixes apply after one AHK reload).
-Editor_GitWriteRobotScript(repoDir, resultPath) {
+; Thin launcher: run the on-disk gated flow hidden in the background (no terminal/SendText).
+Editor_GitWriteRobotScript(repoDir, resultPath, useRobotText := false) {
     flowPs1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
     if !FileExist(flowPs1)
         return ""
@@ -1032,7 +1032,10 @@ Editor_GitWriteRobotScript(repoDir, resultPath) {
     script := "& " Editor_GitQuotePs(flowPs1)
     script .= " -RepoDir " Editor_GitQuotePs(repoArg)
     script .= " -ResultPath " Editor_GitQuotePs(resultPath)
-    script .= " -TimeoutSec 300 -Robot`r`n"
+    script .= " -TimeoutSec 300"
+    if (useRobotText)
+        script .= " -Robot"
+    script .= "`r`n"
     ps1Path := A_Temp "\editor-git-robot-" A_TickCount ".ps1"
     try FileDelete(ps1Path)
     FileAppend(script, ps1Path, "UTF-8-RAW")
@@ -1040,13 +1043,39 @@ Editor_GitWriteRobotScript(repoDir, resultPath) {
 }
 
 Editor_ParseGitRobotResultText(raw) {
-    compact := StrReplace(StrReplace(StrReplace(raw, Chr(0), ""), Chr(65279), ""), " ", "")
-    compact := Trim(compact, "`r`n `t")
+    t := Trim(StrReplace(StrReplace(raw, Chr(0), ""), Chr(65279), ""), "`r`n `t")
+    if (t = "")
+        return ""
+    if (SubStr(t, 1, 1) = "{") {
+        if RegExMatch(t, '"ok"\s*:\s*true')
+            return "ok"
+        if RegExMatch(t, '"ok"\s*:\s*false')
+            return "fail"
+        return ""
+    }
+    compact := StrReplace(t, " ", "")
     if InStr(compact, "fail")
         return "fail"
     if InStr(compact, "ok")
         return "ok"
     return ""
+}
+
+Editor_FormatGitJsonFailure(raw) {
+    step := ""
+    err := ""
+    if RegExMatch(raw, '"failedStep"\s*:\s*"([^"]*)"', &mStep)
+        step := mStep[1]
+    if RegExMatch(raw, '"error"\s*:\s*"([^"]*)"', &mErr)
+        err := StrReplace(StrReplace(mErr[1], '\"', '"'), '\\', '\')
+    restored := RegExMatch(raw, '"stashRestoredOnError"\s*:\s*true')
+    popWarn := RegExMatch(raw, '"stashPopWarning"\s*:\s*true')
+    msg := (step != "" ? step . ": " : "") . (err != "" ? err : "stash/pull failed")
+    if (restored)
+        msg .= " (stash restored)"
+    else if (popWarn)
+        msg .= " (⚠ stash kept — run git stash pop)"
+    return msg
 }
 
 Editor_GitPlayPullSuccessSound() {
@@ -1059,19 +1088,26 @@ Editor_GitPlayPullSuccessSound() {
 }
 
 Editor_GitRobotStopPoll() {
-    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, g_EditorGitRobotQuickUpdate
+    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, g_EditorGitRobotQuickUpdate, g_EditorGitRobotPs1Path
     try SetTimer(Editor_GitRobotPollResult, 0)
     catch {
+    }
+    if (IsSet(g_EditorGitRobotPs1Path) && g_EditorGitRobotPs1Path != "") {
+        try FileDelete(g_EditorGitRobotPs1Path)
+        catch {
+        }
     }
     g_EditorGitRobotResultPath := ""
     g_EditorGitRobotDeadline := 0
     g_EditorGitRobotQuickUpdate := false
+    g_EditorGitRobotPs1Path := ""
 }
 
-Editor_GitRobotStartPoll(resultPath) {
-    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, EDITOR_GIT_ROBOT_TIMEOUT_MS
+Editor_GitRobotStartPoll(resultPath, ps1Path := "") {
+    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, EDITOR_GIT_ROBOT_TIMEOUT_MS, g_EditorGitRobotPs1Path
     Editor_GitRobotStopPoll()
     g_EditorGitRobotResultPath := resultPath
+    g_EditorGitRobotPs1Path := ps1Path
     g_EditorGitRobotDeadline := A_TickCount + EDITOR_GIT_ROBOT_TIMEOUT_MS
     SetTimer(Editor_GitRobotPollResult, 250)
 }
@@ -1089,9 +1125,10 @@ Editor_GitRobotPollResult(*) {
         return
     }
     outcome := ""
+    raw := ""
     try {
         if FileExist(path) {
-            raw := FileRead(path)
+            raw := FileRead(path, "UTF-8")
             outcome := Editor_ParseGitRobotResultText(raw)
             if (outcome != "")
                 try FileDelete(path)
@@ -1114,7 +1151,8 @@ Editor_GitRobotPollResult(*) {
         StandardLoadingBar_Hide(600)
         return
     }
-    Editor_GitFlowFail("Git", "stash/pull failed")
+    failDetail := (SubStr(Trim(raw), 1, 1) = "{") ? Editor_FormatGitJsonFailure(raw) : "stash/pull failed"
+    Editor_GitFlowFail("Git", failDetail)
 }
 
 Editor_GitStashAndPull() {
@@ -1126,28 +1164,29 @@ Editor_GitStashAndPull() {
         return
     }
     repoDir := Editor_ResolveGitRepoDir(hwnd)
-    resultPath := A_Temp "\editor-git-robot-" A_TickCount ".txt"
+    if (repoDir = "")
+        repoDir := A_WorkingDir
+    resultPath := A_Temp "\editor-git-robot-" A_TickCount ".json"
     try FileDelete(resultPath)
-    StandardLoadingBar_Show("🤖 Opening terminal…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-        centerOnHwnd: hwnd })
-    try StandardLoadingBar_ArmForceHide(2500)
-    try {
-        Editor_OpenNewEditorTerminal(hwnd)
-        Sleep 120
-        ps1Path := Editor_GitWriteRobotScript(repoDir, resultPath)
-        if (ps1Path = "") {
-            Editor_GitFlowFail("Git", "Editor-GitStashFetchPull.ps1 not found")
-            return
-        }
-        SendText("powershell -NoProfile -ExecutionPolicy Bypass -File " . Editor_GitQuotePs(ps1Path))
-        Send "{Enter}"
-    } finally {
-        ; Never leave the opening banner up while git runs.
-        try StandardLoadingBar_Hide(0)
+    ps1Path := Editor_GitWriteRobotScript(repoDir, resultPath, false)
+    if (ps1Path = "") {
+        Editor_GitFlowFail("Git", "Editor-GitStashFetchPull.ps1 not found")
+        return
     }
-    Editor_GitRobotStartPoll(resultPath)
+    try {
+        Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' . ps1Path . '"', repoDir, "Hide")
+    } catch as e {
+        try FileDelete(ps1Path)
+        Editor_GitFlowFail("Git", "failed to launch background pull: " . e.Message)
+        return
+    }
     global g_EditorGitRobotQuickUpdate
+    Editor_GitRobotStartPoll(resultPath, ps1Path)
     g_EditorGitRobotQuickUpdate := Editor_IsThisScriptsRepo(hwnd, repoDir)
+    ; Non-blocking notification so user can immediately continue working while git runs in parallel.
+    try ShowCenteredOverlay_Utils("⏳ Git: stashing & pulling in background…", 1500, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
 }
 
 ; ---------------------------------------------------------------------------

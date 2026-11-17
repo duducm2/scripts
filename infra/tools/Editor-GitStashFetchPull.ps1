@@ -1,4 +1,4 @@
-# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
+﻿# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
 # Success (ok=true / exit 0) only if every quality gate passes — never on git exit 0 alone.
 # Writes JSON result to -ResultPath (tests) or plain ok/fail with -Robot (Alt+S terminal).
 # -SkipPull is test-only: fetch then skip pull so the behind-count gate must fail.
@@ -21,17 +21,20 @@ $env:GIT_PAGER = 'cat'
 $stashMsg = "alt+s-auto-$(Get-Date -Format 'yyyyMMddHHmmss')-$PID"
 
 $result = [ordered]@{
-    ok              = $false
-    didStash        = $false
-    stashPopWarning = $false
-    failedStep      = ''
-    error           = ''
-    behindCount     = -1
-    aheadCount      = -1
-    upstream        = ''
-    stashRef        = ''
-    steps           = @()
+    ok                   = $false
+    didStash             = $false
+    stashRestoredOnError = $false
+    stashPopWarning      = $false
+    failedStep           = ''
+    error                = ''
+    behindCount          = -1
+    aheadCount           = -1
+    upstream             = ''
+    stashRef             = ''
+    steps                = @()
 }
+
+$script:didStashNeedsRestore = $false
 
 function Write-Robot {
     param([string]$Msg, [string]$Color = 'Cyan')
@@ -66,8 +69,55 @@ function Add-Step {
     $result.steps += [ordered]@{ name = $Name; ok = $Ok; detail = $Detail }
 }
 
+function Find-OurStashRef {
+    $r = Invoke-GitRaw 'stash list'
+    if (-not $r.Ok -or -not $r.StdOut) { return '' }
+    foreach ($line in ($r.StdOut -split "`r?`n")) {
+        if ($line -match [regex]::Escape($stashMsg) -and $line -match '^(stash@\{\d+\}):') {
+            return $Matches[1]
+        }
+    }
+    return ''
+}
+
+function Restore-StashOnFailure {
+    if (-not $script:didStashNeedsRestore) { return }
+    $script:didStashNeedsRestore = $false
+    Write-Robot 'restore stash after error' 'Yellow'
+    try {
+        $dirRes = Invoke-GitRaw 'rev-parse --absolute-git-dir'
+        if ($dirRes.Ok -and $dirRes.StdOut) {
+            $lock = Join-Path $dirRes.StdOut.Trim() 'index.lock'
+            $dl = [datetime]::UtcNow.AddSeconds(15)
+            while ((Test-Path -LiteralPath $lock) -and ([datetime]::UtcNow -lt $dl)) {
+                Start-Sleep -Milliseconds 200
+            }
+        }
+        $ref = Find-OurStashRef
+        if (-not $ref) {
+            Add-Step 'stash-restore-on-error' $false "stash not found for $stashMsg"
+            $result.stashPopWarning = $true
+            return
+        }
+        $pop = Invoke-GitRaw "stash pop $ref"
+        if ($pop.Ok) {
+            $result.stashRestoredOnError = $true
+            Add-Step 'stash-restore-on-error' $true "restored $ref"
+        } else {
+            $result.stashPopWarning = $true
+            Add-Step 'stash-restore-on-error' $false $(if ($pop.Output) { $pop.Output } else { "git stash pop $ref failed" })
+        }
+    } catch {
+        $result.stashPopWarning = $true
+        Add-Step 'stash-restore-on-error' $false $_.Exception.Message
+    }
+}
+
 function Fail-Step {
     param([string]$Step, [string]$ErrorText)
+    if ($Step -ne 'StashPop' -and $Step -ne 'Stash') {
+        Restore-StashOnFailure
+    }
     $result.failedStep = $Step
     $result.error = $ErrorText
     if ($Step -eq 'StashPop') {
@@ -75,6 +125,10 @@ function Fail-Step {
     }
     Add-Step $Step $false $ErrorText
     Write-Result 1
+}
+
+trap {
+    Fail-Step 'Unexpected' $_.Exception.Message
 }
 
 function Invoke-GitRaw {
@@ -298,6 +352,7 @@ if ($dirty) {
         Fail-Step 'Stash' "new stash@{0} is not ours: $($top.StdOut)"
     }
     $result.didStash = $true
+    $script:didStashNeedsRestore = $true
     $result.stashRef = 'stash@{0}'
     Wait-WorkingTreePullable | Out-Null
     Add-Step 'stash-gate' $true $stashMsg
@@ -352,6 +407,7 @@ Add-Step 'pull-gate' $true "behind=$($result.behindCount) ahead=$($result.aheadC
 
 if ($result.didStash) {
     Write-Robot 'stash pop'
+    $script:didStashNeedsRestore = $false
     $top = Invoke-GitRaw 'stash list -1'
     if (-not $top.Ok -or ($top.StdOut -notmatch [regex]::Escape($stashMsg))) {
         Fail-Step 'StashPop' "expected stash@{0} to be ours before pop: $($top.StdOut)"
