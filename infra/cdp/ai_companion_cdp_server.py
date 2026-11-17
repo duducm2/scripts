@@ -1085,110 +1085,126 @@ class CDPBridge:
         return None
 
     def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
-        search_loc = self._find_first_visible(
-            page,
-            [
-                'div[contenteditable="true"][data-tab="3"]',
-                'div[role="textbox"][aria-label*="Search" i]',
-                'div[role="textbox"][aria-label*="Pesquisar" i]',
-                'input[aria-label*="Search" i]',
-            ],
-            timeout_s=8.0,
-        )
-        if search_loc is None:
-            try:
-                if page.locator('canvas[aria-label*="Scan" i], div[data-ref]').count() > 0 or self._is_auth_page(page):
-                    return {"ok": False, "error": "AUTH_REQUIRED"}
-            except Exception:
-                pass
-            return {"ok": False, "error": "WHATSAPP_SEARCH_NOT_FOUND"}
+        search_sels = [
+            'div[contenteditable="true"][data-tab="3"]',
+            'div[role="textbox"][aria-label*="Search" i]',
+            'div[role="textbox"][aria-label*="Pesquisar" i]',
+            'div[role="textbox"][title*="Search" i]',
+            '#side div[role="textbox"][contenteditable="true"]',
+            'input[aria-label*="Search" i]',
+        ]
+        composer_sels = [
+            'footer div[contenteditable="true"][data-tab="10"]',
+            'footer div[role="textbox"][contenteditable="true"]',
+            'footer div[contenteditable="true"]',
+        ]
 
-        self._insert_text_in_composer(page, search_loc, contact, clear=True)
-        time.sleep(0.4)
+        composer = None
+        last_err = "WHATSAPP_SEARCH_NOT_FOUND"
+        for attempt in range(1, 4):
+            search_loc = self._find_first_visible(page, search_sels, timeout_s=18.0 if attempt == 1 else 6.0)
+            if search_loc is None:
+                try:
+                    if page.locator('canvas[aria-label*="Scan" i], div[data-ref]').count() > 0 or self._is_auth_page(page):
+                        return {"ok": False, "error": "AUTH_REQUIRED"}
+                except Exception:
+                    pass
+                last_err = "WHATSAPP_SEARCH_NOT_FOUND"
+                time.sleep(0.5)
+                continue
 
-        # Wait for search results in #pane-side and click the best token-matched chat row.
-        clicked = False
-        click_deadline = time.time() + 5.0
-        while time.time() < click_deadline:
-            try:
-                clicked = bool(
-                    page.evaluate(
-                        """(contact) => {
-                            const pane = document.querySelector('#pane-side');
-                            if (!pane) return false;
-                            const tokens = contact.toLowerCase().split(/\\s+/).filter(Boolean);
-                            const rows = Array.from(pane.querySelectorAll('[role="listitem"], [role="row"]'));
-                            let best = null;
-                            for (const row of rows) {
-                                const titleEl = row.querySelector('span[title]');
-                                const label = ((titleEl && titleEl.getAttribute('title')) || row.innerText || '').toLowerCase();
-                                if (!label) continue;
-                                if (tokens.every(t => label.includes(t))) {
-                                    best = titleEl || row.querySelector('[role="gridcell"]') || row;
-                                    break;
+            self._insert_text_in_composer(page, search_loc, contact, clear=True)
+            time.sleep(0.45)
+
+            clicked = False
+            click_deadline = time.time() + 5.0
+            while time.time() < click_deadline:
+                try:
+                    clicked = bool(
+                        page.evaluate(
+                            """(contact) => {
+                                const pane = document.querySelector('#pane-side');
+                                if (!pane) return false;
+                                const tokens = contact.toLowerCase().split(/\\s+/).filter(Boolean);
+                                const rows = Array.from(pane.querySelectorAll('[role="listitem"], [role="row"]'));
+                                let best = null;
+                                for (const row of rows) {
+                                    const titleEl = row.querySelector('span[title]');
+                                    const label = ((titleEl && titleEl.getAttribute('title')) || row.innerText || '').toLowerCase();
+                                    if (!label) continue;
+                                    if (tokens.every(t => label.includes(t))) {
+                                        best = titleEl || row.querySelector('[role="gridcell"]') || row;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (!best && rows.length > 0) {
-                                const firstTitle = rows[0].querySelector('span[title]');
-                                best = firstTitle || rows[0].querySelector('[role="gridcell"]') || rows[0];
-                            }
-                            if (!best) return false;
-                            for (const evt of ['mousedown', 'mouseup', 'click']) {
-                                best.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
-                            }
-                            return true;
-                        }""",
-                        contact,
+                                if (!best && rows.length > 0) {
+                                    const firstTitle = rows[0].querySelector('span[title]');
+                                    best = firstTitle || rows[0].querySelector('[role="gridcell"]') || rows[0];
+                                }
+                                if (!best) return false;
+                                for (const evt of ['mousedown', 'mouseup', 'click']) {
+                                    best.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
+                                }
+                                return true;
+                            }""",
+                            contact,
+                        )
                     )
-                )
-            except Exception:
-                clicked = False
-            if clicked:
+                except Exception:
+                    clicked = False
+                if clicked:
+                    break
+                time.sleep(0.15)
+
+            if not clicked:
+                last_err = f"CONTACT_NOT_FOUND:{contact}"
+                try:
+                    page.keyboard.press("Escape")
+                except Exception:
+                    pass
+                time.sleep(0.3)
+                continue
+
+            composer = self._find_first_visible(page, composer_sels, timeout_s=2.5)
+            if composer is None:
+                try:
+                    search_loc.press("Enter")
+                except Exception:
+                    pass
+                composer = self._find_first_visible(page, composer_sels, timeout_s=3.5)
+            if composer is not None:
                 break
-            time.sleep(0.15)
+            last_err = "WHATSAPP_COMPOSER_NOT_FOUND"
+            time.sleep(0.3)
 
-        if not clicked:
-            return {"ok": False, "error": f"CONTACT_NOT_FOUND:{contact}"}
-
-        composer = self._find_first_visible(
-            page,
-            [
-                'footer div[contenteditable="true"][data-tab="10"]',
-                'footer div[role="textbox"][contenteditable="true"]',
-                'footer div[contenteditable="true"]',
-            ],
-            timeout_s=2.5,
-        )
         if composer is None:
-            try:
-                search_loc.press("Enter")
-            except Exception:
-                pass
-            composer = self._find_first_visible(
-                page,
-                [
-                    'footer div[contenteditable="true"][data-tab="10"]',
-                    'footer div[role="textbox"][contenteditable="true"]',
-                    'footer div[contenteditable="true"]',
-                ],
-                timeout_s=3.5,
-            )
-        if composer is None:
-            return {"ok": False, "error": "WHATSAPP_COMPOSER_NOT_FOUND"}
+            return {"ok": False, "error": last_err}
 
         if files:
-            if not self._attach_files(page, files):
+            attached = False
+            for _ in range(3):
+                if self._attach_files(page, files):
+                    attached = True
+                    break
+                time.sleep(0.3)
+            if not attached:
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
             time.sleep(0.4)
         if text:
-            self._insert_text_in_composer(page, composer, text, clear=False)
-            time.sleep(0.1)
+            for _ in range(3):
+                self._insert_text_in_composer(page, composer, text, clear=False)
+                time.sleep(0.1)
+                try:
+                    if (composer.inner_text() or "").strip():
+                        break
+                except Exception:
+                    break
 
         if submit and (text or files):
             send_btn = self._find_first_visible(
                 page,
                 ['button[aria-label="Send" i]', 'button[aria-label="Enviar" i]', 'span[data-icon="send"]'],
-                timeout_s=2.0,
+                timeout_s=2.5,
             )
             if send_btn is not None:
                 try:
@@ -1200,66 +1216,86 @@ class CDPBridge:
         return {"ok": True}
 
     def _chat_jump_teams(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
-        search_loc = self._find_first_visible(
-            page,
-            [
-                'input[id*="search" i]',
-                '[data-tid="search-box"] input',
-                'input[placeholder*="Search" i]',
-                'input[placeholder*="Pesquisar" i]',
-            ],
-            timeout_s=8.0,
-        )
-        if search_loc is None:
-            if self._is_auth_page(page):
-                return {"ok": False, "error": "AUTH_REQUIRED"}
-            return {"ok": False, "error": "TEAMS_SEARCH_NOT_FOUND"}
+        search_sels = [
+            'input[id*="search" i]',
+            '[data-tid="search-box"] input',
+            'input[placeholder*="Search" i]',
+            'input[placeholder*="Pesquisar" i]',
+        ]
+        composer_sels = [
+            '[data-tid="ckeditor"]',
+            'div[role="textbox"][contenteditable="true"]',
+        ]
+        composer = None
+        last_err = "TEAMS_SEARCH_NOT_FOUND"
+        for attempt in range(1, 4):
+            search_loc = self._find_first_visible(page, search_sels, timeout_s=15.0 if attempt == 1 else 6.0)
+            if search_loc is None:
+                if self._is_auth_page(page):
+                    return {"ok": False, "error": "AUTH_REQUIRED"}
+                last_err = "TEAMS_SEARCH_NOT_FOUND"
+                time.sleep(0.5)
+                continue
 
-        self._insert_text_in_composer(page, search_loc, contact, clear=True)
-        time.sleep(0.4)
+            self._insert_text_in_composer(page, search_loc, contact, clear=True)
+            time.sleep(0.45)
 
-        result_loc = self._find_first_visible(
-            page,
-            [
-                '[data-tid*="search" i] [role="option"]',
-                '[role="listbox"] [role="option"]',
-                '[data-tid*="autosuggest" i] [role="listitem"]',
-            ],
-            timeout_s=5.0,
-        )
-        if result_loc is not None:
+            result_loc = self._find_first_visible(
+                page,
+                [
+                    '[data-tid*="search" i] [role="option"]',
+                    '[role="listbox"] [role="option"]',
+                    '[data-tid*="autosuggest" i] [role="listitem"]',
+                ],
+                timeout_s=5.0,
+            )
+            if result_loc is not None:
+                try:
+                    result_loc.evaluate("el => el.click()")
+                except Exception:
+                    result_loc.click()
+            else:
+                page.keyboard.press("ArrowDown")
+                page.keyboard.press("Enter")
+
+            composer = self._find_first_visible(page, composer_sels, timeout_s=5.0)
+            if composer is not None:
+                break
+            last_err = "TEAMS_COMPOSER_NOT_FOUND"
             try:
-                result_loc.evaluate("el => el.click()")
+                page.keyboard.press("Escape")
             except Exception:
-                result_loc.click()
-        else:
-            page.keyboard.press("ArrowDown")
-            page.keyboard.press("Enter")
+                pass
+            time.sleep(0.3)
 
-        composer = self._find_first_visible(
-            page,
-            [
-                '[data-tid="ckeditor"]',
-                'div[role="textbox"][contenteditable="true"]',
-            ],
-            timeout_s=5.0,
-        )
         if composer is None:
-            return {"ok": False, "error": "TEAMS_COMPOSER_NOT_FOUND"}
+            return {"ok": False, "error": last_err}
 
         if files:
-            if not self._attach_files(page, files):
+            attached = False
+            for _ in range(3):
+                if self._attach_files(page, files):
+                    attached = True
+                    break
+                time.sleep(0.3)
+            if not attached:
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
             time.sleep(0.4)
         if text:
-            self._insert_text_in_composer(page, composer, text, clear=False)
-            time.sleep(0.1)
+            for _ in range(3):
+                self._insert_text_in_composer(page, composer, text, clear=False)
+                time.sleep(0.1)
+                try:
+                    if (composer.inner_text() or "").strip():
+                        break
+                except Exception:
+                    break
 
         if submit and (text or files):
             send_btn = self._find_first_visible(
                 page,
                 ['button[data-tid="newMessageCommands-send"]', 'button[aria-label="Send" i]', 'button[aria-label="Enviar" i]'],
-                timeout_s=2.0,
+                timeout_s=2.5,
             )
             if send_btn is not None:
                 try:
