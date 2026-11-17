@@ -180,6 +180,9 @@ CleanClipboard_UnwindClipAngel(hwnd := 0) {
 
 ; N/Esc while automation runs (overlay already closed; StandardLoadingBar keys are inactive)
 CleanClipboard_SetAbortHotkeys(enable := true) {
+    try HotIf()
+    catch {
+    }
     if (enable) {
         Hotkey("*n", CleanClipboard_OnCancel, "On")
         Hotkey("*Escape", CleanClipboard_OnCancel, "On")
@@ -215,6 +218,9 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0, &outRoot := 0) {
 CleanClipboardInternal(sessionId := 0) {
     global g_ClipAngelAutomationBusy
     if (CleanClipboard_ShouldAbort(sessionId)) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         CleanClipboard_UnwindClipAngel()
         return
     }
@@ -226,17 +232,25 @@ CleanClipboardInternal(sessionId := 0) {
         centerOnHwnd: priorHwnd,
         fontSize: 17
     })
-    ; Fast DB-direct path: deletes non-favorites without opening, moving, or focusing ClipAngel.
+    ; Fast DB-direct path (with 1 brief retry on SQLITE_BUSY): deletes non-favorites without opening ClipAngel.
     if (ClipAngelDb_ExePath() != "") {
         deletedCount := 0
-        if (ClipAngelDb_DeleteNonFav(&deletedCount)) {
+        dbOk := ClipAngelDb_DeleteNonFav(&deletedCount)
+        if (!dbOk && !CleanClipboard_ShouldAbort(sessionId)) {
+            Sleep 200
+            dbOk := ClipAngelDb_DeleteNonFav(&deletedCount)
+        }
+        if (dbOk) {
             if (CleanClipboard_ShouldAbort(sessionId)) {
                 StandardLoadingBar_Hide(0)
                 return
             }
+            try A_Clipboard := ""
+            catch {
+            }
             PlayCleaningDesktopSound()
             StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
-            StandardLoadingBar_Hide(500)
+            StandardLoadingBar_Hide(900)
             return
         }
     }
@@ -255,12 +269,16 @@ CleanClipboardInternal(sessionId := 0) {
 
         StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
         try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE: 0ms menu-close guard
-        triggered := false
+        confirmed := false
         try {
             ControlSend("^!k", , "ahk_id " hwnd)
-            triggered := true
+            confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(650)
         } catch {
-            triggered := false
+            confirmed := false
+        }
+        if (!confirmed && !CleanClipboard_ShouldAbort(sessionId)) {
+            if (ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root))
+                confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500)
         }
         if (CleanClipboard_ShouldAbort(sessionId)) {
             StandardLoadingBar_Hide(0)
@@ -268,14 +286,16 @@ CleanClipboardInternal(sessionId := 0) {
             return
         }
 
-        confirmed := triggered ? ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500) : false
         CleanClipboard_UnwindClipAngel(hwnd)
         if (priorHwnd)
             ClipAngel_RestorePriorFocus(priorHwnd, true)
         if (confirmed) {
+            try A_Clipboard := ""
+            catch {
+            }
             PlayCleaningDesktopSound()
             StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
-            StandardLoadingBar_Hide(500)
+            StandardLoadingBar_Hide(900)
         } else {
             StandardLoadingBar_Update("❌ Could not clean clipboard", BANNER_ACCENT_ERROR)
             StandardLoadingBar_Hide(1500)

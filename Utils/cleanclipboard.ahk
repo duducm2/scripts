@@ -126,6 +126,10 @@ CleanClipboard_Proceed(sessionId := 0) {
         })
         CleanClipboard_SetAbortHotkeys(true)
         CleanClipboardInternal(sessionId)
+    } catch {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
     } finally {
         CleanClipboard_SetAbortHotkeys(false)
         CleanClipboard_EndSession()
@@ -140,7 +144,8 @@ CleanClipboard_OnYConfirm(*) {
     if (g_CleanClipboardProceedClaimed)
         return
     g_CleanClipboardProceedClaimed := true
-    CleanClipboard_Proceed(g_CleanClipboardSessionId)
+    sid := g_CleanClipboardSessionId
+    SetTimer((*) => CleanClipboard_Proceed(sid), -1)
 }
 
 ; Auto-continue when countdown ends. Success chime plays inside CleanClipboardInternal.
@@ -151,5 +156,5 @@ CleanClipboard_OnTimeout(sessionId, *) {
     if (g_CleanClipboardProceedClaimed)
         return
     g_CleanClipboardProceedClaimed := true
-    CleanClipboard_Proceed(sessionId)
+    SetTimer((*) => CleanClipboard_Proceed(sessionId), -1)
 }
