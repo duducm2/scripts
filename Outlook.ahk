@@ -338,11 +338,17 @@ ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg, targetModule := 
     PromptActivateOutlookBanner(failureMsg, targetModule)
 }
 
-GetOutlookMainModuleState() {
+GetOutlookMainModuleState(targetHwnd := 0) {
     try {
-        if !OutlookWinActive()
+        hwnd := targetHwnd
+        if (!hwnd) {
+            if !OutlookWinActive()
+                return ""
+            hwnd := WinExist("A")
+        }
+        if (!hwnd || !WinExist("ahk_id " hwnd))
             return ""
-        root := UIA.ElementFromHandle(WinExist("A"))
+        root := UIA.ElementFromHandle(hwnd)
         if !root
             return ""
 
@@ -381,11 +387,17 @@ GetOutlookMainModuleState() {
     return ""
 }
 
-ClickOutlookModuleNavItem(targetModule) {
+ClickOutlookModuleNavItem(targetModule, targetHwnd := 0) {
     try {
-        if !OutlookWinActive()
+        hwnd := targetHwnd
+        if (!hwnd) {
+            if !OutlookWinActive()
+                return false
+            hwnd := WinExist("A")
+        }
+        if (!hwnd || !WinExist("ahk_id " hwnd))
             return false
-        root := UIA.ElementFromHandle(WinExist("A"))
+        root := UIA.ElementFromHandle(hwnd)
         if !root
             return false
 
@@ -400,27 +412,55 @@ ClickOutlookModuleNavItem(targetModule) {
         if !targetItem
             return false
 
-        targetItem.SetFocus()
-        Sleep 50
+        ; Prefer non-focus-stealing UIA Invoke/Select/Toggle so Outlook stays in the background.
         try {
-            targetItem.Click()
+            if targetItem.IsInvokePatternAvailable {
+                targetItem.Invoke()
+                return true
+            }
         } catch {
-            try targetItem.Invoke()
-            catch {
+        }
+        try {
+            if targetItem.IsSelectionItemPatternAvailable {
+                targetItem.Select()
+                return true
+            }
+        } catch {
+        }
+        try {
+            if targetItem.IsTogglePatternAvailable {
+                targetItem.Toggle()
+                return true
+            }
+        } catch {
+        }
+        try {
+            targetItem.Invoke()
+            return true
+        } catch {
+            try {
+                targetItem.Click()
+                return true
+            } catch {
                 return false
             }
         }
-        return true
     } catch {
         return false
     }
 }
 
-IsOutlookTitleMatchingModule(targetModule) {
+IsOutlookTitleMatchingModule(targetModule, targetHwnd := 0) {
     try {
-        if !OutlookWinActive()
+        hwnd := targetHwnd
+        if (!hwnd) {
+            if !OutlookWinActive()
+                return false
+            hwnd := WinExist("A")
+        }
+        if (!hwnd || !WinExist("ahk_id " hwnd))
             return false
-        title := WinGetTitle("A")
+        title := WinGetTitle("ahk_id " hwnd)
         if (targetModule = "calendar")
             return OutlookTitleIsCalendarModule(title)
         if (targetModule = "mail")
@@ -430,14 +470,14 @@ IsOutlookTitleMatchingModule(targetModule) {
     return false
 }
 
-VerifyOutlookModuleReached(targetModule, timeoutMs := 700) {
+VerifyOutlookModuleReached(targetModule, timeoutMs := 700, targetHwnd := 0) {
     deadline := A_TickCount + timeoutMs
     loop {
-        state := GetOutlookMainModuleState()
+        state := GetOutlookMainModuleState(targetHwnd)
         if (state = targetModule) {
             return true
         }
-        if (state = "" && IsOutlookTitleMatchingModule(targetModule)) {
+        if (state = "" && IsOutlookTitleMatchingModule(targetModule, targetHwnd)) {
             return true
         }
         if (A_TickCount >= deadline)
@@ -447,66 +487,134 @@ VerifyOutlookModuleReached(targetModule, timeoutMs := 700) {
     return false
 }
 
-EnsureOutlookMainModule(targetModule) {
-    currentModule := GetOutlookMainModuleState()
+EnsureOutlookMainModule(targetModule, targetHwnd := 0) {
+    currentModule := GetOutlookMainModuleState(targetHwnd)
     if (currentModule = targetModule)
         return true
 
-    ; Reuse Shift+M semantics without key injection: click the target nav item directly.
-    if ((currentModule = "mail" && targetModule = "calendar") || (currentModule = "calendar" && targetModule = "mail")) {
-        switched := ClickOutlookModuleNavItem(targetModule)
-        verified := VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS)
-        return switched && verified
-    }
-
-    ; If selection state cannot be read, try direct UIA click on target module and verify.
-    if ClickOutlookModuleNavItem(targetModule) {
-        afterClickVerified := VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS)
-        return afterClickVerified
+    if ClickOutlookModuleNavItem(targetModule, targetHwnd) {
+        return VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS, targetHwnd)
     }
     return false
 }
 
+global g_OutlookParallelNavState := 0
+
+Outlook_ResolveBackgroundMainHwnd() {
+    hwnd := ResolveOutlookMailboxHwnd()
+    if (hwnd > 0)
+        return hwnd
+    return ResolveOutlookCalendarHwnd()
+}
+
+Outlook_RestoreCallerFocus(prevHwnd, outlookHwnd := 0) {
+    if (!prevHwnd || prevHwnd = outlookHwnd || !WinExist("ahk_id " prevHwnd))
+        return
+    try {
+        if !WinActive("ahk_id " prevHwnd)
+            WinActivate("ahk_id " prevHwnd)
+    } catch {
+    }
+}
+
+Outlook_EnsureVisibleNoActivate(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1) {
+            ; SW_SHOWNOACTIVATE (4): restores without stealing foreground focus, keeping AutoSlot intact.
+            DllCall("user32\ShowWindow", "ptr", hwnd, "int", 4)
+        }
+    } catch {
+    }
+}
+
+Outlook_LaunchBackground() {
+    try {
+        outlookPath := GetOutlookLaunchPath()
+        if (outlookPath != "")
+            Run(outlookPath, , "Min")
+        else {
+            olkPath := OutlookGetOlkExePath()
+            if (olkPath != "")
+                Run(olkPath, , "Min")
+            else
+                Run(OUTLOOK_EXE, , "Min")
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+Outlook_ParallelNavTick() {
+    global g_OutlookParallelNavState
+    st := g_OutlookParallelNavState
+    if (!IsObject(st)) {
+        SetTimer(Outlook_ParallelNavTick, 0)
+        return
+    }
+    hwnd := Outlook_ResolveBackgroundMainHwnd()
+    if (hwnd <= 0) {
+        if (A_TickCount >= st.deadline) {
+            SetTimer(Outlook_ParallelNavTick, 0)
+            g_OutlookParallelNavState := 0
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Outlook: Did not become ready in time.", OUTLOOK_BANNER_FAIL_MS,
+                BANNER_ACCENT_ERROR)
+        }
+        return
+    }
+
+    SetTimer(Outlook_ParallelNavTick, 0)
+    g_OutlookParallelNavState := 0
+    OutlookHwndCache.InvalidateMailbox()
+    OutlookHwndCache.InvalidateCalendar()
+    Outlook_EnsureVisibleNoActivate(hwnd)
+    Outlook_RestoreCallerFocus(st.prevHwnd, hwnd)
+
+    targetLabel := (st.targetModule = "mail") ? "Mailbox" : "Calendar"
+    StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
+    switched := EnsureOutlookMainModule(st.targetModule, hwnd)
+    Outlook_RestoreCallerFocus(st.prevHwnd, hwnd)
+    if (switched) {
+        StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(220)
+    } else {
+        StandardLoadingBar_Hide(0)
+        moduleLabel := (st.targetModule = "mail") ? "mailbox" : "calendar"
+        ShowCenteredOverlay_Utils("❌ Outlook: Could not switch to " moduleLabel ".", OUTLOOK_BANNER_FAIL_MS,
+            BANNER_ACCENT_ERROR)
+    }
+}
+
 NavigateOutlookToModule(targetModule, autoLaunchAttempted := false) {
+    global g_OutlookParallelNavState
+    prevHwnd := 0
+    try prevHwnd := WinGetID("A")
+    catch {
+        prevHwnd := 0
+    }
+
     targetLabel := (targetModule = "mail") ? "Mailbox" : "Calendar"
     StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
 
-    ; If Outlook is already the foreground app (including Copilot surface), we can switch modules directly.
-    ; This avoids false "activation failed" when the active Outlook title starts with "Copilot - ...".
-    try {
-        if OutlookWinActive() {
-            activeHwnd := WinGetID("A")
-            if (activeHwnd > 0) && OutlookIsMainFrameClass(WinGetClass("ahk_id " activeHwnd)) {
-                WinActivate("ahk_id " activeHwnd)
-                StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
-                if EnsureOutlookMainModule(targetModule) {
-                    StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
-                    StandardLoadingBar_Hide(220)
-                    return
-                }
-            }
-        }
-    } catch {
-    }
-
-    mailboxActivated := ActivateOutlookMailbox()
-    calendarActivated := false
-    if !mailboxActivated
-        calendarActivated := ActivateOutlookCalendar()
-    if !(mailboxActivated || calendarActivated) {
-        if !autoLaunchAttempted {
-            StandardLoadingBar_Update("⏳ Outlook: launching...", BANNER_ACCENT_INTERMEDIATE)
-            ActivateOrLaunchOutlook()
-            if !WaitForOutlookMainWindow() {
+    hwnd := Outlook_ResolveBackgroundMainHwnd()
+    if (hwnd <= 0) {
+        if (!autoLaunchAttempted) {
+            StandardLoadingBar_Update("⏳ Outlook: launching in background...", BANNER_ACCENT_INTERMEDIATE)
+            if !Outlook_LaunchBackground() {
                 StandardLoadingBar_Hide(0)
-                ShowCenteredOverlay_Utils("❌ Outlook: Did not become ready in time.", OUTLOOK_BANNER_FAIL_MS,
-                    BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Failed to launch Outlook.", OUTLOOK_BANNER_FAIL_MS, BANNER_ACCENT_ERROR)
                 return
             }
-            OutlookHwndCache.InvalidateMailbox()
-            OutlookHwndCache.InvalidateCalendar()
-            NavigateOutlookToModule(targetModule, true)
+            g_OutlookParallelNavState := {
+                targetModule: targetModule,
+                prevHwnd: prevHwnd,
+                deadline: A_TickCount + OUTLOOK_LAUNCH_READY_MS
+            }
+            SetTimer(Outlook_ParallelNavTick, 200)
             return
         }
         StandardLoadingBar_Hide(0)
@@ -515,9 +623,11 @@ NavigateOutlookToModule(targetModule, autoLaunchAttempted := false) {
         return
     }
 
+    Outlook_EnsureVisibleNoActivate(hwnd)
     StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
-    switched := EnsureOutlookMainModule(targetModule)
-    if switched {
+    switched := EnsureOutlookMainModule(targetModule, hwnd)
+    Outlook_RestoreCallerFocus(prevHwnd, hwnd)
+    if (switched) {
         StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(220)
         return

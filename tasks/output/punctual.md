@@ -26,12 +26,16 @@ Show things that were big deliverables that are still active and not dead.
 
 ⏳ 🕒 Review your habitual activities
 
+🔲 Fix the kitchen falset
+
 ## Job Search
 
 ⚡ Check Job openings
 ℹ️ C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo\web\start.bat
 
 ⏳ You have subscribed yourself to LinkedIn Premium paying 69 reels for the next two months starting today, October 13th, till December 13th. Then after you will have to pay more
+
+⏳ Remember that you have saved your LinkedIn profile to open to work
 
 ### Alumni Unicamp
 
