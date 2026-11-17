@@ -487,15 +487,34 @@ VerifyOutlookModuleReached(targetModule, timeoutMs := 700, targetHwnd := 0) {
     return false
 }
 
-EnsureOutlookMainModule(targetModule, targetHwnd := 0) {
+EnsureOutlookMainModule(targetModule, targetHwnd := 0, prevHwnd := 0) {
     currentModule := GetOutlookMainModuleState(targetHwnd)
     if (currentModule = targetModule)
         return true
 
-    if ClickOutlookModuleNavItem(targetModule, targetHwnd) {
-        return VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS, targetHwnd)
+    ; 1. Try non-focus-stealing UIA Invoke/Select/Toggle first.
+    if (ClickOutlookModuleNavItem(targetModule, targetHwnd)) {
+        if (VerifyOutlookModuleReached(targetModule, 500, targetHwnd))
+            return true
     }
-    return false
+
+    ; 2. Fallback: briefly activate Outlook, switch via UIA Click or Ctrl+1/Ctrl+2, then restore caller focus.
+    if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
+        return false
+    try {
+        WinActivate("ahk_id " targetHwnd)
+        if (!WinWaitActive("ahk_id " targetHwnd, , 1))
+            return false
+        if (ClickOutlookModuleNavItem(targetModule, targetHwnd)
+            && VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS, targetHwnd))
+            return true
+        Send(targetModule = "mail" ? "^1" : "^2")
+        return VerifyOutlookModuleReached(targetModule, OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS, targetHwnd)
+    } catch {
+        return false
+    } finally {
+        Outlook_RestoreCallerFocus(prevHwnd, targetHwnd)
+    }
 }
 
 global g_OutlookParallelNavState := 0
@@ -575,7 +594,7 @@ Outlook_ParallelNavTick() {
 
     targetLabel := (st.targetModule = "mail") ? "Mailbox" : "Calendar"
     StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
-    switched := EnsureOutlookMainModule(st.targetModule, hwnd)
+    switched := EnsureOutlookMainModule(st.targetModule, hwnd, st.prevHwnd)
     Outlook_RestoreCallerFocus(st.prevHwnd, hwnd)
     if (switched) {
         StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
@@ -625,7 +644,7 @@ NavigateOutlookToModule(targetModule, autoLaunchAttempted := false) {
 
     Outlook_EnsureVisibleNoActivate(hwnd)
     StandardLoadingBar_Update("🔄 Outlook: switching to " targetLabel "...", BANNER_ACCENT_INTERMEDIATE)
-    switched := EnsureOutlookMainModule(targetModule, hwnd)
+    switched := EnsureOutlookMainModule(targetModule, hwnd, prevHwnd)
     Outlook_RestoreCallerFocus(prevHwnd, hwnd)
     if (switched) {
         StandardLoadingBar_Update("✅ Outlook: " targetLabel " ready", BANNER_ACCENT_SUCCESS)
