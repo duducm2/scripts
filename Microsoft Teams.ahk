@@ -626,11 +626,19 @@ Teams_RunDesktopJump(contact, forceColdStart := false) {
 }
 
 Teams_StartNewConversationJump() {
+    useCdp := ChatCDP_IsEnabled("teams")
+    teamsWasClosed := false
+    if (!useCdp) {
+        teamsWasClosed := !ProcessExist("ms-teams.exe")
+        ; Launch Teams immediately (0ms wait) so it boots in parallel while the user types the contact name.
+        if (!CheckAndOpenOutlookTeams(false, true, 0))
+            return
+    }
     ib := InputBox("Enter a Teams contact name:", "Jump to Chat")
     contact := Trim(ib.Value)
     if (ib.Result = "Cancel" || contact = "")
         return
-    if (ChatCDP_IsEnabled("teams")) {
+    if (useCdp) {
         StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
         res := ChatCDP_Jump("teams", contact, "", "", false, true)
         StandardLoadingBar_Hide(0)
@@ -638,9 +646,6 @@ Teams_StartNewConversationJump() {
             ChatCDP_NotifyError("teams", res.error)
         return
     }
-    teamsWasClosed := !ProcessExist("ms-teams.exe")
-    if (!CheckAndOpenOutlookTeams(false, true))
-        return
     SetTimer((*) => Teams_RunDesktopJump(contact, teamsWasClosed), -1)
 }
 

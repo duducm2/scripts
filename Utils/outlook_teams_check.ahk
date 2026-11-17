@@ -11,9 +11,10 @@
 ; Parameters:
 ;   - checkOutlook: true to check Outlook, false otherwise
 ;   - checkTeams: true to check Teams, false otherwise
+;   - waitAfterLaunchMs: ms to sleep after launching (pass 0 to continue immediately in parallel)
 ; Returns: true if applications are running (or were opened), false if user cancelled
 ; =============================================================================
-CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
+CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false, waitAfterLaunchMs := 2000) {
     outlookClosed := false
     teamsClosed := false
 
@@ -103,8 +104,9 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
                 }
             }
 
-            ; Wait a bit for applications to start
-            Sleep 2000
+            ; Wait a bit for applications to start (skipped when caller passes 0 for parallel startup)
+            if (waitAfterLaunchMs > 0)
+                Sleep waitAfterLaunchMs
             return true
         } catch Error as e {
             MsgBox "Error opening applications: " e.Message, "Error", "IconX"
