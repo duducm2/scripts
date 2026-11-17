@@ -1028,17 +1028,18 @@ class D2C_FlowManager {
                 return
             }
 
-            if (!TeamsJumpToChat(contact)) {
+            if (!TeamsJumpToChat(contact, true)) {
                 return
             }
 
             hwnd := TeamsJump_ResolveChatHwnd()
-            if (hwnd <= 0 || !TeamsJump_ActivateWindowWithRetry(hwnd, 3, 300)) {
-                ShowCenteredOverlay_Utils("❌ Could not activate Teams chat.", 2500, BANNER_ACCENT_ERROR)
+            if (hwnd <= 0) {
+                ShowCenteredOverlay_Utils("❌ Could not find Teams chat.", 2500, BANNER_ACCENT_ERROR)
                 return
             }
-            ; Focus composer + paste with verify/retry (replaces blind ^v).
-            TeamsJump_PasteAndVerify(hwnd, messageText)
+            ; Background UIA paste with verify/retry; restores caller focus if fallback ^v was needed.
+            if (TeamsJump_PasteAndVerify(hwnd, messageText, 3, true))
+                ShowCenteredOverlay_Utils("✅ Message ready in Teams", 1400, BANNER_ACCENT_SUCCESS)
         } finally {
             A_Clipboard := clipSaved
             if (ClipWait(1)) {

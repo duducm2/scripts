@@ -234,10 +234,97 @@ TeamsJump_ActivateWindowWithRetry(hwnd, attempts := 3, waitMs := 300) {
     return false
 }
 
-TeamsJumpToChat(contact) {
+TeamsJump_EnsureVisibleNoActivate(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            DllCall("user32\ShowWindow", "ptr", hwnd, "int", 4)
+    } catch {
+    }
+}
+
+TeamsJump_SearchAndSelectViaUia(hwndTeams, contact) {
+    if (!hwndTeams || contact = "")
+        return false
+    TeamsJump_EnsureVisibleNoActivate(hwndTeams)
+    root := TeamsJump_AttachUiaRoot(hwndTeams)
+    if (!root)
+        return false
+    searchEl := 0
+    for aid in ["ms-searchux-input", "search-box-input", "searchInput"] {
+        try searchEl := root.FindFirst({ AutomationId: aid })
+        catch {
+            searchEl := 0
+        }
+        if (searchEl)
+            break
+    }
+    if (!searchEl) {
+        for nm in ["Search", "Pesquisar", "Go to"] {
+            try searchEl := root.FindFirst({ Name: nm, ControlType: "Edit", matchmode: "Substring" })
+            catch {
+                searchEl := 0
+            }
+            if (searchEl)
+                break
+        }
+    }
+    if (!searchEl)
+        return false
+    try {
+        searchEl.Value := contact
+    } catch {
+        return false
+    }
+    tokens := StrSplit(StrLower(Trim(contact)), " ")
+    deadline := A_TickCount + 3000
+    while (A_TickCount < deadline) {
+        for ct in ["ListItem", "MenuItem", "Option", "TreeItem"] {
+            try {
+                items := root.FindAll({ ControlType: ct })
+                for item in items {
+                    nm := ""
+                    try nm := StrLower(item.Name)
+                    if (nm = "")
+                        continue
+                    allMatch := true
+                    for tok in tokens {
+                        if (tok != "" && !InStr(nm, tok)) {
+                            allMatch := false
+                            break
+                        }
+                    }
+                    if (allMatch) {
+                        try {
+                            item.Invoke()
+                            return true
+                        } catch {
+                            try {
+                                item.Select()
+                                return true
+                            } catch {
+                            }
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+        Sleep 80
+    }
+    return false
+}
+
+TeamsJumpToChat(contact, backgroundOnly := false) {
     ; Closed means no ms-teams.exe, which is when CheckAndOpenOutlookTeams asks
     ; "Teams is closed. Do you want to open it?" Nothing below runs until that returns.
     teamsWasClosed := !ProcessExist("ms-teams.exe")
+    prevHwnd := 0
+    try prevHwnd := WinGetID("A")
+    catch {
+        prevHwnd := 0
+    }
 
     if (!CheckAndOpenOutlookTeams(false, true))
         return false
@@ -276,6 +363,11 @@ TeamsJumpToChat(contact) {
             return false
         }
 
+        if (backgroundOnly && !gotoAlreadyOpen) {
+            if (TeamsJump_SearchAndSelectViaUia(hwndTeams, contact))
+                return true
+        }
+
         if (!gotoAlreadyOpen && !TeamsJump_ActivateWindowWithRetry(hwndTeams, 3, 300)) {
             ShowCenteredOverlay_Utils("❌ Could not activate Teams window.", 2500, BANNER_ACCENT_ERROR)
             return false
@@ -303,6 +395,11 @@ TeamsJumpToChat(contact) {
         Sleep 200
         Sleep 600
         Send "{Enter}"
+        if (backgroundOnly && prevHwnd && prevHwnd != hwndTeams && WinExist("ahk_id " prevHwnd)) {
+            try WinActivate("ahk_id " prevHwnd)
+            catch {
+            }
+        }
         return true
     } finally {
         SetWinDelay oldWinDelay
@@ -501,40 +598,67 @@ TeamsJump_ComposerGetText(hwnd) {
 }
 
 ; Paste expectedText into focused composer; verify content landed; retry up to maxAttempts.
-TeamsJump_PasteAndVerify(hwnd, expectedText, maxAttempts := 3) {
+TeamsJump_PasteAndVerify(hwnd, expectedText, maxAttempts := 3, backgroundOnly := false) {
     expected := Trim(expectedText)
     if (!hwnd || expected = "") {
         ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
         return false
     }
-    loop maxAttempts {
-        if (!WinExist("ahk_id " hwnd)) {
-            ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
-            return false
+    prevHwnd := 0
+    if (backgroundOnly) {
+        try prevHwnd := WinGetID("A")
+        catch {
+            prevHwnd := 0
         }
-        if (!WinActive("ahk_id " hwnd)) {
-            if (!TeamsJump_ActivateWindowWithRetry(hwnd, 2, 300)) {
+        TeamsJump_EnsureVisibleNoActivate(hwnd)
+        el := TeamsJump_FindComposer(hwnd)
+        if (el) {
+            try {
+                el.Value := expected
+                Sleep 80
+                got := TeamsJump_ComposerGetTextViaUia(hwnd)
+                if (got != "" && InStr(got, expected))
+                    return true
+            } catch {
+            }
+        }
+    }
+    try {
+        loop maxAttempts {
+            if (!WinExist("ahk_id " hwnd)) {
+                ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
+                return false
+            }
+            if (!WinActive("ahk_id " hwnd)) {
+                if (!TeamsJump_ActivateWindowWithRetry(hwnd, 2, 300)) {
+                    Sleep 100
+                    continue
+                }
+            }
+            A_Clipboard := ""
+            A_Clipboard := expected
+            if (!ClipWait(2) || Trim(A_Clipboard) != expected) {
                 Sleep 100
                 continue
             }
+            TeamsJump_FocusComposer(hwnd)
+            Sleep 60
+            Send "^v"
+            Sleep 200
+            got := TeamsJump_ComposerGetText(hwnd)
+            if (got != "" && InStr(got, expected))
+                return true
+            Sleep 150
         }
-        A_Clipboard := ""
-        A_Clipboard := expected
-        if (!ClipWait(2) || Trim(A_Clipboard) != expected) {
-            Sleep 100
-            continue
+        ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
+        return false
+    } finally {
+        if (backgroundOnly && prevHwnd && prevHwnd != hwnd && WinExist("ahk_id " prevHwnd)) {
+            try WinActivate("ahk_id " prevHwnd)
+            catch {
+            }
         }
-        TeamsJump_FocusComposer(hwnd)
-        Sleep 60
-        Send "^v"
-        Sleep 200
-        got := TeamsJump_ComposerGetText(hwnd)
-        if (got != "" && InStr(got, expected))
-            return true
-        Sleep 150
     }
-    ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
-    return false
 }
 
 ; Activate Teams chat, focus composer via UIA, paste + verify. Never presses Enter to send.

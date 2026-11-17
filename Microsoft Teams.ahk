@@ -612,7 +612,11 @@ Teams_RunDesktopJump(contact) {
     clipSaved := ClipboardAll()
     StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
     try {
-        TeamsJumpToChat(contact)
+        if (TeamsJumpToChat(contact, true)) {
+            hwnd := TeamsJump_ResolveChatHwnd()
+            if (hwnd > 0)
+                TeamsJump_ActivateWindowWithRetry(hwnd, 2, 250)
+        }
     } finally {
         StandardLoadingBar_Hide(0)
         A_Clipboard := clipSaved
