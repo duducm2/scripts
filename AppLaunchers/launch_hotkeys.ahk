@@ -115,8 +115,23 @@ LaunchF_OpenChrome() {
 ; Fast path: Run the .lnk only (focuses existing PWA or cold-starts). No HWND
 ; scan / UI-ready wait / loading banner — JumpToChat still uses ActivateOrOpen.
 ; =============================================================================
+LaunchZ_OpenWhatsAppCDP() {
+    StandardLoadingBar_Show("⏳ Opening WhatsApp (CDP)…", BANNER_ACCENT_INTERMEDIATE)
+    res := ChatCDP_OpenOrFocus("whatsapp", true)
+    StandardLoadingBar_Hide(0)
+    if (!res.ok) {
+        ChatCDP_NotifyError("whatsapp", res.error)
+        return
+    }
+    CenterMouse()
+}
+
 #!+z::
 {
+    if (ChatCDP_IsEnabled("whatsapp")) {
+        SetTimer(LaunchZ_OpenWhatsAppCDP, -1)
+        return
+    }
     if (IS_WORK_ENVIRONMENT) {
         Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
     } else {

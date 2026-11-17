@@ -27,6 +27,21 @@ ChatCDP_IsEnabled(app := "") {
     return defaultVal != "off"
 }
 
+ChatCDP_OpenOrFocus(app := "whatsapp", activate := true) {
+    appNorm := StrLower(Trim(app))
+    if (appNorm != "whatsapp" && appNorm != "teams")
+        return { ok: false, hwnd: 0, error: "Unsupported chat app" }
+    res := AiCompanionCDP_Post("/ensure", Map(
+        "companion", appNorm,
+        "activate", activate ? true : false,
+        "new_tab", false
+    ), 25000)
+    hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
+    if (res.ok && activate)
+        hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)
+    return { ok: res.ok, hwnd: hwnd, error: res.error }
+}
+
 ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate := false) {
     appNorm := StrLower(Trim(app))
     if (appNorm != "whatsapp" && appNorm != "teams")

@@ -530,6 +530,86 @@ RegisterMacro(MacroAICompanionQuickModel, "⚡ AI companion Quick / Fast model",
 RegisterMacro(MacroAICompanionDeepModel, "🔄 AI companion Deep model", "m")
 RegisterMacro(MacroAICompanionNewChat, "💬 New chat — AI companion (Shift+N)", "n")
 
+; Macros [X] — close active AI companion tab (only if >1 tab is open; keeps single tab open).
+MacroAICompanionCloseTab(*) {
+    companion := ResolveGlobalAICompanion()
+    label := GetGlobalAIProviderLabel()
+    if (AiCompanionMode_IsCDP(companion)) {
+        res := AiCompanionCDP_CloseTab(companion)
+        if (res.ok) {
+            ShowCenteredOverlay_Utils("🗂 Closed " . label . " tab (" . res.remaining . " left)", 1200,
+                BANNER_ACCENT_SUCCESS)
+            return true
+        }
+        if (InStr(StrLower(res.error), "only_one_tab")) {
+            ShowCenteredOverlay_Utils("ℹ Only 1 " . label . " tab open — keeping it open", 1500,
+                BANNER_ACCENT_INFO)
+            return false
+        }
+        AiCompanionCDP_NotifyError("Close tab", res.error, companion)
+        return false
+    }
+
+    global g_UtilitySelectorRestoreHwnd
+    prevHwnd := 0
+    try {
+        if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+            prevHwnd := g_UtilitySelectorRestoreHwnd
+    } catch {
+        prevHwnd := 0
+    }
+    if (!prevHwnd) {
+        try prevHwnd := WinGetID("A")
+        catch {
+            prevHwnd := 0
+        }
+    }
+
+    hwnd := 0
+    GlobalAICompanionHwndAndLabel(&hwnd, &label)
+    if (!hwnd || !WinExist("ahk_id " hwnd)) {
+        ShowCenteredOverlay_Utils("ℹ No " . label . " window open.", 1500, BANNER_ACCENT_INFO)
+        return false
+    }
+
+    tabCount := 0
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (root) {
+            tabs := root.FindAll({ Type: "TabItem" })
+            if (IsObject(tabs))
+                tabCount := tabs.Length
+        }
+    } catch {
+        tabCount := 0
+    }
+    if (tabCount <= 1) {
+        ShowCenteredOverlay_Utils("ℹ Only 1 " . label . " tab open — keeping it open", 1500,
+            BANNER_ACCENT_INFO)
+        return false
+    }
+
+    try {
+        WinActivate("ahk_id " hwnd)
+        if (WinWaitActive("ahk_id " hwnd, , 1.5)) {
+            Send("^w")
+            Sleep 80
+        }
+    } catch {
+    } finally {
+        if (prevHwnd && prevHwnd != hwnd && WinExist("ahk_id " prevHwnd)) {
+            try WinActivate("ahk_id " prevHwnd)
+            catch {
+            }
+        }
+    }
+    ShowCenteredOverlay_Utils("🗂 Closed " . label . " tab (" . (tabCount - 1) . " left)", 1200,
+        BANNER_ACCENT_SUCCESS)
+    return true
+}
+
+RegisterMacro(MacroAICompanionCloseTab, "🗂 Close AI companion tab (keep ≥1)", "x")
+
 ; Utility Shortcuts [Q] — paste OS clipboard to active / resolved AI companion (no submit)
 UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
     if (!originHwnd) {

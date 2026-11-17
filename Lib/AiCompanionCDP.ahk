@@ -336,6 +336,8 @@ AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
         return "Read aloud button not available on last reply"
     if (InStr(low, "new_chat_not_found"))
         return "Could not start a new chat in " . compLabel . " CDP tab"
+    if (InStr(low, "only_one_tab"))
+        return "Only 1 " . compLabel . " tab open — keeping it open"
     if (InStr(low, "file_attach_failed"))
         return "Could not attach context file(s) in " . compLabel . " CDP Chrome"
     if (InStr(low, "unsupported companion"))
@@ -558,6 +560,18 @@ AiCompanionCDP_NewChat(companionId := "") {
         return false
     res := AiCompanionCDP_Post("/new_chat", Map("companion", comp), 15000)
     return res.ok
+}
+
+AiCompanionCDP_CloseTab(companionId := "") {
+    comp := AiCompanionCDP_NormalizeCompanion(companionId)
+    if (comp = "")
+        return { ok: false, remaining: 0, error: "Unsupported companion" }
+    res := AiCompanionCDP_Post("/close_tab", Map("companion", comp), 10000)
+    return {
+        ok: res.ok,
+        remaining: _AiCDP_JsonGetInt(res.raw, "remaining", 0),
+        error: res.error
+    }
 }
 
 AiCompanionCDP_SelectModel(companionId, modelName) {

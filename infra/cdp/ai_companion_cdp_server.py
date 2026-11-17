@@ -474,12 +474,13 @@ class CDPBridge:
                 pass
             hwnd = self._find_cdp_chrome_hwnd(page_title)
             self._activate_hwnd(hwnd)
-            composer = self._find_composer(page, timeout_s=6.0)
-            if composer:
-                try:
-                    composer.click()
-                except Exception:
-                    pass
+            if companion.strip().lower() not in ("whatsapp", "wa", "teams", "msteams"):
+                composer = self._find_composer(page, timeout_s=6.0)
+                if composer:
+                    try:
+                        composer.click()
+                    except Exception:
+                        pass
         else:
             page_title = ""
             try:
@@ -1000,6 +1001,36 @@ class CDPBridge:
             return {"ok": True}
         return {"ok": False, "error": "NEW_CHAT_NOT_FOUND"}
 
+    def close_tab(self, data: dict) -> dict:
+        companion = data.get("companion", "gemini")
+        comp = (companion or "gemini").strip().lower()
+        needle, _ = self._companion_meta(companion)
+        browser = self._connect(launch_if_down=False)
+        if not browser.contexts:
+            return {"ok": False, "error": "NO_BROWSER_CONTEXT"}
+        context = browser.contexts[0]
+        is_consumer = (needle == "gemini.google.com")
+        matching_pages = []
+        for page in context.pages:
+            u = (page.url or "").lower()
+            if needle not in u:
+                continue
+            if not is_consumer or "/app" in u or "/gem/" in u:
+                matching_pages.append(page)
+        if len(matching_pages) <= 1:
+            return {"ok": False, "error": "ONLY_ONE_TAB"}
+        target = self._pick_current_page(comp, matching_pages)
+        remaining = [p for p in matching_pages if p != target]
+        try:
+            target.close()
+        except Exception as exc:
+            return {"ok": False, "error": str(exc)}
+        if remaining:
+            self._active_pages[comp] = remaining[-1]
+        else:
+            self._active_pages.pop(comp, None)
+        return {"ok": True, "remaining": len(remaining)}
+
     def select_model(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         model_name = (data.get("model") or "").strip()
@@ -1393,6 +1424,7 @@ class Handler(BaseHTTPRequestHandler):
             "/status": BRIDGE.status,
             "/copy_last": BRIDGE.copy_last,
             "/new_chat": BRIDGE.new_chat,
+            "/close_tab": BRIDGE.close_tab,
             "/select_model": BRIDGE.select_model,
             "/read_aloud": BRIDGE.read_aloud,
             "/chat/jump": BRIDGE.chat_jump,
