@@ -1,4 +1,4 @@
-﻿# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
+# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
 # Success (ok=true / exit 0) only if every quality gate passes — never on git exit 0 alone.
 # Writes JSON result to -ResultPath (tests) or plain ok/fail with -Robot (Alt+S terminal).
 # -SkipPull is test-only: fetch then skip pull so the behind-count gate must fail.

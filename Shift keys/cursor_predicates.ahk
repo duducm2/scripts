@@ -1089,6 +1089,7 @@ Editor_GitPlayPullSuccessSound() {
 
 Editor_GitRobotStopPoll() {
     global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, g_EditorGitRobotQuickUpdate, g_EditorGitRobotPs1Path
+    global g_EditorGitRobotPid, g_EditorGitRobotExitSeenTick
     try SetTimer(Editor_GitRobotPollResult, 0)
     catch {
     }
@@ -1101,27 +1102,40 @@ Editor_GitRobotStopPoll() {
     g_EditorGitRobotDeadline := 0
     g_EditorGitRobotQuickUpdate := false
     g_EditorGitRobotPs1Path := ""
+    g_EditorGitRobotPid := 0
+    g_EditorGitRobotExitSeenTick := 0
 }
 
-Editor_GitRobotStartPoll(resultPath, ps1Path := "") {
+Editor_GitRobotStartPoll(resultPath, ps1Path := "", psPid := 0) {
     global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, EDITOR_GIT_ROBOT_TIMEOUT_MS, g_EditorGitRobotPs1Path
+    global g_EditorGitRobotPid, g_EditorGitRobotExitSeenTick
     Editor_GitRobotStopPoll()
     g_EditorGitRobotResultPath := resultPath
     g_EditorGitRobotPs1Path := ps1Path
+    g_EditorGitRobotPid := psPid
+    g_EditorGitRobotExitSeenTick := 0
     g_EditorGitRobotDeadline := A_TickCount + EDITOR_GIT_ROBOT_TIMEOUT_MS
     SetTimer(Editor_GitRobotPollResult, 250)
 }
 
+Editor_GitShowFinalBanner(msg, bgColor, durationMs := 2200) {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    try StandardLoadingBar_Show(msg, bgColor, { passive: true, centerOnHwnd: 0 })
+    catch {
+    }
+    try StandardLoadingBar_Hide(durationMs)
+    catch {
+    }
+}
+
 Editor_GitRobotPollResult(*) {
     global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, g_EditorGitRobotQuickUpdate
+    global g_EditorGitRobotPid, g_EditorGitRobotExitSeenTick
     path := g_EditorGitRobotResultPath
     if (path = "") {
         Editor_GitRobotStopPoll()
-        return
-    }
-    if (A_TickCount > g_EditorGitRobotDeadline) {
-        Editor_GitRobotStopPoll()
-        Editor_GitFlowFail("Git", "timed out waiting for stash/pull")
         return
     }
     outcome := ""
@@ -1135,24 +1149,41 @@ Editor_GitRobotPollResult(*) {
         }
     } catch {
     }
-    if (outcome = "")
+    if (outcome = "") {
+        if (g_EditorGitRobotPid > 0 && !ProcessExist(g_EditorGitRobotPid)) {
+            if (g_EditorGitRobotExitSeenTick = 0) {
+                g_EditorGitRobotExitSeenTick := A_TickCount
+                return
+            }
+            if ((A_TickCount - g_EditorGitRobotExitSeenTick) >= 500) {
+                Editor_GitRobotStopPoll()
+                Editor_GitShowFinalBanner("❌ Git failed: background pull exited without a result", BANNER_ACCENT_ERROR, 3500)
+                return
+            }
+            return
+        }
+        if (A_TickCount > g_EditorGitRobotDeadline) {
+            Editor_GitRobotStopPoll()
+            Editor_GitShowFinalBanner("❌ Git failed: timed out waiting for stash/pull", BANNER_ACCENT_ERROR, 3500)
+            return
+        }
         return
+    }
     doQuickUpdate := false
     try doQuickUpdate := g_EditorGitRobotQuickUpdate
     Editor_GitRobotStopPoll()
     if (outcome = "ok") {
         Editor_GitPlayPullSuccessSound()
         if (doQuickUpdate) {
-            try StandardLoadingBar_Show("⏳ Restarting scripts...", BANNER_ACCENT_INTERMEDIATE)
-            QuickUpdateScripts()
+            Editor_GitShowFinalBanner("✅ Pull complete — restarting scripts…", BANNER_ACCENT_SUCCESS, 1200)
+            SetTimer((*) => QuickUpdateScripts(), -900)
             return
         }
-        StandardLoadingBar_Show("✅ Pull complete", BANNER_ACCENT_SUCCESS)
-        StandardLoadingBar_Hide(600)
+        Editor_GitShowFinalBanner("✅ Pull complete", BANNER_ACCENT_SUCCESS, 2200)
         return
     }
     failDetail := (SubStr(Trim(raw), 1, 1) = "{") ? Editor_FormatGitJsonFailure(raw) : "stash/pull failed"
-    Editor_GitFlowFail("Git", failDetail)
+    Editor_GitShowFinalBanner("❌ Git failed: " . failDetail, BANNER_ACCENT_ERROR, 3500)
 }
 
 Editor_GitStashAndPull() {
@@ -1173,20 +1204,19 @@ Editor_GitStashAndPull() {
         Editor_GitFlowFail("Git", "Editor-GitStashFetchPull.ps1 not found")
         return
     }
+    psPid := 0
     try {
-        Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' . ps1Path . '"', repoDir, "Hide")
+        Run('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' . ps1Path . '"', repoDir, "Hide", &psPid)
     } catch as e {
         try FileDelete(ps1Path)
         Editor_GitFlowFail("Git", "failed to launch background pull: " . e.Message)
         return
     }
     global g_EditorGitRobotQuickUpdate
-    Editor_GitRobotStartPoll(resultPath, ps1Path)
+    Editor_GitRobotStartPoll(resultPath, ps1Path, psPid)
     g_EditorGitRobotQuickUpdate := Editor_IsThisScriptsRepo(hwnd, repoDir)
     ; Non-blocking notification so user can immediately continue working while git runs in parallel.
-    try ShowCenteredOverlay_Utils("⏳ Git: stashing & pulling in background…", 1500, BANNER_ACCENT_INTERMEDIATE)
-    catch {
-    }
+    Editor_GitShowFinalBanner("⏳ Git: stashing & pulling in background…", BANNER_ACCENT_INTERMEDIATE, 1200)
 }
 
 ; ---------------------------------------------------------------------------
