@@ -479,9 +479,20 @@ class CDPBridge:
             """() => {
                 function collect(root, out) {
                     if (!root) return;
+                    const seenPres = new Set();
                     const blocks = root.querySelectorAll('pre code, code-block code, .code-block code');
                     for (const b of blocks) {
                         const t = (b.innerText || '').trim();
+                        if (t) {
+                            out.push(t);
+                            const p = b.closest('pre');
+                            if (p) seenPres.add(p);
+                        }
+                    }
+                    const pres = root.querySelectorAll('code-block pre, .code-block pre, pre');
+                    for (const p of pres) {
+                        if (seenPres.has(p)) continue;
+                        const t = (p.innerText || '').trim();
                         if (t) out.push(t);
                     }
                     for (const el of root.querySelectorAll('*')) {
@@ -1483,11 +1494,42 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(500, {"ok": False, "error": str(exc)})
 
 
+def _is_healthy_bridge_up() -> bool:
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(f"http://{HOST}:{PORT}/health", timeout=0.8) as resp:
+            if resp.status != 200:
+                return False
+            data = json.loads(resp.read().decode("utf-8"))
+            return bool(data.get("ok")) and not bool(data.get("stale"))
+    except Exception:
+        return False
+
+
 def main() -> int:
     os.environ["NO_PROXY"] = "127.0.0.1,localhost"
     os.environ["no_proxy"] = "127.0.0.1,localhost"
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    server = HTTPServer((HOST, PORT), Handler)
+    server = None
+    last_exc = None
+    deadline = time.time() + 6.0
+    while time.time() < deadline:
+        try:
+            server = HTTPServer((HOST, PORT), Handler)
+            break
+        except OSError as exc:
+            last_exc = exc
+            if _is_healthy_bridge_up():
+                return 0
+            time.sleep(0.2)
+    if server is None:
+        try:
+            log_path = os.path.join(os.environ.get("TEMP", "."), "ai_companion_cdp_server.log")
+            with open(log_path, "a", encoding="utf-8") as fh:
+                fh.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] bind failed: {last_exc}\n")
+        except Exception:
+            pass
+        raise last_exc if last_exc is not None else RuntimeError("HTTPServer bind failed")
     server.serve_forever()
     return 0
 

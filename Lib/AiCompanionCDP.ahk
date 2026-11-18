@@ -177,15 +177,49 @@ _AiCDP_JsonGetStr(raw, key, defaultVal := "") {
 ; --- Python / Server bootstrap -----------------------------------------------
 
 AiCompanionCDP_FindPythonExe() {
+    static cached := ""
+    if (cached != "")
+        return cached
     localApp := EnvGet("LOCALAPPDATA")
     candidates := [
         localApp . "\Python\pythoncore-3.14-64\python.exe",
-        "C:\Users\fie7ca\AppData\Local\Python\pythoncore-3.14-64\python.exe",
-        A_WinDir . "\py.exe"
+        "C:\Users\fie7ca\AppData\Local\Python\pythoncore-3.14-64\python.exe"
     ]
+    for glob in [
+        localApp . "\Programs\Python\Python3*\python.exe",
+        EnvGet("ProgramFiles") . "\Python3*\python.exe",
+        "C:\Python3*\python.exe"
+    ] {
+        loop files glob, "F"
+            candidates.Push(A_LoopFileFullPath)
+    }
+    if (FileExist(A_WinDir . "\py.exe"))
+        candidates.Push(A_WinDir . "\py.exe")
     for c in candidates {
-        if FileExist(c)
-            return '"' . c . '"'
+        if !FileExist(c)
+            continue
+        try {
+            if (RunWait('"' . c . '" -c "import playwright"', , "Hide") = 0) {
+                cached := '"' . c . '"'
+                return cached
+            }
+        } catch {
+        }
+    }
+    for c in candidates {
+        if FileExist(c) {
+            cached := '"' . c . '"'
+            return cached
+        }
+    }
+    for cmd in ["python", "py"] {
+        try {
+            if (RunWait(cmd . ' -c "import playwright"', , "Hide") = 0) {
+                cached := cmd
+                return cached
+            }
+        } catch {
+        }
     }
     return "py"
 }
@@ -242,11 +276,16 @@ AiCompanionCDP_EnsureServer(&cdpUp := false) {
     if !FileExist(py)
         return false
     pyExe := AiCompanionCDP_FindPythonExe()
-    try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide")
+    logPath := A_Temp . "\ai_companion_cdp_server.log"
+    psPid := 0
+    try Run(A_ComSpec . ' /c ""' . StrReplace(pyExe, '"', '') . '" -u "' . py . '" 2>>"' . logPath . '""', A_ScriptDir, "Hide", &psPid)
     catch {
-        return false
+        try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide", &psPid)
+        catch {
+            return false
+        }
     }
-    deadline := A_TickCount + 8000
+    deadline := A_TickCount + 15000
     while (A_TickCount < deadline) {
         if AiCompanionCDP_HealthOk(&cdpUp)
             return true
