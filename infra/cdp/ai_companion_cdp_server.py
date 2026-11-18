@@ -220,18 +220,10 @@ class CDPBridge:
             self._active_pages[comp] = matching_pages[0]
             return matching_pages[0]
 
+        # 1. Active Chrome window title always reflects the currently selected tab.
         win_title = self._strip_chrome_title_suffix(active_title) or self._strip_chrome_title_suffix(
             self._get_hwnd_title(self._find_cdp_chrome_hwnd())
         )
-        
-        visible_pages = []
-        for p in matching_pages:
-            try:
-                if bool(p.evaluate("() => document.visibilityState === 'visible'")):
-                    visible_pages.append(p)
-            except Exception:
-                pass
-
         if win_title:
             title_matches = []
             for p in matching_pages:
@@ -241,31 +233,25 @@ class CDPBridge:
                         title_matches.append(p)
                 except Exception:
                     pass
-            
-            # Intersection of title matches and visible tabs
-            visible_title_matches = [p for p in title_matches if p in visible_pages]
-            if visible_title_matches:
-                self._active_pages[comp] = visible_title_matches[0]
-                return visible_title_matches[0]
-            
             if len(title_matches) == 1:
                 self._active_pages[comp] = title_matches[0]
                 return title_matches[0]
-            
             if len(title_matches) > 1:
                 for p in title_matches:
                     if self._page_has_focus(p):
                         self._active_pages[comp] = p
                         return p
+                tracked = self._active_pages.get(comp)
+                if tracked in title_matches:
+                    return tracked
+                self._active_pages[comp] = title_matches[-1]
+                return title_matches[-1]
 
-        # No title match or multiple matches? Trust visibility (the active tab in the browser)
-        if visible_pages:
-            for p in visible_pages:
-                if self._page_has_focus(p):
-                    self._active_pages[comp] = p
-                    return p
-            self._active_pages[comp] = visible_pages[0]
-            return visible_pages[0]
+        # 2. If Chrome is focused on an AI tab whose title differs slightly, document.hasFocus() wins.
+        for p in matching_pages:
+            if self._page_has_focus(p):
+                self._active_pages[comp] = p
+                return p
 
         # 3. Last tracked active page for this companion.
         tracked = self._active_pages.get(comp)
@@ -539,8 +525,7 @@ class CDPBridge:
         companion = data.get("companion", "gemini")
         activate = bool(data.get("activate", False))
         new_tab = bool(data.get("new_tab", False))
-        active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=new_tab, minimized=not activate, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=new_tab, minimized=not activate)
         if activate:
             self._restore_window_via_cdp(page)
             try:
@@ -968,9 +953,8 @@ class CDPBridge:
         submit = bool(data.get("submit", False))
         clear = bool(data.get("clear", False))
         image_gen = bool(data.get("image_gen", False))
-        active_title = (data.get("active_title") or "").strip()
 
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
         composer = self._find_composer(page, timeout_s=12.0)
         if composer is None:
             if self._is_auth_page(page):
@@ -1006,8 +990,7 @@ class CDPBridge:
     def submit(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
-        active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=False, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=False)
         composer = self._find_composer(page, timeout_s=5.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
@@ -1022,8 +1005,7 @@ class CDPBridge:
     def status(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
-        active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=False, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=False)
         generating = self._has_stop_button(page)
         replies = self._get_response_texts(page, enterprise)
         composer_text = ""
@@ -1046,8 +1028,7 @@ class CDPBridge:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         kind = (data.get("kind") or "message").strip().lower()
-        active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
         items = self._get_code_texts(page) if kind == "code" else self._get_response_texts(page, enterprise)
         if not items:
             return {"ok": False, "error": "NO_RESPONSE_FOUND"}
@@ -1089,7 +1070,6 @@ class CDPBridge:
     def close_tab(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         comp = (companion or "gemini").strip().lower()
-        active_title = (data.get("active_title") or "").strip()
         needle, _ = self._companion_meta(companion)
         browser = self._connect(launch_if_down=False)
         if not browser.contexts:
@@ -1105,7 +1085,7 @@ class CDPBridge:
                 matching_pages.append(page)
         if len(matching_pages) <= 1:
             return {"ok": False, "error": "ONLY_ONE_TAB"}
-        target = self._pick_current_page(comp, matching_pages, active_title=active_title)
+        target = self._pick_current_page(comp, matching_pages)
         remaining = [p for p in matching_pages if p != target]
         try:
             target.close()

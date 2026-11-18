@@ -519,22 +519,19 @@ AiCompanionCDP_Ensure(companionId := "", activate := false, newTab := false) {
     return { ok: res.ok, hwnd: hwnd, error: res.error }
 }
 
-AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImageGen := false, clear := false, activeTitle := "") {
+AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImageGen := false, clear := false) {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return { ok: false, started: false, hwnd: 0, error: "Unsupported companion" }
     fileArr := IsObject(files) ? files : []
-    payload := Map(
+    res := AiCompanionCDP_Post("/paste", Map(
         "companion", comp,
         "text", text,
         "files", fileArr,
         "submit", submit ? true : false,
         "clear", clear ? true : false,
         "image_gen", enableImageGen ? true : false
-    )
-    if (Trim(activeTitle) != "")
-        payload["active_title"] := Trim(activeTitle)
-    res := AiCompanionCDP_Post("/paste", payload, 45000)
+    ), 45000)
     return {
         ok: res.ok,
         started: _AiCDP_JsonGetBool(res.raw, "started", false),
@@ -544,25 +541,19 @@ AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImag
     }
 }
 
-AiCompanionCDP_Submit(companionId := "", activeTitle := "") {
+AiCompanionCDP_Submit(companionId := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return false
-    payload := Map("companion", comp)
-    if (Trim(activeTitle) != "")
-        payload["active_title"] := Trim(activeTitle)
-    res := AiCompanionCDP_Post("/submit", payload, 15000)
+    res := AiCompanionCDP_Post("/submit", Map("companion", comp), 15000)
     return res.ok && _AiCDP_JsonGetBool(res.raw, "started", true)
 }
 
-AiCompanionCDP_Status(companionId := "", activeTitle := "") {
+AiCompanionCDP_Status(companionId := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return { ok: false, generating: false, replyCount: 0, lastReplyLen: 0, composerText: "", title: "" }
-    payload := Map("companion", comp)
-    if (Trim(activeTitle) != "")
-        payload["active_title"] := Trim(activeTitle)
-    res := AiCompanionCDP_Post("/status", payload, 8000)
+    res := AiCompanionCDP_Post("/status", Map("companion", comp), 8000)
     return {
         ok: res.ok,
         generating: _AiCDP_JsonGetBool(res.raw, "generating", false),
@@ -573,17 +564,14 @@ AiCompanionCDP_Status(companionId := "", activeTitle := "") {
     }
 }
 
-AiCompanionCDP_CopyLast(companionId := "", isCode := false, playChimeAndNotify := false, activeTitle := "") {
+AiCompanionCDP_CopyLast(companionId := "", isCode := false, playChimeAndNotify := false) {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return false
-    payload := Map(
+    res := AiCompanionCDP_Post("/copy_last", Map(
         "companion", comp,
         "kind", isCode ? "code" : "message"
-    )
-    if (Trim(activeTitle) != "")
-        payload["active_title"] := Trim(activeTitle)
-    res := AiCompanionCDP_Post("/copy_last", payload, 12000)
+    ), 12000)
     if (!res.ok)
         return false
     text := _AiCDP_JsonGetStr(res.raw, "text", "")
@@ -618,14 +606,11 @@ AiCompanionCDP_NewChat(companionId := "", activeTitle := "") {
     return res.ok
 }
 
-AiCompanionCDP_CloseTab(companionId := "", activeTitle := "") {
+AiCompanionCDP_CloseTab(companionId := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return { ok: false, remaining: 0, error: "Unsupported companion" }
-    payload := Map("companion", comp)
-    if (Trim(activeTitle) != "")
-        payload["active_title"] := Trim(activeTitle)
-    res := AiCompanionCDP_Post("/close_tab", payload, 10000)
+    res := AiCompanionCDP_Post("/close_tab", Map("companion", comp), 10000)
     return {
         ok: res.ok,
         remaining: _AiCDP_JsonGetInt(res.raw, "remaining", 0),
