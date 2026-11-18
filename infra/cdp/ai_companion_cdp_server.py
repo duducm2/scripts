@@ -673,7 +673,7 @@ class CDPBridge:
         companion = data.get("companion", "gemini")
         activate = bool(data.get("activate", False))
         new_tab = bool(data.get("new_tab", False))
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=new_tab, minimized=not activate)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=new_tab, minimized=not activate)
         if activate:
             self._restore_window_via_cdp(page)
             try:
@@ -1102,7 +1102,7 @@ class CDPBridge:
         clear = bool(data.get("clear", False))
         image_gen = bool(data.get("image_gen", False))
 
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True)
         composer = self._find_composer(page, timeout_s=12.0)
         if composer is None:
             if self._is_auth_page(page):
@@ -1176,7 +1176,7 @@ class CDPBridge:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         kind = (data.get("kind") or "message").strip().lower()
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True)
         items = self._get_code_texts(page) if kind == "code" else self._get_response_texts(page, enterprise)
         if not items:
             return {"ok": False, "error": "NO_RESPONSE_FOUND"}
@@ -1185,7 +1185,7 @@ class CDPBridge:
     def new_chat(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
         composer = self._find_composer(page, timeout_s=6.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
@@ -1250,7 +1250,7 @@ class CDPBridge:
         model_name = (data.get("model") or "").strip()
         if not model_name:
             return {"ok": False, "error": "EMPTY_MODEL"}
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True)
         composer = self._find_composer(page, timeout_s=6.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
@@ -1303,7 +1303,7 @@ class CDPBridge:
 
     def read_aloud(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
-        page = self._find_or_open_page(companion, launch_if_down=True, new_tab=False, minimized=True)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True)
         for sel in ['button[aria-label*="Listen" i]', 'button[aria-label*="Read aloud" i]']:
             try:
                 btns = page.locator(sel).locator("visible=true")
@@ -1563,7 +1563,7 @@ class CDPBridge:
         if not contact:
             return {"ok": False, "error": "EMPTY_CONTACT"}
 
-        page = self._find_or_open_page(app, launch_if_down=True, new_tab=False, minimized=not activate)
+        page = self._find_or_open_page(app, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=not activate)
         res = (
             self._chat_jump_whatsapp(page, contact, text, files, submit)
             if app == "whatsapp"

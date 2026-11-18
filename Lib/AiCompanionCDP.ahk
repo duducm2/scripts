@@ -331,7 +331,7 @@ AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
     if (InStr(low, "auth_required"))
         return "Sign in required in CDP Chrome — press Win+Alt+Shift+I to open " . compLabel . " (CDP) and log in"
     if (InStr(low, "cdp_not_running") || InStr(low, "cdp_launch_failed") || InStr(low, "cdp_unreachable") || InStr(low, "econnrefused"))
-        return "CDP Chrome not reachable (port 9222) — reopen " . compLabel
+        return "CDP Chrome is not open — press Win+Alt+Shift+I to open " . compLabel
     if (InStr(low, "cdp server unavailable"))
         return "CDP bridge failed to start — check Python / port 8768"
     if (InStr(low, "composer_not_found"))
@@ -369,7 +369,7 @@ AiCompanionCDP_NotifyError(actionLabel, rawErr := "", companionId := "", duratio
     }
 }
 
-AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
+AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false) {
     global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError
     cdpUp := false
     if !AiCompanionCDP_EnsureServer(&cdpUp) {
@@ -377,10 +377,15 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000) {
         return { ok: false, raw: "", error: "CDP server unavailable" }
     }
 
+    if (!cdpUp && !allowLaunch) {
+        g_AiCompanionCDP_LastError := "CDP_NOT_RUNNING"
+        return { ok: false, raw: "", error: "CDP_NOT_RUNNING" }
+    }
+
     isPassivePoll := (endpoint = "/status" || endpoint = "/close_tab")
     effectiveTimeout := timeoutMs
     shownColdNotice := false
-    if (!cdpUp && !isPassivePoll) {
+    if (!cdpUp && allowLaunch && !isPassivePoll) {
         if (effectiveTimeout < 60000)
             effectiveTimeout := 60000
         try {
@@ -521,8 +526,9 @@ AiCompanionCDP_Ensure(companionId := "", activate := false, newTab := false) {
     res := AiCompanionCDP_Post("/ensure", Map(
         "companion", comp,
         "activate", activate ? true : false,
-        "new_tab", newTab ? true : false
-    ), 25000)
+        "new_tab", newTab ? true : false,
+        "launch_if_down", true
+    ), 25000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
     if (res.ok && activate)
         hwnd := AiCompanionCDP_ActivateWindow(hwnd, comp)

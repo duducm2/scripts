@@ -65,6 +65,8 @@ ChatCDP_NotifyError(app, rawErr := "") {
     low := StrLower(err)
     if (InStr(low, "auth_required"))
         msg := "❌ " . label . " (CDP): Sign in required in CDP Chrome — press Win+Alt+Shift+I or open " . label . " Web in CDP Chrome"
+    else if (InStr(low, "cdp_not_running") || InStr(low, "cdp_unreachable") || InStr(low, "econnrefused"))
+        msg := "❌ " . label . " (CDP): CDP Chrome is not open — press Win+Alt+Shift+I to open it"
     else if (InStr(low, "contact_not_found:"))
         msg := "❌ " . label . " (CDP): Contact not found — " . Trim(SubStr(err, 19))
     else
