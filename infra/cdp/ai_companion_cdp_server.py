@@ -37,6 +37,23 @@ COMPOSER_SEL = (
     "textarea"
 )
 
+TAB_TRACKER_INIT_JS = """
+(() => {
+    if (!window.__agyLastActiveAt) {
+        window.__agyLastActiveAt = (document.visibilityState === 'visible') ? Date.now() : 0;
+    }
+    if (window.__agyTabTrackerInstalled) return;
+    window.__agyTabTrackerInstalled = true;
+    const bump = () => { window.__agyLastActiveAt = Date.now(); };
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') bump();
+    }, true);
+    window.addEventListener('focus', bump, true);
+    document.addEventListener('pointerdown', bump, true);
+    document.addEventListener('keydown', bump, true);
+})();
+"""
+
 
 class CDPBridge:
     def __init__(self) -> None:
@@ -142,6 +159,7 @@ class CDPBridge:
                     browser = self._pw.chromium.connect_over_cdp(CDP_URL)
                     if browser.contexts:
                         self._browser = browser
+                        self._install_context_tab_trackers(browser.contexts[0])
                         return self._browser
                 except Exception as exc:
                     last_exc = exc
@@ -225,6 +243,23 @@ class CDPBridge:
         except Exception:
             return False
 
+    def _install_context_tab_trackers(self, context) -> None:
+        try:
+            context.add_init_script(TAB_TRACKER_INIT_JS)
+        except Exception:
+            pass
+        try:
+            for p in context.pages:
+                self._ensure_tab_tracker(p, stamp_now=False)
+        except Exception:
+            pass
+        try:
+            def _on_page(page):
+                self._ensure_tab_tracker(page, stamp_now=True)
+            context.on("page", _on_page)
+        except Exception:
+            pass
+
     @staticmethod
     def _ensure_tab_tracker(page, stamp_now: bool = False) -> None:
         try:
@@ -298,22 +333,7 @@ class CDPBridge:
             self._active_pages[comp] = best_page
             return best_page
 
-        # 2. Chrome DevTools /json/list MRU order (index 0 is most recently active in Chrome).
-        mru_ids = self._get_mru_target_ids()
-        if mru_ids:
-            rank = {tid: idx for idx, tid in enumerate(mru_ids)}
-            best_mru = None
-            best_rank = len(mru_ids) + 1
-            for p in candidates:
-                tid = self._get_page_target_id(p)
-                if tid in rank and rank[tid] < best_rank:
-                    best_rank = rank[tid]
-                    best_mru = p
-            if best_mru is not None:
-                self._active_pages[comp] = best_mru
-                return best_mru
-
-        # 3. Last tracked active page for this companion, then newest tab.
+        # 2. Last tracked active page for this companion, then newest tab (avoid /json/list creation order).
         tracked = self._active_pages.get(comp)
         if tracked in candidates:
             return tracked
