@@ -7,21 +7,28 @@
 ; Pattern mirrors WindowManagement\audio_bt_menu.ahk #!+9.
 ; =============================================================================
 
-FINANCE_D_HOLD_MS := 700
+global FINANCE_D_HOLD_MS := 700
 global g_FinanceD_DoubleTapArmed := false
 global g_FinanceD_LastPressTick := 0
 global g_FinanceD_DoubleTapTimer := 0
+global g_FinanceD_LastHoldReleaseTick := 0
 
 ; Hotkey bodies only see these globals if auto-execute reached the assignments above.
 ; A startup error earlier in Utils aborts that thread and leaves them unset.
 FinanceD_EnsureState() {
+    global FINANCE_D_HOLD_MS
     global g_FinanceD_DoubleTapArmed, g_FinanceD_LastPressTick, g_FinanceD_DoubleTapTimer
+    global g_FinanceD_LastHoldReleaseTick
+    if !IsSet(FINANCE_D_HOLD_MS)
+        FINANCE_D_HOLD_MS := 700
     if !IsSet(g_FinanceD_DoubleTapArmed)
         g_FinanceD_DoubleTapArmed := false
     if !IsSet(g_FinanceD_LastPressTick)
         g_FinanceD_LastPressTick := 0
     if !IsSet(g_FinanceD_DoubleTapTimer)
         g_FinanceD_DoubleTapTimer := 0
+    if !IsSet(g_FinanceD_LastHoldReleaseTick)
+        g_FinanceD_LastHoldReleaseTick := 0
 }
 
 class FinanceD_DoubleTapTimerObj {
@@ -38,7 +45,7 @@ class FinanceD_DoubleTapTimerObj {
 
 FinanceD_DisarmDoubleTap() {
     global g_FinanceD_DoubleTapArmed, g_FinanceD_DoubleTapTimer
-    global g_FinanceD_LastPressTick
+    global g_FinanceD_LastPressTick!
     FinanceD_EnsureState()
     g_FinanceD_DoubleTapArmed := false
     g_FinanceD_LastPressTick := 0
@@ -49,12 +56,14 @@ FinanceD_DisarmDoubleTap() {
 }
 
 #!+d:: {
+    global FINANCE_D_HOLD_MS
     global g_FinanceD_DoubleTapArmed, g_FinanceD_LastPressTick, g_FinanceD_DoubleTapTimer
+    global g_FinanceD_LastHoldReleaseTick
     FinanceD_EnsureState()
 
-    ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
-    ; released (those start with D already up and would otherwise arm single-tap Tasks).
-    if !GetKeyState("d", "P")
+    ; Drop queued auto-repeat ghosts that run right after a hold released, without
+    ; blocking fast taps or ZMK macros where D is already up on key-down entry.
+    if (g_FinanceD_LastHoldReleaseTick > 0 && (A_TickCount - g_FinanceD_LastHoldReleaseTick) < 80)
         return
 
     thresholdMs := 400
@@ -81,6 +90,7 @@ FinanceD_DisarmDoubleTap() {
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.
         KeyWait "d"
+        g_FinanceD_LastHoldReleaseTick := A_TickCount
         return
     }
 
