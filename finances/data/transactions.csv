@@ -347,3 +347,6 @@ TX353,2026-11-15,Transfer to Mercado Pago checking,"5287,19",transfer,,ACC_MERCA
 TX354,2026-11-15,Marmitas,"271,43",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX355,2026-11-15,Google services,"23,99",card_expense,CAT_SUBSCRIP,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX356,2026-11-15,Bosch power tool repair,"65,00",card_expense,CAT_SERVICO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX357,2026-11-16,Transfer to Mercado Pago short-term,"4000,00",transfer,,ACC_MERCADOP,,ACC_MERCADOP2,1,1,,0
+TX358,2026-11-16,Transfer to Mercado Pago long-term,"1280,00",transfer,,ACC_MERCADOP,,ACC_MERCADOP3,1,1,,0
+TX359,2026-11-16,Groceries,"43,95",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0

@@ -1755,6 +1755,8 @@ HotkeyCopy_DispatchChoice() {
                 HotkeyCopy_DoClipAngelEdit()
             case "I":
                 HotkeyCopy_DoImport()
+            case "7":
+                HotkeyCopy_DoPasteDesktop7()
         }
     } finally {
         g_HotkeyCopy_Flow.active := false
@@ -1860,6 +1862,31 @@ HotkeyCopy_DoDisplay() {
 
 ClipAngelExport_OnConfirmDesktop(*) {
     HotkeyCopy_FinalizeIntent("Y")
+}
+
+HotkeyCopy_OnPasteDesktop7(*) {
+    HotkeyCopy_FinalizeIntent("7")
+}
+
+HotkeyCopy_DoPasteDesktop7() {
+    errMsg := ""
+    outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
+    if (outPath = "") {
+        ClipAngel_WaitForClipboardIngest()
+        outPath := ClipAngelExport_PasteFirstClipToDesktop()
+    }
+    if (outPath = "") {
+        msg := errMsg != "" ? errMsg : "Paste file to Desktop failed"
+        ShowCenteredOverlay_Utils("❌ " . msg, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    SplitPath(outPath, &name)
+    if (StrLen(name) > 48)
+        name := SubStr(name, 1, 45) "..."
+    ShowCenteredOverlay_Utils("📎 Pasted to Desktop: " . name, 2000, BANNER_ACCENT_SUCCESS)
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\clip-paste-desktop.mp3")
+    catch {
+    }
 }
 
 ClipAngelExport_OnFavoriteClip(*) {
@@ -2142,6 +2169,7 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
         "P", HotkeyCopy_OnCopyOnly,
         "D", HotkeyCopy_OnDisplay,
         "Y", ClipAngelExport_OnConfirmDesktop,
+        "7", HotkeyCopy_OnPasteDesktop7,
         "F", ClipAngelExport_OnFavoriteClip,
         "I", HotkeyCopy_OnImport,
         "W", HotkeyCopy_OnPasteWindow,
@@ -2155,14 +2183,14 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
 
     if (isCode) {
         title := "❓ Copy code — what next? (5s)"
-        pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [D] Display  [Y] Desktop  [7] Paste Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
     } else if (companion = "enterprise") {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [D] Display  [Y] Desktop  [7] Paste Desktop  [F] Favorite  [I] Import  [W] Paste window  [O] Clip Angel  [N] No"
     } else {
         title := "❓ Copy message — what next? (5s)"
         pk :=
-            "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [I] Import  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+            "[P] Copy  [D] Display  [Y] Desktop  [7] Paste Desktop  [F] Favorite  [I] Import  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
     }
 
     timeoutMs := 5000
