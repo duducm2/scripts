@@ -39,18 +39,14 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false, waitAfterLa
         return true
     }
 
-    ; Build message based on what's closed
-    message := ""
-    if (outlookClosed && teamsClosed) {
-        message := "Outlook and Teams are closed. Do you want to open them?"
-    } else if (outlookClosed) {
-        message := "Outlook is closed. Do you want to open it?"
-    } else if (teamsClosed) {
-        message := "Teams is closed. Do you want to open it?"
+    ; Only prompt for Outlook; Teams opens automatically without asking.
+    response := "Yes"
+    if (outlookClosed) {
+        message := teamsClosed
+            ? "Outlook and Teams are closed. Do you want to open them?"
+            : "Outlook is closed. Do you want to open it?"
+        response := MsgBox(message, "Open Applications?", "YesNo Icon?")
     }
-
-    ; Show message box
-    response := MsgBox(message, "Open Applications?", "YesNo Icon?")
 
     ; If user confirms, open the applications (only open, don't toggle)
     if (response = "Yes") {
