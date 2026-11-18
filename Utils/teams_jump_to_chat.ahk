@@ -163,8 +163,28 @@ TeamsJump_ProbeGoToField() {
     return true
 }
 
+; Lightweight background UIA check: true once Teams' search bar is hydrated (no WinActivate needed).
+TeamsJump_IsUiHydrated(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        for aid in ["ms-searchux-input", "search-box-input", "searchInput"] {
+            try {
+                if (root.FindFirst({ AutomationId: aid }))
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
 ; Gate 2: Cold start after the open prompt. gotoAlreadyOpen: Ctrl+G already focused the field, do not send it again.
-; Returns true only when a Teams window is present AND Ctrl+G focus probe succeeded.
+; Polls UIA in the background without stealing focus while Teams loads, then activates once to confirm Ctrl+G.
 TeamsJump_WaitUntilGoToReady(&hwnd, &gotoAlreadyOpen, timeoutMs := 30000) {
     gotoAlreadyOpen := false
     TeamsJump_WaitUntilOpenPromptClosed()
@@ -192,10 +212,12 @@ TeamsJump_WaitUntilGoToReady(&hwnd, &gotoAlreadyOpen, timeoutMs := 30000) {
             if (fresh > 0)
                 hwnd := fresh
             if (hwnd > 0 && WinExist("ahk_id " hwnd)) {
-                try WinActivate("ahk_id " hwnd)
-                if WinActive("ahk_id " hwnd) && TeamsJump_ProbeGoToField() {
-                    gotoAlreadyOpen := true
-                    return true
+                ; Only activate Teams once UIA confirms the search UI is hydrated (or after 12s fallback).
+                if (TeamsJump_IsUiHydrated(hwnd) || (A_TickCount - start) >= 12000) {
+                    if (TeamsJump_ActivateWindowWithRetry(hwnd, 2, 300) && TeamsJump_ProbeGoToField()) {
+                        gotoAlreadyOpen := true
+                        return true
+                    }
                 }
             }
             Sleep 400

@@ -797,8 +797,15 @@ ChatFav_PromptContact(appLabel, appKey) {
     ChatFav_SetHotkeys(true)
 
     try {
-        while (!g_ChatFavDone && DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd))
+        while (!g_ChatFavDone && DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd)) {
+            ; If Teams finishes launching in parallel and steals focus, keep the picker on top.
+            if (WinActive("ahk_exe ms-teams.exe") && !WinActive("Edit Favorite #")) {
+                try WinActivate("ahk_id " g_ChatFavGuiHwnd)
+                catch {
+                }
+            }
             Sleep 30
+        }
     } finally {
         ChatFav_SetHotkeys(false)
         g_ChatFavGuiHwnd := 0

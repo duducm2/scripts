@@ -79,23 +79,24 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false, waitAfterLa
                 }
             }
 
-            ; Launch Teams if closed
+            ; Launch Teams if closed (Min when waitAfterLaunchMs=0 for parallel background startup)
             if (teamsClosed) {
+                launchOpt := (waitAfterLaunchMs = 0) ? "Min" : ""
                 if (IS_WORK_ENVIRONMENT) {
                     teamsExePath :=
                         "C:\Program Files\WindowsApps\MSTeams_25332.1210.4188.1171_x64__8wekyb3d8bbwe\ms-teams.exe"
                     if (FileExist(teamsExePath)) {
-                        Run teamsExePath
+                        Run teamsExePath, , launchOpt
                     } else {
-                        Run "ms-teams.exe"
+                        Run "ms-teams.exe", , launchOpt
                     }
                 } else {
                     teamsPath :=
                         "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk"
                     if (FileExist(teamsPath)) {
-                        Run teamsPath
+                        Run teamsPath, , launchOpt
                     } else {
-                        Run "ms-teams.exe"
+                        Run "ms-teams.exe", , launchOpt
                     }
                 }
             }
