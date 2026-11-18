@@ -1360,9 +1360,24 @@ class D2C_FlowManager {
                 if (optionalSnippet = "")
                     textToSend := clipText
             }
+            aiLabel := GetGlobalAIProviderLabel()
+            if (autoSubmit) {
+                try ShowCenteredOverlay_Utils("🚀 Sending to " . aiLabel . " (CDP)…", 1300, BANNER_ACCENT_INFO)
+                catch {
+                }
+            }
             res := { ok: false, error: "CDP paste failed" }
             try {
-                res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths)
+                activeTitle := ""
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
+                    try {
+                        if (StrLower(WinGetProcessName("ahk_id " this.OriginHwnd)) = "chrome.exe") {
+                            activeTitle := WinGetTitle("ahk_id " this.OriginHwnd)
+                        }
+                    } catch {
+                    }
+                }
+                res := AiCompanionCDP_Paste(this.CompanionId, textToSend, autoSubmit, filePaths, false, false, activeTitle)
             } finally {
                 for tmp in tempFiles {
                     try {
@@ -1372,7 +1387,6 @@ class D2C_FlowManager {
                     }
                 }
             }
-            aiLabel := GetGlobalAIProviderLabel()
             if (!res.ok) {
                 AiCompanionCDP_NotifyError("Send to " . aiLabel, res.error, this.CompanionId)
                 this.Reset()
@@ -1381,9 +1395,6 @@ class D2C_FlowManager {
             this.GeminiHwnd := res.hwnd ? res.hwnd : 1
             this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
             if (autoSubmit) {
-                try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP) — waiting for reply…", 1300, BANNER_ACCENT_INFO)
-                catch {
-                }
                 this.StartGeminiMonitor()
                 if (res.started)
                     this.MonitorButtonEverFound := true

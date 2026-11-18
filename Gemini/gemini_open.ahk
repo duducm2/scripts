@@ -366,7 +366,7 @@ GeminiOpen_FocusFreshPage(hwnd, companion, host, playChime := true) {
 ; New tab in the main companion window, loaded with a fresh companion page and a new chat.
 GeminiOpen_NewCompanionTab() {
     companion := ResolveGlobalAICompanion()
-    res := AiCompanionCDP_Ensure(companion, false, true)
+    res := AiCompanionCDP_Ensure(companion, true, true)
     if (!res.ok)
         AiCompanionCDP_NotifyError("Open new tab", res.error, companion)
     else {

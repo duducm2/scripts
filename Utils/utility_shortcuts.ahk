@@ -552,24 +552,6 @@ RegisterMacro(MacroAICompanionNewChat, "💬 New chat — AI companion (Shift+N)
 
 ; Macros [X] — close active AI companion tab (only if >1 tab is open; keeps single tab open).
 MacroAICompanionCloseTab(*) {
-    companion := ResolveGlobalAICompanion()
-    label := GetGlobalAIProviderLabel()
-    if (AiCompanionMode_IsCDP(companion)) {
-        res := AiCompanionCDP_CloseTab(companion)
-        if (res.ok) {
-            ShowCenteredOverlay_Utils("🗂 Closed " . label . " tab (" . res.remaining . " left)", 1200,
-                BANNER_ACCENT_SUCCESS)
-            return true
-        }
-        if (InStr(StrLower(res.error), "only_one_tab")) {
-            ShowCenteredOverlay_Utils("ℹ Only 1 " . label . " tab open — keeping it open", 1500,
-                BANNER_ACCENT_INFO)
-            return false
-        }
-        AiCompanionCDP_NotifyError("Close tab", res.error, companion)
-        return false
-    }
-
     global g_UtilitySelectorRestoreHwnd
     prevHwnd := 0
     try {
@@ -583,6 +565,34 @@ MacroAICompanionCloseTab(*) {
         catch {
             prevHwnd := 0
         }
+    }
+
+    prevTitle := ""
+    if (prevHwnd && WinExist("ahk_id " prevHwnd)) {
+        try {
+            if (StrLower(WinGetProcessName("ahk_id " prevHwnd)) = "chrome.exe") {
+                prevTitle := WinGetTitle("ahk_id " prevHwnd)
+            }
+        } catch {
+        }
+    }
+
+    companion := ResolveGlobalAICompanion()
+    label := GetGlobalAIProviderLabel()
+    if (AiCompanionMode_IsCDP(companion)) {
+        res := AiCompanionCDP_CloseTab(companion, prevTitle)
+        if (res.ok) {
+            ShowCenteredOverlay_Utils("🗂 Closed " . label . " tab (" . res.remaining . " left)", 1200,
+                BANNER_ACCENT_SUCCESS)
+            return true
+        }
+        if (InStr(StrLower(res.error), "only_one_tab")) {
+            ShowCenteredOverlay_Utils("ℹ Only 1 " . label . " tab open — keeping it open", 1500,
+                BANNER_ACCENT_INFO)
+            return false
+        }
+        AiCompanionCDP_NotifyError("Close tab", res.error, companion)
+        return false
     }
 
     hwnd := 0
@@ -663,9 +673,21 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
             ShowCenteredOverlay_Utils("❌ Could not read clipboard image/text for CDP paste.", 2000, BANNER_ACCENT_ERROR)
             return false
         }
+        try ShowCenteredOverlay_Utils("📋 Pasting to " . label . " (CDP)…", 1000, BANNER_ACCENT_INFO)
+        catch {
+        }
         res := { ok: false, error: "CDP paste failed" }
         try {
-            res := AiCompanionCDP_Paste(companionId, clipText, false, filePaths)
+            activeTitle := ""
+            if (originHwnd && WinExist("ahk_id " originHwnd)) {
+                try {
+                    if (StrLower(WinGetProcessName("ahk_id " originHwnd)) = "chrome.exe") {
+                        activeTitle := WinGetTitle("ahk_id " originHwnd)
+                    }
+                } catch {
+                }
+            }
+            res := AiCompanionCDP_Paste(companionId, clipText, false, filePaths, false, false, activeTitle)
         } finally {
             for tmp in tempFiles {
                 try {
