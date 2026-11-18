@@ -79,6 +79,19 @@ class CDPBridge:
     def _launch_cdp_chrome(self, target_url: str, minimized: bool = True) -> bool:
         local_app = os.environ.get("LOCALAPPDATA", "")
         profile_dir = str(Path(local_app) / "GeminiCDP") if local_app else "GeminiCDP"
+
+        if not self._is_cdp_up():
+            try:
+                subprocess.run(
+                    ["powershell.exe", "-NoProfile", "-Command", 
+                     "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -match 'GeminiCDP' } | Invoke-CimMethod -MethodName Terminate"],
+                    shell=False,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+                )
+                time.sleep(0.5)
+            except Exception:
+                pass
+
         chrome_exe = self._find_chrome_exe()
         args = [
             chrome_exe,
