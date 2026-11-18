@@ -828,6 +828,8 @@ Editor_IsThisScriptsRepo(hwnd, repoDir) {
         }
     }
     repoNorm := Editor_NormGitDir(repoDir)
+    if (repoNorm != "" && repoNorm = Editor_NormGitDir(A_ScriptDir))
+        return true
     if (repoNorm = "" || !IsSet(g_Projects) || !IsObject(g_Projects))
         return false
     loop g_Projects.Length {
@@ -1255,8 +1257,9 @@ Editor_GitRobotPollResult(*) {
         Editor_GitPlayPullSuccessSound()
         pulledUpdated := RegExMatch(raw, '"pulledUpdated"\s*:\s*true')
         didStash := RegExMatch(raw, '"didStash"\s*:\s*true')
-        if (doQuickUpdate && pulledUpdated) {
-            Editor_GitShowFinalBanner("✅ Pull complete (new changes) — restarting scripts…", BANNER_ACCENT_SUCCESS, 1400)
+        if (doQuickUpdate) {
+            suffix := pulledUpdated ? " (new changes)" : ""
+            Editor_GitShowFinalBanner("✅ Pull complete" . suffix . " — restarting scripts…", BANNER_ACCENT_SUCCESS, 1400)
             SetTimer((*) => QuickUpdateScripts(), -1000)
             return
         }
