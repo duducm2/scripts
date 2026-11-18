@@ -98,6 +98,8 @@ class CDPBridge:
             chrome_exe,
             f"--user-data-dir={profile_dir}",
             "--remote-debugging-port=9222",
+            "--disable-features=CalculateNativeWindowOcclusion",
+            "--disable-backgrounding-occluded-windows",
         ]
         if minimized:
             args.append("--start-minimized")
@@ -223,6 +225,53 @@ class CDPBridge:
         except Exception:
             return False
 
+    @staticmethod
+    def _ensure_tab_tracker(page, stamp_now: bool = False) -> None:
+        try:
+            page.evaluate(
+                """(stampNow) => {
+                    if (stampNow || !window.__agyLastActiveAt) {
+                        if (stampNow || document.visibilityState === 'visible') {
+                            window.__agyLastActiveAt = Date.now();
+                        } else {
+                            window.__agyLastActiveAt = window.__agyLastActiveAt || 0;
+                        }
+                    }
+                    if (window.__agyTabTrackerInstalled) return;
+                    window.__agyTabTrackerInstalled = true;
+                    const bump = () => { window.__agyLastActiveAt = Date.now(); };
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') bump();
+                    }, true);
+                    window.addEventListener('focus', bump, true);
+                    document.addEventListener('pointerdown', bump, true);
+                    document.addEventListener('keydown', bump, true);
+                }""",
+                bool(stamp_now),
+            )
+        except Exception:
+            pass
+
+    @staticmethod
+    def _get_page_last_active_at(page) -> int:
+        try:
+            return int(page.evaluate("() => window.__agyLastActiveAt || 0"))
+        except Exception:
+            return 0
+
+    def _is_cdp_chrome_foreground(self) -> bool:
+        try:
+            fg = ctypes.windll.user32.GetForegroundWindow()
+            if not fg:
+                return False
+            win_pid = ctypes.c_ulong(0)
+            ctypes.windll.user32.GetWindowThreadProcessId(fg, ctypes.byref(win_pid))
+            if not self._cdp_pids:
+                self._cdp_pids = self._query_cdp_chrome_pids()
+            return win_pid.value in self._cdp_pids
+        except Exception:
+            return False
+
     def _match_title_pages(self, pages: list, win_title: str) -> list:
         if not win_title:
             return []
@@ -236,59 +285,77 @@ class CDPBridge:
                 pass
         return matches
 
+    def _pick_most_recent_page(self, comp: str, candidates: list) -> object:
+        # 1. In-page activation timestamp (updated on visibilitychange/focus/pointer/key and new_tab).
+        best_ts = -1
+        best_page = None
+        for p in candidates:
+            ts = self._get_page_last_active_at(p)
+            if ts > best_ts:
+                best_ts = ts
+                best_page = p
+        if best_page is not None and best_ts > 0:
+            self._active_pages[comp] = best_page
+            return best_page
+
+        # 2. Chrome DevTools /json/list MRU order (index 0 is most recently active in Chrome).
+        mru_ids = self._get_mru_target_ids()
+        if mru_ids:
+            rank = {tid: idx for idx, tid in enumerate(mru_ids)}
+            best_mru = None
+            best_rank = len(mru_ids) + 1
+            for p in candidates:
+                tid = self._get_page_target_id(p)
+                if tid in rank and rank[tid] < best_rank:
+                    best_rank = rank[tid]
+                    best_mru = p
+            if best_mru is not None:
+                self._active_pages[comp] = best_mru
+                return best_mru
+
+        # 3. Last tracked active page for this companion, then newest tab.
+        tracked = self._active_pages.get(comp)
+        if tracked in candidates:
+            return tracked
+        self._active_pages[comp] = candidates[-1]
+        return candidates[-1]
+
     def _pick_current_page(self, comp: str, matching_pages: list, active_title: str = "") -> object:
+        for p in matching_pages:
+            self._ensure_tab_tracker(p, stamp_now=False)
+
         if len(matching_pages) == 1:
             self._active_pages[comp] = matching_pages[0]
             return matching_pages[0]
-
-        # 1. If CDP Chrome is focused, document.hasFocus() uniquely identifies the active tab.
-        for p in matching_pages:
-            if self._page_has_focus(p):
-                self._active_pages[comp] = p
-                return p
 
         win_title = self._strip_chrome_title_suffix(active_title) or self._strip_chrome_title_suffix(
             self._get_hwnd_title(self._find_cdp_chrome_hwnd())
         )
 
-        # 2. When CDP Chrome is not minimized (even if unfocused behind another app/banner),
-        #    only the selected tab in that window has document.visibilityState === 'visible'.
+        # 1. When CDP Chrome is not minimized/occluded, only the selected tab has visibilityState === 'visible'.
         visible_pages = [p for p in matching_pages if self._page_is_visible(p)]
         if len(visible_pages) == 1:
+            self._ensure_tab_tracker(visible_pages[0], stamp_now=True)
             self._active_pages[comp] = visible_pages[0]
             return visible_pages[0]
         if len(visible_pages) > 1:
+            if self._is_cdp_chrome_foreground():
+                for p in visible_pages:
+                    if self._page_has_focus(p):
+                        self._active_pages[comp] = p
+                        return p
             title_matches = self._match_title_pages(visible_pages, win_title)
             if len(title_matches) == 1:
                 self._active_pages[comp] = title_matches[0]
                 return title_matches[0]
-            pool = title_matches if title_matches else visible_pages
-            tracked = self._active_pages.get(comp)
-            if tracked in pool:
-                return tracked
-            self._active_pages[comp] = pool[-1]
-            return pool[-1]
+            return self._pick_most_recent_page(comp, title_matches if title_matches else visible_pages)
 
-        # 3. Minimized fallback: CDP Chrome window title reflects its active tab.
+        # 2. Minimized/occluded fallback: narrow by CDP Chrome window title, then pick most recently active tab.
         title_matches = self._match_title_pages(matching_pages, win_title)
         if len(title_matches) == 1:
             self._active_pages[comp] = title_matches[0]
             return title_matches[0]
-        if len(title_matches) > 1:
-            tracked = self._active_pages.get(comp)
-            if tracked in title_matches:
-                return tracked
-            self._active_pages[comp] = title_matches[-1]
-            return title_matches[-1]
-
-        # 4. Last tracked active page for this companion.
-        tracked = self._active_pages.get(comp)
-        if tracked in matching_pages:
-            return tracked
-
-        # 5. Fallback: newest tab (avoid /json/list creation order which biases toward the first tab).
-        self._active_pages[comp] = matching_pages[-1]
-        return matching_pages[-1]
+        return self._pick_most_recent_page(comp, title_matches if title_matches else matching_pages)
 
     def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True, active_title: str = ""):
         comp = (companion or "gemini").strip().lower()
@@ -323,6 +390,7 @@ class CDPBridge:
             page.bring_to_front()
         except Exception:
             pass
+        self._ensure_tab_tracker(page, stamp_now=True)
         self._active_pages[comp] = page
         return page
 

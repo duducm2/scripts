@@ -241,13 +241,13 @@ ToggleAICompanionChromeTab() {
     label := "Gemini"
     switch companion {
         case "enterprise":
-            hwnd := GetGeminiEnterpriseWindowHwnd()
+            hwnd := AiCompanionMode_IsCDP(companion) ? AiCompanionCDP_FindWindowHwnd(0, companion) : GetGeminiEnterpriseWindowHwnd()
             label := "Gemini Enterprise"
         case "copilot":
             hwnd := GetCopilotWebWindowHwnd()
             label := "Copilot"
         default:
-            hwnd := FindGeminiChromeHwnd()
+            hwnd := AiCompanionMode_IsCDP(companion) ? AiCompanionCDP_FindWindowHwnd(0, companion) : FindGeminiChromeHwnd()
             label := "Gemini"
     }
     if (!hwnd) {

@@ -28,7 +28,7 @@ Gemini_GetSearchRoot(uia) {
 }
 
 ; Navigate to consumer Gemini, focus the prompt, paste snippet (optional text or current clipboard).
-GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {
+GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := false) {
     if (AiCompanionMode_IsCDP("gemini")) {
         textToPaste := (optionalPromptText != "") ? optionalPromptText : A_Clipboard
         res := AiCompanionCDP_Paste("gemini", textToPaste, false)

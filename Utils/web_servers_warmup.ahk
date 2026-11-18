@@ -109,8 +109,21 @@ WebWarmup_HealthOk(port) {
         whr.Open("GET", "http://127.0.0.1:" . port . path, false)
         whr.SetTimeouts(400, 400, 1200, 1200)
         whr.Send()
-        if (whr.Status = 200)
+        if (whr.Status = 200) {
+            if (port = 8768 && InStr(whr.ResponseText, '"stale": true')) {
+                try {
+                    shut := ComObject("WinHttp.WinHttpRequest.5.1")
+                    try shut.SetProxy(1)
+                    shut.Open("POST", "http://127.0.0.1:" . port . "/shutdown", false)
+                    shut.SetTimeouts(300, 300, 500, 500)
+                    shut.Send("{}")
+                } catch {
+                }
+                Sleep 150
+                return false
+            }
             return true
+        }
     } catch {
     }
     ; Finance historically exposed /api/health only.

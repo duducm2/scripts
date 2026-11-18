@@ -181,7 +181,7 @@ try {
     cdpUp := false
 }
 if (!cdpUp) {
-    try Run('chrome.exe --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --start-minimized "' . cdpUrl . '"', , "Min")
+    try Run('chrome.exe --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --disable-features=CalculateNativeWindowOcclusion --disable-backgrounding-occluded-windows --start-minimized "' . cdpUrl . '"', , "Min")
     catch {
     }
 }

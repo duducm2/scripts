@@ -305,6 +305,16 @@ AiCompanionCDP_EnsureServer(&cdpUp := false) {
     return false
 }
 
+QuickUpdate_RefreshCdpServer() {
+    try {
+        AiCompanionCDP_KillStaleServer()
+        Sleep 100
+        return AiCompanionCDP_EnsureServer()
+    } catch {
+        return false
+    }
+}
+
 global g_AiCompanionCDP_LastError := ""
 
 AiCompanionCDP_GetLastError() {

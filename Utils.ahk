@@ -407,6 +407,9 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     try QuickUpdate_RefreshTasksServer()
     catch {
     }
+    try QuickUpdate_RefreshCdpServer()
+    catch {
+    }
     try ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
     catch {
     }
