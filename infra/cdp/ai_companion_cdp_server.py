@@ -433,18 +433,19 @@ class CDPBridge:
                         const cs = getComputedStyle(el);
                         return cs.display !== 'none' && cs.visibility !== 'hidden';
                     }
-                    function check(root) {
-                        if (!root) return false;
-                        for (const el of root.querySelectorAll(sel)) {
-                            if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
-                            if (isVisible(el)) return true;
-                        }
-                        for (const el of root.querySelectorAll('*')) {
-                            if (el.shadowRoot && check(el.shadowRoot)) return true;
-                        }
-                        return false;
+                    for (const el of document.querySelectorAll(sel)) {
+                        if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                        if (isVisible(el)) return true;
                     }
-                    return check(document);
+                    for (const host of document.querySelectorAll('*')) {
+                        if (host.tagName.includes('-') && host.shadowRoot) {
+                            for (const el of host.shadowRoot.querySelectorAll(sel)) {
+                                if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                                if (isVisible(el)) return true;
+                            }
+                        }
+                    }
+                    return false;
                 }"""
             )
         )
@@ -465,10 +466,11 @@ class CDPBridge:
             )
         return page.evaluate(
             """() => {
-                function collect(root, out) {
+                const sel = 'ucs-markdown, ucs-response-markdown, .markdown, .markdown-content, [class*="markdown" i], message-content';
+                const out = [];
+                function collect(root) {
                     if (!root) return;
-                    const els = root.querySelectorAll('ucs-markdown, ucs-response-markdown, .markdown, .markdown-content, [class*="markdown" i], message-content');
-                    for (const el of els) {
+                    for (const el of root.querySelectorAll(sel)) {
                         if (el.closest('button, [role="button"], .ProseMirror')) continue;
                         const t = (el.innerText || '').trim();
                         if (!t) continue;
@@ -476,12 +478,13 @@ class CDPBridge:
                         if (low === 'thumb up' || low === 'thumb down' || low === 'thumb_up' || low === 'thumb_down') continue;
                         out.push(t);
                     }
-                    for (const el of root.querySelectorAll('*')) {
-                        if (el.shadowRoot) collect(el.shadowRoot, out);
+                    for (const host of root.querySelectorAll('*')) {
+                        if (host.tagName.includes('-') && host.shadowRoot) {
+                            collect(host.shadowRoot);
+                        }
                     }
                 }
-                const out = [];
-                collect(document, out);
+                collect(document);
                 return out;
             }"""
         )
@@ -1451,6 +1454,8 @@ BRIDGE = CDPBridge()
 
 
 class Handler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
     def log_message(self, format, *args):
         return
 
@@ -1459,8 +1464,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(body)
+        self.close_connection = True
 
     def do_GET(self):
         if self.path == "/health":
@@ -1519,22 +1526,31 @@ def _is_healthy_bridge_up() -> bool:
         return False
 
 
+class SingleInstanceHTTPServer(HTTPServer):
+    allow_reuse_address = False
+
+
 def main() -> int:
     os.environ["NO_PROXY"] = "127.0.0.1,localhost"
     os.environ["no_proxy"] = "127.0.0.1,localhost"
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    # Fast-path: if a healthy bridge is already running, exit cleanly immediately.
+    if _is_healthy_bridge_up():
+        return 0
+
     server = None
     last_exc = None
     deadline = time.time() + 6.0
     while time.time() < deadline:
         try:
-            server = HTTPServer((HOST, PORT), Handler)
+            server = SingleInstanceHTTPServer((HOST, PORT), Handler)
             break
         except OSError as exc:
             last_exc = exc
             if _is_healthy_bridge_up():
                 return 0
-            time.sleep(0.2)
+            time.sleep(0.3)
     if server is None:
         try:
             log_path = os.path.join(os.environ.get("TEMP", "."), "ai_companion_cdp_server.log")
