@@ -45,7 +45,7 @@ class FinanceD_DoubleTapTimerObj {
 
 FinanceD_DisarmDoubleTap() {
     global g_FinanceD_DoubleTapArmed, g_FinanceD_DoubleTapTimer
-    global g_FinanceD_LastPressTick!
+    global g_FinanceD_LastPressTick
     FinanceD_EnsureState()
     g_FinanceD_DoubleTapArmed := false
     g_FinanceD_LastPressTick := 0
