@@ -43,6 +43,7 @@ class CDPBridge:
         self._pw = None
         self._browser = None
         self._active_pages: dict[str, object] = {}
+        self._cdp_pids: set[int] = set()
         self._connect_lock = threading.Lock()
 
     def _is_cdp_up(self) -> bool:
@@ -215,64 +216,77 @@ class CDPBridge:
         except Exception:
             return False
 
+    @staticmethod
+    def _page_is_visible(page) -> bool:
+        try:
+            return bool(page.evaluate("() => document.visibilityState === 'visible'"))
+        except Exception:
+            return False
+
+    def _match_title_pages(self, pages: list, win_title: str) -> list:
+        if not win_title:
+            return []
+        matches = []
+        for p in pages:
+            try:
+                t = (p.title() or "").strip()
+                if t and (t == win_title or win_title.startswith(t)):
+                    matches.append(p)
+            except Exception:
+                pass
+        return matches
+
     def _pick_current_page(self, comp: str, matching_pages: list, active_title: str = "") -> object:
         if len(matching_pages) == 1:
             self._active_pages[comp] = matching_pages[0]
             return matching_pages[0]
 
-        # 1. Active Chrome window title always reflects the currently selected tab.
-        win_title = self._strip_chrome_title_suffix(active_title) or self._strip_chrome_title_suffix(
-            self._get_hwnd_title(self._find_cdp_chrome_hwnd())
-        )
-        if win_title:
-            title_matches = []
-            for p in matching_pages:
-                try:
-                    t = (p.title() or "").strip()
-                    if t and (t == win_title or win_title.startswith(t)):
-                        title_matches.append(p)
-                except Exception:
-                    pass
-            if len(title_matches) == 1:
-                self._active_pages[comp] = title_matches[0]
-                return title_matches[0]
-            if len(title_matches) > 1:
-                for p in title_matches:
-                    if self._page_has_focus(p):
-                        self._active_pages[comp] = p
-                        return p
-                tracked = self._active_pages.get(comp)
-                if tracked in title_matches:
-                    return tracked
-                self._active_pages[comp] = title_matches[-1]
-                return title_matches[-1]
-
-        # 2. If Chrome is focused on an AI tab whose title differs slightly, document.hasFocus() wins.
+        # 1. If CDP Chrome is focused, document.hasFocus() uniquely identifies the active tab.
         for p in matching_pages:
             if self._page_has_focus(p):
                 self._active_pages[comp] = p
                 return p
 
-        # 3. Last tracked active page for this companion.
+        win_title = self._strip_chrome_title_suffix(active_title) or self._strip_chrome_title_suffix(
+            self._get_hwnd_title(self._find_cdp_chrome_hwnd())
+        )
+
+        # 2. When CDP Chrome is not minimized (even if unfocused behind another app/banner),
+        #    only the selected tab in that window has document.visibilityState === 'visible'.
+        visible_pages = [p for p in matching_pages if self._page_is_visible(p)]
+        if len(visible_pages) == 1:
+            self._active_pages[comp] = visible_pages[0]
+            return visible_pages[0]
+        if len(visible_pages) > 1:
+            title_matches = self._match_title_pages(visible_pages, win_title)
+            if len(title_matches) == 1:
+                self._active_pages[comp] = title_matches[0]
+                return title_matches[0]
+            pool = title_matches if title_matches else visible_pages
+            tracked = self._active_pages.get(comp)
+            if tracked in pool:
+                return tracked
+            self._active_pages[comp] = pool[-1]
+            return pool[-1]
+
+        # 3. Minimized fallback: CDP Chrome window title reflects its active tab.
+        title_matches = self._match_title_pages(matching_pages, win_title)
+        if len(title_matches) == 1:
+            self._active_pages[comp] = title_matches[0]
+            return title_matches[0]
+        if len(title_matches) > 1:
+            tracked = self._active_pages.get(comp)
+            if tracked in title_matches:
+                return tracked
+            self._active_pages[comp] = title_matches[-1]
+            return title_matches[-1]
+
+        # 4. Last tracked active page for this companion.
         tracked = self._active_pages.get(comp)
         if tracked in matching_pages:
             return tracked
 
-        # 4. Fallback: /json/list order, then newest tab.
-        mru_ids = self._get_mru_target_ids()
-        if mru_ids:
-            rank = {tid: idx for idx, tid in enumerate(mru_ids)}
-            best_page = None
-            best_rank = len(mru_ids) + 1
-            for p in matching_pages:
-                tid = self._get_page_target_id(p)
-                if tid in rank and rank[tid] < best_rank:
-                    best_rank = rank[tid]
-                    best_page = p
-            if best_page is not None:
-                self._active_pages[comp] = best_page
-                return best_page
-
+        # 5. Fallback: newest tab (avoid /json/list creation order which biases toward the first tab).
         self._active_pages[comp] = matching_pages[-1]
         return matching_pages[-1]
 
@@ -350,34 +364,80 @@ class CDPBridge:
         return False
 
     @staticmethod
-    def _find_cdp_chrome_hwnd(title_needle: str = "") -> int:
+    def _query_cdp_chrome_pids() -> set[int]:
+        pids: set[int] = set()
+        try:
+            out = subprocess.check_output(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-Command",
+                    "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -like '*GeminiCDP*' -or $_.CommandLine -like '*remote-debugging-port=9222*' } | Select-Object -ExpandProperty ProcessId",
+                ],
+                text=True,
+                timeout=3.0,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
+            )
+            for line in out.splitlines():
+                line = line.strip()
+                if line.isdigit():
+                    pids.add(int(line))
+        except Exception:
+            pass
+        return pids
+
+    def _find_cdp_chrome_hwnd(self, title_needle: str = "") -> int:
         user32 = ctypes.windll.user32
-        matches: list[int] = []
-        chrome_fallback: list[int] = []
 
-        @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
-        def enum_cb(hwnd, _lparam):
-            if not user32.IsWindowVisible(hwnd):
-                return True
-            cls_buf = ctypes.create_unicode_buffer(64)
-            user32.GetClassNameW(hwnd, cls_buf, 64)
-            if cls_buf.value != "Chrome_WidgetWin_1":
-                return True
-            length = user32.GetWindowTextLengthW(hwnd)
-            if length <= 0:
-                return True
-            buf = ctypes.create_unicode_buffer(length + 1)
-            user32.GetWindowTextW(hwnd, buf, length + 1)
-            title = buf.value
-            if title_needle and title_needle.lower() in title.lower():
-                matches.insert(0, int(hwnd))
-            elif "Gemini" in title or "AskBosch" in title or "Vertex" in title:
-                matches.append(int(hwnd))
-            elif "Chrome" in title:
-                chrome_fallback.append(int(hwnd))
-            return True
+        def _scan(cdp_pids: set[int]) -> tuple[list[int], list[int], list[int]]:
+            pid_matches: list[int] = []
+            matches: list[int] = []
+            chrome_fallback: list[int] = []
 
-        user32.EnumWindows(enum_cb, 0)
+            @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+            def enum_cb(hwnd, _lparam):
+                if not user32.IsWindowVisible(hwnd):
+                    return True
+                cls_buf = ctypes.create_unicode_buffer(64)
+                user32.GetClassNameW(hwnd, cls_buf, 64)
+                if cls_buf.value != "Chrome_WidgetWin_1":
+                    return True
+                length = user32.GetWindowTextLengthW(hwnd)
+                if length <= 0:
+                    return True
+                buf = ctypes.create_unicode_buffer(length + 1)
+                user32.GetWindowTextW(hwnd, buf, length + 1)
+                title = buf.value
+                win_pid = ctypes.c_ulong(0)
+                user32.GetWindowThreadProcessId(hwnd, ctypes.byref(win_pid))
+                is_cdp = win_pid.value in cdp_pids
+                if is_cdp:
+                    if title_needle and title_needle.lower() in title.lower():
+                        pid_matches.insert(0, int(hwnd))
+                    else:
+                        pid_matches.append(int(hwnd))
+                    return True
+                if title_needle and title_needle.lower() in title.lower():
+                    matches.insert(0, int(hwnd))
+                elif "Gemini" in title or "AskBosch" in title or "Vertex" in title:
+                    matches.append(int(hwnd))
+                elif "Chrome" in title:
+                    chrome_fallback.append(int(hwnd))
+                return True
+
+            user32.EnumWindows(enum_cb, 0)
+            return pid_matches, matches, chrome_fallback
+
+        if not self._cdp_pids:
+            self._cdp_pids = self._query_cdp_chrome_pids()
+        pid_matches, matches, chrome_fallback = _scan(self._cdp_pids)
+        if not pid_matches:
+            refreshed = self._query_cdp_chrome_pids()
+            if refreshed and refreshed != self._cdp_pids:
+                self._cdp_pids = refreshed
+                pid_matches, matches, chrome_fallback = _scan(self._cdp_pids)
+        if pid_matches:
+            return pid_matches[0]
         if matches:
             return matches[0]
         return chrome_fallback[0] if chrome_fallback else 0
