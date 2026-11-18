@@ -269,9 +269,24 @@ AiCompanionCDP_HealthOk(&cdpUp := false) {
     }
 }
 
+AiCompanionCDP_KillStaleServer() {
+    try {
+        wmi := ComObjGet("winmgmts:")
+        procs := wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE CommandLine LIKE '%ai_companion_cdp_server.py%'")
+        for proc in procs {
+            try ProcessClose(Integer(proc.ProcessId))
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
 AiCompanionCDP_EnsureServer(&cdpUp := false) {
     if AiCompanionCDP_HealthOk(&cdpUp)
         return true
+    AiCompanionCDP_KillStaleServer()
+    Sleep 150
     py := A_ScriptDir . "\infra\cdp\ai_companion_cdp_server.py"
     if !FileExist(py)
         return false

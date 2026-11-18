@@ -262,6 +262,19 @@ WebWarmup_StartFinanceServer() {
     return WebWarmup_WaitHealthy(port)
 }
 
+WebWarmup_KillStaleCdpServer() {
+    try {
+        wmi := ComObjGet("winmgmts:")
+        procs := wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE CommandLine LIKE '%ai_companion_cdp_server.py%'")
+        for proc in procs {
+            try ProcessClose(Integer(proc.ProcessId))
+            catch {
+            }
+        }
+    } catch {
+    }
+}
+
 WebWarmup_StartCdpServer() {
     global WEB_WARMUP_CDP_PORT
     port := WEB_WARMUP_CDP_PORT
@@ -274,6 +287,8 @@ WebWarmup_StartCdpServer() {
     pyCmd := WebWarmup_FindPythonCmd()
     if (pyCmd = "")
         return false
+    WebWarmup_KillStaleCdpServer()
+    Sleep 150
     cmd := pyCmd . ' -u "' . py . '"'
     try Run(cmd, root, "Hide")
     catch {
