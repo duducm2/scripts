@@ -276,14 +276,10 @@ AiCompanionCDP_EnsureServer(&cdpUp := false) {
     if !FileExist(py)
         return false
     pyExe := AiCompanionCDP_FindPythonExe()
-    logPath := A_Temp . "\ai_companion_cdp_server.log"
     psPid := 0
-    try Run(A_ComSpec . ' /c ""' . StrReplace(pyExe, '"', '') . '" -u "' . py . '" 2>>"' . logPath . '""', A_ScriptDir, "Hide", &psPid)
+    try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide", &psPid)
     catch {
-        try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide", &psPid)
-        catch {
-            return false
-        }
+        return false
     }
     deadline := A_TickCount + 15000
     while (A_TickCount < deadline) {
