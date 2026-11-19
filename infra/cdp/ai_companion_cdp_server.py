@@ -975,8 +975,10 @@ class CDPBridge:
                     } else {
                         function findText(root) {
                             if (!root) return '';
-                            const ed = root.querySelector('.ProseMirror, div[contenteditable="true"], textarea');
-                            if (ed) return (ed.innerText || ed.value || '').trim();
+                            for (const ed of root.querySelectorAll('.ProseMirror, div[contenteditable="true"], textarea')) {
+                                const t = (ed.innerText || ed.value || '').trim();
+                                if (t) return t;
+                            }
                             for (const el of root.querySelectorAll('*')) {
                                 if (el.shadowRoot) {
                                     const t = findText(el.shadowRoot);
@@ -993,7 +995,10 @@ class CDPBridge:
                         'button.send-button:not(.stop):not([disabled])',
                         'button[aria-label^="Send" i]:not([disabled])',
                         'button[aria-label^="Enviar" i]:not([disabled])',
-                        'button[aria-label="Submit" i]:not([disabled])',
+                        'button[aria-label*="Submit" i]:not([disabled])',
+                        'md-icon-button[aria-label*="Submit" i]:not([disabled])',
+                        'md-icon-button[aria-label*="Send" i]:not([disabled])',
+                        'button[type="submit"]:not([disabled])',
                     ];
                     function findAndClick(root) {
                         if (!root) return '';
