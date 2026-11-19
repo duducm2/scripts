@@ -396,6 +396,13 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
         }
     }
 
+    startTime := A_TickCount
+    ; #region agent log
+    SafeDebugLog Format(
+        "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Lib\AiCompanionCDP.ahk`",`"message`":`"AiCompanionCDP_Post request started`",`"data`":{`"endpoint`":`"{4}`"},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"debug-timeout`"}`n",
+        A_TickCount, Random(1000, 9999), A_TickCount, endpoint)
+    ; #endregion
+
     body := _AiCDP_JsonEncode(payload)
     maxAttempts := isPassivePoll ? 1 : 3
     lastRes := { ok: false, raw: "", error: "CDP request failed" }
@@ -412,6 +419,14 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             err := _AiCDP_JsonGetStr(raw, "error", "")
             g_AiCompanionCDP_LastError := ok ? "" : err
             lastRes := { ok: ok, raw: raw, error: err }
+
+            elapsedTime := A_TickCount - startTime
+            ; #region agent log
+            SafeDebugLog Format(
+                "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Lib\AiCompanionCDP.ahk`",`"message`":`"AiCompanionCDP_Post request completed`",`"data`":{`"endpoint`":`"{4}`",`"ok`":{5},`"elapsedTime`":{6}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"debug-timeout`"}`n",
+                A_TickCount, Random(1000, 9999), A_TickCount, endpoint, ok, elapsedTime)
+            ; #endregion
+
             if (ok)
                 break
             lowErr := StrLower(err)
@@ -422,6 +437,13 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             }
             break
         } catch as e {
+            elapsedTime := A_TickCount - startTime
+            ; #region agent log
+            SafeDebugLog Format(
+                "{`"id`":`"log_{1}_{2}`",`"timestamp`":{3},`"location`":`"Lib\AiCompanionCDP.ahk`",`"message`":`"AiCompanionCDP_Post request failed`",`"data`":{`"endpoint`":`"{4}`",`"error`":`"{5}`",`"elapsedTime`":{6}},`"sessionId`":`"debug-session`",`"runId`":`"run1`",`"hypothesisId`":`"debug-timeout`"}`n",
+                A_TickCount, Random(1000, 9999), A_TickCount, endpoint, e.Message, elapsedTime)
+            ; #endregion
+
             g_AiCompanionCDP_LastError := e.Message
             lastRes := { ok: false, raw: "", error: e.Message }
             if (A_Index < maxAttempts && !cdpUp) {
