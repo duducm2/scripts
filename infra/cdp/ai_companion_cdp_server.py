@@ -158,6 +158,17 @@ class CDPBridge:
                 try:
                     browser = self._pw.chromium.connect_over_cdp(CDP_URL)
                     if browser.contexts:
+                        # Playwright's connect_over_cdp sets Browser.setDownloadBehavior to
+                        # "allow" with a temp path, which saves manual downloads as UUIDs
+                        # without extensions; restore Chrome's default download handling.
+                        try:
+                            cdp = browser.new_browser_cdp_session()
+                            try:
+                                cdp.send("Browser.setDownloadBehavior", {"behavior": "default"})
+                            finally:
+                                cdp.detach()
+                        except Exception:
+                            pass
                         self._browser = browser
                         self._install_context_tab_trackers(browser.contexts[0])
                         return self._browser
