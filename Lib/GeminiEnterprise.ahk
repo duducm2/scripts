@@ -509,9 +509,18 @@ GeminiEnterprise_FindComposer(uia) {
     saved := UiElements_TrySaved(uia, "GeminiEnterprise", "Prompt")
     if (saved)
         return saved
-    return GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "agent-search-prosemirror-editor" }, { Name: "Search",
+    el := GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "agent-search-prosemirror-editor" }, { Name: "Search",
         AutomationId: "agent-search-prosemirror-editor" }, { ClassName: "ProseMirror", matchmode: "Substring" }
     ])
+    if (el)
+        return el
+    try {
+        consumerField := FindGeminiPromptField(uia)
+        if (consumerField)
+            return consumerField
+    } catch {
+    }
+    return 0
 }
 
 GeminiEnterprise_FindMenuButton(uia) {
@@ -583,8 +592,18 @@ GeminiEnterprise_FindSubmitButton(uia) {
     saved := AiCompanionButtons_FindSaved(uia, AI_COMPANION_ENTERPRISE, "Send")
     if (saved)
         return saved
-    return GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Submit", ControlType: "Button" }, { ClassName: "send-button",
+    btn := GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Submit", ControlType: "Button" }, { Name: "Send",
+        ControlType: "Button" }, { Name: "Enviar", ControlType: "Button" }, { ClassName: "send-button",
         matchmode: "Substring" }])
+    if (btn)
+        return btn
+    try {
+        consumerBtn := Gemini_FindSendButton(uia)
+        if (consumerBtn)
+            return consumerBtn
+    } catch {
+    }
+    return 0
 }
 
 GeminiEnterprise_FindStopButton(uia) {
@@ -594,12 +613,20 @@ GeminiEnterprise_FindStopButton(uia) {
     if (saved)
         return saved
     el := GeminiEnterprise_FindFirstInUia(uia, [{ Name: "Stop generating", ControlType: "Button" }, { Name: "Stop response",
+        ControlType: "Button" }, { Name: "Stop streaming", ControlType: "Button" }, { Name: "Interromper transmissão",
         ControlType: "Button" }, { Name: "Stop", ControlType: "Button" }
     ])
     if (el)
         return el
     try {
-        return uia.FindFirst({ Name: "Stop", matchmode: "Substring", ControlType: "Button" })
+        found := uia.FindFirst({ Name: "Stop", matchmode: "Substring", ControlType: "Button" })
+        if (found)
+            return found
+    } catch {
+    }
+    try {
+        if (Gemini_HasGeneratingStopButtonForUia(uia))
+            return 1
     } catch {
     }
     return 0

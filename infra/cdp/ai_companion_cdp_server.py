@@ -28,7 +28,8 @@ CONSUMER_URL = "https://gemini.google.com/app"
 ENTERPRISE_URL = "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92?pli=1"
 
 COMPOSER_SEL = (
-    "#agent-search-prosemirror-editor, "
+    '#agent-search-prosemirror-editor .ProseMirror[contenteditable="true"], '
+    '#agent-search-prosemirror-editor [contenteditable="true"], '
     '.ProseMirror[contenteditable="true"], '
     'div.ql-editor[contenteditable="true"], '
     'rich-textarea [contenteditable="true"], '
@@ -883,7 +884,10 @@ class CDPBridge:
                             'button.send-button:not(.stop)',
                             'button[aria-label^="Send" i]',
                             'button[aria-label^="Enviar" i]',
-                            'button[aria-label="Submit" i]',
+                            'button[aria-label*="Submit" i]',
+                            'md-icon-button[aria-label*="Submit" i]',
+                            'md-icon-button[aria-label*="Send" i]',
+                            'button[type="submit"]',
                         ];
                         let sawSend = false;
                         let sawDisabledSend = false;
@@ -1040,6 +1044,10 @@ class CDPBridge:
                 composer.evaluate(
                     """async (el, payload) => {
                         const { text, clear } = payload;
+                        if (el && !el.isContentEditable && el.shadowRoot) {
+                            const inner = el.shadowRoot.querySelector('.ProseMirror, [contenteditable="true"], textarea, input');
+                            if (inner) el = inner;
+                        }
                         el.focus();
                         const isInput = el.tagName === 'TEXTAREA' || el.tagName === 'INPUT';
                         if (clear) {
@@ -1087,7 +1095,7 @@ class CDPBridge:
                             }));
                             await new Promise(r => setTimeout(r, 80));
                         } catch (e) {}
-                        return ((el.innerText || el.textContent || '').trim().length > 0);
+                        return ((el.innerText || el.textContent || el.value || '').trim().length > 0);
                     }""",
                     {"text": text, "clear": clear},
                 )
@@ -1096,11 +1104,18 @@ class CDPBridge:
             inserted = False
 
         if not inserted and (text or clear):
+            target = composer
             try:
-                composer.focus(timeout=2000)
+                inner_loc = composer.locator('.ProseMirror, [contenteditable="true"], textarea').first
+                if inner_loc.count() > 0:
+                    target = inner_loc
+            except Exception:
+                pass
+            try:
+                target.focus(timeout=2000)
             except Exception:
                 try:
-                    composer.click(timeout=2000, force=True)
+                    target.click(timeout=2000, force=True)
                 except Exception:
                     pass
             if clear:
@@ -1117,7 +1132,13 @@ class CDPBridge:
         except Exception:
             pass
         try:
-            return bool(composer.evaluate("el => ((el.innerText || el.value || el.textContent || '').trim().length > 0)"))
+            return bool(composer.evaluate("""el => {
+                if (el && !el.isContentEditable && el.shadowRoot) {
+                    const inner = el.shadowRoot.querySelector('.ProseMirror, [contenteditable="true"], textarea, input');
+                    if (inner) el = inner;
+                }
+                return ((el.innerText || el.value || el.textContent || '').trim().length > 0);
+            }"""))
         except Exception:
             return False
 
@@ -1228,6 +1249,19 @@ class CDPBridge:
             composer = self._find_composer(page, timeout_s=1.5)
             if composer is not None:
                 composer_text = (composer.inner_text() or "").strip()
+                if not composer_text:
+                    composer_text = (
+                        composer.evaluate(
+                            """el => {
+                                if (el && !el.isContentEditable && el.shadowRoot) {
+                                    const inner = el.shadowRoot.querySelector('.ProseMirror, [contenteditable="true"], textarea, input');
+                                    if (inner) el = inner;
+                                }
+                                return (el.innerText || el.value || el.textContent || '').trim();
+                            }"""
+                        )
+                        or ""
+                    )
         except Exception:
             pass
         return {
