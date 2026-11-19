@@ -670,6 +670,9 @@ class CDPBridge:
         )
 
     def ensure(self, data: dict) -> dict:
+        print(f"DEBUG: CDP action started: ensure, data: {data}")
+        start_time = time.time()
+        
         companion = data.get("companion", "gemini")
         activate = bool(data.get("activate", False))
         new_tab = bool(data.get("new_tab", False))
@@ -701,6 +704,8 @@ class CDPBridge:
             except Exception:
                 pass
             hwnd = self._find_cdp_chrome_hwnd(page_title)
+
+        print(f"DEBUG: CDP action completed: ensure, took: {time.time() - start_time:.2f}s")
         return {"ok": True, "url": page.url, "title": page.title(), "hwnd": hwnd}
 
     def _toggle_image_gen(self, page, enterprise: bool) -> bool:
@@ -1094,6 +1099,9 @@ class CDPBridge:
         return False, reply_count_before
 
     def paste(self, data: dict) -> dict:
+        print(f"DEBUG: CDP action started: paste, data: {data}")
+        start_time = time.time()
+        
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         text = data.get("text", "") or ""
@@ -1125,6 +1133,7 @@ class CDPBridge:
             if files:
                 self._wait_for_upload_ready(page, before_chips=before_chips, timeout_s=25.0)
             started, reply_count_before = self._submit_and_confirm_start(page, enterprise, has_attachments=bool(files))
+            print(f"DEBUG: CDP action completed: paste (with submit), took: {time.time() - start_time:.2f}s")
             return {
                 "ok": True,
                 "submitted": True,
@@ -1133,6 +1142,7 @@ class CDPBridge:
                 "hwnd": self._find_cdp_chrome_hwnd(),
             }
 
+        print(f"DEBUG: CDP action completed: paste, took: {time.time() - start_time:.2f}s")
         return {"ok": True, "submitted": False, "hwnd": self._find_cdp_chrome_hwnd()}
 
     def submit(self, data: dict) -> dict:
