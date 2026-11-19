@@ -1029,7 +1029,7 @@ class CDPBridge:
         try:
             inserted = bool(
                 composer.evaluate(
-                    """(el, payload) => {
+                    """async (el, payload) => {
                         const { text, clear } = payload;
                         el.focus();
                         const isInput = el.tagName === 'TEXTAREA' || el.tagName === 'INPUT';
@@ -1061,6 +1061,23 @@ class CDPBridge:
                         sel.removeAllRanges();
                         sel.addRange(range);
                         document.execCommand('insertText', false, text);
+                        if ((el.innerText || el.textContent || '').trim().length > 0)
+                            return true;
+                        // Lexical editors (e.g. WhatsApp Web) commit execCommand('insertText')
+                        // asynchronously on the next microtask/frame; wait briefly before falling back.
+                        await new Promise(r => setTimeout(r, 80));
+                        if ((el.innerText || el.textContent || '').trim().length > 0)
+                            return true;
+                        try {
+                            const dt = new DataTransfer();
+                            dt.setData('text/plain', text);
+                            el.dispatchEvent(new ClipboardEvent('paste', {
+                                clipboardData: dt,
+                                bubbles: true,
+                                cancelable: true
+                            }));
+                            await new Promise(r => setTimeout(r, 80));
+                        } catch (e) {}
                         return ((el.innerText || el.textContent || '').trim().length > 0);
                     }""",
                     {"text": text, "clear": clear},
@@ -1071,9 +1088,12 @@ class CDPBridge:
 
         if not inserted and (text or clear):
             try:
-                composer.click()
+                composer.focus(timeout=2000)
             except Exception:
-                pass
+                try:
+                    composer.click(timeout=2000, force=True)
+                except Exception:
+                    pass
             if clear:
                 page.keyboard.press("Control+A")
                 page.keyboard.press("Backspace")
@@ -1352,6 +1372,9 @@ class CDPBridge:
 
     def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
         search_sels = [
+            'input[data-tab="3"]',
+            '#side input[role="textbox"]',
+            '#side input',
             'div[contenteditable="true"][data-tab="3"]',
             'div[role="textbox"][aria-label*="Search" i]',
             'div[role="textbox"][aria-label*="Pesquisar" i]',
