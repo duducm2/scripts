@@ -2838,7 +2838,7 @@ AutoSlot_ForgetHwndMon(hwnd) {
         g_AutoSlotHwndMon.Delete(hwnd)
 }
 
-AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
+AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds, toastMsg := "") {
     ; Quiet heal/pair events briefly; no [F] replace — user fills with Y if needed.
     AutoSlot_BeginSwapQuiet(AutoSlot_SWAP_MODAL_MS + 500)
     for h in displacedHwnds {
@@ -2858,7 +2858,7 @@ AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
     catch {
     }
     AutoSlot_ActivateHwnd(moverHwnd)
-    AutoSlot_Toast("ℹ️ Swapped M" srcLabel " ↔ M" dstLabel)
+    AutoSlot_Toast(toastMsg != "" ? toastMsg : ("ℹ️ Swapped M" srcLabel " ↔ M" dstLabel))
     AutoSlot_ActivateHwnd(moverHwnd)
 }
 
@@ -2924,6 +2924,7 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
         AutoSlot_UnregisterSnapPair(h)
     }
 
+    customToast := ""
     if (dest.kind = "pair") {
         ; Displaced pair onto source FIRST; do not register snap pair until layout is stable.
         placedPair := AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon, false)
@@ -2947,35 +2948,59 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
             g_AutoSlotSwapQuietUntil := 0
             return false
         }
-        ; Former dest window onto source first, then mover takes dest.
-        ; Place other into the vacated mover pane; keep companion on its pane.
-        placedOther := false
-        if (companion && companion != other) {
-            moverPane := AutoSlot_GetHwndPaneOnMonitor(hwnd, sourceMon)
-            companionPane := AutoSlot_GetHwndPaneOnMonitor(companion, sourceMon)
-            if (moverPane = "" && companionPane != "")
-                moverPane := (companionPane = "start") ? "end" : "start"
-            if (companionPane = "" && moverPane != "")
-                companionPane := (moverPane = "start") ? "end" : "start"
-            if (moverPane = "" || companionPane = "" || moverPane = companionPane) {
-                moverPane := "start"
-                companionPane := "end"
+        if (role = "half" && companion && companion != hwnd && companion != other) {
+            ; Active half-pair window moves to destMon and snaps 50/50 with the lonely window;
+            ; former inactive sibling stays on sourceMon and maximizes in place.
+            otherPane := AutoSlot_GetHwndPaneOnMonitor(other, destMon)
+            if (otherPane != "start" && otherPane != "end")
+                otherPane := "end"
+            hwndPane := (otherPane = "start") ? "end" : "start"
+            snappedDest := AutoSlot_ApplyPairOnMonitor(hwnd, other, hwndPane, otherPane, destMon, false)
+            if (!snappedDest) {
+                global g_AutoSlotSwapQuietUntil
+                g_AutoSlotSwapQuietUntil := 0
+                return false
             }
-            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, moverPane, companionPane, sourceMon, false)
-            if (placedOther)
-                AutoSlot_FinishSwappedPair(other, companion)
-        }
-        if (!placedOther)
-            placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
-        ; If other resisted, still continue — mover takes dest (partial swap better than none).
-        if (placedOther)
+            AutoSlot_FinishSwappedPair(hwnd, other)
+            AutoSlot_RememberHwndMon(hwnd)
             AutoSlot_RememberHwndMon(other)
-        if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
-            global g_AutoSlotSwapQuietUntil
-            g_AutoSlotSwapQuietUntil := 0
-            return false
+            if (AutoSlot_MaximizeOnMonitor(companion, sourceMon, false))
+                AutoSlot_RememberHwndMon(companion)
+            dstLabel := AutoSlot_OrderForMonitorIndex(destMon)
+            if (dstLabel < 1)
+                dstLabel := destMon
+            customToast := "ℹ️ Snapped → M" dstLabel
+        } else {
+            ; Former dest window onto source first, then mover takes dest.
+            ; Place other into the vacated mover pane; keep companion on its pane.
+            placedOther := false
+            if (companion && companion != other) {
+                moverPane := AutoSlot_GetHwndPaneOnMonitor(hwnd, sourceMon)
+                companionPane := AutoSlot_GetHwndPaneOnMonitor(companion, sourceMon)
+                if (moverPane = "" && companionPane != "")
+                    moverPane := (companionPane = "start") ? "end" : "start"
+                if (companionPane = "" && moverPane != "")
+                    companionPane := (moverPane = "start") ? "end" : "start"
+                if (moverPane = "" || companionPane = "" || moverPane = companionPane) {
+                    moverPane := "start"
+                    companionPane := "end"
+                }
+                placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, moverPane, companionPane, sourceMon, false)
+                if (placedOther)
+                    AutoSlot_FinishSwappedPair(other, companion)
+            }
+            if (!placedOther)
+                placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
+            ; If other resisted, still continue — mover takes dest (partial swap better than none).
+            if (placedOther)
+                AutoSlot_RememberHwndMon(other)
+            if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
+                global g_AutoSlotSwapQuietUntil
+                g_AutoSlotSwapQuietUntil := 0
+                return false
+            }
+            AutoSlot_RememberHwndMon(hwnd)
         }
-        AutoSlot_RememberHwndMon(hwnd)
     } else {
         global g_AutoSlotSwapQuietUntil
         g_AutoSlotSwapQuietUntil := 0
@@ -2994,7 +3019,7 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
         srcLabel := sourceMon
     if (dstLabel < 1)
         dstLabel := destMon
-    AutoSlot_ShowSwapModal(srcLabel, dstLabel, hwnd, displaced)
+    AutoSlot_ShowSwapModal(srcLabel, dstLabel, hwnd, displaced, customToast)
     return true
 }
 

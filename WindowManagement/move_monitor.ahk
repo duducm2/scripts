@@ -327,11 +327,16 @@ MoveWinToMonitor(mon) {
         WMAutomation_SuppressCursorCentering("move_window_to_monitor", 800)
 
         ; Break any 50/50 snap-pair / F11-restore link before moving so
-        ; AutoSlot_OnLocationChange cannot drag the former partner to destMon.
+        ; AutoSlot_OnLocationChange cannot drag or affect the former partner.
         try {
             AutoSlot_PairSuppressMark(hwnd)
             AutoSlot_ClearPairMaxPending(hwnd)
             AutoSlot_UnregisterSnapPair(hwnd)
+            if (companionHwnd) {
+                AutoSlot_PairSuppressMark(companionHwnd)
+                AutoSlot_ClearPairMaxPending(companionHwnd)
+                AutoSlot_UnregisterSnapPair(companionHwnd)
+            }
         } catch {
         }
 
