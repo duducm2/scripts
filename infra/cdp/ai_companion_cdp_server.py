@@ -98,7 +98,7 @@ class CDPBridge:
         local_app = os.environ.get("LOCALAPPDATA", "")
         profile_dir = str(Path(local_app) / "GeminiCDP") if local_app else "GeminiCDP"
 
-        if not self._is_cdp_up():
+        if not self._is_cdp_up() or self._find_cdp_chrome_hwnd() == 0:
             try:
                 subprocess.run(
                     ["powershell.exe", "-NoProfile", "-Command", 
@@ -123,7 +123,11 @@ class CDPBridge:
         args.append(target_url)
         try:
             creation_flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-            subprocess.Popen(args, shell=False, creationflags=creation_flags)
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            # Prevent Chrome from inheriting SW_HIDE when the bridge itself was launched hidden.
+            si.wShowWindow = 7 if minimized else 1
+            subprocess.Popen(args, shell=False, creationflags=creation_flags, startupinfo=si)
         except Exception:
             return False
         deadline = time.time() + 25.0
@@ -142,7 +146,7 @@ class CDPBridge:
                 except Exception:
                     self._browser = None
 
-            if not self._is_cdp_up():
+            if not self._is_cdp_up() or (launch_if_down and self._find_cdp_chrome_hwnd() == 0):
                 self._browser = None
                 if not launch_if_down:
                     raise RuntimeError("CDP_NOT_RUNNING")
