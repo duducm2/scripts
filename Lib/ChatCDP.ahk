@@ -32,8 +32,9 @@ ChatCDP_OpenOrFocus(app := "whatsapp", activate := true) {
     res := AiCompanionCDP_Post("/ensure", Map(
         "companion", appNorm,
         "activate", activate ? true : false,
-        "new_tab", false
-    ), 60000)
+        "new_tab", false,
+        "launch_if_down", true
+    ), 60000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
     if (res.ok && activate)
         hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)
@@ -51,8 +52,9 @@ ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate :=
         "text", text,
         "files", fileArr,
         "submit", submit ? true : false,
-        "activate", activate ? true : false
-    ), 60000)
+        "activate", activate ? true : false,
+        "launch_if_down", true
+    ), 60000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
     if (res.ok && activate)
         hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)

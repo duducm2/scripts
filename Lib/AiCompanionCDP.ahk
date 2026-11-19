@@ -407,6 +407,9 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
         A_TickCount, Random(1000, 9999), A_TickCount, endpoint)
     ; #endregion
 
+    if (allowLaunch && payload is Map && !payload.Has("launch_if_down"))
+        payload["launch_if_down"] := true
+
     body := _AiCDP_JsonEncode(payload)
     maxAttempts := isPassivePoll ? 1 : 3
     lastRes := { ok: false, raw: "", error: "CDP request failed" }
@@ -572,8 +575,9 @@ AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImag
         "files", fileArr,
         "submit", submit ? true : false,
         "clear", clear ? true : false,
-        "image_gen", enableImageGen ? true : false
-    ), 45000)
+        "image_gen", enableImageGen ? true : false,
+        "launch_if_down", true
+    ), 45000, true)
     return {
         ok: res.ok,
         started: _AiCDP_JsonGetBool(res.raw, "started", false),
@@ -641,10 +645,10 @@ AiCompanionCDP_NewChat(companionId := "", activeTitle := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return false
-    payload := Map("companion", comp)
+    payload := Map("companion", comp, "launch_if_down", true)
     if (Trim(activeTitle) != "")
         payload["active_title"] := Trim(activeTitle)
-    res := AiCompanionCDP_Post("/new_chat", payload, 15000)
+    res := AiCompanionCDP_Post("/new_chat", payload, 15000, true)
     return res.ok
 }
 
