@@ -371,6 +371,10 @@ AiCompanionCDP_NotifyError(actionLabel, rawErr := "", companionId := "", duratio
 
 AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false) {
     global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError
+    
+    ; Ensure logging helper exists
+    if !IsSet(SafeDebugLog)
+        SafeDebugLog := (*) => 0
     cdpUp := false
     if !AiCompanionCDP_EnsureServer(&cdpUp) {
         g_AiCompanionCDP_LastError := "CDP server unavailable"
