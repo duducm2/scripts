@@ -397,7 +397,7 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
     }
 
     body := _AiCDP_JsonEncode(payload)
-    maxAttempts := isPassivePoll ? 1 : 2
+    maxAttempts := isPassivePoll ? 1 : 3
     lastRes := { ok: false, raw: "", error: "CDP request failed" }
     loop maxAttempts {
         try {
@@ -417,7 +417,7 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             lowErr := StrLower(err)
             isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "only_one_tab")
             if (A_Index < maxAttempts && !isFatal && (!cdpUp || InStr(lowErr, "cdp_launch_failed") || InStr(lowErr, "cdp_not_running") || InStr(lowErr, "no_browser_context"))) {
-                Sleep 800
+                Sleep 1000
                 continue
             }
             break
@@ -425,7 +425,7 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             g_AiCompanionCDP_LastError := e.Message
             lastRes := { ok: false, raw: "", error: e.Message }
             if (A_Index < maxAttempts && !cdpUp) {
-                Sleep 800
+                Sleep 1000
                 continue
             }
             break
