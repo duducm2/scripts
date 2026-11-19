@@ -139,8 +139,8 @@
 ### 1. Must
 
 - [✅] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
-- [ ] Query lakehouse tables with Spark SQL
-- [ ] Transform data with PySpark DataFrames
+- [✅] Query lakehouse tables with Spark SQL
+- [✅] Transform data with PySpark DataFrames
 - [ ] Create Delta tables and use time travel to inspect earlier versions
 - [ ] Build a medallion pipeline through bronze, silver, and gold
 - [ ] Map how a Databricks workspace, storage, and Unity Catalog sit on Azure

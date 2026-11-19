@@ -707,8 +707,8 @@ PITEM_0916,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),Jobs-t
 PITEM_0917,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDiff (maximum difference scaling),0,90
 PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
 PITEM_0925,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",1,49
-PITEM_0926,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,0,50
-PITEM_0927,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,0,51
+PITEM_0926,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,1,50
+PITEM_0927,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,1,51
 PITEM_0928,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,0,52
 PITEM_0929,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Build a medallion pipeline through bronze, silver, and gold",0,53
 PITEM_0930,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Map how a Databricks workspace, storage, and Unity Catalog sit on Azure",0,54
