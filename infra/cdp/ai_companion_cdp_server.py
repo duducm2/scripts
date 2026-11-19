@@ -581,10 +581,15 @@ class CDPBridge:
                     const sel =
                         'button.send-button.stop, ' +
                         'button[aria-label^="Stop" i], ' +
+                        'button[aria-label*="Stop generating" i], ' +
+                        'button[aria-label*="Stop response" i], ' +
+                        'button[aria-label*="Stop streaming" i], ' +
+                        'button[aria-label^="Cancel" i], ' +
                         'button[aria-label^="Interromper" i], ' +
                         'mat-icon[data-mat-icon-name="stop"], ' +
                         '[aria-label="Stop streaming" i], ' +
                         '[aria-label="Stop generating" i], ' +
+                        '[aria-label="Stop response" i], ' +
                         '[aria-label="Interromper transmissão" i]';
                     function isVisible(el) {
                         const r = el.getBoundingClientRect();
@@ -592,19 +597,18 @@ class CDPBridge:
                         const cs = getComputedStyle(el);
                         return cs.display !== 'none' && cs.visibility !== 'hidden';
                     }
-                    for (const el of document.querySelectorAll(sel)) {
-                        if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
-                        if (isVisible(el)) return true;
-                    }
-                    for (const host of document.querySelectorAll('*')) {
-                        if (host.tagName.includes('-') && host.shadowRoot) {
-                            for (const el of host.shadowRoot.querySelectorAll(sel)) {
-                                if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
-                                if (isVisible(el)) return true;
-                            }
+                    function walk(root) {
+                        if (!root) return false;
+                        for (const el of root.querySelectorAll(sel)) {
+                            if (el.closest('conversations-list, [role="navigation"], nav, aside')) continue;
+                            if (isVisible(el)) return true;
                         }
+                        for (const host of root.querySelectorAll('*')) {
+                            if (host.shadowRoot && walk(host.shadowRoot)) return true;
+                        }
+                        return false;
                     }
-                    return false;
+                    return walk(document);
                 }"""
             )
         )
@@ -630,7 +634,7 @@ class CDPBridge:
                 function collect(root) {
                     if (!root) return;
                     for (const el of root.querySelectorAll(sel)) {
-                        if (el.closest('button, [role="button"], .ProseMirror')) continue;
+                        if (el.closest('button, [role="button"], .ProseMirror, [aria-busy="true"], [class*="user" i], [class*="query" i], [class*="prompt" i]')) continue;
                         const t = (el.innerText || '').trim();
                         if (!t) continue;
                         const low = t.toLowerCase();
@@ -1024,7 +1028,7 @@ class CDPBridge:
         )
 
     @staticmethod
-    def _insert_text_in_composer(page, composer, text: str, clear: bool = False) -> None:
+    def _insert_text_in_composer(page, composer, text: str, clear: bool = False) -> bool:
         inserted = False
         try:
             inserted = bool(
@@ -1100,6 +1104,17 @@ class CDPBridge:
                 time.sleep(0.03)
             if text:
                 page.keyboard.insert_text(text)
+        if not (text or "").strip():
+            return True
+        try:
+            if (composer.inner_text(timeout=1500) or "").strip():
+                return True
+        except Exception:
+            pass
+        try:
+            return bool(composer.evaluate("el => ((el.innerText || el.value || el.textContent || '').trim().length > 0)"))
+        except Exception:
+            return False
 
     def _submit_and_confirm_start(self, page, enterprise: bool, has_attachments: bool = False) -> tuple[bool, int]:
         reply_count_before = len(self._get_response_texts(page, enterprise))
@@ -1109,8 +1124,12 @@ class CDPBridge:
         btn_deadline = time.time() + (4.0 if has_attachments else 0.45)
         while time.time() < btn_deadline:
             click_res = self._atomic_click_send_if_idle(page, enterprise, allow_empty_text=has_attachments)
-            if click_res in ("already_generating", "stop_found", "composer_empty"):
+            if click_res in ("already_generating", "stop_found"):
                 return True, reply_count_before
+            if click_res == "composer_empty":
+                if self._has_stop_button(page) or len(self._get_response_texts(page, enterprise)) > reply_count_before:
+                    return True, reply_count_before
+                return False, reply_count_before
             if click_res == "clicked":
                 deadline = time.time() + 2.5
                 while time.time() < deadline:
@@ -1158,7 +1177,9 @@ class CDPBridge:
             if not self._attach_files(page, files):
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
 
-        self._insert_text_in_composer(page, composer, text, clear=clear)
+        inserted = self._insert_text_in_composer(page, composer, text, clear=clear)
+        if text.strip() and not inserted:
+            return {"ok": False, "error": "PASTE_FAILED"}
 
         if submit:
             if files:

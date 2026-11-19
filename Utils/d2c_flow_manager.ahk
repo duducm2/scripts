@@ -1381,12 +1381,18 @@ class D2C_FlowManager {
             this.GeminiHwnd := res.hwnd ? res.hwnd : 1
             this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
             if (autoSubmit) {
+                if (!res.started) {
+                    try ShowCenteredOverlay_Utils("❌ Send to " . aiLabel . " (CDP): submission did not start", 2200, BANNER_ACCENT_ERROR)
+                    catch {
+                    }
+                    this.Reset()
+                    return false
+                }
                 try ShowCenteredOverlay_Utils("🚀 Sent to " . aiLabel . " (CDP) — waiting for reply…", 1300, BANNER_ACCENT_INFO)
                 catch {
                 }
                 this.StartGeminiMonitor()
-                if (res.started)
-                    this.MonitorButtonEverFound := true
+                this.MonitorButtonEverFound := true
             } else {
                 try ShowCenteredOverlay_Utils("📋 Pasted to " . aiLabel . " (CDP)", 1200, BANNER_ACCENT_SUCCESS)
                 catch {
@@ -1595,7 +1601,7 @@ class D2C_FlowManager {
             SetTimer(this.MonitorTimer, 0)
             isTrulyDone := true
             prevLen := st.lastReplyLen
-            loop 2 {
+            loop 4 {
                 Sleep 350
                 st2 := AiCompanionCDP_Status(companion)
                 if (!st2.ok || st2.generating || st2.lastReplyLen <= 0
@@ -1630,8 +1636,8 @@ class D2C_FlowManager {
             SetTimer(this.MonitorTimer, 0)
 
             isTrulyGone := true
-            loop 4 {
-                Sleep 200
+            loop 5 {
+                Sleep 250
                 if (this.IsCompanionTabSwitched(companion)) {
                     this.Reset()
                     return

@@ -352,6 +352,8 @@ AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
         return "Only 1 " . compLabel . " tab open — keeping it open"
     if (InStr(low, "file_attach_failed"))
         return "Could not attach context file(s) in " . compLabel . " CDP Chrome"
+    if (InStr(low, "paste_failed"))
+        return "Could not paste text into " . compLabel . " CDP composer"
     if (InStr(low, "unsupported companion"))
         return "Current AI companion does not support CDP mode"
     return err
