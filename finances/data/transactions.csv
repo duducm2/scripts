@@ -350,3 +350,8 @@ TX356,2026-11-15,Bosch power tool repair,"65,00",card_expense,CAT_SERVICO,ACC_ME
 TX357,2026-11-16,Transfer to Mercado Pago short-term,"4000,00",transfer,,ACC_MERCADOP,,ACC_MERCADOP2,1,1,,0
 TX358,2026-11-16,Transfer to Mercado Pago long-term,"1280,00",transfer,,ACC_MERCADOP,,ACC_MERCADOP3,1,1,,0
 TX359,2026-11-16,Groceries,"43,95",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX360,2026-11-17,New house services,"700,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX361,2026-11-17,Transfer to checking,"700,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX362,2026-11-17,Rent,"1576,50",expense,CAT_CONTASDE,ACC_MERCADOP,,,1,1,,0
+TX363,2026-11-17,New home reconstruction materials,"1000,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX364,2026-11-17,Transfer to checking account,"1000,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
