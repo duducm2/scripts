@@ -2394,11 +2394,12 @@ AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
 }
 
 ; Keep rows whose centers are not inside a higher z-order row's rect (WinGetList order).
-; Same heuristic as GetVisibleWindowsOnMonitor — buried noise must not block heal.
+; Pad by 12px so the 4px gutter between a 50/50 pair covers a background maximized window's center.
 AutoSlot_OccupancyRowsUncovered(rows) {
     uncovered := []
     if (!IsObject(rows))
         return uncovered
+    pad := 12
     for row in rows {
         if (!IsObject(row) || !row.HasProp("hwnd") || !row.hwnd)
             continue
@@ -2406,7 +2407,7 @@ AutoSlot_OccupancyRowsUncovered(rows) {
         cy := (row.top + row.bottom) // 2
         covered := false
         for u in uncovered {
-            if (cx >= u.left && cx <= u.right && cy >= u.top && cy <= u.bottom) {
+            if (cx >= (u.left - pad) && cx <= (u.right + pad) && cy >= (u.top - pad) && cy <= (u.bottom + pad)) {
                 covered := true
                 break
             }
@@ -2553,7 +2554,7 @@ AutoSlot_PickOppositeNonFilledCompanion(hwnd, sourceMon) {
     if (!hwnd || sourceMon < 1)
         return 0
     moverPane := AutoSlot_GetHwndPaneOnMonitor(hwnd, sourceMon)
-    others := AutoSlot_OccupancyOnMonitor(sourceMon, hwnd)
+    others := AutoSlot_OccupancyRowsUncovered(AutoSlot_OccupancyOnMonitor(sourceMon, hwnd))
     nonFilled := []
     for row in others {
         h := row.hwnd
@@ -2657,17 +2658,25 @@ AutoSlot_PickPairFromOccupancyRows(rows) {
 }
 
 AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
-    rows := AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd)
+    rows := AutoSlot_OccupancyRowsUncovered(AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd))
     if (rows.Length = 0)
         return { kind: "empty" }
-    if (rows.Length = 1) {
-        h := rows[1].hwnd
-        if (AutoSlot_CompanionAlreadyFilled(h, monIdx))
-            return { kind: "full", hwnd: h }
-        return { kind: "single", hwnd: h }
+    if (AutoSlot_CompanionAlreadyFilled(rows[1].hwnd, monIdx))
+        return { kind: "full", hwnd: rows[1].hwnd }
+    nonFilled := []
+    for row in rows {
+        if (!row.hwnd)
+            continue
+        if (AutoSlot_CompanionAlreadyFilled(row.hwnd, monIdx))
+            break
+        nonFilled.Push(row)
     }
-    ; 2+ visible candidates → swappable pair (stray 3rd must not kill swap).
-    picked := AutoSlot_PickPairFromOccupancyRows(rows)
+    if (nonFilled.Length = 0)
+        return { kind: "empty" }
+    if (nonFilled.Length = 1)
+        return { kind: "single", hwnd: nonFilled[1].hwnd }
+    ; 2+ uncovered non-filled candidates → swappable pair (never pairs with a covered filled window).
+    picked := AutoSlot_PickPairFromOccupancyRows(nonFilled)
     if (IsObject(picked))
         return picked
     return { kind: "other" }
@@ -2675,12 +2684,22 @@ AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
 
 ; Mover role on source: full | half | halfAlone | other (+ companion when half).
 ; Maximized / work-area-filled always counts as full even if covered extras share the monitor.
-; Half detection ignores maximized-behind: strict snap, then opposite-pane / geometric non-filled.
+; Half detection ignores maximized-behind: registered snap partner, strict snap, then uncovered opposite-pane.
 AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
+    global g_AutoSlotSnapPairs
     if (!hwnd || sourceMon < 1)
         return { role: "other" }
     if (AutoSlot_CompanionAlreadyFilled(hwnd, sourceMon))
         return { role: "full" }
+    if (IsSet(g_AutoSlotSnapPairs) && (g_AutoSlotSnapPairs is Map) && g_AutoSlotSnapPairs.Has(hwnd)) {
+        regPartner := Integer(g_AutoSlotSnapPairs[hwnd])
+        if (regPartner && regPartner != hwnd && DllCall("IsWindow", "ptr", regPartner)
+            && AutoSlot_IsOccupancyCandidate(regPartner, hwnd)
+            && AutoSlot_GetHwndMonitorIndex(regPartner) = sourceMon
+            && !AutoSlot_CompanionAlreadyFilled(regPartner, sourceMon)) {
+            return { role: "half", companion: regPartner }
+        }
+    }
     companion := 0
     try companion := Integer(WM_FindStrictSnapCompanion(hwnd, sourceMon))
     catch
@@ -2690,17 +2709,19 @@ AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     companion := AutoSlot_PickOppositeNonFilledCompanion(hwnd, sourceMon)
     if (companion)
         return { role: "half", companion: companion }
-    others := AutoSlot_OccupancyOnMonitor(sourceMon, hwnd)
+    others := AutoSlot_OccupancyRowsUncovered(AutoSlot_OccupancyOnMonitor(sourceMon, hwnd))
     nonFilled := []
     for row in others {
         h := row.hwnd
-        if (!h || AutoSlot_CompanionAlreadyFilled(h, sourceMon))
+        if (!h)
             continue
+        if (AutoSlot_CompanionAlreadyFilled(h, sourceMon))
+            break
         nonFilled.Push(h)
     }
     if (nonFilled.Length = 0)
         return { role: "halfAlone" }
-    ; Any remaining non-filled other is a half companion (prefer first).
+    ; Any remaining uncovered non-filled other is a half companion (prefer first).
     return { role: "half", companion: nonFilled[1] }
 }
 
@@ -2948,59 +2969,31 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
             g_AutoSlotSwapQuietUntil := 0
             return false
         }
-        if (role = "half" && companion && companion != hwnd && companion != other) {
-            ; Active half-pair window moves to destMon and snaps 50/50 with the lonely window;
-            ; former inactive sibling stays on sourceMon and maximizes in place.
-            otherPane := AutoSlot_GetHwndPaneOnMonitor(other, destMon)
-            if (otherPane != "start" && otherPane != "end")
-                otherPane := "end"
-            hwndPane := (otherPane = "start") ? "end" : "start"
-            snappedDest := AutoSlot_ApplyPairOnMonitor(hwnd, other, hwndPane, otherPane, destMon, false)
-            if (!snappedDest) {
-                global g_AutoSlotSwapQuietUntil
-                g_AutoSlotSwapQuietUntil := 0
-                return false
-            }
-            AutoSlot_FinishSwappedPair(hwnd, other)
-            AutoSlot_RememberHwndMon(hwnd)
-            AutoSlot_RememberHwndMon(other)
+        ; Target monitor has 1 lonely window: always move active focused window (hwnd) to destMon
+        ; and snap it 50/50 with other (never pull other to sourceMon). Heal leftover sibling on sourceMon.
+        otherPane := AutoSlot_GetHwndPaneOnMonitor(other, destMon)
+        if (otherPane != "start" && otherPane != "end")
+            otherPane := "end"
+        hwndPane := (otherPane = "start") ? "end" : "start"
+        snappedDest := AutoSlot_ApplyPairOnMonitor(hwnd, other, hwndPane, otherPane, destMon, false)
+        if (!snappedDest) {
+            global g_AutoSlotSwapQuietUntil
+            g_AutoSlotSwapQuietUntil := 0
+            return false
+        }
+        AutoSlot_FinishSwappedPair(hwnd, other)
+        AutoSlot_RememberHwndMon(hwnd)
+        AutoSlot_RememberHwndMon(other)
+        if (companion && companion != hwnd && companion != other) {
             if (AutoSlot_MaximizeOnMonitor(companion, sourceMon, false))
                 AutoSlot_RememberHwndMon(companion)
-            dstLabel := AutoSlot_OrderForMonitorIndex(destMon)
-            if (dstLabel < 1)
-                dstLabel := destMon
-            customToast := "ℹ️ Snapped → M" dstLabel
         } else {
-            ; Former dest window onto source first, then mover takes dest.
-            ; Place other into the vacated mover pane; keep companion on its pane.
-            placedOther := false
-            if (companion && companion != other) {
-                moverPane := AutoSlot_GetHwndPaneOnMonitor(hwnd, sourceMon)
-                companionPane := AutoSlot_GetHwndPaneOnMonitor(companion, sourceMon)
-                if (moverPane = "" && companionPane != "")
-                    moverPane := (companionPane = "start") ? "end" : "start"
-                if (companionPane = "" && moverPane != "")
-                    companionPane := (moverPane = "start") ? "end" : "start"
-                if (moverPane = "" || companionPane = "" || moverPane = companionPane) {
-                    moverPane := "start"
-                    companionPane := "end"
-                }
-                placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, moverPane, companionPane, sourceMon, false)
-                if (placedOther)
-                    AutoSlot_FinishSwappedPair(other, companion)
-            }
-            if (!placedOther)
-                placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
-            ; If other resisted, still continue — mover takes dest (partial swap better than none).
-            if (placedOther)
-                AutoSlot_RememberHwndMon(other)
-            if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
-                global g_AutoSlotSwapQuietUntil
-                g_AutoSlotSwapQuietUntil := 0
-                return false
-            }
-            AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_HealLoneCompanion(sourceMon)
         }
+        dstLabel := AutoSlot_OrderForMonitorIndex(destMon)
+        if (dstLabel < 1)
+            dstLabel := destMon
+        customToast := "ℹ️ Snapped → M" dstLabel
     } else {
         global g_AutoSlotSwapQuietUntil
         g_AutoSlotSwapQuietUntil := 0

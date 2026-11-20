@@ -21,6 +21,14 @@ Utils_EnsureGlobalEscapeHotkey() {
 ; Thin Clip Angel stack (not full Utils.ahk) so Act can guarantee Clip Angel is up.
 #Include %A_ScriptDir%\Utils\clip_angel_act_bootstrap.ahk
 
+; CDP companion & chat helpers (no hotkeys registered at load).
+ResolveGlobalAICompanion() {
+    global IS_WORK_ENVIRONMENT
+    return (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) ? "enterprise" : "gemini"
+}
+#Include %A_ScriptDir%\Lib\AiCompanionCDP.ahk
+#Include %A_ScriptDir%\Lib\ChatCDP.ahk
+
 ; Preflight: catch env.ahk drift before launching hosts that load lib/CopilotWeb.ahk
 verifyPs1 := A_ScriptDir "\infra\ipc\Verify-EnvAhk.ps1"
 if FileExist(verifyPs1) {
@@ -156,7 +164,16 @@ if (IS_WORK_ENVIRONMENT) {
     StandardLoadingBar_Update("🔊 Checking audio…")
     Act_EnsurePersonalAudio()
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Settle Up.lnk"
-    Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+    if (ChatCDP_IsEnabled("whatsapp")) {
+        StandardLoadingBar_Update("⏳ Ensuring AI companion (CDP)...")
+        Act_EnsureCdpCompanion()
+        StandardLoadingBar_Update("⏳ Opening WhatsApp (CDP)...")
+        resWa := ChatCDP_OpenOrFocus("whatsapp", true)
+        if (!resWa.ok)
+            ChatCDP_NotifyError("whatsapp", resWa.error)
+    } else {
+        Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+    }
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
 }
 
@@ -164,26 +181,10 @@ if (IS_WORK_ENVIRONMENT) {
 StandardLoadingBar_Update("⏳ Ensuring Clip Angel...")
 clipAngelOk := ClipAngel_EnsureRunning()
 
-; Warm up the minimized CDP Chrome window on Act startup.
-StandardLoadingBar_Update("⏳ Ensuring AI companion (CDP)...")
-cdpUrl := IS_WORK_ENVIRONMENT
-    ? "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92?pli=1"
-    : "https://gemini.google.com/app"
-cdpProfile := EnvGet("LOCALAPPDATA") . "\GeminiCDP"
-try {
-    whr := ComObject("WinHttp.WinHttpRequest.5.1")
-    try whr.SetProxy(1)
-    whr.Open("GET", "http://127.0.0.1:9222/json/version", false)
-    whr.SetTimeouts(300, 300, 600, 600)
-    whr.Send()
-    cdpUp := (whr.Status = 200)
-} catch {
-    cdpUp := false
-}
-if (!cdpUp) {
-    try Run('chrome.exe --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --disable-features=CalculateNativeWindowOcclusion --disable-backgrounding-occluded-windows --start-minimized "' . cdpUrl . '"', , "Min")
-    catch {
-    }
+; Warm up the minimized CDP Chrome window on Act startup (if not already warmed up above).
+if (IS_WORK_ENVIRONMENT || !ChatCDP_IsEnabled("whatsapp")) {
+    StandardLoadingBar_Update("⏳ Ensuring AI companion (CDP)...")
+    Act_EnsureCdpCompanion()
 }
 
 habitsFolder := notesFolder . "\habits"
@@ -193,6 +194,34 @@ StandardLoadingBar_Hide(clipAngelOk ? 500 : 0)
 Sleep 1000
 ; Exit so Act never remains as a lingering Utils/hotkey host after bootstrap.
 ExitApp
+
+Act_EnsureCdpCompanion() {
+    global IS_WORK_ENVIRONMENT
+    companion := IS_WORK_ENVIRONMENT ? "enterprise" : "gemini"
+    res := AiCompanionCDP_Ensure(companion, false, false)
+    if (res.ok)
+        return true
+    cdpUrl := IS_WORK_ENVIRONMENT
+        ? "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92?pli=1"
+        : "https://gemini.google.com/app"
+    cdpProfile := EnvGet("LOCALAPPDATA") . "\GeminiCDP"
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        try whr.SetProxy(1)
+        whr.Open("GET", "http://127.0.0.1:9222/json/version", false)
+        whr.SetTimeouts(300, 300, 600, 600)
+        whr.Send()
+        cdpUp := (whr.Status = 200)
+    } catch {
+        cdpUp := false
+    }
+    if (!cdpUp) {
+        try Run('chrome.exe --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --disable-features=CalculateNativeWindowOcclusion --disable-backgrounding-occluded-windows --start-minimized "' . cdpUrl . '"', , "Min")
+        catch {
+        }
+    }
+    return cdpUp
+}
 
 ; Stash, fetch, pull --ff-only, stash pop. Same gates as editor Alt+S, hidden.
 ; Each git step inside the script is capped at 900s. Outer cap covers stash, fetch,
