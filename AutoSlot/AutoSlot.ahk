@@ -2884,8 +2884,10 @@ AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds, toastMsg :
 }
 
 ; Exchange whole-monitor FG layouts when MoveWinToMonitor would collide.
+; mode = "swap" (default, ^!#a/s/d/f): move entire active window to destMon and swap places.
+; mode = "snap" (^!#x): when destMon has 1 window, snap 50/50 with it on destMon.
 ; Returns true when swap was applied (caller should skip normal move).
-AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
+AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon, mode := "swap") {
     if (!AutoSlot_IsEnabled() || !hwnd || sourceMon < 1 || destMon < 1 || sourceMon = destMon)
         return false
     if (!DllCall("IsWindow", "ptr", hwnd) || !AutoSlot_IsOccupancyCandidate(hwnd))
@@ -2911,13 +2913,87 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
 
     StandardLoadingBar_BusyAllMonitors_Begin()
     try {
-        return AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role)
+        return AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role, mode)
     } finally {
         StandardLoadingBar_BusyAllMonitors_End()
     }
 }
 
-AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
+AutoSlot_SwapOneIntoSourceHalf(incomingHwnd, moverHwnd, companionHwnd, sourceMon) {
+    hwndPane := AutoSlot_GetHwndPaneOnMonitor(moverHwnd, sourceMon)
+    companionPane := AutoSlot_GetHwndPaneOnMonitor(companionHwnd, sourceMon)
+    if (hwndPane != "start" && hwndPane != "end") {
+        if (companionPane = "start" || companionPane = "end")
+            hwndPane := (companionPane = "start") ? "end" : "start"
+        else
+            hwndPane := "start"
+    }
+    companionPane := (hwndPane = "start") ? "end" : "start"
+    if (AutoSlot_ApplyPairOnMonitor(incomingHwnd, companionHwnd, hwndPane, companionPane, sourceMon, false)) {
+        AutoSlot_FinishSwappedPair(incomingHwnd, companionHwnd)
+        return true
+    }
+    if (AutoSlot_MaximizeOnMonitor(incomingHwnd, sourceMon, false))
+        AutoSlot_RememberHwndMon(incomingHwnd)
+    return false
+}
+
+AutoSlot_FindPlaceExcludingMonitors(hwnd, excludeMon1, excludeMon2 := 0) {
+    global g_AutoSlotUndo
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return { placed: false }
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
+    emptyMon := 0
+    emptyOrder := 0
+    halfMon := 0
+    halfOrder := 0
+    halfPartner := 0
+    loop ordinalCount {
+        order := A_Index
+        monIdx := AutoSlot_GetMonitorIndexByOrder(order)
+        if (!monIdx || monIdx = excludeMon1 || monIdx = excludeMon2)
+            continue
+        rows := snap.Has(monIdx) ? snap[monIdx] : []
+        part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
+        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
+            if (!emptyMon) {
+                emptyMon := monIdx
+                emptyOrder := order
+            }
+            continue
+        }
+        if (!halfMon) {
+            partner := AutoSlot_FreeHalfPartnerFromPart(part)
+            if (partner && partner != hwnd) {
+                halfMon := monIdx
+                halfOrder := order
+                halfPartner := partner
+            }
+        }
+    }
+    if (emptyMon) {
+        if (AutoSlot_MaximizeOnMonitor(hwnd, emptyMon, false)) {
+            AutoSlot_ClaimMonitor(emptyMon)
+            AutoSlot_RememberHwndMon(hwnd)
+            return { placed: true, order: emptyOrder, kind: "max" }
+        }
+    }
+    if (halfMon && halfPartner) {
+        pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon, true)
+        if (pane != "") {
+            g_AutoSlotUndo := 0
+            AutoSlot_FinishSwappedPair(hwnd, halfPartner)
+            AutoSlot_ClaimMonitor(halfMon)
+            AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_RememberHwndMon(halfPartner)
+            return { placed: true, order: halfOrder, kind: "snap" }
+        }
+    }
+    return { placed: false }
+}
+
+AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role, mode := "swap") {
     displaced := []
     if (dest.kind = "pair") {
         displaced.Push(dest.a)
@@ -2945,23 +3021,54 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
         AutoSlot_UnregisterSnapPair(h)
     }
 
+    srcLabel := AutoSlot_OrderForMonitorIndex(sourceMon)
+    dstLabel := AutoSlot_OrderForMonitorIndex(destMon)
+    if (srcLabel < 1)
+        srcLabel := sourceMon
+    if (dstLabel < 1)
+        dstLabel := destMon
+
     customToast := ""
     if (dest.kind = "pair") {
-        ; Displaced pair onto source FIRST; do not register snap pair until layout is stable.
-        placedPair := AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon, false)
-        if (!placedPair) {
-            ; Last resort: stack both maximized on source so exchange still happens.
-            AutoSlot_MaximizeOnMonitor(dest.a, sourceMon, false)
-            AutoSlot_MaximizeOnMonitor(dest.b, sourceMon, false)
+        if (role = "half" && companion && companion != hwnd && mode != "snap") {
+            ; Active monitor has 2 windows & target has 2 windows:
+            ; swap only one target window into sourceMon's half-slot with companion,
+            ; maximize hwnd on destMon, and try to place the other target window elsewhere.
+            incoming := dest.a
+            overflow := dest.b
+            if (incoming = hwnd || incoming = companion) {
+                incoming := dest.b
+                overflow := dest.a
+            }
+            AutoSlot_SwapOneIntoSourceHalf(incoming, hwnd, companion, sourceMon)
+            if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
+                global g_AutoSlotSwapQuietUntil
+                g_AutoSlotSwapQuietUntil := 0
+                return false
+            }
+            AutoSlot_RememberHwndMon(hwnd)
+            overflowRes := AutoSlot_FindPlaceExcludingMonitors(overflow, sourceMon, destMon)
+            if (overflowRes.placed)
+                customToast := "ℹ️ Swapped M" srcLabel " ↔ M" dstLabel " (2nd → M" overflowRes.order ")"
+            else
+                customToast := "ℹ️ Swapped 1 from M" dstLabel " ↔ M" srcLabel
+        } else {
+            ; Displaced pair onto source FIRST; do not register snap pair until layout is stable.
+            placedPair := AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon, false)
+            if (!placedPair) {
+                ; Last resort: stack both maximized on source so exchange still happens.
+                AutoSlot_MaximizeOnMonitor(dest.a, sourceMon, false)
+                AutoSlot_MaximizeOnMonitor(dest.b, sourceMon, false)
+            }
+            if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
+                global g_AutoSlotSwapQuietUntil
+                g_AutoSlotSwapQuietUntil := 0
+                return false
+            }
+            AutoSlot_RememberHwndMon(hwnd)
+            if (placedPair)
+                AutoSlot_FinishSwappedPair(dest.a, dest.b)
         }
-        if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
-            global g_AutoSlotSwapQuietUntil
-            g_AutoSlotSwapQuietUntil := 0
-            return false
-        }
-        AutoSlot_RememberHwndMon(hwnd)
-        if (placedPair)
-            AutoSlot_FinishSwappedPair(dest.a, dest.b)
     } else if (dest.kind = "full") {
         other := dest.hwnd
         if (other = hwnd) {
@@ -2969,31 +3076,43 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
             g_AutoSlotSwapQuietUntil := 0
             return false
         }
-        ; Target monitor has 1 lonely window: always move active focused window (hwnd) to destMon
-        ; and snap it 50/50 with other (never pull other to sourceMon). Heal leftover sibling on sourceMon.
-        otherPane := AutoSlot_GetHwndPaneOnMonitor(other, destMon)
-        if (otherPane != "start" && otherPane != "end")
-            otherPane := "end"
-        hwndPane := (otherPane = "start") ? "end" : "start"
-        snappedDest := AutoSlot_ApplyPairOnMonitor(hwnd, other, hwndPane, otherPane, destMon, false)
-        if (!snappedDest) {
-            global g_AutoSlotSwapQuietUntil
-            g_AutoSlotSwapQuietUntil := 0
-            return false
-        }
-        AutoSlot_FinishSwappedPair(hwnd, other)
-        AutoSlot_RememberHwndMon(hwnd)
-        AutoSlot_RememberHwndMon(other)
-        if (companion && companion != hwnd && companion != other) {
-            if (AutoSlot_MaximizeOnMonitor(companion, sourceMon, false))
-                AutoSlot_RememberHwndMon(companion)
+        if (mode = "snap") {
+            ; ^!#x: move active window to destMon and snap 50/50 with the lone window there.
+            otherPane := AutoSlot_GetHwndPaneOnMonitor(other, destMon)
+            if (otherPane != "start" && otherPane != "end")
+                otherPane := "end"
+            hwndPane := (otherPane = "start") ? "end" : "start"
+            snappedDest := AutoSlot_ApplyPairOnMonitor(hwnd, other, hwndPane, otherPane, destMon, false)
+            if (!snappedDest) {
+                global g_AutoSlotSwapQuietUntil
+                g_AutoSlotSwapQuietUntil := 0
+                return false
+            }
+            AutoSlot_FinishSwappedPair(hwnd, other)
+            AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_RememberHwndMon(other)
+            if (companion && companion != hwnd && companion != other) {
+                if (AutoSlot_MaximizeOnMonitor(companion, sourceMon, false))
+                    AutoSlot_RememberHwndMon(companion)
+            } else {
+                AutoSlot_HealLoneCompanion(sourceMon)
+            }
+            customToast := "ℹ️ Snapped → M" dstLabel
         } else {
-            AutoSlot_HealLoneCompanion(sourceMon)
+            ; ^!#a/s/d/f: move entire active window to destMon (maximized) and swap other to sourceMon.
+            if (role = "half" && companion && companion != hwnd && companion != other) {
+                AutoSlot_SwapOneIntoSourceHalf(other, hwnd, companion, sourceMon)
+            } else {
+                if (AutoSlot_MaximizeOnMonitor(other, sourceMon, false))
+                    AutoSlot_RememberHwndMon(other)
+            }
+            if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
+                global g_AutoSlotSwapQuietUntil
+                g_AutoSlotSwapQuietUntil := 0
+                return false
+            }
+            AutoSlot_RememberHwndMon(hwnd)
         }
-        dstLabel := AutoSlot_OrderForMonitorIndex(destMon)
-        if (dstLabel < 1)
-            dstLabel := destMon
-        customToast := "ℹ️ Snapped → M" dstLabel
     } else {
         global g_AutoSlotSwapQuietUntil
         g_AutoSlotSwapQuietUntil := 0
@@ -3006,12 +3125,6 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
     try WM_MaybeCenterMouse(hwnd, "autoslot_fg_swap", true)
     catch {
     }
-    srcLabel := AutoSlot_OrderForMonitorIndex(sourceMon)
-    dstLabel := AutoSlot_OrderForMonitorIndex(destMon)
-    if (srcLabel < 1)
-        srcLabel := sourceMon
-    if (dstLabel < 1)
-        dstLabel := destMon
     AutoSlot_ShowSwapModal(srcLabel, dstLabel, hwnd, displaced, customToast)
     return true
 }
