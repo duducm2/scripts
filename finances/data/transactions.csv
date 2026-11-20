@@ -355,3 +355,7 @@ TX361,2026-11-17,Transfer to checking,"700,00",transfer,,ACC_MERCADOP3,,ACC_MERC
 TX362,2026-11-17,Rent,"1576,50",expense,CAT_CONTASDE,ACC_MERCADOP,,,1,1,,0
 TX363,2026-11-17,New home reconstruction materials,"1000,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX364,2026-11-17,Transfer to checking account,"1000,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX365,2026-11-19,Transfer to Mercado Pago checking,"709,03",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX366,2026-11-19,Mason / bricklayer (new house),"700,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
+TX368,2026-11-19,Beer,"41,80",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX369,2026-11-19,Hot dogs,"56,50",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
