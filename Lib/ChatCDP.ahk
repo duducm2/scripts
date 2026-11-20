@@ -77,3 +77,9 @@ ChatCDP_NotifyError(app, rawErr := "") {
     catch {
     }
 }
+
+ChatCDP_WhatsAppVoiceToggle() {
+    res := AiCompanionCDP_Post("/whatsapp/voice", Map("launch_if_down", false), 8000, false)
+    state := _AiCDP_JsonGetStr(res.raw, "state", "")
+    return { ok: res.ok, state: state, error: res.error }
+}

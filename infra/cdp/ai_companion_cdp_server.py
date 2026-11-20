@@ -1740,6 +1740,65 @@ class CDPBridge:
             hwnd = self._focus_cdp_window(page)
         return {"ok": True, "hwnd": hwnd}
 
+    def whatsapp_voice(self, data: dict) -> dict:
+        page = self._find_or_open_page(
+            "whatsapp",
+            launch_if_down=bool(data.get("launch_if_down", False)),
+            new_tab=False,
+            minimized=False,
+        )
+        res = page.evaluate(
+            """() => {
+                const footer = document.querySelector('footer') || document;
+                const isVisible = (el) => {
+                    if (!el) return false;
+                    const r = el.getBoundingClientRect();
+                    if (r.width <= 0 || r.height <= 0) return false;
+                    const cs = getComputedStyle(el);
+                    return cs.display !== 'none' && cs.visibility !== 'hidden';
+                };
+                const clickEl = (el) => {
+                    const btn = el.closest('button') || el;
+                    btn.click();
+                    return true;
+                };
+                const sendSels = [
+                    'button[aria-label="Send" i]',
+                    'button[aria-label="Enviar" i]',
+                    'button[aria-label*="Stop recording" i]',
+                    'button[aria-label*="Parar grava" i]',
+                    'span[data-icon="send"]',
+                ];
+                for (const sel of sendSels) {
+                    for (const el of footer.querySelectorAll(sel)) {
+                        if (isVisible(el)) {
+                            clickEl(el);
+                            return { ok: true, state: 'sent' };
+                        }
+                    }
+                }
+                const micSels = [
+                    'button[aria-label="Voice message" i]',
+                    'button[aria-label*="Record voice" i]',
+                    'button[aria-label*="Voice message" i]',
+                    'button[aria-label*="Mensagem de voz" i]',
+                    'button[aria-label*="Gravar mensagem" i]',
+                    'span[data-icon="mic"]',
+                    'span[data-icon="ptt"]',
+                ];
+                for (const sel of micSels) {
+                    for (const el of footer.querySelectorAll(sel)) {
+                        if (isVisible(el)) {
+                            clickEl(el);
+                            return { ok: true, state: 'recording' };
+                        }
+                    }
+                }
+                return { ok: false, error: 'WHATSAPP_VOICE_BUTTON_NOT_FOUND' };
+            }"""
+        )
+        return res if isinstance(res, dict) else {"ok": False, "error": "WHATSAPP_VOICE_FAILED"}
+
 
 def _file_sig() -> tuple[int, int]:
     try:
@@ -1802,6 +1861,7 @@ class Handler(BaseHTTPRequestHandler):
             "/select_model": BRIDGE.select_model,
             "/read_aloud": BRIDGE.read_aloud,
             "/chat/jump": BRIDGE.chat_jump,
+            "/whatsapp/voice": BRIDGE.whatsapp_voice,
         }
         fn = routes.get(self.path)
         if fn is None:

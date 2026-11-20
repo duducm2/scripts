@@ -145,13 +145,17 @@ WhatsApp_GetActiveUia() {
 }
 
 ; FindFirst rejects MatchMode RegEx; FindElement is the one-lookup path that accepts it.
+; Scope to document element first so multi-tab Chrome windows don't scan the full browser tree.
 WhatsApp_FindNamedButton(uia, pattern, timeoutMs := 0) {
     if (!uia)
         return 0
+    doc := 0
+    try doc := uia.GetCurrentDocumentElement()
+    target := doc ? doc : uia
     deadline := A_TickCount + timeoutMs
     loop {
         el := 0
-        try el := uia.FindElement({ Type: "Button", Name: pattern, matchmode: "RegEx" })
+        try el := target.FindElement({ Type: "Button", Name: pattern, matchmode: "RegEx" })
         if (el)
             return el
         if (A_TickCount >= deadline)
@@ -318,6 +322,21 @@ ToggleVoiceMessage() {
 
     WhatsApp_Begin("Voice message")
     try {
+        if (ChatCDP_IsEnabled("whatsapp")) {
+            hwnd := WinExist("A")
+            winPid := 0
+            try winPid := WinGetPID("ahk_id " hwnd)
+            cdpPids := AiCompanionCDP_GetProcessPids()
+            if (winPid && cdpPids.Has(winPid)) {
+                res := ChatCDP_WhatsAppVoiceToggle()
+                if (res.ok) {
+                    isRecording := (res.state = "recording")
+                    WhatsApp_Ok(isRecording ? "Recording" : "Voice sent")
+                    return
+                }
+            }
+        }
+
         chrome := WhatsApp_GetActiveUia()
         if !IsObject(chrome) {
             WhatsApp_Fail("❌ WhatsApp: could not attach")
@@ -325,8 +344,8 @@ ToggleVoiceMessage() {
         }
 
         ; Exact-name regexes (case-insensitive, anchored ^ $)
-        voicePattern := "i)^(Voice message|Record voice message)$"
-        sendPattern := "i)^(Send|Stop recording)$"
+        voicePattern := "i)^(Voice message|Record voice message|Mensagem de voz|Gravar mensagem de voz)$"
+        sendPattern := "i)^(Send|Stop recording|Enviar|Parar gravação)$"
 
         if (isRecording) {
             ; Short poll: the send control replaces the mic after recording starts.
