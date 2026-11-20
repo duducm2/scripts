@@ -18,4 +18,4 @@ Name=📝 How-to steps CSV
 Name=Finance daily transactions
 Name=Finance monthly investments
 Name=Finance evaluate and advice
-Name=Memory Palace atoms CSV import
+Name=Memory Palace atoms CSV imlport

@@ -19,6 +19,12 @@
 **Quote**
 “Databricks will delete the metadata information about this table, but it is not going to touch this S3 location, it will never ever delete that data files and things from that location.”
 
+**Character**
+Chefe Débora do escoteiro
+
+**Justification**
+Chefe Débora do escoteiro cuts bamboo cleanly with a sharp machete
+
 #### Notes
 
 _No notes._
@@ -48,6 +54,12 @@ _No gallery images._
 **Quote**
 “All we have to tell is the location, that's the only difference from the regular create table which creates the managed table.”
 
+**Character**
+Rodrigo
+
+**Justification**
+Rodrigo loves money and counts stacks of bills out of an overflowing silver briefcase
+
 ### [Ds] Dark skull
 
 <img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/skull.png" alt="Dark skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -57,6 +69,12 @@ _No gallery images._
 
 **Quote**
 “It tells whether the table type is managed or external, and it also tells where the table is stored, the location in the storage bucket.”
+
+**Character**
+Cleuza Lanzoni
+
+**Justification**
+Cleuza Lanzoni loves gossip and peers out the window through compact binoculars to inspect the street
 
 ### [Dr] dragonfly
 
@@ -68,6 +86,12 @@ _No gallery images._
 **Quote**
 “Drop table on managed table deletes your data, drop table on external table does not delete your data, it only deletes the metadata.”
 
+**Character**
+Tata
+
+**Justification**
+Tata is a lawyer who slams a judge's gavel on the bench with authority
+
 ### [Dq] Dark Quetzalcoatl
 
 <img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Dark Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -78,6 +102,12 @@ _No gallery images._
 **Quote**
 “For creating a table in Spark, you first have to create a DataFrame and then you can write that DataFrame as a table.”
 
+**Character**
+Antônio
+
+**Justification**
+Antônio lives in Japan and assembles computer chips with titanium chopsticks on an illuminated motherboard
+
 ### [Dp] Dark panther
 
 <img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/panther.png" alt="Dark panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
@@ -87,6 +117,12 @@ _No gallery images._
 
 **Quote**
 “Create table products will throw an error if table already exist, whereas if I use create or replace table, if the table already exist, it will replace the older table and run without any problem.”
+
+**Character**
+George
+
+**Justification**
+George understands design and draws futuristic designs on his tablet with a stylus
 
 #### Notes
 

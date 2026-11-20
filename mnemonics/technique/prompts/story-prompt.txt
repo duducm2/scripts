@@ -45,13 +45,13 @@ PREVIEW lives **only** here (importer + confirm UI read it from the pack). Shape
 STUDY_… · N palaces · N beasts · N atoms
 Packing: 5+5+…+remainder (remainder only on last **new** palace in this pack)
 
-PALACE N+1 — <title> (<character>) [<palace_id>]
+PALACE N+1 — <title> [<palace_id>]
   [U] <beast> — Concept: … | Quote: "…" | Character: <name>
   [V] <beast> — Concept: … | Quote: "…" | Character: <name>
   [W] <beast> — Concept: … | Quote: "…" | Character: <name>
   [X] <beast> — Concept: … | Quote: "…" | Character: <name>
   [Y] <beast> — Concept: … | Quote: "…" | Character: <name>
-PALACE N+2 — <title> (<character>) [<palace_id>]   ← last new palace in this pack may have 1–4
+PALACE N+2 — <title> [<palace_id>]   ← last new palace in this pack may have 1–4
   [Z] <beast> — Concept: … | Quote: "…" | Character: <name>
   [Aa] <beast> — Concept: … | Quote: "…" | Character: <name>
   [Aa] <beast> Z2 — …
@@ -286,7 +286,7 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 - NEVER re-emit Knowledge Atoms / beasts / palaces already present in the attached inventory.
 - NEVER top up an existing under-filled inventory palace with new beasts.
 - NEVER dump the whole practice `.md` / study into PREVIEW or FILE sections.
-- NEVER assign two+ characters to one palace or reuse a character already used (inventory + this pack).
+- NEVER assign the same character to two atoms in the same palace, or reuse a character within ±6 memory palaces (inventory + this pack).
 - NEVER reuse a character in a Knowledge Atom if that character appeared in any of the 6 surrounding memory palaces (at least 6 palaces before or within this pack).
 - NEVER assign a character in `PALACE_ATOMS.csv` that is not in the attached `pao_characters.csv` list (never pull characters from the web or outside the list; if no character in the list matches the primary keyword, randomly choose an eligible character from `pao_characters.csv` instead).
 - NEVER leave a Knowledge Atom's `character` or `justification` field empty or unassigned; always use your best creative judgment within `pao_characters.csv`, or randomly choose an eligible character from `pao_characters.csv` if none matches.
@@ -315,7 +315,7 @@ Do this **before** writing PREVIEW. Bad packing **inside this pack** = failed de
 | study_id from pack or `STUDY_VIOLIN` for violin test | Yes |
 | Every non-final **pack** palace has exactly 5 beasts; any remainder < 5 is only on the highest `palace_number` **in this pack**; depth_slots_used coherent; no sparse-then-full sequence among pack palaces | Yes |
 | Pack has only NEW palaces / beasts / atoms; inventory left untouched; already-known skipped in Discard candidates | Yes |
-| One unused character per new palace | Yes |
+| Every Knowledge Atom has a non-empty `character` exclusively from `pao_characters.csv` (respecting ±6 palaces proximity) and a non-empty `justification` | Yes |
 | Peg letters only | Yes |
 | Plain everyday English on concept (+ Note) / image_prompt / PREVIEW Concept; no archaic/old-fashioned/literary diction; quotes untouched | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |

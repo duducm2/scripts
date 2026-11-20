@@ -67,13 +67,13 @@ Scope: palaces N–M · pegs X–Y
 Packing: 5+5+…+remainder (remainder only on last in-scope palace)
 Changes: what the instruction changed (short)
 
-PALACE N — <title> (<character>) [<palace_id>]
+PALACE N — <title> [<palace_id>]
   [U] <beast> — Concept: … | Quote: "…" | Character: <name>
   [V] <beast> — Concept: … | Quote: "…" | Character: <name>
   [W] <beast> — Concept: … | Quote: "…" | Character: <name>
   [X] <beast> — Concept: … | Quote: "…" | Character: <name>
   [Y] <beast> — Concept: … | Quote: "…" | Character: <name>
-PALACE N+1 — <title> (<character>) [<palace_id>]   ← last in-scope may have 1–4
+PALACE N+1 — <title> [<palace_id>]   ← last in-scope may have 1–4
   [Z] <beast> — Concept: … | Quote: "…" | Character: <name>
   [Aa] <beast> — Concept: … | Quote: "…" | Character: <name>
 
@@ -226,7 +226,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,ipa,sort_order,character
 - NEVER leave a later street standing after its beasts were pulled. List it on `Exclude:` and omit its FILE rows.
 - NEVER pull beasts from earlier palaces, and NEVER keep an old beast name when the peg letter changes.
 - NEVER restart peg letters at `A` for a scoped reduction when earlier out-of-scope pegs already occupy `A…`.
-- NEVER assign two characters to one palace or zero characters after collapse.
+- NEVER leave a Knowledge Atom's `character` or `justification` empty on any surviving, merged, or replaced atom, and NEVER repeat a character within a palace or within ±6 memory palaces.
 - NEVER assign a character in `PALACE_ATOMS.csv` that is not in the attached `pao_characters.csv` list (never pull characters from the web or outside the list; if no character in the list matches the primary keyword, randomly choose an eligible character from `pao_characters.csv` instead).
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving **in-scope** palaces.
@@ -276,7 +276,8 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | Facts and quotes the instruction kept are intact; a replacement drops only the deprecated facts | Yes |
 | Palace title and mnemonic_name updated if removed or changed beasts were part of their original creation | Yes |
 | Plain everyday English on concept (+ Note) / image_prompt / PREVIEW Concept; no archaic/old-fashioned/literary diction; no diction upgrades; quotes untouched; `story` left empty | Yes |
-| Each atom the instruction left alone has `concept` and `keywords` copied byte-for-byte; merged quotes are joined with ` / ` on one line | Yes |
+| Each atom the instruction left alone has `concept`, `keywords`, `character`, and `justification` copied byte-for-byte; merged quotes are joined with ` / ` on one line | Yes |
+| Every newly authored, merged, or replaced atom has a non-empty `character` exclusively from `pao_characters.csv` (respecting ±6 palaces proximity) and a non-empty `justification` | Yes |
 | A concept newly authored in this run (not copied) is 4–5 square-bracket groups; Note unchunked; quote never wrapped as concept groups | Yes |
 | A newly authored concept uses `[I use {Name} to {verb}]` plus later groups and 5–6 keyword pairs (name + infinitive + single concrete words) | Yes |
 | image_prompt refreshed per surviving **in-scope** palace | Yes |

@@ -207,11 +207,12 @@ A beast holds exactly one Knowledge Atom. Body zones are not knowledge slots.
 
 ### Characters
 
-Named public figures and copyrighted characters are not street anchors. `characters.json` is an empty catalog. Leave `character_name` blank.
-
-- Do not assign a real person, historical figure, celebrity, or copyrighted character to a street.
-- Do not put those names in `character_name`, PREVIEW titles, stories, or `image_prompt`.
-- Streets are recalled through their beasts and the place. Do not add a named character when removing streets.
+- **Street / Palace level (`character_name`):** Named public figures and copyrighted characters are not street anchors. `characters.json` is an empty catalog. Leave `character_name` blank. Do not assign a real person, historical figure, celebrity, or copyrighted character to a street, `character_name`, PREVIEW titles, stories, or `image_prompt`.
+- **Knowledge Atom level (`character` and `justification` — MANDATORY):** Every Knowledge Atom MUST have a non-empty `character` and `justification`.
+  - **Closed List Only:** Select `character` exclusively from `mnemonics/data/pao_characters.csv` (`name` column) based on the atom's primary (first) keyword (left of pair 1 in `keywords`), matching against `characteristics`, `action`, or `object`.
+  - **±6 Palaces Proximity Rule:** A character assigned to an atom MUST NOT appear in any Memory Palace within `±6` palaces of the current one (including within the same palace).
+  - **Fallback Rule:** If no character in `pao_characters.csv` directly matches the primary keyword, randomly choose any eligible character from `pao_characters.csv` respecting the `±6` palaces proximity rule. Never invent or pull a character from outside `pao_characters.csv`, and never leave `character` or `justification` empty.
+  - **Justification:** Write 1–2 concise sentences explaining how the chosen character relates to the primary keyword (or noting the character's `characteristics`/`action`/`object` if chosen via fallback), without describing beast interactions.
 
 ### Language & IPA
 
@@ -319,7 +320,7 @@ Use simple markdown `#` levels to separate topics and streets in the mnemonic li
 ### Data format strategy
 
 - **Study list:** `.md` at the topic root, sibling to `images/` (see **Standardized Directory Layout**).
-- **Data / indices:** `bestiary.json` is the canonical source for Beasts. `characters.json` is an empty catalog and is not a name pool.
+- **Data / indices:** `bestiary.json` is the canonical source for Beasts. `mnemonics/data/pao_characters.csv` is the canonical closed list of PAO Characters for Knowledge Atoms (`characters.json` is a legacy empty catalog and is not a name pool).
 
 Keep formats consistent so both humans and AI can read and update the same files.
 
@@ -330,7 +331,8 @@ Keep formats consistent so both humans and AI can read and update the same files
 | This README         | `studies/technique/README.md`                                                                       |
 | Prompts             | `studies/technique/prompts/`                                                                        |
 | Bestiary            | `studies/technique/bestiary.json`                                                                   |
-| Characters          | `studies/technique/characters.json`                                                                 |
+| PAO Characters      | `mnemonics/data/pao_characters.csv` (closed list for atom `character`)                              |
+| Characters (legacy) | `studies/technique/characters.json` (empty legacy catalog)                                          |
 | Images              | `studies/technique/images/`                                                                         |
 | Supplementary note  | `studies/technique/research/mnemonic-technique.md` (informal; canonical beasts are `bestiary.json`) |
 | Advanced strategies | `studies/technique/research/nested-memory-palaces.md` (Nested Palace / Portal Method)               |

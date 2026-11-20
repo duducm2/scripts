@@ -606,6 +606,8 @@ def synthesize_inscope_inventory(
                 lines.append(f"  Concept: {(a.get('concept') or '').strip() or '—'}")
                 lines.append(f"  Keywords: {(a.get('keywords') or '').strip() or '—'}")
                 lines.append(f"  Quote: {(a.get('quote') or '').strip() or '—'}")
+                lines.append(f"  Character: {(a.get('character') or '').strip() or '(none)'}")
+                lines.append(f"  Justification: {(a.get('justification') or '').strip() or '(none)'}")
         lines.append("")
     return "\n".join(lines)
 
@@ -646,17 +648,25 @@ def characters_used_for_range(
     data = store._load_tree()
     names: list[str] = []
     seen: set[str] = set()
+    window_lo = max(1, min(lo, before_n) - 6)
+    window_hi = max(hi, before_n) + 6
     for p in _study_palaces(data, study_id):
         n = int(p.get("palace_number") or 0)
-        if n == before_n - 1 or (lo <= n <= hi):
-            name = (p.get("character_name") or "").strip()
-            if name and name not in seen:
-                seen.add(name)
-                names.append(name)
+        if window_lo <= n <= window_hi:
+            legacy_name = (p.get("character_name") or "").strip()
+            if legacy_name and legacy_name not in seen:
+                seen.add(legacy_name)
+                names.append(legacy_name)
+            for b in _beasts_for_palace(data, p.get("id") or ""):
+                for a in _atoms_for_beast(data, b.get("id") or ""):
+                    char_name = (a.get("character") or "").strip()
+                    if char_name and char_name not in seen:
+                        seen.add(char_name)
+                        names.append(char_name)
     if not names:
-        return "Characters in bridge/in-scope: (none assigned)\n"
+        return "Characters in ±6 palaces / in-scope: (none assigned)\n"
     return (
-        "Characters in bridge/in-scope (names only):\n"
+        "Characters in ±6 palaces / in-scope (names only):\n"
         + "\n".join(f"- {n}" for n in names)
         + "\n"
     )
