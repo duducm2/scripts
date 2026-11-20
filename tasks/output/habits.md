@@ -26,8 +26,8 @@
 ⏳ 🩺 Health check-up (self-check; schedule visit if concerns)
 🔲 🐕 Apply tick and flea prevention to German Shepherd
 🔲 🐈 Apply tick and flea prevention to cats
-🔲 🐕 Give dewormer to Moka
 🔲 🥗 Buy monthly frozen meals (marmitas)
+🔲 🐕 Give dewormer to Moka
 
 ## Quarterly
 
@@ -78,7 +78,7 @@
 ### General
 
 ⏳ 🐾 Prevent heartworm when traveling to coast with pets
-🔲 💊 Pharmacological regimen interactions
+⏳ 💊 Pharmacological regimen interactions
 ⏳ 💊 Medication Monitoring (Fluvoxamina)
 ⏳ 🩺 Vaccination Plan (Follow-up, from 2025 onward)
 ⏳ 🩺 Notes from Your Records (Prior Vaccines)
@@ -88,7 +88,6 @@
 ### Monthly
 
 🔲 💻 You need to check if you made something good to add to your my personal repo just for historical purposes
-⏳ 💻 Start paying OpenCode Go if weekly limit overflows by midweek
 🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
 🔲 💰 Portfolio Allocation Strategy
 ### Bi-yearly (Every 6 months)

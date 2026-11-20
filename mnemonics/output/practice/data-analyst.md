@@ -1,6 +1,104 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Dropping External Delta Tables Like Ghosting an Ex While Keeping All Their Stuff in Your Closet</strong> · Memory Palace 33: Dropping External Delta Tables · Character: — · 1 beast · 1 atom</summary>
+
+![Memory Palace 33](images/data-analyst/33.jpg)
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### [Du] duck
+
+<img src="../../web/assets/beast-thumbs/duck.png" alt="duck" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[DROP TABLE on an external table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDROP%20TABLE%20on%20an%20external%20table%5D&color=9fd4ff" />(katana) to <img alt="[remove]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bremove%5D&color=ffd966" />(broom)] [only <img alt="[catalog]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcatalog%5D&color=ffd966" />(library card)] [<img alt="[metadata]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmetadata%5D&color=ffd966" />(label)] [while <img alt="[keeping]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bkeeping%5D&color=ffd966" />(safe)] [storage <img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(folder).] — Note: Queries fail with TABLE_OR_VIEW_NOT_FOUND, yet the S3 folder keeps the snappy.parquet data files and _delta_log JSON files intact.
+
+**Quote**
+“Databricks will delete the metadata information about this table, but it is not going to touch this S3 location, it will never ever delete that data files and things from that location.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
+<summary><strong>Creating and Inspecting Managed and External Delta Tables at a VIP Cloud Club Where Bouncers Check Your Location</strong> · Memory Palace 32: Creating and Inspecting Managed and External Delta Tables · Character: — · 5 beasts · 5 atoms</summary>
+
+![Memory Palace 32](images/data-analyst/32.jpg)
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Dt] Dark toucan
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/toucan.png" alt="Dark toucan" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[LOCATION clause]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BLOCATION%20clause%5D&color=9fd4ff" />(treasure chest) to <img alt="[tell]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btell%5D&color=ffd966" />(megaphone)] [<img alt="[Databricks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDatabricks%5D&color=ffd966" />(brick)] [my <img alt="[cloud]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcloud%5D&color=ffd966" />(raincloud)] [<img alt="[bucket]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbucket%5D&color=ffd966" />(pail)] [<img alt="[path]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpath%5D&color=ffd966" />(trail).] — Note: Adding an explicit LOCATION in DDL, CTAS, or PySpark is the only syntax change needed to register a table as EXTERNAL.
+
+**Quote**
+“All we have to tell is the location, that's the only difference from the regular create table which creates the managed table.”
+
+### [Ds] Dark skull
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/skull.png" alt="Dark skull" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[DESCRIBE EXTENDED]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDESCRIBE%20EXTENDED%5D&color=9fd4ff" />(telescope) to <img alt="[check]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcheck%5D&color=ffd966" />(checkmark)] [whether a <img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=ffd966" />(workbench)] [is <img alt="[managed]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmanaged%5D&color=ffd966" />(leash)] [or <img alt="[external]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bexternal%5D&color=ffd966" />(tent)] [and its <img alt="[location]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blocation%5D&color=ffd966" />(map pin).] — Note: Plain DESCRIBE shows only the schema and DESCRIBE DETAIL omits table type, while DESCRIBE EXTENDED lists Type and the exact storage bucket path.
+
+**Quote**
+“It tells whether the table type is managed or external, and it also tells where the table is stored, the location in the storage bucket.”
+
+### [Dr] dragonfly
+
+<img src="../../web/assets/beast-thumbs/dragonfly.png" alt="dragonfly" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Managed vs. External Delta Tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BManaged%20vs.%20External%20Delta%20Tables%5D&color=9fd4ff" />(golden scale) to <img alt="[decide]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdecide%5D&color=ffd966" />(gavel)] [who <img alt="[owns]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bowns%5D&color=ffd966" />(tag)] [the <img alt="[cloud]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcloud%5D&color=ffd966" />(raincloud)] [<img alt="[storage]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstorage%5D&color=ffd966" />(warehouse)] [<img alt="[files]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bfiles%5D&color=ffd966" />(folder).] — Note: Dropping a managed table deletes both metadata and data files, while dropping an external table deletes only Unity Catalog metadata and leaves the files untouched.
+
+**Quote**
+“Drop table on managed table deletes your data, drop table on external table does not delete your data, it only deletes the metadata.”
+
+### [Dq] Dark Quetzalcoatl
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/quetzalcoatl.png" alt="Dark Quetzalcoatl" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[saveAsTable]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BsaveAsTable%5D&color=9fd4ff" />(computer) to <img alt="[write]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwrite%5D&color=ffd966" />(pen)] [a <img alt="[Spark]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSpark%5D&color=ffd966" />(sparkler)] [<img alt="[DataFrame]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDataFrame%5D&color=ffd966" />(picture frame)] [as a <img alt="[permanent]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpermanent%5D&color=ffd966" />(concrete)] [<img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=ffd966" />(dining table).] — Note: Build the DataFrame first with StructType and StructField, chain format("delta") and mode("overwrite"), and pass the full catalog.schema.table name because SQL context may not carry over.
+
+**Quote**
+“For creating a table in Spark, you first have to create a DataFrame and then you can write that DataFrame as a table.”
+
+### [Dp] Dark panther
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/panther.png" alt="Dark panther" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[CREATE OR REPLACE TABLE]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BCREATE%20OR%20REPLACE%20TABLE%5D&color=9fd4ff" />(blueprint) to <img alt="[build]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbuild%5D&color=ffd966" />(hammer)] [an <img alt="[empty]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bempty%5D&color=ffd966" />(jar)] [Delta <img alt="[table]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btable%5D&color=ffd966" />(desk)] [with <img alt="[named]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bnamed%5D&color=ffd966" />(nametag)] [<img alt="[columns]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcolumns%5D&color=ffd966" />(pillar).] — Note: Replaces any existing table without throwing an error on reruns, adds USING DELTA plus metadata comments for AI workflows, and loads rows afterward with INSERT INTO.
+
+**Quote**
+“Create table products will throw an error if table already exist, whereas if I use create or replace table, if the table already exist, it will replace the older table and run without any problem.”
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Olympic Podium Champagne Shower on Medallion Architecture Data Layers</strong> · Memory Palace 31: Medallion Architecture Data Layers · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 31](images/data-analyst/31.png)
