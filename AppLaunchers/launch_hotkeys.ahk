@@ -116,8 +116,14 @@ LaunchF_OpenChrome() {
 ; scan / UI-ready wait / loading banner — JumpToChat still uses ActivateOrOpen.
 ; =============================================================================
 LaunchZ_OpenWhatsAppCDP() {
-    StandardLoadingBar_Show("⏳ Opening WhatsApp (CDP)…", BANNER_ACCENT_INTERMEDIATE)
-    res := ChatCDP_OpenOrFocus("whatsapp", true)
+    scriptPath := A_ScriptDir . "\AppLaunchers\launch_whatsapp_cdp.ahk"
+    try {
+        Run('"' . A_AhkPath . '" /ErrorStdOut "' . scriptPath . '"', A_ScriptDir, "Hide")
+        return
+    } catch {
+    }
+    StandardLoadingBar_Show("⏳ Opening WhatsApp (CDP)…", BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true })
+    res := ChatCDP_OpenOrFocus("whatsapp", false)
     StandardLoadingBar_Hide(0)
     if (!res.ok) {
         ChatCDP_NotifyError("whatsapp", res.error)
@@ -129,7 +135,7 @@ LaunchZ_OpenWhatsAppCDP() {
 #!+z::
 {
     if (ChatCDP_IsEnabled("whatsapp")) {
-        SetTimer(LaunchZ_OpenWhatsAppCDP, -1)
+        LaunchZ_OpenWhatsAppCDP()
         return
     }
     if (IS_WORK_ENVIRONMENT) {

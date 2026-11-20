@@ -282,37 +282,53 @@ AiCompanionCDP_KillStaleServer() {
     }
 }
 
+global g_AiCompanionCDP_LastRefreshTick := 0
+
 AiCompanionCDP_EnsureServer(&cdpUp := false) {
     if AiCompanionCDP_HealthOk(&cdpUp)
         return true
-    AiCompanionCDP_KillStaleServer()
-    Sleep 150
     py := A_ScriptDir . "\infra\cdp\ai_companion_cdp_server.py"
     if !FileExist(py)
         return false
     pyExe := AiCompanionCDP_FindPythonExe()
-    psPid := 0
-    try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide", &psPid)
-    catch {
-        return false
-    }
-    deadline := A_TickCount + 15000
-    while (A_TickCount < deadline) {
-        if AiCompanionCDP_HealthOk(&cdpUp)
-            return true
+    loop 3 {
+        AiCompanionCDP_KillStaleServer()
         Sleep 150
+        psPid := 0
+        try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide", &psPid)
+        catch {
+            Sleep 250
+            continue
+        }
+        deadline := A_TickCount + 8000
+        while (A_TickCount < deadline) {
+            if AiCompanionCDP_HealthOk(&cdpUp)
+                return true
+            Sleep 150
+        }
     }
     return false
 }
 
-QuickUpdate_RefreshCdpServer() {
+QuickUpdate_RefreshCdpServer(&cdpUp := false) {
+    global g_AiCompanionCDP_LastRefreshTick
     try {
+        g_AiCompanionCDP_LastRefreshTick := A_TickCount
         AiCompanionCDP_KillStaleServer()
-        Sleep 100
-        return AiCompanionCDP_EnsureServer()
+        Sleep 120
+        return AiCompanionCDP_EnsureServer(&cdpUp)
     } catch {
         return false
     }
+}
+
+AiCompanionCDP_TrySelfHealServer(&cdpUp := false, minIntervalMs := 2500) {
+    global g_AiCompanionCDP_LastRefreshTick
+    now := A_TickCount
+    if (g_AiCompanionCDP_LastRefreshTick > 0 && (now - g_AiCompanionCDP_LastRefreshTick) < minIntervalMs) {
+        return AiCompanionCDP_EnsureServer(&cdpUp)
+    }
+    return QuickUpdate_RefreshCdpServer(&cdpUp)
 }
 
 global g_AiCompanionCDP_LastError := ""
@@ -439,9 +455,12 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             if (ok)
                 break
             lowErr := StrLower(err)
-            isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "only_one_tab")
-            if (A_Index < maxAttempts && !isFatal && (!cdpUp || InStr(lowErr, "cdp_launch_failed") || InStr(lowErr, "cdp_not_running") || InStr(lowErr, "no_browser_context"))) {
-                Sleep 1000
+            isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "empty_model") || InStr(lowErr, "only_one_tab") || InStr(lowErr, "contact_not_found:")
+            if (A_Index < maxAttempts && !isFatal) {
+                needsBridgeHeal := InStr(lowErr, "target") || InStr(lowErr, "browser") || InStr(lowErr, "context") || InStr(lowErr, "closed") || InStr(lowErr, "cdp_") || InStr(lowErr, "connect") || InStr(lowErr, "timeout") || (A_Index >= 2)
+                if (needsBridgeHeal)
+                    AiCompanionCDP_TrySelfHealServer(&cdpUp)
+                Sleep 600
                 continue
             }
             break
@@ -455,8 +474,9 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
 
             g_AiCompanionCDP_LastError := e.Message
             lastRes := { ok: false, raw: "", error: e.Message }
-            if (A_Index < maxAttempts && !cdpUp) {
-                Sleep 1000
+            if (A_Index < maxAttempts) {
+                AiCompanionCDP_TrySelfHealServer(&cdpUp)
+                Sleep 600
                 continue
             }
             break
@@ -490,27 +510,37 @@ AiCompanionCDP_GetProcessPids() {
 }
 
 AiCompanionCDP_FindWindowHwnd(preferredHwnd := 0, companionId := "") {
-    if (preferredHwnd && WinExist("ahk_id " preferredHwnd))
-        return preferredHwnd
+    cdpPids := AiCompanionCDP_GetProcessPids()
+
+    if (preferredHwnd && WinExist("ahk_id " preferredHwnd)) {
+        if (cdpPids.Count = 0)
+            return preferredHwnd
+        try {
+            winPid := WinGetPID("ahk_id " preferredHwnd)
+            if cdpPids.Has(winPid)
+                return preferredHwnd
+        } catch {
+        }
+    }
 
     ; 1. Prefer the Chrome process launched with the dedicated GeminiCDP profile / port 9222.
-    try {
-        wmi := ComObjGet("winmgmts:")
-        procs := wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE Name='chrome.exe' AND (CommandLine LIKE '%GeminiCDP%' OR CommandLine LIKE '%remote-debugging-port=9222%')")
-        for proc in procs {
-            pid := Integer(proc.ProcessId)
+    for pid, _ in cdpPids {
+        try {
             for hwnd in WinGetList("ahk_pid " pid " ahk_class Chrome_WidgetWin_1") {
                 title := ""
                 try title := WinGetTitle("ahk_id " hwnd)
                 if (title != "")
                     return hwnd
             }
+        } catch {
         }
-    } catch {
     }
 
-    ; 2. Fallback: match visible Chrome_WidgetWin_1 windows by companion title.
-    comp := AiCompanionCDP_NormalizeCompanion(companionId)
+    ; 2. Fallback only when WMI PID lookup returned empty: match visible Chrome_WidgetWin_1 windows by companion/chat title.
+    if (cdpPids.Count > 0)
+        return 0
+    rawComp := StrLower(Trim(companionId))
+    comp := (rawComp = "whatsapp" || rawComp = "teams") ? rawComp : AiCompanionCDP_NormalizeCompanion(companionId)
     for hwnd in WinGetList("ahk_exe chrome.exe ahk_class Chrome_WidgetWin_1") {
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
@@ -518,6 +548,12 @@ AiCompanionCDP_FindWindowHwnd(preferredHwnd := 0, companionId := "") {
             continue
         if (comp = "enterprise") {
             if (InStr(title, "Vertex AI Search") || InStr(title, "AskBosch") || InStr(title, "Gemini Enterprise"))
+                return hwnd
+        } else if (comp = "whatsapp") {
+            if InStr(title, "WhatsApp")
+                return hwnd
+        } else if (comp = "teams") {
+            if InStr(title, "Teams")
                 return hwnd
         } else if (InStr(title, "Gemini")) {
             return hwnd
@@ -527,25 +563,33 @@ AiCompanionCDP_FindWindowHwnd(preferredHwnd := 0, companionId := "") {
 }
 
 AiCompanionCDP_ActivateWindow(preferredHwnd := 0, companionId := "") {
-    hwnd := AiCompanionCDP_FindWindowHwnd(preferredHwnd, companionId)
-    if (!hwnd || !WinExist("ahk_id " hwnd))
-        return 0
-    try {
-        if (WinGetMinMax("ahk_id " hwnd) = -1) {
-            WinRestore("ahk_id " hwnd)
-            Sleep 60
+    hwnd := 0
+    loop 3 {
+        hwnd := AiCompanionCDP_FindWindowHwnd(A_Index = 1 ? preferredHwnd : 0, companionId)
+        if (!hwnd || !WinExist("ahk_id " hwnd)) {
+            Sleep 150
+            continue
         }
-        if !WinActive("ahk_id " hwnd) {
-            WinActivate("ahk_id " hwnd)
-            WinWaitActive("ahk_id " hwnd, , 1.5)
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1) {
+                WinRestore("ahk_id " hwnd)
+                Sleep 60
+            }
+            if !WinActive("ahk_id " hwnd) {
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 1.0)
+            }
+            if !WinActive("ahk_id " hwnd) {
+                DllCall("User32\ShowWindow", "Ptr", hwnd, "Int", 9)
+                DllCall("User32\SetForegroundWindow", "Ptr", hwnd)
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 0.8)
+            }
+            if WinActive("ahk_id " hwnd)
+                return hwnd
+        } catch {
         }
-        if !WinActive("ahk_id " hwnd) {
-            DllCall("User32\ShowWindow", "Ptr", hwnd, "Int", 9)
-            DllCall("User32\SetForegroundWindow", "Ptr", hwnd)
-            WinActivate("ahk_id " hwnd)
-            WinWaitActive("ahk_id " hwnd, , 1.0)
-        }
-    } catch {
+        Sleep 150
     }
     return hwnd
 }

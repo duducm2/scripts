@@ -138,48 +138,83 @@ class CDPBridge:
             time.sleep(0.3)
         return False
 
+    def _reset_connection(self) -> None:
+        self._active_pages.clear()
+        self._cdp_pids.clear()
+        if self._browser is not None:
+            try:
+                self._browser.close()
+            except Exception:
+                pass
+            self._browser = None
+        if self._pw is not None:
+            try:
+                self._pw.stop()
+            except Exception:
+                pass
+            self._pw = None
+
     def _connect(self, launch_if_down: bool = False, target_url: str = CONSUMER_URL, minimized: bool = True):
         with self._connect_lock:
             if self._browser is not None:
                 try:
-                    if self._browser.is_connected() and self._browser.contexts:
+                    cdp_ok = self._is_cdp_up()
+                    hwnd_ok = (not launch_if_down) or (self._find_cdp_chrome_hwnd() != 0)
+                    if cdp_ok and hwnd_ok and self._browser.is_connected() and self._browser.contexts:
+                        _ = len(self._browser.contexts[0].pages)
                         return self._browser
                 except Exception:
-                    self._browser = None
-
-            if not self._is_cdp_up() or (launch_if_down and self._find_cdp_chrome_hwnd() == 0):
-                self._browser = None
-                if not launch_if_down:
-                    raise RuntimeError("CDP_NOT_RUNNING")
-                if not self._launch_cdp_chrome(target_url, minimized=minimized):
-                    raise RuntimeError("CDP_LAUNCH_FAILED")
-
-            if self._pw is None:
-                self._pw = sync_playwright().start()
+                    pass
+                self._reset_connection()
 
             last_exc = None
-            deadline = time.time() + 6.0
-            while time.time() < deadline:
-                try:
-                    browser = self._pw.chromium.connect_over_cdp(CDP_URL)
-                    if browser.contexts:
-                        # Playwright's connect_over_cdp sets Browser.setDownloadBehavior to
-                        # "allow" with a temp path, which saves manual downloads as UUIDs
-                        # without extensions; restore Chrome's default download handling.
-                        try:
-                            cdp = browser.new_browser_cdp_session()
+            for attempt in range(1, 4):
+                if not self._is_cdp_up() or (launch_if_down and self._find_cdp_chrome_hwnd() == 0):
+                    self._reset_connection()
+                    if not launch_if_down:
+                        raise RuntimeError("CDP_NOT_RUNNING")
+                    if not self._launch_cdp_chrome(target_url, minimized=minimized):
+                        last_exc = RuntimeError("CDP_LAUNCH_FAILED")
+                        time.sleep(0.4)
+                        continue
+
+                if self._pw is None:
+                    try:
+                        self._pw = sync_playwright().start()
+                    except Exception as exc:
+                        last_exc = exc
+                        self._reset_connection()
+                        time.sleep(0.3)
+                        continue
+
+                deadline = time.time() + 5.0
+                while time.time() < deadline:
+                    try:
+                        browser = self._pw.chromium.connect_over_cdp(CDP_URL)
+                        if browser.contexts:
+                            # Playwright's connect_over_cdp sets Browser.setDownloadBehavior to
+                            # "allow" with a temp path, which saves manual downloads as UUIDs
+                            # without extensions; restore Chrome's default download handling.
                             try:
-                                cdp.send("Browser.setDownloadBehavior", {"behavior": "default"})
-                            finally:
-                                cdp.detach()
-                        except Exception:
-                            pass
-                        self._browser = browser
-                        self._install_context_tab_trackers(browser.contexts[0])
-                        return self._browser
-                except Exception as exc:
-                    last_exc = exc
-                time.sleep(0.25)
+                                cdp = browser.new_browser_cdp_session()
+                                try:
+                                    cdp.send("Browser.setDownloadBehavior", {"behavior": "default"})
+                                finally:
+                                    cdp.detach()
+                            except Exception:
+                                pass
+                            self._browser = browser
+                            self._cdp_pids = self._query_cdp_chrome_pids()
+                            self._install_context_tab_trackers(browser.contexts[0])
+                            return self._browser
+                    except Exception as exc:
+                        last_exc = exc
+                    time.sleep(0.25)
+
+                # Connection attempt failed; reset Playwright before next attempt.
+                self._reset_connection()
+                time.sleep(0.35)
+
             if last_exc is not None:
                 raise last_exc
             raise RuntimeError("NO_BROWSER_CONTEXT")
@@ -396,39 +431,60 @@ class CDPBridge:
     def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True, active_title: str = ""):
         comp = (companion or "gemini").strip().lower()
         needle, target_url = self._companion_meta(companion)
-        browser = self._connect(launch_if_down=launch_if_down, target_url=target_url, minimized=minimized)
-        if not browser.contexts:
-            raise RuntimeError("NO_BROWSER_CONTEXT")
-        context = browser.contexts[0]
+        last_exc = None
 
-        if not new_tab:
-            matching_pages = []
-            fallback_page = None
-            is_consumer = (needle == "gemini.google.com")
-            for page in context.pages:
-                u = (page.url or "").lower()
-                if needle not in u:
-                    continue
-                if not is_consumer or "/app" in u or "/gem/" in u:
-                    matching_pages.append(page)
-                elif fallback_page is None:
-                    fallback_page = page
-            if matching_pages:
-                return self._pick_current_page(comp, matching_pages, active_title=active_title)
-            if fallback_page is not None:
-                fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
-                self._active_pages[comp] = fallback_page
-                return fallback_page
+        for attempt in range(1, 4):
+            try:
+                browser = self._connect(launch_if_down=launch_if_down, target_url=target_url, minimized=minimized)
+                if not browser.contexts:
+                    raise RuntimeError("NO_BROWSER_CONTEXT")
+                context = browser.contexts[0]
 
-        page = context.new_page()
-        page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
-        try:
-            page.bring_to_front()
-        except Exception:
-            pass
-        self._ensure_tab_tracker(page, stamp_now=True)
-        self._active_pages[comp] = page
-        return page
+                if not new_tab:
+                    matching_pages = []
+                    fallback_page = None
+                    is_consumer = (needle == "gemini.google.com")
+                    for page in list(context.pages):
+                        try:
+                            if page.is_closed():
+                                continue
+                            u = (page.url or "").lower()
+                        except Exception:
+                            continue
+                        if needle not in u:
+                            continue
+                        if not is_consumer or "/app" in u or "/gem/" in u:
+                            matching_pages.append(page)
+                        elif fallback_page is None:
+                            fallback_page = page
+                    if matching_pages:
+                        picked = self._pick_current_page(comp, matching_pages, active_title=active_title)
+                        _ = picked.url
+                        return picked
+                    if fallback_page is not None:
+                        fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
+                        self._active_pages[comp] = fallback_page
+                        return fallback_page
+
+                page = context.new_page()
+                page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
+                try:
+                    page.bring_to_front()
+                except Exception:
+                    pass
+                self._ensure_tab_tracker(page, stamp_now=True)
+                self._active_pages[comp] = page
+                return page
+            except Exception as exc:
+                last_exc = exc
+                self._reset_connection()
+                if not launch_if_down and str(exc) == "CDP_NOT_RUNNING":
+                    raise
+                time.sleep(0.35)
+
+        if last_exc is not None:
+            raise last_exc
+        raise RuntimeError("NO_BROWSER_CONTEXT")
 
     @staticmethod
     def _find_composer(page, timeout_s: float = 12.0):
@@ -493,10 +549,10 @@ class CDPBridge:
     def _find_cdp_chrome_hwnd(self, title_needle: str = "") -> int:
         user32 = ctypes.windll.user32
 
-        def _scan(cdp_pids: set[int]) -> tuple[list[int], list[int], list[int]]:
+        def _scan(cdp_pids: set[int]) -> list[int]:
             pid_matches: list[int] = []
-            matches: list[int] = []
-            chrome_fallback: list[int] = []
+            if not cdp_pids:
+                return pid_matches
 
             @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
             def enum_cb(hwnd, _lparam):
@@ -514,37 +570,25 @@ class CDPBridge:
                 title = buf.value
                 win_pid = ctypes.c_ulong(0)
                 user32.GetWindowThreadProcessId(hwnd, ctypes.byref(win_pid))
-                is_cdp = win_pid.value in cdp_pids
-                if is_cdp:
+                if win_pid.value in cdp_pids:
                     if title_needle and title_needle.lower() in title.lower():
                         pid_matches.insert(0, int(hwnd))
                     else:
                         pid_matches.append(int(hwnd))
-                    return True
-                if title_needle and title_needle.lower() in title.lower():
-                    matches.insert(0, int(hwnd))
-                elif "Gemini" in title or "AskBosch" in title or "Vertex" in title:
-                    matches.append(int(hwnd))
-                elif "Chrome" in title:
-                    chrome_fallback.append(int(hwnd))
                 return True
 
             user32.EnumWindows(enum_cb, 0)
-            return pid_matches, matches, chrome_fallback
+            return pid_matches
 
         if not self._cdp_pids:
             self._cdp_pids = self._query_cdp_chrome_pids()
-        pid_matches, matches, chrome_fallback = _scan(self._cdp_pids)
+        pid_matches = _scan(self._cdp_pids)
         if not pid_matches:
             refreshed = self._query_cdp_chrome_pids()
-            if refreshed and refreshed != self._cdp_pids:
-                self._cdp_pids = refreshed
-                pid_matches, matches, chrome_fallback = _scan(self._cdp_pids)
-        if pid_matches:
-            return pid_matches[0]
-        if matches:
-            return matches[0]
-        return chrome_fallback[0] if chrome_fallback else 0
+            self._cdp_pids = refreshed
+            if refreshed:
+                pid_matches = _scan(self._cdp_pids)
+        return pid_matches[0] if pid_matches else 0
 
     @staticmethod
     def _restore_window_via_cdp(page) -> None:
@@ -577,6 +621,28 @@ class CDPBridge:
         if user32.IsIconic(hwnd):
             user32.ShowWindow(hwnd, SW_RESTORE)
         user32.SetForegroundWindow(hwnd)
+
+    def _focus_cdp_window(self, page) -> int:
+        user32 = ctypes.windll.user32
+        hwnd = 0
+        for _ in range(3):
+            self._restore_window_via_cdp(page)
+            try:
+                page.bring_to_front()
+            except Exception:
+                pass
+            page_title = ""
+            try:
+                page_title = page.title() or ""
+            except Exception:
+                pass
+            hwnd = self._find_cdp_chrome_hwnd(page_title)
+            if hwnd:
+                self._activate_hwnd(hwnd)
+                if not user32.IsIconic(hwnd) and user32.GetForegroundWindow() == hwnd:
+                    return hwnd
+            time.sleep(0.15)
+        return hwnd
 
     @staticmethod
     def _has_stop_button(page) -> bool:
@@ -698,18 +764,7 @@ class CDPBridge:
         new_tab = bool(data.get("new_tab", False))
         page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=new_tab, minimized=not activate)
         if activate:
-            self._restore_window_via_cdp(page)
-            try:
-                page.bring_to_front()
-            except Exception:
-                pass
-            page_title = ""
-            try:
-                page_title = page.title() or ""
-            except Exception:
-                pass
-            hwnd = self._find_cdp_chrome_hwnd(page_title)
-            self._activate_hwnd(hwnd)
+            hwnd = self._focus_cdp_window(page)
             if companion.strip().lower() not in ("whatsapp", "wa", "teams", "msteams"):
                 composer = self._find_composer(page, timeout_s=6.0)
                 if composer:
@@ -1682,18 +1737,7 @@ class CDPBridge:
 
         hwnd = 0
         if activate:
-            self._restore_window_via_cdp(page)
-            try:
-                page.bring_to_front()
-            except Exception:
-                pass
-            page_title = ""
-            try:
-                page_title = page.title() or ""
-            except Exception:
-                pass
-            hwnd = self._find_cdp_chrome_hwnd(page_title)
-            self._activate_hwnd(hwnd)
+            hwnd = self._focus_cdp_window(page)
         return {"ok": True, "hwnd": hwnd}
 
 
