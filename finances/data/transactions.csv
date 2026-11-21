@@ -372,3 +372,5 @@ TX379,2026-11-20,Investment return (99 Pay),"39,33",income,CAT_INVESTIM,ACC_99PA
 TX380,2026-11-20,Investment return (Mercado Pago short-term),"91,44",income,CAT_INVESTIM,ACC_MERCADOP2,,,1,1,,0
 TX381,2026-11-20,Investment return (Mercado Pago long-term),"116,49",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
 TX382,2026-11-20,Investment return (Nubank short-term),"38,58",income,CAT_INVESTIM,ACC_TRANSITI,,,1,1,,0
+TX383,2026-11-20,Transfer from 99 Pay to Mercado Pago,"100,00",transfer,,ACC_99PAY,,ACC_MERCADOP,1,1,,0
+TX384,2026-11-20,Transfer from Nubank short-term to Mercado Pago,"100,00",transfer,,ACC_TRANSITI,,ACC_MERCADOP,1,1,,0
