@@ -359,3 +359,9 @@ TX365,2026-11-19,Transfer to Mercado Pago checking,"709,03",transfer,,ACC_MERCAD
 TX366,2026-11-19,Mason / bricklayer (new house),"700,00",expense,CAT_NEWHOUSE,ACC_MERCADOP,,,1,1,,0
 TX368,2026-11-19,Beer,"41,80",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX369,2026-11-19,Hot dogs,"56,50",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX370,2026-11-20,House maintenance serviceman,"700,00",expense,CAT_SERVICO,ACC_MERCADOP,,,1,1,,0
+TX371,2026-11-20,Received from husband,"100,00",income,CAT_TRANSFER,ACC_MERCADOP,,,1,1,,0
+TX372,2026-11-20,Restaurant lunch,"235,07",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX373,2026-11-20,Transfer Mercado Pago long-term to checking,"700,00",transfer,,ACC_MERCADOP3,,ACC_MERCADOP,1,1,,0
+TX374,2026-11-20,New smartphone SIM,"13,00",card_expense,CAT_CELULAR,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX375,2026-11-20,Grocery store,"15,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
