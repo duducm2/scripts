@@ -368,3 +368,7 @@ TX375,2026-11-20,Grocery store,"15,99",card_expense,CAT_MERCADO,ACC_MERCADOP,CAR
 TX376,2026-11-20,Meli dólares investment return,"48,61",income,CAT_INVESTIM,ACC_MELIDOLA,,,1,1,,0
 TX377,2026-11-20,FGTS salary deposit,"970,87",income,CAT_SALARIO,ACC_FGTS,,,1,1,,0
 TX378,2026-11-20,BoschLife investment return,"267,10",income,CAT_INVESTIM,ACC_BOSCHLIF,,,1,1,,0
+TX379,2026-11-20,Investment return (99 Pay),"39,33",income,CAT_INVESTIM,ACC_99PAY,,,1,1,,0
+TX380,2026-11-20,Investment return (Mercado Pago short-term),"91,44",income,CAT_INVESTIM,ACC_MERCADOP2,,,1,1,,0
+TX381,2026-11-20,Investment return (Mercado Pago long-term),"116,49",income,CAT_INVESTIM,ACC_MERCADOP3,,,1,1,,0
+TX382,2026-11-20,Investment return (Nubank short-term),"38,58",income,CAT_INVESTIM,ACC_TRANSITI,,,1,1,,0
