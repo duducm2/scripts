@@ -2991,7 +2991,7 @@ ClipAngel_FocusUnfavoriteAllConfirmYes() {
     }
 }
 
-; Confirm → suppress Clip Angel + restore prior focus → favorites filter (Ctrl+2) → select all → unmark in background.
+; Confirm → show loading bar → DB unfavall (or foreground favorites filter → select all → unmark).
 ClipAngel_UnfavoriteAllClips() {
     hwnd := ClipAngel_MainHwnd()
     hasDb := (ClipAngelDb_ExePath() != "")
@@ -3010,7 +3010,6 @@ ClipAngel_UnfavoriteAllClips() {
     ok := false
     errMsg := ""
     loadingShown := false
-    suppressed := false
     try {
         ownerOpt := wasShown ? (" Owner" . hwnd) : ""
         ; Default1 + timer focus so Enter confirms without Tab.
@@ -3030,6 +3029,16 @@ ClipAngel_UnfavoriteAllClips() {
             return false
         }
 
+        ; Show loading indicator immediately (including during ClipAngelDb_UnfavAll) and keep
+        ; Clip Angel in the foreground so the user does not switch focus mid-operation.
+        centerTarget := hwnd ? hwnd : priorHwnd
+        StandardLoadingBar_Show("⏳ Removing all favorites...", BANNER_ACCENT_INTERMEDIATE, {
+            passive: true,
+            centerOnHwnd: centerTarget,
+            fontSize: 17
+        })
+        loadingShown := true
+
         clearedCount := 0
         if (hasDb && ClipAngelDb_UnfavAll(&clearedCount)) {
             ok := true
@@ -3039,17 +3048,7 @@ ClipAngel_UnfavoriteAllClips() {
                 return false
             }
             ClipAngel_WaitChordModifiersReleased()
-            ClipAngel_BeginFavoriteSuppress(hwnd)
-            suppressed := true
-            if (priorHwnd)
-                ClipAngel_RestorePriorFocus(priorHwnd, true)
-
-            StandardLoadingBar_Show("⏳ Removing all favorites...", BANNER_ACCENT_INTERMEDIATE, {
-                passive: true,
-                centerOnHwnd: priorHwnd,
-                fontSize: 17
-            })
-            loadingShown := true
+            ClipAngel_EnsureWindowActive(hwnd, 600)
 
             root := 0
             try root := UIA.ElementFromHandle(hwnd)
@@ -3063,15 +3062,24 @@ ClipAngel_UnfavoriteAllClips() {
             }
 
             StandardLoadingBar_Update("⏳ Unfavoriting all...", BANNER_ACCENT_INTERMEDIATE)
-            try ControlSend("^a", , "ahk_id " hwnd)
-            catch {
+            ClipAngel_FocusGridIfFilterCombo()
+            ClipAngel_ReleaseChordModifiersForSend()
+            priorSendLevel := A_SendLevel
+            SendLevel 0
+            try {
+                if WinActive("ahk_id " hwnd)
+                    SendInput "^a"
+                else
+                    ControlSend("^a", , "ahk_id " hwnd)
+            } finally {
+                SendLevel priorSendLevel
             }
             Sleep 80
-            if !ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root) {
+            if (ClipAngel_SendUnmarkFavoriteAltW(hwnd) || ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root)) {
+                ok := true
+            } else {
                 errMsg := "❌ Could not unmark the selected clips."
                 ok := false
-            } else {
-                ok := true
             }
         }
     } catch Error as e {
@@ -3083,8 +3091,6 @@ ClipAngel_UnfavoriteAllClips() {
             catch {
             }
         }
-        if suppressed
-            ClipAngel_EndFavoriteSuppress(hwnd)
         ClipAngel_ReleaseAutomationLock()
     }
 

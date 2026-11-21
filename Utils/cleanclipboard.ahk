@@ -101,6 +101,20 @@ CleanClipboard_OnCancel(*) {
     ShowCenteredOverlay_Utils("Clipboard cleanup cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
+CleanClipboard_ClearOsClipboard(retries := 4) {
+    loop retries {
+        try {
+            A_Clipboard := ""
+            if (DllCall("CountClipboardFormats", "int") = 0 || A_Clipboard = "")
+                return true
+        } catch {
+        }
+        if (A_Index < retries)
+            Sleep 50
+    }
+    return false
+}
+
 CleanClipboard_Proceed(sessionId := 0) {
     global g_CleanClipboardCanceled, g_CleanClipboardInProgress, g_CleanClipboardSessionId
 
@@ -118,18 +132,13 @@ CleanClipboard_Proceed(sessionId := 0) {
         try StandardLoadingBar_CloseKeysOverlay()
         catch {
         }
-        StandardLoadingBar_Show("⏳ Cleaning clipboard in background...", BANNER_ACCENT_INTERMEDIATE, {
-            passive: true,
-            noActivate: true,
-            centerOnHwnd: 0,
-            fontSize: 17
-        })
         CleanClipboard_SetAbortHotkeys(true)
         CleanClipboardInternal(sessionId)
-    } catch {
+    } catch Error as e {
         try StandardLoadingBar_Hide(0)
         catch {
         }
+        ShowCenteredOverlay_Utils("❌ Clipboard cleanup error: " e.Message, 2500, BANNER_ACCENT_ERROR)
     } finally {
         CleanClipboard_SetAbortHotkeys(false)
         CleanClipboard_EndSession()

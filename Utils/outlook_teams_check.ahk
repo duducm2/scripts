@@ -200,20 +200,38 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0, &outRoot := 0) {
         return 0
 
     hwnd := 0
-    if (!ClipAngel_OpenForAutomation("all", 0, true, &hwnd, &outRoot, true) || !hwnd) {
-        if (!CleanClipboard_ShouldAbort(sessionId))
-            ShowCenteredOverlay_Utils("❌ Clip Angel not found — is it running?", 2500, BANNER_ACCENT_ERROR)
+    if (!ClipAngel_OpenForAutomation("all", 0, true, &hwnd, &outRoot, true) || !hwnd)
         return 0
-    }
     if (CleanClipboard_ShouldAbort(sessionId))
         return 0
     return hwnd
 }
 
-; Internal helper: Performs clipboard cleanup in the background without stealing focus.
-; sessionId: macro session from CleanClipboard_ShowCountdown; 0 = dictation legacy path (no session guard)
+CleanClipboard_UpdateProgress(pct, msg, barColor := BANNER_ACCENT_INTERMEDIATE) {
+    try StandardLoadingBar_SetProgressValue(pct)
+    catch {
+    }
+    try StandardLoadingBar_Update(msg, barColor)
+    catch {
+    }
+}
+
+CleanClipboard_FinishStatus(pct, msg, barColor, hideMs, playSuccessSound := false) {
+    CleanClipboard_UpdateProgress(pct, msg, barColor)
+    if (playSuccessSound) {
+        try PlayCleaningDesktopSound()
+        catch {
+        }
+    }
+    try StandardLoadingBar_Hide(hideMs)
+    catch {
+    }
+}
+
+; Internal helper: Performs clipboard cleanup with real step-by-step progress.
+; sessionId: macro session from CleanClipboard_ShowCountdown; 0 = dictation legacy path
 CleanClipboardInternal(sessionId := 0) {
-    global g_ClipAngelAutomationBusy
+    global g_ClipAngelAutomationBusy, g_CleanClipboardInProgress
     if (CleanClipboard_ShouldAbort(sessionId)) {
         try StandardLoadingBar_Hide(0)
         catch {
@@ -222,58 +240,94 @@ CleanClipboardInternal(sessionId := 0) {
         return
     }
 
+    ownsSession := (sessionId = 0)
+    if (ownsSession) {
+        if (g_CleanClipboardInProgress)
+            return
+        g_CleanClipboardInProgress := true
+    }
+
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
-    StandardLoadingBar_Show("⏳ Cleaning clipboard in background...", BANNER_ACCENT_INTERMEDIATE, {
-        passive: true,
+    StandardLoadingBar_Show("⏳ [1/4] Clearing Windows clipboard...", BANNER_ACCENT_INTERMEDIATE, {
+        passive: false,
+        manualProgress: true,
         noActivate: true,
         centerOnHwnd: priorHwnd,
         fontSize: 17
     })
-    ; Fast DB-direct path (with 1 brief retry on SQLITE_BUSY): deletes non-favorites without opening ClipAngel.
-    if (ClipAngelDb_ExePath() != "") {
-        deletedCount := 0
-        dbOk := ClipAngelDb_DeleteNonFav(&deletedCount)
-        if (!dbOk && !CleanClipboard_ShouldAbort(sessionId)) {
-            Sleep 200
-            dbOk := ClipAngelDb_DeleteNonFav(&deletedCount)
+    try StandardLoadingBar_SetProgressValue(15)
+    catch {
+    }
+
+    prevBusy := g_ClipAngelAutomationBusy
+    try {
+        osClipCleared := CleanClipboard_ClearOsClipboard()
+        if (CleanClipboard_ShouldAbort(sessionId)) {
+            StandardLoadingBar_Hide(0)
+            return
         }
-        if (dbOk) {
+
+        ; Fast DB-direct path (with 1 brief retry on SQLITE_BUSY): deletes non-favorites without opening ClipAngel.
+        if (ClipAngelDb_ExePath() != "") {
+            CleanClipboard_UpdateProgress(35, "⏳ [2/4] Cleaning Clip Angel database...")
+            deletedCount := 0
+            dbOk := ClipAngelDb_DeleteNonFav(&deletedCount)
+            if (!dbOk && !CleanClipboard_ShouldAbort(sessionId)) {
+                CleanClipboard_UpdateProgress(50, "⏳ [2/4] Clip Angel DB busy — retrying...")
+                Sleep 200
+                dbOk := ClipAngelDb_DeleteNonFav(&deletedCount)
+            }
             if (CleanClipboard_ShouldAbort(sessionId)) {
                 StandardLoadingBar_Hide(0)
                 return
             }
-            try A_Clipboard := ""
-            catch {
+            if (dbOk) {
+                if (osClipCleared) {
+                    detail := (deletedCount = 0) ? "already empty"
+                        : (deletedCount = 1 ? "1 clip removed" : deletedCount " clips removed")
+                    CleanClipboard_FinishStatus(100, "✅ Clipboard cleaned (" detail ")", BANNER_ACCENT_SUCCESS, 1200, true)
+                } else {
+                    CleanClipboard_FinishStatus(100, "⚠️ Clip Angel cleaned, but Windows clipboard was locked",
+                        BANNER_ACCENT_INTERMEDIATE, 2200, false)
+                }
+                return
             }
-            PlayCleaningDesktopSound()
-            StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
-            StandardLoadingBar_Hide(900)
-            return
         }
-    }
 
-    prevBusy := g_ClipAngelAutomationBusy
-    g_ClipAngelAutomationBusy := true
-    try {
-        StandardLoadingBar_Update("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
+        g_ClipAngelAutomationBusy := true
+        CleanClipboard_UpdateProgress(60, "⏳ [3/4] DB unavailable — opening Clip Angel...")
+        try ClipAngel_WaitChordModifiersReleased()
+        catch {
+        }
+        try ClipAngel_ReleaseChordModifiersForSend()
+        catch {
+        }
+
         root := 0
         hwnd := CleanClipboard_ActivateClipAngelForCleanup(sessionId, &root)
         if (!hwnd || CleanClipboard_ShouldAbort(sessionId)) {
-            StandardLoadingBar_Hide(0)
+            if (!CleanClipboard_ShouldAbort(sessionId))
+                CleanClipboard_FinishStatus(100, "❌ Failed at [3/4]: Clip Angel not running", BANNER_ACCENT_ERROR, 2500, false)
+            else
+                StandardLoadingBar_Hide(0)
             CleanClipboard_UnwindClipAngel(hwnd)
             return
         }
 
-        StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
+        CleanClipboard_UpdateProgress(75, "⏳ [3/4] Sending delete non-favorites...")
         try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE: 0ms menu-close guard
+        try ClipAngel_FocusGridIfFilterCombo()
+        catch {
+        }
         confirmed := false
         try {
             ControlSend("^!k", , "ahk_id " hwnd)
-            confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(650)
+            confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(900)
         } catch {
             confirmed := false
         }
         if (!confirmed && !CleanClipboard_ShouldAbort(sessionId)) {
+            CleanClipboard_UpdateProgress(85, "⏳ [3/4] Trying Clip menu fallback...")
             if (ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root))
                 confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500)
         }
@@ -283,21 +337,23 @@ CleanClipboardInternal(sessionId := 0) {
             return
         }
 
+        CleanClipboard_UpdateProgress(95, "⏳ [4/4] Restoring focus & finalizing...")
         CleanClipboard_UnwindClipAngel(hwnd)
         if (priorHwnd)
             ClipAngel_RestorePriorFocus(priorHwnd, true)
-        if (confirmed) {
-            try A_Clipboard := ""
-            catch {
-            }
-            PlayCleaningDesktopSound()
-            StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
-            StandardLoadingBar_Hide(900)
+
+        if (confirmed && osClipCleared) {
+            CleanClipboard_FinishStatus(100, "✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS, 1200, true)
+        } else if (confirmed && !osClipCleared) {
+            CleanClipboard_FinishStatus(100, "⚠️ Clip Angel cleaned, but Windows clipboard was locked",
+                BANNER_ACCENT_INTERMEDIATE, 2200, false)
         } else {
-            StandardLoadingBar_Update("❌ Could not clean clipboard", BANNER_ACCENT_ERROR)
-            StandardLoadingBar_Hide(1500)
+            CleanClipboard_FinishStatus(100, "❌ Failed at [3/4]: Delete confirmation did not appear",
+                BANNER_ACCENT_ERROR, 2500, false)
         }
     } finally {
         g_ClipAngelAutomationBusy := prevBusy
+        if (ownsSession)
+            g_CleanClipboardInProgress := false
     }
 }
