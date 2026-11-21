@@ -192,7 +192,7 @@ ClipAngel_HasMainWindowChildren(hwnd) {
         return false
 }
 
-ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0, skipFilterAndRow0 := false) {
+ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0, skipFilterAndRow0 := false, useNativeHotkey := true) {
     wantAll := (mode = "all" || mode = "")
     outHwnd := 0
     outRoot := 0
@@ -228,6 +228,16 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
         if (priorFg && WinActive("ahk_exe ClipAngel.exe"))
             ClipAngel_RestorePriorFocus(priorFg, true)
     } else {
+        ; Foreground open: prefer native Alt+P (reset all + Row 0) / Alt+B (favorites + Row 0)
+        ; when not skipping filter/Row 0, avoiding slow UIA MarkFilter polls.
+        if (useNativeHotkey && !skipFilterAndRow0 && ClipAngel_OpenNative(wantAll ? "p" : "b", targetMon, false)) {
+            hwnd := ClipAngel_MainHwnd()
+            if (hwnd) {
+                outHwnd := hwnd
+                outRoot := 0
+                return true
+            }
+        }
         if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false)
             return false
         hwnd := ClipAngel_MainHwnd()
@@ -245,6 +255,16 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
         outHwnd := hwnd
         outRoot := 0
         return true
+    }
+    ; Suppressed background "all": native F9 (ClearFilter + ReloadList + select top) avoids slow UIA walks.
+    if (suppressVisual && wantAll) {
+        prevDetect := A_DetectHiddenWindows
+        DetectHiddenWindows true
+        try ControlSend("{F9}", , "ahk_id " hwnd)
+        catch {
+        }
+        DetectHiddenWindows prevDetect
+        Sleep 30
     }
     root := 0
     try root := UIA.ElementFromHandle(hwnd)
@@ -266,16 +286,31 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
     return true
 }
 
-; Alt+P / Alt+B: Clip Angel's own hotkeys (Open last / Open favorites) clear filters and select the top clip.
-; Post that hotkey, then one short layout pass so a parked off-screen window still lands on the cursor monitor.
-; UIA open remains the fallback when the post does not show the window.
-ClipAngel_OpenNative(letter) {
+; Alt+P / Alt+B: Clip Angel's own native hotkeys (Open last with reset / Open favorites).
+; Post WM_HOTKEY directly, wait briefly for unpark, then synchronously place/maximize on targetMon.
+; Falls back to UIA ClipAngel_OpenWithMarkFilter only if the native post fails to show the window.
+ClipAngel_OpenNative(letter, targetMon := 0, playSound := true) {
     global g_ClipAngelFavoriteSuppressActive
     mode := (letter = "b") ? "favorites" : "all"
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
-        ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
-        return false
+        if (ProcessExist("ClipAngel.exe")) {
+            ClipAngel_DismissStartupHotkeyDialogs()
+            ClipAngel_PostHotkey(letter, "a")
+            hwnd := ClipAngel_WaitForMainHwnd(400)
+        }
+        if !hwnd {
+            ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+    }
+    if (!targetMon || targetMon < 1) {
+        targetMon := ClipAngel_GetMonitorIndexFromCursor()
+        if (!targetMon || targetMon < 1) {
+            try targetMon := MonitorGetPrimary()
+            catch
+                targetMon := 1
+        }
     }
     g_ClipAngelFavoriteSuppressActive := false
     prevDetect := A_DetectHiddenWindows
@@ -296,25 +331,26 @@ ClipAngel_OpenNative(letter) {
         return ClipAngel_OpenWithMarkFilter(mode)
     if alreadyHere
         return true
-    ClipAngel_EnsureForegroundAfterNativeOpen()
-    deadline := A_TickCount + 280
+    ; Wait briefly for native ShowForPaste to unpark the window (typically 15–40ms).
+    unparked := false
+    deadline := A_TickCount + 180
     while (A_TickCount < deadline) {
-        if ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd) {
-            mon := ClipAngel_GetMonitorIndexFromCursor()
-            onMon := true
-            if (mon >= 1) {
-                try onMon := (GetAhkMonitorIndexFromHwnd(hwnd) = mon)
-                catch
-                    onMon := true
-            }
-            if onMon {
-                try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-open.wav")
-                catch {
-                }
-                return true
+        if ClipAngel_IsWindowShown(hwnd) {
+            unparked := true
+            break
+        }
+        Sleep 15
+    }
+    if !unparked
+        unparked := ClipAngel_IsWindowShown(hwnd)
+    if unparked {
+        ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
+        if playSound {
+            try ScriptSoundPlay(A_ScriptDir "\assets\sounds\clipangel-open.wav")
+            catch {
             }
         }
-        Sleep 20
+        return true
     }
     return ClipAngel_OpenWithMarkFilter(mode)
 }
@@ -361,7 +397,7 @@ ClipAngel_OpenWithMarkFilter(mode) {
         }
         hwnd := 0
         root := 0
-        if !ClipAngel_OpenForAutomation(wantAll ? "all" : "favorites", targetMon, false, &hwnd, &root) {
+        if !ClipAngel_OpenForAutomation(wantAll ? "all" : "favorites", targetMon, false, &hwnd, &root, false, false) {
             try StandardLoadingBar_Hide(0)
             catch {
             }
@@ -866,11 +902,13 @@ ClipAngel_WaitForRestartHwnd(newPid := 0, timeoutMs := 0) {
         if (elapsed >= 700 && (lastWakeTick = 0 || (A_TickCount - lastWakeTick) >= 1200)) {
             if (!newPid || ProcessExist(newPid)) {
                 lastWakeTick := A_TickCount
-                priorSendLevel := A_SendLevel
-                SendLevel 0
-                ClipAngel_ReleaseChordModifiersForSend()
-                SendInput("!p")
-                SendLevel priorSendLevel
+                if !ClipAngel_PostHotkey("p", "a") {
+                    priorSendLevel := A_SendLevel
+                    SendLevel 0
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    SendInput("!p")
+                    SendLevel priorSendLevel
+                }
             }
         }
         Sleep CLIPANGEL_RESTART_QUALITY_POLL_MS

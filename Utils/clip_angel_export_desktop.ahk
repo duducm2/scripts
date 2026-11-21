@@ -2112,39 +2112,22 @@ HotkeyCopy_DoClipAngelEdit() {
             try originHwnd := WinGetID("A")
         originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
 
-        ActivateClipAngelWithFocusCorrection(true, originMon, true)
-        clipHwnd := ClipAngel_MainHwnd()
-        if (!clipHwnd) {
+        if (!ClipAngel_OpenNative("p", originMon, false)) {
             StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
             return
         }
-
-        if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
+        clipHwnd := ClipAngel_MainHwnd()
+        if (!clipHwnd || !WinWaitActive("ahk_id " clipHwnd, , 0.5)) {
             StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
             return
         }
 
         StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
-        ClipAngel_LeaveFavoritesFilter(clipHwnd)
         priorSendLevel := A_SendLevel
         SendLevel 0
-        SendInput "{Tab}"
-        Sleep 40
-        SendInput "^a"
-        Sleep 40
-        SendInput "^c"
-        try ClipWait(0.3)
-        catch {
-        }
-        SendInput "{F10}"
-        ClipAngel_UiaWaitPreviewFocused(clipHwnd, 150)
-        SendInput "{Up}"
-        Sleep 40
         SendInput "{F4}"
         SendLevel priorSendLevel
 
-        StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
-        TryMaximizeWindow(clipHwnd)
         StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
     } finally {
         StandardLoadingBar_Hide(350)

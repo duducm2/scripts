@@ -54,9 +54,10 @@
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
-; Alt+P opens all marks. Alt+B opens favorites. Native Clip Angel hotkey, UIA only if that does not show.
-!p:: ClipAngel_OpenNative("p")
-!b:: ClipAngel_OpenNative("b")
+; Alt+P opens all marks (reset). Alt+B opens favorites. Hook hotkeys ($!) avoid Win32 RegisterHotKey
+; collision with Clip Angel's native Alt+P / Alt+B registration while keeping monitor layout + sound.
+$!p:: ClipAngel_OpenNative("p")
+$!b:: ClipAngel_OpenNative("b")
 
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)

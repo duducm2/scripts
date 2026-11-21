@@ -53,20 +53,14 @@ CLIPANGEL_WAS7_HOLD_MS := 200
         hideMs := 350
         StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
         try {
-            hwnd := 0
-            root := 0
-            if !ClipAngel_OpenForAutomation("all", 0, false, &hwnd, &root) {
+            if !ClipAngel_OpenNative("p", 0, false) {
                 StandardLoadingBar_Update("❌ Clip Angel is not running.", BANNER_ACCENT_ERROR)
                 hideMs := 2000
                 return
             }
-            if !ClipAngel_EnsureWindowActive(hwnd) {
+            hwnd := ClipAngel_MainHwnd()
+            if (!hwnd || !ClipAngel_EnsureWindowActive(hwnd, 400)) {
                 StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
-                hideMs := 2000
-                return
-            }
-            if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
-                StandardLoadingBar_Update("❌ Clip Angel: list not ready", BANNER_ACCENT_ERROR)
                 hideMs := 2000
                 return
             }
