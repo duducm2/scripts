@@ -101,7 +101,7 @@ CleanClipboard_OnCancel(*) {
     ShowCenteredOverlay_Utils("Clipboard cleanup cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
-CleanClipboard_ClearOsClipboard(retries := 4) {
+CleanClipboard_ClearOsClipboard(retries := 6) {
     loop retries {
         try {
             A_Clipboard := ""
@@ -135,10 +135,13 @@ CleanClipboard_Proceed(sessionId := 0) {
         CleanClipboard_SetAbortHotkeys(true)
         CleanClipboardInternal(sessionId)
     } catch Error as e {
+        try CleanClipboard_LogError(0, "Proceed", e.Message)
+        catch {
+        }
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        ShowCenteredOverlay_Utils("❌ Clipboard cleanup error: " e.Message, 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ Clipboard cleanup error: " e.Message, 3500, BANNER_ACCENT_ERROR)
     } finally {
         CleanClipboard_SetAbortHotkeys(false)
         CleanClipboard_EndSession()

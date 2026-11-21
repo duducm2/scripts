@@ -2317,23 +2317,29 @@ ClipAngel_UiaWaitUnmarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
         "Desmarcar favorito"], timeoutMs)
 }
 
-ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root := 0) {
+ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root := 0,
+    topMenuSavedId := "Clip", topMenuAutoId := "clipToolStripMenuItem", topMenuNames := 0) {
     global g_ClipAngelFavoriteSuppressActive
     if !hwnd
         return false
+    if !IsObject(topMenuNames)
+        topMenuNames := ["Clip", "Recortar"]
     try {
         if !root {
             root := UIA.ElementFromHandle(hwnd)
             if !root
                 return false
         }
-        clipMenu := ClipAngel_TrySavedMenu(root, "Clip")
-        if !clipMenu
-            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, AutomationId: "clipToolStripMenuItem" })
-        if !clipMenu
-            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Recortar" })
-        if !clipMenu
-            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        clipMenu := ClipAngel_TrySavedMenu(root, topMenuSavedId)
+        if !clipMenu && topMenuAutoId != ""
+            clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, AutomationId: topMenuAutoId })
+        if !clipMenu {
+            for tName in topMenuNames {
+                clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: tName })
+                if clipMenu
+                    break
+            }
+        }
         if !clipMenu {
             try {
                 ms := root.FindFirst({ AutomationId: "menuStrip1" })
@@ -2343,7 +2349,16 @@ ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root :=
                         nm := ""
                         try aid := mi.AutomationId
                         try nm := mi.Name
-                        if (aid = "clipToolStripMenuItem" || nm = "Clip" || nm = "Recortar") {
+                        matchedTop := (topMenuAutoId != "" && aid = topMenuAutoId)
+                        if !matchedTop {
+                            for tName in topMenuNames {
+                                if (nm = tName) {
+                                    matchedTop := true
+                                    break
+                                }
+                            }
+                        }
+                        if (matchedTop) {
                             clipMenu := mi
                             break
                         }
@@ -2356,12 +2371,18 @@ ClipAngel_InvokeClipMenuFavoriteItem(hwnd, savedId, automationId, names, root :=
             if !ClipAngel_UiaInvokeElement(clipMenu) {
                 if g_ClipAngelFavoriteSuppressActive
                     return false
-                ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+                if (topMenuAutoId = "clipToolStripMenuItem")
+                    ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+                else
+                    return false
             }
         } else {
             if g_ClipAngelFavoriteSuppressActive
                 return false
-            ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+            if (topMenuAutoId = "clipToolStripMenuItem")
+                ClipAngel_OpenClipMenuViaKeyboard(hwnd)
+            else
+                return false
         }
         item := ClipAngel_TrySavedMenu(root, savedId)
         if !item
@@ -2453,12 +2474,33 @@ ClipAngel_InvokeUnmarkFavoriteViaMenu(hwnd, root := 0) {
 
 ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root := 0) {
     return ClipAngel_InvokeClipMenuFavoriteItem(hwnd, "DeleteNonFavorites",
-        "deleteNonFavoriteClipsToolStripMenuItem",
-        ["Delete all non-favorite clips", "Delete all non-favorite", "Excluir todos os clipes não favoritos"],
-        root)
+        "deleteAllNonFavoriteToolStripMenuItem",
+        ["Delete all non favorite", "Delete all non-favorite", "Delete all non-favorite clips",
+        "Excluir todos os clipes não favoritos"],
+        root, "List", "listToolStripMenuItem", ["List", "Lista"])
+}
+
+; Trigger ClipAngel.Main.ClearFilter() -> ReloadList() in the background (F7) so
+; its in-memory DataTable drops rows deleted directly from db.sqlite.
+ClipAngel_TriggerBackgroundReloadList(hwnd := 0) {
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        ControlSend("{F7}", , "ahk_id " hwnd)
+        return true
+    } catch {
+        return false
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
 }
 
 ; Confirm Clip Angel's delete-non-favorites #32770 prompt in the background without stealing focus.
+; Sends ControlClick + BM_CLICK + WM_COMMAND(IDYES) and verifies the dialog actually closes.
 ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(timeoutMs := 1200) {
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
@@ -2466,21 +2508,22 @@ ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(timeoutMs := 1200) {
             try WinSetTransparent(0, "ahk_id " dlgHwnd)
             catch {
             }
-            clicked := false
-            try {
-                ControlClick("Button1", "ahk_id " dlgHwnd, , "Left", 1, "NA")
-                clicked := true
-            } catch {
-                clicked := false
+            try ControlClick("Button1", "ahk_id " dlgHwnd, , "Left", 1, "NA")
+            catch {
             }
-            if !clicked {
-                try {
-                    PostMessage(0x00F5, 0, 0, "Button1", "ahk_id " dlgHwnd) ; BM_CLICK
-                    clicked := true
-                } catch {
-                }
+            try PostMessage(0x00F5, 0, 0, "Button1", "ahk_id " dlgHwnd) ; BM_CLICK
+            catch {
             }
-            if clicked
+            try PostMessage(0x0111, 6, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDYES
+            catch {
+            }
+            closeDeadline := A_TickCount + 350
+            while (A_TickCount < closeDeadline) {
+                if !WinExist("ahk_id " dlgHwnd)
+                    return true
+                Sleep 20
+            }
+            if !WinExist("ahk_id " dlgHwnd)
                 return true
         }
         Sleep 25
