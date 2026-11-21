@@ -5,7 +5,7 @@
 ; =============================================================================
 
 ChatCDP_IniPath() {
-    return A_ScriptDir . "\assets\data\chat_cdp_mode.ini"
+    return _AiCDP_RepoRoot() . "\assets\data\chat_cdp_mode.ini"
 }
 
 ChatCDP_IsEnabled(app := "") {
@@ -25,10 +25,18 @@ ChatCDP_IsEnabled(app := "") {
     return defaultVal != "off"
 }
 
+ChatCDP_AppMeta(appNorm) {
+    if (appNorm = "teams")
+        return { url: "https://teams.microsoft.com", needle: "teams.microsoft.com" }
+    return { url: "https://web.whatsapp.com", needle: "web.whatsapp.com" }
+}
+
 ChatCDP_OpenOrFocus(app := "whatsapp", activate := true) {
     appNorm := StrLower(Trim(app))
     if (appNorm != "whatsapp" && appNorm != "teams")
         return { ok: false, hwnd: 0, error: "Unsupported chat app" }
+
+    ; Layer 1: Python CDP bridge (/ensure) with built-in retry & self-heal.
     res := AiCompanionCDP_Post("/ensure", Map(
         "companion", appNorm,
         "activate", activate ? true : false,
@@ -36,9 +44,26 @@ ChatCDP_OpenOrFocus(app := "whatsapp", activate := true) {
         "launch_if_down", true
     ), 60000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
-    if (res.ok && activate)
-        hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)
-    return { ok: res.ok, hwnd: hwnd, error: res.error }
+    if (res.ok) {
+        if (activate)
+            hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)
+        return { ok: true, hwnd: hwnd, error: "" }
+    }
+
+    ; Layer 2: Silent direct CDP HTTP fallback on port 9222 (reuses existing Gemini CDP window).
+    meta := ChatCDP_AppMeta(appNorm)
+    if AiCompanionCDP_IsChromeCdpUp(800) {
+        direct := AiCompanionCDP_DirectOpenUrl(meta.url, meta.needle, activate, appNorm)
+        if (direct.ok)
+            return direct
+    }
+
+    ; Layer 3: Silent direct CDP Chrome cold-launch fallback.
+    launched := AiCompanionCDP_DirectLaunchChrome(meta.url, !activate, 15000, appNorm)
+    if (launched.ok)
+        return launched
+
+    return { ok: false, hwnd: hwnd, error: res.error }
 }
 
 ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate := false) {
@@ -67,8 +92,10 @@ ChatCDP_NotifyError(app, rawErr := "") {
     low := StrLower(err)
     if (InStr(low, "auth_required"))
         msg := "❌ " . label . " (CDP): Sign in required in CDP Chrome — press Win+Alt+Shift+I or open " . label . " Web in CDP Chrome"
-    else if (InStr(low, "cdp_not_running") || InStr(low, "cdp_unreachable") || InStr(low, "econnrefused"))
-        msg := "❌ " . label . " (CDP): CDP Chrome is not open — press Win+Alt+Shift+I to open it"
+    else if (InStr(low, "cdp_not_running") || InStr(low, "cdp_unreachable") || InStr(low, "cdp_launch_failed") || InStr(low, "econnrefused"))
+        msg := "❌ " . label . " (CDP): Could not open CDP Chrome — press Win+Alt+Shift+I to open it"
+    else if (InStr(low, "0x80072efd") || InStr(low, "winhttp") || InStr(low, "conexão com o servidor") || InStr(low, "connection with the server") || InStr(low, "cdp server unavailable"))
+        msg := "❌ " . label . " (CDP): Local CDP bridge unreachable after retries — try Win+Alt+Shift+I"
     else if (InStr(low, "contact_not_found:"))
         msg := "❌ " . label . " (CDP): Contact not found — " . Trim(SubStr(err, 19))
     else

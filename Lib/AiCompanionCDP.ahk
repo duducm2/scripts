@@ -6,6 +6,24 @@
 ; =============================================================================
 
 global AI_COMPANION_CDP_PORT := 8768
+global AI_COMPANION_CDP_CHROME_PORT := 9222
+
+_AiCDP_RepoRoot() {
+    static root := ""
+    if (root != "")
+        return root
+    try {
+        SplitPath(A_LineFile, , &libDir)
+        SplitPath(libDir, , &parentDir)
+        if (parentDir != "" && FileExist(parentDir . "\infra\cdp\ai_companion_cdp_server.py")) {
+            root := parentDir
+            return root
+        }
+    } catch {
+    }
+    root := A_ScriptDir
+    return root
+}
 
 AiCompanionMode_Get() {
     return "cdp"
@@ -231,7 +249,7 @@ AiCompanionCDP_HealthOk(&cdpUp := false) {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
         try whr.SetProxy(1)
         whr.Open("GET", "http://127.0.0.1:" . AI_COMPANION_CDP_PORT . "/health", false)
-        whr.SetTimeouts(400, 400, 1000, 1000)
+        whr.SetTimeouts(800, 800, 2000, 2000)
         whr.Send()
         if (whr.Status != 200)
             return false
@@ -287,7 +305,8 @@ global g_AiCompanionCDP_LastRefreshTick := 0
 AiCompanionCDP_EnsureServer(&cdpUp := false) {
     if AiCompanionCDP_HealthOk(&cdpUp)
         return true
-    py := A_ScriptDir . "\infra\cdp\ai_companion_cdp_server.py"
+    repoRoot := _AiCDP_RepoRoot()
+    py := repoRoot . "\infra\cdp\ai_companion_cdp_server.py"
     if !FileExist(py)
         return false
     pyExe := AiCompanionCDP_FindPythonExe()
@@ -295,7 +314,7 @@ AiCompanionCDP_EnsureServer(&cdpUp := false) {
         AiCompanionCDP_KillStaleServer()
         Sleep 150
         psPid := 0
-        try Run(pyExe . ' -u "' . py . '"', A_ScriptDir, "Hide", &psPid)
+        try Run(pyExe . ' -u "' . py . '"', repoRoot, "Hide", &psPid)
         catch {
             Sleep 250
             continue
@@ -348,8 +367,8 @@ AiCompanionCDP_FormatError(rawErr := "", companionId := "") {
         return "Sign in required in CDP Chrome — press Win+Alt+Shift+I to open " . compLabel . " (CDP) and log in"
     if (InStr(low, "cdp_not_running") || InStr(low, "cdp_launch_failed") || InStr(low, "cdp_unreachable") || InStr(low, "econnrefused"))
         return "CDP Chrome is not open — press Win+Alt+Shift+I to open " . compLabel
-    if (InStr(low, "cdp server unavailable"))
-        return "CDP bridge failed to start — check Python / port 8768"
+    if (InStr(low, "cdp server unavailable") || InStr(low, "0x80072efd") || InStr(low, "winhttp") || InStr(low, "conexão com o servidor") || InStr(low, "connection with the server"))
+        return "CDP bridge unavailable — check Python / port 8768"
     if (InStr(low, "composer_not_found"))
         return compLabel . " prompt box not found — wait for page load or sign in"
     if (InStr(low, "no_response_found"))
@@ -458,8 +477,16 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "empty_model") || InStr(lowErr, "only_one_tab") || InStr(lowErr, "contact_not_found:")
             if (A_Index < maxAttempts && !isFatal) {
                 needsBridgeHeal := InStr(lowErr, "target") || InStr(lowErr, "browser") || InStr(lowErr, "context") || InStr(lowErr, "closed") || InStr(lowErr, "cdp_") || InStr(lowErr, "connect") || InStr(lowErr, "timeout") || (A_Index >= 2)
-                if (needsBridgeHeal)
-                    AiCompanionCDP_TrySelfHealServer(&cdpUp)
+                if (needsBridgeHeal) {
+                    if !AiCompanionCDP_TrySelfHealServer(&cdpUp) {
+                        Sleep 300
+                        if !AiCompanionCDP_EnsureServer(&cdpUp) {
+                            g_AiCompanionCDP_LastError := "CDP server unavailable"
+                            lastRes := { ok: false, raw: "", error: "CDP server unavailable" }
+                            break
+                        }
+                    }
+                }
                 Sleep 600
                 continue
             }
@@ -475,7 +502,14 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             g_AiCompanionCDP_LastError := e.Message
             lastRes := { ok: false, raw: "", error: e.Message }
             if (A_Index < maxAttempts) {
-                AiCompanionCDP_TrySelfHealServer(&cdpUp)
+                if !AiCompanionCDP_TrySelfHealServer(&cdpUp) {
+                    Sleep 300
+                    if !AiCompanionCDP_EnsureServer(&cdpUp) {
+                        g_AiCompanionCDP_LastError := "CDP server unavailable"
+                        lastRes := { ok: false, raw: "", error: "CDP server unavailable" }
+                        break
+                    }
+                }
                 Sleep 600
                 continue
             }
@@ -488,6 +522,125 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
         }
     }
     return lastRes
+}
+
+; --- Direct Chrome CDP HTTP helpers (port 9222 fallback) ---------------------
+
+AiCompanionCDP_IsChromeCdpUp(timeoutMs := 600) {
+    global AI_COMPANION_CDP_CHROME_PORT
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        try whr.SetProxy(1)
+        whr.Open("GET", "http://127.0.0.1:" . AI_COMPANION_CDP_CHROME_PORT . "/json/version", false)
+        whr.SetTimeouts(timeoutMs, timeoutMs, timeoutMs, timeoutMs)
+        whr.Send()
+        return (whr.Status = 200)
+    } catch {
+        return false
+    }
+}
+
+_AiCDP_FindChromeExe() {
+    candidates := [
+        EnvGet("ProgramFiles") . "\Google\Chrome\Application\chrome.exe",
+        EnvGet("ProgramFiles(x86)") . "\Google\Chrome\Application\chrome.exe",
+        EnvGet("LOCALAPPDATA") . "\Google\Chrome\Application\chrome.exe"
+    ]
+    for c in candidates {
+        if (c != "" && FileExist(c))
+            return '"' . c . '"'
+    }
+    return "chrome.exe"
+}
+
+AiCompanionCDP_DirectOpenUrl(targetUrl, matchNeedle := "", activate := false, companionId := "") {
+    global AI_COMPANION_CDP_CHROME_PORT
+    baseUrl := "http://127.0.0.1:" . AI_COMPANION_CDP_CHROME_PORT
+    if !AiCompanionCDP_IsChromeCdpUp(800)
+        return { ok: false, hwnd: 0, error: "CDP_NOT_RUNNING" }
+
+    ; 1. Check /json/list for an already-open tab matching matchNeedle and activate it.
+    if (matchNeedle != "") {
+        try {
+            whr := ComObject("WinHttp.WinHttpRequest.5.1")
+            try whr.SetProxy(1)
+            whr.Open("GET", baseUrl . "/json/list", false)
+            whr.SetTimeouts(800, 800, 2000, 2000)
+            whr.Send()
+            if (whr.Status = 200) {
+                raw := whr.ResponseText
+                needleLow := StrLower(matchNeedle)
+                pos := 1
+                while (RegExMatch(raw, "\{[^{}]*\}", &m, pos)) {
+                    obj := m[0]
+                    pos := m.Pos + m.Len
+                    if (_AiCDP_JsonGetStr(obj, "type", "") != "page")
+                        continue
+                    tabUrl := StrLower(_AiCDP_JsonGetStr(obj, "url", ""))
+                    if !InStr(tabUrl, needleLow)
+                        continue
+                    tabId := _AiCDP_JsonGetStr(obj, "id", "")
+                    if (tabId != "") {
+                        try {
+                            act := ComObject("WinHttp.WinHttpRequest.5.1")
+                            try act.SetProxy(1)
+                            act.Open("GET", baseUrl . "/json/activate/" . tabId, false)
+                            act.SetTimeouts(800, 800, 2000, 2000)
+                            act.Send()
+                        } catch {
+                        }
+                        hwnd := activate ? AiCompanionCDP_ActivateWindow(0, companionId) : AiCompanionCDP_FindWindowHwnd(0, companionId)
+                        return { ok: true, hwnd: hwnd, error: "" }
+                    }
+                }
+            }
+        } catch {
+        }
+    }
+
+    ; 2. No matching tab yet — open a new tab directly inside the running CDP Chrome window.
+    for method in ["PUT", "GET"] {
+        try {
+            whr := ComObject("WinHttp.WinHttpRequest.5.1")
+            try whr.SetProxy(1)
+            whr.Open(method, baseUrl . "/json/new?" . targetUrl, false)
+            whr.SetTimeouts(1000, 1000, 4000, 4000)
+            whr.Send()
+            if (whr.Status >= 200 && whr.Status < 300) {
+                hwnd := activate ? AiCompanionCDP_ActivateWindow(0, companionId) : AiCompanionCDP_FindWindowHwnd(0, companionId)
+                return { ok: true, hwnd: hwnd, error: "" }
+            }
+        } catch {
+        }
+    }
+    return { ok: false, hwnd: 0, error: "CDP_DIRECT_OPEN_FAILED" }
+}
+
+AiCompanionCDP_DirectLaunchChrome(targetUrl, minimized := true, waitMs := 15000, companionId := "") {
+    if AiCompanionCDP_IsChromeCdpUp(600)
+        return AiCompanionCDP_DirectOpenUrl(targetUrl, "", !minimized, companionId)
+
+    cdpProfile := EnvGet("LOCALAPPDATA") . "\GeminiCDP"
+    chromeExe := _AiCDP_FindChromeExe()
+    cmd := chromeExe . ' --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --disable-features=CalculateNativeWindowOcclusion --disable-backgrounding-occluded-windows'
+    if (minimized)
+        cmd .= " --start-minimized"
+    cmd .= ' "' . targetUrl . '"'
+
+    try Run(cmd, , minimized ? "Min" : "")
+    catch {
+        return { ok: false, hwnd: 0, error: "CDP_LAUNCH_FAILED" }
+    }
+
+    deadline := A_TickCount + waitMs
+    while (A_TickCount < deadline) {
+        if AiCompanionCDP_IsChromeCdpUp(500) {
+            hwnd := minimized ? AiCompanionCDP_FindWindowHwnd(0, companionId) : AiCompanionCDP_ActivateWindow(0, companionId)
+            return { ok: true, hwnd: hwnd, error: "" }
+        }
+        Sleep 300
+    }
+    return { ok: false, hwnd: 0, error: "CDP_LAUNCH_FAILED" }
 }
 
 ; --- High-level Companion Operations -----------------------------------------
@@ -677,7 +830,7 @@ AiCompanionCDP_CopyLast(companionId := "", isCode := false, playChimeAndNotify :
         return false
     }
     if (playChimeAndNotify) {
-        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+        try ScriptSoundPlay(_AiCDP_RepoRoot() . "\assets\sounds\copy.wav")
         catch {
         }
         try ShowCenteredOverlay_Utils(isCode ? "Code copied!" : "Copied!", 800, BANNER_ACCENT_SUCCESS)

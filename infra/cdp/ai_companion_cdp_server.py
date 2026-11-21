@@ -7,11 +7,13 @@ and executes all companion actions in the background without stealing OS focus, 
 from __future__ import annotations
 
 import ctypes
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import queue
 import shutil
+import struct
 import subprocess
 import sys
 import threading
@@ -95,17 +97,23 @@ class CDPBridge:
                 pass
         return "chrome.exe"
 
-    def _launch_cdp_chrome(self, target_url: str, minimized: bool = True) -> bool:
+    def _launch_cdp_chrome(self, target_url: str, minimized: bool = True, force_restart: bool = False) -> bool:
         local_app = os.environ.get("LOCALAPPDATA", "")
         profile_dir = str(Path(local_app) / "GeminiCDP") if local_app else "GeminiCDP"
 
-        if not self._is_cdp_up() or self._find_cdp_chrome_hwnd() == 0:
+        # Never terminate a live CDP Chrome instance that is already responding on port 9222,
+        # unless force_restart=True was explicitly requested for a confirmed zombie browser.
+        if not force_restart and self._is_cdp_up():
+            return True
+
+        if force_restart or not self._is_cdp_up():
             try:
                 subprocess.run(
-                    ["powershell.exe", "-NoProfile", "-Command", 
+                    ["powershell.exe", "-NoProfile", "-Command",
                      "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -match 'GeminiCDP' } | Invoke-CimMethod -MethodName Terminate"],
                     shell=False,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+                    timeout=6.0,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000),
                 )
                 time.sleep(0.5)
             except Exception:
@@ -158,9 +166,9 @@ class CDPBridge:
         with self._connect_lock:
             if self._browser is not None:
                 try:
-                    cdp_ok = self._is_cdp_up()
-                    hwnd_ok = (not launch_if_down) or (self._find_cdp_chrome_hwnd() != 0)
-                    if cdp_ok and hwnd_ok and self._browser.is_connected() and self._browser.contexts:
+                    # Trust CDP port 9222 + live Playwright context; never kill an open CDP Chrome
+                    # just because Win32 HWND enumeration missed a minimized/occluded window.
+                    if self._is_cdp_up() and self._browser.is_connected() and self._browser.contexts:
                         _ = len(self._browser.contexts[0].pages)
                         return self._browser
                 except Exception:
@@ -169,11 +177,17 @@ class CDPBridge:
 
             last_exc = None
             for attempt in range(1, 4):
-                if not self._is_cdp_up() or (launch_if_down and self._find_cdp_chrome_hwnd() == 0):
+                if not self._is_cdp_up():
+                    # Brief grace poll in case CDP Chrome is currently starting up.
+                    grace_deadline = time.time() + (1.5 if attempt == 1 else 0.5)
+                    while time.time() < grace_deadline and not self._is_cdp_up():
+                        time.sleep(0.25)
+
+                if not self._is_cdp_up():
                     self._reset_connection()
                     if not launch_if_down:
                         raise RuntimeError("CDP_NOT_RUNNING")
-                    if not self._launch_cdp_chrome(target_url, minimized=minimized):
+                    if not self._launch_cdp_chrome(target_url, minimized=minimized, force_restart=False):
                         last_exc = RuntimeError("CDP_LAUNCH_FAILED")
                         time.sleep(0.4)
                         continue
@@ -213,6 +227,10 @@ class CDPBridge:
 
                 # Connection attempt failed; reset Playwright before next attempt.
                 self._reset_connection()
+                # If port 9222 responds but Playwright still cannot connect on attempt 2,
+                # treat it as a broken/zombie Chrome and force-restart once before attempt 3.
+                if attempt == 2 and launch_if_down:
+                    self._launch_cdp_chrome(target_url, minimized=minimized, force_restart=True)
                 time.sleep(0.35)
 
             if last_exc is not None:
@@ -524,8 +542,40 @@ class CDPBridge:
         return False
 
     @staticmethod
-    def _query_cdp_chrome_pids() -> set[int]:
+    def _query_cdp_port_pid(port: int = 9222) -> int:
+        """Fast (<1ms) Win32 TCP listener PID lookup for 127.0.0.1:<port> with zero subprocesses."""
+        try:
+            iphlpapi = ctypes.windll.iphlpapi
+            AF_INET = 2
+            TCP_TABLE_OWNER_PID_LISTENER = 3
+            size = ctypes.c_uint32(0)
+            res = iphlpapi.GetExtendedTcpTable(None, ctypes.byref(size), False, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0)
+            if size.value <= 0:
+                return 0
+            buf = ctypes.create_string_buffer(size.value)
+            res = iphlpapi.GetExtendedTcpTable(buf, ctypes.byref(size), False, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0)
+            if res != 0:
+                return 0
+            num_entries = struct.unpack_from("<I", buf, 0)[0]
+            for i in range(num_entries):
+                offset = 4 + i * 24
+                if offset + 24 > size.value:
+                    break
+                _, _, raw_port, _, _, owning_pid = struct.unpack_from("<6I", buf, offset)
+                local_port = ((raw_port & 0xFF) << 8) | ((raw_port >> 8) & 0xFF)
+                if local_port == port and owning_pid > 0:
+                    return int(owning_pid)
+        except Exception:
+            pass
+        return 0
+
+    @classmethod
+    def _query_cdp_chrome_pids(cls) -> set[int]:
         pids: set[int] = set()
+        port_pid = cls._query_cdp_port_pid(9222)
+        if port_pid > 0:
+            pids.add(port_pid)
+            return pids
         try:
             out = subprocess.check_output(
                 [
@@ -1812,6 +1862,42 @@ _STARTUP_FILE_SIG = _file_sig()
 BRIDGE = CDPBridge()
 
 
+class _PlaywrightWorker:
+    """Dedicated single-thread executor preserving Playwright's greenlet thread affinity
+    while allowing ThreadingHTTPServer to serve /health without blocking."""
+
+    def __init__(self) -> None:
+        self._q: queue.Queue = queue.Queue()
+        self.busy: bool = False
+        self._thread = threading.Thread(target=self._run, name="cdp-playwright-worker", daemon=True)
+        self._thread.start()
+
+    def _run(self) -> None:
+        while True:
+            fn, data, done, box = self._q.get()
+            self.busy = True
+            try:
+                box["result"] = fn(data)
+            except Exception as exc:
+                box["error"] = exc
+            finally:
+                self.busy = False
+                done.set()
+                self._q.task_done()
+
+    def submit(self, fn, data: dict):
+        done = threading.Event()
+        box: dict = {}
+        self._q.put((fn, data, done, box))
+        done.wait()
+        if "error" in box:
+            raise box["error"]
+        return box.get("result")
+
+
+WORKER = _PlaywrightWorker()
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -1834,6 +1920,7 @@ class Handler(BaseHTTPRequestHandler):
                 "ok": True,
                 "stale": _file_sig() != _STARTUP_FILE_SIG,
                 "cdp_up": BRIDGE._is_cdp_up(),
+                "busy": WORKER.busy,
             })
             return
         self._send_json(404, {"ok": False, "error": "NOT_FOUND"})
@@ -1868,7 +1955,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(404, {"ok": False, "error": "NOT_FOUND"})
             return
         try:
-            res = fn(data)
+            res = WORKER.submit(fn, data)
             self._send_json(200, res)
         except Exception as exc:
             self._send_json(500, {"ok": False, "error": str(exc)})
@@ -1886,8 +1973,9 @@ def _is_healthy_bridge_up() -> bool:
         return False
 
 
-class SingleInstanceHTTPServer(HTTPServer):
+class SingleInstanceHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = False
+    daemon_threads = True
 
 
 def main() -> int:
