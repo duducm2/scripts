@@ -90,6 +90,9 @@
 🔲 💻 You need to check if you made something good to add to your my personal repo just for historical purposes
 🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
 🔲 💰 Portfolio Allocation Strategy
+### Quarterly
+
+🔲 The next time I go to the dramatologist, ask for the version of your sunscreen that has color in it
 ### Bi-yearly (Every 6 months)
 
 🩺 Tomar vermífugo
