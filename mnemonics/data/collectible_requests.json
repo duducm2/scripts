@@ -1,12 +1,10 @@
 {
-  "pending_slot": "",
-  "pending_palace_id": "",
+  "pending_slot": "trophy",
+  "pending_palace_id": "PALACE_DATAANALYST_28",
   "cycle": [
     "trophy"
   ],
   "recent_looks": [
-    "a porcelain figurine",
-    "a batik motif",
     "a watercolor study",
     "a cast bronze miniature",
     "an enamel badge",
@@ -16,6 +14,8 @@
     "an oil painting of one object",
     "a wax-seal impression",
     "an ink wash painting",
-    "a hand-built clay figure"
+    "a hand-built clay figure",
+    "a glossy studio object",
+    "a marble carving"
   ]
 }

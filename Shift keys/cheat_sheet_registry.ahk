@@ -1407,6 +1407,7 @@ cheatSheets["Career"] := "
     === Openings ===
     ➕ [Alt+N] Add opening
     📋 [Alt+R] Generate openings prompt and send it. Import box opens after the send. Keeps every IT title.
+    📥 [Alt+Shift+R] Bulk paste unstructured multi-company openings (LinkedIn / mixed text) from anywhere in Career Cockpit.
     🔖 [Shift+S] Filter saved (toggle)
     📌 [Shift+R] Filter subscribed (toggle)
     📝 [Alt+F] Form prompt for the focused card or open dossier. Type the Chrome tab title. Import box opens after the send.

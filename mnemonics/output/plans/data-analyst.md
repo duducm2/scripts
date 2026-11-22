@@ -6,6 +6,20 @@
 
 - [ ] Spark SQL with PySpark project - Add to your personal repo afterwards
 
+- [ ] semantic model
+
+- [ ] F/Z-pattern and Gestalt layout
+
+- [ ] Add the Databricks projects into your portfolio
+
+- [ ] Add a real Power BI link to your portfolio
+
+- [ ] Complete SQL portfolio project: import raw data, query, window functions, document in GitHub
+
+- [ ] Check how you can also add to your portfolio the results coming from phase five that is programmatic manipulation and advanced transformation
+
+- [ ] Publish the code you need on GitHub and also link that to your portfolio for people to access. Showcase the business value that your data result returned
+
 ## Phase 1: Advanced Tabular Modeling and Automation
 
 ### 1. Interface and Navigation
@@ -141,9 +155,9 @@
 - [✅] Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas
 - [✅] Query lakehouse tables with Spark SQL
 - [✅] Transform data with PySpark DataFrames
-- [ ] Create Delta tables and use time travel to inspect earlier versions
-- [ ] Build a medallion pipeline through bronze, silver, and gold
-- [ ] Map how a Databricks workspace, storage, and Unity Catalog sit on Azure
+- [✅] Create Delta tables and use time travel to inspect earlier versions
+- [✅] Build a medallion pipeline through bronze, silver, and gold
+- [✅] Map how a Databricks workspace, storage, and Unity Catalog sit on Azure
 
 **🔗 Resources:**
 
@@ -208,10 +222,10 @@
 
 ### 4. DAX and Evaluation Context
 
-- [ ] Distinguish row context from filter context in DAX
-- [ ] Master CALCULATE, FILTER, and iterator functions like SUMX
-- [ ] Build Time Intelligence measures with DATEADD and related functions
-- [ ] Use CALCULATE to change the filter context of a measure
+- [✅] Distinguish row context from filter context in DAX
+- [✅] Master CALCULATE, FILTER, and iterator functions like SUMX
+- [✅] Build Time Intelligence measures with DATEADD and related functions
+- [✅] Use CALCULATE to change the filter context of a measure
 
 **🔗 Resources:**
 
@@ -221,10 +235,10 @@
 
 ### 5. Dashboard UX and Portfolio
 
-- [ ] Apply UX principles: visual hierarchy, F/Z-pattern, Gestalt layout
-- [ ] Choose chart types correctly (bar, line, scatter) and avoid chart junk
-- [ ] Create drill-throughs and publish a portfolio dashboard to the service
-- [ ] Lead stakeholder eye to the primary KPI first using hierarchy and contrast
+- [✅] Apply UX principles: visual hierarchy, F/Z-pattern, Gestalt layout
+- [✅] Choose chart types correctly (bar, line, scatter) and avoid chart junk
+- [✅] Create drill-throughs and publish a portfolio dashboard to the service
+- [✅] Lead stakeholder eye to the primary KPI first using hierarchy and contrast
 
 **🔗 Resources:**
 
@@ -294,9 +308,9 @@
 
 ### 1. Audience Empathy and Context
 
-- [ ] Map stakeholder personas: Executive, Operations Manager, Marketing Lead
-- [ ] Build a narrative arc that ends on actionable insight, not exploration process
-- [ ] Tailor pitch length and detail to Executive, Operations, and Marketing audiences
+- [✅] Map stakeholder personas: Executive, Operations Manager, Marketing Lead
+- [✅] Build a narrative arc that ends on actionable insight, not exploration process
+- [✅] Tailor pitch length and detail to Executive, Operations, and Marketing audiences
 
 **🔗 Resources:**
 
@@ -305,9 +319,9 @@
 
 ### 2. Cognitive Load Reduction
 
-- [ ] Eliminate gridlines, excess labels, and 3D/exploding pie charts (Knaflic)
-- [ ] Use pre-attentive attributes (color, size, contrast) to force focus on the key metric
-- [ ] Apply Storytelling with Data: one stark highlight (red line) on otherwise muted slides
+- [✅] Eliminate gridlines, excess labels, and 3D/exploding pie charts (Knaflic)
+- [✅] Use pre-attentive attributes (color, size, contrast) to force focus on the key metric
+- [✅] Apply Storytelling with Data: one stark highlight (red line) on otherwise muted slides
 
 **🔗 Resources:**
 
@@ -316,9 +330,9 @@
 
 ### 3. SQL and BI Project Execution
 
-- [ ] Complete SQL portfolio project: import raw data, query, window functions, document in GitHub
-- [ ] Feed SQL insights into a Power BI Star Schema with DAX measures and minimalist visuals
-- [ ] Chain SQL exploration output into a dimensional Power BI model for executives
+- [✅] Complete SQL portfolio project: import raw data, query, window functions, document in GitHub
+- [✅] Feed SQL insights into a Power BI Star Schema with DAX measures and minimalist visuals
+- [✅] Chain SQL exploration output into a dimensional Power BI model for executives
 
 **🔗 Resources:**
 
@@ -327,9 +341,9 @@
 
 ### 4. Python Project Execution
 
-- [ ] Complete Jupyter portfolio: clean a messy dataset with Pandas vectorization
-- [ ] Document correlations and transformations as a readable executive-facing notebook
-- [ ] Prove programmatic capability beyond BI tools with messy-data cleaning notebook
+- [✅] Complete Jupyter portfolio: clean a messy dataset with Pandas vectorization
+- [✅] Document correlations and transformations as a readable executive-facing notebook
+- [✅] Prove programmatic capability beyond BI tools with messy-data cleaning notebook
 
 **🔗 Resources:**
 
@@ -337,9 +351,9 @@
 
 ### 5. Public Deployment
 
-- [ ] Create a free portfolio website showcasing the three projects
-- [ ] Establish a public GitHub repository with clean README and documented queries
-- [ ] Write portfolio READMEs that show commercial utility, not only academic theory
+- [✅] Create a free portfolio website showcasing the three projects
+- [✅] Establish a public GitHub repository with clean README and documented queries
+- [✅] Write portfolio READMEs that show commercial utility, not only academic theory
 
 **🔗 Resources:**
 

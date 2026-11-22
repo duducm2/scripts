@@ -159,14 +159,14 @@ PITEM_0162,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualizatio
 PITEM_0163,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Construct a Star Schema with a central Fact table and Dimension tables,1,70
 PITEM_0164,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Manage 1-to-Many cardinality and active vs inactive relationships,1,71
 PITEM_0165,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 3. Dimensional Modeling,Relate each dimension to the fact table so filters flow through one active relationship,1,72
-PITEM_0166,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Distinguish row context from filter context in DAX,0,73
-PITEM_0167,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,"Master CALCULATE, FILTER, and iterator functions like SUMX",0,74
-PITEM_0168,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Build Time Intelligence measures with DATEADD and related functions,0,75
-PITEM_0169,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Use CALCULATE to change the filter context of a measure,0,76
-PITEM_0170,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Apply UX principles: visual hierarchy, F/Z-pattern, Gestalt layout",0,77
-PITEM_0171,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Choose chart types correctly (bar, line, scatter) and avoid chart junk",0,78
-PITEM_0172,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Create drill-throughs and publish a portfolio dashboard to the service,0,79
-PITEM_0173,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Lead stakeholder eye to the primary KPI first using hierarchy and contrast,0,80
+PITEM_0166,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Distinguish row context from filter context in DAX,1,73
+PITEM_0167,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,"Master CALCULATE, FILTER, and iterator functions like SUMX",1,74
+PITEM_0168,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Build Time Intelligence measures with DATEADD and related functions,1,75
+PITEM_0169,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 4. DAX and Evaluation Context,Use CALCULATE to change the filter context of a measure,1,76
+PITEM_0170,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Apply UX principles: visual hierarchy, F/Z-pattern, Gestalt layout",1,77
+PITEM_0171,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,"Choose chart types correctly (bar, line, scatter) and avoid chart junk",1,78
+PITEM_0172,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Create drill-throughs and publish a portfolio dashboard to the service,1,79
+PITEM_0173,PLAN_0007,Phase 4: Business Intelligence and Dimensional Visualization > 5. Dashboard UX and Portfolio,Lead stakeholder eye to the primary KPI first using hierarchy and contrast,1,80
 PITEM_0174,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Install Anaconda and open Jupyter Notebooks,0,81
 PITEM_0175,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Import pandas and numpy in a clean analysis environment,0,82
 PITEM_0176,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 1. Environment Setup,Use one notebook environment and declare imports at the top,0,83
@@ -182,21 +182,21 @@ PITEM_0185,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformat
 PITEM_0186,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Compute correlation matrices on cleaned numeric features,0,93
 PITEM_0187,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Plot heatmaps with Seaborn for exploratory visualization,0,94
 PITEM_0188,PLAN_0007,Phase 5: Programmatic Manipulation and Advanced Transformation > 5. Statistical Visualization,Keep matplotlib/seaborn for EDA only — do not introduce ML libraries,0,95
-PITEM_0189,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Map stakeholder personas: Executive, Operations Manager, Marketing Lead",0,96
-PITEM_0190,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Build a narrative arc that ends on actionable insight, not exploration process",0,97
-PITEM_0191,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Tailor pitch length and detail to Executive, Operations, and Marketing audiences",0,98
-PITEM_0192,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Eliminate gridlines, excess labels, and 3D/exploding pie charts (Knaflic)",0,99
-PITEM_0193,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Use pre-attentive attributes (color, size, contrast) to force focus on the key metric",0,100
-PITEM_0194,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction",Apply Storytelling with Data: one stark highlight (red line) on otherwise muted slides,0,101
-PITEM_0195,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution","Complete SQL portfolio project: import raw data, query, window functions, document in GitHub",0,102
-PITEM_0196,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Feed SQL insights into a Power BI Star Schema with DAX measures and minimalist visuals,0,103
-PITEM_0197,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Chain SQL exploration output into a dimensional Power BI model for executives,0,104
-PITEM_0198,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Complete Jupyter portfolio: clean a messy dataset with Pandas vectorization,0,105
-PITEM_0199,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Document correlations and transformations as a readable executive-facing notebook,0,106
-PITEM_0200,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Prove programmatic capability beyond BI tools with messy-data cleaning notebook,0,107
-PITEM_0201,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Create a free portfolio website showcasing the three projects,0,108
-PITEM_0202,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Establish a public GitHub repository with clean README and documented queries,0,109
-PITEM_0203,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment","Write portfolio READMEs that show commercial utility, not only academic theory",0,110
+PITEM_0189,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Map stakeholder personas: Executive, Operations Manager, Marketing Lead",1,96
+PITEM_0190,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Build a narrative arc that ends on actionable insight, not exploration process",1,97
+PITEM_0191,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 1. Audience Empathy and Context","Tailor pitch length and detail to Executive, Operations, and Marketing audiences",1,98
+PITEM_0192,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Eliminate gridlines, excess labels, and 3D/exploding pie charts (Knaflic)",1,99
+PITEM_0193,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction","Use pre-attentive attributes (color, size, contrast) to force focus on the key metric",1,100
+PITEM_0194,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 2. Cognitive Load Reduction",Apply Storytelling with Data: one stark highlight (red line) on otherwise muted slides,1,101
+PITEM_0195,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution","Complete SQL portfolio project: import raw data, query, window functions, document in GitHub",1,102
+PITEM_0196,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Feed SQL insights into a Power BI Star Schema with DAX measures and minimalist visuals,1,103
+PITEM_0197,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 3. SQL and BI Project Execution",Chain SQL exploration output into a dimensional Power BI model for executives,1,104
+PITEM_0198,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Complete Jupyter portfolio: clean a messy dataset with Pandas vectorization,1,105
+PITEM_0199,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Document correlations and transformations as a readable executive-facing notebook,1,106
+PITEM_0200,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 4. Python Project Execution",Prove programmatic capability beyond BI tools with messy-data cleaning notebook,1,107
+PITEM_0201,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Create a free portfolio website showcasing the three projects,1,108
+PITEM_0202,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment",Establish a public GitHub repository with clean README and documented queries,1,109
+PITEM_0203,PLAN_0007,"Phase 6: Synthesis, Storytelling, and Portfolio Development > 5. Public Deployment","Write portfolio READMEs that show commercial utility, not only academic theory",1,110
 PITEM_0297,PLAN_0002,Phase 1: Foundation Refinement (Months 1-3) > 1. Grammar Mastery > Month 1: Core Advanced Structures > Passive Voice,Forming passive sentences in all tenses,0,1
 PITEM_0298,PLAN_0002,Phase 1: Foundation Refinement (Months 1-3) > 1. Grammar Mastery > Month 1: Core Advanced Structures > Passive Voice,Impersonal passives,0,2
 PITEM_0299,PLAN_0002,Phase 1: Foundation Refinement (Months 1-3) > 1. Grammar Mastery > Month 1: Core Advanced Structures > Passive Voice,Causative passives,0,3
@@ -709,9 +709,9 @@ PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value
 PITEM_0925,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Orient the Databricks workspace, notebooks, and Unity Catalog catalogs and schemas",1,49
 PITEM_0926,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Query lakehouse tables with Spark SQL,1,50
 PITEM_0927,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Transform data with PySpark DataFrames,1,51
-PITEM_0928,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,0,52
-PITEM_0929,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Build a medallion pipeline through bronze, silver, and gold",0,53
-PITEM_0930,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Map how a Databricks workspace, storage, and Unity Catalog sit on Azure",0,54
+PITEM_0928,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,Create Delta tables and use time travel to inspect earlier versions,1,52
+PITEM_0929,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Build a medallion pipeline through bronze, silver, and gold",1,53
+PITEM_0930,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 1. Must,"Map how a Databricks workspace, storage, and Unity Catalog sit on Azure",1,54
 PITEM_0931,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Schedule pipelines with Lakeflow Jobs,0,55
 PITEM_0932,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Ingest data with Lakeflow Connect,0,56
 PITEM_0933,PLAN_0007,Phase 3: Azure Databricks (Principal Platform) > 2. Good to know,Enforce schema and data-quality checks on Delta tables,0,57
@@ -755,3 +755,10 @@ PITEM_0970,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Use Snowpar
 PITEM_0971,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Build a pipeline with dynamic tables,0,142
 PITEM_0972,PLAN_0007,Phase 9: Snowflake (Secondary) > 3. Learn after,Call Cortex functions on warehouse data,0,143
 PITEM_0116,PLAN_0007,Backlog,Spark SQL with PySpark project - Add to your personal repo afterwards,0,1
+PITEM_0117,PLAN_0007,Backlog,semantic model,0,2
+PITEM_0125,PLAN_0007,Backlog,F/Z-pattern and Gestalt layout,0,3
+PITEM_0140,PLAN_0007,Backlog,Add the Databricks projects into your portfolio,0,4
+PITEM_0143,PLAN_0007,Backlog,Add a real Power BI link to your portfolio,0,5
+PITEM_0204,PLAN_0007,Backlog,"Complete SQL portfolio project: import raw data, query, window functions, document in GitHub",0,6
+PITEM_0205,PLAN_0007,Backlog,Check how you can also add to your portfolio the results coming from phase five that is programmatic manipulation and advanced transformation,0,7
+PITEM_0206,PLAN_0007,Backlog,Publish the code you need on GitHub and also link that to your portfolio for people to access. Showcase the business value that your data result returned,0,8
