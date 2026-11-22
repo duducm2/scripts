@@ -147,7 +147,8 @@ Gemini_IsToolsMenuOpen(uia) {
         for el in root.FindAll({ Type: 50026 }) {
             cls := el.ClassName
             if InStr(cls, "card-container", false) || InStr(cls, "menu-list-container", false)
-            || InStr(cls, "mat-mdc-menu-panel", false)
+            || InStr(cls, "mat-mdc-menu-panel", false) || InStr(cls, "mat-menu-content", false)
+            || InStr(cls, "cdk-overlay-pane", false)
                 return true
         }
     } catch {
@@ -168,6 +169,8 @@ Gemini_IsToolsMenuOpen(uia) {
         }
     } catch {
     }
+    if Gemini_FindToolboxCheckBoxInScope(root, ["Upload files", "Enviar arquivos", "More tools", "Mais ferramentas"])
+        return true
     return false
 }
 
@@ -177,28 +180,19 @@ Gemini_OpenToolsMenu(uia) {
     btn := Gemini_FindToolsButton(uia)
     if !btn
         return false
-    clicked := false
     try {
         btn.Click()
-        clicked := true
+        Sleep 250
+        return true
     } catch {
     }
-    if (!clicked) {
-        try {
-            btn.Click("left")
-            clicked := true
-        } catch {
-            return false
-        }
+    try {
+        btn.Click("left")
+        Sleep 250
+        return true
+    } catch {
+        return false
     }
-    Sleep 250
-    if (!Gemini_IsToolsMenuOpen(uia)) {
-        try btn.Click("left")
-        catch {
-        }
-        Sleep 200
-    }
-    return true
 }
 
 ; Open menu only when the toolbox drawer is not already in the tree (avoids toggling closed).
@@ -252,7 +246,8 @@ Gemini_FindToolboxMenuPane(uia) {
         for el in root.FindAll({ Type: 50026 }) {
             cls := el.ClassName
             if InStr(cls, "card-container", false) || InStr(cls, "mat-mdc-menu-panel", false)
-            || InStr(cls, "menu-list-container", false)
+            || InStr(cls, "menu-list-container", false) || InStr(cls, "mat-menu-content", false)
+            || InStr(cls, "cdk-overlay-pane", false)
                 return el
         }
         m := root.FindFirst({ Type: 50009 })
@@ -370,9 +365,9 @@ Gemini_FindToolboxCheckBoxInScope(scope, nameSubstrings) {
                 }
             }
         }
-        ; Fallback for gem-menu-redesign (Upload & tools) where items may be MenuItem, Button, or CheckBox
+        ; Fallback for gem-menu-redesign (Upload & tools) where items may be MenuItem, Button, CheckBox, or ListItem
         ; without the legacy "toolbox-drawer-item" class.
-        for ctrlType in [50011, GEMINI_TOOLBOX_CHECKBOX_TYPE, 50000] {
+        for ctrlType in [50011, GEMINI_TOOLBOX_CHECKBOX_TYPE, 50000, 50007] {
             items := 0
             try items := scope.FindAll({ Type: ctrlType })
             if (!items || items.Length = 0)

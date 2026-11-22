@@ -1,13 +1,10 @@
 {
-  "pending_slot": "trophy",
-  "pending_palace_id": "PALACE_DATAANALYST_31",
+  "pending_slot": "",
+  "pending_palace_id": "",
   "cycle": [
     "trophy"
   ],
   "recent_looks": [
-    "a risograph print",
-    "a linocut",
-    "an oil painting of one object",
     "a wax-seal impression",
     "an ink wash painting",
     "a hand-built clay figure",
@@ -16,6 +13,9 @@
     "an origami model",
     "a felt craft",
     "a cast bronze miniature",
-    "a ballpoint doodle"
+    "a ballpoint doodle",
+    "a blown-glass sculpture",
+    "a flat cartoon drawing",
+    "a shadow puppet"
   ]
 }
