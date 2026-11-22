@@ -6,10 +6,6 @@
 
 - [ ] Spark SQL with PySpark project - Add to your personal repo afterwards
 
-- [ ] semantic model
-
-- [ ] F/Z-pattern and Gestalt layout
-
 - [ ] Add the Databricks projects into your portfolio
 
 - [ ] Add a real Power BI link to your portfolio

@@ -1,0 +1,8 @@
+﻿ts=20261122205654
+hwnd=68018 title=Google Gemini - Google Chrome
+root=Google Gemini type=50030
+preOpenCb=0
+toolsBtn=Upload & tools type=50000
+ensureMenuOpen=1
+finalCb=Create image type=50002 cls=mat-mdc-tooltip-trigger lm-enabled ng-star-inserted
+activated=1

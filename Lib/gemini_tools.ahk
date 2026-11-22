@@ -181,13 +181,13 @@ Gemini_OpenToolsMenu(uia) {
     if !btn
         return false
     try {
-        btn.Click()
+        btn.Click("left")
         Sleep 250
         return true
     } catch {
     }
     try {
-        btn.Click("left")
+        btn.Click()
         Sleep 250
         return true
     } catch {
@@ -421,40 +421,88 @@ Gemini_ActivateToolboxItem(el) {
     }
 }
 
+Gemini_WriteToggleImageLog(lines) {
+    try {
+        logPath := A_ScriptDir "\assets\data\gemini_toggle_image.log"
+        try FileDelete(logPath)
+        FileAppend(lines, logPath, "UTF-8")
+    } catch {
+    }
+}
+
 ; Same action as Shift+I on personal Gemini: Tools menu, Create image.
 Gemini_ToggleCreateImage() {
     try StandardLoadingBar_Show("⏳ Create image…", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
     ok := false
+    log := "ts=" A_Now "`n"
     try {
         hwnd := WinExist("A")
+        title := ""
+        try title := WinGetTitle("ahk_id " hwnd)
+        log .= "hwnd=" hwnd " title=" title "`n"
         uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
-        if !IsObject(uia)
+        if !IsObject(uia) {
+            log .= "err=NO_UIA_BROWSER`n"
             return false
+        }
         Sleep 150
         subs := ["Create image", "Create images", "Criar imagem", "Criar imagens"]
         root := Gemini_ActivePageRoot(uia)
+        try log .= "root=" root.Name " type=" root.Type "`n"
         cb := 0
         try cb := UiElements_TrySaved(root, "Gemini", "CreateImage")
         if !cb
             cb := Gemini_FindToolboxCheckBox(uia, subs)
+        log .= "preOpenCb=" (IsObject(cb) ? cb.Name : "0") "`n"
         if !cb {
-            if !Gemini_EnsureToolsMenuOpen(&uia, hwnd)
-                return false
-            root := Gemini_ActivePageRoot(uia)
-            try cb := UiElements_TrySaved(root, "Gemini", "CreateImage")
-            if !cb
-                cb := Gemini_FindToolboxCheckBox(uia, subs)
+            tBtn := Gemini_FindToolsButton(uia)
+            try log .= "toolsBtn=" (IsObject(tBtn) ? (tBtn.Name " type=" tBtn.Type) : "0") "`n"
+            menuOk := Gemini_EnsureToolsMenuOpen(&uia, hwnd)
+            log .= "ensureMenuOpen=" menuOk "`n"
+            if !menuOk {
+                root := Gemini_ActivePageRoot(uia)
+                cbFallback := Gemini_FindToolboxCheckBox(uia, subs)
+                log .= "menuTimeoutCb=" (IsObject(cbFallback) ? cbFallback.Name : "0") "`n"
+                if !cbFallback
+                    return false
+                cb := cbFallback
+            } else {
+                root := Gemini_ActivePageRoot(uia)
+                try cb := UiElements_TrySaved(root, "Gemini", "CreateImage")
+                if !cb
+                    cb := Gemini_FindToolboxCheckBox(uia, subs)
+            }
         }
         if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs, hwnd)
             cb := Gemini_FindToolboxCheckBox(uia, subs)
-        if !cb
+        log .= "finalCb=" (IsObject(cb) ? (cb.Name " type=" cb.Type " cls=" cb.ClassName) : "0") "`n"
+        if !cb {
+            try {
+                for t in [50011, 50002, 50000, 50007] {
+                    arr := root.FindAll({ Type: t })
+                    if (arr && arr.Length > 0) {
+                        for el in arr {
+                            try {
+                                if (el.Name != "")
+                                    log .= "  cand[" t "] " el.Name " | " el.ClassName "`n"
+                            } catch {
+                            }
+                        }
+                    }
+                }
+            } catch {
+            }
             return false
+        }
         Gemini_ActivateToolboxItem(cb)
         ok := true
+        log .= "activated=1`n"
         return true
     } catch Error as e {
+        log .= "exception=" e.Message "`n"
         return false
     } finally {
+        Gemini_WriteToggleImageLog(log)
         if (ok) {
             try StandardLoadingBar_Hide(0)
         } else {
