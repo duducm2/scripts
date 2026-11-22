@@ -322,6 +322,8 @@ Gemini_ActivateToolboxItem(el) {
 
 ; Same action as Shift+I on personal Gemini: Tools menu, Create image.
 Gemini_ToggleCreateImage() {
+    try StandardLoadingBar_Show("⏳ Create image…", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
+    ok := false
     try {
         uia := UIA_Browser()
         if !IsObject(uia)
@@ -344,9 +346,17 @@ Gemini_ToggleCreateImage() {
         if !cb
             return false
         Gemini_ActivateToolboxItem(cb)
+        ok := true
         return true
     } catch Error as e {
         return false
+    } finally {
+        if (ok) {
+            try StandardLoadingBar_Hide(0)
+        } else {
+            try StandardLoadingBar_Show("Create image failed", BANNER_ACCENT_ERROR, { passive: true, centerOnHwnd: 0 })
+            try StandardLoadingBar_Hide(1800)
+        }
     }
 }
 
