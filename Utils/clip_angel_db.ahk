@@ -234,7 +234,7 @@ ClipAngelDb_UnfavAll(&count := 0) {
 
 ; Deletes all non-favorite clips from ClipAngel's SQLite DB. Returns true on success.
 ClipAngelDb_DeleteNonFav(&count := 0) {
-    out := ClipAngelDb_Run("deletenonfav", 5000)
+    out := ClipAngelDb_Run("deletenonfav", 15000)
     if (out = "" || !IsInteger(out))
         return false
     count := Integer(out)

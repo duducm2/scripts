@@ -115,7 +115,7 @@ internal static class Program
         string path = ResolveDbPath();
         if (!File.Exists(path))
             throw new FileNotFoundException("ClipAngel DB not found: " + path);
-        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=3000;";
+        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=8000;";
         var con = new SQLiteConnection(cs);
         con.Open();
         return con;
@@ -352,13 +352,26 @@ internal static class Program
 
     static int CmdDeleteNonFav()
     {
-        using (var con = OpenWrite())
+        for (int attempt = 0; attempt < 5; attempt++)
         {
-            int rows = ExecuteNonQuery(con,
-                "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
-            Console.Write(rows.ToString());
-            return 0;
+            try
+            {
+                using (var con = OpenWrite())
+                {
+                    int rows = ExecuteNonQuery(con,
+                        "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
+                    Console.Write(rows.ToString());
+                    return 0;
+                }
+            }
+            catch (SQLiteException)
+            {
+                if (attempt == 4)
+                    throw;
+                Thread.Sleep(200);
+            }
         }
+        return 2;
     }
 
     static string SanitizeOneLine(string s)

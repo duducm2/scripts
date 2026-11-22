@@ -2499,11 +2499,12 @@ ClipAngel_TriggerBackgroundReloadList(hwnd := 0) {
     }
 }
 
-; Confirm Clip Angel's delete-non-favorites #32770 prompt in the background without stealing focus.
-; Sends ControlClick + BM_CLICK + WM_COMMAND(IDYES) and verifies the dialog actually closes.
-ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(timeoutMs := 1200) {
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
+; Single non-blocking pass to confirm Clip Angel's delete-non-favorites #32770 prompt.
+; Returns true if a dialog was found and closed.
+ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
         for dlgHwnd in WinGetList("ahk_exe ClipAngel.exe ahk_class #32770") {
             try WinSetTransparent(0, "ahk_id " dlgHwnd)
             catch {
@@ -2517,15 +2518,54 @@ ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(timeoutMs := 1200) {
             try PostMessage(0x0111, 6, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDYES
             catch {
             }
-            closeDeadline := A_TickCount + 350
+            try PostMessage(0x0111, 1, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDOK
+            catch {
+            }
+            try ControlSend("{Enter}", , "ahk_id " dlgHwnd)
+            catch {
+            }
+            closeDeadline := A_TickCount + 250
             while (A_TickCount < closeDeadline) {
                 if !WinExist("ahk_id " dlgHwnd)
                     return true
                 Sleep 20
             }
+            if (allowActivateFallback && WinExist("ahk_id " dlgHwnd)) {
+                try {
+                    WinActivate("ahk_id " dlgHwnd)
+                    if WinWaitActive("ahk_id " dlgHwnd, , 0.3) {
+                        ControlClick("Button1", "ahk_id " dlgHwnd, , "Left", 1)
+                        Sleep 30
+                        if WinExist("ahk_id " dlgHwnd)
+                            SendInput("{Enter}")
+                    }
+                } catch {
+                }
+                closeDeadline2 := A_TickCount + 300
+                while (A_TickCount < closeDeadline2) {
+                    if !WinExist("ahk_id " dlgHwnd)
+                        return true
+                    Sleep 20
+                }
+            }
             if !WinExist("ahk_id " dlgHwnd)
                 return true
         }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    return false
+}
+
+; Confirm Clip Angel's delete-non-favorites #32770 prompt in the background without stealing focus.
+; Falls back to brief activation if background messages do not dismiss the modal dialog.
+ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(timeoutMs := 1200) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        remaining := deadline - A_TickCount
+        ; Allow brief activation fallback once we are past the initial background-only window.
+        if (ClipAngel_TryConfirmDeleteDialogOnce(remaining < 500))
+            return true
         Sleep 25
     }
     return false

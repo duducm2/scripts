@@ -348,21 +348,41 @@ CleanClipboardInternal(sessionId := 0) {
                         return
                     } else {
                         CleanClipboard_UpdateProgress(75, "⏳ " attemptTag "[3/4] Sending delete non-favorites...")
-                        try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE: 0ms menu-close guard
-                        try ClipAngel_FocusGridIfFilterCombo()
-                        catch {
-                        }
-                        confirmed := false
-                        try {
-                            ControlSend("^!k", , "ahk_id " hwnd)
-                            confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(900)
-                        } catch {
-                            confirmed := false
+                        ; Dismiss any leftover confirmation dialog first so ClipAngel's UI thread isn't blocked.
+                        confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true)
+                        if (!confirmed) {
+                            try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE: 0ms menu-close guard
+                            try ClipAngel_FocusGridIfFilterCombo()
+                            catch {
+                            }
+                            try {
+                                ControlSend("^!k", , "ahk_id " hwnd)
+                                confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(900)
+                            } catch {
+                                confirmed := false
+                            }
                         }
                         if (!confirmed && !CleanClipboard_ShouldAbort(sessionId)) {
                             CleanClipboard_UpdateProgress(85, "⏳ " attemptTag "[3/4] Trying List menu fallback...")
-                            if (ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root))
+                            ; Poll in background during UIA menu invoke because MessageBox.Show blocks the UI thread.
+                            menuDialogConfirmed := false
+                            menuPollCb := (*) => (
+                                !menuDialogConfirmed && ClipAngel_TryConfirmDeleteDialogOnce(true)
+                                    ? (menuDialogConfirmed := true) : 0
+                            )
+                            SetTimer(menuPollCb, 50)
+                            menuInvoked := false
+                            try {
+                                menuInvoked := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
+                            } finally {
+                                SetTimer(menuPollCb, 0)
+                            }
+                            if (menuDialogConfirmed)
+                                confirmed := true
+                            else if (menuInvoked)
                                 confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500)
+                            else
+                                confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true)
                         }
                         if (CleanClipboard_ShouldAbort(sessionId)) {
                             StandardLoadingBar_Hide(0)
@@ -371,8 +391,9 @@ CleanClipboardInternal(sessionId := 0) {
                         if (confirmed) {
                             clipAngelOk := true
                         } else {
+                            dbPrefix := (attemptDetail != "") ? (attemptDetail " -> ") : ""
                             attemptStage := "3/4 UI"
-                            attemptDetail := "Delete confirmation dialog did not appear"
+                            attemptDetail := dbPrefix "Delete confirmation dialog did not appear"
                         }
                     }
                 } finally {
