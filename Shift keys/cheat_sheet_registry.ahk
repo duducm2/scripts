@@ -1431,8 +1431,13 @@ cheatSheets["Career"] := "
     
     === People ===
     👥 [Shift+O] Open People. Hiring is someone hiring at a company. Network is someone in your network. Both can keep a company.
+    🔄 [Alt+T] Toggle focused person contact status (To contact ↔ Contacted; preserves Replied and Paused)
+    ➕ [Alt+N] or [Shift+N] Add person
+    🎛️ [Alt+F] Filters ↔ cards
+    🗂️ [Alt+Shift+K] Collapse / expand filter bar
     📋 [Alt+R] Prompt to import a pasted LinkedIn profile. Pick Hiring or Network first. Import box opens after the send.
     ⏎ [Ctrl+Enter] or [Shift+Enter] Send that prompt, or import the JSON
+    🏠 [Esc] Close modal, then clear filters, then openings home
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
