@@ -7,19 +7,85 @@
 
 GEMINI_TOOLBOX_CHECKBOX_TYPE := 50002
 
+; Active gemini.google.com document. Background Chrome tabs must not shadow the
+; visible tab's Upload & tools button, menu, or Copy controls.
+Gemini_ActivePageRoot(uia) {
+    if (!IsObject(uia))
+        return uia
+    docs := []
+    try docs := uia.FindAll({ Type: "Document" })
+    catch
+        docs := []
+    geminiDocs := []
+    for doc in docs {
+        name := ""
+        val := ""
+        try name := doc.Name
+        try val := doc.Value
+        if (InStr(val, "gemini.google.com", false) || InStr(name, "Gemini", false))
+            geminiDocs.Push(doc)
+    }
+    if (geminiDocs.Length = 0)
+        return uia
+    if (geminiDocs.Length = 1)
+        return geminiDocs[1]
+    title := ""
+    try {
+        hwnd := 0
+        try hwnd := uia.BrowserId
+        if (hwnd)
+            title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        title := ""
+    }
+    if (!title) {
+        try title := WinGetTitle("A")
+        catch
+            title := ""
+    }
+    best := 0
+    bestLen := 0
+    bestVisible := false
+    for doc in geminiDocs {
+        name := ""
+        try name := doc.Name
+        if (name && title && InStr(title, name, false) = 1) {
+            off := true
+            try off := doc.GetPropertyValue(UIA.Property.IsOffscreen)
+            vis := !off
+            nLen := StrLen(name)
+            if (!best || (vis && !bestVisible) || (vis = bestVisible && nLen > bestLen)) {
+                best := doc
+                bestLen := nLen
+                bestVisible := vis
+            }
+        }
+    }
+    if (best)
+        return best
+    for doc in geminiDocs {
+        off := true
+        try off := doc.GetPropertyValue(UIA.Property.IsOffscreen)
+        if (!off)
+            return doc
+    }
+    return geminiDocs[geminiDocs.Length]
+}
+
 Gemini_FindToolsButton(uia) {
     if !IsObject(uia)
         return 0
-    saved := UiElements_TrySaved(uia, "Gemini", "Tools")
+    root := Gemini_ActivePageRoot(uia)
+    saved := UiElements_TrySaved(root, "Gemini", "Tools")
     if (saved)
         return saved
     toolsButton := 0
     try {
-        toolsButton := uia.FindFirst({ Name: "Upload & tools", Type: 50000 })
+        toolsButton := root.FindFirst({ Name: "Upload & tools", Type: 50000 })
         if toolsButton
             return toolsButton
 
-        allButtons := uia.FindAll({ Type: 50000 })
+        allButtons := root.FindAll({ Type: 50000 })
         for button in allButtons {
             nm := button.Name
             if (InStr(nm, "tools", false) || InStr(nm, "ferramentas", false))
@@ -27,7 +93,7 @@ Gemini_FindToolsButton(uia) {
                 return button
         }
 
-        for grp in uia.FindAll({ Type: 50026 }) {
+        for grp in root.FindAll({ Type: 50026 }) {
             if !InStr(grp.ClassName, "gem-menu-button", false)
                 continue
             try {
@@ -38,9 +104,9 @@ Gemini_FindToolsButton(uia) {
             }
         }
 
-        toolsButton := uia.FindFirst({ Name: "Tools", Type: 50000 })
+        toolsButton := root.FindFirst({ Name: "Tools", Type: 50000 })
         if !toolsButton
-            toolsButton := uia.FindFirst({ Type: "Button", Name: "Tools" })
+            toolsButton := root.FindFirst({ Type: "Button", Name: "Tools" })
         if !toolsButton {
             for button in allButtons {
                 if InStr(button.ClassName, "toolbox-drawer-button") && InStr(button.Name, "Tools") {
@@ -67,17 +133,18 @@ Gemini_FindToolsButton(uia) {
 Gemini_IsToolsMenuOpen(uia) {
     if !IsObject(uia)
         return false
+    root := Gemini_ActivePageRoot(uia)
     try {
-        if uia.FindFirst({ Name: "Menu options", Type: 50009 })
+        if root.FindFirst({ Name: "Menu options", Type: 50009 })
             return true
-        if uia.FindFirst({ Name: "Menu options", Type: UIA.Type.Menu })
+        if root.FindFirst({ Name: "Menu options", Type: UIA.Type.Menu })
             return true
-        if uia.FindFirst({ Type: 50009 })
+        if root.FindFirst({ Type: 50009 })
             return true
     } catch {
     }
     try {
-        for el in uia.FindAll({ Type: 50026 }) {
+        for el in root.FindAll({ Type: 50026 }) {
             cls := el.ClassName
             if InStr(cls, "card-container", false) || InStr(cls, "menu-list-container", false)
             || InStr(cls, "mat-mdc-menu-panel", false)
@@ -86,14 +153,14 @@ Gemini_IsToolsMenuOpen(uia) {
     } catch {
     }
     try {
-        for cb in uia.FindAll({ Type: GEMINI_TOOLBOX_CHECKBOX_TYPE }) {
+        for cb in root.FindAll({ Type: GEMINI_TOOLBOX_CHECKBOX_TYPE }) {
             if InStr(cb.ClassName, "toolbox-drawer-item-list-button", false)
                 return true
         }
     } catch {
     }
     try {
-        for mi in uia.FindAll({ Type: 50011 }) {
+        for mi in root.FindAll({ Type: 50011 }) {
             nm := mi.Name
             if InStr(nm, "Create image", false) || InStr(nm, "Criar imagem", false)
             || InStr(nm, "Upload", false) || InStr(nm, "Deep research", false)
@@ -110,24 +177,46 @@ Gemini_OpenToolsMenu(uia) {
     btn := Gemini_FindToolsButton(uia)
     if !btn
         return false
+    clicked := false
     try {
         btn.Click()
+        clicked := true
     } catch {
-        return false
+    }
+    if (!clicked) {
+        try {
+            btn.Click("left")
+            clicked := true
+        } catch {
+            return false
+        }
     }
     Sleep 250
+    if (!Gemini_IsToolsMenuOpen(uia)) {
+        try btn.Click("left")
+        catch {
+        }
+        Sleep 200
+    }
     return true
 }
 
 ; Open menu only when the toolbox drawer is not already in the tree (avoids toggling closed).
-Gemini_EnsureToolsMenuOpen(&uia) {
+Gemini_EnsureToolsMenuOpen(&uia, hwnd := 0) {
+    if (!hwnd) {
+        try hwnd := uia.BrowserId
+        catch
+            hwnd := 0
+        if (!hwnd)
+            hwnd := WinExist("A")
+    }
     if Gemini_IsToolsMenuOpen(uia)
         return true
     if !Gemini_OpenToolsMenu(uia)
         return false
-    ; Refresh UIA — stale element trees are common right after the Tools click.
+    ; Refresh UIA pinned to hwnd — stale element trees are common right after the Tools click.
     try
-        uia := UIA_Browser()
+        uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
     catch
         return false
     deadline := A_TickCount + 3000
@@ -136,7 +225,7 @@ Gemini_EnsureToolsMenuOpen(&uia) {
             return true
         Sleep 80
         try
-            uia := UIA_Browser()
+            uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
         catch
             return false
     }
@@ -146,26 +235,27 @@ Gemini_EnsureToolsMenuOpen(&uia) {
 Gemini_FindToolboxMenuPane(uia) {
     if !IsObject(uia)
         return 0
+    root := Gemini_ActivePageRoot(uia)
     try {
-        m := uia.FindFirst({ Name: "Menu options", Type: 50009 })
+        m := root.FindFirst({ Name: "Menu options", Type: 50009 })
         if m
             return m
-        m := uia.FindFirst({ Name: "Menu options", Type: UIA.Type.Menu })
+        m := root.FindFirst({ Name: "Menu options", Type: UIA.Type.Menu })
         if m
             return m
-        m := uia.FindFirst({ AutomationId: "toolbox-drawer-menu" })
+        m := root.FindFirst({ AutomationId: "toolbox-drawer-menu" })
         if m
             return m
-        m := uia.FindFirst({ Type: UIA.Type.Menu, AutomationId: "toolbox-drawer-menu" })
+        m := root.FindFirst({ Type: UIA.Type.Menu, AutomationId: "toolbox-drawer-menu" })
         if m
             return m
-        for el in uia.FindAll({ Type: 50026 }) {
+        for el in root.FindAll({ Type: 50026 }) {
             cls := el.ClassName
             if InStr(cls, "card-container", false) || InStr(cls, "mat-mdc-menu-panel", false)
             || InStr(cls, "menu-list-container", false)
                 return el
         }
-        m := uia.FindFirst({ Type: 50009 })
+        m := root.FindFirst({ Type: 50009 })
         if m
             return m
     } catch {
@@ -176,19 +266,20 @@ Gemini_FindToolboxMenuPane(uia) {
 Gemini_FindMoreToolsButton(uia) {
     if !IsObject(uia)
         return 0
+    root := Gemini_ActivePageRoot(uia)
     try {
-        saved := UiElements_TrySaved(uia, "Gemini", "MoreTools")
+        saved := UiElements_TrySaved(root, "Gemini", "MoreTools")
         if (saved)
             return saved
     } catch {
     }
     try {
         for name in ["More tools", "Mais ferramentas"] {
-            btn := uia.FindFirst({ Name: name, Type: 50000 })
+            btn := root.FindFirst({ Name: name, Type: 50000 })
             if btn
                 return btn
         }
-        for btn in uia.FindAll({ Type: 50000 }) {
+        for btn in root.FindAll({ Type: 50000 }) {
             cls := btn.ClassName
             nm := btn.Name
             if InStr(cls, "more-tools-button", false)
@@ -202,9 +293,16 @@ Gemini_FindMoreToolsButton(uia) {
 }
 
 ; Expands the "More tools" submenu when the target checkbox is not in the top-level menu.
-Gemini_EnsureMoreToolsExpanded(&uia, nameSubstrings) {
+Gemini_EnsureMoreToolsExpanded(&uia, nameSubstrings, hwnd := 0) {
     if !IsObject(uia) || !IsObject(nameSubstrings) || nameSubstrings.Length = 0
         return false
+    if (!hwnd) {
+        try hwnd := uia.BrowserId
+        catch
+            hwnd := 0
+        if (!hwnd)
+            hwnd := WinExist("A")
+    }
     if Gemini_FindToolboxCheckBox(uia, nameSubstrings)
         return true
     btn := Gemini_FindMoreToolsButton(uia)
@@ -213,10 +311,12 @@ Gemini_EnsureMoreToolsExpanded(&uia, nameSubstrings) {
     try {
         btn.Click()
     } catch {
-        return false
+        try btn.Click("left")
+        catch
+            return false
     }
     try
-        uia := UIA_Browser()
+        uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
     catch
         return false
     deadline := A_TickCount + 2000
@@ -225,7 +325,7 @@ Gemini_EnsureMoreToolsExpanded(&uia, nameSubstrings) {
             return true
         Sleep 80
         try
-            uia := UIA_Browser()
+            uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
         catch
             return false
     }
@@ -233,11 +333,11 @@ Gemini_EnsureMoreToolsExpanded(&uia, nameSubstrings) {
 }
 
 ; nameSubstrings: ordered list — first matching toolbox-drawer checkbox wins (EN/PT partial names).
-; Searches inside toolbox-drawer-menu when present (fast + reliable); falls back to full tree.
+; Searches inside toolbox-drawer-menu when present (fast + reliable); falls back to active document root.
 Gemini_FindToolboxCheckBox(uia, nameSubstrings) {
     if !IsObject(uia) || !IsObject(nameSubstrings) || nameSubstrings.Length = 0
         return 0
-    scope := uia
+    scope := Gemini_ActivePageRoot(uia)
     try {
         menu := Gemini_FindToolboxMenuPane(uia)
         if menu
@@ -298,16 +398,22 @@ Gemini_FindToolboxCheckBoxInScope(scope, nameSubstrings) {
 }
 
 ; Material toolbox items expose Invoke + Toggle; Invoke alone often dismisses the menu without toggling.
-; Prefer Toggle; then physical center click (Click("left")) — not bare Click() which tries Invoke first.
+; Prefer Toggle only for CheckBox items; use physical center click (Click("left")) for MenuItem/Button.
 Gemini_ActivateToolboxItem(el) {
     if !IsObject(el)
         return
-    try {
-        if el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
-            el.TogglePattern.Toggle()
-            return
+    ctrlType := 0
+    try ctrlType := el.Type
+    catch
+        ctrlType := 0
+    if (ctrlType = GEMINI_TOOLBOX_CHECKBOX_TYPE) {
+        try {
+            if el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                el.TogglePattern.Toggle()
+                return
+            }
+        } catch {
         }
-    } catch {
     }
     try {
         el.Click("left")
@@ -325,23 +431,26 @@ Gemini_ToggleCreateImage() {
     try StandardLoadingBar_Show("⏳ Create image…", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
     ok := false
     try {
-        uia := UIA_Browser()
+        hwnd := WinExist("A")
+        uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
         if !IsObject(uia)
             return false
         Sleep 150
         subs := ["Create image", "Create images", "Criar imagem", "Criar imagens"]
+        root := Gemini_ActivePageRoot(uia)
         cb := 0
-        try cb := UiElements_TrySaved(uia, "Gemini", "CreateImage")
+        try cb := UiElements_TrySaved(root, "Gemini", "CreateImage")
         if !cb
             cb := Gemini_FindToolboxCheckBox(uia, subs)
         if !cb {
-            if !Gemini_EnsureToolsMenuOpen(&uia)
+            if !Gemini_EnsureToolsMenuOpen(&uia, hwnd)
                 return false
-            try cb := UiElements_TrySaved(uia, "Gemini", "CreateImage")
+            root := Gemini_ActivePageRoot(uia)
+            try cb := UiElements_TrySaved(root, "Gemini", "CreateImage")
             if !cb
                 cb := Gemini_FindToolboxCheckBox(uia, subs)
         }
-        if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs)
+        if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs, hwnd)
             cb := Gemini_FindToolboxCheckBox(uia, subs)
         if !cb
             return false

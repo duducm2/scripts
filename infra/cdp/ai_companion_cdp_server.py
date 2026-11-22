@@ -834,10 +834,31 @@ class CDPBridge:
         return {"ok": True, "url": page.url, "title": page.title(), "hwnd": hwnd}
 
     def _toggle_image_gen(self, page, enterprise: bool) -> bool:
+        for engaged_sel in [
+            'button[aria-label*="Deselect Create image" i]',
+            'button[aria-label*="Remove Create image" i]',
+            'button[aria-label*="Remover Criar imagem" i]',
+        ]:
+            try:
+                if page.locator(engaged_sel).locator("visible=true").count() > 0:
+                    return True
+            except Exception:
+                pass
         selectors = [
+            'button[aria-label*="Upload & tools" i]',
             'button:has-text("Tools")',
             'button:has-text("Select tools")',
             'button[aria-label*="Tools" i]',
+        ]
+        item_selectors = [
+            'text="Create image"',
+            'text="Create images"',
+            'text="Criar imagem"',
+            '[role="menuitem"]:has-text("Create image")',
+            '[role="menuitemcheckbox"]:has-text("Create image")',
+            'button:has-text("Create image")',
+            '[role="menuitem"]:has-text("Criar imagem")',
+            'button:has-text("Criar imagem")',
         ]
         for sel in selectors:
             try:
@@ -845,11 +866,23 @@ class CDPBridge:
                 if btn.count() > 0:
                     btn.click()
                     time.sleep(0.25)
-                    for item_sel in ['text="Create image"', 'text="Create images"', 'button:has-text("Create image")']:
+                    for item_sel in item_selectors:
                         item = page.locator(item_sel).locator("visible=true").first
                         if item.count() > 0:
                             item.click()
                             return True
+                    try:
+                        more_btn = page.locator('button:has-text("More tools"), [role="menuitem"]:has-text("More tools")').locator("visible=true").first
+                        if more_btn.count() > 0:
+                            more_btn.click()
+                            time.sleep(0.25)
+                            for item_sel in item_selectors:
+                                item = page.locator(item_sel).locator("visible=true").first
+                                if item.count() > 0:
+                                    item.click()
+                                    return True
+                    except Exception:
+                        pass
             except Exception:
                 pass
         return False
@@ -1294,8 +1327,9 @@ class CDPBridge:
         submit = bool(data.get("submit", False))
         clear = bool(data.get("clear", False))
         image_gen = bool(data.get("image_gen", False))
+        active_title = (data.get("active_title") or "").strip()
 
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
         composer = self._find_composer(page, timeout_s=12.0)
         if composer is None:
             if self._is_auth_page(page):

@@ -763,12 +763,12 @@ AiCompanionCDP_Ensure(companionId := "", activate := false, newTab := false) {
     return { ok: res.ok, hwnd: hwnd, error: res.error }
 }
 
-AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImageGen := false, clear := false) {
+AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImageGen := false, clear := false, activeTitle := "") {
     comp := AiCompanionCDP_NormalizeCompanion(companionId)
     if (comp = "")
         return { ok: false, started: false, hwnd: 0, error: "Unsupported companion" }
     fileArr := IsObject(files) ? files : []
-    res := AiCompanionCDP_Post("/paste", Map(
+    payload := Map(
         "companion", comp,
         "text", text,
         "files", fileArr,
@@ -776,7 +776,10 @@ AiCompanionCDP_Paste(companionId, text, submit := false, files := "", enableImag
         "clear", clear ? true : false,
         "image_gen", enableImageGen ? true : false,
         "launch_if_down", true
-    ), 45000, true)
+    )
+    if (Trim(activeTitle) != "")
+        payload["active_title"] := Trim(activeTitle)
+    res := AiCompanionCDP_Post("/paste", payload, 45000, true)
     return {
         ok: res.ok,
         started: _AiCDP_JsonGetBool(res.raw, "started", false),

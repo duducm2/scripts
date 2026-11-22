@@ -74,62 +74,7 @@ Gemini_ClassHasToken(className, token) {
     return false
 }
 
-; Active gemini.google.com document. A second Chrome tab in the same window must not
-; contribute Copy / Copy code buttons (its bounds can sit on top of the visible footer Copy).
-Gemini_ActivePageRoot(uia) {
-    if (!IsObject(uia))
-        return uia
-    docs := []
-    try docs := uia.FindAll({ Type: "Document" })
-    catch
-        docs := []
-    geminiDocs := []
-    for doc in docs {
-        name := ""
-        val := ""
-        try name := doc.Name
-        try val := doc.Value
-        if (InStr(val, "gemini.google.com", false) || InStr(name, "Gemini", false))
-            geminiDocs.Push(doc)
-    }
-    if (geminiDocs.Length = 0)
-        return uia
-    if (geminiDocs.Length = 1)
-        return geminiDocs[1]
-    title := ""
-    try {
-        hwnd := 0
-        try hwnd := uia.BrowserId
-        if (hwnd)
-            title := WinGetTitle("ahk_id " hwnd)
-    } catch {
-        title := ""
-    }
-    if (!title) {
-        try title := WinGetTitle("A")
-        catch
-            title := ""
-    }
-    best := 0
-    bestLen := 0
-    for doc in geminiDocs {
-        name := ""
-        try name := doc.Name
-        if (name && title && InStr(title, name, false) = 1 && StrLen(name) > bestLen) {
-            best := doc
-            bestLen := StrLen(name)
-        }
-    }
-    if (best)
-        return best
-    for doc in geminiDocs {
-        off := true
-        try off := doc.GetPropertyValue(UIA.Property.IsOffscreen)
-        if (!off)
-            return doc
-    }
-    return geminiDocs[geminiDocs.Length]
-}
+; Gemini_ActivePageRoot(uia) is defined in Lib\gemini_tools.ahk (included via Utils.ahk).
 
 ; Footer "Copy" lives on response-container, outside presented-response-container.
 ; The fence control lives in group.copy-button inside the presented body (or legacy code-block).

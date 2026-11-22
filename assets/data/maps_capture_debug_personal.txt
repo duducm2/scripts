@@ -1,26 +1,52 @@
-﻿{"session":"20261120130826","seq":1,"t":65202890,"step":"machine","data":{"computer":"EDUARDO","log":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\assets\\data\\maps_capture_debug_personal.txt","scriptDir":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts","user":"eduev","work":"no"}}
-{"session":"20261120130826","seq":2,"t":65202890,"step":"enter","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","title":"Campinas, São Paulo - Google Maps - Google Chrome"}}
-{"session":"20261120130826","seq":3,"t":65202968,"step":"attach","data":{"hwnd":"262294","ok":"1"}}
-{"session":"20261120130826","seq":4,"t":65202968,"step":"maximize","data":{"hwnd":"262294","ok":"1"}}
-{"session":"20261120130826","seq":5,"t":65202984,"step":"document","data":{"ok":"1"}}
-{"session":"20261120130826","seq":6,"t":65202984,"step":"collapse_panel","data":{"ok":"0"}}
-{"session":"20261120130826","seq":7,"t":65205671,"step":"hide_chrome","data":{"ok":"0"}}
-{"session":"20261120130826","seq":8,"t":65206875,"step":"session_start","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","isWork":"0","methods":"print,screen,canvas","outPath":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png"}}
-{"session":"20261120130826","seq":9,"t":65207000,"step":"pane","data":{"attempt":"1","b":"2159","h":"1977","l":"0","name":"Street View","ok":"1","r":"3840","t":"182","w":"3840"}}
-{"session":"20261120130826","seq":10,"t":65207000,"step":"rect_fit","data":{"attempt":"1","clientB":"2158","clientL":"0","clientR":"3840","clientT":"0","h":"1976","l":"0","ok":"1","paneH":"1977","paneL":"0","paneT":"182","paneW":"3840","rule":"intersect","t":"182","w":"3840"}}
-{"session":"20261120130826","seq":11,"t":65207015,"step":"method_start","data":{"attempt":"1","method":"print"}}
-{"session":"20261120130826","seq":12,"t":65207234,"step":"print_window","data":{"err":"","exists":"1","h":"1976","hwnd":"262294","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
-{"session":"20261120130826","seq":13,"t":65207234,"step":"method_file","data":{"attempt":"1","bytes":"33039","h":"1976","headerErr":"","method":"print","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
-{"session":"20261120130826","seq":14,"t":65207250,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png","minH":"1580","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261120130826","seq":15,"t":65207531,"step":"commit_header","data":{"bytes":"33039","err":"","h":"1976","ok":"1","w":"3840"}}
-{"session":"20261120130826","seq":16,"t":65207546,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
-{"session":"20261120130826","seq":17,"t":65207546,"step":"keep_png","data":{"bytes":"33039","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261120-130831-print-a1.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261120130826","seq":18,"t":65207562,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
-{"session":"20261120130826","seq":19,"t":65207578,"step":"method_start","data":{"attempt":"1","method":"screen"}}
-{"session":"20261120130826","seq":20,"t":65208890,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"1976","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
-{"session":"20261120130826","seq":21,"t":65208906,"step":"method_file","data":{"attempt":"1","bytes":"16423519","h":"1976","headerErr":"","method":"screen","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
-{"session":"20261120130826","seq":22,"t":65208906,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png","minH":"1580","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
-{"session":"20261120130826","seq":23,"t":65209171,"step":"commit_header","data":{"bytes":"16423519","err":"","h":"1976","ok":"1","w":"3840"}}
-{"session":"20261120130826","seq":24,"t":65209312,"step":"pixel_gate","data":{"code":"0","err":"","reason":"ok"}}
-{"session":"20261120130826","seq":25,"t":65209578,"step":"commit_ok","data":{"bytes":"16423519","dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png","h":"1976","w":"3840"}}
-{"session":"20261120130826","seq":26,"t":65211734,"step":"saved","data":{"name":"PALACE_QUICK_IMAGE_02.png","path":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE_02.png"}}
+﻿{"session":"20261122203923","seq":1,"t":265059656,"step":"machine","data":{"computer":"EDUARDO","log":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\assets\\data\\maps_capture_debug_personal.txt","scriptDir":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts","user":"eduev","work":"no"}}
+{"session":"20261122203923","seq":2,"t":265059656,"step":"enter","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","title":"Campinas, São Paulo - Google Maps - Google Chrome"}}
+{"session":"20261122203923","seq":3,"t":265059781,"step":"attach","data":{"hwnd":"1051500","ok":"1"}}
+{"session":"20261122203923","seq":4,"t":265060390,"step":"maximize","data":{"hwnd":"1051500","ok":"1"}}
+{"session":"20261122203923","seq":5,"t":265060421,"step":"document","data":{"ok":"1"}}
+{"session":"20261122203923","seq":6,"t":265060421,"step":"collapse_panel","data":{"ok":"0"}}
+{"session":"20261122203923","seq":7,"t":265063125,"step":"hide_chrome","data":{"ok":"0"}}
+{"session":"20261122203923","seq":8,"t":265064343,"step":"session_start","data":{"desktop":"C:\\Users\\eduev\\OneDrive\\Desktop","dpi":"144","isWork":"0","methods":"print,screen,canvas","outPath":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png"}}
+{"session":"20261122203923","seq":9,"t":265064453,"step":"pane","data":{"attempt":"1","b":"2161","h":"1979","l":"0","name":"Street View","ok":"1","r":"3840","t":"182","w":"3840"}}
+{"session":"20261122203923","seq":10,"t":265064453,"step":"rect_fit","data":{"attempt":"1","clientB":"2160","clientL":"0","clientR":"3840","clientT":"0","h":"1978","l":"0","ok":"1","paneH":"1979","paneL":"0","paneT":"182","paneW":"3840","rule":"intersect","t":"182","w":"3840"}}
+{"session":"20261122203923","seq":11,"t":265064468,"step":"method_start","data":{"attempt":"1","method":"print"}}
+{"session":"20261122203923","seq":12,"t":265064687,"step":"print_window","data":{"err":"","exists":"1","h":"1978","hwnd":"1051500","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
+{"session":"20261122203923","seq":13,"t":265064687,"step":"method_file","data":{"attempt":"1","bytes":"33072","h":"1978","headerErr":"","method":"print","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261122203923","seq":14,"t":265064703,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1582","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":15,"t":265064984,"step":"commit_header","data":{"bytes":"33072","err":"","h":"1978","ok":"1","w":"3840"}}
+{"session":"20261122203923","seq":16,"t":265065000,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261122203923","seq":17,"t":265065000,"step":"keep_png","data":{"bytes":"33072","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261122-203928-print-a1.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":18,"t":265065015,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"print"}}
+{"session":"20261122203923","seq":19,"t":265065031,"step":"method_start","data":{"attempt":"1","method":"screen"}}
+{"session":"20261122203923","seq":20,"t":265065625,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"1978","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
+{"session":"20261122203923","seq":21,"t":265065656,"step":"method_file","data":{"attempt":"1","bytes":"33072","h":"1978","headerErr":"","method":"screen","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261122203923","seq":22,"t":265065656,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1582","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":23,"t":265065937,"step":"commit_header","data":{"bytes":"33072","err":"","h":"1978","ok":"1","w":"3840"}}
+{"session":"20261122203923","seq":24,"t":265065937,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261122203923","seq":25,"t":265065953,"step":"keep_png","data":{"bytes":"33072","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261122-203929-screen-a1.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":26,"t":265065953,"step":"method_fail","data":{"attempt":"1","err":"blank or black image","method":"screen"}}
+{"session":"20261122203923","seq":27,"t":265065968,"step":"method_start","data":{"attempt":"1","method":"canvas"}}
+{"session":"20261122203923","seq":28,"t":265066281,"step":"canvas_token","data":{"title":"AHKMAPS:0:blank - Google Chrome","token":"0:blank"}}
+{"session":"20261122203923","seq":29,"t":265066328,"step":"method_fail","data":{"attempt":"1","bytes":"0","err":"blank or black image","h":"0","headerErr":"capture file missing","method":"canvas","w":"0"}}
+{"session":"20261122203923","seq":30,"t":265066328,"step":"retry","data":{"attempt":"2","lastErr":"blank or black image","lastMethod":"canvas"}}
+{"session":"20261122203923","seq":31,"t":265067281,"step":"pane","data":{"attempt":"2","b":"2161","h":"1979","l":"0","name":"Street View","ok":"1","r":"3840","t":"182","w":"3840"}}
+{"session":"20261122203923","seq":32,"t":265067281,"step":"rect_fit","data":{"attempt":"2","clientB":"2160","clientL":"0","clientR":"3840","clientT":"0","h":"1978","l":"0","ok":"1","paneH":"1979","paneL":"0","paneT":"182","paneW":"3840","rule":"intersect","t":"182","w":"3840"}}
+{"session":"20261122203923","seq":33,"t":265067281,"step":"method_start","data":{"attempt":"2","method":"print"}}
+{"session":"20261122203923","seq":34,"t":265067484,"step":"print_window","data":{"err":"","exists":"1","h":"1978","hwnd":"1051500","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
+{"session":"20261122203923","seq":35,"t":265067484,"step":"method_file","data":{"attempt":"2","bytes":"33072","h":"1978","headerErr":"","method":"print","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261122203923","seq":36,"t":265067500,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1582","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":37,"t":265067765,"step":"commit_header","data":{"bytes":"33072","err":"","h":"1978","ok":"1","w":"3840"}}
+{"session":"20261122203923","seq":38,"t":265067781,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261122203923","seq":39,"t":265067796,"step":"keep_png","data":{"bytes":"33072","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261122-203931-print-a2.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":40,"t":265067812,"step":"method_fail","data":{"attempt":"2","err":"blank or black image","method":"print"}}
+{"session":"20261122203923","seq":41,"t":265067812,"step":"method_start","data":{"attempt":"2","method":"screen"}}
+{"session":"20261122203923","seq":42,"t":265068468,"step":"copy_from_screen","data":{"err":"","exists":"1","h":"1978","ok":"1","out":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840","x":"0","y":"182"}}
+{"session":"20261122203923","seq":43,"t":265068500,"step":"method_file","data":{"attempt":"2","bytes":"33072","h":"1978","headerErr":"","method":"screen","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png","w":"3840"}}
+{"session":"20261122203923","seq":44,"t":265068500,"step":"commit_start","data":{"dest":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png","minH":"1582","minW":"3072","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":45,"t":265068765,"step":"commit_header","data":{"bytes":"33072","err":"","h":"1978","ok":"1","w":"3840"}}
+{"session":"20261122203923","seq":46,"t":265068796,"step":"pixel_gate","data":{"code":"2","err":"blank or black image","reason":"blank or black image"}}
+{"session":"20261122203923","seq":47,"t":265068796,"step":"keep_png","data":{"bytes":"33072","dest":"C:\\Users\\eduev\\Meu Drive\\17 - Projects\\scripts\\debug-maps-capture\\20261122-203932-screen-a2.png","reason":"blank or black image","src":"C:\\Users\\eduev\\AppData\\Local\\Temp\\ahk-maps-cap.png"}}
+{"session":"20261122203923","seq":48,"t":265068828,"step":"method_fail","data":{"attempt":"2","err":"blank or black image","method":"screen"}}
+{"session":"20261122203923","seq":49,"t":265068859,"step":"method_start","data":{"attempt":"2","method":"canvas"}}
+{"session":"20261122203923","seq":50,"t":265069000,"step":"canvas_token","data":{"title":"AHKMAPS:0:blank - Google Chrome","token":"0:blank"}}
+{"session":"20261122203923","seq":51,"t":265069156,"step":"method_fail","data":{"attempt":"2","bytes":"0","err":"blank or black image","h":"0","headerErr":"capture file missing","method":"canvas","w":"0"}}
+{"session":"20261122203923","seq":52,"t":265069156,"step":"fail","data":{"err":"a1 print: blank or black image | a1 screen: blank or black image | a1 canvas: blank or black image | a2 print: blank or black image | a2 screen: blank or black image | a2 canvas: blank or black image","lastErr":"blank or black image","lastMethod":"canvas","outPath":"C:\\Users\\eduev\\OneDrive\\Desktop\\PALACE_QUICK_IMAGE.png"}}

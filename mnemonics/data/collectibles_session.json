@@ -1,32 +1,6 @@
 {
   "items": [
     {
-      "id": "col_41f3d04bf701",
-      "palace_id": "PALACE_AI_03",
-      "slot": "trophy",
-      "name": "The Tipped Scales of Elo & Value",
-      "blurb": "An intricate armillary of spiraling rating stairs and weighted pricing scales, endlessly tested and mischievously tipped by climbing imps to represent AI pricing dynamics.",
-      "svg": "",
-      "image": "/assets/trophies/col_41f3d04bf701.png",
-      "anim": "bob",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-11T19:55:27Z"
-    },
-    {
-      "id": "col_7c5b753df1e4",
-      "palace_id": "PALACE_DATAANALYST_20",
-      "slot": "trophy",
-      "name": "Navigation Astrolabe & Metastore Catalog",
-      "blurb": "An intricate, ever-shifting navigational device used to catalog data pathways and manage workspace organization within the palace's Unity Catalog.",
-      "svg": "",
-      "image": "/assets/trophies/col_7c5b753df1e4.png",
-      "anim": "bob",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-12T02:39:37Z"
-    },
-    {
       "id": "col_5d5043e4354b",
       "palace_id": "PALACE_GERMAN_11",
       "slot": "trophy",
@@ -145,13 +119,39 @@
     },
     {
       "id": "col_0a1633286b68",
-      "created_at": "2026-11-22T23:11:00Z",
       "palace_id": "PALACE_DATAANALYST_28",
       "slot": "trophy",
       "name": "Windowed Rank & Aggregation Obelisk",
       "blurb": "Carved from dark veined marble, its segmented pillars and ascending ladder embody partitioned rows, ordered rankings, and grouped Spark aggregations.",
       "svg": "",
       "image": "/assets/trophies/col_0a1633286b68.png",
+      "anim": "float",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-11-22T23:11:00Z"
+    },
+    {
+      "id": "col_d84cf70e7378",
+      "palace_id": "PALACE_DATAANALYST_29",
+      "slot": "trophy",
+      "name": "Delta Chronometer Origami",
+      "blurb": "This folded geometric hourglass represents Delta Lake Time Travel by capturing historical table states across exact timestamps and version logs.",
+      "svg": "",
+      "image": "/assets/trophies/col_d84cf70e7378.png",
+      "anim": "float",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-11-22T23:34:01Z"
+    },
+    {
+      "id": "col_efc6afbf0191",
+      "created_at": "2026-11-22T23:38:10Z",
+      "palace_id": "PALACE_DATAANALYST_30",
+      "slot": "trophy",
+      "name": "Delta Table Restoration Ledger",
+      "blurb": "This cast bronze miniature honors the mastery of rolling back data blocks through versioned history while keeping operations safe from accidental overwrites or vacuum erasure.",
+      "svg": "",
+      "image": "/assets/trophies/col_efc6afbf0191.png",
       "anim": "float",
       "anchor": "pedestal",
       "equipped": true
