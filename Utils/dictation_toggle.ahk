@@ -21,7 +21,7 @@ global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to thr
 global g_DictationStartSound := A_ScriptDir . "\assets\sounds\speach-start.wav"
 ; Multi-lang (Handy slot 3) start cue. CC0: Robin Lamb, "UI Sound Effects",
 ; https://opengameart.org/content/ui-sound-effects-button-clicks-user-feedback-notifications
-; Pack file chimes.wav, raised 4.5 dB. Other pack chimes are much louder.
+; Pack file ding_deep.wav (instant attack, matches speach-start.wav loudness).
 global g_DictationStartSoundMultilang := A_ScriptDir . "\assets\sounds\dictation-start-multilang.wav"
 global g_DictationStopSound := A_ScriptDir . "\assets\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" (reserved for future)
@@ -1023,7 +1023,7 @@ StopDictationCheckTimer() {
 ; Toggle dictation mode on/off
 ; The check timer handles everything automatically, this just triggers an immediate check
 ToggleDictationMode() {
-    global g_DictationHotkeyIsOwner, g_DictationSoundPlayed
+    global g_DictationHotkeyIsOwner, g_DictationSoundPlayed, g_DictationCheckTimer
     if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
         return
     ; Trigger immediate check (the timer will handle showing/hiding)
@@ -1035,6 +1035,9 @@ ToggleDictationMode() {
     if (!g_DictationSoundPlayed) {
         SetTimer(CheckDictationRecordingWindow, 25)
         SetTimer(RevertDictationPolling, -3000)
+    } else if (!g_DictationCheckTimer) {
+        g_DictationCheckTimer := CheckDictationRecordingWindow
+        SetTimer(g_DictationCheckTimer, 500)
     }
 }
 
@@ -1103,7 +1106,7 @@ Dictation_ArmUserStopCompletion() {
 ; Only AppLaunchers owns this path (Dictation_IsOwnerProcess / g_DictationHotkeyIsOwner).
 ~#!+0::
 {
-    global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound, g_DictationStartClipboardText
+    global g_DictationActive, g_DictationSoundPlayed, g_LastStateTransitionTick, g_DictationStartSound, g_DictationStartClipboardText
     global g_ProgrammaticDictationStop, g_ProgrammaticDictationStart, g_PendingGeminiPromptAfterDictation,
         g_D2C_DictationSubmitMenuCycleFinished, g_DictationGeminiConfirmBannerVisible
     global g_DictationHotkeyIsOwner, g_DictationCompletionChimeScheduled
@@ -1168,16 +1171,23 @@ Dictation_ArmUserStopCompletion() {
             g_DictationCompletedText := ""
         }
 
-        ; Synthetic restart: Send has not released 0 yet, so KeyWait would never return.
-        if (!forcedStart)
-            KeyWait("0", "L")
-
         if (userStop) {
+            ; Synthetic restart: Send has not released 0 yet, so KeyWait would never return.
+            if (!forcedStart)
+                KeyWait("0", "L")
             ; Never fall into the start branch if Recording closed during KeyWait.
             Dictation_ArmUserStopCompletion()
         } else if (!g_DictationActive) {
-            ; START. Snapshot before the poll; the poll skips this once active is already true.
+            ; START. Play the start cue immediately on keydown (~ already passed to Handy),
+            ; before GUI creation, mic script, Recording overlay polling, or KeyWait.
+            Critical "On"
             g_DictationActive := true
+            shouldPlayStartSound := !g_DictationSoundPlayed
+            g_DictationSoundPlayed := true
+            Critical "Off"
+            if (shouldPlayStartSound)
+                SafePlayDictationSound(Dictation_StartSoundForCurrentModel())
+
             g_DictationCompletedText := ""
             if (!forcedStart) {
                 Dictation_StopClipboardListen()
@@ -1193,7 +1203,12 @@ Dictation_ArmUserStopCompletion() {
             } catch {
             }
             ToggleDictationMode()
+            ; Wait for physical release after starting to block typematic repeats without delaying audio.
+            if (!forcedStart)
+                KeyWait("0", "L")
         } else {
+            if (!forcedStart)
+                KeyWait("0", "L")
             ToggleDictationMode()
         }
     } finally {
