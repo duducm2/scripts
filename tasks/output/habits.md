@@ -92,7 +92,7 @@
 🔲 💰 Portfolio Allocation Strategy
 ### Quarterly
 
-🔲 The next time I go to the dramatologist, ask for the version of your sunscreen that has color in it
+⚡ The next time I go to the dramatologist, ask for the version of your sunscreen that has color in it
 ### Bi-yearly (Every 6 months)
 
 🩺 Tomar vermífugo
