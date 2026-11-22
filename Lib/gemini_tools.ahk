@@ -72,12 +72,15 @@ Gemini_IsToolsMenuOpen(uia) {
             return true
         if uia.FindFirst({ Name: "Menu options", Type: UIA.Type.Menu })
             return true
+        if uia.FindFirst({ Type: 50009 })
+            return true
     } catch {
     }
     try {
         for el in uia.FindAll({ Type: 50026 }) {
             cls := el.ClassName
             if InStr(cls, "card-container", false) || InStr(cls, "menu-list-container", false)
+            || InStr(cls, "mat-mdc-menu-panel", false)
                 return true
         }
     } catch {
@@ -85,6 +88,15 @@ Gemini_IsToolsMenuOpen(uia) {
     try {
         for cb in uia.FindAll({ Type: GEMINI_TOOLBOX_CHECKBOX_TYPE }) {
             if InStr(cb.ClassName, "toolbox-drawer-item-list-button", false)
+                return true
+        }
+    } catch {
+    }
+    try {
+        for mi in uia.FindAll({ Type: 50011 }) {
+            nm := mi.Name
+            if InStr(nm, "Create image", false) || InStr(nm, "Criar imagem", false)
+            || InStr(nm, "Upload", false) || InStr(nm, "Deep research", false)
                 return true
         }
     } catch {
@@ -148,9 +160,14 @@ Gemini_FindToolboxMenuPane(uia) {
         if m
             return m
         for el in uia.FindAll({ Type: 50026 }) {
-            if InStr(el.ClassName, "card-container", false)
+            cls := el.ClassName
+            if InStr(cls, "card-container", false) || InStr(cls, "mat-mdc-menu-panel", false)
+            || InStr(cls, "menu-list-container", false)
                 return el
         }
+        m := uia.FindFirst({ Type: 50009 })
+        if m
+            return m
     } catch {
     }
     return 0
@@ -237,20 +254,41 @@ Gemini_FindToolboxCheckBoxInScope(scope, nameSubstrings) {
         allCb := scope.FindAll({ Type: GEMINI_TOOLBOX_CHECKBOX_TYPE })
         if !allCb || allCb.Length = 0
             allCb := scope.FindAll({ Type: "CheckBox" })
-        if !allCb
-            return 0
-        for sub in nameSubstrings {
-            for cb in allCb {
-                try {
-                    nm := cb.Name
-                    cls := cb.ClassName
-                } catch {
-                    continue
+        if (allCb) {
+            for sub in nameSubstrings {
+                for cb in allCb {
+                    try {
+                        nm := cb.Name
+                        cls := cb.ClassName
+                    } catch {
+                        continue
+                    }
+                    if !InStr(cls, "toolbox-drawer-item", false)
+                        continue
+                    if InStr(nm, sub, false)
+                        return cb
                 }
-                if !InStr(cls, "toolbox-drawer-item", false)
-                    continue
-                if InStr(nm, sub, false)
-                    return cb
+            }
+        }
+        ; Fallback for gem-menu-redesign (Upload & tools) where items may be MenuItem, Button, or CheckBox
+        ; without the legacy "toolbox-drawer-item" class.
+        for ctrlType in [50011, GEMINI_TOOLBOX_CHECKBOX_TYPE, 50000] {
+            items := 0
+            try items := scope.FindAll({ Type: ctrlType })
+            if (!items || items.Length = 0)
+                continue
+            for sub in nameSubstrings {
+                for item in items {
+                    try nm := item.Name
+                    catch
+                        continue
+                    if (nm = "")
+                        continue
+                    if InStr(nm, "Deselect", false) || InStr(nm, "Remove ", false) || InStr(nm, "Remover ", false)
+                        continue
+                    if InStr(nm, sub, false)
+                        return item
+                }
             }
         }
     } catch {
@@ -273,6 +311,11 @@ Gemini_ActivateToolboxItem(el) {
     }
     try {
         el.Click("left")
+        return
+    } catch {
+    }
+    try {
+        el.Click()
     } catch {
     }
 }
@@ -284,7 +327,7 @@ Gemini_ToggleCreateImage() {
         if !IsObject(uia)
             return false
         Sleep 150
-        subs := ["Create image", "Criar imagem"]
+        subs := ["Create image", "Create images", "Criar imagem", "Criar imagens"]
         cb := 0
         try cb := UiElements_TrySaved(uia, "Gemini", "CreateImage")
         if !cb
@@ -296,6 +339,8 @@ Gemini_ToggleCreateImage() {
             if !cb
                 cb := Gemini_FindToolboxCheckBox(uia, subs)
         }
+        if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs)
+            cb := Gemini_FindToolboxCheckBox(uia, subs)
         if !cb
             return false
         Gemini_ActivateToolboxItem(cb)

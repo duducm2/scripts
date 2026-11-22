@@ -1,19 +1,6 @@
 {
   "items": [
     {
-      "id": "col_6077cd38a501",
-      "palace_id": "PALACE_SKILLS_05",
-      "slot": "trophy",
-      "name": "The Shuffling Mind",
-      "blurb": "Representing the art of cognitive shuffling, this miniature bronze owl and Neanderthal navigate a tumbling cascade of scrambled thoughts to quiet the mind for rest.",
-      "svg": "",
-      "image": "/assets/trophies/col_6077cd38a501.png",
-      "anim": "sway",
-      "anchor": "pedestal",
-      "equipped": true,
-      "created_at": "2026-10-11T19:18:01Z"
-    },
-    {
       "id": "col_41f3d04bf701",
       "palace_id": "PALACE_AI_03",
       "slot": "trophy",
@@ -145,7 +132,6 @@
     },
     {
       "id": "col_98b4bfcf68ea",
-      "created_at": "2026-11-02T15:58:33Z",
       "palace_id": "PALACE_DATAANALYST_16",
       "slot": "trophy",
       "name": "API to Power BI Clay Conduit",
@@ -153,6 +139,20 @@
       "svg": "",
       "image": "/assets/trophies/col_98b4bfcf68ea.png",
       "anim": "bob",
+      "anchor": "pedestal",
+      "equipped": true,
+      "created_at": "2026-11-02T15:58:33Z"
+    },
+    {
+      "id": "col_0a1633286b68",
+      "created_at": "2026-11-22T23:11:00Z",
+      "palace_id": "PALACE_DATAANALYST_28",
+      "slot": "trophy",
+      "name": "Windowed Rank & Aggregation Obelisk",
+      "blurb": "Carved from dark veined marble, its segmented pillars and ascending ladder embody partitioned rows, ordered rankings, and grouped Spark aggregations.",
+      "svg": "",
+      "image": "/assets/trophies/col_0a1633286b68.png",
+      "anim": "float",
       "anchor": "pedestal",
       "equipped": true
     }
