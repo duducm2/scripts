@@ -55,27 +55,69 @@
     SetTimer(() => ToolTip(), -2000)
 }
 
-; Shift + I : Click Images tab (keeps current search query)
+; Shift + I : Click Images / Imagens tab (keeps current search query)
 +i:: {
     try {
         uia := UIA_Browser()
         Sleep 200
 
-        imagesBtn := UiElements_TrySaved(uia, "Google", "Images")
-        if !imagesBtn
-            imagesBtn := uia.FindFirst({ Name: "Images", Type: "Link" })
-        if !imagesBtn
-            imagesBtn := uia.FindFirst({ Name: "Imagens", Type: "Link" })
-        if !imagesBtn
-            imagesBtn := uia.FindFirst({ Name: "Images" })
-        if !imagesBtn
-            imagesBtn := uia.FindFirst({ Name: "Imagens" })
+        root := uia
+        try {
+            if (doc := uia.GetCurrentDocumentElement())
+                root := doc
+        } catch {
+        }
+
+        imagesBtn := UiElements_TrySaved(root, "Google", "Images")
+        if (!imagesBtn && root != uia)
+            imagesBtn := UiElements_TrySaved(uia, "Google", "Images")
+
+        if !imagesBtn {
+            for label in ["Images", "Imagens"] {
+                for ctrlType in ["Link", "TabItem", "Button"] {
+                    try imagesBtn := root.FindFirst({ Name: label, Type: ctrlType })
+                    catch
+                        imagesBtn := 0
+                    if (imagesBtn)
+                        break 2
+                }
+            }
+        }
+        if !imagesBtn {
+            for label in ["Images", "Imagens"] {
+                try imagesBtn := root.FindFirst({ Name: label })
+                catch
+                    imagesBtn := 0
+                if (imagesBtn) {
+                    ; If we matched a Text/Group inside the tab link, walk up to the clickable ancestor.
+                    cur := imagesBtn
+                    Loop 4 {
+                        try {
+                            t := cur.Type
+                            if (t = 50005 || t = 50019 || t = 50000) { ; Link, TabItem, Button
+                                imagesBtn := cur
+                                break
+                            }
+                            cur := cur.WalkTree("p")
+                            if !cur
+                                break
+                        } catch {
+                            break
+                        }
+                    }
+                    break
+                }
+            }
+        }
 
         if (imagesBtn) {
             try {
                 imagesBtn.Invoke()
             } catch {
-                imagesBtn.Click()
+                try imagesBtn.Click()
+                catch {
+                    imagesBtn.Select()
+                }
             }
             return
         }
