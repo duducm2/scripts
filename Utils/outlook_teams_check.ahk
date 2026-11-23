@@ -376,45 +376,59 @@ CleanClipboard_RunUiFallback(run, &outStage := "", &outDetail := "") {
             return false
 
         CleanClipboard_UpdateProgress(75, "⏳ " run.attemptTag "[2/3] Sending delete non-favorites...")
-        confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true)
-        if (!confirmed) {
-            try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE
-            try ClipAngel_FocusGridIfFilterCombo()
-            catch {
-            }
-            try {
-                ControlSend("^!k", , "ahk_id " hwnd)
-                confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(900)
-            } catch {
-                confirmed := false
-            }
+        ; Spawn out-of-process dialog confirmer BEFORE ^!k or synchronous UIA Invoke so AHK ComCall never deadlocks on MessageBox.Show.
+        confirmerHandle := 0
+        try confirmerHandle := ClipAngelDb_SpawnDialogConfirmer(4000)
+        catch {
+            confirmerHandle := 0
         }
-        if (!confirmed && !run.cancelled && !CleanClipboard_ShouldAbort(run.sessionId)) {
-            CleanClipboard_UpdateProgress(85, "⏳ " run.attemptTag "[2/3] Trying List menu fallback...")
-            if (!root) {
-                try root := UIA.ElementFromHandle(hwnd)
+        try {
+            confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true)
+            if (!confirmed) {
+                try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE
+                try ClipAngel_FocusGridIfFilterCombo()
                 catch {
-                    root := 0
+                }
+                try {
+                    ControlSend("^!k", , "ahk_id " hwnd)
+                    confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(450)
+                } catch {
+                    confirmed := false
                 }
             }
-            menuDialogConfirmed := false
-            menuPollCb := (*) => (
-                !menuDialogConfirmed && ClipAngel_TryConfirmDeleteDialogOnce(true)
-                    ? (menuDialogConfirmed := true) : 0
-            )
-            SetTimer(menuPollCb, 50)
-            menuInvoked := false
-            try {
-                menuInvoked := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
-            } finally {
-                SetTimer(menuPollCb, 0)
+            if (!confirmed && !run.cancelled && !CleanClipboard_ShouldAbort(run.sessionId)) {
+                CleanClipboard_UpdateProgress(85, "⏳ " run.attemptTag "[2/3] Trying List menu fallback...")
+                if (!root) {
+                    try root := UIA.ElementFromHandle(hwnd)
+                    catch {
+                        root := 0
+                    }
+                }
+                menuDialogConfirmed := false
+                menuPollCb := (*) => (
+                    !menuDialogConfirmed && ClipAngel_TryConfirmDeleteDialogOnce(true)
+                        ? (menuDialogConfirmed := true) : 0
+                )
+                SetTimer(menuPollCb, 50)
+                menuInvoked := false
+                try {
+                    menuInvoked := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
+                } finally {
+                    SetTimer(menuPollCb, 0)
+                }
+                if (menuDialogConfirmed || (confirmerHandle && confirmerHandle.done))
+                    confirmed := true
+                else if (menuInvoked)
+                    confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1000) || (confirmerHandle && confirmerHandle.done)
+                else
+                    confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true) || (confirmerHandle && confirmerHandle.done)
             }
-            if (menuDialogConfirmed)
-                confirmed := true
-            else if (menuInvoked)
-                confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500)
-            else
-                confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true)
+        } finally {
+            if (confirmerHandle) {
+                try ClipAngelDb_CancelAsync(confirmerHandle)
+                catch {
+                }
+            }
         }
         if (!confirmed) {
             dbPrefix := (run.attemptDetail != "") ? (run.attemptDetail " -> ") : ""
@@ -566,7 +580,9 @@ CleanClipboard_RunAttempt(run) {
         } else {
             run.dbOk := false
             run.attemptStage := "2/3 DB"
-            run.attemptDetail := timedOut ? "ClipAngelDb timed out" : "ClipAngelDb deletenonfav failed/busy"
+            errMsg := Trim(StrReplace(StrReplace(outText, "READY", ""), "`r`n", " "))
+            run.attemptDetail := timedOut ? "ClipAngelDb timed out"
+                : (errMsg != "" ? "ClipAngelDb failed: " errMsg : "ClipAngelDb deletenonfav failed/busy")
         }
         CleanClipboard_CheckBarrier(run)
     }

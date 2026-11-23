@@ -40,10 +40,6 @@ ClipAngelDb_StartProcess(exe, args, workDir, useStdin := false) {
         DllCall("SetHandleInformation", "Ptr", hInWrite, "UInt", 1, "UInt", 0) ; clear HANDLE_FLAG_INHERIT
     }
 
-    hNull := DllCall("CreateFileW", "WStr", "NUL", "UInt", 0x40000000, "UInt", 3, "Ptr", sa, "UInt", 3, "UInt", 0, "Ptr", 0, "Ptr")
-    if (hNull = -1)
-        hNull := 0
-
     siSize := (A_PtrSize = 8) ? 104 : 68
     si := Buffer(siSize, 0)
     NumPut("UInt", siSize, si, 0)
@@ -51,7 +47,7 @@ ClipAngelDb_StartProcess(exe, args, workDir, useStdin := false) {
     NumPut("UShort", 0, si, (A_PtrSize = 8) ? 64 : 48)    ; SW_HIDE
     NumPut("Ptr", useStdin ? hInRead : 0, si, (A_PtrSize = 8) ? 80 : 56) ; hStdInput
     NumPut("Ptr", hWrite, si, (A_PtrSize = 8) ? 88 : 60)  ; hStdOutput
-    NumPut("Ptr", hNull ? hNull : hWrite, si, (A_PtrSize = 8) ? 96 : 64) ; hStdError
+    NumPut("Ptr", hWrite, si, (A_PtrSize = 8) ? 96 : 64)  ; hStdError (capture errors instead of NUL)
 
     pi := Buffer((A_PtrSize = 8) ? 24 : 16, 0)
     cmdLine := '"' exe '"' (args != "" ? " " args : "")
@@ -61,8 +57,6 @@ ClipAngelDb_StartProcess(exe, args, workDir, useStdin := false) {
     DllCall("CloseHandle", "Ptr", hWrite)
     if (hInRead)
         DllCall("CloseHandle", "Ptr", hInRead)
-    if (hNull)
-        DllCall("CloseHandle", "Ptr", hNull)
     if (!ok) {
         DllCall("CloseHandle", "Ptr", hRead)
         if (hInWrite)
@@ -241,6 +235,12 @@ ClipAngelDb_CancelAsync(handle) {
         }
     }
     ClipAngelDb_CloseProcess(handle.proc, true)
+}
+
+; Spawns an out-of-process ClipAngelDb.exe confirmdelete watcher that clicks IDOK (1) / IDYES (6)
+; on ClipAngel's #32770 confirmation dialog even while AHK is blocked inside a synchronous UIA ComCall.
+ClipAngelDb_SpawnDialogConfirmer(timeoutMs := 4000) {
+    return ClipAngelDb_StartAsync("confirmdelete " Integer(timeoutMs), timeoutMs + 1000, 0, true)
 }
 
 ; Run helper; returns stdout (trimmed) on exit 0, else "".

@@ -6,7 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -15,13 +17,47 @@ internal static class Program
     const string Password = "Magic67234784";
     const int DefaultWaitPollMs = 50;
 
+    delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+    [DllImport("user32.dll")]
+    static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    [DllImport("user32.dll")]
+    static extern IntPtr GetDlgItem(IntPtr hDlg, int nIDDlgItem);
+
+    [DllImport("user32.dll")]
+    static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    static extern bool IsWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll")]
+    static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    static extern bool SetDllDirectory(string lpPathName);
+
     static int Main(string[] args)
     {
         if (args == null || args.Length < 1)
         {
-            Console.Error.WriteLine("usage: ClipAngelDb <maxid|waitnew|newest|isfav|mergepayload|setfav|favnewest|unfavall|deletenonfav> ...");
+            Console.Error.WriteLine("usage: ClipAngelDb <maxid|waitnew|newest|isfav|mergepayload|setfav|favnewest|unfavall|deletenonfav|deletenonfav-staged|confirmdelete> ...");
             return 1;
         }
+
+        TryConfigureClipAngelDllDirectory();
 
         string cmd = args[0].Trim().ToLowerInvariant();
         try
@@ -63,6 +99,8 @@ internal static class Program
                     return CmdDeleteNonFav();
                 case "deletenonfav-staged":
                     return CmdDeleteNonFavStaged();
+                case "confirmdelete":
+                    return CmdConfirmDelete(args.Length >= 2 ? ParseInt(args[1]) : 4000);
                 default:
                     Console.Error.WriteLine("unknown command: " + cmd);
                     return 1;
@@ -91,18 +129,166 @@ internal static class Program
         return v;
     }
 
-    static string ResolveDbPath()
+    static string GetRunningClipAngelDir()
     {
-        string env = Environment.GetEnvironmentVariable("CLIPANGEL_DB_PATH");
-        if (!string.IsNullOrWhiteSpace(env))
-            return env.Trim();
-        string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(local, "ClipAngel", "db.sqlite");
+        try
+        {
+            Process[] procs = Process.GetProcessesByName("ClipAngel");
+            foreach (var p in procs)
+            {
+                try
+                {
+                    string exePath = p.MainModule.FileName;
+                    if (!string.IsNullOrEmpty(exePath))
+                        return Path.GetDirectoryName(exePath);
+                }
+                catch
+                {
+                }
+            }
+        }
+        catch
+        {
+        }
+        return "";
     }
 
-    static SQLiteConnection OpenReadOnly()
+    static void TryConfigureClipAngelDllDirectory()
     {
-        string path = ResolveDbPath();
+        try
+        {
+            string dir = GetRunningClipAngelDir();
+            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+                SetDllDirectory(dir);
+        }
+        catch
+        {
+        }
+    }
+
+    // Finds and confirms any open ClipAngel #32770 confirmation dialog (MessageBoxButtons.OKCancel -> IDOK=1, or YesNo -> IDYES=6).
+    static bool ConfirmAnyClipAngelDeleteDialogs()
+    {
+        var clipAngelPids = new HashSet<uint>();
+        try
+        {
+            foreach (var p in Process.GetProcessesByName("ClipAngel"))
+                clipAngelPids.Add((uint)p.Id);
+        }
+        catch
+        {
+        }
+        if (clipAngelPids.Count == 0)
+            return false;
+
+        var dialogs = new List<IntPtr>();
+        EnumWindows((hWnd, lParam) =>
+        {
+            uint pid;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if (!clipAngelPids.Contains(pid))
+                return true;
+            var sb = new StringBuilder(64);
+            if (GetClassName(hWnd, sb, sb.Capacity) > 0 && sb.ToString() == "#32770")
+                dialogs.Add(hWnd);
+            return true;
+        }, IntPtr.Zero);
+
+        bool closedAny = false;
+        foreach (IntPtr dlg in dialogs)
+        {
+            try
+            {
+                int exStyle = GetWindowLong(dlg, -20);
+                SetWindowLong(dlg, -20, exStyle | 0x00080000); // WS_EX_LAYERED
+                SetLayeredWindowAttributes(dlg, 0, 0, 2);       // Opacity 0
+            }
+            catch
+            {
+            }
+
+            IntPtr btnOk = GetDlgItem(dlg, 1);  // IDOK (MessageBoxButtons.OKCancel)
+            IntPtr btnYes = GetDlgItem(dlg, 6); // IDYES (MessageBoxButtons.YesNo)
+            if (btnOk != IntPtr.Zero)
+                PostMessage(btnOk, 0x00F5, IntPtr.Zero, IntPtr.Zero); // BM_CLICK
+            if (btnYes != IntPtr.Zero)
+                PostMessage(btnYes, 0x00F5, IntPtr.Zero, IntPtr.Zero); // BM_CLICK
+
+            PostMessage(dlg, 0x0111, new IntPtr(1), btnOk);  // WM_COMMAND IDOK
+            PostMessage(dlg, 0x0111, new IntPtr(6), btnYes); // WM_COMMAND IDYES
+
+            int waitEnd = Environment.TickCount + 150;
+            while (unchecked(Environment.TickCount - waitEnd) < 0)
+            {
+                if (!IsWindow(dlg))
+                {
+                    closedAny = true;
+                    break;
+                }
+                Thread.Sleep(15);
+            }
+            if (!IsWindow(dlg))
+                closedAny = true;
+        }
+        return closedAny;
+    }
+
+    static int CmdConfirmDelete(int timeoutMs)
+    {
+        if (timeoutMs < 50)
+            timeoutMs = 50;
+        int deadline = Environment.TickCount + timeoutMs;
+        while (true)
+        {
+            if (ConfirmAnyClipAngelDeleteDialogs())
+            {
+                Console.Write("1");
+                return 0;
+            }
+            if (unchecked(Environment.TickCount - deadline) >= 0)
+                return 2;
+            Thread.Sleep(20);
+        }
+    }
+
+    static List<string> ResolveDbPaths()
+    {
+        var paths = new List<string>();
+        string env = Environment.GetEnvironmentVariable("CLIPANGEL_DB_PATH");
+        if (!string.IsNullOrWhiteSpace(env))
+        {
+            string p = env.Trim();
+            if (File.Exists(p))
+                paths.Add(p);
+        }
+
+        string caDir = GetRunningClipAngelDir();
+        if (!string.IsNullOrEmpty(caDir))
+        {
+            string portableDb = Path.Combine(caDir, "db.sqlite");
+            if (File.Exists(portableDb) && !paths.Contains(portableDb))
+                paths.Add(portableDb);
+        }
+
+        string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string localDb = Path.Combine(local, "ClipAngel", "db.sqlite");
+        if (File.Exists(localDb) && !paths.Contains(localDb))
+            paths.Add(localDb);
+
+        paths.Sort((a, b) => File.GetLastWriteTimeUtc(b).CompareTo(File.GetLastWriteTimeUtc(a)));
+        if (paths.Count == 0)
+            paths.Add(localDb);
+        return paths;
+    }
+
+    static string ResolveDbPath()
+    {
+        return ResolveDbPaths()[0];
+    }
+
+    static SQLiteConnection OpenReadOnly(string explicitPath = null)
+    {
+        string path = string.IsNullOrEmpty(explicitPath) ? ResolveDbPath() : explicitPath;
         if (!File.Exists(path))
             throw new FileNotFoundException("ClipAngel DB not found: " + path);
         // Read Only=True avoids write locks; Password matches ClipAngel Main.cs.
@@ -112,9 +298,9 @@ internal static class Program
         return con;
     }
 
-    static SQLiteConnection OpenWrite()
+    static SQLiteConnection OpenWrite(string explicitPath = null)
     {
-        string path = ResolveDbPath();
+        string path = string.IsNullOrEmpty(explicitPath) ? ResolveDbPath() : explicitPath;
         if (!File.Exists(path))
             throw new FileNotFoundException("ClipAngel DB not found: " + path);
         string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=5000;";
@@ -356,50 +542,65 @@ internal static class Program
 
     static int CmdDeleteNonFav()
     {
-        for (int attempt = 0; attempt < 5; attempt++)
+        ConfirmAnyClipAngelDeleteDialogs();
+        List<string> dbPaths = ResolveDbPaths();
+        int totalDeleted = 0;
+        long totalRemaining = 0;
+
+        foreach (string dbPath in dbPaths)
         {
-            try
+            if (!File.Exists(dbPath))
+                continue;
+            for (int attempt = 0; attempt < 5; attempt++)
             {
-                using (var con = OpenWrite())
-                using (var tx = con.BeginTransaction())
+                try
                 {
-                    int rows = 0;
-                    using (var cmd = con.CreateCommand())
+                    ConfirmAnyClipAngelDeleteDialogs();
+                    using (var con = OpenWrite(dbPath))
+                    using (var tx = con.BeginTransaction())
                     {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL";
-                        rows = cmd.ExecuteNonQuery();
-                    }
+                        int rows = 0;
+                        using (var cmd = con.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL";
+                            rows = cmd.ExecuteNonQuery();
+                        }
 
-                    long remaining = 0;
-                    using (var cmd = con.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL";
-                        object o = cmd.ExecuteScalar();
-                        remaining = (o == null || o == DBNull.Value) ? 0L : Convert.ToInt64(o);
-                    }
+                        long remaining = 0;
+                        using (var cmd = con.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL";
+                            object o = cmd.ExecuteScalar();
+                            remaining = (o == null || o == DBNull.Value) ? 0L : Convert.ToInt64(o);
+                        }
 
-                    tx.Commit();
-                    Console.Write(rows + "\t" + remaining);
-                    return remaining == 0 ? 0 : 2;
+                        tx.Commit();
+                        totalDeleted += rows;
+                        totalRemaining += remaining;
+                        break;
+                    }
+                }
+                catch (SQLiteException)
+                {
+                    if (attempt == 4)
+                        throw;
+                    Thread.Sleep(60 + (attempt * 60));
                 }
             }
-            catch (SQLiteException)
-            {
-                if (attempt == 4)
-                    throw;
-                Thread.Sleep(60 + (attempt * 60));
-            }
         }
-        return 2;
+
+        Console.Write(totalDeleted + "\t" + totalRemaining);
+        return totalRemaining == 0 ? 0 : 2;
     }
 
     static int CmdDeleteNonFavStaged()
     {
-        // Pre-warm SQLite + key derivation without holding a write lock.
+        // Unstick any leftover #32770 confirmation dialog and pre-warm SQLite without holding a write lock.
         try
         {
+            ConfirmAnyClipAngelDeleteDialogs();
             using (var con = OpenReadOnly())
             {
                 Scalar(con, "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
