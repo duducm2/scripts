@@ -558,64 +558,41 @@ RunTeams() {
 ; Start New Conversation
 ; Hotkey: Win+Alt+Shift+R
 ; 1× = WhatsApp jump to chat; 2× within 500ms = Teams jump to chat
+; Modal opens immediately on tap 1 (WhatsApp) and switches in-place to Teams on tap 2.
 ; Original File: Microsoft Teams - New conversation.ahk
 ; =============================================================================
 global Teams_R_DoubleTapArmed := false
 global Teams_R_LastPressTick := 0
 global Teams_R_DoubleTapThresholdMs := 500
 global Teams_R_DoubleTapTimer := 0
-global Teams_R_DoubleTapOverlayGui := ""
-
-Teams_R_DoubleTap_ShowOverlay() {
-    global Teams_R_DoubleTapOverlayGui
-    if (Teams_R_DoubleTapOverlayGui) {
-        Teams_R_DoubleTapOverlayGui.Destroy()
-        Teams_R_DoubleTapOverlayGui := ""
-    }
-    Teams_R_DoubleTapOverlayGui := Gui("+ToolWindow +AlwaysOnTop -Caption +E0x20 -DPIScale", "Teams_R_DoubleTapOverlay"
-    )
-    Teams_R_DoubleTapOverlayGui.BackColor := "2980B9"
-    WinSetTransColor("2980B9", Teams_R_DoubleTapOverlayGui.Hwnd)
-    Teams_R_DoubleTapOverlayGui.SetFont("s11 w700 cWhite", "Segoe UI")
-    ovlW := 300, ovlH := 36
-    Teams_R_DoubleTapOverlayGui.Add("Text", "x12 y8 w276 h20 0x200 Background2980B9 Center",
-        "Tap again → Teams")
-    mon := 0
-    try mon := MonitorGetPrimary()
-    MonitorGetWorkArea(mon, &mlx, &mty, &mrx, &mby)
-    ovlX := mlx + ((mrx - mlx) - ovlW) // 2
-    ovlY := mty + 48
-    Teams_R_DoubleTapOverlayGui.Show("NoActivate x" ovlX " y" ovlY " w" ovlW " h" ovlH)
-}
-
-Teams_R_DoubleTap_HideOverlay() {
-    global Teams_R_DoubleTapOverlayGui
-    if (Teams_R_DoubleTapOverlayGui) {
-        Teams_R_DoubleTapOverlayGui.Destroy()
-        Teams_R_DoubleTapOverlayGui := ""
-    }
-}
 
 class Teams_R_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
         global Teams_R_DoubleTapArmed, Teams_R_DoubleTapTimer, Teams_R_LastPressTick
+        global g_ChatFavGui, g_ChatFavGuiHwnd, g_ChatFavAppKey
         if (!Teams_R_DoubleTapArmed)
             return
         Teams_R_DoubleTapArmed := false
         Teams_R_LastPressTick := 0
         Teams_R_DoubleTapTimer := 0
-        Teams_R_DoubleTap_HideOverlay()
-        SetTimer((*) => WhatsApp_StartNewConversationJump(), -1)
+        if (g_ChatFavGuiHwnd && DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd) && g_ChatFavAppKey = "WhatsApp") {
+            try g_ChatFavGui.Title := "Jump to Chat — WhatsApp"
+            catch {
+            }
+            SetTimer((*) => ChatFav_PrewarmWhatsApp(), -1)
+        }
     }
 }
 
 global g_ChatFavGui := 0
 global g_ChatFavGuiHwnd := 0
 global g_ChatFavEditCtrl := 0
+global g_ChatFavPromptCtrl := 0
 global g_ChatFavRowCtrls := []
 global g_ChatFavAppKey := ""
-global g_ChatFavResult := ""
-global g_ChatFavDone := false
+global g_ChatFavAppLabel := ""
+global g_ChatFavTeamsWasClosed := false
+global g_ChatFavFocusGuardTimer := 0
 
 ChatFav_IniPath() {
     return A_ScriptDir . "\assets\data\chat_favorites.ini"
@@ -701,7 +678,7 @@ ChatFav_EditSlot(slot, *) {
 }
 
 ChatFav_PickSlot(slot, *) {
-    global g_ChatFavAppKey, g_ChatFavResult, g_ChatFavDone
+    global g_ChatFavAppKey
     favs := ChatFav_Load(g_ChatFavAppKey)
     name := favs[slot]
     if (name = "") {
@@ -711,8 +688,7 @@ ChatFav_PickSlot(slot, *) {
         if (name = "")
             return
     }
-    g_ChatFavResult := name
-    g_ChatFavDone := true
+    ChatFav_Finish(name)
 }
 
 ChatFav_SetHotkeys(enable) {
@@ -740,23 +716,83 @@ ChatFav_SetHotkeys(enable) {
     }
 }
 
-ChatFav_PromptContact(appLabel, appKey) {
-    global g_ChatFavGui, g_ChatFavGuiHwnd, g_ChatFavEditCtrl, g_ChatFavRowCtrls
-    global g_ChatFavAppKey, g_ChatFavResult, g_ChatFavDone
+ChatFav_FocusGuard(*) {
+    global g_ChatFavGuiHwnd
+    if (!g_ChatFavGuiHwnd || !DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd))
+        return
+    ; If Teams finishes launching in parallel and steals focus, keep the picker on top.
+    if (WinActive("ahk_exe ms-teams.exe") && !WinActive("Edit Favorite #")) {
+        try WinActivate("ahk_id " g_ChatFavGuiHwnd)
+        catch {
+        }
+    }
+}
+
+ChatFav_Cleanup() {
+    global g_ChatFavGui, g_ChatFavGuiHwnd, g_ChatFavEditCtrl, g_ChatFavPromptCtrl, g_ChatFavRowCtrls
+    global g_ChatFavFocusGuardTimer, g_ChatFavTeamsWasClosed
+    if (g_ChatFavFocusGuardTimer) {
+        SetTimer(g_ChatFavFocusGuardTimer, 0)
+        g_ChatFavFocusGuardTimer := 0
+    }
+    ChatFav_SetHotkeys(false)
+    g_ChatFavGuiHwnd := 0
+    g_ChatFavEditCtrl := 0
+    g_ChatFavPromptCtrl := 0
+    g_ChatFavRowCtrls := []
+    g_ChatFavTeamsWasClosed := false
+    if (IsObject(g_ChatFavGui)) {
+        try g_ChatFavGui.Destroy()
+        catch {
+        }
+    }
+    g_ChatFavGui := 0
+}
+
+ChatFav_Finish(result) {
+    global g_ChatFavAppKey, g_ChatFavTeamsWasClosed
+    global Teams_R_DoubleTapArmed, Teams_R_LastPressTick, Teams_R_DoubleTapTimer
+
+    if (Teams_R_DoubleTapTimer) {
+        SetTimer(Teams_R_DoubleTapTimer, 0)
+        Teams_R_DoubleTapTimer := 0
+    }
+    Teams_R_DoubleTapArmed := false
+    Teams_R_LastPressTick := 0
+
+    appKey := g_ChatFavAppKey
+    teamsWasClosed := g_ChatFavTeamsWasClosed
+    ChatFav_Cleanup()
+
+    contact := Trim(result)
+    if (contact = "")
+        return
+    if (appKey = "Teams")
+        SetTimer((*) => Teams_ExecuteJump(contact, teamsWasClosed), -1)
+    else
+        SetTimer((*) => WhatsApp_ExecuteJump(contact), -1)
+}
+
+ChatFav_ShowPicker(appLabel, appKey, showTapHint := false) {
+    global g_ChatFavGui, g_ChatFavGuiHwnd, g_ChatFavEditCtrl, g_ChatFavPromptCtrl, g_ChatFavRowCtrls
+    global g_ChatFavAppKey, g_ChatFavAppLabel, g_ChatFavTeamsWasClosed, g_ChatFavFocusGuardTimer
+
+    ChatFav_Cleanup()
 
     g_ChatFavAppKey := appKey
-    g_ChatFavResult := ""
-    g_ChatFavDone := false
+    g_ChatFavAppLabel := appLabel
+    g_ChatFavTeamsWasClosed := false
     g_ChatFavRowCtrls := []
 
-    g := Gui("+AlwaysOnTop +ToolWindow", "Jump to Chat — " . appLabel)
+    title := "Jump to Chat — " . appLabel . (showTapHint ? "  (tap again → Teams)" : "")
+    g := Gui("+AlwaysOnTop +ToolWindow", title)
     g.SetFont("s10", "Segoe UI")
     g.BackColor := "1E1E1E"
     g.MarginX := 16
     g.MarginY := 12
 
     g.SetFont("s10 cWhite", "Segoe UI")
-    g.Add("Text", "w380", "Enter a " . appLabel . " contact name, or press 1–5 for a favorite:")
+    promptCtrl := g.Add("Text", "w380", "Enter a " . appLabel . " contact name, or press 1–5 for a favorite:")
     g.SetFont("s11 cBlack", "Segoe UI")
     ed := g.Add("Edit", "w380 vContactInput")
 
@@ -776,14 +812,8 @@ ChatFav_PromptContact(appLabel, appKey) {
     btnOk := g.Add("Button", "Default w90 y+12", "Go")
     btnCancel := g.Add("Button", "x+8 w90", "Cancel")
 
-    onSubmit := (*) => (
-        g_ChatFavResult := Trim(ed.Value),
-        g_ChatFavDone := true
-    )
-    onCancel := (*) => (
-        g_ChatFavResult := "",
-        g_ChatFavDone := true
-    )
+    onSubmit := (*) => ChatFav_Finish(ed.Value)
+    onCancel := (*) => ChatFav_Finish("")
     btnOk.OnEvent("Click", onSubmit)
     btnCancel.OnEvent("Click", onCancel)
     g.OnEvent("Close", onCancel)
@@ -791,32 +821,46 @@ ChatFav_PromptContact(appLabel, appKey) {
 
     g_ChatFavGui := g
     g_ChatFavEditCtrl := ed
+    g_ChatFavPromptCtrl := promptCtrl
     g.Show("AutoSize Center")
     g_ChatFavGuiHwnd := g.Hwnd
     ed.Focus()
     ChatFav_SetHotkeys(true)
 
-    try {
-        while (!g_ChatFavDone && DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd)) {
-            ; If Teams finishes launching in parallel and steals focus, keep the picker on top.
-            if (WinActive("ahk_exe ms-teams.exe") && !WinActive("Edit Favorite #")) {
-                try WinActivate("ahk_id " g_ChatFavGuiHwnd)
-                catch {
-                }
-            }
-            Sleep 30
-        }
-    } finally {
-        ChatFav_SetHotkeys(false)
-        g_ChatFavGuiHwnd := 0
-        g_ChatFavEditCtrl := 0
-        g_ChatFavRowCtrls := []
-        try g.Destroy()
+    g_ChatFavFocusGuardTimer := ChatFav_FocusGuard
+    SetTimer(g_ChatFavFocusGuardTimer, 50)
+}
+
+ChatFav_SwitchToTeams() {
+    global g_ChatFavGui, g_ChatFavGuiHwnd, g_ChatFavEditCtrl, g_ChatFavPromptCtrl
+    global g_ChatFavAppKey, g_ChatFavAppLabel
+
+    if (!g_ChatFavGuiHwnd || !DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd)) {
+        ChatFav_ShowPicker("Teams", "Teams", false)
+        SetTimer((*) => ChatFav_PrewarmTeams(), -1)
+        return
+    }
+
+    g_ChatFavAppKey := "Teams"
+    g_ChatFavAppLabel := "Teams"
+    try g_ChatFavGui.Title := "Jump to Chat — Teams"
+    catch {
+    }
+    if (IsObject(g_ChatFavPromptCtrl)) {
+        try g_ChatFavPromptCtrl.Text := "Enter a Teams contact name, or press 1–5 for a favorite:"
         catch {
         }
-        g_ChatFavGui := 0
     }
-    return g_ChatFavResult
+    ChatFav_RefreshRows()
+    try WinActivate("ahk_id " g_ChatFavGuiHwnd)
+    catch {
+    }
+    if (IsObject(g_ChatFavEditCtrl)) {
+        try g_ChatFavEditCtrl.Focus()
+        catch {
+        }
+    }
+    SetTimer((*) => ChatFav_PrewarmTeams(), -1)
 }
 
 Teams_RunDesktopJump(contact, forceColdStart := false) {
@@ -836,19 +880,23 @@ Teams_RunDesktopJump(contact, forceColdStart := false) {
     }
 }
 
-Teams_StartNewConversationJump() {
-    useCdp := ChatCDP_IsEnabled("teams")
-    teamsWasClosed := false
-    if (!useCdp) {
-        teamsWasClosed := !ProcessExist("ms-teams.exe")
-        ; Launch Teams immediately (0ms wait) so it boots in parallel while the user types the contact name.
-        if (!CheckAndOpenOutlookTeams(false, true, 0))
-            return
-    }
-    contact := ChatFav_PromptContact("Teams", "Teams")
+ChatFav_PrewarmTeams() {
+    global g_ChatFavTeamsWasClosed
+    if (ChatCDP_IsEnabled("teams"))
+        return
+    g_ChatFavTeamsWasClosed := !ProcessExist("ms-teams.exe")
+    CheckAndOpenOutlookTeams(false, true, 0)
+}
+
+ChatFav_PrewarmWhatsApp() {
+    if (ChatCDP_IsEnabled("whatsapp") && !ChatCDP_IsAppTabOpen("whatsapp"))
+        ChatCDP_EnsureAppOpenAsync("whatsapp")
+}
+
+Teams_ExecuteJump(contact, teamsWasClosed := false) {
     if (contact = "")
         return
-    if (useCdp) {
+    if (ChatCDP_IsEnabled("teams")) {
         StandardLoadingBar_Show("⏳ Teams: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
         res := ChatCDP_Jump("teams", contact, "", "", false, true)
         StandardLoadingBar_Hide(0)
@@ -856,16 +904,15 @@ Teams_StartNewConversationJump() {
             ChatCDP_NotifyError("teams", res.error)
         return
     }
-    SetTimer((*) => Teams_RunDesktopJump(contact, teamsWasClosed), -1)
+    if (!CheckAndOpenOutlookTeams(false, true, 0))
+        return
+    Teams_RunDesktopJump(contact, teamsWasClosed)
 }
 
-WhatsApp_StartNewConversationJump() {
-    useCdp := ChatCDP_IsEnabled("whatsapp")
-    if (useCdp && !ChatCDP_IsAppTabOpen("whatsapp"))
-        ChatCDP_EnsureAppOpenAsync("whatsapp")
-    contact := ChatFav_PromptContact("WhatsApp", "WhatsApp")
+WhatsApp_ExecuteJump(contact) {
     if (contact = "")
         return
+    useCdp := ChatCDP_IsEnabled("whatsapp")
     if (useCdp) {
         isSelf := D2C_WhatsAppIsSelfContact(contact)
         if (isSelf) {
@@ -925,7 +972,7 @@ WhatsApp_StartNewConversationJump() {
 
 #!+r:: {
     global Teams_R_DoubleTapArmed, Teams_R_LastPressTick, Teams_R_DoubleTapThresholdMs,
-        Teams_R_DoubleTapTimer
+        Teams_R_DoubleTapTimer, g_ChatFavGuiHwnd, g_ChatFavEditCtrl
 
     now := A_TickCount
     elapsed := (Teams_R_LastPressTick > 0) ? (now - Teams_R_LastPressTick) : 9999
@@ -937,8 +984,19 @@ WhatsApp_StartNewConversationJump() {
             SetTimer(Teams_R_DoubleTapTimer, 0)
             Teams_R_DoubleTapTimer := 0
         }
-        Teams_R_DoubleTap_HideOverlay()
-        SetTimer((*) => Teams_StartNewConversationJump(), -1)
+        ChatFav_SwitchToTeams()
+        return
+    }
+
+    if (g_ChatFavGuiHwnd && DllCall("IsWindow", "ptr", g_ChatFavGuiHwnd)) {
+        try WinActivate("ahk_id " g_ChatFavGuiHwnd)
+        catch {
+        }
+        if (IsObject(g_ChatFavEditCtrl)) {
+            try g_ChatFavEditCtrl.Focus()
+            catch {
+            }
+        }
         return
     }
 
@@ -946,7 +1004,7 @@ WhatsApp_StartNewConversationJump() {
         SetTimer(Teams_R_DoubleTapTimer, 0)
         Teams_R_DoubleTapTimer := 0
     }
-    Teams_R_DoubleTap_ShowOverlay()
+    ChatFav_ShowPicker("WhatsApp", "WhatsApp", true)
     Teams_R_LastPressTick := A_TickCount
     Teams_R_DoubleTapArmed := true
     Teams_R_DoubleTapTimer := ObjBindMethod(Teams_R_DoubleTapTimerObj, "OnSingleTapTimeout")

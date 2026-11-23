@@ -10,8 +10,6 @@
 
 ⏳ You need to transfer your voting place to Nova Odessa and change our photo
 
-⚡ Go to the VIVO store
-
 🔲 Fix bosch powertool
 ℹ️ image.png
 ℹ️ image.png
@@ -113,3 +111,13 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 ## Tarefas para Submissão do Artigo (Revista JIS)
 
 ## Notes
+
+## New Home
+
+🔲 Week 1: Transfer R$ 1225 to the mason (2026-11-28)
+
+🔲 Week 2: Transfer R$ 1225 to the mason (2026-12-05)
+
+🔲 Week 3: Transfer R$ 1225 to the mason (2026-12-12)
+
+🔲 Week 4: Transfer R$ 1225 to the mason (2026-12-19)
