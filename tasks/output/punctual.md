@@ -44,8 +44,6 @@ E-mail: novaodessajec@tjsp.jus.br | Telefones: (19) 3399-4119, (19) 3399-4127 e 
 ℹ️ Custas processuais
 Não há cobrança de custas processuais ou despesas em primeiro grau de jurisdição (Lei nº 9.099/95
 
-⚡ 🐕 Apply tick and flea prevention to German Shepherd
-
 🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
 
 ## Job Search
@@ -57,6 +55,9 @@ Não há cobrança de custas processuais ou despesas em primeiro grau de jurisdi
 
 ⏳ Remember that you have saved your LinkedIn profile to open to work
 
+⚡ Add more deliverables
+ℹ️ C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\general\bookmarks\work-bookmarks.json
+
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
@@ -67,7 +68,7 @@ Não há cobrança de custas processuais ou despesas em primeiro grau de jurisdi
 
 ⏳ Castrar a Moka
 
-🔲 Fetch Training: Two-Ball Method
+⏳ Fetch Training: Two-Ball Method
 ℹ️ Pro Tip
 The most effective pro tip for a dog that won't bring the ball all the way back to your hand is the Two-Ball Method, combined with backpedaling. Because German Shepherds have a high chase and herding drive, this technique uses Moka's natural instincts to fix the recall.
 ℹ️ Step 1: Two Identical Balls
@@ -98,10 +99,6 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 ⏳ Give dewormer - February 2027 (2027-02-10)
 
 ⏳ Give dewormer - March 2027 (2027-03-10)
-
-### Flea and Tick prevention
-
-🔲 Flea and Tick prevention 1 (após se mudar para a casa) (2027-03-01)
 
 ## Art of Memory
 
