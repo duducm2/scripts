@@ -357,18 +357,35 @@ internal static class Program
             try
             {
                 using (var con = OpenWrite())
+                using (var tx = con.BeginTransaction())
                 {
-                    int rows = ExecuteNonQuery(con,
-                        "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
-                    Console.Write(rows.ToString());
-                    return 0;
+                    int rows = 0;
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "DELETE FROM Clips WHERE NOT Favorite OR Favorite IS NULL";
+                        rows = cmd.ExecuteNonQuery();
+                    }
+
+                    long remaining = 0;
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL";
+                        object o = cmd.ExecuteScalar();
+                        remaining = (o == null || o == DBNull.Value) ? 0L : Convert.ToInt64(o);
+                    }
+
+                    tx.Commit();
+                    Console.Write(rows + "\t" + remaining);
+                    return remaining == 0 ? 0 : 2;
                 }
             }
             catch (SQLiteException)
             {
                 if (attempt == 4)
                     throw;
-                Thread.Sleep(200);
+                Thread.Sleep(60 + (attempt * 60));
             }
         }
         return 2;

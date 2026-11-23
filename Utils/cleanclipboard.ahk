@@ -94,6 +94,9 @@ CleanClipboard_ShowCountdown() {
 CleanClipboard_OnCancel(*) {
     global g_CleanClipboardCanceled
     g_CleanClipboardCanceled := true
+    try CleanClipboard_CancelActiveRun()
+    catch {
+    }
     try StandardLoadingBar_CloseKeysOverlay()
     catch {
     }
@@ -101,18 +104,75 @@ CleanClipboard_OnCancel(*) {
     ShowCenteredOverlay_Utils("Clipboard cleanup cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
-CleanClipboard_ClearOsClipboard(retries := 6) {
-    loop retries {
-        try {
-            A_Clipboard := ""
-            if (DllCall("CountClipboardFormats", "int") = 0 || A_Clipboard = "")
+CleanClipboard_IsOsClipboardEmpty() {
+    try return (DllCall("CountClipboardFormats", "int") = 0)
+    catch
+        return false
+}
+
+CleanClipboard_TryClearOsClipboardOnce() {
+    if (CleanClipboard_IsOsClipboardEmpty())
+        return true
+    try {
+        if (DllCall("OpenClipboard", "Ptr", 0)) {
+            emptied := false
+            try emptied := DllCall("EmptyClipboard")
+            finally DllCall("CloseClipboard")
+            if (emptied && CleanClipboard_IsOsClipboardEmpty())
                 return true
-        } catch {
         }
-        if (A_Index < retries)
-            Sleep 50
+    } catch {
+    }
+    try {
+        A_Clipboard := ""
+        if (CleanClipboard_IsOsClipboardEmpty() || A_Clipboard = "")
+            return true
+    } catch {
     }
     return false
+}
+
+CleanClipboard_ClearOsClipboard(retries := 6) {
+    loop retries {
+        if (CleanClipboard_TryClearOsClipboardOnce())
+            return true
+        if (A_Index < retries)
+            Sleep 30
+    }
+    return false
+}
+
+CleanClipboard_StartClearOsClipboardAsync(retries := 8, onDone := 0, shouldAbortFn := 0) {
+    if (CleanClipboard_TryClearOsClipboardOnce()) {
+        if (onDone)
+            onDone(true)
+        return 0
+    }
+    state := { attempt: 1, max: retries, timerFn: 0, cancelled: false }
+    step(*) {
+        if (state.cancelled || (shouldAbortFn && shouldAbortFn())) {
+            state.cancelled := true
+            SetTimer(state.timerFn, 0)
+            if (onDone)
+                onDone(false)
+            return
+        }
+        state.attempt += 1
+        if (CleanClipboard_TryClearOsClipboardOnce()) {
+            SetTimer(state.timerFn, 0)
+            if (onDone)
+                onDone(true)
+            return
+        }
+        if (state.attempt >= state.max) {
+            SetTimer(state.timerFn, 0)
+            if (onDone)
+                onDone(false)
+        }
+    }
+    state.timerFn := step
+    SetTimer(step, 25)
+    return state
 }
 
 CleanClipboard_Proceed(sessionId := 0) {
@@ -126,6 +186,7 @@ CleanClipboard_Proceed(sessionId := 0) {
         return
 
     g_CleanClipboardInProgress := true
+    startedAsync := false
     try {
         if (g_CleanClipboardCanceled)
             return
@@ -133,7 +194,7 @@ CleanClipboard_Proceed(sessionId := 0) {
         catch {
         }
         CleanClipboard_SetAbortHotkeys(true)
-        CleanClipboardInternal(sessionId)
+        startedAsync := CleanClipboardInternal(sessionId)
     } catch Error as e {
         try CleanClipboard_LogError(0, "Proceed", e.Message)
         catch {
@@ -143,8 +204,10 @@ CleanClipboard_Proceed(sessionId := 0) {
         }
         ShowCenteredOverlay_Utils("❌ Clipboard cleanup error: " e.Message, 3500, BANNER_ACCENT_ERROR)
     } finally {
-        CleanClipboard_SetAbortHotkeys(false)
-        CleanClipboard_EndSession()
+        if (!startedAsync) {
+            CleanClipboard_SetAbortHotkeys(false)
+            CleanClipboard_EndSession()
+        }
     }
 }
 
