@@ -31,6 +31,64 @@ ChatCDP_AppMeta(appNorm) {
     return { url: "https://web.whatsapp.com", needle: "web.whatsapp.com" }
 }
 
+ChatCDP_IsAppTabOpen(app := "whatsapp", timeoutMs := 400) {
+    global AI_COMPANION_CDP_CHROME_PORT
+    appNorm := StrLower(Trim(app))
+    if (appNorm != "whatsapp" && appNorm != "teams")
+        return false
+    if !AiCompanionCDP_IsChromeCdpUp(timeoutMs)
+        return false
+    meta := ChatCDP_AppMeta(appNorm)
+    needleLow := StrLower(meta.needle)
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        try whr.SetProxy(1)
+        whr.Open("GET", "http://127.0.0.1:" . AI_COMPANION_CDP_CHROME_PORT . "/json/list", false)
+        whr.SetTimeouts(timeoutMs, timeoutMs, 1500, 1500)
+        whr.Send()
+        if (whr.Status != 200)
+            return false
+        raw := whr.ResponseText
+        pos := 1
+        while (RegExMatch(raw, "\{[^{}]*\}", &m, pos)) {
+            obj := m[0]
+            pos := m.Pos + m.Len
+            if (_AiCDP_JsonGetStr(obj, "type", "") != "page")
+                continue
+            tabUrl := StrLower(_AiCDP_JsonGetStr(obj, "url", ""))
+            if InStr(tabUrl, needleLow)
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+ChatCDP_EnsureAppOpenAsync(app := "whatsapp") {
+    appNorm := StrLower(Trim(app))
+    if (appNorm != "whatsapp" && appNorm != "teams")
+        return false
+    if ChatCDP_IsAppTabOpen(appNorm)
+        return true
+    meta := ChatCDP_AppMeta(appNorm)
+    if AiCompanionCDP_IsChromeCdpUp(400) {
+        direct := AiCompanionCDP_DirectOpenUrl(meta.url, meta.needle, false, appNorm)
+        return direct.ok
+    }
+    if (appNorm = "whatsapp") {
+        launcher := _AiCDP_RepoRoot() . "\AppLaunchers\launch_whatsapp_cdp.ahk"
+        if FileExist(launcher) {
+            try {
+                Run('"' . A_AhkPath . '" "' . launcher . '"')
+                return true
+            } catch {
+            }
+        }
+    }
+    launched := AiCompanionCDP_DirectLaunchChrome(meta.url, true, 500, appNorm)
+    return launched.ok
+}
+
 ChatCDP_OpenOrFocus(app := "whatsapp", activate := true) {
     appNorm := StrLower(Trim(app))
     if (appNorm != "whatsapp" && appNorm != "teams")
@@ -79,7 +137,7 @@ ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate :=
         "submit", submit ? true : false,
         "activate", activate ? true : false,
         "launch_if_down", true
-    ), 60000, true)
+    ), 90000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
     if (res.ok && activate)
         hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)

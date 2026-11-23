@@ -1626,7 +1626,7 @@ class CDPBridge:
         composer = None
         last_err = "WHATSAPP_SEARCH_NOT_FOUND"
         for attempt in range(1, 4):
-            search_loc = self._find_first_visible(page, search_sels, timeout_s=18.0 if attempt == 1 else 6.0)
+            search_loc = self._find_first_visible(page, search_sels, timeout_s=35.0 if attempt == 1 else 6.0)
             if search_loc is None:
                 try:
                     if page.locator('canvas[aria-label*="Scan" i], div[data-ref]').count() > 0 or self._is_auth_page(page):

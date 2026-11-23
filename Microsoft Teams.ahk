@@ -860,10 +860,13 @@ Teams_StartNewConversationJump() {
 }
 
 WhatsApp_StartNewConversationJump() {
+    useCdp := ChatCDP_IsEnabled("whatsapp")
+    if (useCdp && !ChatCDP_IsAppTabOpen("whatsapp"))
+        ChatCDP_EnsureAppOpenAsync("whatsapp")
     contact := ChatFav_PromptContact("WhatsApp", "WhatsApp")
     if (contact = "")
         return
-    if (ChatCDP_IsEnabled("whatsapp")) {
+    if (useCdp) {
         isSelf := D2C_WhatsAppIsSelfContact(contact)
         if (isSelf) {
             if (!D2C_WhatsAppSelfPaste_Confirm())
