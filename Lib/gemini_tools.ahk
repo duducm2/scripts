@@ -7,8 +7,17 @@
 
 GEMINI_TOOLBOX_CHECKBOX_TYPE := 50002
 
-; Active gemini.google.com document. Background Chrome tabs must not shadow the
-; visible tab's Upload & tools button, menu, or Copy controls.
+; Active gemini.google.com document. Background Chrome tabs sit directly under the
+; top-level Window (Type 50032), whereas the active tab sits inside MultiContentsView -> Pane (50033).
+Gemini_IsHostedActiveTabDoc(doc) {
+    try {
+        p := doc.Parent
+        return IsObject(p) && p.Type != 50032
+    } catch {
+        return false
+    }
+}
+
 Gemini_ActivePageRoot(uia) {
     if (!IsObject(uia))
         return uia
@@ -46,6 +55,7 @@ Gemini_ActivePageRoot(uia) {
     best := 0
     bestLen := 0
     bestVisible := false
+    bestHosted := false
     for doc in geminiDocs {
         name := ""
         try name := doc.Name
@@ -53,16 +63,31 @@ Gemini_ActivePageRoot(uia) {
             off := true
             try off := doc.GetPropertyValue(UIA.Property.IsOffscreen)
             vis := !off
+            hosted := Gemini_IsHostedActiveTabDoc(doc)
             nLen := StrLen(name)
-            if (!best || (vis && !bestVisible) || (vis = bestVisible && nLen > bestLen)) {
+            better := false
+            if (!best)
+                better := true
+            else if (hosted != bestHosted)
+                better := hosted
+            else if (vis != bestVisible)
+                better := vis
+            else if (nLen > bestLen)
+                better := true
+            if (better) {
                 best := doc
                 bestLen := nLen
                 bestVisible := vis
+                bestHosted := hosted
             }
         }
     }
     if (best)
         return best
+    for doc in geminiDocs {
+        if (Gemini_IsHostedActiveTabDoc(doc))
+            return doc
+    }
     for doc in geminiDocs {
         off := true
         try off := doc.GetPropertyValue(UIA.Property.IsOffscreen)
@@ -392,16 +417,17 @@ Gemini_FindToolboxCheckBoxInScope(scope, nameSubstrings) {
     return 0
 }
 
-; Material toolbox items expose Invoke + Toggle; Invoke alone often dismisses the menu without toggling.
-; Prefer Toggle only for CheckBox items; use physical center click (Click("left")) for MenuItem/Button.
+; Material toolbox items expose Invoke + Toggle; Invoke/Toggle alone often fails to trigger
+; Angular's click handler on redesigned Upload & tools items. Restrict TogglePattern to legacy
+; toolbox-drawer-item checkboxes and use physical center click (Click("left")) for redesigned items.
 Gemini_ActivateToolboxItem(el) {
     if !IsObject(el)
         return
     ctrlType := 0
+    cls := ""
     try ctrlType := el.Type
-    catch
-        ctrlType := 0
-    if (ctrlType = GEMINI_TOOLBOX_CHECKBOX_TYPE) {
+    try cls := el.ClassName
+    if (ctrlType = GEMINI_TOOLBOX_CHECKBOX_TYPE && InStr(cls, "toolbox-drawer-item", false)) {
         try {
             if el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
                 el.TogglePattern.Toggle()

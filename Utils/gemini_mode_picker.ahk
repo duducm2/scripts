@@ -198,13 +198,14 @@ GeminiDismissModePickerMenu(uia, browserHwnd := 0) {
 FindGeminiModePickerButton(uia) {
     if !IsObject(uia)
         return 0
+    root := Gemini_ActivePageRoot(uia)
     saved := 0
-    try saved := UiElements_TrySaved(uia, "Gemini", "ModePicker")
+    try saved := UiElements_TrySaved(root, "Gemini", "ModePicker")
     if saved
         return saved
     for typeSpec in [50000, "Button"] {
         try {
-            el := uia.FindFirst({ Type: typeSpec, Name: GEMINI_MODE_PICKER_NAME_SUBSTR, mm: 2, cs: 0 })
+            el := root.FindFirst({ Type: typeSpec, Name: GEMINI_MODE_PICKER_NAME_SUBSTR, mm: 2, cs: 0 })
             if el
                 return el
         } catch {
@@ -213,7 +214,7 @@ FindGeminiModePickerButton(uia) {
     ; Modern labels: "Pro Extended", "Flash-Lite", "1.5 Flash", etc. (no "Open mode picker" prefix).
     for typeSpec in [50000, "Button"] {
         try {
-            buttons := uia.FindAll({ Type: typeSpec })
+            buttons := root.FindAll({ Type: typeSpec })
         } catch {
             continue
         }

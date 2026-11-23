@@ -406,6 +406,28 @@ AiCompanionCDP_NotifyError(actionLabel, rawErr := "", companionId := "", duratio
     }
 }
 
+_AiCDP_GetActiveWindowTitle(companionId := "") {
+    try {
+        activeHwnd := WinExist("A")
+        if (activeHwnd && WinGetProcessName("ahk_id " activeHwnd) = "chrome.exe") {
+            t := Trim(WinGetTitle("ahk_id " activeHwnd))
+            if (t != "")
+                return t
+        }
+    } catch {
+    }
+    try {
+        cdpHwnd := AiCompanionCDP_FindWindowHwnd(0, companionId)
+        if (cdpHwnd) {
+            t := Trim(WinGetTitle("ahk_id " cdpHwnd))
+            if (t != "")
+                return t
+        }
+    } catch {
+    }
+    return ""
+}
+
 AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false) {
     global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError
     
@@ -446,6 +468,12 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
 
     if (allowLaunch && payload is Map && !payload.Has("launch_if_down"))
         payload["launch_if_down"] := true
+    if (payload is Map && !payload.Has("active_title")) {
+        compId := payload.Has("companion") ? payload["companion"] : ""
+        activeTitle := _AiCDP_GetActiveWindowTitle(compId)
+        if (activeTitle != "")
+            payload["active_title"] := activeTitle
+    }
 
     body := _AiCDP_JsonEncode(payload)
     maxAttempts := isPassivePoll ? 1 : 3

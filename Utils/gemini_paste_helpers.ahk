@@ -19,6 +19,12 @@ Gemini_GetSearchRoot(uia) {
     if (!IsObject(uia))
         return 0
     try {
+        root := Gemini_ActivePageRoot(uia)
+        if (IsObject(root))
+            return root
+    } catch {
+    }
+    try {
         root := uia.GetCurrentMainPaneElement()
         if (root)
             return root

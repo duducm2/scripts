@@ -18,17 +18,25 @@ FindGeminiPromptField(uia) {
     } catch {
     }
 
-    ; Resolve document element if uia is UIA_Browser or top-level window
+    ; Resolve active tab document first (UIA_Browser.GetCurrentDocumentElement hits background tab 1).
     doc := uia
     try {
-        if (uia.HasMethod("GetCurrentDocumentElement")) {
-            d := uia.GetCurrentDocumentElement()
-            if (IsObject(d))
-                doc := d
-        } else if (uia.HasProp("DocumentElement") && IsObject(uia.DocumentElement)) {
-            doc := uia.DocumentElement
-        }
+        activeDoc := Gemini_ActivePageRoot(uia)
+        if (IsObject(activeDoc))
+            doc := activeDoc
     } catch {
+    }
+    if (doc = uia) {
+        try {
+            if (uia.HasMethod("GetCurrentDocumentElement")) {
+                d := uia.GetCurrentDocumentElement()
+                if (IsObject(d))
+                    doc := d
+            } else if (uia.HasProp("DocumentElement") && IsObject(uia.DocumentElement)) {
+                doc := uia.DocumentElement
+            }
+        } catch {
+        }
     }
 
     ; 1. Fast path: Find Edit control by name in document / root (Type 50004 avoids static placeholder text)

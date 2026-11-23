@@ -60,53 +60,11 @@ $+e:: {
 ; Helper: Focus the Gemini prompt text field using UIA
 FocusGeminiPromptField() {
     try {
-        uia := UIA_Browser()
+        hwnd := WinExist("A")
+        uia := hwnd ? UIA_Browser("ahk_id " hwnd) : UIA_Browser()
         Sleep 150  ; small settle per README (keep this snappy)
 
-        promptField := UiElements_TrySaved(uia, "Gemini", "Prompt")
-
-        ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
-        try
-            promptField := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
-        catch
-            promptField := ""
-
-        ; Fallback 1: Legacy name "Enter a prompt here"
-        if !promptField {
-            try
-                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-            catch
-                promptField := ""
-        }
-
-        ; Shared scan for remaining fallbacks (single FindAll + scoring for efficiency)
-        if !promptField {
-            best := 0, bestScore := -1
-            allEdits := uia.FindAll({ Type: 50004 })
-            for edit in allEdits {
-                cls := edit.ClassName
-                name := edit.Name
-                score := 0
-                if InStr(cls, "ql-editor")
-                    score += 3
-                if InStr(cls, "new-input-ui")
-                    score += 2
-                if InStr(name, "Enter a prompt")
-                    score += 3
-                else if InStr(name, "prompt")
-                    score += 2
-                else if InStr(name, "Digite um prompt")
-                    score += 2
-                ; pick the highest scoring candidate
-                if (score > bestScore) {
-                    bestScore := score
-                    best := edit
-                }
-            }
-            if (bestScore >= 0) {
-                promptField := best
-            }
-        }
+        promptField := FindGeminiPromptField(uia)
 
         if (promptField) {
             promptField.SetFocus()
