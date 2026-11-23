@@ -1,6 +1,89 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Gossiping Through a Semantic Layer While Eyes Trace F-Pattern, Z-Pattern, and Gestalt Curves on a Neon Runway</strong> · Memory Palace 34: Semantic Layer and Visual Layout Patterns · Character: — · 4 beasts · 4 atoms</summary>
+
+![Memory Palace 34](images/data-analyst/34.jpg)
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Dy] dystopia
+
+<img src="../../web/assets/beast-thumbs/dystopia.png" alt="dystopia" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use a <img alt="[Gestalt Layout]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BGestalt%20Layout%5D&color=9fd4ff" />(puzzle cube) to <img alt="[group]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bgroup%5D&color=ffd966" />(magnet)] [related <img alt="[items]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bitems%5D&color=ffd966" />(blocks)] [into a single <img alt="[whole]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bwhole%5D&color=ffd966" />(globe)] [using visual <img alt="[cues]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcues%5D&color=ffd966" />(signpost).] — Note: Uses perception cues like Proximity, Similarity, Closure, Good Continuation, Symmetry, and Common Fate so the brain reads hierarchy without effort.
+
+**Quote**
+“A Gestalt layout applies the psychological principles of visual perception to organize an interface so the human brain automatically groups related elements into a unified whole. Rather than forcing users to parse every item individually, it uses spatial and visual cues - such as Proximity (close items belong together), Similarity (matching shapes or styles share a role), Closure (the mind completes partial shapes), Good Continuation, Symmetry, and Common Fate - to make hierarchy effortless to understand.”
+
+**Character**
+Mayara
+
+**Justification**
+Mayara enjoys hanging out with tech-loving nerds and has a solved Rubik's cube as her signature object, directly matching the puzzle cube keyword.
+
+### [Dx] Dark Xena, warrior woman
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/xena_warrior_woman.png" alt="Dark Xena, warrior woman" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[Z-Pattern]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BZ-Pattern%5D&color=9fd4ff" />(sword) to <img alt="[guide]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bguide%5D&color=ffd966" />(flashlight)] [user <img alt="[eyes]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Beyes%5D&color=ffd966" />(glasses)] [across <img alt="[visual]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bvisual%5D&color=ffd966" />(poster)] [<img alt="[landing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blanding%5D&color=ffd966" />(runway) pages] [toward the main <img alt="[button]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbutton%5D&color=ffd966" />(doorbell).] — Note: On minimal visual pages, eyes sweep top-left to top-right, cut diagonally across the center to bottom-left, and finish at the bottom-right call-to-action.
+
+**Quote**
+“The Z-pattern is the natural eye-tracking behavior people use on minimal, visual pages (such as landing pages, hero sections, or ads). The eye sweeps from top-left (often a logo) to top-right (navigation or secondary action), cuts diagonally across the center visual to bottom-left, and finishes at bottom-right - forming a "Z" shape, where the primary call-to-action usually sits.”
+
+**Character**
+Zorro
+
+**Justification**
+Zorro uses his sharp fencing sword to carve the letter Z with three quick slashes, directly matching the sword keyword.
+
+### [Dw] dwarf
+
+<img src="../../web/assets/beast-thumbs/dwarf.png" alt="dwarf" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use the <img alt="[F-Pattern]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BF-Pattern%5D&color=9fd4ff" />(flag) to <img alt="[place]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bplace%5D&color=ffd966" />(pin)] [key <img alt="[headlines]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bheadlines%5D&color=ffd966" />(newspaper)] [across the <img alt="[top]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btop%5D&color=ffd966" />(roof)] [and down the <img alt="[left]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bleft%5D&color=ffd966" />(glove)] [of text <img alt="[pages]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bpages%5D&color=ffd966" />(book).] — Note: On text-heavy pages like articles or docs, eyes scan across the top, make a shorter second scan, and then skim down the left edge in an F shape.
+
+**Quote**
+“The F-pattern is the natural eye-tracking behavior people use on text-heavy pages (such as articles, documentation, or search results). Users scan horizontally across the top, drop down for a shorter second horizontal scan, and then skim vertically down the left margin - forming an "F" shape. Important headlines and keywords belong along the top and left edge.”
+
+**Character**
+Astronauta da NASA
+
+**Justification**
+Astronauta da NASA floats in zero gravity planting a metal-poled flag on the Moon, directly matching the flag keyword.
+
+### [Dv] Dark vulture
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/vulture.png" alt="Dark vulture" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use a <img alt="[Semantic Layer]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSemantic%20Layer%5D&color=9fd4ff" />(dictionary) to <img alt="[translate]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btranslate%5D&color=ffd966" />(headphones)] [raw <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(scroll)] [into <img alt="[business]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbusiness%5D&color=ffd966" />(briefcase)] [<img alt="[terms]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bterms%5D&color=ffd966" />(nametag)] [for every <img alt="[dashboard]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdashboard%5D&color=ffd966" />(screen).] — Note: It defines business logic and metrics once in a single place so every dashboard, report, and analytics tool shows the exact same numbers.
+
+**Quote**
+“A semantic layer is a translation layer between raw, complex data (databases, tables, and SQL joins) and human-friendly business terms (like "Monthly Revenue" or "Active Users"). It defines business logic and metrics once in a single place so that every dashboard, report, and analytics tool calculates and displays the exact same numbers.”
+
+**Character**
+Luana Prima
+
+**Justification**
+Luana Prima speaks German and carries a thick hardcover German-Portuguese dictionary, matching the dictionary keyword.
+
+#### Notes
+
+C
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Dropping External Delta Tables Like Ghosting an Ex While Keeping All Their Stuff in Your Closet</strong> · Memory Palace 33: Dropping External Delta Tables · Character: — · 1 beast · 1 atom</summary>
 
 ![Memory Palace 33](images/data-analyst/33.jpg)
