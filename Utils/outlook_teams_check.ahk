@@ -175,14 +175,18 @@ CleanClipboard_UnwindClipAngel(hwnd := 0) {
     ClipAngel_ClearFavoriteSessionOpacity(hwnd)
 }
 
-; Esc while automation runs (do NOT hook bare *n so typing words with 'n' in another window never aborts)
+; Shift+N / Esc while automation runs (do NOT hook bare *n so typing words with 'n' in another window never aborts)
 CleanClipboard_SetAbortHotkeys(enable := true) {
     try HotIf()
     catch {
     }
     if (enable) {
+        Hotkey("+n", CleanClipboard_OnCancel, "On")
         Hotkey("*Escape", CleanClipboard_OnCancel, "On")
     } else {
+        try Hotkey("+n", "Off")
+        catch {
+        }
         try Hotkey("*Escape", "Off")
         catch {
         }

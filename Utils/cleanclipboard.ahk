@@ -69,9 +69,8 @@ CleanClipboard_ShowCountdown() {
     }
     StandardLoadingBar_Hide(0)
 
-    state := "❓ Clean the clipboard? (removes stored clips, 4s)`nPress [Y] to clean now, or [N] within 4s to cancel."
-    keyCallbacks := Map("N", CleanClipboard_OnCancel, "Y", CleanClipboard_OnYConfirm, "*Escape",
-        CleanClipboard_OnCancel)
+    state := "🧹 Cleaning clipboard in 4s...`nPress [Shift+N] or [Esc] within 4s to cancel."
+    keyCallbacks := Map("+n", CleanClipboard_OnCancel, "*Escape", CleanClipboard_OnCancel)
 
     ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
     StandardLoadingBar_ShowWithKeys(
@@ -85,7 +84,7 @@ CleanClipboard_ShowCountdown() {
         17,
         "",
         false,
-        "[Y] Clean now  [N] Cancel (auto-continue in 4s)",
+        "[Shift+N] / [Esc] Cancel (auto-cleans in 4s)",
         true,
         true,
         true)
@@ -209,18 +208,6 @@ CleanClipboard_Proceed(sessionId := 0) {
             CleanClipboard_EndSession()
         }
     }
-}
-
-CleanClipboard_OnYConfirm(*) {
-    global g_CleanClipboardCanceled, g_CleanClipboardSessionId, g_CleanClipboardProceedClaimed
-    if (g_CleanClipboardCanceled)
-        return
-    ; Hotkey + poll can both fire Y before Proceed sets inProgress
-    if (g_CleanClipboardProceedClaimed)
-        return
-    g_CleanClipboardProceedClaimed := true
-    sid := g_CleanClipboardSessionId
-    SetTimer((*) => CleanClipboard_Proceed(sid), -1)
 }
 
 ; Auto-continue when countdown ends. Success chime plays inside CleanClipboardInternal.
