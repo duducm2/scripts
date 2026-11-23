@@ -61,6 +61,8 @@ internal static class Program
                     return CmdUnfavAll();
                 case "deletenonfav":
                     return CmdDeleteNonFav();
+                case "deletenonfav-staged":
+                    return CmdDeleteNonFavStaged();
                 default:
                     Console.Error.WriteLine("unknown command: " + cmd);
                     return 1;
@@ -389,6 +391,31 @@ internal static class Program
             }
         }
         return 2;
+    }
+
+    static int CmdDeleteNonFavStaged()
+    {
+        // Pre-warm SQLite + key derivation without holding a write lock.
+        try
+        {
+            using (var con = OpenReadOnly())
+            {
+                Scalar(con, "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
+            }
+        }
+        catch
+        {
+            // Proceed anyway; CmdDeleteNonFav will retry or report busy.
+        }
+
+        Console.WriteLine("READY");
+        Console.Out.Flush();
+
+        string line = Console.In.ReadLine();
+        if (line == null || line.Trim() != "GO")
+            return 2;
+
+        return CmdDeleteNonFav();
     }
 
     static string SanitizeOneLine(string s)

@@ -21,7 +21,7 @@ ClipAngelDb_ExePath() {
 }
 
 ; Starts a hidden process with stdout captured via anonymous pipe. Returns handle or 0.
-ClipAngelDb_StartProcess(exe, args, workDir) {
+ClipAngelDb_StartProcess(exe, args, workDir, useStdin := false) {
     sa := Buffer(A_PtrSize = 8 ? 24 : 12, 0)
     NumPut("UInt", sa.Size, sa, 0)
     NumPut("Int", 1, sa, A_PtrSize = 8 ? 16 : 8) ; bInheritHandle = TRUE
@@ -29,6 +29,16 @@ ClipAngelDb_StartProcess(exe, args, workDir) {
     if !DllCall("CreatePipe", "Ptr*", &hRead, "Ptr*", &hWrite, "Ptr", sa, "UInt", 0)
         return 0
     DllCall("SetHandleInformation", "Ptr", hRead, "UInt", 1, "UInt", 0) ; clear HANDLE_FLAG_INHERIT
+
+    hInRead := 0, hInWrite := 0
+    if (useStdin) {
+        if !DllCall("CreatePipe", "Ptr*", &hInRead, "Ptr*", &hInWrite, "Ptr", sa, "UInt", 0) {
+            DllCall("CloseHandle", "Ptr", hRead)
+            DllCall("CloseHandle", "Ptr", hWrite)
+            return 0
+        }
+        DllCall("SetHandleInformation", "Ptr", hInWrite, "UInt", 1, "UInt", 0) ; clear HANDLE_FLAG_INHERIT
+    }
 
     hNull := DllCall("CreateFileW", "WStr", "NUL", "UInt", 0x40000000, "UInt", 3, "Ptr", sa, "UInt", 3, "UInt", 0, "Ptr", 0, "Ptr")
     if (hNull = -1)
@@ -39,7 +49,7 @@ ClipAngelDb_StartProcess(exe, args, workDir) {
     NumPut("UInt", siSize, si, 0)
     NumPut("UInt", 0x101, si, (A_PtrSize = 8) ? 60 : 44) ; STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW
     NumPut("UShort", 0, si, (A_PtrSize = 8) ? 64 : 48)    ; SW_HIDE
-    NumPut("Ptr", 0, si, (A_PtrSize = 8) ? 80 : 56)       ; hStdInput
+    NumPut("Ptr", useStdin ? hInRead : 0, si, (A_PtrSize = 8) ? 80 : 56) ; hStdInput
     NumPut("Ptr", hWrite, si, (A_PtrSize = 8) ? 88 : 60)  ; hStdOutput
     NumPut("Ptr", hNull ? hNull : hWrite, si, (A_PtrSize = 8) ? 96 : 64) ; hStdError
 
@@ -49,10 +59,14 @@ ClipAngelDb_StartProcess(exe, args, workDir) {
         "Int", 1, "UInt", 0x08000000, "Ptr", 0, "WStr", workDir, "Ptr", si, "Ptr", pi)
 
     DllCall("CloseHandle", "Ptr", hWrite)
+    if (hInRead)
+        DllCall("CloseHandle", "Ptr", hInRead)
     if (hNull)
         DllCall("CloseHandle", "Ptr", hNull)
     if (!ok) {
         DllCall("CloseHandle", "Ptr", hRead)
+        if (hInWrite)
+            DllCall("CloseHandle", "Ptr", hInWrite)
         return 0
     }
 
@@ -62,6 +76,7 @@ ClipAngelDb_StartProcess(exe, args, workDir) {
 
     return {
         hRead: hRead,
+        hInWrite: hInWrite,
         hProc: hProc,
         raw: Buffer(0),
         rawLen: 0,
@@ -94,6 +109,12 @@ ClipAngelDb_CloseProcess(proc, terminate := false) {
         try DllCall("TerminateProcess", "Ptr", proc.hProc, "UInt", 1)
         catch {
         }
+    }
+    if (proc.hInWrite) {
+        try DllCall("CloseHandle", "Ptr", proc.hInWrite)
+        catch {
+        }
+        proc.hInWrite := 0
     }
     if (proc.hRead) {
         try DllCall("CloseHandle", "Ptr", proc.hRead)
@@ -142,11 +163,11 @@ ClipAngelDb_ExecCapture(exe, args, workDir, timeoutMs, &exitCode) {
 
 ; Non-blocking async ClipAngelDb runner. Calls onComplete(ok, outText, exitCode, timedOut) on completion.
 ; Returns handle for ClipAngelDb_CancelAsync(), or 0 if process could not start.
-ClipAngelDb_StartAsync(args, timeoutMs, onComplete, allowExit2 := false) {
+ClipAngelDb_StartAsync(args, timeoutMs, onComplete, allowExit2 := false, useStdin := false) {
     exe := ClipAngelDb_ExePath()
     if (exe = "" || !FileExist(exe))
         return 0
-    proc := ClipAngelDb_StartProcess(exe, args, A_ScriptDir)
+    proc := ClipAngelDb_StartProcess(exe, args, A_ScriptDir, useStdin)
     if (!proc)
         return 0
 
@@ -155,6 +176,7 @@ ClipAngelDb_StartAsync(args, timeoutMs, onComplete, allowExit2 := false) {
         deadline: A_TickCount + timeoutMs,
         cancelled: false,
         done: false,
+        onComplete: onComplete,
         timerFn: 0
     }
 
@@ -177,14 +199,33 @@ ClipAngelDb_StartAsync(args, timeoutMs, onComplete, allowExit2 := false) {
         outText := (!timedOut && proc.rawLen > 0) ? RTrim(StrGet(proc.raw, proc.rawLen, "UTF-8"), "`r`n") : ""
         ClipAngelDb_CloseProcess(proc, timedOut)
         ok := (!timedOut && (ec = 0 || (allowExit2 && ec = 2)))
-        try onComplete(ok, outText, ec, timedOut)
-        catch {
+        if (handle.onComplete) {
+            try handle.onComplete(ok, outText, ec, timedOut)
+            catch {
+            }
         }
     }
 
     handle.timerFn := pollFn
     SetTimer(pollFn, 15)
     return handle
+}
+
+ClipAngelDb_SendStdin(handle, text) {
+    if (!handle || handle.done || handle.cancelled || !handle.proc || !handle.proc.hInWrite)
+        return false
+    byteLen := StrPut(text, "UTF-8") - 1
+    if (byteLen <= 0)
+        return false
+    buf := Buffer(byteLen)
+    StrPut(text, buf, byteLen, "UTF-8")
+    written := 0
+    ok := DllCall("WriteFile", "Ptr", handle.proc.hInWrite, "Ptr", buf, "UInt", byteLen, "UInt*", &written, "Ptr", 0)
+    try DllCall("CloseHandle", "Ptr", handle.proc.hInWrite)
+    catch {
+    }
+    handle.proc.hInWrite := 0
+    return ok && written = byteLen
 }
 
 ClipAngelDb_CancelAsync(handle) {
@@ -322,11 +363,19 @@ ClipAngelDb_UnfavAll(&count := 0) {
     return true
 }
 
-; Parses deletenonfav stdout ("<deleted>\t<remaining>" or "<deleted>").
+; Parses deletenonfav stdout ("<deleted>\t<remaining>" or "<deleted>", ignoring any leading "READY" line).
 ClipAngelDb_ParseDeleteNonFav(out, &count := 0, &remaining := 0) {
     if (out = "")
         return false
-    parts := StrSplit(out, "`t")
+    lastLine := ""
+    for line in StrSplit(out, "`n", "`r") {
+        t := Trim(line)
+        if (t != "")
+            lastLine := t
+    }
+    if (lastLine = "")
+        return false
+    parts := StrSplit(lastLine, "`t")
     if (!IsInteger(parts[1]))
         return false
     count := Integer(parts[1])

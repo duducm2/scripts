@@ -241,6 +241,67 @@ CleanClipboard_FinishStatus(pct, msg, barColor, hideMs, playSuccessSound := fals
 }
 
 global g_CleanClipboardActiveRun := 0
+global g_CleanClipboardPrewarm := 0
+
+CleanClipboard_CancelPrewarm() {
+    global g_CleanClipboardPrewarm
+    pw := g_CleanClipboardPrewarm
+    g_CleanClipboardPrewarm := 0
+    if (!pw || pw.completed)
+        return
+    pw.completed := true
+    pw.onCompleteCallback := 0
+    if (pw.handle) {
+        try ClipAngelDb_CancelAsync(pw.handle)
+        catch {
+        }
+        pw.handle := 0
+    }
+}
+
+; Starts ClipAngelDb.exe deletenonfav-staged immediately when the 3s countdown opens
+; so .NET CLR + SQLite key derivation + page cache warm up while the user decides.
+; No write lock is held until "GO\n" is sent at timeout; Shift+N / Esc aborts cleanly.
+CleanClipboard_BeginPrewarm(sessionId) {
+    global g_CleanClipboardPrewarm
+    CleanClipboard_CancelPrewarm()
+    try ClipAngel_TryConfirmDeleteDialogOnce(false)
+    catch {
+    }
+    if (ClipAngelDb_ExePath() = "")
+        return
+
+    pw := {
+        sessionId: sessionId,
+        handle: 0,
+        completed: false,
+        ok: false,
+        outText: "",
+        exitCode: 1,
+        timedOut: false,
+        onCompleteCallback: 0
+    }
+
+    onPrewarmDone(ok, outText, exitCode, timedOut) {
+        pw.completed := true
+        pw.handle := 0
+        pw.ok := ok
+        pw.outText := outText
+        pw.exitCode := exitCode
+        pw.timedOut := timedOut
+        cb := pw.onCompleteCallback
+        if (cb) {
+            pw.onCompleteCallback := 0
+            try cb(ok, outText, exitCode, timedOut)
+            catch {
+            }
+        }
+    }
+
+    pw.handle := ClipAngelDb_StartAsync("deletenonfav-staged", 20000, onPrewarmDone, true, true)
+    if (pw.handle)
+        g_CleanClipboardPrewarm := pw
+}
 
 CleanClipboard_CancelActiveRun() {
     global g_CleanClipboardActiveRun
@@ -504,17 +565,39 @@ CleanClipboard_RunAttempt(run) {
         CleanClipboard_CheckBarrier(run)
     }
 
-    if (ClipAngelDb_ExePath() != "") {
-        run.dbHandle := ClipAngelDb_StartAsync("deletenonfav", 15000, onDbDone, true)
-        if (!run.dbHandle) {
+    ; Worker A: reuse pre-warmed ClipAngelDb process if alive (near-instant commit), else spawn fresh.
+    usedPrewarm := false
+    if (run.attempt = 1 && run.sessionId) {
+        global g_CleanClipboardPrewarm
+        pw := g_CleanClipboardPrewarm
+        g_CleanClipboardPrewarm := 0
+        if (pw && pw.sessionId = run.sessionId && !pw.completed && pw.handle) {
+            pw.onCompleteCallback := onDbDone
+            if (ClipAngelDb_SendStdin(pw.handle, "GO`n")) {
+                run.dbHandle := pw.handle
+                usedPrewarm := true
+            } else {
+                pw.onCompleteCallback := 0
+                try ClipAngelDb_CancelAsync(pw.handle)
+                catch {
+                }
+            }
+        }
+    }
+
+    if (!usedPrewarm) {
+        if (ClipAngelDb_ExePath() != "") {
+            run.dbHandle := ClipAngelDb_StartAsync("deletenonfav", 15000, onDbDone, true)
+            if (!run.dbHandle) {
+                run.dbDone := true
+                run.dbOk := false
+                run.attemptStage := "2/3 DB"
+                run.attemptDetail := "Failed to launch ClipAngelDb.exe"
+            }
+        } else {
             run.dbDone := true
             run.dbOk := false
-            run.attemptStage := "2/3 DB"
-            run.attemptDetail := "Failed to launch ClipAngelDb.exe"
         }
-    } else {
-        run.dbDone := true
-        run.dbOk := false
     }
 
     ; Worker B: async OS clipboard clear in parallel with Worker A.

@@ -62,6 +62,9 @@ CleanClipboard_ShowCountdown() {
     }
 
     CleanClipboard_BeginSession()
+    try CleanClipboard_BeginPrewarm(g_CleanClipboardSessionId)
+    catch {
+    }
 
     ; Ensure any previous keys overlay is closed before showing a new one
     try StandardLoadingBar_CloseKeysOverlay()
@@ -69,14 +72,14 @@ CleanClipboard_ShowCountdown() {
     }
     StandardLoadingBar_Hide(0)
 
-    state := "🧹 Cleaning clipboard in 4s...`nPress [Shift+N] or [Esc] within 4s to cancel."
+    state := "🧹 Cleaning clipboard in 3s...`nPress [Shift+N] or [Esc] within 3s to cancel."
     keyCallbacks := Map("+n", CleanClipboard_OnCancel, "*Escape", CleanClipboard_OnCancel)
 
     ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
     StandardLoadingBar_ShowWithKeys(
         state,
         keyCallbacks,
-        4000,
+        3000,
         0,
         CleanClipboard_OnTimeout.Bind(g_CleanClipboardSessionId),
         BANNER_ACCENT_ERROR,
@@ -84,7 +87,7 @@ CleanClipboard_ShowCountdown() {
         17,
         "",
         false,
-        "[Shift+N] / [Esc] Cancel (auto-cleans in 4s)",
+        "[Shift+N] / [Esc] Cancel (auto-cleans in 3s)",
         true,
         true,
         true)
@@ -93,6 +96,9 @@ CleanClipboard_ShowCountdown() {
 CleanClipboard_OnCancel(*) {
     global g_CleanClipboardCanceled
     g_CleanClipboardCanceled := true
+    try CleanClipboard_CancelPrewarm()
+    catch {
+    }
     try CleanClipboard_CancelActiveRun()
     catch {
     }
