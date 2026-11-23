@@ -26,9 +26,11 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     if (AiCompanionMode_IsCDP("gemini")) {
-        ok := AiCompanionCDP_CopyLast("gemini", false, playChimeAndNotify)
+        ctx := AiCompanionCDP_CaptureChromeContext(geminiHwnd)
+        compId := (ctx.companion = "enterprise" || ctx.companion = "gemini") ? ctx.companion : "gemini"
+        ok := AiCompanionCDP_CopyLast(compId, false, playChimeAndNotify, ctx.title)
         if (!ok && playChimeAndNotify)
-            AiCompanionCDP_NotifyError("Copy reply", AiCompanionCDP_GetLastError(), "gemini")
+            AiCompanionCDP_NotifyError("Copy reply", AiCompanionCDP_GetLastError(), compId)
         GeminiPerfLog("copy", t0)
         return ok
     }
@@ -93,9 +95,11 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
     alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
     if (AiCompanionMode_IsCDP("gemini")) {
-        ok := AiCompanionCDP_CopyLast("gemini", true, playChimeAndNotify)
+        ctx := AiCompanionCDP_CaptureChromeContext(geminiHwnd)
+        compId := (ctx.companion = "enterprise" || ctx.companion = "gemini") ? ctx.companion : "gemini"
+        ok := AiCompanionCDP_CopyLast(compId, true, playChimeAndNotify, ctx.title)
         if (!ok && playChimeAndNotify)
-            AiCompanionCDP_NotifyError("Copy code", AiCompanionCDP_GetLastError(), "gemini")
+            AiCompanionCDP_NotifyError("Copy code", AiCompanionCDP_GetLastError(), compId)
         GeminiPerfLog("copy_code", t0)
         return ok
     }

@@ -515,6 +515,7 @@ class D2C_FlowManager {
         this.ShowReplyHereAfterSend := false
         this.MonitorInitialTitle := ""
         this.CdpReplyCountBefore := -1
+        this.CdpTargetId := ""
     }
 
     ; --- Entry Points ---
@@ -1380,6 +1381,7 @@ class D2C_FlowManager {
             }
             this.GeminiHwnd := res.hwnd ? res.hwnd : 1
             this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
+            this.CdpTargetId := res.HasProp("targetId") ? res.targetId : ""
             if (autoSubmit) {
                 if (!res.started) {
                     try ShowCenteredOverlay_Utils("❌ Send to " . aiLabel . " (CDP): submission did not start", 2200, BANNER_ACCENT_ERROR)
@@ -1587,7 +1589,8 @@ class D2C_FlowManager {
         }
 
         if (AiCompanionMode_IsCDP(companion)) {
-            st := AiCompanionCDP_Status(companion)
+            tid := this.HasProp("CdpTargetId") ? this.CdpTargetId : ""
+            st := AiCompanionCDP_Status(companion, "", tid)
             if (!st.ok)
                 return
             if (st.generating) {
@@ -1603,7 +1606,7 @@ class D2C_FlowManager {
             prevLen := st.lastReplyLen
             loop 4 {
                 Sleep 350
-                st2 := AiCompanionCDP_Status(companion)
+                st2 := AiCompanionCDP_Status(companion, "", tid)
                 if (!st2.ok || st2.generating || st2.lastReplyLen <= 0
                     || (this.CdpReplyCountBefore >= 0 && st2.replyCount <= this.CdpReplyCountBefore)
                     || st2.lastReplyLen != prevLen) {
@@ -1986,7 +1989,8 @@ class D2C_FlowManager {
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
 
         if (AiCompanionMode_IsCDP(companion)) {
-            clipOk := AiCompanionCDP_CopyLast(companion, false, false)
+            tid := this.HasProp("CdpTargetId") ? this.CdpTargetId : ""
+            clipOk := AiCompanionCDP_CopyLast(companion, false, false, "", tid)
             if (clipOk) {
                 clip := Trim(A_Clipboard)
                 clipOk := (clip != "" && StrLen(clip) >= 10)
@@ -1994,7 +1998,7 @@ class D2C_FlowManager {
             if (clipOk) {
                 this.HasCopiedForThisResponse := true
                 if (readAloud) {
-                    if (!AiCompanionCDP_ReadAloud(companion))
+                    if (!AiCompanionCDP_ReadAloud(companion, "", tid))
                         AiCompanionCDP_NotifyError("Read aloud", AiCompanionCDP_GetLastError(), companion)
                 } else {
                     try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")

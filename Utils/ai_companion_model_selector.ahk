@@ -640,8 +640,10 @@ AiCompanionModelSelector_HandleKey(thisHotkey := "") {
         return
 
     modelName := models[idx]
+    targetHwnd := g_AiCompanionModelSelectorTargetHwnd
+    ctx := AiCompanionCDP_CaptureChromeContext(targetHwnd)
     AiCompanionModelSelector_Close()
-    ok := AiCompanionModels_Apply(companion, modelName)
+    ok := AiCompanionModels_Apply(companion, modelName, ctx.title)
     if (!ok)
         try ShowCenteredOverlay_Utils("Could not select " . modelName, 2200, BANNER_ACCENT_ERROR)
 }

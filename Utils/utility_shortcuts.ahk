@@ -374,9 +374,41 @@ GlobalAICompanionOpenOrFocus() {
 
 ; Global Fast / Deep — via CDP (Copilot falls back to CopilotWeb).
 GlobalAICompanionSelectRole(role) {
+    global g_UtilitySelectorRestoreHwnd
+    originHwnd := 0
+    try {
+        if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+            originHwnd := g_UtilitySelectorRestoreHwnd
+    } catch {
+        originHwnd := 0
+    }
+    if (!originHwnd) {
+        try originHwnd := WinGetID("A")
+        catch {
+            originHwnd := 0
+        }
+    }
+
+    ctx := AiCompanionCDP_CaptureChromeContext(originHwnd)
+    isChromeCompanion := (ctx.hwnd && ctx.companion != "")
+
     if (AiCompanionMode_IsCDP()) {
-        compId := GlobalAICompanionModelsId()
-        ok := AiCompanionModels_SelectRole(compId, role)
+        compId := isChromeCompanion ? ctx.companion : GlobalAICompanionModelsId()
+        if (isChromeCompanion && compId != AI_COMPANION_COPILOT) {
+            cdpHwnd := AiCompanionCDP_FindWindowHwnd(0, compId)
+            if (cdpHwnd && ctx.hwnd != cdpHwnd) {
+                try {
+                    WinActivate("ahk_id " ctx.hwnd)
+                    WinWaitActive("ahk_id " ctx.hwnd, , 1.0)
+                } catch {
+                }
+                ok := AiCompanionModels_SelectRole(compId, role)
+                AICompanion_RestoreOriginWindow(ctx.hwnd, ctx.hwnd, true, "RoleSelect")
+                return ok
+            }
+        }
+        activeTitle := (isChromeCompanion && compId != AI_COMPANION_COPILOT) ? ctx.title : ""
+        ok := AiCompanionModels_SelectRole(compId, role, activeTitle)
         if (ok) {
             try ShowCenteredOverlay_Utils("⚡ Switched model (" . role . ") via CDP", 1200, BANNER_ACCENT_SUCCESS)
             catch {
@@ -386,11 +418,7 @@ GlobalAICompanionSelectRole(role) {
         }
         return ok
     }
-    prevHwnd := 0
-    try prevHwnd := WinGetID("A")
-    catch {
-        prevHwnd := 0
-    }
+    prevHwnd := originHwnd
     hwnd := 0
     label := "Copilot"
     GlobalAICompanionHwndAndLabel(&hwnd, &label)
@@ -552,10 +580,19 @@ RegisterMacro(MacroAICompanionNewChat, "💬 New chat — AI companion (Shift+N)
 
 ; Macros [X] — close active AI companion tab (only if >1 tab is open; keeps single tab open).
 MacroAICompanionCloseTab(*) {
-    companion := ResolveGlobalAICompanion()
-    label := GetGlobalAIProviderLabel()
+    global g_UtilitySelectorRestoreHwnd
+    originHwnd := 0
+    try {
+        if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+            originHwnd := g_UtilitySelectorRestoreHwnd
+    } catch {
+        originHwnd := 0
+    }
+    ctx := AiCompanionCDP_CaptureChromeContext(originHwnd)
+    companion := (ctx.companion = "enterprise" || ctx.companion = "gemini") ? ctx.companion : ResolveGlobalAICompanion()
+    label := (companion = "enterprise") ? "Gemini Enterprise" : ((companion = "gemini") ? "Gemini" : GetGlobalAIProviderLabel())
     if (AiCompanionMode_IsCDP(companion)) {
-        res := AiCompanionCDP_CloseTab(companion)
+        res := AiCompanionCDP_CloseTab(companion, ctx.title)
         if (res.ok) {
             ShowCenteredOverlay_Utils("🗂 Closed " . label . " tab (" . res.remaining . " left)", 1200,
                 BANNER_ACCENT_SUCCESS)
@@ -653,8 +690,9 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
         return false
     }
 
-    companionId := ResolveGlobalAICompanion()
-    label := GetGlobalAIProviderLabel()
+    ctx := AiCompanionCDP_CaptureChromeContext(originHwnd)
+    companionId := (ctx.companion != "") ? ctx.companion : ResolveGlobalAICompanion()
+    label := (companionId = "enterprise") ? "Gemini Enterprise" : ((companionId = "copilot") ? "Copilot" : ((companionId = "gemini") ? "Gemini" : GetGlobalAIProviderLabel()))
     if (AiCompanionMode_IsCDP(companionId)) {
         clipText := ""
         tempFiles := []
@@ -665,7 +703,7 @@ UtilityShortcuts_AICompanionPaste(originHwnd := 0) {
         }
         res := { ok: false, error: "CDP paste failed" }
         try {
-            res := AiCompanionCDP_Paste(companionId, clipText, false, filePaths)
+            res := AiCompanionCDP_Paste(companionId, clipText, false, filePaths, false, false, ctx.title)
         } finally {
             for tmp in tempFiles {
                 try {

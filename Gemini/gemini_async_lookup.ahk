@@ -68,6 +68,7 @@ class GeminiAsyncLookup {
             this.RetryCount := 0
             this.ButtonEverFound := res.started
             this.CdpReplyCountBefore := res.HasProp("replyCountBefore") ? res.replyCountBefore : -1
+            this.CdpTargetId := res.HasProp("targetId") ? res.targetId : ""
             GeminiBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ASYNC_POLL_MS)
             return
         }
@@ -148,7 +149,8 @@ class GeminiAsyncLookup {
                 }
                 return
             }
-            st := AiCompanionCDP_Status("gemini")
+            tid := this.HasProp("CdpTargetId") ? this.CdpTargetId : ""
+            st := AiCompanionCDP_Status("gemini", "", tid)
             if (!st.ok)
                 return
             if (st.generating) {
@@ -158,7 +160,7 @@ class GeminiAsyncLookup {
             hasNewReply := (this.CdpReplyCountBefore >= 0) ? (st.replyCount > this.CdpReplyCountBefore && st.lastReplyLen > 0) : ((this.ButtonEverFound || this.RetryCount >= 4) && st.lastReplyLen > 0)
             if (hasNewReply) {
                 Sleep 300
-                st2 := AiCompanionCDP_Status("gemini")
+                st2 := AiCompanionCDP_Status("gemini", "", tid)
                 if (st2.ok && !st2.generating && st2.lastReplyLen > 0 && st2.lastReplyLen = st.lastReplyLen) {
                     GeminiBackgroundStopTimer(this)
                     this.OnStreamingCompleted()
@@ -185,7 +187,8 @@ class GeminiAsyncLookup {
 
     RetrieveResponse() {
         if (this.IsCDP) {
-            if (!AiCompanionCDP_CopyLast("gemini", false, false)) {
+            tid := this.HasProp("CdpTargetId") ? this.CdpTargetId : ""
+            if (!AiCompanionCDP_CopyLast("gemini", false, false, "", tid)) {
                 StandardLoadingBar_Hide(0)
                 AiCompanionCDP_NotifyError("Copy lookup", AiCompanionCDP_GetLastError(), "gemini")
                 return

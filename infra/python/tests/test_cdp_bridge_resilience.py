@@ -114,3 +114,79 @@ def test_health_does_not_block_while_worker_is_busy():
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_find_or_open_page_uses_pinned_target_id_first():
+    bridge = srv.CDPBridge()
+    page1 = mock.MagicMock()
+    page1.is_closed.return_value = False
+    page1.url = "https://gemini.google.com/app/chat1"
+    page2 = mock.MagicMock()
+    page2.is_closed.return_value = False
+    page2.url = "https://gemini.google.com/app/chat2"
+
+    fake_ctx = mock.MagicMock()
+    fake_ctx.pages = [page1, page2]
+    fake_browser = mock.MagicMock()
+    fake_browser.contexts = [fake_ctx]
+
+    def fake_tid(p):
+        return "TID_1" if p is page1 else "TID_2"
+
+    with (
+        mock.patch.object(bridge, "_connect", return_value=fake_browser),
+        mock.patch.object(bridge, "_get_page_target_id", side_effect=fake_tid),
+        mock.patch.object(bridge, "_pick_current_page") as pick_mock,
+    ):
+        got = bridge._find_or_open_page("gemini", target_id="TID_2")
+        assert got is page2
+        assert bridge._active_pages["gemini"] is page2
+        pick_mock.assert_not_called()
+
+
+def test_pick_current_page_minimized_prefers_active_pages_over_json_list_order():
+    bridge = srv.CDPBridge()
+    page1 = mock.MagicMock()
+    page2 = mock.MagicMock()
+    bridge._active_pages["enterprise"] = page2
+
+    with (
+        mock.patch.object(bridge, "_order_pages_by_cdp_mru", return_value=[page1, page2]),
+        mock.patch.object(bridge, "_ensure_tab_tracker"),
+        mock.patch.object(bridge, "_is_cdp_chrome_foreground", return_value=False),
+        mock.patch.object(bridge, "_find_cdp_chrome_hwnd", return_value=0),
+        mock.patch.object(bridge, "_page_is_visible", return_value=False),
+        mock.patch.object(bridge, "_get_page_last_active_at", return_value=0),
+    ):
+        got = bridge._pick_current_page("enterprise", [page1, page2])
+        assert got is page2
+
+
+def test_select_model_returns_target_id():
+    bridge = srv.CDPBridge()
+    page2 = mock.MagicMock()
+    page2.url = "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/123"
+    opt_loc = mock.MagicMock()
+    opt_loc.count.return_value = 1
+    btn_loc = mock.MagicMock()
+    btn_loc.count.return_value = 1
+
+    def fake_locator(sel):
+        m = mock.MagicMock()
+        if "Hydrogen" in sel or "menuitem" in sel or "text=" in sel:
+            m.locator.return_value.first = opt_loc
+        else:
+            m.locator.return_value.first = btn_loc
+        return m
+
+    page2.locator.side_effect = fake_locator
+
+    with (
+        mock.patch.object(bridge, "_find_or_open_page", return_value=page2),
+        mock.patch.object(bridge, "_get_page_target_id", return_value="TID_2"),
+        mock.patch.object(bridge, "_find_composer", return_value=mock.MagicMock()),
+    ):
+        res = bridge.select_model({"companion": "enterprise", "model": "Gemini 4 Hydrogen", "target_id": "TID_2"})
+        assert res["ok"] is True
+        assert res["target_id"] == "TID_2"
+

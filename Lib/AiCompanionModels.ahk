@@ -344,13 +344,13 @@ AiCompanionModels_FocusHwnd(hwnd) {
 }
 
 ; Apply a model via CDP for Gemini / Enterprise (Copilot falls back to CopilotWeb).
-AiCompanionModels_Apply(companion, modelName) {
+AiCompanionModels_Apply(companion, modelName, activeTitle := "", targetId := "") {
     modelName := Trim(modelName)
     if (modelName = "")
         return false
     if (companion = AI_COMPANION_COPILOT)
         return AiCompanionModels_ApplyCopilot(modelName)
-    return AiCompanionCDP_SelectModel(companion, modelName)
+    return AiCompanionCDP_SelectModel(companion, modelName, activeTitle, targetId)
 }
 
 AiCompanionModels_ApplyGemini(modelName) {
@@ -438,7 +438,7 @@ AiCompanionModels_ApplyCopilot(modelName) {
 }
 
 ; One-shot Fast / Deep. Returns true if already active or selection succeeded.
-AiCompanionModels_SelectRole(companion, role) {
+AiCompanionModels_SelectRole(companion, role, activeTitle := "", targetId := "") {
     role := StrLower(Trim(role))
     cfg := AiCompanionModels_Load(companion)
     modelName := (role = "fast") ? cfg.fast : ((role = "deep") ? cfg.deep : "")
@@ -475,7 +475,7 @@ AiCompanionModels_SelectRole(companion, role) {
     } else if (companion = AI_COMPANION_GEMINI) {
         ; EnsureGeminiModelViaMenu no-ops when already selected.
     }
-    ok := AiCompanionModels_Apply(companion, modelName)
+    ok := AiCompanionModels_Apply(companion, modelName, activeTitle, targetId)
     if (!ok) {
         try ShowCenteredOverlay_Utils("Could not select " . modelName, 2200, BANNER_ACCENT_ERROR)
     }

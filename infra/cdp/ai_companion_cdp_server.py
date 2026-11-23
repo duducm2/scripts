@@ -290,6 +290,20 @@ class CDPBridge:
                 except Exception:
                     pass
 
+    def _find_page_by_target_id(self, context, target_id: str):
+        tid = (target_id or "").strip()
+        if not tid:
+            return None
+        for page in list(context.pages):
+            try:
+                if page.is_closed():
+                    continue
+                if self._get_page_target_id(page) == tid:
+                    return page
+            except Exception:
+                continue
+        return None
+
     @staticmethod
     def _strip_chrome_title_suffix(title: str) -> str:
         t = (title or "").strip()
@@ -410,11 +424,10 @@ class CDPBridge:
         return exact if exact else prefix
 
     def _pick_most_recent_page(self, comp: str, candidates: list) -> object:
-        ordered = self._order_pages_by_cdp_mru(candidates)
         # 1. In-page activation timestamp (updated on visibilitychange/focus/pointer/key and new_tab).
         best_ts = -1
         best_page = None
-        for p in ordered:
+        for p in candidates:
             ts = self._get_page_last_active_at(p)
             if ts > best_ts:
                 best_ts = ts
@@ -423,15 +436,15 @@ class CDPBridge:
             self._active_pages[comp] = best_page
             return best_page
 
-        # 2. Chrome /json/list MRU puts the active tab first; fall back to tracked page if MRU unavailable.
-        if self._get_mru_target_ids():
-            self._active_pages[comp] = ordered[0]
-            return ordered[0]
+        # 2. Remembered active page for this companion (e.g., active before Chrome was minimized).
         tracked = self._active_pages.get(comp)
-        if tracked in ordered:
+        if tracked in candidates:
             return tracked
-        self._active_pages[comp] = ordered[-1]
-        return ordered[-1]
+
+        # 3. Last resort: most recently opened matching tab (avoid trusting /json/list order,
+        # which frequently puts Tab 1 first even when Tab 2 was active).
+        self._active_pages[comp] = candidates[-1]
+        return candidates[-1]
 
     def _pick_current_page(self, comp: str, matching_pages: list, active_title: str = "") -> object:
         ordered_pages = self._order_pages_by_cdp_mru(matching_pages)
@@ -442,9 +455,15 @@ class CDPBridge:
             self._active_pages[comp] = ordered_pages[0]
             return ordered_pages[0]
 
-        win_title = self._strip_chrome_title_suffix(active_title) or self._strip_chrome_title_suffix(
-            self._get_hwnd_title(self._find_cdp_chrome_hwnd())
-        )
+        win_title = self._strip_chrome_title_suffix(active_title)
+        if not win_title and self._is_cdp_chrome_foreground():
+            win_title = self._strip_chrome_title_suffix(
+                self._get_hwnd_title(ctypes.windll.user32.GetForegroundWindow())
+            )
+        if not win_title:
+            win_title = self._strip_chrome_title_suffix(
+                self._get_hwnd_title(self._find_cdp_chrome_hwnd())
+            )
 
         # 1. When CDP Chrome is not minimized/occluded, only the selected tab has visibilityState === 'visible'.
         visible_pages = [p for p in ordered_pages if self._page_is_visible(p)]
@@ -456,10 +475,12 @@ class CDPBridge:
             if self._is_cdp_chrome_foreground():
                 for p in visible_pages:
                     if self._page_has_focus(p):
+                        self._ensure_tab_tracker(p, stamp_now=True)
                         self._active_pages[comp] = p
                         return p
             title_matches = self._match_title_pages(visible_pages, win_title)
             if len(title_matches) == 1:
+                self._ensure_tab_tracker(title_matches[0], stamp_now=True)
                 self._active_pages[comp] = title_matches[0]
                 return title_matches[0]
             return self._pick_most_recent_page(comp, title_matches if title_matches else visible_pages)
@@ -471,7 +492,7 @@ class CDPBridge:
             return title_matches[0]
         return self._pick_most_recent_page(comp, title_matches if title_matches else ordered_pages)
 
-    def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True, active_title: str = ""):
+    def _find_or_open_page(self, companion: str, launch_if_down: bool = False, new_tab: bool = False, minimized: bool = True, active_title: str = "", target_id: str = ""):
         comp = (companion or "gemini").strip().lower()
         needle, target_url = self._companion_meta(companion)
         last_exc = None
@@ -484,6 +505,13 @@ class CDPBridge:
                 context = browser.contexts[0]
 
                 if not new_tab:
+                    if target_id:
+                        pinned = self._find_page_by_target_id(context, target_id)
+                        if pinned is not None:
+                            self._active_pages[comp] = pinned
+                            _ = pinned.url
+                            return pinned
+
                     matching_pages = []
                     fallback_page = None
                     is_consumer = (needle == "gemini.google.com")
@@ -838,7 +866,8 @@ class CDPBridge:
         activate = bool(data.get("activate", False))
         new_tab = bool(data.get("new_tab", False))
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=new_tab, minimized=not activate, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=new_tab, minimized=not activate, active_title=active_title, target_id=target_id)
         if activate:
             hwnd = self._focus_cdp_window(page)
             if companion.strip().lower() not in ("whatsapp", "wa", "teams", "msteams"):
@@ -857,7 +886,7 @@ class CDPBridge:
             hwnd = self._find_cdp_chrome_hwnd(page_title)
 
         print(f"DEBUG: CDP action completed: ensure, took: {time.time() - start_time:.2f}s")
-        return {"ok": True, "url": page.url, "title": page.title(), "hwnd": hwnd}
+        return {"ok": True, "url": page.url, "title": page.title(), "hwnd": hwnd, "target_id": self._get_page_target_id(page)}
 
     def _toggle_image_gen(self, page, enterprise: bool) -> bool:
         for engaged_sel in [
@@ -1354,8 +1383,10 @@ class CDPBridge:
         clear = bool(data.get("clear", False))
         image_gen = bool(data.get("image_gen", False))
         active_title = (data.get("active_title") or "").strip()
+        target_id = (data.get("target_id") or "").strip()
 
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
         composer = self._find_composer(page, timeout_s=12.0)
         if composer is None:
             if self._is_auth_page(page):
@@ -1387,16 +1418,19 @@ class CDPBridge:
                 "started": started,
                 "reply_count_before": reply_count_before,
                 "hwnd": self._find_cdp_chrome_hwnd(),
+                "target_id": resolved_tid,
             }
 
         print(f"DEBUG: CDP action completed: paste, took: {time.time() - start_time:.2f}s")
-        return {"ok": True, "submitted": False, "hwnd": self._find_cdp_chrome_hwnd()}
+        return {"ok": True, "submitted": False, "hwnd": self._find_cdp_chrome_hwnd(), "target_id": resolved_tid}
 
     def submit(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=False, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=False, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
         composer = self._find_composer(page, timeout_s=5.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
@@ -1406,13 +1440,15 @@ class CDPBridge:
             except Exception:
                 pass
         started, reply_count_before = self._submit_and_confirm_start(page, enterprise)
-        return {"ok": True, "started": started, "reply_count_before": reply_count_before}
+        return {"ok": True, "started": started, "reply_count_before": reply_count_before, "target_id": resolved_tid}
 
     def status(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=False, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=False, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
         generating = self._has_stop_button(page)
         replies = self._get_response_texts(page, enterprise)
         composer_text = ""
@@ -1442,6 +1478,7 @@ class CDPBridge:
             "last_reply_len": len(replies[-1]) if replies else 0,
             "composer_text": composer_text,
             "title": page.title(),
+            "target_id": resolved_tid,
         }
 
     def copy_last(self, data: dict) -> dict:
@@ -1449,16 +1486,19 @@ class CDPBridge:
         enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
         kind = (data.get("kind") or "message").strip().lower()
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title, target_id=target_id)
         items = self._get_code_texts(page) if kind == "code" else self._get_response_texts(page, enterprise)
         if not items:
             return {"ok": False, "error": "NO_RESPONSE_FOUND"}
-        return {"ok": True, "text": items[-1]}
+        return {"ok": True, "text": items[-1], "target_id": self._get_page_target_id(page)}
 
     def new_chat(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
         composer = self._find_composer(page, timeout_s=6.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
@@ -1479,13 +1519,13 @@ class CDPBridge:
                     except Exception:
                         btn.click()
                     time.sleep(0.25)
-                    return {"ok": True}
+                    return {"ok": True, "target_id": resolved_tid}
             except Exception:
                 pass
         page.keyboard.press("Control+Shift+O")
         time.sleep(0.3)
         if self._find_composer(page, timeout_s=2.0) is not None:
-            return {"ok": True}
+            return {"ok": True, "target_id": resolved_tid}
         return {"ok": False, "error": "NEW_CHAT_NOT_FOUND"}
 
     def close_tab(self, data: dict) -> dict:
@@ -1507,7 +1547,10 @@ class CDPBridge:
         if len(matching_pages) <= 1:
             return {"ok": False, "error": "ONLY_ONE_TAB"}
         active_title = (data.get("active_title") or "").strip()
-        target = self._pick_current_page(comp, matching_pages, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        target = self._find_page_by_target_id(context, target_id) if target_id else None
+        if target is None or target not in matching_pages:
+            target = self._pick_current_page(comp, matching_pages, active_title=active_title)
         remaining = [p for p in matching_pages if p != target]
         try:
             target.close()
@@ -1525,7 +1568,9 @@ class CDPBridge:
         if not model_name:
             return {"ok": False, "error": "EMPTY_MODEL"}
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
         composer = self._find_composer(page, timeout_s=6.0)
         if composer is None and self._is_auth_page(page):
             return {"ok": False, "error": "AUTH_REQUIRED"}
@@ -1567,7 +1612,7 @@ class CDPBridge:
                         except Exception:
                             opt.click()
                         time.sleep(0.2)
-                        return {"ok": True, "model": model_name}
+                        return {"ok": True, "model": model_name, "target_id": resolved_tid}
                     try:
                         page.keyboard.press("Escape")
                     except Exception:
@@ -1579,14 +1624,16 @@ class CDPBridge:
     def read_aloud(self, data: dict) -> dict:
         companion = data.get("companion", "gemini")
         active_title = (data.get("active_title") or "").strip()
-        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title)
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
         for sel in ['button[aria-label*="Listen" i]', 'button[aria-label*="Read aloud" i]']:
             try:
                 btns = page.locator(sel).locator("visible=true")
                 cnt = btns.count()
                 if cnt > 0:
                     btns.nth(cnt - 1).click()
-                    return {"ok": True}
+                    return {"ok": True, "target_id": resolved_tid}
             except Exception:
                 pass
         return {"ok": False, "error": "READ_ALOUD_NOT_FOUND"}
