@@ -44,6 +44,10 @@ E-mail: novaodessajec@tjsp.jus.br | Telefones: (19) 3399-4119, (19) 3399-4127 e 
 ℹ️ Custas processuais
 Não há cobrança de custas processuais ou despesas em primeiro grau de jurisdição (Lei nº 9.099/95
 
+⚡ 🐕 Apply tick and flea prevention to German Shepherd
+
+🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
+
 ## Job Search
 
 ⚡ Check Job openings
