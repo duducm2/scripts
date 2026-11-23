@@ -117,9 +117,11 @@ internal static class Program
         string path = ResolveDbPath();
         if (!File.Exists(path))
             throw new FileNotFoundException("ClipAngel DB not found: " + path);
-        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=8000;";
+        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=5000;";
         var con = new SQLiteConnection(cs);
+        con.DefaultTimeout = 5;
         con.Open();
+        ExecuteNonQuery(con, "PRAGMA busy_timeout = 5000;");
         return con;
     }
 

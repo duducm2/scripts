@@ -509,6 +509,12 @@ CleanClipboard_CheckBarrier(run) {
         return
     }
 
+    ; Retry fast dialog-free DB path before falling back to UI (^!k / modal confirmation).
+    if (ClipAngelDb_ExePath() != "" && run.attempt < run.maxAttempts) {
+        CleanClipboard_FinalizeAttempt(run, false, true)
+        return
+    }
+
     uiStage := "", uiDetail := ""
     uiOk := CleanClipboard_RunUiFallback(run, &uiStage, &uiDetail)
     if (!uiOk) {
@@ -542,8 +548,8 @@ CleanClipboard_RunAttempt(run) {
 
     CleanClipboard_UpdateProgress(25, "⏳ " run.attemptTag "[1/3] Cleaning clipboard & Clip Angel in parallel...")
 
-    ; Worker C: non-blocking dismissal of any stray #32770 confirmation dialog.
-    try ClipAngel_TryConfirmDeleteDialogOnce(false)
+    ; Worker C: dismiss any stray #32770 confirmation dialog so ClipAngel's UI thread is unblocked.
+    try ClipAngel_TryConfirmDeleteDialogOnce(true)
     catch {
     }
 

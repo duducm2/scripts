@@ -2499,7 +2499,33 @@ ClipAngel_TriggerBackgroundReloadList(hwnd := 0) {
     }
 }
 
-; Single non-blocking pass to confirm Clip Angel's delete-non-favorites #32770 prompt.
+; Finds the "Yes"/"Sim"/"OK" button hwnd inside a #32770 confirmation dialog (never picks No/Cancel).
+ClipAngel_FindYesButtonHwnd(dlgHwnd) {
+    fallbackBtn := 0
+    try {
+        for ctrlHwnd in WinGetControlsHwnd("ahk_id " dlgHwnd) {
+            cls := ""
+            txt := ""
+            try cls := WinGetClass("ahk_id " ctrlHwnd)
+            catch {
+            }
+            if (cls != "Button")
+                continue
+            try txt := StrLower(Trim(StrReplace(ControlGetText("ahk_id " ctrlHwnd), "&", "")))
+            catch {
+                txt := ""
+            }
+            if (txt = "yes" || txt = "sim" || txt = "ok")
+                return ctrlHwnd
+            if (!fallbackBtn && txt != "no" && txt != "não" && txt != "nao" && txt != "cancel" && txt != "cancelar")
+                fallbackBtn := ctrlHwnd
+        }
+    } catch {
+    }
+    return fallbackBtn
+}
+
+; Single pass to confirm Clip Angel's delete-non-favorites #32770 (or owned) prompt.
 ; Returns true if a dialog was found and closed.
 ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
     prevDetect := A_DetectHiddenWindows
@@ -2509,11 +2535,14 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
             try WinSetTransparent(0, "ahk_id " dlgHwnd)
             catch {
             }
-            try ControlClick("Button1", "ahk_id " dlgHwnd, , "Left", 1, "NA")
-            catch {
-            }
-            try PostMessage(0x00F5, 0, 0, "Button1", "ahk_id " dlgHwnd) ; BM_CLICK
-            catch {
+            yesHwnd := ClipAngel_FindYesButtonHwnd(dlgHwnd)
+            if (yesHwnd) {
+                try ControlClick("ahk_id " yesHwnd, , , "Left", 1, "NA")
+                catch {
+                }
+                try PostMessage(0x00F5, 0, 0, , "ahk_id " yesHwnd) ; BM_CLICK
+                catch {
+                }
             }
             try PostMessage(0x0111, 6, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDYES
             catch {
@@ -2521,31 +2550,35 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
             try PostMessage(0x0111, 1, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDOK
             catch {
             }
-            try ControlSend("{Enter}", , "ahk_id " dlgHwnd)
-            catch {
-            }
-            closeDeadline := A_TickCount + 250
+            closeDeadline := A_TickCount + 150
             while (A_TickCount < closeDeadline) {
                 if !WinExist("ahk_id " dlgHwnd)
                     return true
-                Sleep 20
+                Sleep 15
             }
             if (allowActivateFallback && WinExist("ahk_id " dlgHwnd)) {
                 try {
                     WinActivate("ahk_id " dlgHwnd)
                     if WinWaitActive("ahk_id " dlgHwnd, , 0.3) {
-                        ControlClick("Button1", "ahk_id " dlgHwnd, , "Left", 1)
-                        Sleep 30
+                        if (yesHwnd) {
+                            try ControlClick("ahk_id " yesHwnd, , , "Left", 1)
+                            catch {
+                            }
+                            Sleep 25
+                        }
                         if WinExist("ahk_id " dlgHwnd)
-                            SendInput("{Enter}")
+                            SendInput("!y")
+                        Sleep 25
+                        if WinExist("ahk_id " dlgHwnd)
+                            SendInput("!s")
                     }
                 } catch {
                 }
-                closeDeadline2 := A_TickCount + 300
+                closeDeadline2 := A_TickCount + 250
                 while (A_TickCount < closeDeadline2) {
                     if !WinExist("ahk_id " dlgHwnd)
                         return true
-                    Sleep 20
+                    Sleep 15
                 }
             }
             if !WinExist("ahk_id " dlgHwnd)
