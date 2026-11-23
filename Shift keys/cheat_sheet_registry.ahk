@@ -1467,7 +1467,7 @@ cheatSheets["Google"] := "
     Google (Shift)
     🔍 [S][S]earch box focus
     🥇 [U][U]se first result
-    🖼️ [I][I]mages tab
+    🖼️ [I][I]mages / Imagens tab
 )"
 
 ; --- ChatGPT ---------------------------------------------------------------

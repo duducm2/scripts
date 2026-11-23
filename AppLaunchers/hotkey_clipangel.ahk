@@ -91,6 +91,8 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     }
     if ClipAngelExport_PasteFirstClipToActiveTarget(priorHwnd) {
         try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\clip-paste-desktop.mp3")
+        if (destLabel = "Desktop")
+            DesktopCutNewest_CopyPath()
     } else {
         try ShowCenteredOverlay_Utils("❌ Paste file failed", 2000, BANNER_ACCENT_ERROR)
         catch {
