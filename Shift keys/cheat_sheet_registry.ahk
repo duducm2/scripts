@@ -1671,7 +1671,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+D] > Voice aloud the email
     
     === MICROSOFT TEAMS ===
-    [Win+Alt+Shift+R] > 1× Teams jump / 2× WhatsApp jump
+    [Win+Alt+Shift+R] > 1× WhatsApp jump / 2× Teams jump
     [Win+Alt+Shift+5] > Toggle Mute (meeting)
     [Win+Alt+Shift+4] > Toggle camera (meeting)
     [Win+Alt+Shift+T] > Screen share (meeting)

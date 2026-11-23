@@ -557,7 +557,7 @@ RunTeams() {
 ; =============================================================================
 ; Start New Conversation
 ; Hotkey: Win+Alt+Shift+R
-; 1× = Teams jump to chat; 2× within 400ms = WhatsApp jump to chat
+; 1× = WhatsApp jump to chat; 2× within 500ms = Teams jump to chat
 ; Original File: Microsoft Teams - New conversation.ahk
 ; =============================================================================
 global Teams_R_DoubleTapArmed := false
@@ -579,7 +579,7 @@ Teams_R_DoubleTap_ShowOverlay() {
     Teams_R_DoubleTapOverlayGui.SetFont("s11 w700 cWhite", "Segoe UI")
     ovlW := 300, ovlH := 36
     Teams_R_DoubleTapOverlayGui.Add("Text", "x12 y8 w276 h20 0x200 Background2980B9 Center",
-        "Tap again → WhatsApp")
+        "Tap again → Teams")
     mon := 0
     try mon := MonitorGetPrimary()
     MonitorGetWorkArea(mon, &mlx, &mty, &mrx, &mby)
@@ -605,7 +605,7 @@ class Teams_R_DoubleTapTimerObj {
         Teams_R_LastPressTick := 0
         Teams_R_DoubleTapTimer := 0
         Teams_R_DoubleTap_HideOverlay()
-        SetTimer((*) => Teams_StartNewConversationJump(), -1)
+        SetTimer((*) => WhatsApp_StartNewConversationJump(), -1)
     }
 }
 
@@ -938,7 +938,7 @@ WhatsApp_StartNewConversationJump() {
             Teams_R_DoubleTapTimer := 0
         }
         Teams_R_DoubleTap_HideOverlay()
-        SetTimer((*) => WhatsApp_StartNewConversationJump(), -1)
+        SetTimer((*) => Teams_StartNewConversationJump(), -1)
         return
     }
 
