@@ -199,8 +199,10 @@ ClipAngelDb_StartAsync(args, timeoutMs, onComplete, allowExit2 := false, useStdi
         outText := (!timedOut && proc.rawLen > 0) ? RTrim(StrGet(proc.raw, proc.rawLen, "UTF-8"), "`r`n") : ""
         ClipAngelDb_CloseProcess(proc, timedOut)
         ok := (!timedOut && (ec = 0 || (allowExit2 && ec = 2)))
-        if (handle.onComplete) {
-            try handle.onComplete(ok, outText, ec, timedOut)
+        cb := handle.onComplete
+        handle.onComplete := 0
+        if (IsObject(cb) && HasMethod(cb, "Call")) {
+            try cb(ok, outText, ec, timedOut)
             catch {
             }
         }

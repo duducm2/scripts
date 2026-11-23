@@ -148,30 +148,32 @@ CleanClipboard_ClearOsClipboard(retries := 6) {
 }
 
 CleanClipboard_StartClearOsClipboardAsync(retries := 8, onDone := 0, shouldAbortFn := 0) {
+    hasDoneCb := (IsObject(onDone) && HasMethod(onDone, "Call"))
     if (CleanClipboard_TryClearOsClipboardOnce()) {
-        if (onDone)
+        if (hasDoneCb)
             onDone(true)
         return 0
     }
+    hasAbortFn := (IsObject(shouldAbortFn) && HasMethod(shouldAbortFn, "Call"))
     state := { attempt: 1, max: retries, timerFn: 0, cancelled: false }
     step(*) {
-        if (state.cancelled || (shouldAbortFn && shouldAbortFn())) {
+        if (state.cancelled || (hasAbortFn && shouldAbortFn())) {
             state.cancelled := true
             SetTimer(state.timerFn, 0)
-            if (onDone)
+            if (hasDoneCb)
                 onDone(false)
             return
         }
         state.attempt += 1
         if (CleanClipboard_TryClearOsClipboardOnce()) {
             SetTimer(state.timerFn, 0)
-            if (onDone)
+            if (hasDoneCb)
                 onDone(true)
             return
         }
         if (state.attempt >= state.max) {
             SetTimer(state.timerFn, 0)
-            if (onDone)
+            if (hasDoneCb)
                 onDone(false)
         }
     }
@@ -224,5 +226,14 @@ CleanClipboard_OnTimeout(sessionId, *) {
     if (g_CleanClipboardProceedClaimed)
         return
     g_CleanClipboardProceedClaimed := true
+    ; Show continuous loading banner immediately before KeysOverlay closes so there is no visual gap.
+    try StandardLoadingBar_Show("⏳ Cleaning clipboard & Clip Angel...", BANNER_ACCENT_INTERMEDIATE, {
+        passive: false,
+        manualProgress: true,
+        noActivate: true,
+        fontSize: 17
+    })
+    catch {
+    }
     SetTimer((*) => CleanClipboard_Proceed(sessionId), -1)
 }

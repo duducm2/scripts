@@ -290,7 +290,7 @@ CleanClipboard_BeginPrewarm(sessionId) {
         pw.exitCode := exitCode
         pw.timedOut := timedOut
         cb := pw.onCompleteCallback
-        if (cb) {
+        if (IsObject(cb) && HasMethod(cb, "Call")) {
             pw.onCompleteCallback := 0
             try cb(ok, outText, exitCode, timedOut)
             catch {
@@ -674,6 +674,17 @@ CleanClipboardInternal(sessionId := 0) {
         finished: false
     }
     g_CleanClipboardActiveRun := run
-    CleanClipboard_RunAttempt(run)
+    try {
+        CleanClipboard_RunAttempt(run)
+    } catch Error as e {
+        try CleanClipboard_LogError(run.attempt, "RunAttempt", e.Message)
+        catch {
+        }
+        try CleanClipboard_FinishStatus(100, "❌ Clipboard cleanup error: " e.Message, BANNER_ACCENT_ERROR, 3500, false)
+        catch {
+        }
+        CleanClipboard_CompleteRun(run)
+        return false
+    }
     return !run.finished
 }
