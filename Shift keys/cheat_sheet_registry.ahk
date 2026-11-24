@@ -1631,7 +1631,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Alt+B] AHK posts the native favorites hotkey. Alt never reaches the Window menu.
     [Esc] (Clip Angel focused) Minimize
     [Win+Alt+Shift+1] > Send top list item from Clip Angel
-    [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file into focused Explorer / Cursor·VS Code Files Explorer (Desktop fallback), then hide
+    [Win+Alt+Shift+7] > Clip Angel: tap = Paste file into focused Explorer / Cursor·VS Code Files Explorer (Desktop fallback), then hide; hold 200ms+ = Edit Text (F4)
     
     === AI CHAT (Chrome) ===
     [Win+Alt+Shift+I] > {AI_PROVIDER}: 1× open/focus; 2× (within 400ms) new tab with a fresh page in that window
