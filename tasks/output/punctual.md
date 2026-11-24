@@ -44,6 +44,8 @@ Não há cobrança de custas processuais ou despesas em primeiro grau de jurisdi
 
 🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
 
+⚡ Realizar exames médicos
+
 ## Job Search
 
 ⚡ Check Job openings
