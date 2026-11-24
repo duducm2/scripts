@@ -502,7 +502,7 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
             if (ok)
                 break
             lowErr := StrLower(err)
-            isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "empty_model") || InStr(lowErr, "only_one_tab") || InStr(lowErr, "contact_not_found:")
+            isFatal := InStr(lowErr, "auth_required") || InStr(lowErr, "unsupported") || InStr(lowErr, "empty_contact") || InStr(lowErr, "empty_model") || InStr(lowErr, "only_one_tab") || InStr(lowErr, "contact_not_found:") || InStr(lowErr, "whatsapp_search_not_found") || InStr(lowErr, "whatsapp_composer_not_found") || InStr(lowErr, "file_attach_failed") || InStr(lowErr, "whatsapp_send_not_confirmed")
             if (A_Index < maxAttempts && !isFatal) {
                 needsBridgeHeal := InStr(lowErr, "target") || InStr(lowErr, "browser") || InStr(lowErr, "context") || InStr(lowErr, "closed") || InStr(lowErr, "cdp_") || InStr(lowErr, "connect") || InStr(lowErr, "timeout") || (A_Index >= 2)
                 if (needsBridgeHeal) {

@@ -362,7 +362,7 @@ D2C_WhatsAppSelfPaste_OnSkip(*) {
 
 ; 4s Interactive Input. Y confirms; Esc or timeout leaves the chat untouched.
 D2C_WhatsAppSelfPaste_Confirm() {
-    global g_WhatsAppSelfPasteChoice, g_WhatsAppSelfPasteActive
+    global g_WhatsAppSelfPasteChoice, g_WhatsAppSelfPasteActive, g_StandardLoadingBarIsKeysOverlay
     g_WhatsAppSelfPasteChoice := ""
     g_WhatsAppSelfPasteActive := true
     keyCallbacks := Map(
@@ -385,8 +385,16 @@ D2C_WhatsAppSelfPaste_Confirm() {
         true,
         false
     )
-    while (g_WhatsAppSelfPasteActive)
+    startTick := A_TickCount
+    deadline := startTick + 5500
+    while (g_WhatsAppSelfPasteActive) {
+        if (A_TickCount >= deadline || ((A_TickCount - startTick) > 250 && !g_StandardLoadingBarIsKeysOverlay)) {
+            D2C_WhatsAppSelfPaste_Finish("")
+            try StandardLoadingBar_CloseKeysOverlay()
+            break
+        }
         Sleep 30
+    }
     return g_WhatsAppSelfPasteChoice = "yes"
 }
 
@@ -462,14 +470,26 @@ D2C_WhatsAppPastePayload(clipData, pressEnter := false) {
     Sleep 100
     D2C_WhatsAppSendCtrlV(hwnd)
     if (pressEnter) {
-        Sleep 1000
-        if (hwnd > 0 && WinActive("ahk_id " hwnd))
-            Send "{Enter}"
-        else if (hwnd > 0)
-            ControlSend "{Enter}", , "ahk_id " hwnd
-        else
-            Send "{Enter}"
-        Sleep 200
+        Sleep 1200
+        if (hwnd > 0 && !WinActive("ahk_id " hwnd))
+            WhatsAppJump_ActivateHwnd(hwnd, 2)
+        prevMode := A_SendMode
+        prevDelay := A_KeyDelay
+        prevDuration := A_KeyDuration
+        try {
+            SendMode "Event"
+            SetKeyDelay 40, 30
+            if (hwnd > 0 && WinActive("ahk_id " hwnd))
+                Send "{Enter}"
+            else if (hwnd > 0)
+                ControlSend "{Enter}", , "ahk_id " hwnd
+            else
+                Send "{Enter}"
+        } finally {
+            try SendMode prevMode
+            try SetKeyDelay prevDelay, prevDuration
+        }
+        Sleep 250
     } else {
         Sleep 600
     }

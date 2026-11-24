@@ -916,12 +916,20 @@ WhatsApp_ExecuteJump(contact) {
     if (useCdp) {
         isSelf := D2C_WhatsAppIsSelfContact(contact)
         if (isSelf) {
+            if (!AiCompanion_GetClipboardPastePayload()) {
+                ShowCenteredOverlay_Utils("⚠ Clipboard is empty — nothing to send.", 2200, BANNER_ACCENT_ERROR)
+                return
+            }
             if (!D2C_WhatsAppSelfPaste_Confirm())
                 return
             clipText := ""
             tempFiles := []
             staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
             filePaths := (staged != false) ? staged : []
+            if (staged = false || (clipText = "" && filePaths.Length = 0)) {
+                ShowCenteredOverlay_Utils("⚠ Clipboard is empty — nothing to send.", 2200, BANNER_ACCENT_ERROR)
+                return
+            }
             StandardLoadingBar_Show("⏳ WhatsApp: sending to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
             res := { ok: false, error: "CDP failed" }
             try res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, true, false)
@@ -952,7 +960,8 @@ WhatsApp_ExecuteJump(contact) {
     clipSaved := ClipboardAll()
     sentSelf := false
     try {
-        WhatsAppJumpToChat(contact)
+        if (!WhatsAppJumpToChat(contact))
+            return
         if (!D2C_WhatsAppIsSelfContact(contact))
             return
         WhatsAppJump_HideLoading()

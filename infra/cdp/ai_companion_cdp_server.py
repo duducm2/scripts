@@ -1673,7 +1673,7 @@ class CDPBridge:
         composer = None
         last_err = "WHATSAPP_SEARCH_NOT_FOUND"
         for attempt in range(1, 4):
-            search_loc = self._find_first_visible(page, search_sels, timeout_s=35.0 if attempt == 1 else 6.0)
+            search_loc = self._find_first_visible(page, search_sels, timeout_s=15.0 if attempt == 1 else 5.0)
             if search_loc is None:
                 try:
                     if page.locator('canvas[aria-label*="Scan" i], div[data-ref]').count() > 0 or self._is_auth_page(page):
@@ -1772,18 +1772,63 @@ class CDPBridge:
                     break
 
         if submit and (text or files):
-            send_btn = self._find_first_visible(
-                page,
-                ['button[aria-label="Send" i]', 'button[aria-label="Enviar" i]', 'span[data-icon="send"]'],
-                timeout_s=2.5,
-            )
+            send_sels = [
+                '[role="button"][aria-label="Send" i]',
+                '[role="button"][aria-label="Enviar" i]',
+                'button[aria-label="Send" i]',
+                'button[aria-label="Enviar" i]',
+                'span[data-icon="wds-ic-send-filled"]',
+                'span[data-icon="send"]',
+            ]
+            send_btn = self._find_first_visible(page, send_sels, timeout_s=8.0 if files else 3.0)
             if send_btn is not None:
                 try:
-                    send_btn.evaluate("el => el.click()")
+                    send_btn.evaluate(
+                        """el => {
+                            const btn = el.closest('button, [role="button"]') || el;
+                            btn.click();
+                        }"""
+                    )
                 except Exception:
-                    send_btn.click()
+                    try:
+                        send_btn.click()
+                    except Exception:
+                        pass
             else:
                 page.keyboard.press("Enter")
+
+            if files:
+                # Verify that the media preview / Send button actually cleared after clicking Send.
+                cleared = False
+                for attempt_idx in range(2):
+                    verify_deadline = time.time() + (2.5 if attempt_idx == 0 else 1.5)
+                    while time.time() < verify_deadline:
+                        still_up = self._find_first_visible(page, send_sels, timeout_s=0.15)
+                        if still_up is None:
+                            cleared = True
+                            break
+                        time.sleep(0.15)
+                    if cleared:
+                        break
+                    # Retry click or Enter once if the media preview Send button is still visible.
+                    retry_btn = self._find_first_visible(page, send_sels, timeout_s=0.3)
+                    if retry_btn is not None:
+                        try:
+                            retry_btn.evaluate(
+                                """el => {
+                                    const btn = el.closest('button, [role="button"]') || el;
+                                    btn.click();
+                                }"""
+                            )
+                        except Exception:
+                            try:
+                                retry_btn.click()
+                            except Exception:
+                                page.keyboard.press("Enter")
+                    else:
+                        page.keyboard.press("Enter")
+                if not cleared:
+                    return {"ok": False, "error": "WHATSAPP_SEND_NOT_CONFIRMED"}
         return {"ok": True}
 
     def _chat_jump_teams(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:

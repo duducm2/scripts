@@ -137,7 +137,7 @@ ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate :=
         "submit", submit ? true : false,
         "activate", activate ? true : false,
         "launch_if_down", true
-    ), 90000, true)
+    ), 45000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
     if (res.ok && activate)
         hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)
