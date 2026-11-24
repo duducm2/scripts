@@ -116,8 +116,8 @@ She will be fully protected and ready for public outdoor walks 15 days after thi
 
 🔲 Week 1: Transfer R$ 1225 to the mason (2026-11-28)
 
-🔲 Week 2: Transfer R$ 1225 to the mason (2026-12-05)
+⏳ Week 2: Transfer R$ 1225 to the mason (2026-12-05)
 
-🔲 Week 3: Transfer R$ 1225 to the mason (2026-12-12)
+⏳ Week 3: Transfer R$ 1225 to the mason (2026-12-12)
 
-🔲 Week 4: Transfer R$ 1225 to the mason (2026-12-19)
+⏳ Week 4: Transfer R$ 1225 to the mason (2026-12-19)
