@@ -429,7 +429,7 @@ _AiCDP_GetActiveWindowTitle(companionId := "") {
 }
 
 AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false) {
-    global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError
+    global AI_COMPANION_CDP_PORT, g_AiCompanionCDP_LastError, g_StandardLoadingBarGui
     
     ; Ensure logging helper exists
     if !IsSet(SafeDebugLog)
@@ -451,11 +451,13 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
     if (!cdpUp && allowLaunch && !isPassivePoll) {
         if (effectiveTimeout < 60000)
             effectiveTimeout := 60000
-        try {
-            StandardLoadingBar_Show("⏳ CDP Chrome is closed — starting it now (first run may take longer)…",
-                BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, centerOnHwnd: 0 })
-            shownColdNotice := true
-        } catch {
+        if (!IsSet(g_StandardLoadingBarGui) || !IsObject(g_StandardLoadingBarGui)) {
+            try {
+                StandardLoadingBar_Show("⏳ CDP Chrome is closed — starting it now (first run may take longer)…",
+                    BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, centerOnHwnd: 0 })
+                shownColdNotice := true
+            } catch {
+            }
         }
     }
 

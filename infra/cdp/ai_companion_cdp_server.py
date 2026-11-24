@@ -106,7 +106,7 @@ class CDPBridge:
         if not force_restart and self._is_cdp_up():
             return True
 
-        if force_restart or not self._is_cdp_up():
+        if force_restart:
             try:
                 subprocess.run(
                     ["powershell.exe", "-NoProfile", "-Command",
@@ -179,9 +179,10 @@ class CDPBridge:
             for attempt in range(1, 4):
                 if not self._is_cdp_up():
                     # Brief grace poll in case CDP Chrome is currently starting up.
-                    grace_deadline = time.time() + (1.5 if attempt == 1 else 0.5)
+                    grace_s = 0.25 if (attempt == 1 and launch_if_down) else (1.5 if attempt == 1 else 0.5)
+                    grace_deadline = time.time() + grace_s
                     while time.time() < grace_deadline and not self._is_cdp_up():
-                        time.sleep(0.25)
+                        time.sleep(0.15)
 
                 if not self._is_cdp_up():
                     self._reset_connection()
@@ -1652,7 +1653,19 @@ class CDPBridge:
             time.sleep(0.12)
         return None
 
+    @staticmethod
+    def _wa_debug_log(msg: str) -> None:
+        try:
+            log_path = os.path.join(os.environ.get("TEMP", "."), "whatsapp_cdp_jump.log")
+            ts = time.strftime("%Y-%m-%d %H:%M:%S") + f".{int((time.time() % 1) * 1000):03d}"
+            with open(log_path, "a", encoding="utf-8") as fh:
+                fh.write(f"{ts} | PY | {msg}\n")
+        except Exception:
+            pass
+
     def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
+        t0 = time.time()
+        self._wa_debug_log(f"_chat_jump_whatsapp start contact={contact!r} text_len={len(text)} files={len(files)} submit={submit}")
         search_sels = [
             'input[data-tab="3"]',
             '#side input[role="textbox"]',
@@ -1671,8 +1684,33 @@ class CDPBridge:
         ]
 
         composer = None
+        # Fast-path: if the currently open chat header already matches contact, skip search & click.
+        try:
+            already_open = bool(
+                page.evaluate(
+                    """(contact) => {
+                        const header = document.querySelector('#main header');
+                        if (!header) return false;
+                        const tokens = contact.toLowerCase().split(/\\s+/).filter(Boolean);
+                        if (!tokens.length) return false;
+                        const titleEl = header.querySelector('span[title]');
+                        const label = ((titleEl && titleEl.getAttribute('title')) || header.innerText || '').toLowerCase();
+                        return tokens.every(t => label.includes(t));
+                    }""",
+                    contact,
+                )
+            )
+            if already_open:
+                composer = self._find_first_visible(page, composer_sels, timeout_s=1.0)
+                if composer is not None:
+                    self._wa_debug_log(f"fast-path matched active chat in {time.time() - t0:.2f}s")
+        except Exception:
+            composer = None
+
         last_err = "WHATSAPP_SEARCH_NOT_FOUND"
         for attempt in range(1, 4):
+            if composer is not None:
+                break
             search_loc = self._find_first_visible(page, search_sels, timeout_s=15.0 if attempt == 1 else 5.0)
             if search_loc is None:
                 try:
@@ -1749,6 +1787,7 @@ class CDPBridge:
             time.sleep(0.3)
 
         if composer is None:
+            self._wa_debug_log(f"composer_none err={last_err} elapsed={time.time() - t0:.2f}s")
             return {"ok": False, "error": last_err}
 
         if files:
@@ -1759,7 +1798,9 @@ class CDPBridge:
                     break
                 time.sleep(0.3)
             if not attached:
+                self._wa_debug_log(f"file_attach_failed elapsed={time.time() - t0:.2f}s")
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
+            self._wa_debug_log(f"files_attached elapsed={time.time() - t0:.2f}s")
             time.sleep(0.4)
         if text:
             for _ in range(3):
@@ -1828,7 +1869,9 @@ class CDPBridge:
                     else:
                         page.keyboard.press("Enter")
                 if not cleared:
+                    self._wa_debug_log(f"send_not_confirmed elapsed={time.time() - t0:.2f}s")
                     return {"ok": False, "error": "WHATSAPP_SEND_NOT_CONFIRMED"}
+        self._wa_debug_log(f"_chat_jump_whatsapp ok elapsed={time.time() - t0:.2f}s")
         return {"ok": True}
 
     def _chat_jump_teams(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
@@ -1885,6 +1928,7 @@ class CDPBridge:
             time.sleep(0.3)
 
         if composer is None:
+            self._wa_debug_log(f"composer_none err={last_err} elapsed={time.time() - t0:.2f}s")
             return {"ok": False, "error": last_err}
 
         if files:
@@ -1895,7 +1939,9 @@ class CDPBridge:
                     break
                 time.sleep(0.3)
             if not attached:
+                self._wa_debug_log(f"file_attach_failed elapsed={time.time() - t0:.2f}s")
                 return {"ok": False, "error": "FILE_ATTACH_FAILED"}
+            self._wa_debug_log(f"files_attached elapsed={time.time() - t0:.2f}s")
             time.sleep(0.4)
         if text:
             for _ in range(3):

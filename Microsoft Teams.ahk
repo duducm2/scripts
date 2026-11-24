@@ -826,6 +826,8 @@ ChatFav_ShowPicker(appLabel, appKey, showTapHint := false) {
     g_ChatFavGuiHwnd := g.Hwnd
     ed.Focus()
     ChatFav_SetHotkeys(true)
+    if (appKey = "WhatsApp")
+        SetTimer((*) => ChatFav_PrewarmWhatsApp(), -1)
 
     g_ChatFavFocusGuardTimer := ChatFav_FocusGuard
     SetTimer(g_ChatFavFocusGuardTimer, 50)
@@ -909,29 +911,67 @@ Teams_ExecuteJump(contact, teamsWasClosed := false) {
     Teams_RunDesktopJump(contact, teamsWasClosed)
 }
 
+WhatsApp_DebugLog(msg) {
+    try {
+        logPath := A_Temp . "\whatsapp_cdp_jump.log"
+        if (FileExist(logPath) && FileGetSize(logPath) > 262144)
+            try FileDelete(logPath)
+        ts := FormatTime(, "yyyy-MM-dd HH:mm:ss") . "." . Format("{:03}", Mod(A_TickCount, 1000))
+        FileAppend(ts . " | AHK | " . msg . "`n", logPath, "UTF-8")
+    } catch {
+    }
+}
+
 WhatsApp_ExecuteJump(contact) {
     if (contact = "")
         return
     useCdp := ChatCDP_IsEnabled("whatsapp")
+    WhatsApp_DebugLog("ExecuteJump start contact=" . contact . " useCdp=" . (useCdp ? "1" : "0"))
     if (useCdp) {
         isSelf := D2C_WhatsAppIsSelfContact(contact)
         if (isSelf) {
+            StandardLoadingBar_Show("⏳ [1/4] Checking clipboard…", BANNER_ACCENT_INTERMEDIATE)
             if (!AiCompanion_GetClipboardPastePayload()) {
+                StandardLoadingBar_Hide(0)
+                WhatsApp_DebugLog("Aborted: clipboard empty before confirm")
                 ShowCenteredOverlay_Utils("⚠ Clipboard is empty — nothing to send.", 2200, BANNER_ACCENT_ERROR)
                 return
             }
-            if (!D2C_WhatsAppSelfPaste_Confirm())
+            if (!D2C_WhatsAppSelfPaste_Confirm()) {
+                WhatsApp_DebugLog("Aborted: self-paste confirm cancelled/timed out")
                 return
+            }
+            tStart := A_TickCount
+            cdpUp := AiCompanionCDP_IsChromeCdpUp(250)
+            tabUp := cdpUp ? ChatCDP_IsAppTabOpen("whatsapp", 250) : false
+            WhatsApp_DebugLog("Confirm accepted cdpUp=" . (cdpUp ? "1" : "0") . " tabUp=" . (tabUp ? "1" : "0"))
+            if (!cdpUp || !tabUp) {
+                StandardLoadingBar_Show("⏳ [2/4] WhatsApp CDP is closed — opening WhatsApp Web…",
+                    BANNER_ACCENT_INTERMEDIATE)
+                openRes := ChatCDP_OpenOrFocus("whatsapp", false)
+                WhatsApp_DebugLog("Cold-open result ok=" . (openRes.ok ? "1" : "0") . " err=" . openRes.error .
+                    " elapsedMs=" . (A_TickCount - tStart))
+                if (!openRes.ok) {
+                    StandardLoadingBar_Hide(0)
+                    ChatCDP_NotifyError("whatsapp", openRes.error)
+                    return
+                }
+            }
+            StandardLoadingBar_Show("⏳ [3/4] Staging clipboard for '" . contact . "'…", BANNER_ACCENT_INTERMEDIATE)
             clipText := ""
             tempFiles := []
             staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
             filePaths := (staged != false) ? staged : []
             if (staged = false || (clipText = "" && filePaths.Length = 0)) {
+                StandardLoadingBar_Hide(0)
+                WhatsApp_DebugLog("Aborted: clipboard empty after stage")
                 ShowCenteredOverlay_Utils("⚠ Clipboard is empty — nothing to send.", 2200, BANNER_ACCENT_ERROR)
                 return
             }
-            StandardLoadingBar_Show("⏳ WhatsApp: sending to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
+            WhatsApp_DebugLog("Staged textLen=" . StrLen(clipText) . " files=" . filePaths.Length)
+            StandardLoadingBar_Show("⏳ [4/4] Opening '" . contact . "' & sending…", BANNER_ACCENT_INTERMEDIATE)
             res := { ok: false, error: "CDP failed" }
+            tJump := A_TickCount
             try res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, true, false)
             finally {
                 for tmp in tempFiles {
@@ -943,11 +983,24 @@ WhatsApp_ExecuteJump(contact) {
                 }
                 StandardLoadingBar_Hide(0)
             }
+            WhatsApp_DebugLog("ChatCDP_Jump done ok=" . (res.ok ? "1" : "0") . " err=" . res.error .
+                " elapsedMs=" . (A_TickCount - tJump) . " totalMs=" . (A_TickCount - tStart))
             if (res.ok)
                 ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp (CDP)", 1500, BANNER_ACCENT_SUCCESS)
             else
                 ChatCDP_NotifyError("whatsapp", res.error)
             return
+        }
+        cdpUp := AiCompanionCDP_IsChromeCdpUp(250)
+        tabUp := cdpUp ? ChatCDP_IsAppTabOpen("whatsapp", 250) : false
+        if (!cdpUp || !tabUp) {
+            StandardLoadingBar_Show("⏳ WhatsApp CDP is closed — opening WhatsApp Web…", BANNER_ACCENT_INTERMEDIATE)
+            openRes := ChatCDP_OpenOrFocus("whatsapp", false)
+            if (!openRes.ok) {
+                StandardLoadingBar_Hide(0)
+                ChatCDP_NotifyError("whatsapp", openRes.error)
+                return
+            }
         }
         StandardLoadingBar_Show("⏳ WhatsApp: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
         res := ChatCDP_Jump("whatsapp", contact, "", "", false, true)
