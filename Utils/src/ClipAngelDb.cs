@@ -22,8 +22,17 @@ internal static class Program
     [DllImport("user32.dll")]
     static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
+    [DllImport("user32.dll")]
+    static extern bool EnumChildWindows(IntPtr hWndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+    [DllImport("user32.dll")]
+    static extern int GetDlgCtrlID(IntPtr hWndCtl);
 
     [DllImport("user32.dll")]
     static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -33,6 +42,12 @@ internal static class Program
 
     [DllImport("user32.dll")]
     static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+
+    [DllImport("user32.dll")]
+    static extern bool SetForegroundWindow(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     static extern bool IsWindow(IntPtr hWnd);
@@ -166,7 +181,7 @@ internal static class Program
         }
     }
 
-    // Finds and confirms any open ClipAngel #32770 confirmation dialog (MessageBoxButtons.OKCancel -> IDOK=1, or YesNo -> IDYES=6).
+    // Finds and confirms any open ClipAngel #32770 confirmation dialog (OKCancel -> IDOK=1, YesNo -> IDYES=6, or Yes/Sim/OK text).
     static bool ConfirmAnyClipAngelDeleteDialogs()
     {
         var clipAngelPids = new HashSet<uint>();
@@ -197,40 +212,107 @@ internal static class Program
         bool closedAny = false;
         foreach (IntPtr dlg in dialogs)
         {
+            int origExStyle = 0;
+            bool madeLayered = false;
             try
             {
-                int exStyle = GetWindowLong(dlg, -20);
-                SetWindowLong(dlg, -20, exStyle | 0x00080000); // WS_EX_LAYERED
-                SetLayeredWindowAttributes(dlg, 0, 0, 2);       // Opacity 0
+                origExStyle = GetWindowLong(dlg, -20);
+                if ((origExStyle & 0x00080000) == 0)
+                {
+                    SetWindowLong(dlg, -20, origExStyle | 0x00080000); // WS_EX_LAYERED
+                    SetLayeredWindowAttributes(dlg, 0, 0, 2);           // Opacity 0
+                    madeLayered = true;
+                }
             }
             catch
             {
             }
 
-            IntPtr btnOk = GetDlgItem(dlg, 1);  // IDOK (MessageBoxButtons.OKCancel)
-            IntPtr btnYes = GetDlgItem(dlg, 6); // IDYES (MessageBoxButtons.YesNo)
-            if (btnOk != IntPtr.Zero)
-                PostMessage(btnOk, 0x00F5, IntPtr.Zero, IntPtr.Zero); // BM_CLICK
-            if (btnYes != IntPtr.Zero)
-                PostMessage(btnYes, 0x00F5, IntPtr.Zero, IntPtr.Zero); // BM_CLICK
-
-            PostMessage(dlg, 0x0111, new IntPtr(1), btnOk);  // WM_COMMAND IDOK
-            PostMessage(dlg, 0x0111, new IntPtr(6), btnYes); // WM_COMMAND IDYES
-
-            int waitEnd = Environment.TickCount + 150;
-            while (unchecked(Environment.TickCount - waitEnd) < 0)
+            IntPtr targetBtn = IntPtr.Zero;
+            int targetCtrlId = 0;
+            EnumChildWindows(dlg, (child, lParam) =>
             {
-                if (!IsWindow(dlg))
+                var cls = new StringBuilder(32);
+                if (GetClassName(child, cls, cls.Capacity) <= 0 || cls.ToString() != "Button")
+                    return true;
+                int id = GetDlgCtrlID(child);
+                var txtSb = new StringBuilder(64);
+                GetWindowText(child, txtSb, txtSb.Capacity);
+                string txt = txtSb.ToString().Replace("&", "").Trim().ToLowerInvariant();
+                if (txt == "no" || txt == "não" || txt == "nao" || txt == "cancel" || txt == "cancelar")
+                    return true;
+                if (id == 6 || id == 1 || txt == "yes" || txt == "sim" || txt == "ok")
                 {
-                    closedAny = true;
-                    break;
+                    targetBtn = child;
+                    targetCtrlId = id;
+                    return false;
                 }
-                Thread.Sleep(15);
+                return true;
+            }, IntPtr.Zero);
+
+            IntPtr unused;
+            SendMessageTimeout(dlg, 0x0006, new IntPtr(1), IntPtr.Zero, 2, 50, out unused); // WM_ACTIVATE (WA_ACTIVE)
+
+            if (targetBtn != IntPtr.Zero)
+            {
+                SendMessageTimeout(targetBtn, 0x00F5, IntPtr.Zero, IntPtr.Zero, 2, 100, out unused); // BM_CLICK
+                SendMessageTimeout(dlg, 0x0111, new IntPtr(targetCtrlId & 0xFFFF), targetBtn, 2, 100, out unused); // WM_COMMAND BN_CLICKED
             }
-            if (!IsWindow(dlg))
+            else
+            {
+                IntPtr btnOk = GetDlgItem(dlg, 1);
+                IntPtr btnYes = GetDlgItem(dlg, 6);
+                if (btnYes != IntPtr.Zero)
+                    SendMessageTimeout(btnYes, 0x00F5, IntPtr.Zero, IntPtr.Zero, 2, 100, out unused);
+                if (btnOk != IntPtr.Zero)
+                    SendMessageTimeout(btnOk, 0x00F5, IntPtr.Zero, IntPtr.Zero, 2, 100, out unused);
+                PostMessage(dlg, 0x0111, new IntPtr(6), btnYes);
+                PostMessage(dlg, 0x0111, new IntPtr(1), btnOk);
+            }
+
+            if (WaitDialogClosed(dlg, 120))
+            {
                 closedAny = true;
+                continue;
+            }
+
+            // Fallback: activate briefly and send Enter / BM_CLICK
+            try
+            {
+                SetForegroundWindow(dlg);
+                if (targetBtn != IntPtr.Zero)
+                    SendMessageTimeout(targetBtn, 0x00F5, IntPtr.Zero, IntPtr.Zero, 2, 100, out unused);
+                PostMessage(dlg, 0x0100, new IntPtr(0x0D), IntPtr.Zero); // WM_KEYDOWN VK_RETURN
+                PostMessage(dlg, 0x0101, new IntPtr(0x0D), IntPtr.Zero); // WM_KEYUP VK_RETURN
+            }
+            catch
+            {
+            }
+
+            if (WaitDialogClosed(dlg, 120))
+            {
+                closedAny = true;
+            }
+            else if (madeLayered && IsWindow(dlg))
+            {
+                // Never leave a stuck modal dialog invisible
+                try { SetWindowLong(dlg, -20, origExStyle); }
+                catch { }
+            }
         }
         return closedAny;
+    }
+
+    static bool WaitDialogClosed(IntPtr dlg, int timeoutMs)
+    {
+        int waitEnd = Environment.TickCount + timeoutMs;
+        while (unchecked(Environment.TickCount - waitEnd) < 0)
+        {
+            if (!IsWindow(dlg))
+                return true;
+            Thread.Sleep(15);
+        }
+        return !IsWindow(dlg);
     }
 
     static int CmdConfirmDelete(int timeoutMs)
@@ -303,11 +385,11 @@ internal static class Program
         string path = string.IsNullOrEmpty(explicitPath) ? ResolveDbPath() : explicitPath;
         if (!File.Exists(path))
             throw new FileNotFoundException("ClipAngel DB not found: " + path);
-        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=5000;";
+        string cs = "data source=" + path + ";Password=" + Password + ";Read Only=False;Pooling=False;BusyTimeout=500;";
         var con = new SQLiteConnection(cs);
-        con.DefaultTimeout = 5;
+        con.DefaultTimeout = 3;
         con.Open();
-        ExecuteNonQuery(con, "PRAGMA busy_timeout = 5000;");
+        ExecuteNonQuery(con, "PRAGMA busy_timeout = 500;");
         return con;
     }
 
@@ -551,7 +633,24 @@ internal static class Program
         {
             if (!File.Exists(dbPath))
                 continue;
-            for (int attempt = 0; attempt < 5; attempt++)
+
+            // Fast read-only pre-check: skip write lock if there are 0 non-favorite clips.
+            try
+            {
+                using (var ro = OpenReadOnly(dbPath))
+                {
+                    object cntObj = Scalar(ro, "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
+                    long nonFavCount = (cntObj == null || cntObj == DBNull.Value) ? 0L : Convert.ToInt64(cntObj);
+                    if (nonFavCount == 0)
+                        continue;
+                }
+            }
+            catch
+            {
+                // Fall through to write attempt.
+            }
+
+            for (int attempt = 0; attempt < 6; attempt++)
             {
                 try
                 {
@@ -584,9 +683,9 @@ internal static class Program
                 }
                 catch (SQLiteException)
                 {
-                    if (attempt == 4)
+                    if (attempt == 5)
                         throw;
-                    Thread.Sleep(60 + (attempt * 60));
+                    Thread.Sleep(50 + (attempt * 50));
                 }
             }
         }
@@ -597,13 +696,15 @@ internal static class Program
 
     static int CmdDeleteNonFavStaged()
     {
+        long preCount = -1;
         // Unstick any leftover #32770 confirmation dialog and pre-warm SQLite without holding a write lock.
         try
         {
             ConfirmAnyClipAngelDeleteDialogs();
             using (var con = OpenReadOnly())
             {
-                Scalar(con, "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
+                object o = Scalar(con, "SELECT COUNT(*) FROM Clips WHERE NOT Favorite OR Favorite IS NULL");
+                preCount = (o == null || o == DBNull.Value) ? 0L : Convert.ToInt64(o);
             }
         }
         catch
@@ -611,7 +712,7 @@ internal static class Program
             // Proceed anyway; CmdDeleteNonFav will retry or report busy.
         }
 
-        Console.WriteLine("READY");
+        Console.WriteLine("READY\t" + preCount);
         Console.Out.Flush();
 
         string line = Console.In.ReadLine();

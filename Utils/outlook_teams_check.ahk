@@ -298,7 +298,7 @@ CleanClipboard_BeginPrewarm(sessionId) {
         }
     }
 
-    pw.handle := ClipAngelDb_StartAsync("deletenonfav-staged", 20000, onPrewarmDone, true, true)
+    pw.handle := ClipAngelDb_StartAsync("deletenonfav-staged", 12000, onPrewarmDone, true, true)
     if (pw.handle)
         g_CleanClipboardPrewarm := pw
 }
@@ -391,7 +391,7 @@ CleanClipboard_RunUiFallback(run, &outStage := "", &outDetail := "") {
                 }
                 try {
                     ControlSend("^!k", , "ahk_id " hwnd)
-                    confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(450)
+                    confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500)
                 } catch {
                     confirmed := false
                 }
@@ -490,7 +490,7 @@ CleanClipboard_FinalizeAttempt(run, clipAngelOk, usedDb) {
             "⚠️ Attempt " (run.attempt - 1) "/" run.maxAttempts " failed [" run.lastStage "]: " run.lastDetail
             . " — retrying (" run.attempt "/" run.maxAttempts ")...",
             BANNER_ACCENT_INTERMEDIATE)
-        SetTimer((*) => CleanClipboard_RunAttempt(run), -(200 * (run.attempt - 1)))
+        SetTimer((*) => CleanClipboard_RunAttempt(run), -100)
         return
     }
 
@@ -518,7 +518,8 @@ CleanClipboard_CheckBarrier(run) {
         return
 
     if (run.dbOk) {
-        ClipAngel_TriggerBackgroundReloadList()
+        if (run.deletedCount > 0)
+            ClipAngel_TriggerBackgroundReloadList()
         CleanClipboard_FinalizeAttempt(run, true, true)
         return
     }
@@ -567,6 +568,24 @@ CleanClipboard_RunAttempt(run) {
     catch {
     }
 
+    ; Worker B: async OS clipboard clear (runs after Worker A so EmptyClipboard's
+    ; WM_CLIPBOARDUPDATE does not race with ClipAngelDb's SQLite write transaction).
+    onOsDone(ok) {
+        if (run.finished || run.cancelled)
+            return
+        run.osHandle := 0
+        run.osDone := true
+        run.osOk := ok
+        CleanClipboard_CheckBarrier(run)
+    }
+
+    startOsClear() {
+        if (run.finished || run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+            return
+        run.osHandle := CleanClipboard_StartClearOsClipboardAsync(6, onOsDone,
+            (*) => (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId)))
+    }
+
     ; Worker A: async ClipAngelDb deletenonfav (atomic delete + verify in one process).
     onDbDone(ok, outText, exitCode, timedOut) {
         if (run.finished || run.cancelled)
@@ -580,11 +599,12 @@ CleanClipboard_RunAttempt(run) {
         } else {
             run.dbOk := false
             run.attemptStage := "2/3 DB"
-            errMsg := Trim(StrReplace(StrReplace(outText, "READY", ""), "`r`n", " "))
+            cleaned := RegExReplace(outText, "m)^READY(?:\t-?\d+)?\R?", "")
+            errMsg := Trim(StrReplace(cleaned, "`r`n", " "))
             run.attemptDetail := timedOut ? "ClipAngelDb timed out"
                 : (errMsg != "" ? "ClipAngelDb failed: " errMsg : "ClipAngelDb deletenonfav failed/busy")
         }
-        CleanClipboard_CheckBarrier(run)
+        startOsClear()
     }
 
     ; Worker A: reuse pre-warmed ClipAngelDb process if alive (near-instant commit), else spawn fresh.
@@ -609,35 +629,20 @@ CleanClipboard_RunAttempt(run) {
 
     if (!usedPrewarm) {
         if (ClipAngelDb_ExePath() != "") {
-            run.dbHandle := ClipAngelDb_StartAsync("deletenonfav", 15000, onDbDone, true)
+            run.dbHandle := ClipAngelDb_StartAsync("deletenonfav", 4500, onDbDone, true)
             if (!run.dbHandle) {
                 run.dbDone := true
                 run.dbOk := false
                 run.attemptStage := "2/3 DB"
                 run.attemptDetail := "Failed to launch ClipAngelDb.exe"
+                startOsClear()
             }
         } else {
             run.dbDone := true
             run.dbOk := false
+            startOsClear()
         }
     }
-
-    ; Worker B: async OS clipboard clear in parallel with Worker A.
-    onOsDone(ok) {
-        if (run.finished || run.cancelled)
-            return
-        run.osHandle := 0
-        run.osDone := true
-        run.osOk := ok
-        CleanClipboard_CheckBarrier(run)
-    }
-
-    run.osHandle := CleanClipboard_StartClearOsClipboardAsync(8, onOsDone,
-        (*) => (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId)))
-
-    ; If both workers resolved synchronously (e.g. OS clipboard already empty + DB exe missing), advance barrier.
-    if (run.dbDone && run.osDone)
-        CleanClipboard_CheckBarrier(run)
 }
 
 ; Internal helper: Performs parallel clipboard cleanup with 3 retry attempts,
@@ -678,7 +683,7 @@ CleanClipboardInternal(sessionId := 0) {
         priorHwnd: priorHwnd,
         prevBusy: g_ClipAngelAutomationBusy,
         attempt: 1,
-        maxAttempts: 3,
+        maxAttempts: 2,
         attemptTag: "",
         dbHandle: 0,
         osHandle: 0,

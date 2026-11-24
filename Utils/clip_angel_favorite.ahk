@@ -2532,7 +2532,13 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
     DetectHiddenWindows true
     try {
         for dlgHwnd in WinGetList("ahk_exe ClipAngel.exe ahk_class #32770") {
-            try WinSetTransparent(0, "ahk_id " dlgHwnd)
+            madeTransparent := false
+            try {
+                WinSetTransparent(0, "ahk_id " dlgHwnd)
+                madeTransparent := true
+            } catch {
+            }
+            try SendMessage(0x0006, 1, 0, , "ahk_id " dlgHwnd, , , , 80) ; WM_ACTIVATE (WA_ACTIVE)
             catch {
             }
             yesHwnd := ClipAngel_FindYesButtonHwnd(dlgHwnd)
@@ -2540,14 +2546,17 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
                 try ControlClick("ahk_id " yesHwnd, , , "Left", 1, "NA")
                 catch {
                 }
+                try SendMessage(0x00F5, 0, 0, , "ahk_id " yesHwnd, , , , 100) ; BM_CLICK
+                catch {
+                }
                 try PostMessage(0x00F5, 0, 0, , "ahk_id " yesHwnd) ; BM_CLICK
                 catch {
                 }
             }
-            try PostMessage(0x0111, 6, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDYES
+            try SendMessage(0x0111, 6, yesHwnd, , "ahk_id " dlgHwnd, , , , 100) ; WM_COMMAND IDYES
             catch {
             }
-            try PostMessage(0x0111, 1, 0, , "ahk_id " dlgHwnd) ; WM_COMMAND IDOK
+            try SendMessage(0x0111, 1, yesHwnd, , "ahk_id " dlgHwnd, , , , 100) ; WM_COMMAND IDOK
             catch {
             }
             closeDeadline := A_TickCount + 150
@@ -2558,6 +2567,10 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
             }
             if (allowActivateFallback && WinExist("ahk_id " dlgHwnd)) {
                 try {
+                    if (madeTransparent) {
+                        WinSetTransparent("Off", "ahk_id " dlgHwnd)
+                        madeTransparent := false
+                    }
                     WinActivate("ahk_id " dlgHwnd)
                     if WinWaitActive("ahk_id " dlgHwnd, , 0.3) {
                         if (yesHwnd) {
@@ -2566,6 +2579,9 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
                             }
                             Sleep 25
                         }
+                        if WinExist("ahk_id " dlgHwnd)
+                            SendInput("{Enter}")
+                        Sleep 25
                         if WinExist("ahk_id " dlgHwnd)
                             SendInput("!y")
                         Sleep 25
@@ -2583,6 +2599,11 @@ ClipAngel_TryConfirmDeleteDialogOnce(allowActivateFallback := false) {
             }
             if !WinExist("ahk_id " dlgHwnd)
                 return true
+            if (madeTransparent) {
+                try WinSetTransparent("Off", "ahk_id " dlgHwnd)
+                catch {
+                }
+            }
         }
     } finally {
         DetectHiddenWindows prevDetect
