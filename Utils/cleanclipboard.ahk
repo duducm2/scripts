@@ -6,9 +6,21 @@
 ; =============================================================================
 
 ; Clean the Clipboard macro function
-; Shows a non-modal 4s countdown; auto-continues unless user cancels with N; Y proceeds immediately.
+; Runs immediately in the background without blocking or stealing focus.
 CleanClipboard() {
-    CleanClipboard_ShowCountdown()
+    global g_CleanClipboardInProgress, g_CleanClipboardSessionId
+
+    if (g_CleanClipboardInProgress) {
+        ShowCenteredOverlay_Utils("Clipboard cleanup already running", 1500, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+
+    CleanClipboard_BeginSession()
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    StandardLoadingBar_Hide(0)
+    SetTimer((*) => CleanClipboard_Proceed(g_CleanClipboardSessionId), -1)
 }
 
 ; Strip markdown escape backslashes chat UIs add on copy (e.g. meeting\_id → meeting_id).
@@ -54,40 +66,7 @@ UnescapeMarkdownClipboard() {
 }
 
 CleanClipboard_ShowCountdown() {
-    global g_CleanClipboardInProgress
-
-    if (g_CleanClipboardInProgress) {
-        ShowCenteredOverlay_Utils("Clipboard cleanup already running", 1500, BANNER_ACCENT_INTERMEDIATE)
-        return
-    }
-
-    CleanClipboard_BeginSession()
-
-    ; Ensure any previous keys overlay is closed before showing a new one
-    try StandardLoadingBar_CloseKeysOverlay()
-    catch {
-    }
-    StandardLoadingBar_Hide(0)
-
-    state := "🧹 Cleaning clipboard in 3s...`nPress [Shift+N] or [Esc] within 3s to cancel."
-    keyCallbacks := Map("+n", CleanClipboard_OnCancel, "*Escape", CleanClipboard_OnCancel)
-
-    ; Center on active monitor (centerOnHwnd := 0), use red accent for destructive action.
-    StandardLoadingBar_ShowWithKeys(
-        state,
-        keyCallbacks,
-        3000,
-        0,
-        CleanClipboard_OnTimeout.Bind(g_CleanClipboardSessionId),
-        BANNER_ACCENT_ERROR,
-        560,
-        17,
-        "",
-        false,
-        "[Shift+N] / [Esc] Cancel (auto-cleans in 3s)",
-        true,
-        true,
-        true)
+    CleanClipboard()
 }
 
 CleanClipboard_OnCancel(*) {

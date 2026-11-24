@@ -286,8 +286,10 @@ CleanClipboard_CompleteRun(run) {
     }
 }
 
-; Worker A: Native Clip Angel cleanup via Alt+P (all clips) -> Ctrl+A -> Delete.
-; Clip Angel preserves favorites and skips confirmation when ConfirmationBeforeDelete=False.
+; Worker A: Zero-focus-steal background Clip Angel cleanup (Handy/BeginFavoriteSuppress pattern).
+; Parks Clip Angel suppressed (WS_EX_NOACTIVATE + opacity 0), resets to all clips (F9),
+; then sends Ctrl+A -> Delete directly to the dataGridView control via ControlSend.
+; User can keep typing or switching windows without interruption.
 CleanClipboard_RunClipAngelAltPDelete(run, &outStage := "", &outDetail := "") {
     global g_ClipAngelAutomationBusy
     outStage := ""
@@ -296,78 +298,86 @@ CleanClipboard_RunClipAngelAltPDelete(run, &outStage := "", &outDetail := "") {
     g_ClipAngelAutomationBusy := true
     hwnd := 0
     ok := false
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
     try {
-        ; Dismiss any stray #32770 dialog so Clip Angel's UI thread is unblocked.
-        try ClipAngel_TryConfirmDeleteDialogOnce(true)
+        ; Dismiss any stray #32770 dialog in the background without stealing focus.
+        try ClipAngel_TryConfirmDeleteDialogOnce(false)
         catch {
         }
 
         if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
             return false
 
-        try ClipAngel_WaitChordModifiersReleased()
-        catch {
-        }
-        try ClipAngel_ReleaseChordModifiersForSend()
-        catch {
-        }
+        CleanClipboard_UpdateProgress(45, "⏳ " run.attemptTag "[1/2] Cleaning Clip Angel in background...")
 
-        CleanClipboard_UpdateProgress(45, "⏳ " run.attemptTag "[1/2] Opening Clip Angel (Alt+P)...")
-        if (!ClipAngel_OpenNative("p", 0, false)) {
+        root := 0
+        hwnd := CleanClipboard_ActivateClipAngelForCleanup(run.sessionId, &root)
+        if (!hwnd) {
             if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
                 return false
             outStage := "1/2 Open"
-            outDetail := "Clip Angel is not running or failed to open via Alt+P"
-            return false
-        }
-
-        hwnd := ClipAngel_MainHwnd()
-        if (!hwnd || !ClipAngel_EnsureWindowActive(hwnd, 400)) {
-            if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
-                return false
-            outStage := "1/2 Activate"
-            outDetail := "Clip Angel window failed to activate"
+            outDetail := "Clip Angel is not running or window not found"
             return false
         }
 
         if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
             return false
 
-        ; Ensure focus is on the clip list (not the filter combo) before Ctrl+A -> Delete.
-        try ClipAngel_FocusGridIfFilterCombo()
+        ; Reset filter & show all clips (normal + favorite) in background without activating.
+        try ControlSend("{F9}", , "ahk_id " hwnd)
         catch {
         }
+        Sleep 40
 
-        if (!WinActive("ahk_id " hwnd)) {
-            if (!ClipAngel_EnsureWindowActive(hwnd, 250)) {
-                outStage := "1/2 Focus"
-                outDetail := "Clip Angel lost focus before Ctrl+A / Delete"
-                return false
+        if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+            return false
+
+        ; Target dataGridView HWND directly so Ctrl+A -> Delete never hits the search/filter box.
+        targetHwnd := hwnd
+        try {
+            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+            if (dataGrid) {
+                gridHwnd := 0
+                try gridHwnd := dataGrid.NativeWindowHandle
+                catch {
+                }
+                if (!gridHwnd) {
+                    try gridHwnd := dataGrid.GetPropertyValue(30020) ; UIA_NativeWindowHandlePropertyId
+                    catch {
+                    }
+                }
+                if (gridHwnd)
+                    targetHwnd := gridHwnd
             }
+        } catch {
         }
 
         CleanClipboard_UpdateProgress(75, "⏳ " run.attemptTag "[1/2] Selecting all & deleting non-favorites...")
-        Sleep 35
-        if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+        try {
+            ControlSend("^a", , "ahk_id " targetHwnd)
+            Sleep 40
+            if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+                return false
+            ControlSend("{Delete}", , "ahk_id " targetHwnd)
+            Sleep 50
+        } catch Error as e {
+            outStage := "1/2 Delete"
+            outDetail := "Background ControlSend failed: " e.Message
             return false
+        }
 
-        SendInput("^a")
-        Sleep 40
-        if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
-            return false
-
-        SendInput("{Delete}")
-        Sleep 50
-
-        ; Defensive: dismiss any confirmation dialog if ConfirmationBeforeDelete is ever enabled.
-        try ClipAngel_TryConfirmDeleteDialogOnce(true)
+        ; Defensive: dismiss any confirmation dialog in background if ConfirmationBeforeDelete is ever enabled.
+        try ClipAngel_TryConfirmDeleteDialogOnce(false)
         catch {
         }
 
         ok := true
     } finally {
+        DetectHiddenWindows prevDetect
         CleanClipboard_UnwindClipAngel(hwnd)
-        if (run.priorHwnd)
+        ; Only restore focus if Clip Angel itself accidentally stole it — never yank the user away from another window.
+        if (run.priorHwnd && WinActive("ahk_exe ClipAngel.exe"))
             ClipAngel_RestorePriorFocus(run.priorHwnd, true)
         g_ClipAngelAutomationBusy := prevBusy
     }
