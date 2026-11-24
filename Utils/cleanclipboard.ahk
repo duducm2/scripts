@@ -62,9 +62,6 @@ CleanClipboard_ShowCountdown() {
     }
 
     CleanClipboard_BeginSession()
-    try CleanClipboard_BeginPrewarm(g_CleanClipboardSessionId)
-    catch {
-    }
 
     ; Ensure any previous keys overlay is closed before showing a new one
     try StandardLoadingBar_CloseKeysOverlay()
@@ -96,9 +93,6 @@ CleanClipboard_ShowCountdown() {
 CleanClipboard_OnCancel(*) {
     global g_CleanClipboardCanceled
     g_CleanClipboardCanceled := true
-    try CleanClipboard_CancelPrewarm()
-    catch {
-    }
     try CleanClipboard_CancelActiveRun()
     catch {
     }

@@ -45,7 +45,7 @@ Não há cobrança de custas processuais ou despesas em primeiro grau de jurisdi
 🔲 💰 Add R$350 to your private pension plan and R$50 for any emergency
 
 ⚡ Realizar exames médicos
-ℹ️ Unicoo Laboratório
+ℹ️ Unicoo Laboratório
 Av. João Pessoa, 360 - Centro, Nova Odessa - SP, 13460-000
 
 ## Job Search

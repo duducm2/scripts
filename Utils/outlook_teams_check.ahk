@@ -241,66 +241,12 @@ CleanClipboard_FinishStatus(pct, msg, barColor, hideMs, playSuccessSound := fals
 }
 
 global g_CleanClipboardActiveRun := 0
-global g_CleanClipboardPrewarm := 0
 
+; Kept as no-ops for backwards compatibility with any external callers.
 CleanClipboard_CancelPrewarm() {
-    global g_CleanClipboardPrewarm
-    pw := g_CleanClipboardPrewarm
-    g_CleanClipboardPrewarm := 0
-    if (!pw || pw.completed)
-        return
-    pw.completed := true
-    pw.onCompleteCallback := 0
-    if (pw.handle) {
-        try ClipAngelDb_CancelAsync(pw.handle)
-        catch {
-        }
-        pw.handle := 0
-    }
 }
 
-; Starts ClipAngelDb.exe deletenonfav-staged immediately when the 3s countdown opens
-; so .NET CLR + SQLite key derivation + page cache warm up while the user decides.
-; No write lock is held until "GO\n" is sent at timeout; Shift+N / Esc aborts cleanly.
-CleanClipboard_BeginPrewarm(sessionId) {
-    global g_CleanClipboardPrewarm
-    CleanClipboard_CancelPrewarm()
-    try ClipAngel_TryConfirmDeleteDialogOnce(false)
-    catch {
-    }
-    if (ClipAngelDb_ExePath() = "")
-        return
-
-    pw := {
-        sessionId: sessionId,
-        handle: 0,
-        completed: false,
-        ok: false,
-        outText: "",
-        exitCode: 1,
-        timedOut: false,
-        onCompleteCallback: 0
-    }
-
-    onPrewarmDone(ok, outText, exitCode, timedOut) {
-        pw.completed := true
-        pw.handle := 0
-        pw.ok := ok
-        pw.outText := outText
-        pw.exitCode := exitCode
-        pw.timedOut := timedOut
-        cb := pw.onCompleteCallback
-        if (IsObject(cb) && HasMethod(cb, "Call")) {
-            pw.onCompleteCallback := 0
-            try cb(ok, outText, exitCode, timedOut)
-            catch {
-            }
-        }
-    }
-
-    pw.handle := ClipAngelDb_StartAsync("deletenonfav-staged", 12000, onPrewarmDone, true, true)
-    if (pw.handle)
-        g_CleanClipboardPrewarm := pw
+CleanClipboard_BeginPrewarm(sessionId := 0) {
 }
 
 CleanClipboard_CancelActiveRun() {
@@ -309,12 +255,6 @@ CleanClipboard_CancelActiveRun() {
     if (!run || run.finished)
         return
     run.cancelled := true
-    if (run.dbHandle) {
-        try ClipAngelDb_CancelAsync(run.dbHandle)
-        catch {
-        }
-        run.dbHandle := 0
-    }
     if (run.osHandle && IsObject(run.osHandle)) {
         run.osHandle.cancelled := true
         if (run.osHandle.timerFn) {
@@ -346,16 +286,25 @@ CleanClipboard_CompleteRun(run) {
     }
 }
 
-CleanClipboard_RunUiFallback(run, &outStage := "", &outDetail := "") {
+; Worker A: Native Clip Angel cleanup via Alt+P (all clips) -> Ctrl+A -> Delete.
+; Clip Angel preserves favorites and skips confirmation when ConfirmationBeforeDelete=False.
+CleanClipboard_RunClipAngelAltPDelete(run, &outStage := "", &outDetail := "") {
     global g_ClipAngelAutomationBusy
     outStage := ""
     outDetail := ""
     prevBusy := g_ClipAngelAutomationBusy
     g_ClipAngelAutomationBusy := true
     hwnd := 0
-    confirmed := false
+    ok := false
     try {
-        CleanClipboard_UpdateProgress(60, "⏳ " run.attemptTag "[2/3] DB busy — opening Clip Angel...")
+        ; Dismiss any stray #32770 dialog so Clip Angel's UI thread is unblocked.
+        try ClipAngel_TryConfirmDeleteDialogOnce(true)
+        catch {
+        }
+
+        if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+            return false
+
         try ClipAngel_WaitChordModifiersReleased()
         catch {
         }
@@ -363,88 +312,69 @@ CleanClipboard_RunUiFallback(run, &outStage := "", &outDetail := "") {
         catch {
         }
 
-        root := 0
-        hwnd := CleanClipboard_ActivateClipAngelForCleanup(run.sessionId, &root)
-        if (!hwnd) {
+        CleanClipboard_UpdateProgress(45, "⏳ " run.attemptTag "[1/2] Opening Clip Angel (Alt+P)...")
+        if (!ClipAngel_OpenNative("p", 0, false)) {
             if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
                 return false
-            outStage := "2/3 Open"
-            outDetail := "Clip Angel window not found"
+            outStage := "1/2 Open"
+            outDetail := "Clip Angel is not running or failed to open via Alt+P"
             return false
         }
+
+        hwnd := ClipAngel_MainHwnd()
+        if (!hwnd || !ClipAngel_EnsureWindowActive(hwnd, 400)) {
+            if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+                return false
+            outStage := "1/2 Activate"
+            outDetail := "Clip Angel window failed to activate"
+            return false
+        }
+
         if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
             return false
 
-        CleanClipboard_UpdateProgress(75, "⏳ " run.attemptTag "[2/3] Sending delete non-favorites...")
-        ; Spawn out-of-process dialog confirmer BEFORE ^!k or synchronous UIA Invoke so AHK ComCall never deadlocks on MessageBox.Show.
-        confirmerHandle := 0
-        try confirmerHandle := ClipAngelDb_SpawnDialogConfirmer(4000)
+        ; Ensure focus is on the clip list (not the filter combo) before Ctrl+A -> Delete.
+        try ClipAngel_FocusGridIfFilterCombo()
         catch {
-            confirmerHandle := 0
         }
-        try {
-            confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true)
-            if (!confirmed) {
-                try PostMessage(0x001F, 0, 0, , "ahk_id " hwnd) ; WM_CANCELMODE
-                try ClipAngel_FocusGridIfFilterCombo()
-                catch {
-                }
-                try {
-                    ControlSend("^!k", , "ahk_id " hwnd)
-                    confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1500)
-                } catch {
-                    confirmed := false
-                }
-            }
-            if (!confirmed && !run.cancelled && !CleanClipboard_ShouldAbort(run.sessionId)) {
-                CleanClipboard_UpdateProgress(85, "⏳ " run.attemptTag "[2/3] Trying List menu fallback...")
-                if (!root) {
-                    try root := UIA.ElementFromHandle(hwnd)
-                    catch {
-                        root := 0
-                    }
-                }
-                menuDialogConfirmed := false
-                menuPollCb := (*) => (
-                    !menuDialogConfirmed && ClipAngel_TryConfirmDeleteDialogOnce(true)
-                        ? (menuDialogConfirmed := true) : 0
-                )
-                SetTimer(menuPollCb, 50)
-                menuInvoked := false
-                try {
-                    menuInvoked := ClipAngel_InvokeDeleteNonFavoritesViaMenu(hwnd, root)
-                } finally {
-                    SetTimer(menuPollCb, 0)
-                }
-                if (menuDialogConfirmed || (confirmerHandle && confirmerHandle.done))
-                    confirmed := true
-                else if (menuInvoked)
-                    confirmed := ClipAngel_ConfirmDeleteNonFavoritesDialogBackground(1000) || (confirmerHandle && confirmerHandle.done)
-                else
-                    confirmed := ClipAngel_TryConfirmDeleteDialogOnce(true) || (confirmerHandle && confirmerHandle.done)
-            }
-        } finally {
-            if (confirmerHandle) {
-                try ClipAngelDb_CancelAsync(confirmerHandle)
-                catch {
-                }
+
+        if (!WinActive("ahk_id " hwnd)) {
+            if (!ClipAngel_EnsureWindowActive(hwnd, 250)) {
+                outStage := "1/2 Focus"
+                outDetail := "Clip Angel lost focus before Ctrl+A / Delete"
+                return false
             }
         }
-        if (!confirmed) {
-            dbPrefix := (run.attemptDetail != "") ? (run.attemptDetail " -> ") : ""
-            outStage := "2/3 UI"
-            outDetail := dbPrefix "Delete confirmation dialog did not appear"
+
+        CleanClipboard_UpdateProgress(75, "⏳ " run.attemptTag "[1/2] Selecting all & deleting non-favorites...")
+        Sleep 35
+        if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+            return false
+
+        SendInput("^a")
+        Sleep 40
+        if (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
+            return false
+
+        SendInput("{Delete}")
+        Sleep 50
+
+        ; Defensive: dismiss any confirmation dialog if ConfirmationBeforeDelete is ever enabled.
+        try ClipAngel_TryConfirmDeleteDialogOnce(true)
+        catch {
         }
+
+        ok := true
     } finally {
         CleanClipboard_UnwindClipAngel(hwnd)
         if (run.priorHwnd)
             ClipAngel_RestorePriorFocus(run.priorHwnd, true)
         g_ClipAngelAutomationBusy := prevBusy
     }
-    return confirmed
+    return ok
 }
 
-CleanClipboard_FinalizeAttempt(run, clipAngelOk, usedDb) {
+CleanClipboard_FinalizeAttempt(run, clipAngelOk) {
     if (run.finished || run.cancelled || CleanClipboard_ShouldAbort(run.sessionId)) {
         try StandardLoadingBar_Hide(0)
         catch {
@@ -453,8 +383,8 @@ CleanClipboard_FinalizeAttempt(run, clipAngelOk, usedDb) {
         return
     }
 
-    ; Final Guarantee Gate: re-verify OS clipboard is empty after ClipAngel reload/UI actions.
-    CleanClipboard_UpdateProgress(95, "⏳ " run.attemptTag "[3/3] Verifying clipboard empty...")
+    ; Final Guarantee Gate: re-verify OS clipboard is empty after Clip Angel delete/minimize.
+    CleanClipboard_UpdateProgress(95, "⏳ " run.attemptTag "[2/2] Verifying clipboard empty...")
     osClipCleared := run.osOk
     if (!osClipCleared || !CleanClipboard_IsOsClipboardEmpty())
         osClipCleared := CleanClipboard_ClearOsClipboard(4)
@@ -462,24 +392,17 @@ CleanClipboard_FinalizeAttempt(run, clipAngelOk, usedDb) {
     run.lastClipAngelOk := clipAngelOk
     if (clipAngelOk && osClipCleared) {
         retrySuffix := (run.attempt > 1) ? (" [attempt " run.attempt "/" run.maxAttempts "]") : ""
-        if (usedDb) {
-            detail := (run.deletedCount = 0) ? "already empty"
-                : (run.deletedCount = 1 ? "1 clip removed" : run.deletedCount " clips removed")
-            CleanClipboard_FinishStatus(100, "✅ Clipboard cleaned (" detail ")" retrySuffix,
-                BANNER_ACCENT_SUCCESS, 1200, true)
-        } else {
-            CleanClipboard_FinishStatus(100, "✅ Clipboard cleaned" retrySuffix,
-                BANNER_ACCENT_SUCCESS, 1200, true)
-        }
+        CleanClipboard_FinishStatus(100, "✅ Clipboard cleaned" retrySuffix,
+            BANNER_ACCENT_SUCCESS, 1200, true)
         CleanClipboard_CompleteRun(run)
         return
     }
 
     if (clipAngelOk && !osClipCleared) {
-        run.lastStage := "3/3 OS Clipboard"
+        run.lastStage := "2/2 OS Clipboard"
         run.lastDetail := "Windows clipboard locked by another app"
     } else {
-        run.lastStage := (run.attemptStage != "") ? run.attemptStage : "2/3 Cleanup"
+        run.lastStage := (run.attemptStage != "") ? run.attemptStage : "1/2 Clip Angel"
         run.lastDetail := (run.attemptDetail != "") ? run.attemptDetail : "Unknown failure"
     }
     CleanClipboard_LogError(run.attempt, run.lastStage, run.lastDetail)
@@ -514,31 +437,10 @@ CleanClipboard_CheckBarrier(run) {
         CleanClipboard_CompleteRun(run)
         return
     }
-    if (!run.dbDone || !run.osDone)
+    if (!run.uiDone || !run.osDone)
         return
 
-    if (run.dbOk) {
-        if (run.deletedCount > 0)
-            ClipAngel_TriggerBackgroundReloadList()
-        CleanClipboard_FinalizeAttempt(run, true, true)
-        return
-    }
-
-    ; Retry fast dialog-free DB path before falling back to UI (^!k / modal confirmation).
-    if (ClipAngelDb_ExePath() != "" && run.attempt < run.maxAttempts) {
-        CleanClipboard_FinalizeAttempt(run, false, true)
-        return
-    }
-
-    uiStage := "", uiDetail := ""
-    uiOk := CleanClipboard_RunUiFallback(run, &uiStage, &uiDetail)
-    if (!uiOk) {
-        if (uiStage != "")
-            run.attemptStage := uiStage
-        if (uiDetail != "")
-            run.attemptDetail := uiDetail
-    }
-    CleanClipboard_FinalizeAttempt(run, uiOk, false)
+    CleanClipboard_FinalizeAttempt(run, run.uiOk)
 }
 
 CleanClipboard_RunAttempt(run) {
@@ -551,25 +453,17 @@ CleanClipboard_RunAttempt(run) {
     }
 
     run.attemptTag := (run.attempt > 1) ? ("[Attempt " run.attempt "/" run.maxAttempts "] ") : ""
-    run.dbDone := false
+    run.uiDone := false
     run.osDone := false
-    run.dbOk := false
+    run.uiOk := false
     run.osOk := false
-    run.deletedCount := 0
     run.attemptStage := ""
     run.attemptDetail := ""
-    run.dbHandle := 0
     run.osHandle := 0
 
-    CleanClipboard_UpdateProgress(25, "⏳ " run.attemptTag "[1/3] Cleaning clipboard & Clip Angel in parallel...")
+    CleanClipboard_UpdateProgress(25, "⏳ " run.attemptTag "[1/2] Cleaning clipboard & Clip Angel in parallel...")
 
-    ; Worker C: dismiss any stray #32770 confirmation dialog so ClipAngel's UI thread is unblocked.
-    try ClipAngel_TryConfirmDeleteDialogOnce(true)
-    catch {
-    }
-
-    ; Worker B: async OS clipboard clear (runs after Worker A so EmptyClipboard's
-    ; WM_CLIPBOARDUPDATE does not race with ClipAngelDb's SQLite write transaction).
+    ; Worker B: async OS clipboard clear in parallel with Worker A.
     onOsDone(ok) {
         if (run.finished || run.cancelled)
             return
@@ -579,74 +473,23 @@ CleanClipboard_RunAttempt(run) {
         CleanClipboard_CheckBarrier(run)
     }
 
-    startOsClear() {
-        if (run.finished || run.cancelled || CleanClipboard_ShouldAbort(run.sessionId))
-            return
-        run.osHandle := CleanClipboard_StartClearOsClipboardAsync(6, onOsDone,
-            (*) => (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId)))
-    }
+    run.osHandle := CleanClipboard_StartClearOsClipboardAsync(6, onOsDone,
+        (*) => (run.cancelled || CleanClipboard_ShouldAbort(run.sessionId)))
 
-    ; Worker A: async ClipAngelDb deletenonfav (atomic delete + verify in one process).
-    onDbDone(ok, outText, exitCode, timedOut) {
-        if (run.finished || run.cancelled)
-            return
-        run.dbHandle := 0
-        run.dbDone := true
-        deleted := 0, remaining := 0
-        if (ok && ClipAngelDb_ParseDeleteNonFav(outText, &deleted, &remaining)) {
-            run.dbOk := true
-            run.deletedCount := deleted
-        } else {
-            run.dbOk := false
-            run.attemptStage := "2/3 DB"
-            cleaned := RegExReplace(outText, "m)^READY(?:\t-?\d+)?\R?", "")
-            errMsg := Trim(StrReplace(cleaned, "`r`n", " "))
-            run.attemptDetail := timedOut ? "ClipAngelDb timed out"
-                : (errMsg != "" ? "ClipAngelDb failed: " errMsg : "ClipAngelDb deletenonfav failed/busy")
-        }
-        startOsClear()
+    ; Worker A: Clip Angel native Alt+P -> Ctrl+A -> Delete.
+    uiStage := "", uiDetail := ""
+    uiOk := CleanClipboard_RunClipAngelAltPDelete(run, &uiStage, &uiDetail)
+    run.uiDone := true
+    run.uiOk := uiOk
+    if (!uiOk) {
+        run.attemptStage := uiStage
+        run.attemptDetail := uiDetail
     }
-
-    ; Worker A: reuse pre-warmed ClipAngelDb process if alive (near-instant commit), else spawn fresh.
-    usedPrewarm := false
-    if (run.attempt = 1 && run.sessionId) {
-        global g_CleanClipboardPrewarm
-        pw := g_CleanClipboardPrewarm
-        g_CleanClipboardPrewarm := 0
-        if (pw && pw.sessionId = run.sessionId && !pw.completed && pw.handle) {
-            pw.onCompleteCallback := onDbDone
-            if (ClipAngelDb_SendStdin(pw.handle, "GO`n")) {
-                run.dbHandle := pw.handle
-                usedPrewarm := true
-            } else {
-                pw.onCompleteCallback := 0
-                try ClipAngelDb_CancelAsync(pw.handle)
-                catch {
-                }
-            }
-        }
-    }
-
-    if (!usedPrewarm) {
-        if (ClipAngelDb_ExePath() != "") {
-            run.dbHandle := ClipAngelDb_StartAsync("deletenonfav", 4500, onDbDone, true)
-            if (!run.dbHandle) {
-                run.dbDone := true
-                run.dbOk := false
-                run.attemptStage := "2/3 DB"
-                run.attemptDetail := "Failed to launch ClipAngelDb.exe"
-                startOsClear()
-            }
-        } else {
-            run.dbDone := true
-            run.dbOk := false
-            startOsClear()
-        }
-    }
+    CleanClipboard_CheckBarrier(run)
 }
 
-; Internal helper: Performs parallel clipboard cleanup with 3 retry attempts,
-; atomic ClipAngelDb delete+verify, ClipAngel in-memory reload, and final guarantee barrier.
+; Internal helper: Performs parallel clipboard cleanup (Clip Angel Alt+P -> Ctrl+A -> Delete
+; + concurrent Windows OS clipboard clear) with retry and final guarantee barrier.
 ; Returns true if an async run is active (caller must NOT end session synchronously).
 CleanClipboardInternal(sessionId := 0) {
     global g_ClipAngelAutomationBusy, g_CleanClipboardInProgress, g_CleanClipboardActiveRun
@@ -666,7 +509,7 @@ CleanClipboardInternal(sessionId := 0) {
     }
 
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
-    StandardLoadingBar_Show("⏳ [1/3] Cleaning clipboard & Clip Angel in parallel...", BANNER_ACCENT_INTERMEDIATE, {
+    StandardLoadingBar_Show("⏳ [1/2] Cleaning clipboard & Clip Angel in parallel...", BANNER_ACCENT_INTERMEDIATE, {
         passive: false,
         manualProgress: true,
         noActivate: true,
@@ -685,13 +528,11 @@ CleanClipboardInternal(sessionId := 0) {
         attempt: 1,
         maxAttempts: 2,
         attemptTag: "",
-        dbHandle: 0,
         osHandle: 0,
-        dbDone: false,
+        uiDone: false,
         osDone: false,
-        dbOk: false,
+        uiOk: false,
         osOk: false,
-        deletedCount: 0,
         attemptStage: "",
         attemptDetail: "",
         lastStage: "",

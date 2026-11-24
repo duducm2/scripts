@@ -127,12 +127,9 @@ DictationCleanup_StartCountdown(seconds := 5) {
     g_DictationCleanupCanceled := false
     g_DictationCleanupRemaining := seconds
 
-    ; Show initial banner + enable cancel keys + pre-warm ClipAngelDb
+    ; Show initial banner + enable cancel keys
     DictationCleanup_ShowBanner()
     DictationCleanup_SetCancelHotkeys(true)
-    try CleanClipboard_BeginPrewarm(0)
-    catch {
-    }
 
     ; Start ticking immediately (1s cadence)
     SetTimer(DictationCleanup_Tick, 0)
@@ -145,11 +142,6 @@ DictationCleanup_StopCountdown(showCancelledBanner := false) {
     ; Stop timer + disable cancel keys
     SetTimer(DictationCleanup_Tick, 0)
     DictationCleanup_SetCancelHotkeys(false)
-    if (showCancelledBanner) {
-        try CleanClipboard_CancelPrewarm()
-        catch {
-        }
-    }
 
     if (showCancelledBanner) {
         ; Reuse the same banner GUI for a short "cancelled" message (non-blocking)
