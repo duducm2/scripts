@@ -11,17 +11,25 @@ TeamsJump_Processes() {
     return ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
 }
 
+TeamsJump_IsProcessRunning() {
+    for proc in TeamsJump_Processes() {
+        if (ProcessExist(proc))
+            return true
+    }
+    return false
+}
+
 ; Returns a visible Teams HWND suitable for generic navigation (chat/search), or 0.
 TeamsJump_ResolveMainHwnd() {
     for proc in TeamsJump_Processes() {
         for hwnd in WinGetList("ahk_exe " proc) {
             try {
-                title := WinGetTitle(hwnd)
+                title := Trim(WinGetTitle(hwnd))
                 if (!title)
                     continue
                 if InStr(title, "Sharing control bar |")
                     continue
-                if (RegExMatch(title, "i)\| Microsoft Teams"))
+                if (RegExMatch(title, "i)\| Microsoft Teams") || title = "Microsoft Teams")
                     return hwnd
             } catch {
                 continue
@@ -477,9 +485,10 @@ TeamsJump_WaitUntilChatOpened(hwndTeams, contact, timeoutMs := 3500) {
 }
 
 TeamsJumpToChat(contact, backgroundOnly := false, forceColdStart := false) {
-    ; Gate 1: Closed means no ms-teams.exe (or caller saw it closed before CheckAndOpenOutlookTeams),
-    ; or no main Teams window exists yet. Nothing below runs until the open prompt is resolved.
-    teamsWasClosed := forceColdStart || !ProcessExist("ms-teams.exe")
+    ; Gate 1: Closed means no Teams process or no hydrated main Teams window yet.
+    ; If a hydrated main window already exists, never enter the cold-start wait even if forceColdStart=true.
+    hwndTeams := TeamsJump_ResolveMainHwnd()
+    teamsWasClosed := !TeamsJump_IsProcessRunning() || (hwndTeams <= 0) || (forceColdStart && !TeamsJump_IsUiHydrated(hwndTeams))
     prevHwnd := 0
     try prevHwnd := WinGetID("A")
     catch {
@@ -502,8 +511,10 @@ TeamsJumpToChat(contact, backgroundOnly := false, forceColdStart := false) {
         hwndTeams := TeamsJump_ResolveMainHwnd()
         if (hwndTeams <= 0) {
             teamsWasClosed := true
-            if (!ProcessExist("ms-teams.exe"))
+            if (!TeamsJump_IsProcessRunning())
                 TeamsJump_Run()
+        } else if (TeamsJump_IsUiHydrated(hwndTeams)) {
+            teamsWasClosed := false
         }
 
         ; Gate 2: Wait for main window + UIA-verified Ctrl+G readiness on cold start.

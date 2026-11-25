@@ -28,7 +28,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false, waitAfterLa
 
     ; Check Teams status
     if (checkTeams) {
-        teamsRunning := ProcessExist("ms-teams.exe")
+        teamsRunning := ProcessExist("ms-teams.exe") || ProcessExist("Teams.exe") || ProcessExist("MSTeams.exe")
         if (!teamsRunning) {
             teamsClosed := true
         }

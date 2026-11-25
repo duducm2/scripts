@@ -156,12 +156,12 @@ ResolveTeamsMainHwnd() {
     for proc in TEAMS_PROCESSES {
         for hwnd in WinGetList("ahk_exe " proc) {
             try {
-                title := WinGetTitle(hwnd)
+                title := Trim(WinGetTitle(hwnd))
                 if (!title)
                     continue
                 if InStr(title, "Sharing control bar |")
                     continue
-                if (RegExMatch(title, "i)\| Microsoft Teams"))
+                if (RegExMatch(title, "i)\| Microsoft Teams") || title = "Microsoft Teams")
                     return hwnd
             } catch {
                 continue
@@ -885,7 +885,7 @@ ChatFav_PrewarmTeams() {
     global g_ChatFavTeamsWasClosed
     if (ChatCDP_IsEnabled("teams"))
         return
-    g_ChatFavTeamsWasClosed := !ProcessExist("ms-teams.exe")
+    g_ChatFavTeamsWasClosed := !TeamsJump_IsProcessRunning()
     CheckAndOpenOutlookTeams(false, true, 0)
 }
 
