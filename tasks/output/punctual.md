@@ -10,10 +10,6 @@
 
 ⏳ You need to transfer your voting place to Nova Odessa and change our photo
 
-🔲 Fix bosch powertool
-ℹ️ image.png
-ℹ️ image.png
-
 ⏳ Buy 3 frames do add your and Leo's diplomas
 ℹ️ Show big processes mapped
 Show that these big processes that you mapped (e.g. from X-Tower) are key deliverables.
@@ -57,9 +53,6 @@ Av. João Pessoa, 360 - Centro, Nova Odessa - SP, 13460-000
 
 ⏳ Remember that you have saved your LinkedIn profile to open to work
 
-⚡ Add more deliverables
-ℹ️ C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\general\bookmarks\work-bookmarks.json
-
 ### Alumni Unicamp
 
 ⏳ You can get in touch with people directly through this page and check if the companies have job openings
@@ -85,6 +78,8 @@ When she reaches you, say "Drop it." Because she wants the live, moving ball in 
 Pick up Ball 1 and repeat.
 ℹ️ Outcome
 This breaks the habit of playing "keep away" by teaching her that giving up the toy doesn't end the game—it instantly restarts it. Once the habit of running directly to your hands is hardwired, you can gradually phase out the second ball.
+
+🔲 After Mocha finished all the vaccines you can place her anti-flea and tick collar
 
 ### Vaccination Timetable
 
