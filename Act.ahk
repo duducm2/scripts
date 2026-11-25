@@ -215,7 +215,7 @@ Act_EnsureCdpCompanion() {
     } catch {
         cdpUp := false
     }
-    if (!cdpUp) {
+    if (!cdpUp && AiCompanionCDP_GetProcessPids().Count = 0) {
         try Run('chrome.exe --user-data-dir="' . cdpProfile . '" --remote-debugging-port=9222 --disable-features=CalculateNativeWindowOcclusion --disable-backgrounding-occluded-windows --start-minimized "' . cdpUrl . '"', , "Min")
         catch {
         }

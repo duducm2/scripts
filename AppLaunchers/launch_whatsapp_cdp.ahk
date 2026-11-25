@@ -4,7 +4,7 @@
 ; blocks on HTTP/CDP retries and runs in parallel without stealing focus.
 ; =============================================================================
 #Requires AutoHotkey v2.0+
-#SingleInstance Force
+#SingleInstance Ignore
 
 #Include %A_ScriptDir%\..\env.ahk
 #Include %A_ScriptDir%\..\Utils\standard_loading_bar.ahk

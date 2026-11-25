@@ -65,6 +65,7 @@ class CDPBridge:
         self._active_pages: dict[str, object] = {}
         self._cdp_pids: set[int] = set()
         self._connect_lock = threading.Lock()
+        self._last_launch_ts: float = 0.0
 
     def _is_cdp_up(self) -> bool:
         try:
@@ -97,6 +98,12 @@ class CDPBridge:
                 pass
         return "chrome.exe"
 
+    def _has_cdp_chrome_process(self) -> bool:
+        try:
+            return bool(self._query_cdp_chrome_pids())
+        except Exception:
+            return False
+
     def _launch_cdp_chrome(self, target_url: str, minimized: bool = True, force_restart: bool = False) -> bool:
         local_app = os.environ.get("LOCALAPPDATA", "")
         profile_dir = str(Path(local_app) / "GeminiCDP") if local_app else "GeminiCDP"
@@ -105,6 +112,16 @@ class CDPBridge:
         # unless force_restart=True was explicitly requested for a confirmed zombie browser.
         if not force_restart and self._is_cdp_up():
             return True
+
+        # Never spawn a second chrome.exe against GeminiCDP while a GeminiCDP Chrome process
+        # is already running or starting up (Chrome's ProcessSingleton would open a 2nd window).
+        if not force_restart and self._has_cdp_chrome_process():
+            wait_deadline = time.time() + 10.0
+            while time.time() < wait_deadline:
+                if self._is_cdp_up():
+                    return True
+                time.sleep(0.25)
+            return False
 
         if force_restart:
             try:
@@ -137,6 +154,7 @@ class CDPBridge:
             # Prevent Chrome from inheriting SW_HIDE when the bridge itself was launched hidden.
             si.wShowWindow = 7 if minimized else 1
             subprocess.Popen(args, shell=False, creationflags=creation_flags, startupinfo=si)
+            self._last_launch_ts = time.time()
         except Exception:
             return False
         deadline = time.time() + 25.0
@@ -513,22 +531,42 @@ class CDPBridge:
                             _ = pinned.url
                             return pinned
 
-                    matching_pages = []
-                    fallback_page = None
-                    is_consumer = (needle == "gemini.google.com")
-                    for page in list(context.pages):
-                        try:
-                            if page.is_closed():
+                    def _scan_pages():
+                        matched = []
+                        fallback = None
+                        blank = None
+                        is_consumer = (needle == "gemini.google.com")
+                        for page in list(context.pages):
+                            try:
+                                if page.is_closed():
+                                    continue
+                                u = (page.url or "").strip().lower()
+                            except Exception:
                                 continue
-                            u = (page.url or "").lower()
-                        except Exception:
-                            continue
-                        if needle not in u:
-                            continue
-                        if not is_consumer or "/app" in u or "/gem/" in u:
-                            matching_pages.append(page)
-                        elif fallback_page is None:
-                            fallback_page = page
+                            if u in ("", "about:blank", "chrome://newtab/", "chrome://newtab"):
+                                if blank is None:
+                                    blank = page
+                                continue
+                            if needle not in u:
+                                continue
+                            if not is_consumer or "/app" in u or "/gem/" in u:
+                                matched.append(page)
+                            elif fallback is None:
+                                fallback = page
+                        return matched, fallback, blank
+
+                    matching_pages, fallback_page, blank_page = _scan_pages()
+
+                    # After a cold Chrome launch or while an initial blank tab is still committing its
+                    # startup URL / restored session, wait briefly before opening a new tab.
+                    if not matching_pages and fallback_page is None and (
+                        (time.time() - self._last_launch_ts) < 5.0 or blank_page is not None
+                    ):
+                        wait_deadline = time.time() + 2.0
+                        while time.time() < wait_deadline and not matching_pages and fallback_page is None:
+                            time.sleep(0.15)
+                            matching_pages, fallback_page, blank_page = _scan_pages()
+
                     if matching_pages:
                         picked = self._pick_current_page(comp, matching_pages, active_title=active_title)
                         _ = picked.url
@@ -537,6 +575,15 @@ class CDPBridge:
                         fallback_page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
                         self._active_pages[comp] = fallback_page
                         return fallback_page
+                    if blank_page is not None:
+                        blank_page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
+                        try:
+                            blank_page.bring_to_front()
+                        except Exception:
+                            pass
+                        self._ensure_tab_tracker(blank_page, stamp_now=True)
+                        self._active_pages[comp] = blank_page
+                        return blank_page
 
                 page = context.new_page()
                 page.goto(target_url, wait_until="domcontentloaded", timeout=35000)
@@ -1663,9 +1710,134 @@ class CDPBridge:
         except Exception:
             pass
 
-    def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
+    def _inspect_whatsapp_state(self, page) -> dict:
+        state = {
+            "auth_required": False,
+            "search_visible": False,
+            "chat_list_ready": False,
+            "startup_loading": False,
+        }
+        try:
+            if self._is_auth_page(page):
+                state["auth_required"] = True
+                return state
+            raw = page.evaluate(
+                """() => {
+                    const isVis = (el) => {
+                        if (!el) return false;
+                        const r = el.getBoundingClientRect();
+                        if (r.width <= 0 || r.height <= 0) return false;
+                        const cs = getComputedStyle(el);
+                        return cs.display !== 'none' && cs.visibility !== 'hidden';
+                    };
+                    const qr = document.querySelector('canvas[aria-label*="Scan" i], div[data-ref]');
+                    const authRequired = !!(qr && isVis(qr));
+                    const searchSels = [
+                        'input[data-tab="3"]',
+                        '#side input[role="textbox"]',
+                        '#side input',
+                        'div[contenteditable="true"][data-tab="3"]',
+                        'div[role="textbox"][aria-label*="Search" i]',
+                        'div[role="textbox"][aria-label*="Pesquisar" i]',
+                        'div[role="textbox"][title*="Search" i]',
+                        '#side div[role="textbox"][contenteditable="true"]',
+                        'input[aria-label*="Search" i]'
+                    ];
+                    let searchVisible = false;
+                    for (const sel of searchSels) {
+                        for (const el of document.querySelectorAll(sel)) {
+                            if (isVis(el)) { searchVisible = true; break; }
+                        }
+                        if (searchVisible) break;
+                    }
+                    const pane = document.querySelector('#pane-side');
+                    const hasRows = !!(pane && pane.querySelector('[role="listitem"], [role="row"]'));
+                    const hasMainHeader = !!document.querySelector('#main header');
+                    const startupEl = document.querySelector('#initial_startup, div[data-testid="startup"], progress');
+                    const startupLoading = !!(startupEl && isVis(startupEl));
+                    return {
+                        auth_required: authRequired,
+                        search_visible: searchVisible,
+                        chat_list_ready: hasRows || hasMainHeader,
+                        startup_loading: startupLoading
+                    };
+                }"""
+            )
+            if isinstance(raw, dict):
+                state.update(raw)
+        except Exception:
+            pass
+        return state
+
+    def _wait_whatsapp_ready(self, page, timeout_s: float = 90.0) -> tuple[bool, str]:
+        try:
+            page.bring_to_front()
+        except Exception:
+            pass
+        deadline = time.time() + timeout_s
+        search_seen_at = 0.0
+        while time.time() < deadline:
+            st = self._inspect_whatsapp_state(page)
+            if st.get("auth_required"):
+                return False, "AUTH_REQUIRED"
+            if st.get("search_visible"):
+                if st.get("chat_list_ready"):
+                    return True, ""
+                if search_seen_at <= 0.0:
+                    search_seen_at = time.time()
+                elif not st.get("startup_loading") and (time.time() - search_seen_at) >= 8.0:
+                    return True, ""
+            else:
+                search_seen_at = 0.0
+            time.sleep(0.25)
+        return False, "WHATSAPP_SEARCH_NOT_FOUND"
+
+    def whatsapp_ready(self, data: dict) -> dict:
+        if not self._is_cdp_up():
+            return {"ok": True, "ready": False, "auth_required": False, "stage": "cdp_down"}
+        try:
+            browser = self._connect(launch_if_down=False)
+        except Exception:
+            return {"ok": True, "ready": False, "auth_required": False, "stage": "cdp_down"}
+        if not browser.contexts:
+            return {"ok": True, "ready": False, "auth_required": False, "stage": "cdp_down"}
+        context = browser.contexts[0]
+        needle, _ = self._companion_meta("whatsapp")
+        matching = []
+        for page in list(context.pages):
+            try:
+                if page.is_closed():
+                    continue
+                if needle in (page.url or "").lower():
+                    matching.append(page)
+            except Exception:
+                continue
+        if not matching:
+            return {"ok": True, "ready": False, "auth_required": False, "stage": "tab_missing"}
+        page = self._pick_current_page("whatsapp", matching)
+        try:
+            page.bring_to_front()
+        except Exception:
+            pass
+        st = self._inspect_whatsapp_state(page)
+        if st.get("auth_required"):
+            return {"ok": True, "ready": False, "auth_required": True, "stage": "auth_required"}
+        if st.get("search_visible") and st.get("chat_list_ready"):
+            return {"ok": True, "ready": True, "auth_required": False, "stage": "ready"}
+        stage = "syncing" if st.get("search_visible") else "loading"
+        return {"ok": True, "ready": False, "auth_required": False, "stage": stage}
+
+    def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool, ready_timeout_s: float = 90.0) -> dict:
         t0 = time.time()
-        self._wa_debug_log(f"_chat_jump_whatsapp start contact={contact!r} text_len={len(text)} files={len(files)} submit={submit}")
+        self._wa_debug_log(f"_chat_jump_whatsapp start contact={contact!r} text_len={len(text)} files={len(files)} submit={submit} ready_timeout_s={ready_timeout_s}")
+        try:
+            page.bring_to_front()
+        except Exception:
+            pass
+        ready_ok, ready_err = self._wait_whatsapp_ready(page, timeout_s=ready_timeout_s)
+        if not ready_ok:
+            self._wa_debug_log(f"wait_whatsapp_ready failed err={ready_err} elapsed={time.time() - t0:.2f}s")
+            return {"ok": False, "error": ready_err}
         search_sels = [
             'input[data-tab="3"]',
             '#side input[role="textbox"]',
@@ -1980,9 +2152,10 @@ class CDPBridge:
         if not contact:
             return {"ok": False, "error": "EMPTY_CONTACT"}
 
+        ready_timeout_s = float(data.get("ready_timeout_s", 90.0) or 90.0)
         page = self._find_or_open_page(app, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=not activate)
         res = (
-            self._chat_jump_whatsapp(page, contact, text, files, submit)
+            self._chat_jump_whatsapp(page, contact, text, files, submit, ready_timeout_s=ready_timeout_s)
             if app == "whatsapp"
             else self._chat_jump_teams(page, contact, text, files, submit)
         )
@@ -2152,6 +2325,7 @@ class Handler(BaseHTTPRequestHandler):
             "/select_model": BRIDGE.select_model,
             "/read_aloud": BRIDGE.read_aloud,
             "/chat/jump": BRIDGE.chat_jump,
+            "/whatsapp/ready": BRIDGE.whatsapp_ready,
             "/whatsapp/voice": BRIDGE.whatsapp_voice,
         }
         fn = routes.get(self.path)

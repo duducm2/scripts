@@ -923,6 +923,26 @@
           grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
         }
       }
+      .project-sections {
+        position: relative;
+      }
+      .project-sections.is-packed > .task-section {
+        position: absolute;
+        box-sizing: border-box;
+        margin: 0;
+      }
+      .project-sections.is-packed > .task-section.is-general {
+        margin: 0;
+      }
+      .project-sections.is-packed > .project-col-divider {
+        position: absolute;
+        top: 4px;
+        bottom: 6px;
+        width: 1px;
+        background: var(--line);
+        opacity: 0.55;
+        pointer-events: none;
+      }
       .kb-selected,
       details.project.kb-selected > summary,
       .task.kb-selected,
@@ -3375,7 +3395,7 @@
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
         ${pThumbs}
-        ${projectTasksHtml(p, allPts, plan)}
+        <div class="project-sections">${projectTasksHtml(p, allPts, plan)}</div>
       </details>`);
           }
           const known = new Set(projectsFor(filt).map((p) => p.id));
@@ -3542,7 +3562,7 @@
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
         ${pThumbs}
-        ${projectTasksHtml(p, allPts, plan)}
+        <div class="project-sections">${projectTasksHtml(p, allPts, plan)}</div>
       </details>`);
           }
           const known = new Set(projects.map((p) => p.id));
@@ -3608,7 +3628,140 @@
       ${renderHabitsColumn()}`;
         }
 
+        function clearProjectSections(card) {
+          const wrap = card.querySelector(":scope > .project-sections");
+          if (!wrap) return;
+          wrap.classList.remove("is-packed");
+          wrap.style.height = "";
+          wrap
+            .querySelectorAll(":scope > .project-col-divider")
+            .forEach((d) => d.remove());
+          wrap
+            .querySelectorAll(":scope > .task-section, :scope > .empty")
+            .forEach((el) => {
+              el.style.position = "";
+              el.style.left = "";
+              el.style.top = "";
+              el.style.width = "";
+            });
+          delete card.dataset.bentoSpan;
+        }
+
+        function visibleProjectSections(card) {
+          const wrap = card.querySelector(":scope > .project-sections");
+          if (!wrap) return [];
+          return [...wrap.querySelectorAll(":scope > .task-section")].filter(
+            (el) =>
+              !el.classList.contains("search-hidden") &&
+              !el.classList.contains("emoji-hidden") &&
+              !el.hasAttribute("data-inline-create"),
+          );
+        }
+
+        function partitionBalanced(heights, cols, gap) {
+          const n = heights.length;
+          if (cols <= 1 || n <= 1) return [heights.map((_, i) => i)];
+          const k = Math.min(cols, n);
+          const pref = new Array(n + 1).fill(0);
+          for (let i = 0; i < n; i++) pref[i + 1] = pref[i] + heights[i];
+          const segCost = (l, r) =>
+            pref[r] - pref[l] + Math.max(0, r - l - 1) * gap;
+          const dp = Array.from({ length: k + 1 }, () =>
+            new Array(n + 1).fill(Infinity),
+          );
+          const split = Array.from({ length: k + 1 }, () =>
+            new Array(n + 1).fill(0),
+          );
+          for (let i = 1; i <= n; i++) dp[1][i] = segCost(0, i);
+          for (let g = 2; g <= k; g++) {
+            for (let i = g; i <= n; i++) {
+              for (let j = g - 1; j < i; j++) {
+                const cost = Math.max(dp[g - 1][j], segCost(j, i));
+                if (cost < dp[g][i]) {
+                  dp[g][i] = cost;
+                  split[g][i] = j;
+                }
+              }
+            }
+          }
+          const groups = new Array(k);
+          let end = n;
+          for (let g = k; g >= 1; g--) {
+            const start = g === 1 ? 0 : split[g][end];
+            const idxs = [];
+            for (let x = start; x < end; x++) idxs.push(x);
+            groups[g - 1] = idxs;
+            end = start;
+          }
+          return groups;
+        }
+
+        function packProjectSections(card, span) {
+          if (span <= 1 || !card.open) {
+            clearProjectSections(card);
+            return;
+          }
+          const wrap = card.querySelector(":scope > .project-sections");
+          const secs = visibleProjectSections(card);
+          if (!wrap || secs.length < 2) {
+            clearProjectSections(card);
+            return;
+          }
+          const secPadX = 8;
+          const secGap = 16;
+          const vGap = 8;
+          const subCols = Math.min(span, secs.length);
+          const innerW = Math.max(0, wrap.clientWidth - secPadX * 2);
+          const subColW = (innerW - secGap * (subCols - 1)) / subCols;
+          if (subColW <= 0) {
+            clearProjectSections(card);
+            return;
+          }
+          wrap.classList.add("is-packed");
+          wrap
+            .querySelectorAll(":scope > .project-col-divider")
+            .forEach((d) => d.remove());
+          for (const sec of secs) {
+            sec.style.position = "absolute";
+            sec.style.width = `${subColW}px`;
+          }
+          const heights = secs.map((s) => s.offsetHeight);
+          const groups = partitionBalanced(heights, subCols, vGap);
+          let maxH = 0;
+          for (let c = 0; c < groups.length; c++) {
+            let y = 4;
+            const x = secPadX + c * (subColW + secGap);
+            for (const idx of groups[c]) {
+              const sec = secs[idx];
+              sec.style.left = `${x}px`;
+              sec.style.top = `${y}px`;
+              y += heights[idx] + vGap;
+            }
+            maxH = Math.max(maxH, y - vGap);
+          }
+          const trailing = wrap.querySelectorAll(
+            ":scope > .task-section[data-inline-create], :scope > .empty",
+          );
+          for (const el of trailing) {
+            el.style.position = "absolute";
+            el.style.left = `${secPadX}px`;
+            el.style.top = `${maxH + vGap}px`;
+            el.style.width = `${innerW}px`;
+            maxH += vGap + el.offsetHeight;
+          }
+          wrap.style.height = `${Math.max(0, Math.ceil(maxH + 6))}px`;
+          for (let c = 0; c < subCols - 1; c++) {
+            const div = document.createElement("div");
+            div.className = "project-col-divider";
+            div.setAttribute("aria-hidden", "true");
+            div.style.left = `${Math.round(secPadX + (c + 1) * subColW + c * secGap + secGap / 2)}px`;
+            wrap.appendChild(div);
+          }
+          card.dataset.bentoSpan = String(span);
+        }
+
         function clearBentoCard(card) {
+          clearProjectSections(card);
           card.style.gridColumn = "";
           card.style.gridRow = "";
           card.style.position = "";
@@ -3627,9 +3780,47 @@
           grid.querySelectorAll(":scope > .project").forEach(clearBentoCard);
         }
 
-        // Shortest-column placement: each project keeps its content height, and
-        // the next one fills whichever column is shortest. Source order is kept
-        // (a later card never jumps above an earlier one).
+        function placeSkyline(cards, spans, heights, cols, colW, gap, padL) {
+          const colH = new Array(cols).fill(0);
+          const placements = [];
+          for (let i = 0; i < cards.length; i++) {
+            const s = Math.min(spans[i], cols);
+            let bestC = 0;
+            let bestTop = Infinity;
+            let bestWaste = Infinity;
+            for (let c = 0; c <= cols - s; c++) {
+              let top = 0;
+              for (let k = c; k < c + s; k++) {
+                if (colH[k] > top) top = colH[k];
+              }
+              let waste = 0;
+              for (let k = c; k < c + s; k++) waste += top - colH[k];
+              if (
+                top < bestTop - 1 ||
+                (Math.abs(top - bestTop) <= 1 && waste < bestWaste)
+              ) {
+                bestTop = top;
+                bestWaste = waste;
+                bestC = c;
+              }
+            }
+            const h = heights[i];
+            placements.push({
+              card: cards[i],
+              span: s,
+              left: padL + bestC * (colW + gap),
+              top: bestTop,
+              h,
+            });
+            for (let k = bestC; k < bestC + s; k++) colH[k] = bestTop + h + gap;
+          }
+          return {
+            placements,
+            boardH: Math.max(0, Math.max(...colH) - gap),
+          };
+        }
+
+        // Skyline placement with automatic multi-column section packing for tall projects.
         function packBento() {
           document.querySelectorAll("section.bento-packed").forEach((grid) => {
             if (!grid.classList.contains("bento")) resetBentoGrid(grid);
@@ -3670,6 +3861,7 @@
               grid.classList.contains("bento-packed") &&
               grid.dataset.bentoCols === String(cols) &&
               grid.dataset.bentoW === widthKey;
+            const prevSig = grid.dataset.bentoSig;
             grid.classList.add("bento-packed");
             grid.style.gridTemplateColumns = "";
             const placed = new Set(cards);
@@ -3680,37 +3872,98 @@
               if (card.style.position !== "absolute")
                 card.style.position = "absolute";
               if (card.style.width !== wpx) card.style.width = wpx;
+              clearProjectSections(card);
             }
-            const heights = cards.map((card) => card.offsetHeight);
-            const colH = Array(cols).fill(0);
-            const placements = [];
+            const h1 = cards.map((card) => card.offsetHeight);
+            const spans = new Array(cards.length).fill(1);
+            const heights = h1.slice();
+            const base = placeSkyline(
+              cards,
+              spans,
+              h1,
+              cols,
+              colW,
+              gap,
+              padL,
+            );
+            const tallThreshold = Math.max(
+              520,
+              Math.min((window.innerHeight || 900) * 0.72, 740),
+            );
+            const spareCols = cards.length < cols;
             for (let i = 0; i < cards.length; i++) {
-              let best = 0;
-              for (let c = 1; c < cols; c++) {
-                if (colH[c] < colH[best]) best = c;
+              const card = cards[i];
+              if (!card.open) continue;
+              const secCount = visibleProjectSections(card).length;
+              if (secCount < 2) continue;
+              if (h1[i] <= tallThreshold && !(spareCols && h1[i] > 380)) continue;
+              const w2 = colW * 2 + gap;
+              card.style.width = `${w2}px`;
+              packProjectSections(card, 2);
+              const h2 = card.offsetHeight;
+              if (h2 < h1[i] * 0.78) {
+                spans[i] = 2;
+                heights[i] = h2;
+                if (
+                  cols >= 4 &&
+                  secCount >= 3 &&
+                  h2 > tallThreshold * 1.15
+                ) {
+                  const w3 = colW * 3 + gap * 2;
+                  card.style.width = `${w3}px`;
+                  packProjectSections(card, 3);
+                  const h3 = card.offsetHeight;
+                  if (h3 < h2 * 0.8) {
+                    spans[i] = 3;
+                    heights[i] = h3;
+                  } else {
+                    card.style.width = `${w2}px`;
+                    packProjectSections(card, 2);
+                  }
+                }
+              } else {
+                card.style.width = wpx;
+                clearProjectSections(card);
               }
-              placements.push({
-                card: cards[i],
-                left: padL + best * (colW + gap),
-                top: colH[best],
-                h: heights[i],
-              });
-              colH[best] += heights[i] + gap;
             }
-            const height = Math.max(0, Math.max(...colH) - gap);
+            let result = base;
+            if (spans.some((s) => s > 1)) {
+              const candidate = placeSkyline(
+                cards,
+                spans,
+                heights,
+                cols,
+                colW,
+                gap,
+                padL,
+              );
+              if (candidate.boardH < base.boardH) {
+                result = candidate;
+              } else {
+                for (let i = 0; i < cards.length; i++) {
+                  if (spans[i] > 1) {
+                    cards[i].style.width = wpx;
+                    clearProjectSections(cards[i]);
+                  }
+                }
+              }
+            }
+            const { placements, boardH } = result;
             const sig = `${cols}|${widthKey}|${placements
-              .map((p) => `${Math.round(p.left)}:${Math.round(p.top)}:${p.h}`)
-              .join(",")}|${Math.round(height)}`;
-            if (sameFrame && grid.dataset.bentoSig === sig) return;
+              .map(
+                (p) =>
+                  `${p.span}:${Math.round(p.left)}:${Math.round(p.top)}:${p.h}`,
+              )
+              .join(",")}|${Math.round(boardH)}`;
             grid.dataset.bentoSig = sig;
             grid.dataset.bentoCols = String(cols);
             grid.dataset.bentoW = widthKey;
-            grid.style.height = `${Math.round(height)}px`;
+            grid.style.height = `${Math.round(boardH)}px`;
             for (const p of placements) {
               p.card.style.left = `${p.left}px`;
               p.card.style.top = `${p.top}px`;
             }
-            changed = true;
+            if (!sameFrame || prevSig !== sig) changed = true;
           });
           return changed;
         }
@@ -4003,7 +4256,7 @@
             let projectShown = projectHit;
             proj
               .querySelectorAll(
-                ":scope > .task-section, :scope > .section-bento > .task-section",
+                ":scope > .task-section, :scope > .project-sections > .task-section, :scope > .section-bento > .task-section",
               )
               .forEach((sec) => {
                 if (sec.hasAttribute("data-inline-create")) {
@@ -4229,7 +4482,7 @@
             if (!proj.open) return;
             proj
               .querySelectorAll(
-                ":scope > .task-section:not(.emoji-hidden):not(.search-hidden), :scope > .section-bento > .task-section:not(.emoji-hidden):not(.search-hidden)",
+                ":scope > .task-section:not(.emoji-hidden):not(.search-hidden), :scope > .project-sections > .task-section:not(.emoji-hidden):not(.search-hidden), :scope > .section-bento > .task-section:not(.emoji-hidden):not(.search-hidden)",
               )
               .forEach((sec) => {
                 if (sec.hasAttribute("data-inline-create")) return;
@@ -7046,11 +7299,14 @@
             return;
           }
           if (!notesStayClosed(proj)) proj.open = true;
-          proj.insertAdjacentHTML(
+          const secWrap =
+            proj.querySelector(":scope > .project-sections") || proj;
+          secWrap.insertAdjacentHTML(
             "beforeend",
             inlineSectionHtml(ctx.project_id),
           );
           bindInlineCreateInput();
+          scheduleBentoPack();
         }
 
         function mountInlineProject() {

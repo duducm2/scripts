@@ -31,7 +31,7 @@ ChatCDP_AppMeta(appNorm) {
     return { url: "https://web.whatsapp.com", needle: "web.whatsapp.com" }
 }
 
-ChatCDP_IsAppTabOpen(app := "whatsapp", timeoutMs := 400) {
+ChatCDP_IsAppTabOpen(app := "whatsapp", timeoutMs := 600) {
     global AI_COMPANION_CDP_CHROME_PORT
     appNorm := StrLower(Trim(app))
     if (appNorm != "whatsapp" && appNorm != "teams")
@@ -49,10 +49,7 @@ ChatCDP_IsAppTabOpen(app := "whatsapp", timeoutMs := 400) {
         if (whr.Status != 200)
             return false
         raw := whr.ResponseText
-        pos := 1
-        while (RegExMatch(raw, "\{[^{}]*\}", &m, pos)) {
-            obj := m[0]
-            pos := m.Pos + m.Len
+        for obj in _AiCDP_JsonArrayObjects(raw) {
             if (_AiCDP_JsonGetStr(obj, "type", "") != "page")
                 continue
             tabUrl := StrLower(_AiCDP_JsonGetStr(obj, "url", ""))
@@ -64,17 +61,27 @@ ChatCDP_IsAppTabOpen(app := "whatsapp", timeoutMs := 400) {
     return false
 }
 
+global g_ChatCDP_LastEnsureAsyncTick := Map()
+
 ChatCDP_EnsureAppOpenAsync(app := "whatsapp") {
+    global g_ChatCDP_LastEnsureAsyncTick
     appNorm := StrLower(Trim(app))
     if (appNorm != "whatsapp" && appNorm != "teams")
         return false
     if ChatCDP_IsAppTabOpen(appNorm)
         return true
+    now := A_TickCount
+    if (g_ChatCDP_LastEnsureAsyncTick.Has(appNorm) && (now - g_ChatCDP_LastEnsureAsyncTick[appNorm]) < 8000)
+        return true
+    g_ChatCDP_LastEnsureAsyncTick[appNorm] := now
     meta := ChatCDP_AppMeta(appNorm)
-    if AiCompanionCDP_IsChromeCdpUp(400) {
+    if AiCompanionCDP_IsChromeCdpUp(500) {
         direct := AiCompanionCDP_DirectOpenUrl(meta.url, meta.needle, false, appNorm)
         return direct.ok
     }
+    ; If GeminiCDP Chrome is already starting/running, do not spawn a duplicate launcher or window.
+    if (AiCompanionCDP_GetProcessPids().Count > 0)
+        return true
     if (appNorm = "whatsapp") {
         launcher := _AiCDP_RepoRoot() . "\AppLaunchers\launch_whatsapp_cdp.ahk"
         if FileExist(launcher) {
@@ -85,7 +92,7 @@ ChatCDP_EnsureAppOpenAsync(app := "whatsapp") {
             }
         }
     }
-    launched := AiCompanionCDP_DirectLaunchChrome(meta.url, true, 500, appNorm)
+    launched := AiCompanionCDP_DirectLaunchChrome(meta.url, true, 500, appNorm, meta.needle)
     return launched.ok
 }
 
@@ -117,14 +124,14 @@ ChatCDP_OpenOrFocus(app := "whatsapp", activate := true) {
     }
 
     ; Layer 3: Silent direct CDP Chrome cold-launch fallback.
-    launched := AiCompanionCDP_DirectLaunchChrome(meta.url, !activate, 15000, appNorm)
+    launched := AiCompanionCDP_DirectLaunchChrome(meta.url, !activate, 15000, appNorm, meta.needle)
     if (launched.ok)
         return launched
 
     return { ok: false, hwnd: hwnd, error: res.error }
 }
 
-ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate := false) {
+ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate := false, readyTimeoutSec := 90) {
     appNorm := StrLower(Trim(app))
     if (appNorm != "whatsapp" && appNorm != "teams")
         return { ok: false, hwnd: 0, error: "Unsupported chat app" }
@@ -136,12 +143,33 @@ ChatCDP_Jump(app, contact, text := "", files := "", submit := false, activate :=
         "files", fileArr,
         "submit", submit ? true : false,
         "activate", activate ? true : false,
-        "launch_if_down", true
-    ), 45000, true)
+        "launch_if_down", true,
+        "ready_timeout_s", readyTimeoutSec
+    ), 95000, true)
     hwnd := _AiCDP_JsonGetInt(res.raw, "hwnd", 0)
     if (res.ok && activate)
         hwnd := AiCompanionCDP_ActivateWindow(hwnd, appNorm)
     return { ok: res.ok, hwnd: hwnd, error: res.error }
+}
+
+ChatCDP_WhatsAppReady(timeoutMs := 3000) {
+    res := AiCompanionCDP_Post("/whatsapp/ready", Map("launch_if_down", false), timeoutMs, false)
+    if (!res.ok) {
+        return {
+            ok: false,
+            ready: false,
+            authRequired: false,
+            stage: (res.error = "CDP_NOT_RUNNING") ? "cdp_down" : "error",
+            error: res.error
+        }
+    }
+    return {
+        ok: true,
+        ready: _AiCDP_JsonGetBool(res.raw, "ready", false),
+        authRequired: _AiCDP_JsonGetBool(res.raw, "auth_required", false),
+        stage: _AiCDP_JsonGetStr(res.raw, "stage", ""),
+        error: ""
+    }
 }
 
 ChatCDP_NotifyError(app, rawErr := "") {

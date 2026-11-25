@@ -192,6 +192,52 @@ _AiCDP_JsonGetStr(raw, key, defaultVal := "") {
     return defaultVal
 }
 
+; Extracts top-level JSON objects `{...}` from a JSON array string while respecting
+; quoted strings, backslash escapes, and nested braces.
+_AiCDP_JsonArrayObjects(raw) {
+    objs := []
+    len := StrLen(raw)
+    i := 1
+    depth := 0
+    inStr := false
+    escaped := false
+    objStart := 0
+    while (i <= len) {
+        ch := SubStr(raw, i, 1)
+        if (inStr) {
+            if (escaped) {
+                escaped := false
+            } else if (ch = "\") {
+                escaped := true
+            } else if (ch = '"') {
+                inStr := false
+            }
+        } else {
+            if (ch = '"') {
+                inStr := true
+            } else if (ch = "{") {
+                if (depth = 0)
+                    objStart := i
+                depth++
+            } else if (ch = "}" && depth > 0) {
+                depth--
+                if (depth = 0 && objStart > 0) {
+                    objs.Push(SubStr(raw, objStart, i - objStart + 1))
+                    objStart := 0
+                }
+            }
+        }
+        i++
+    }
+    return objs
+}
+
+_AiCDP_UrlHostNeedle(targetUrl) {
+    if RegExMatch(Trim(targetUrl), "i)^https?://([^/?#]+)", &m)
+        return StrLower(m[1])
+    return ""
+}
+
 ; --- Python / Server bootstrap -----------------------------------------------
 
 AiCompanionCDP_FindPythonExe() {
@@ -445,7 +491,7 @@ AiCompanionCDP_Post(endpoint, payload, timeoutMs := 25000, allowLaunch := false)
         return { ok: false, raw: "", error: "CDP_NOT_RUNNING" }
     }
 
-    isPassivePoll := (endpoint = "/status" || endpoint = "/close_tab")
+    isPassivePoll := (endpoint = "/status" || endpoint = "/close_tab" || endpoint = "/whatsapp/ready")
     effectiveTimeout := timeoutMs
     shownColdNotice := false
     if (!cdpUp && allowLaunch && !isPassivePoll) {
@@ -600,10 +646,7 @@ AiCompanionCDP_DirectOpenUrl(targetUrl, matchNeedle := "", activate := false, co
             if (whr.Status = 200) {
                 raw := whr.ResponseText
                 needleLow := StrLower(matchNeedle)
-                pos := 1
-                while (RegExMatch(raw, "\{[^{}]*\}", &m, pos)) {
-                    obj := m[0]
-                    pos := m.Pos + m.Len
+                for obj in _AiCDP_JsonArrayObjects(raw) {
                     if (_AiCDP_JsonGetStr(obj, "type", "") != "page")
                         continue
                     tabUrl := StrLower(_AiCDP_JsonGetStr(obj, "url", ""))
@@ -646,9 +689,25 @@ AiCompanionCDP_DirectOpenUrl(targetUrl, matchNeedle := "", activate := false, co
     return { ok: false, hwnd: 0, error: "CDP_DIRECT_OPEN_FAILED" }
 }
 
-AiCompanionCDP_DirectLaunchChrome(targetUrl, minimized := true, waitMs := 15000, companionId := "") {
+AiCompanionCDP_DirectLaunchChrome(targetUrl, minimized := true, waitMs := 15000, companionId := "", matchNeedle := "") {
+    effectiveNeedle := (Trim(matchNeedle) != "") ? Trim(matchNeedle) : _AiCDP_UrlHostNeedle(targetUrl)
     if AiCompanionCDP_IsChromeCdpUp(600)
-        return AiCompanionCDP_DirectOpenUrl(targetUrl, "", !minimized, companionId)
+        return AiCompanionCDP_DirectOpenUrl(targetUrl, effectiveNeedle, !minimized, companionId)
+
+    ; Never spawn a second chrome.exe against GeminiCDP while a GeminiCDP Chrome process
+    ; is already running or starting up (Chrome's ProcessSingleton would open a 2nd window).
+    if (AiCompanionCDP_GetProcessPids().Count > 0) {
+        graceDeadline := A_TickCount + Min(waitMs, 8000)
+        while (A_TickCount < graceDeadline) {
+            if AiCompanionCDP_IsChromeCdpUp(500)
+                return AiCompanionCDP_DirectOpenUrl(targetUrl, effectiveNeedle, !minimized, companionId)
+            Sleep 250
+        }
+        existingHwnd := minimized ? AiCompanionCDP_FindWindowHwnd(0, companionId) : AiCompanionCDP_ActivateWindow(0, companionId)
+        if (existingHwnd > 0)
+            return { ok: true, hwnd: existingHwnd, error: "" }
+        return { ok: false, hwnd: 0, error: "CDP_UNREACHABLE" }
+    }
 
     cdpProfile := EnvGet("LOCALAPPDATA") . "\GeminiCDP"
     chromeExe := _AiCDP_FindChromeExe()

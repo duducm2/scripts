@@ -579,7 +579,6 @@ class Teams_R_DoubleTapTimerObj {
             try g_ChatFavGui.Title := "Jump to Chat — WhatsApp"
             catch {
             }
-            SetTimer((*) => ChatFav_PrewarmWhatsApp(), -1)
         }
     }
 }
@@ -922,6 +921,122 @@ WhatsApp_DebugLog(msg) {
     }
 }
 
+global g_WhatsAppPendingJump := 0
+global g_WhatsAppPendingJumpTimer := 0
+
+WhatsApp_CleanupTempFiles(tempFiles) {
+    if (!IsObject(tempFiles))
+        return
+    for tmp in tempFiles {
+        try {
+            if (FileExist(tmp))
+                FileDelete(tmp)
+        } catch {
+        }
+    }
+}
+
+WhatsApp_ClearPendingJump(deleteTempFiles := true) {
+    global g_WhatsAppPendingJump, g_WhatsAppPendingJumpTimer
+    if (g_WhatsAppPendingJumpTimer) {
+        SetTimer(g_WhatsAppPendingJumpTimer, 0)
+        g_WhatsAppPendingJumpTimer := 0
+    }
+    if (deleteTempFiles && IsObject(g_WhatsAppPendingJump) && g_WhatsAppPendingJump.HasProp("tempFiles"))
+        WhatsApp_CleanupTempFiles(g_WhatsAppPendingJump.tempFiles)
+    g_WhatsAppPendingJump := 0
+}
+
+WhatsApp_RunCdpJumpNow(job) {
+    tJump := A_TickCount
+    if (job.isSelf)
+        StandardLoadingBar_Show("⏳ Opening '" . job.contact . "' & sending…", BANNER_ACCENT_INTERMEDIATE)
+    else
+        StandardLoadingBar_Show("⏳ WhatsApp: jumping to " . job.contact . "…", BANNER_ACCENT_INTERMEDIATE)
+    res := { ok: false, error: "CDP failed" }
+    try res := ChatCDP_Jump("whatsapp", job.contact, job.clipText, job.filePaths, job.isSelf, !job.isSelf)
+    finally {
+        WhatsApp_CleanupTempFiles(job.tempFiles)
+        StandardLoadingBar_Hide(0)
+    }
+    WhatsApp_DebugLog("ChatCDP_Jump done ok=" . (res.ok ? "1" : "0") . " err=" . res.error .
+        " elapsedMs=" . (A_TickCount - tJump) . " totalMs=" . (A_TickCount - job.startedAt))
+    if (res.ok) {
+        if (job.isSelf)
+            ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp (CDP)", 1500, BANNER_ACCENT_SUCCESS)
+    } else {
+        ChatCDP_NotifyError("whatsapp", res.error)
+    }
+}
+
+WhatsApp_StartPendingJump(contact, isSelf, clipText, filePaths, tempFiles) {
+    global g_WhatsAppPendingJump, g_WhatsAppPendingJumpTimer
+    WhatsApp_ClearPendingJump(true)
+    g_WhatsAppPendingJump := {
+        contact: contact,
+        isSelf: isSelf,
+        clipText: clipText,
+        filePaths: filePaths,
+        tempFiles: tempFiles,
+        startedAt: A_TickCount,
+        deadline: A_TickCount + 120000,
+        inTick: false
+    }
+    ChatCDP_EnsureAppOpenAsync("whatsapp")
+    StandardLoadingBar_Show("⏳ Opening WhatsApp Web (0s) — will jump to '" . contact . "'…",
+        BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, maxDurationMs: 130000 })
+    g_WhatsAppPendingJumpTimer := WhatsApp_PollPendingJump
+    SetTimer(g_WhatsAppPendingJumpTimer, 700)
+}
+
+WhatsApp_PollPendingJump() {
+    global g_WhatsAppPendingJump
+    job := g_WhatsAppPendingJump
+    if (!IsObject(job)) {
+        WhatsApp_ClearPendingJump(false)
+        return
+    }
+    if (job.inTick)
+        return
+    job.inTick := true
+    try {
+        elapsedSec := Max(0, Round((A_TickCount - job.startedAt) / 1000))
+        StandardLoadingBar_Show("⏳ Opening WhatsApp Web (" . elapsedSec . "s) — will jump to '" . job.contact . "'…",
+            BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, maxDurationMs: 130000 })
+
+        st := ChatCDP_WhatsAppReady(2500)
+        if (!IsObject(g_WhatsAppPendingJump) || g_WhatsAppPendingJump != job)
+            return
+
+        if (st.authRequired) {
+            WhatsApp_ClearPendingJump(true)
+            StandardLoadingBar_Hide(0)
+            WhatsApp_DebugLog("PendingJump aborted: AUTH_REQUIRED after " . elapsedSec . "s")
+            ChatCDP_NotifyError("whatsapp", "AUTH_REQUIRED")
+            return
+        }
+
+        if (st.ok && st.ready) {
+            WhatsApp_ClearPendingJump(false)
+            WhatsApp_DebugLog("PendingJump ready after " . elapsedSec . "s contact=" . job.contact)
+            WhatsApp_RunCdpJumpNow(job)
+            return
+        }
+
+        if (st.stage = "cdp_down" || st.stage = "tab_missing")
+            ChatCDP_EnsureAppOpenAsync("whatsapp")
+
+        if (A_TickCount >= job.deadline) {
+            WhatsApp_ClearPendingJump(true)
+            StandardLoadingBar_Hide(0)
+            WhatsApp_DebugLog("PendingJump timed out after " . elapsedSec . "s contact=" . job.contact)
+            ChatCDP_NotifyError("whatsapp", "WHATSAPP_SEARCH_NOT_FOUND")
+        }
+    } finally {
+        job.inTick := false
+    }
+}
+
 WhatsApp_ExecuteJump(contact) {
     if (contact = "")
         return
@@ -929,8 +1044,11 @@ WhatsApp_ExecuteJump(contact) {
     WhatsApp_DebugLog("ExecuteJump start contact=" . contact . " useCdp=" . (useCdp ? "1" : "0"))
     if (useCdp) {
         isSelf := D2C_WhatsAppIsSelfContact(contact)
+        clipText := ""
+        filePaths := []
+        tempFiles := []
         if (isSelf) {
-            StandardLoadingBar_Show("⏳ [1/4] Checking clipboard…", BANNER_ACCENT_INTERMEDIATE)
+            StandardLoadingBar_Show("⏳ [1/3] Checking clipboard…", BANNER_ACCENT_INTERMEDIATE)
             if (!AiCompanion_GetClipboardPastePayload()) {
                 StandardLoadingBar_Hide(0)
                 WhatsApp_DebugLog("Aborted: clipboard empty before confirm")
@@ -941,72 +1059,41 @@ WhatsApp_ExecuteJump(contact) {
                 WhatsApp_DebugLog("Aborted: self-paste confirm cancelled/timed out")
                 return
             }
-            tStart := A_TickCount
-            cdpUp := AiCompanionCDP_IsChromeCdpUp(250)
-            tabUp := cdpUp ? ChatCDP_IsAppTabOpen("whatsapp", 250) : false
-            WhatsApp_DebugLog("Confirm accepted cdpUp=" . (cdpUp ? "1" : "0") . " tabUp=" . (tabUp ? "1" : "0"))
-            if (!cdpUp || !tabUp) {
-                StandardLoadingBar_Show("⏳ [2/4] WhatsApp CDP is closed — opening WhatsApp Web…",
-                    BANNER_ACCENT_INTERMEDIATE)
-                openRes := ChatCDP_OpenOrFocus("whatsapp", false)
-                WhatsApp_DebugLog("Cold-open result ok=" . (openRes.ok ? "1" : "0") . " err=" . openRes.error .
-                    " elapsedMs=" . (A_TickCount - tStart))
-                if (!openRes.ok) {
-                    StandardLoadingBar_Hide(0)
-                    ChatCDP_NotifyError("whatsapp", openRes.error)
-                    return
-                }
-            }
-            StandardLoadingBar_Show("⏳ [3/4] Staging clipboard for '" . contact . "'…", BANNER_ACCENT_INTERMEDIATE)
-            clipText := ""
-            tempFiles := []
+            StandardLoadingBar_Show("⏳ [2/3] Staging clipboard for '" . contact . "'…", BANNER_ACCENT_INTERMEDIATE)
             staged := AiCompanion_StageClipboardForCdp(&clipText, &tempFiles)
             filePaths := (staged != false) ? staged : []
             if (staged = false || (clipText = "" && filePaths.Length = 0)) {
+                WhatsApp_CleanupTempFiles(tempFiles)
                 StandardLoadingBar_Hide(0)
                 WhatsApp_DebugLog("Aborted: clipboard empty after stage")
                 ShowCenteredOverlay_Utils("⚠ Clipboard is empty — nothing to send.", 2200, BANNER_ACCENT_ERROR)
                 return
             }
             WhatsApp_DebugLog("Staged textLen=" . StrLen(clipText) . " files=" . filePaths.Length)
-            StandardLoadingBar_Show("⏳ [4/4] Opening '" . contact . "' & sending…", BANNER_ACCENT_INTERMEDIATE)
-            res := { ok: false, error: "CDP failed" }
-            tJump := A_TickCount
-            try res := ChatCDP_Jump("whatsapp", contact, clipText, filePaths, true, false)
-            finally {
-                for tmp in tempFiles {
-                    try {
-                        if (FileExist(tmp))
-                            FileDelete(tmp)
-                    } catch {
-                    }
-                }
-                StandardLoadingBar_Hide(0)
-            }
-            WhatsApp_DebugLog("ChatCDP_Jump done ok=" . (res.ok ? "1" : "0") . " err=" . res.error .
-                " elapsedMs=" . (A_TickCount - tJump) . " totalMs=" . (A_TickCount - tStart))
-            if (res.ok)
-                ShowCenteredOverlay_Utils("✅ Message sent in WhatsApp (CDP)", 1500, BANNER_ACCENT_SUCCESS)
-            else
-                ChatCDP_NotifyError("whatsapp", res.error)
+        }
+
+        readyState := ChatCDP_WhatsAppReady(1200)
+        WhatsApp_DebugLog("Ready check ok=" . (readyState.ok ? "1" : "0") . " ready=" . (readyState.ready ? "1" : "0") . " stage=" . readyState.stage)
+        if (readyState.authRequired) {
+            WhatsApp_CleanupTempFiles(tempFiles)
+            StandardLoadingBar_Hide(0)
+            ChatCDP_NotifyError("whatsapp", "AUTH_REQUIRED")
             return
         }
-        cdpUp := AiCompanionCDP_IsChromeCdpUp(250)
-        tabUp := cdpUp ? ChatCDP_IsAppTabOpen("whatsapp", 250) : false
-        if (!cdpUp || !tabUp) {
-            StandardLoadingBar_Show("⏳ WhatsApp CDP is closed — opening WhatsApp Web…", BANNER_ACCENT_INTERMEDIATE)
-            openRes := ChatCDP_OpenOrFocus("whatsapp", false)
-            if (!openRes.ok) {
-                StandardLoadingBar_Hide(0)
-                ChatCDP_NotifyError("whatsapp", openRes.error)
-                return
-            }
+        job := {
+            contact: contact,
+            isSelf: isSelf,
+            clipText: clipText,
+            filePaths: filePaths,
+            tempFiles: tempFiles,
+            startedAt: A_TickCount
         }
-        StandardLoadingBar_Show("⏳ WhatsApp: jumping to " . contact . "…", BANNER_ACCENT_INTERMEDIATE)
-        res := ChatCDP_Jump("whatsapp", contact, "", "", false, true)
-        StandardLoadingBar_Hide(0)
-        if (!res.ok)
-            ChatCDP_NotifyError("whatsapp", res.error)
+        if (readyState.ok && readyState.ready) {
+            WhatsApp_ClearPendingJump(true)
+            WhatsApp_RunCdpJumpNow(job)
+            return
+        }
+        WhatsApp_StartPendingJump(contact, isSelf, clipText, filePaths, tempFiles)
         return
     }
     ; Full clipboard (text, image, or other formats) captured before search overwrites it.
