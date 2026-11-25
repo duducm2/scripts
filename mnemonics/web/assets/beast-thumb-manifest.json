@@ -10,11 +10,11 @@
     ],
     "background": "transparent",
     "generated_with": "Cursor GenerateImage",
-    "generated_at": "2026-11-22",
+    "generated_at": "2026-11-24",
     "source_layout": "Custom adjective variants share the A–Z second-letter base icon plus an adj_{adjective} modifier icon shown beside it; Lynne Kelly / unique pegs each get their own canonical slug PNG",
     "generation_prompt_template": "Isolated RPG inventory item icon of {beast_name}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
     "adjective_prompt_template": "Isolated RPG inventory item icon of {adjective}, polished mobile fantasy-game art, soft isometric 3D cartoon style, warm gold and dark navy accents, chunky readable silhouette, no text, no letters; solid chroma-key magenta background (#FF00FF).",
-    "catalog_scope": "563 beasts / 183 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 81 beasts with adj"
+    "catalog_scope": "566 beasts / 185 in-use slugs / 252 bestiary canonical icons / 25 adjective icons / 82 beasts with adj"
   },
   "icons": {
     "BEAST_AI_01_A": {
@@ -5463,6 +5463,36 @@
       "filename": "dystopia.png",
       "url": "/assets/beast-thumbs/dystopia.png",
       "source_slug": "dystopia",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_35_Dz": {
+      "label": "Dark Zeus",
+      "peg_code": "Dz",
+      "filename": "zeus.png",
+      "url": "/assets/beast-thumbs/zeus.png",
+      "source_slug": "zeus",
+      "adjective": "dark",
+      "adj_filename": "adj_dark.png",
+      "adj_url": "/assets/beast-thumbs/adj_dark.png"
+    },
+    "BEAST_DATAANALYST_35_Ea": {
+      "label": "earwig",
+      "peg_code": "Ea",
+      "filename": "earwig.png",
+      "url": "/assets/beast-thumbs/earwig.png",
+      "source_slug": "earwig",
+      "adjective": null,
+      "adj_filename": null,
+      "adj_url": null
+    },
+    "BEAST_DATAANALYST_35_Eb": {
+      "label": "ebb and flow",
+      "peg_code": "Eb",
+      "filename": "ebb_and_flow.png",
+      "url": "/assets/beast-thumbs/ebb_and_flow.png",
+      "source_slug": "ebb_and_flow",
       "adjective": null,
       "adj_filename": null,
       "adj_url": null

@@ -1,6 +1,73 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Gordon Ramsay Screaming at Orchestration With Lakeflow Jobs in a Messy Kitchen</strong> · Memory Palace 35: Orchestration With Lakeflow Jobs · Character: — · 3 beasts · 3 atoms</summary>
+
+![Memory Palace 35](images/data-analyst/35.png)
+
+<p><em>3 beasts · 3 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### [Eb] ebb and flow
+
+<img src="../../web/assets/beast-thumbs/ebb_and_flow.png" alt="ebb and flow" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Dynamic Control Flow]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BDynamic%20Control%20Flow%5D&color=9fd4ff" />(iron lever) to <img alt="[cut]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcut%5D&color=ffd966" />(scissors)] [<img alt="[manual]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bmanual%5D&color=ffd966" />(glove) work] [by <img alt="[routing]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Brouting%5D&color=ffd966" />(signpost)] [my <img alt="[workflows]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bworkflows%5D&color=ffd966" />(pipe)] [with built-in <img alt="[loops]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bloops%5D&color=ffd966" />(hula hoop) and conditions.] — Note: For Each loops run parallel tasks across parameter lists like regions, while If/Else conditions split paths such as publishing clean data or sending alerts.
+
+**Quote**
+“By using built-in loops and conditions, you can reduce manual work and make your workflows significantly more dynamic.”
+
+**Character**
+Cientista Maluco
+
+**Justification**
+Cientista Maluco pulls a heavy industrial power lever crackling with sparks as his signature object, matching the iron lever keyword.
+
+### [Ea] earwig
+
+<img src="../../web/assets/beast-thumbs/earwig.png" alt="earwig" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Smart Triggers]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BSmart%20Triggers%5D&color=9fd4ff" />(mousetrap) to <img alt="[start]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstart%5D&color=ffd966" />(starter pistol)] [my <img alt="[data]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bdata%5D&color=ffd966" />(folder)] [workflows <img alt="[automatically]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bautomatically%5D&color=ffd966" />(robot)] [when <img alt="[storage]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bstorage%5D&color=ffd966" />(warehouse)] [files or <img alt="[tables]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btables%5D&color=ffd966" />(table) change.] — Note: Event-driven triggers like file arrival in Amazon S3 or Delta table batch updates cut wait time and stop empty scheduled runs.
+
+**Quote**
+“Smart triggers allow your workflows to automatically respond to new files landing in storage or updates happening within your tables.”
+
+**Character**
+Tom (Tom & Jerry)
+
+**Justification**
+Tom sets a wooden mousetrap baited with Swiss cheese as his signature object, matching the mousetrap keyword.
+
+### [Dz] Dark Zeus
+
+<img src="../../web/assets/beast-thumbs/adj_dark.png" alt="dark" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" /><img src="../../web/assets/beast-thumbs/zeus.png" alt="Dark Zeus" width="64" height="64" style="vertical-align:middle;height:64px;width:64px;" />
+
+**Concept**
+💡 [I use <img alt="[Visual Pipeline Management]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5BVisual%20Pipeline%20Management%5D&color=9fd4ff" />(paint palette) to <img alt="[build]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bbuild%5D&color=ffd966" />(hammer)] [and <img alt="[link]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Blink%5D&color=ffd966" />(chain)] [my <img alt="[workflow]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bworkflow%5D&color=ffd966" />(flowchart)] [<img alt="[tasks]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Btasks%5D&color=ffd966" />(checklist) without] [writing <img alt="[code]" src="https://img.shields.io/static/v1?style=flat-square&label=&message=%5Bcode%5D&color=ffd966" />(keyboard).] — Note: Drag-and-drop nodes map ETL and machine learning task dependencies on a canvas, and Repair and Rerun restarts a failed pipeline from the broken node.
+
+**Quote**
+“With Lakeflow Jobs, you can build and manage your pipelines using a completely visual approach, eliminating the need to write complex orchestration code.”
+
+**Character**
+Professor Zé Maria de Artes
+
+**Justification**
+Professor Zé Maria de Artes teaches painting and holds an oil-stained wooden paint palette with a brush, matching the paint palette keyword.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details open>
 <summary><strong>Gossiping Through a Semantic Layer While Eyes Trace F-Pattern, Z-Pattern, and Gestalt Curves on a Neon Runway</strong> · Memory Palace 34: Semantic Layer and Visual Layout Patterns · Character: — · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 34](images/data-analyst/34.jpg)
