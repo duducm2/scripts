@@ -1037,18 +1037,26 @@ Editor_ResolveGitRepoDir(editorHwnd := 0) {
         }
     }
     ; 2. Fast path: folder paths directly on the editor process command line.
+    ; If the status bar reports a specific SCM repo basename, prefer a candidate matching it
+    ; so multi-window Cursor/VS Code/Antigravity processes don't pull the first window's repo.
+    basename := Editor_GetScmRepoBasenameFromStatusBar(editorHwnd)
     cmdLine := Editor_GetEditorProcessCommandLine(editorHwnd)
     cmdCandidates := Editor_ExtractFolderPathsFromCmdLine(cmdLine)
-    for p in cmdCandidates {
-        root := Editor_FastFindGitRoot(p)
-        if (root != "")
-            return root
+    if (basename != "") {
+        pickedCmd := Editor_PickGitRootByBasename(cmdCandidates, basename)
+        if (pickedCmd != "")
+            return pickedCmd
+    } else {
+        for p in cmdCandidates {
+            root := Editor_FastFindGitRoot(p)
+            if (root != "")
+                return root
+        }
     }
     ; 3. Fallback: status bar SCM basename + full project registry.
     candidates := cmdCandidates.Clone()
     Editor_AppendProjectRegistryPaths(&candidates)
     candidates := Editor_DeduplicatePaths(candidates)
-    basename := Editor_GetScmRepoBasenameFromStatusBar(editorHwnd)
     if !candidates.Length
         return ""
     if (candidates.Length = 1)
@@ -1094,7 +1102,7 @@ Editor_GitWriteRobotScript(repoDir, resultPath, useRobotText := false) {
     script .= "    & " Editor_GitQuotePs(tempFlowPs1)
     script .= " -RepoDir " Editor_GitQuotePs(repoArg)
     script .= " -ResultPath " Editor_GitQuotePs(resultPath)
-    script .= " -TimeoutSec 45"
+    script .= " -TimeoutSec 90"
     if (useRobotText)
         script .= " -Robot"
     script .= "`r`n} finally {`r`n"
@@ -1287,8 +1295,11 @@ Editor_GitStashAndPull() {
     Send "^s"
     Sleep 120
     repoDir := Editor_ResolveGitRepoDir(hwnd)
-    if (repoDir = "")
-        repoDir := A_WorkingDir
+    if (repoDir = "") {
+        Editor_GitPlayPullErrorSound()
+        Editor_GitFlowFail("Git", "could not resolve repository directory for active editor")
+        return
+    }
     resultPath := A_Temp "\editor-git-robot-" A_TickCount ".json"
     try FileDelete(resultPath)
     ps1Path := Editor_GitWriteRobotScript(repoDir, resultPath, false)
@@ -1306,6 +1317,9 @@ Editor_GitStashAndPull() {
         Editor_GitPlayPullErrorSound()
         Editor_GitFlowFail("Git", "failed to launch background pull: " . e.Message)
         return
+    }
+    try StandardLoadingBar_Show("⏳ Stashing & pulling…", BANNER_ACCENT_INTERMEDIATE, { passive: true, centerOnHwnd: 0 })
+    catch {
     }
     try ScriptSoundPlay(A_ScriptDir "\assets\sounds\commit-start.wav", false)
     catch {

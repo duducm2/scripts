@@ -1,4 +1,4 @@
-# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
+﻿# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
 # Success (ok=true / exit 0) only if every quality gate passes — never on git exit 0 alone.
 # Writes JSON result to -ResultPath (tests) or plain ok/fail with -Robot (Alt+S terminal).
 # -SkipPull is test-only: fetch then skip pull so the behind-count gate must fail.
@@ -415,13 +415,22 @@ function Test-BehindGatePass {
 $headBeforePull = (Invoke-GitRaw 'rev-parse HEAD').StdOut
 
 Write-Robot 'pull'
+Wait-IndexLock
 $pull = Invoke-PullOnce 'pull'
 if ((-not $pull.Ok) -or (-not (Test-BehindGatePass))) {
     $retry = Invoke-GitStep 'fetch-retry' 'fetch'
     if (-not $retry.Ok) {
         Fail-Step 'Fetch' $(if ($retry.Output) { $retry.Output } else { 'git fetch retry failed' })
     }
+    Wait-IndexLock
     $pull = Invoke-PullOnce 'pull-retry'
+    if (((-not $pull.Ok) -or (-not (Test-BehindGatePass))) -and (-not $SkipPull) -and ($result.behindCount -gt 0) -and ($result.aheadCount -gt 0)) {
+        Write-Robot 'pull --rebase (diverged)' 'Yellow'
+        $pull = Invoke-GitStep 'pull-rebase' 'pull --rebase'
+        if (-not $pull.Ok) {
+            Invoke-GitRaw 'rebase --abort' | Out-Null
+        }
+    }
     if ((-not $pull.Ok) -or (-not (Test-BehindGatePass))) {
         $why = if ($SkipPull) {
             "still behind $($result.behindCount) (pull skipped)"
