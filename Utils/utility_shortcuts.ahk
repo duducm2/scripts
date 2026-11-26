@@ -570,6 +570,105 @@ MacroAICompanionNewChat(*) {
     return ok
 }
 
+; Macros [I] / #!+W → I: toggle image generation in the active or resolved AI companion (in parallel via CDP when available).
+MacroAICompanionToggleImageGen(*) {
+    global g_UtilitySelectorRestoreHwnd
+    prevHwnd := 0
+    try {
+        if (g_UtilitySelectorRestoreHwnd && DllCall("IsWindow", "ptr", g_UtilitySelectorRestoreHwnd))
+            prevHwnd := g_UtilitySelectorRestoreHwnd
+    } catch {
+        prevHwnd := 0
+    }
+    if (!prevHwnd) {
+        try prevHwnd := WinGetID("A")
+        catch {
+            prevHwnd := 0
+        }
+    }
+
+    isChromeTab := false
+    prevTitle := ""
+    tabCompanion := ""
+    if (prevHwnd && WinExist("ahk_id " prevHwnd)) {
+        try {
+            if (StrLower(WinGetProcessName("ahk_id " prevHwnd)) = "chrome.exe") {
+                prevTitle := WinGetTitle("ahk_id " prevHwnd)
+                tabCompanion := UtilityShortcuts_DetectAICompanionFromTitle(prevTitle)
+                isChromeTab := (tabCompanion != "")
+            }
+        } catch {
+        }
+    }
+
+    companion := isChromeTab ? tabCompanion : ResolveGlobalAICompanion()
+    label := (companion = "enterprise") ? "Gemini Enterprise" : ((companion = "copilot") ? "Copilot" : ((companion = "gemini") ? "Gemini" : GetGlobalAIProviderLabel()))
+
+    if (AiCompanionMode_IsCDP(companion)) {
+        if (isChromeTab) {
+            cdpHwnd := AiCompanionCDP_FindWindowHwnd(0, tabCompanion)
+            if (cdpHwnd && prevHwnd != cdpHwnd) {
+                try {
+                    WinActivate("ahk_id " prevHwnd)
+                    WinWaitActive("ahk_id " prevHwnd, , 1.0)
+                } catch {
+                }
+                ok := AiCompanion_ToggleImageGeneration(tabCompanion)
+                if (ok)
+                    ShowCenteredOverlay_Utils("🎨 Image generation enabled — " . label, 1200, BANNER_ACCENT_SUCCESS)
+                return ok
+            }
+        }
+        ok := AiCompanionCDP_ToggleImageGen(companion, isChromeTab ? prevTitle : "")
+        if (ok)
+            ShowCenteredOverlay_Utils("🎨 Image generation enabled — " . label . " (CDP)", 1200, BANNER_ACCENT_SUCCESS)
+        else
+            AiCompanionCDP_NotifyError("Image generation", AiCompanionCDP_GetLastError(), companion)
+        return ok
+    }
+
+    if (isChromeTab) {
+        try {
+            WinActivate("ahk_id " prevHwnd)
+            WinWaitActive("ahk_id " prevHwnd, , 1.0)
+        } catch {
+        }
+        ok := AiCompanion_ToggleImageGeneration(tabCompanion)
+        if (ok)
+            ShowCenteredOverlay_Utils("🎨 Image generation enabled — " . label, 1200, BANNER_ACCENT_SUCCESS)
+        return ok
+    }
+
+    StandardLoadingBar_Show("⏳ Opening " . label . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0 })
+    opened := false
+    try opened := GlobalAICompanionOpenOrFocus()
+    catch {
+        opened := false
+    }
+    StandardLoadingBar_Hide(0)
+    if (!opened) {
+        ShowCenteredOverlay_Utils("❌ Could not open " . label . ".", 2000, BANNER_ACCENT_ERROR)
+        AICompanion_RestoreOriginWindow(prevHwnd, , true, "ToggleImageGenFailed")
+        return false
+    }
+    companionHwnd := 0
+    try companionHwnd := WinGetID("A")
+    catch {
+        companionHwnd := 0
+    }
+    Sleep 120
+    ok := AiCompanion_ToggleImageGeneration(GlobalAICompanionModelsId())
+    Sleep 80
+    if (!AICompanion_RestoreOriginWindow(prevHwnd, companionHwnd, true, "ToggleImageGen")) {
+        Sleep 120
+        AICompanion_RestoreOriginWindow(prevHwnd, companionHwnd, true, "ToggleImageGen")
+    }
+    if (ok)
+        ShowCenteredOverlay_Utils("🎨 Image generation enabled — " . label, 1200, BANNER_ACCENT_SUCCESS)
+    return ok
+}
+
 ; Win+Alt+Q / Win+Alt+M — OS-wide Quick / Deep model on the resolved AI companion
 #!q:: MacroAICompanionQuickModel()
 #!m:: MacroAICompanionDeepModel()
@@ -577,6 +676,7 @@ MacroAICompanionNewChat(*) {
 RegisterMacro(MacroAICompanionQuickModel, "⚡ AI companion Quick / Fast model", "q")
 RegisterMacro(MacroAICompanionDeepModel, "🔄 AI companion Deep model", "m")
 RegisterMacro(MacroAICompanionNewChat, "💬 New chat — AI companion (Shift+N)", "n")
+RegisterMacro(MacroAICompanionToggleImageGen, "🎨 Image generation — AI companion (Shift+I)", "i")
 
 ; Macros [X] — close active AI companion tab (only if >1 tab is open; keeps single tab open).
 MacroAICompanionCloseTab(*) {

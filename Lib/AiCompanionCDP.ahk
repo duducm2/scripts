@@ -1059,3 +1059,16 @@ AiCompanionCDP_ReadAloud(companionId := "", activeTitle := "", targetId := "") {
     res := AiCompanionCDP_Post("/read_aloud", payload, 10000)
     return res.ok
 }
+
+AiCompanionCDP_ToggleImageGen(companionId := "", activeTitle := "", targetId := "") {
+    comp := AiCompanionCDP_NormalizeCompanion(companionId)
+    if (comp = "")
+        return false
+    payload := Map("companion", comp, "launch_if_down", true)
+    if (Trim(activeTitle) != "")
+        payload["active_title"] := Trim(activeTitle)
+    if (Trim(targetId) != "")
+        payload["target_id"] := Trim(targetId)
+    res := AiCompanionCDP_Post("/toggle_image_gen", payload, 15000, true)
+    return res.ok
+}

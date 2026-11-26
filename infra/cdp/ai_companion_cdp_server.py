@@ -1686,6 +1686,20 @@ class CDPBridge:
                 pass
         return {"ok": False, "error": "READ_ALOUD_NOT_FOUND"}
 
+    def toggle_image_gen(self, data: dict) -> dict:
+        companion = data.get("companion", "gemini")
+        enterprise = companion.strip().lower() in ("enterprise", "geminienterprise")
+        active_title = (data.get("active_title") or "").strip()
+        target_id = (data.get("target_id") or "").strip()
+        page = self._find_or_open_page(companion, launch_if_down=bool(data.get("launch_if_down", False)), new_tab=False, minimized=True, active_title=active_title, target_id=target_id)
+        resolved_tid = self._get_page_target_id(page)
+        composer = self._find_composer(page, timeout_s=6.0)
+        if composer is None and self._is_auth_page(page):
+            return {"ok": False, "error": "AUTH_REQUIRED"}
+        if not self._toggle_image_gen(page, enterprise):
+            return {"ok": False, "error": "IMAGE_GEN_NOT_FOUND", "target_id": resolved_tid}
+        return {"ok": True, "target_id": resolved_tid}
+
     @staticmethod
     def _find_first_visible(page, selectors: list[str], timeout_s: float = 6.0):
         deadline = time.time() + timeout_s
@@ -2324,6 +2338,7 @@ class Handler(BaseHTTPRequestHandler):
             "/close_tab": BRIDGE.close_tab,
             "/select_model": BRIDGE.select_model,
             "/read_aloud": BRIDGE.read_aloud,
+            "/toggle_image_gen": BRIDGE.toggle_image_gen,
             "/chat/jump": BRIDGE.chat_jump,
             "/whatsapp/ready": BRIDGE.whatsapp_ready,
             "/whatsapp/voice": BRIDGE.whatsapp_voice,
