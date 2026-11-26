@@ -383,3 +383,6 @@ TX390,2026-11-23,groceries,"186,80",expense,CAT_MERCADO,ACC_MERCADOP,,,1,1,,0
 TX391,2026-11-23,miscellaneous transaction to my husband,"170,37",card_expense,CAT_HUMANITA,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX392,2026-11-24,groceries,"148,16",card_expense,CAT_MERCADO,ACC_MERCADOP,CARD_MP,,1,1,,0
 TX393,2026-11-24,food,"7,95",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1,,0
+TX394,2026-11-25,electrical materials for the new house,"3800,00",expense,CAT_NEWHOUSE,ACC_MERCADOP3,,,1,1,,0
+TX395,2026-11-25,mason,"75,00",expense,CAT_SERVICO,ACC_MERCADOP,,,1,1,,0
+TX396,2026-11-25,equipment for the mason,"32,00",expense,CAT_MATERIAI,ACC_MERCADOP,,,1,1,,0

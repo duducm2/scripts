@@ -63,22 +63,6 @@ Av. João Pessoa, 360 - Centro, Nova Odessa - SP, 13460-000
 
 ⏳ Castrar a Moka
 
-⏳ Fetch Training: Two-Ball Method
-ℹ️ Pro Tip
-The most effective pro tip for a dog that won't bring the ball all the way back to your hand is the Two-Ball Method, combined with backpedaling. Because German Shepherds have a high chase and herding drive, this technique uses Moka's natural instincts to fix the recall.
-ℹ️ Step 1: Two Identical Balls
-Use two identical balls. They must be exactly the same. If one is squeakier or bouncier, she will hold out for the "better" one.
-ℹ️ Step 2: Throw Ball 1
-Throw Ball 1. Let her chase it and pick it up.
-ℹ️ Step 3: Show Ball 2 and backpedal
-The second she secures Ball 1 in her mouth, call her name, hold up Ball 2, and quickly jog backward away from her. Your backward movement triggers her chase instinct, forcing her to sprint directly toward you instead of dropping the ball halfway or keeping her distance.
-ℹ️ Step 4: Trade and throw
-When she reaches you, say "Drop it." Because she wants the live, moving ball in your hand, she will drop the dead ball. The instant Ball 1 hits the ground, immediately throw Ball 2.
-ℹ️ Step 5: Repeat
-Pick up Ball 1 and repeat.
-ℹ️ Outcome
-This breaks the habit of playing "keep away" by teaching her that giving up the toy doesn't end the game—it instantly restarts it. Once the habit of running directly to your hands is hardwired, you can gradually phase out the second ball.
-
 🔲 After Mocha finished all the vaccines you can place her anti-flea and tick collar
 
 ### Vaccination Timetable
