@@ -796,18 +796,15 @@ global g_UtilitySelectorSwallowKey := ""
 ; {vkE8} while Win is down keeps the later Win release from opening Start.
 ; Modifier ups are inlined so this does not depend on CopilotWeb / utility_shortcuts.
 ; Defined here: Act and Spotify load this file and not utility_shortcuts.ahk.
+; Direct keybd_event avoids SendInput→SendEvent fallback (~150-300ms with multiple AHK hooks).
 StandardLoadingBar_ReleaseStuckModifiers() {
-    try SendInput "{Blind}{vk11 up}{vkA2 up}{vkA3 up}{vk12 up}{vkA4 up}{vkA5 up}{vk10 up}{vkA0 up}{vkA1 up}{vk5B up}{vk5C up}"
-    catch {
-    }
     for vk in [0x11, 0xA2, 0xA3, 0x12, 0xA4, 0xA5, 0x10, 0xA0, 0xA1, 0x5B, 0x5C]
         DllCall("keybd_event", "UChar", vk, "UChar", 0, "UInt", 2, "UPtr", 0)
 }
 
 UtilityShortcuts_DismissOpenerChord() {
-    try SendInput "{Blind}{vkE8}"
-    catch {
-    }
+    DllCall("keybd_event", "UChar", 0xE8, "UChar", 0, "UInt", 0, "UPtr", 0)
+    DllCall("keybd_event", "UChar", 0xE8, "UChar", 0, "UInt", 2, "UPtr", 0)
     StandardLoadingBar_ReleaseStuckModifiers()
     UtilityShortcuts_ArmOpenerKeySwallow()
 }

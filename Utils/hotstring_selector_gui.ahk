@@ -411,8 +411,10 @@ ShowHotstringSelector(initialCategory := "") {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRestoreHwnd
     global g_UtilitySelectorNoActivate, g_OnEscapePressed
 
+    t0 := A_TickCount
     ; Drop Win/Alt/Shift/Ctrl immediately. Waiting for each key-up blocked the menu.
     UtilityShortcuts_DismissOpenerChord()
+    t1 := A_TickCount
 
     if (g_HotstringSelectorActive && UtilitySelector_GuiIsAlive()) {
         ; Same view again → toggle close. Different category → switch without full reopen.
@@ -455,12 +457,22 @@ ShowHotstringSelector(initialCategory := "") {
 
     g_HotstringSelectorActive := true
     UtilitySelector_RefreshView(false)
+    t2 := A_TickCount
     UtilitySelector_PositionAndShow()
+    t3 := A_TickCount
     UtilitySelector_BindModalHotkeys()
+    t4 := A_TickCount
 
     g_OnEscapePressed := HandleHotstringEscape
     ; Drive FileAppend/FileExist after paint so the hotkey is not blocked on Google Drive I/O.
     SetTimer(UtilitySelector_StartIpc, -1)
+    SetTimer((*) => UtilitySelector_LogPerf(initialCategory, t1 - t0, t2 - t1, t3 - t2, t4 - t3, t4 - t0), -50)
+}
+
+UtilitySelector_LogPerf(cat, dDismiss, dRefresh, dShow, dBind, dTotal) {
+    try FileAppend(A_Now " cat=" (cat != "" ? cat : "top") " dismiss=" dDismiss "ms refresh=" dRefresh "ms show=" dShow "ms bind=" dBind "ms total=" dTotal "ms`n", A_Temp "\utility_selector_perf.log", "UTF-8")
+    catch {
+    }
 }
 
 UtilitySelector_PrewarmGui(*) {
