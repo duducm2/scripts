@@ -433,7 +433,7 @@ UtilitySelector_PopulateLvInner() {
 
     if (g_UtilitySelectorCategory = "Prompts") {
         global g_HotstringSelectorFilterCtrl, g_UtilitySelectorFilterQuery, g_UtilitySelectorFilterTyping
-        PromptData_Load(true)  ; force reload so UTF-8 names are fresh after script updates
+        PromptData_Load(false)
         UtilitySelector_RebuildPromptCharMap()
         if (IsObject(g_HotstringSelectorFilterCtrl))
             g_UtilitySelectorFilterQuery := g_HotstringSelectorFilterCtrl.Value

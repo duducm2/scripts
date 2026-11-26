@@ -348,20 +348,28 @@ UtilitySelector_RefreshView(bindHotkeys := true) {
 }
 
 UtilitySelector_RebuildGui() {
-    global g_HotstringSelectorActive, g_UtilitySelectorSuppressFilterKillFocus
+    global g_HotstringSelectorActive, g_UtilitySelectorSuppressFilterKillFocus, g_UtilitySelectorFilterTyping
     g_UtilitySelectorSuppressFilterKillFocus := true
     if (!UtilitySelector_GuiIsAlive()) {
         UtilitySelector_CreateGui()
         g_HotstringSelectorActive := true
-        UtilitySelector_RefreshView()
+        UtilitySelector_RefreshView(false)
         UtilitySelector_PositionAndShow()
+        if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
+            UtilitySelector_BindFilterTypingHotkeys()
+        else
+            UtilitySelector_BindModalHotkeys()
         g_UtilitySelectorSuppressFilterKillFocus := false
         return
     }
     UtilitySelector_UnbindModalHotkeys()
-    UtilitySelector_RefreshView()
+    UtilitySelector_RefreshView(false)
     ; Re-Show with view metrics so Prompts↔other size changes don't use Gui.Move (outer vs client mismatch).
     UtilitySelector_PositionAndShow()
+    if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
+        UtilitySelector_BindFilterTypingHotkeys()
+    else
+        UtilitySelector_BindModalHotkeys()
     g_UtilitySelectorSuppressFilterKillFocus := false
 }
 
@@ -460,6 +468,18 @@ UtilitySelector_PrewarmGui(*) {
         try UtilitySelector_CreateGui()
         catch {
         }
+    }
+    try PromptData_Load(false, true)
+    catch {
+    }
+    try HotstringData_Load(false, true)
+    catch {
+    }
+    try ClickSeqData_Load(false, true)
+    catch {
+    }
+    try ProjectData_Load(false, true)
+    catch {
     }
 }
 
