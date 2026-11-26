@@ -335,30 +335,31 @@ UtilitySelector_FocusAfterShow() {
     }
 }
 
-UtilitySelector_RefreshView(bindHotkeys := true) {
+UtilitySelector_BindViewHotkeys() {
     global g_UtilitySelectorFilterTyping
-    UtilitySelector_ApplyChrome()
-    UtilitySelector_PopulateLv()
-    if (!bindHotkeys)
-        return
     if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
         UtilitySelector_BindFilterTypingHotkeys()
     else
         UtilitySelector_BindModalHotkeys()
 }
 
+UtilitySelector_RefreshView(bindHotkeys := true) {
+    UtilitySelector_ApplyChrome()
+    UtilitySelector_PopulateLv()
+    if (!bindHotkeys)
+        return
+    UtilitySelector_BindViewHotkeys()
+}
+
 UtilitySelector_RebuildGui() {
-    global g_HotstringSelectorActive, g_UtilitySelectorSuppressFilterKillFocus, g_UtilitySelectorFilterTyping
+    global g_HotstringSelectorActive, g_UtilitySelectorSuppressFilterKillFocus
     g_UtilitySelectorSuppressFilterKillFocus := true
     if (!UtilitySelector_GuiIsAlive()) {
         UtilitySelector_CreateGui()
         g_HotstringSelectorActive := true
         UtilitySelector_RefreshView(false)
         UtilitySelector_PositionAndShow()
-        if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
-            UtilitySelector_BindFilterTypingHotkeys()
-        else
-            UtilitySelector_BindModalHotkeys()
+        UtilitySelector_BindViewHotkeys()
         g_UtilitySelectorSuppressFilterKillFocus := false
         return
     }
@@ -366,10 +367,7 @@ UtilitySelector_RebuildGui() {
     UtilitySelector_RefreshView(false)
     ; Re-Show with view metrics so Prompts↔other size changes don't use Gui.Move (outer vs client mismatch).
     UtilitySelector_PositionAndShow()
-    if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
-        UtilitySelector_BindFilterTypingHotkeys()
-    else
-        UtilitySelector_BindModalHotkeys()
+    UtilitySelector_BindViewHotkeys()
     g_UtilitySelectorSuppressFilterKillFocus := false
 }
 
@@ -460,7 +458,7 @@ ShowHotstringSelector(initialCategory := "") {
     t2 := A_TickCount
     UtilitySelector_PositionAndShow()
     t3 := A_TickCount
-    UtilitySelector_BindModalHotkeys()
+    UtilitySelector_BindViewHotkeys()
     t4 := A_TickCount
 
     g_OnEscapePressed := HandleHotstringEscape
