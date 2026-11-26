@@ -9,21 +9,35 @@ PinnedQuickLink_Path() {
     return A_ScriptDir "\assets\data\pinned_quick_link.ini"
 }
 
+global g_PinnedQuickLinkCacheReady := false
+global g_PinnedQuickLinkCacheVal := ""
+global g_PinnedQuickLinkCacheTick := 0
+
 PinnedQuickLink_Get() {
+    global g_PinnedQuickLinkCacheReady, g_PinnedQuickLinkCacheVal, g_PinnedQuickLinkCacheTick
+    if (g_PinnedQuickLinkCacheReady && (A_TickCount - g_PinnedQuickLinkCacheTick) < 5000)
+        return g_PinnedQuickLinkCacheVal
     path := PinnedQuickLink_Path()
-    if !FileExist(path)
+    if !FileExist(path) {
+        g_PinnedQuickLinkCacheReady := true
+        g_PinnedQuickLinkCacheVal := ""
+        g_PinnedQuickLinkCacheTick := A_TickCount
         return ""
+    }
     try {
         v := IniRead(path, "Pinned", "Target", "")
-        if (v = "ERROR")
-            return ""
-        return Trim(v)
+        val := (v = "ERROR") ? "" : Trim(v)
+        g_PinnedQuickLinkCacheReady := true
+        g_PinnedQuickLinkCacheVal := val
+        g_PinnedQuickLinkCacheTick := A_TickCount
+        return val
     } catch {
         return ""
     }
 }
 
 PinnedQuickLink_Set(target) {
+    global g_PinnedQuickLinkCacheReady, g_PinnedQuickLinkCacheVal, g_PinnedQuickLinkCacheTick
     path := PinnedQuickLink_Path()
     dir := A_ScriptDir "\assets\data"
     if !DirExist(dir) {
@@ -32,8 +46,12 @@ PinnedQuickLink_Set(target) {
             return false
         }
     }
+    trimmed := Trim(target)
     try {
-        IniWrite(Trim(target), path, "Pinned", "Target")
+        IniWrite(trimmed, path, "Pinned", "Target")
+        g_PinnedQuickLinkCacheReady := true
+        g_PinnedQuickLinkCacheVal := trimmed
+        g_PinnedQuickLinkCacheTick := A_TickCount
         return true
     } catch {
         return false

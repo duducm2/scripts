@@ -393,6 +393,17 @@ UtilitySelector_PopulateLv() {
     global g_UtilityTopCategories, g_UtilityTopCategoryById, g_PromptEntries, g_HotstringEntries
     if (!IsObject(g_HotstringSelectorLv))
         return
+    try g_HotstringSelectorLv.Opt("-Redraw")
+    try {
+        UtilitySelector_PopulateLvInner()
+    } finally {
+        try g_HotstringSelectorLv.Opt("+Redraw")
+    }
+}
+
+UtilitySelector_PopulateLvInner() {
+    global g_HotstringSelectorLv, g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRows
+    global g_UtilityTopCategories, g_UtilityTopCategoryById, g_PromptEntries, g_HotstringEntries
     g_HotstringSelectorLv.Delete()
     g_UtilitySelectorRows := []
 

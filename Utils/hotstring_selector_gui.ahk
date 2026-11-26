@@ -130,48 +130,10 @@ UtilitySelector_ApplyChrome() {
         try g_HotstringSelectorBtnEdit.Visible := showCrud
         try g_HotstringSelectorBtnDelete.Visible := showCrud
     }
-    UtilitySelector_ApplyFilterChrome()
+    UtilitySelector_ApplyFilterChrome(false)
 
     if (!IsObject(g_HotstringSelectorLv))
         return
-    if (g_UtilitySelectorMode = "top") {
-        try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
-        try g_HotstringSelectorLv.ModifyCol(2, 220, "Category")
-        try g_HotstringSelectorLv.ModifyCol(3, 80, "Count")
-        try g_HotstringSelectorLv.ModifyCol(4, 0, "")
-        try g_HotstringSelectorLv.ModifyCol(5, 0, "")
-        return
-    }
-    if (g_UtilitySelectorCategory = "Prompts") {
-        try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
-        try g_HotstringSelectorLv.ModifyCol(2, 90, "Category")
-        try g_HotstringSelectorLv.ModifyCol(3, 260, "Name")
-        try g_HotstringSelectorLv.ModifyCol(4, 70, "Out")
-        try g_HotstringSelectorLv.ModifyCol(5, 640, "File")
-        return
-    }
-    if (g_UtilitySelectorCategory = "Hotstrings") {
-        try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
-        try g_HotstringSelectorLv.ModifyCol(2, 260, "Name")
-        try g_HotstringSelectorLv.ModifyCol(3, 420, "Text")
-        try g_HotstringSelectorLv.ModifyCol(4, 0, "")
-        try g_HotstringSelectorLv.ModifyCol(5, 0, "")
-        return
-    }
-    if (g_UtilitySelectorCategory = "Projects") {
-        try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
-        try g_HotstringSelectorLv.ModifyCol(2, 400, "Name")
-        try g_HotstringSelectorLv.ModifyCol(3, 0, "")
-        try g_HotstringSelectorLv.ModifyCol(4, 0, "")
-        try g_HotstringSelectorLv.ModifyCol(5, 0, "")
-        return
-    }
-    try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
-    try g_HotstringSelectorLv.ModifyCol(2, 500, "Title")
-    try g_HotstringSelectorLv.ModifyCol(3, 0, "")
-    try g_HotstringSelectorLv.ModifyCol(4, 0, "")
-    try g_HotstringSelectorLv.ModifyCol(5, 0, "")
-    return
 }
 
 UtilitySelector_WindowTitle() {
@@ -181,7 +143,7 @@ UtilitySelector_WindowTitle() {
     return "Utility Shortcuts"
 }
 
-UtilitySelector_ApplyFilterChrome() {
+UtilitySelector_ApplyFilterChrome(doLayout := true) {
     global g_HotstringSelectorFilterLabel, g_HotstringSelectorFilterCtrl
     global g_HotstringSelectorFilterEnterBtn
 
@@ -211,7 +173,8 @@ UtilitySelector_ApplyFilterChrome() {
         } catch {
         }
     }
-    UtilitySelector_LayoutControls()
+    if (doLayout)
+        UtilitySelector_LayoutControls()
 }
 
 UtilitySelector_LayoutControls() {
@@ -372,10 +335,12 @@ UtilitySelector_FocusAfterShow() {
     }
 }
 
-UtilitySelector_RefreshView() {
+UtilitySelector_RefreshView(bindHotkeys := true) {
     global g_UtilitySelectorFilterTyping
     UtilitySelector_ApplyChrome()
     UtilitySelector_PopulateLv()
+    if (!bindHotkeys)
+        return
     if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
         UtilitySelector_BindFilterTypingHotkeys()
     else
@@ -481,10 +446,22 @@ ShowHotstringSelector(initialCategory := "") {
         UtilitySelector_CreateGui()
 
     g_HotstringSelectorActive := true
-    UtilitySelector_RefreshView()
+    UtilitySelector_RefreshView(false)
     UtilitySelector_PositionAndShow()
+    UtilitySelector_BindModalHotkeys()
 
     g_OnEscapePressed := HandleHotstringEscape
     ; Drive FileAppend/FileExist after paint so the hotkey is not blocked on Google Drive I/O.
     SetTimer(UtilitySelector_StartIpc, -1)
 }
+
+UtilitySelector_PrewarmGui(*) {
+    if (!UtilitySelector_GuiIsAlive()) {
+        try UtilitySelector_CreateGui()
+        catch {
+        }
+    }
+}
+
+if (A_ScriptName = "AppLaunchers.ahk" || A_ScriptName = "Utils.ahk")
+    SetTimer(UtilitySelector_PrewarmGui, -1500)

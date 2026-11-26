@@ -114,10 +114,15 @@ AiCompanionModels_InvalidateCache(companion := "") {
 
 AiCompanionModels_Load(companion) {
     global g_AiCompanionModelsCache, g_AiCompanionModelsCacheMtime
+    static s_mtimeCheckTick := Map()
     if !AiCompanionModels_IsValidCompanion(companion)
         return AiCompanionModels_DefaultConfig(companion)
+    if (s_mtimeCheckTick.Has(companion) && g_AiCompanionModelsCache.Has(companion)
+        && (A_TickCount - s_mtimeCheckTick[companion]) < 2000)
+        return g_AiCompanionModelsCache[companion]
     iniPath := AiCompanionModels_GetIniPath()
     curMtime := AiCompanionModels_GetIniMtime(iniPath)
+    s_mtimeCheckTick[companion] := A_TickCount
     if (g_AiCompanionModelsCache.Has(companion)
         && g_AiCompanionModelsCacheMtime.Has(companion)
         && g_AiCompanionModelsCacheMtime[companion] = curMtime)
