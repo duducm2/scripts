@@ -1724,6 +1724,23 @@ class CDPBridge:
         except Exception:
             pass
 
+    _WHATSAPP_SEARCH_SELS = (
+        'input[data-tab="3"]',
+        '#side input[role="textbox"]',
+        '#side input',
+        'div[contenteditable="true"][data-tab="3"]',
+        'div[role="textbox"][aria-label*="Search" i]',
+        'div[role="textbox"][aria-label*="Pesquisar" i]',
+        'div[role="textbox"][aria-label*="Buscar" i]',
+        'div[role="textbox"][title*="Search" i]',
+        'div[contenteditable="true"][aria-placeholder*="Search" i]',
+        'div[contenteditable="true"][aria-placeholder*="Pesquisar" i]',
+        '#side div[role="textbox"][contenteditable="true"]',
+        '#side [contenteditable="true"]',
+        '#side [role="textbox"]',
+        'input[aria-label*="Search" i]',
+    )
+
     def _inspect_whatsapp_state(self, page) -> dict:
         state = {
             "auth_required": False,
@@ -1736,7 +1753,7 @@ class CDPBridge:
                 state["auth_required"] = True
                 return state
             raw = page.evaluate(
-                """() => {
+                """(searchSels) => {
                     const isVis = (el) => {
                         if (!el) return false;
                         const r = el.getBoundingClientRect();
@@ -1746,17 +1763,6 @@ class CDPBridge:
                     };
                     const qr = document.querySelector('canvas[aria-label*="Scan" i], div[data-ref]');
                     const authRequired = !!(qr && isVis(qr));
-                    const searchSels = [
-                        'input[data-tab="3"]',
-                        '#side input[role="textbox"]',
-                        '#side input',
-                        'div[contenteditable="true"][data-tab="3"]',
-                        'div[role="textbox"][aria-label*="Search" i]',
-                        'div[role="textbox"][aria-label*="Pesquisar" i]',
-                        'div[role="textbox"][title*="Search" i]',
-                        '#side div[role="textbox"][contenteditable="true"]',
-                        'input[aria-label*="Search" i]'
-                    ];
                     let searchVisible = false;
                     for (const sel of searchSels) {
                         for (const el of document.querySelectorAll(sel)) {
@@ -1765,7 +1771,7 @@ class CDPBridge:
                         if (searchVisible) break;
                     }
                     const pane = document.querySelector('#pane-side');
-                    const hasRows = !!(pane && pane.querySelector('[role="listitem"], [role="row"]'));
+                    const hasRows = !!(pane && pane.querySelector('[role="listitem"], [role="row"], [role="gridcell"], [data-testid="cell-frame-container"], [tabindex="0"], [tabindex="-1"]'));
                     const hasMainHeader = !!document.querySelector('#main header');
                     const startupEl = document.querySelector('#initial_startup, div[data-testid="startup"], progress');
                     const startupLoading = !!(startupEl && isVis(startupEl));
@@ -1775,7 +1781,8 @@ class CDPBridge:
                         chat_list_ready: hasRows || hasMainHeader,
                         startup_loading: startupLoading
                     };
-                }"""
+                }""",
+                list(self._WHATSAPP_SEARCH_SELS),
             )
             if isinstance(raw, dict):
                 state.update(raw)
@@ -1815,17 +1822,17 @@ class CDPBridge:
             return {"ok": True, "ready": False, "auth_required": False, "stage": "cdp_down"}
         if not browser.contexts:
             return {"ok": True, "ready": False, "auth_required": False, "stage": "cdp_down"}
-        context = browser.contexts[0]
         needle, _ = self._companion_meta("whatsapp")
         matching = []
-        for page in list(context.pages):
-            try:
-                if page.is_closed():
+        for context in list(browser.contexts):
+            for page in list(context.pages):
+                try:
+                    if page.is_closed():
+                        continue
+                    if needle in (page.url or "").lower():
+                        matching.append(page)
+                except Exception:
                     continue
-                if needle in (page.url or "").lower():
-                    matching.append(page)
-            except Exception:
-                continue
         if not matching:
             return {"ok": True, "ready": False, "auth_required": False, "stage": "tab_missing"}
         page = self._pick_current_page("whatsapp", matching)
@@ -1834,12 +1841,25 @@ class CDPBridge:
         except Exception:
             pass
         st = self._inspect_whatsapp_state(page)
+        seen_map = getattr(self, "_wa_search_seen_at", None)
+        if seen_map is None:
+            seen_map = {}
+            self._wa_search_seen_at = seen_map
+        page_key = id(page)
         if st.get("auth_required"):
+            seen_map.pop(page_key, None)
             return {"ok": True, "ready": False, "auth_required": True, "stage": "auth_required"}
-        if st.get("search_visible") and st.get("chat_list_ready"):
-            return {"ok": True, "ready": True, "auth_required": False, "stage": "ready"}
-        stage = "syncing" if st.get("search_visible") else "loading"
-        return {"ok": True, "ready": False, "auth_required": False, "stage": stage}
+        if st.get("search_visible"):
+            if st.get("chat_list_ready"):
+                seen_map.pop(page_key, None)
+                return {"ok": True, "ready": True, "auth_required": False, "stage": "ready"}
+            now = time.time()
+            first_seen = seen_map.setdefault(page_key, now)
+            if not st.get("startup_loading") and (now - first_seen) >= 2.0:
+                return {"ok": True, "ready": True, "auth_required": False, "stage": "ready"}
+            return {"ok": True, "ready": False, "auth_required": False, "stage": "syncing"}
+        seen_map.pop(page_key, None)
+        return {"ok": True, "ready": False, "auth_required": False, "stage": "loading"}
 
     def _chat_jump_whatsapp(self, page, contact: str, text: str, files: list[str], submit: bool, ready_timeout_s: float = 90.0) -> dict:
         t0 = time.time()
@@ -1852,17 +1872,7 @@ class CDPBridge:
         if not ready_ok:
             self._wa_debug_log(f"wait_whatsapp_ready failed err={ready_err} elapsed={time.time() - t0:.2f}s")
             return {"ok": False, "error": ready_err}
-        search_sels = [
-            'input[data-tab="3"]',
-            '#side input[role="textbox"]',
-            '#side input',
-            'div[contenteditable="true"][data-tab="3"]',
-            'div[role="textbox"][aria-label*="Search" i]',
-            'div[role="textbox"][aria-label*="Pesquisar" i]',
-            'div[role="textbox"][title*="Search" i]',
-            '#side div[role="textbox"][contenteditable="true"]',
-            'input[aria-label*="Search" i]',
-        ]
+        search_sels = list(self._WHATSAPP_SEARCH_SELS)
         composer_sels = [
             'footer div[contenteditable="true"][data-tab="10"]',
             'footer div[role="textbox"][contenteditable="true"]',

@@ -73,15 +73,18 @@ ChatCDP_EnsureAppOpenAsync(app := "whatsapp") {
     now := A_TickCount
     if (g_ChatCDP_LastEnsureAsyncTick.Has(appNorm) && (now - g_ChatCDP_LastEnsureAsyncTick[appNorm]) < 8000)
         return true
-    g_ChatCDP_LastEnsureAsyncTick[appNorm] := now
     meta := ChatCDP_AppMeta(appNorm)
-    if AiCompanionCDP_IsChromeCdpUp(500) {
+    if AiCompanionCDP_IsChromeCdpUp(900) {
         direct := AiCompanionCDP_DirectOpenUrl(meta.url, meta.needle, false, appNorm)
+        if (direct.ok)
+            g_ChatCDP_LastEnsureAsyncTick[appNorm] := now
         return direct.ok
     }
-    ; If GeminiCDP Chrome is already starting/running, do not spawn a duplicate launcher or window.
+    ; If GeminiCDP Chrome is still starting up and port 9222 isn't listening yet,
+    ; do not spawn a duplicate window and do not lock out retries for 8 seconds.
     if (AiCompanionCDP_GetProcessPids().Count > 0)
-        return true
+        return false
+    g_ChatCDP_LastEnsureAsyncTick[appNorm] := now
     if (appNorm = "whatsapp") {
         launcher := _AiCDP_RepoRoot() . "\AppLaunchers\launch_whatsapp_cdp.ahk"
         if FileExist(launcher) {

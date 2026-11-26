@@ -969,21 +969,29 @@ WhatsApp_RunCdpJumpNow(job) {
     }
 }
 
-WhatsApp_StartPendingJump(contact, isSelf, clipText, filePaths, tempFiles) {
+WhatsApp_PendingBannerText(job, elapsedSec) {
+    verb := job.tabOpen ? "Waiting for WhatsApp Web" : "Opening WhatsApp Web"
+    return "⏳ " . verb . " (" . elapsedSec . "s) — will jump to '" . job.contact . "'…"
+}
+
+WhatsApp_StartPendingJump(contact, isSelf, clipText, filePaths, tempFiles, initialStage := "") {
     global g_WhatsAppPendingJump, g_WhatsAppPendingJumpTimer
     WhatsApp_ClearPendingJump(true)
+    tabOpen := (initialStage = "syncing" || initialStage = "loading") || ChatCDP_IsAppTabOpen("whatsapp")
     g_WhatsAppPendingJump := {
         contact: contact,
         isSelf: isSelf,
         clipText: clipText,
         filePaths: filePaths,
         tempFiles: tempFiles,
+        tabOpen: tabOpen,
         startedAt: A_TickCount,
         deadline: A_TickCount + 120000,
         inTick: false
     }
-    ChatCDP_EnsureAppOpenAsync("whatsapp")
-    StandardLoadingBar_Show("⏳ Opening WhatsApp Web (0s) — will jump to '" . contact . "'…",
+    if (!tabOpen)
+        ChatCDP_EnsureAppOpenAsync("whatsapp")
+    StandardLoadingBar_Show(WhatsApp_PendingBannerText(g_WhatsAppPendingJump, 0),
         BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, maxDurationMs: 130000 })
     g_WhatsAppPendingJumpTimer := WhatsApp_PollPendingJump
     SetTimer(g_WhatsAppPendingJumpTimer, 700)
@@ -1001,7 +1009,7 @@ WhatsApp_PollPendingJump() {
     job.inTick := true
     try {
         elapsedSec := Max(0, Round((A_TickCount - job.startedAt) / 1000))
-        StandardLoadingBar_Show("⏳ Opening WhatsApp Web (" . elapsedSec . "s) — will jump to '" . job.contact . "'…",
+        StandardLoadingBar_Show(WhatsApp_PendingBannerText(job, elapsedSec),
             BANNER_ACCENT_INTERMEDIATE, { passive: true, noActivate: true, maxDurationMs: 130000 })
 
         st := ChatCDP_WhatsAppReady(2500)
@@ -1023,8 +1031,14 @@ WhatsApp_PollPendingJump() {
             return
         }
 
-        if (st.stage = "cdp_down" || st.stage = "tab_missing")
+        if (st.ok && (st.stage = "syncing" || st.stage = "loading"))
+            job.tabOpen := true
+        else if (st.stage = "cdp_down" || st.stage = "tab_missing") {
+            job.tabOpen := false
             ChatCDP_EnsureAppOpenAsync("whatsapp")
+        } else if (!job.tabOpen && ChatCDP_IsAppTabOpen("whatsapp")) {
+            job.tabOpen := true
+        }
 
         if (A_TickCount >= job.deadline) {
             WhatsApp_ClearPendingJump(true)
@@ -1072,8 +1086,9 @@ WhatsApp_ExecuteJump(contact) {
             WhatsApp_DebugLog("Staged textLen=" . StrLen(clipText) . " files=" . filePaths.Length)
         }
 
-        readyState := ChatCDP_WhatsAppReady(1200)
-        WhatsApp_DebugLog("Ready check ok=" . (readyState.ok ? "1" : "0") . " ready=" . (readyState.ready ? "1" : "0") . " stage=" . readyState.stage)
+        readyState := ChatCDP_WhatsAppReady(2500)
+        WhatsApp_DebugLog("Ready check ok=" . (readyState.ok ? "1" : "0") . " ready=" . (readyState.ready ? "1" : "0") .
+            " stage=" . readyState.stage . (readyState.error != "" ? " err=" . readyState.error : ""))
         if (readyState.authRequired) {
             WhatsApp_CleanupTempFiles(tempFiles)
             StandardLoadingBar_Hide(0)
@@ -1093,7 +1108,7 @@ WhatsApp_ExecuteJump(contact) {
             WhatsApp_RunCdpJumpNow(job)
             return
         }
-        WhatsApp_StartPendingJump(contact, isSelf, clipText, filePaths, tempFiles)
+        WhatsApp_StartPendingJump(contact, isSelf, clipText, filePaths, tempFiles, readyState.stage)
         return
     }
     ; Full clipboard (text, image, or other formats) captured before search overwrites it.
