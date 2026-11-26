@@ -2071,11 +2071,17 @@ class CDPBridge:
         return {"ok": True}
 
     def _chat_jump_teams(self, page, contact: str, text: str, files: list[str], submit: bool) -> dict:
+        t0 = time.time()
         search_sels = [
             'input[id*="search" i]',
             '[data-tid="search-box"] input',
             'input[placeholder*="Search" i]',
             'input[placeholder*="Pesquisar" i]',
+            'input[placeholder*="Buscar" i]',
+            'input[aria-label*="Search" i]',
+            'input[aria-label*="Pesquisar" i]',
+            'input[aria-label*="Buscar" i]',
+            'input[role="combobox"]',
         ]
         composer_sels = [
             '[data-tid="ckeditor"]',
@@ -2092,8 +2098,35 @@ class CDPBridge:
                 time.sleep(0.5)
                 continue
 
-            self._insert_text_in_composer(page, search_loc, contact, clear=True)
-            time.sleep(0.45)
+            typed_ok = False
+            for _ in range(3):
+                self._insert_text_in_composer(page, search_loc, contact, clear=True)
+                time.sleep(0.15)
+                try:
+                    cur_val = (search_loc.input_value() or "").strip().lower()
+                except Exception:
+                    try:
+                        cur_val = (search_loc.inner_text() or "").strip().lower()
+                    except Exception:
+                        cur_val = ""
+                if contact.strip().lower() in cur_val:
+                    typed_ok = True
+                    break
+                try:
+                    search_loc.click()
+                    search_loc.fill(contact)
+                    time.sleep(0.15)
+                    cur_val = (search_loc.input_value() or "").strip().lower()
+                    if contact.strip().lower() in cur_val:
+                        typed_ok = True
+                        break
+                except Exception:
+                    pass
+            if not typed_ok:
+                last_err = "TEAMS_SEARCH_NOT_FOUND"
+                time.sleep(0.25)
+                continue
+            time.sleep(0.35)
 
             result_loc = self._find_first_visible(
                 page,

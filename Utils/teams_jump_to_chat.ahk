@@ -153,22 +153,46 @@ TeamsJump_ReadFocus() {
     return info
 }
 
-; Ctrl+G once. True when focus moved onto the go-to field (or is already on the named search/go-to field).
+; Ctrl+G / Ctrl+E once. True when focus moved onto the go-to/search field.
 TeamsJump_ProbeGoToField() {
     before := TeamsJump_ReadFocus()
     if (before.isGoTo && before.isNamedSearch)
         return true
     Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
-    Send "^g"
-    Sleep 300
-    after := TeamsJump_ReadFocus()
-    if (!after.isGoTo)
-        return false
-    if (after.isNamedSearch)
-        return true
-    if (before.id != "" && after.id = before.id)
-        return before.isGoTo
-    return true
+    for key in ["^g", "^e"] {
+        Send key
+        Sleep 250
+        after := TeamsJump_ReadFocus()
+        if (after.isNamedSearch)
+            return true
+        if (after.isGoTo && before.id != "" && after.id != before.id)
+            return true
+    }
+    return false
+}
+
+TeamsJump_FindSearchElement(root) {
+    if (!root)
+        return 0
+    for aid in ["ms-searchux-input", "search-box-input", "searchInput"] {
+        try {
+            el := root.FindFirst({ AutomationId: aid })
+            if (el)
+                return el
+        } catch {
+        }
+    }
+    for nm in ["Search", "Pesquisar", "Buscar", "Go to", "Ir para"] {
+        for ct in ["Edit", "ComboBox"] {
+            try {
+                el := root.FindFirst({ Name: nm, ControlType: ct, matchmode: "Substring" })
+                if (el)
+                    return el
+            } catch {
+            }
+        }
+    }
+    return 0
 }
 
 ; Lightweight background UIA check: true once Teams' search bar is hydrated (no WinActivate needed).
@@ -177,15 +201,14 @@ TeamsJump_IsUiHydrated(hwnd) {
         return false
     try {
         root := UIA.ElementFromHandle(hwnd)
-        if (!root)
-            return false
-        for aid in ["ms-searchux-input", "search-box-input", "searchInput"] {
-            try {
-                if (root.FindFirst({ AutomationId: aid }))
-                    return true
-            } catch {
-            }
-        }
+        if (TeamsJump_FindSearchElement(root))
+            return true
+    } catch {
+    }
+    try {
+        root := UIA.ElementFromChromium("ahk_id " hwnd, 400)
+        if (TeamsJump_FindSearchElement(root))
+            return true
     } catch {
     }
     return false
@@ -376,7 +399,7 @@ TeamsJump_SearchAndSelectViaUia(hwndTeams, contact) {
 TeamsJump_EnsureGoToFocused(hwndTeams, gotoAlreadyOpen := false, attempts := 4) {
     if (!hwndTeams || !WinExist("ahk_id " hwndTeams))
         return false
-    if (gotoAlreadyOpen && WinActive("ahk_id " hwndTeams) && TeamsJump_ReadFocus().isGoTo)
+    if (gotoAlreadyOpen && WinActive("ahk_id " hwndTeams) && TeamsJump_ReadFocus().isNamedSearch)
         return true
     loop attempts {
         if (!WinActive("ahk_id " hwndTeams)) {
@@ -385,18 +408,108 @@ TeamsJump_EnsureGoToFocused(hwndTeams, gotoAlreadyOpen := false, attempts := 4) 
                 continue
             }
         }
-        if (TeamsJump_ReadFocus().isGoTo)
+        cur := TeamsJump_ReadFocus()
+        if (cur.isNamedSearch)
             return true
         Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
-        Send "^g"
-        deadline := A_TickCount + 700
-        while (A_TickCount < deadline) {
-            if (TeamsJump_ReadFocus().isGoTo)
-                return true
-            Sleep 100
+        for key in ["^g", "^e"] {
+            Send key
+            deadline := A_TickCount + 550
+            while (A_TickCount < deadline) {
+                cur := TeamsJump_ReadFocus()
+                if (cur.isNamedSearch)
+                    return true
+                Sleep 90
+            }
+        }
+        root := TeamsJump_AttachUiaRoot(hwndTeams)
+        searchEl := TeamsJump_FindSearchElement(root)
+        if (searchEl) {
+            try {
+                searchEl.SetFocus()
+                Sleep 120
+                if (TeamsJump_ReadFocus().isGoTo)
+                    return true
+            } catch {
+            }
+            try {
+                searchEl.Click()
+                Sleep 120
+                if (TeamsJump_ReadFocus().isGoTo)
+                    return true
+            } catch {
+            }
         }
     }
     return TeamsJump_ReadFocus().isGoTo
+}
+
+TeamsJump_ReadFocusedOrSearchValue(hwndTeams) {
+    try {
+        fe := UIA.GetFocusedElement()
+        if (fe) {
+            v := ""
+            try v := fe.Value
+            catch {
+            }
+            if (v != "")
+                return v
+        }
+    } catch {
+    }
+    try {
+        root := TeamsJump_AttachUiaRoot(hwndTeams)
+        el := TeamsJump_FindSearchElement(root)
+        if (el) {
+            v := ""
+            try v := el.Value
+            catch {
+            }
+            return v
+        }
+    } catch {
+    }
+    return ""
+}
+
+TeamsJump_WriteSearchText(hwndTeams, contact) {
+    targetLow := StrLower(Trim(contact))
+    loop 3 {
+        if (A_Index > 1) {
+            if (!TeamsJump_EnsureGoToFocused(hwndTeams, false, 2))
+                return false
+        }
+        Send "^a"
+        Sleep 40
+        if (A_Index = 1) {
+            Send "^v"
+        } else {
+            Send "{BackSpace}"
+            Sleep 40
+            SendText(contact)
+        }
+        Sleep 140
+        val := StrLower(Trim(TeamsJump_ReadFocusedOrSearchValue(hwndTeams)))
+        if (val != "" && InStr(val, targetLow))
+            return true
+        if (A_Index = 2) {
+            try {
+                root := TeamsJump_AttachUiaRoot(hwndTeams)
+                el := TeamsJump_FindSearchElement(root)
+                if (el) {
+                    el.SetFocus()
+                    Sleep 80
+                    el.Value := contact
+                    Sleep 100
+                    val := StrLower(Trim(TeamsJump_ReadFocusedOrSearchValue(hwndTeams)))
+                    if (val != "" && InStr(val, targetLow))
+                        return true
+                }
+            } catch {
+            }
+        }
+    }
+    return false
 }
 
 ; Gate 4: Wait for search results to populate and click/invoke the matching contact item.
@@ -562,9 +675,10 @@ TeamsJumpToChat(contact, backgroundOnly := false, forceColdStart := false) {
             }
             Sleep 100
         }
-        Send "^a"
-        Sleep 40
-        Send "^v"
+        if (!TeamsJump_WriteSearchText(hwndTeams, contact)) {
+            ShowCenteredOverlay_Utils("❌ Could not type contact in Teams search bar.", 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
 
         ; Gate 4: Wait for matching contact result to appear and invoke/click it; Enter fallback if UIA misses.
         selected := TeamsJump_SelectSearchResult(hwndTeams, contact, teamsWasClosed ? 6000 : 3500)
