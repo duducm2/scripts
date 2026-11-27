@@ -386,3 +386,5 @@ TX393,2026-11-24,food,"7,95",card_expense,CAT_ALIMENTA,ACC_MERCADOP,CARD_MP,,1,1
 TX394,2026-11-25,electrical materials for the new house,"3800,00",expense,CAT_NEWHOUSE,ACC_MERCADOP3,,,1,1,,0
 TX395,2026-11-25,mason,"75,00",expense,CAT_SERVICO,ACC_MERCADOP,,,1,1,,0
 TX396,2026-11-25,equipment for the mason,"32,00",expense,CAT_MATERIAI,ACC_MERCADOP,,,1,1,,0
+TX397,2026-11-26,Meal voucher credit,"558,17",income,CAT_BONIFICA,ACC_MEALVOUC,,,1,1,,0
+TX398,2026-11-26,Food,"558,17",expense,CAT_ALIMENTA,ACC_MEALVOUC,,,1,1,,0
