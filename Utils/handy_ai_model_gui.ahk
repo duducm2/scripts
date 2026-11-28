@@ -265,7 +265,7 @@ AiModelSelector_Select(selection, *) {
     restoreHwnd := g_AiModelSelectorPrevHwnd
     AiModelSelector_Close()
     if (g_HandyAiModels.Has(selection))
-        Handy_RequestAiModelSelection(selection, restoreHwnd, false)
+        Handy_RequestAiModelSelection(selection, restoreHwnd, true)
 }
 
 AiModelSelector_SelectedSlot() {

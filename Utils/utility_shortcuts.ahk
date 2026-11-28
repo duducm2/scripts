@@ -851,8 +851,9 @@ RegisterMacro(UtilityShortcuts_AICompanionSend, "🚀 AI companion send clipboar
 ; Win+Alt+Shift+O: 1× cut, 2× open, 3× paste→Desktop (clipboard / Explorer selection / Cursor·Code active file), hold 700ms+ copy path
 #!+o:: DesktopCutNewest_OnHotkey()
 ; Ctrl+Alt+Win+4 / +7 - Handy Nemotron Streaming 3.5 (live transcription) / Voxtral Mini 3B (accurate translation)
-^!#4:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_LIVE)
-^!#7:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_TRANSLATE)
+; restartDictationIfStopped = true: if a dictation take is active, stops it, switches model, and restarts dictation.
+^!#4:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_LIVE, false, 0, true)
+^!#7:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_TRANSLATE, false, 0, true)
 
 ; $ so the forwarded chord does not re-enter this hotkey and swallow Control's key-up.
 $#^!m::

@@ -1643,8 +1643,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
     [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
-    [Ctrl+Alt+Win+4] > Handy: Nemotron Streaming 3.5 (live preview / live transcription mode; picker slot 1)
-    [Ctrl+Alt+Win+7] > Handy: Voxtral Mini 3B (accurate translation mode; picker slot 2)
+    [Ctrl+Alt+Win+4] > Handy: Nemotron Streaming 3.5 (live preview / live transcription mode; picker slot 1; swaps & restarts if dictating)
+    [Ctrl+Alt+Win+7] > Handy: Voxtral Mini 3B (accurate translation mode; picker slot 2; swaps & restarts if dictating)
     [Win+Alt+Shift+U] then [C] > AI model picker (Handy): 1 Nemotron Streaming 3.5, 2 Voxtral Mini 3B
     [Send dictation? B] > Toggle Nemotron Streaming 3.5 ↔ Voxtral Mini 3B, re-transcribe newest History entry, copy to clipboard, re-open menu
     [Send dictation? T] > Convert to Task pack (prompt char k → TASK_PACK.txt)

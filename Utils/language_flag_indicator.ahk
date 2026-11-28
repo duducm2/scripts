@@ -215,7 +215,7 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0, res
         Sleep 350
         AiModelBanner_Hide()
         Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
-        ; Utility Shortcuts K/L during a take: model is switched; start dictation again.
+        ; Mid-dictation model swap (^!#4 / ^!#7 / modal): model is switched; start dictation again.
         if (restartDictationIfStopped && stoppedDictation) {
             if (!Handy_RestartDictationAfterLanguageSwitch()) {
                 AiModelBanner_Show("❌ Could not restart dictation", "E74C3C")
@@ -307,8 +307,8 @@ Handy_OnAiModelRequest(wParam, lParam, *) {
 ; Owner runs the switch here. Another host asks AppLaunchers when that script is up.
 ; After a reboot the menu often belongs to a different script while AppLaunchers
 ; is still down — switch Handy locally then.
-; restartDictationIfStopped: Utility Shortcuts K/L only. If a take was running, start again after the switch.
-; A K/L restart needs the dictation owner. Do not switch locally when that owner is down.
+; restartDictationIfStopped: ^!#4 / ^!#7 / modal. If a take was running, start again after the switch.
+; A model-swap restart needs the dictation owner. Do not switch locally when that owner is down.
 Handy_RequestAiModelSelection(slot, restoreHwnd := 0, restartDictationIfStopped := false) {
     if (HandyAi_IsOwnerProcess()) {
         ExecuteHandyAiModelSelection(slot, false, restoreHwnd, restartDictationIfStopped)

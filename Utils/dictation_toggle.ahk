@@ -714,7 +714,7 @@ Dictation_FinishAbortedTake() {
     }
 }
 
-; K/L language swap while a take is up. Stops whatever is recording, including a same-slot
+; Mid-dictation model swap while a take is up. Stops whatever is recording.
 ; or Portuguese take. Returns "none" (nothing to stop), "stopped", or "failed".
 ; On failure the capture endpoint is unmuted and no further chord is sent.
 Handy_StopDictationForLanguageSwap() {
