@@ -1,14 +1,6 @@
 ; =============================================================================
 ; Utils module: handy_selector_hotkey.ahk
-; Handy AI model selector hotkey #!+C
-; Extracted verbatim from Utils.ahk; loaded via #include into the
-; Utils.ahk orchestrator / shared library entry point.
+; Legacy module stub — Handy AI model selector moved to Utility Shortcuts (#!+U → C).
+; Win+Alt+Shift+C (#!+C) is now bound to MarkLastClipAsFavorite() in utility_shortcuts.ahk.
+; Kept as stub so Utils.ahk #include remains valid without registering #!+C here.
 ; =============================================================================
-
-; =============================================================================
-; Select AI Model in Handy (Win+Alt+Shift+C)
-; =============================================================================
-#!+C::
-{
-    SelectAiModelInHandy()
-}

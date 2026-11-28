@@ -415,7 +415,7 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     }
 }
 
-; Handy model hotkeys and language flag: AppLaunchers.ahk only (after #!+C / ^!#9 / ^!#b are registered).
+; Handy model hotkeys and language flag: AppLaunchers.ahk only (after ^!#4 / ^!#7 are registered).
 HandyAi_ConfigureProcessOwnership()
 ; Desktop import watcher: AppLaunchers only (see ImportWatcher_IsOwnerProcess).
 try ImportWatcher_Init()

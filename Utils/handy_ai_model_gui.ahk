@@ -3,8 +3,8 @@
 ; ShowAiModelSelector GUI (Utility Shortcuts / project-selector ListView aesthetic)
 ; Extracted from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
-; CRUD for ExtraModels (slots 4+): Insert/a add, E edit, Delete remove.
-; Slots 1-3 are immutable builtins.
+; CRUD for ExtraModels (slots 3+): Insert/a add, E edit, Delete remove.
+; Slots 1-2 are immutable builtins.
 ; =============================================================================
 
 global g_AiModelSelectorLv := false
@@ -15,16 +15,20 @@ global g_AiModelSelectorFocusSlot := 0
 ; =============================================================================
 ; ShowAiModelSelector() - ListView picker with digit / Enter / Esc capture
 ; =============================================================================
-ShowAiModelSelector() {
+ShowAiModelSelector(restoreHwnd := 0) {
     global g_AiModelSelectorActive, g_AiModelSelectorPrevHwnd
 
     if (g_AiModelSelectorActive)
         return
 
     g_AiModelSelectorPrevHwnd := 0
-    try g_AiModelSelectorPrevHwnd := WinGetID("A")
-    catch {
-        g_AiModelSelectorPrevHwnd := 0
+    if (restoreHwnd && DllCall("IsWindow", "ptr", restoreHwnd)) {
+        g_AiModelSelectorPrevHwnd := restoreHwnd
+    } else {
+        try g_AiModelSelectorPrevHwnd := WinGetID("A")
+        catch {
+            g_AiModelSelectorPrevHwnd := 0
+        }
     }
 
     g_AiModelSelectorActive := true
@@ -261,7 +265,7 @@ AiModelSelector_Select(selection, *) {
     restoreHwnd := g_AiModelSelectorPrevHwnd
     AiModelSelector_Close()
     if (g_HandyAiModels.Has(selection))
-        ExecuteHandyAiModelSelection(selection, false, restoreHwnd)
+        Handy_RequestAiModelSelection(selection, restoreHwnd, false)
 }
 
 AiModelSelector_SelectedSlot() {
@@ -431,7 +435,7 @@ AiModelSelector_DeleteEntry(*) {
         ; Focus previous extra row when possible.
         g_AiModelSelectorFocusSlot := Max(HANDY_AI_BUILTIN_COUNT + 1, slot - 1)
         if (!g_HandyAiModels.Has(g_AiModelSelectorFocusSlot))
-            g_AiModelSelectorFocusSlot := HANDY_AI_SLOT_ENGLISH
+            g_AiModelSelectorFocusSlot := HANDY_AI_SLOT_LIVE
         try ShowCenteredOverlay_Utils("✅ Removed: " . name, 2000, BANNER_ACCENT_SUCCESS)
     } else {
         try ShowCenteredOverlay_Utils("❌ Could not remove model.", 2200, BANNER_ACCENT_ERROR)

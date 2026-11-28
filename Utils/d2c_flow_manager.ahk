@@ -1201,7 +1201,7 @@ class D2C_FlowManager {
         HandyReplay_PlayLastRecording()
     }
 
-    ; [B] Toggle Parakeet <-> Cohere, re-transcribe newest History entry, copy, re-open menu.
+    ; [B] Toggle Nemotron Streaming 3.5 <-> Voxtral Mini 3B, re-transcribe newest History entry, copy, re-open menu.
     OnSubmitB(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return

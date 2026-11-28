@@ -66,17 +66,13 @@ UtilitySelector_SwitchToCategory(category) {
         UtilityShortcuts_AICompanionSend(restoreHwnd)
         return
     }
-    ; Same as #!+C picker slots 1 / 3 (Parakeet Unified EN / Cohere Transcribe).
-    ; Menu may be hosted outside AppLaunchers; the switch itself must run there.
-    if (category = "Handy English" || category = "Handy Multilang") {
+    ; Open the Handy AI Model selector modal (slots 1-2: Nemotron Streaming 3.5 / Voxtral Mini 3B).
+    if (category = "Handy AI Models") {
         global g_UtilitySelectorRestoreHwnd
         restoreHwnd := g_UtilitySelectorRestoreHwnd
-        slot := (category = "Handy English") ? HANDY_AI_SLOT_ENGLISH : HANDY_AI_SLOT_MULTILANG
         CleanupHotstringSelector()
-        ; #!+U often leaves Win/Alt/Shift down. Drop them before the dictation chord.
         UtilityShortcuts_ReleaseStuckModifiers()
-        ; If a take was running, stop it, switch, then start dictation again.
-        Handy_RequestAiModelSelection(slot, restoreHwnd, true)
+        SelectAiModelInHandy(restoreHwnd)
         return
     }
     g_UtilitySelectorMode := "category"
@@ -376,7 +372,7 @@ UtilitySelector_PromptNameMatches(name, query) {
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
-        return "Char = open category   [S] Sequences   [F] Finance   [N] Tasks/Palace   [J] Import   [G] Push   [Q] AI Paste   [A] AI Send   Enter/double-click = open   Esc = close"
+        return "Char = open category   [S] Sequences   [F] Finance   [N] Tasks/Palace   [J] Import   [G] Push   [C] Handy Models   [Q] AI Paste   [A] AI Send   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
         return "Filter by name, tags, path   Enter = paste first match   Shift+Enter = paste + clipboard   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
@@ -414,7 +410,7 @@ UtilitySelector_PopulateLvInner() {
         counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
         "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length,
         "Sequences", ClickSeqData_SequenceCount(), "Finance", 1, "Memory Palace", 1, "Tasks", 1,
-        "Import Management", 1, "Push", 1, "Handy English", 1, "Handy Multilang", 1,
+        "Import Management", 1, "Push", 1, "Handy AI Models", HandyAiModels_Count(),
         "AI Companion Paste", 1, "AI Companion Send", 1)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById

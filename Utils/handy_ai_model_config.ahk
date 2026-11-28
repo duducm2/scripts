@@ -8,41 +8,36 @@
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Slots 1-3 are immutable builtins. Slots 4+ are user ExtraModels (pipe list in INI).
-; Names are substrings used to find buttons in the UIA tree (Type 50000).
+; Slots 1-2 are immutable builtins. Slots 3+ are user ExtraModels (pipe list in INI).
+; Names are substrings used to find buttons/radios in the UIA tree.
 
-global HANDY_AI_BUILTIN_COUNT := 3
+global HANDY_AI_BUILTIN_COUNT := 2
 
 ; Seed builtins; HandyAiModels_LoadCatalog() rebuilds g_HandyAiModels at include time.
 global g_HandyAiBuiltinModels := Map(
-    1, { name: "Parakeet Unified EN", desc: "Fast, accurate live English transcription." },
-    2, { name: "Nemotron Streaming", desc: "Live multilingual transcription (Portuguese)." },
-    3, { name: "Cohere Transcribe", desc: "Highest accuracy, 14 languages, slower." }
+    1, { name: "Nemotron Streaming 3.5", desc: "Live preview — fast, real-time streaming transcription (PT & EN)." },
+    2, { name: "Voxtral Mini 3B", desc: "Accurate translation — high-accuracy transcription & translation (PT & EN)." }
 )
 
 global g_HandyAiModels := Map()
 
-; Picker indices for ^!#9 / ^!#b; update g_HandyAiBuiltinModels names if Handy renames models.
-global HANDY_AI_SLOT_ENGLISH := 1
-global HANDY_AI_SLOT_PORTUGUESE := 2
-global HANDY_AI_SLOT_MULTILANG := 3
+; Picker indices for ^!#4 / ^!#7; update g_HandyAiBuiltinModels names if Handy renames models.
+global HANDY_AI_SLOT_LIVE := 1
+global HANDY_AI_SLOT_TRANSLATE := 2
 
-; Send dictation? [B]: toggle Parakeet Unified EN (1) <-> Cohere Transcribe (3); never Nemotron (2).
-; From Nemotron/unknown -> Cohere (bilingual correction path).
+; Send dictation? [B]: toggle Nemotron Streaming 3.5 (1) <-> Voxtral Mini 3B (2).
 Handy_GetDictationToggleTargetSlot() {
-    global HANDY_AI_SLOT_ENGLISH, HANDY_AI_SLOT_MULTILANG
+    global HANDY_AI_SLOT_LIVE, HANDY_AI_SLOT_TRANSLATE
     current := Handy_GetPersistedAiModelSlot()
-    if (current = HANDY_AI_SLOT_ENGLISH)
-        return HANDY_AI_SLOT_MULTILANG
-    if (current = HANDY_AI_SLOT_MULTILANG)
-        return HANDY_AI_SLOT_ENGLISH
-    return HANDY_AI_SLOT_MULTILANG
+    if (current = HANDY_AI_SLOT_LIVE)
+        return HANDY_AI_SLOT_TRANSLATE
+    return HANDY_AI_SLOT_LIVE
 }
 
-; INI schema: 2 = current 1-3 slot lineup; 3 = ExtraModels pipe list for user slots 4+.
-; Legacy slot remap only when SchemaVersion < 2.
-global HANDY_AI_LEGACY_SLOT_SCHEMA := 2
-global HANDY_AI_INI_SCHEMA_VERSION := 3
+; INI schema: 4 = 2-model lineup (1=Nemotron Streaming 3.5, 2=Voxtral Mini 3B) + ExtraModels on 3+.
+; Legacy slot remap when SchemaVersion < 4.
+global HANDY_AI_LEGACY_SLOT_SCHEMA := 4
+global HANDY_AI_INI_SCHEMA_VERSION := 4
 
 ; Model switch retry / quality gate (ExecuteHandyAiModelSelection).
 global HANDY_AI_MODEL_MAX_ATTEMPTS := 3
@@ -53,7 +48,7 @@ global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false
 global g_AiModelBannerGui := false
 
-; Set true while ExecuteHandyAiModelSelection runs (guards overlapping #!+C / shortcuts).
+; Set true while ExecuteHandyAiModelSelection runs (guards overlapping shortcuts).
 global g_HandyModelSwitchBusy := false
 
 ; In-process slot cache (shortcuts and the model picker share this after INI load).
@@ -68,9 +63,8 @@ HandyAi_IsOwnerProcess() {
 HandyAi_ConfigureProcessOwnership() {
     if (HandyAi_IsOwnerProcess())
         return
-    try Hotkey("#!+C", "Off")
-    try Hotkey("^!#9", "Off")
-    try Hotkey("^!#b", "Off")
+    try Hotkey("^!#4", "Off")
+    try Hotkey("^!#7", "Off")
 }
 
 Handy_GetHandyAiModelIniPath() {
@@ -78,15 +72,15 @@ Handy_GetHandyAiModelIniPath() {
 }
 
 ; Returns the default Handy slot configured for this environment (via HANDY_AI_DEFAULT_SLOT in env.ahk).
-; Falls back to HANDY_AI_SLOT_ENGLISH (1) if no environment override is present.
+; Falls back to HANDY_AI_SLOT_LIVE (1) if no environment override is present.
 Handy_DefaultSlotForEnv() {
-    global HANDY_AI_DEFAULT_SLOT, HANDY_AI_SLOT_ENGLISH
+    global HANDY_AI_DEFAULT_SLOT, HANDY_AI_SLOT_LIVE
     try {
         if (IsSet(HANDY_AI_DEFAULT_SLOT) && IsInteger(HANDY_AI_DEFAULT_SLOT) && HANDY_AI_DEFAULT_SLOT >= 1)
             return Integer(HANDY_AI_DEFAULT_SLOT)
     } catch {
     }
-    return HANDY_AI_SLOT_ENGLISH
+    return HANDY_AI_SLOT_LIVE
 }
 
 ; Guarantees assets\data\handy_ai_model.ini exists with valid Slot and SchemaVersion.
@@ -132,12 +126,12 @@ Handy_ReadIniSchemaVersion() {
     return Integer(s)
 }
 
-; Legacy migration for unversioned INI only (SchemaVersion missing or 1).
-; Slots 1-3 are current schema; only old Cohere slots 3/4 are remapped.
+; Legacy migration for INI SchemaVersion < 4 (old 3-slot lineup -> 2-slot mode lineup).
+; 1 (old Parakeet) or 2 (old Nemotron) -> 1 (Nemotron Streaming 3.5); 3 (old Cohere) -> 2 (Voxtral Mini 3B).
 Handy_MigrateLegacyAiModelSlot(n) {
     switch n {
-        case 3: return 1   ; old Cohere English -> Parakeet Unified EN
-        case 4: return 2   ; old Cohere Portuguese -> Nemotron Streaming
+        case 1, 2: return 1
+        case 3: return 2
         default: return n
     }
 }
@@ -313,7 +307,7 @@ HandyAiModels_Rename(slot, name) {
 }
 
 HandyAiModels_Remove(slot) {
-    global g_HandyAiModels, g_HandyAiPersistedSlot, HANDY_AI_BUILTIN_COUNT, HANDY_AI_SLOT_ENGLISH
+    global g_HandyAiModels, g_HandyAiPersistedSlot, HANDY_AI_BUILTIN_COUNT, HANDY_AI_SLOT_LIVE
     if (HandyAiModels_IsBuiltin(slot))
         return false
     if !g_HandyAiModels.Has(slot)
@@ -326,7 +320,7 @@ HandyAiModels_Remove(slot) {
         return false
     extras.RemoveAt(extraIndex)
 
-    ; Rebuild slots 4+ densely after remove.
+    ; Rebuild slots 3+ densely after remove.
     slotNum := HANDY_AI_BUILTIN_COUNT + 1
     while g_HandyAiModels.Has(slotNum) {
         g_HandyAiModels.Delete(slotNum)
@@ -342,8 +336,8 @@ HandyAiModels_Remove(slot) {
         return false
 
     if (wasCurrent) {
-        ; Fall back to English builtin when the active extra is removed.
-        Handy_PersistSlotToIni(HANDY_AI_SLOT_ENGLISH)
+        ; Fall back to live transcription builtin when the active extra is removed.
+        Handy_PersistSlotToIni(HANDY_AI_SLOT_LIVE)
     } else if (g_HandyAiPersistedSlot > HANDY_AI_BUILTIN_COUNT) {
         ; Remap persisted extra slot if it sat after the removed index.
         current := g_HandyAiPersistedSlot

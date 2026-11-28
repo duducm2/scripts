@@ -1591,20 +1591,18 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
     [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
     [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
-    Letters available: T
+    Letters available: T, L, B, J, 9
+    [Ctrl+Alt+Win+L] > available for future use (removed D2C direct submit)
     [Ctrl+Alt+Win+Y] > RESERVED — PowerToys Command Palette bookmarks (show); not bound in AHK
     Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +Z/+G/+Numpad1 fallbacks) — see === WINDOW MANAGEMENT === below
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
-    [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
     [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
     [Ctrl+Alt+Win+2] > Quick Update to Your Scripts
     [Ctrl+Alt+Win+3] > Toggle Outlook and Teams
     [Ctrl+Alt+Win+5] > Clean the Clipboard
-    [Ctrl+Alt+Win+4] > Mark Last Clip as Favorite (same as Ctrl+Alt+Win+J if 4 chord fails on keyboard)
-    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (alternate for keyboards that ghost Ctrl+Alt+Win+4)
+    [Ctrl+Alt+Win+4] > Handy: Nemotron Streaming 3.5 (live preview / live transcription mode — model slot 1)
+    [Ctrl+Alt+Win+7] > Handy: Voxtral Mini 3B (accurate translation mode — model slot 2)
     [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin
-    [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (model slot 2)
-    [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (model slot 1)
     
     === AVAILABLE Alt+Shift SLOTS ===
     Letters available: W
@@ -1630,6 +1628,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Alt+P] AHK posts the native reset hotkey. Alt never reaches the Window menu.
     [Alt+B] AHK posts the native favorites hotkey. Alt never reaches the Window menu.
     [Esc] (Clip Angel focused) Minimize
+    [Win+Alt+Shift+C] > Mark Last Clip as Favorite
     [Win+Alt+Shift+1] > Send top list item from Clip Angel
     [Win+Alt+Shift+7] > Clip Angel: tap = Paste file into focused Explorer / Cursor·VS Code Files Explorer (Desktop fallback), then hide; hold 200ms+ = Edit Text (F4)
     
@@ -1644,12 +1643,10 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
     [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
-    [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (picker slot 2; same as Win+Alt+Shift+C then 2)
-    [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (picker slot 1; same as Win+Alt+Shift+C then 1)
-    [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet Unified EN, 2 Nemotron Streaming, 3 Cohere Transcribe
-    [Win+Alt+Shift+U] then [K] > Handy English (slot 1; same as Win+Alt+Shift+C then 1)
-    [Win+Alt+Shift+U] then [L] > Handy Multilang / Cohere (slot 3; same as Win+Alt+Shift+C then 3)
-    [Send dictation? B] > Toggle Parakeet Unified EN ↔ Cohere Transcribe, re-transcribe newest History entry, copy to clipboard, re-open menu
+    [Ctrl+Alt+Win+4] > Handy: Nemotron Streaming 3.5 (live preview / live transcription mode; picker slot 1)
+    [Ctrl+Alt+Win+7] > Handy: Voxtral Mini 3B (accurate translation mode; picker slot 2)
+    [Win+Alt+Shift+U] then [C] > AI model picker (Handy): 1 Nemotron Streaming 3.5, 2 Voxtral Mini 3B
+    [Send dictation? B] > Toggle Nemotron Streaming 3.5 ↔ Voxtral Mini 3B, re-transcribe newest History entry, copy to clipboard, re-open menu
     [Send dictation? T] > Convert to Task pack (prompt char k → TASK_PACK.txt)
     
     === PROMPTS ===
@@ -1662,7 +1659,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === CURSOR ===
     [Win+Alt+Shift+,] > Opens or activates Cursor
-    [Win+Alt+Shift+C] > Handy AI model picker (see HANDY DICTATION)
     
     === OUTLOOK ===
     [Win+Alt+Shift+B] > Open mail
@@ -1726,10 +1722,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
     
     === GENERAL ===
-    [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes, [K] Handy English / [L] Handy Multilang = #!+C slots 1/3)
+    [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes, [C] Handy AI Models)
     [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M); [1]/[2]/[3] set video/article/favorite from clipboard; [4] open pinned link (URL/file/other); select [4] then Shift+E = set pinned link from clipboard; [V]/[A]/[F] open stored video/article/favorite in new Chrome; [Q]/[M] Shift+L Fast/Deep for the current AI companion; [N] open companion + new chat (same as Shift+N); [U] Release stuck Control
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; [Q] close mode: slot key closes that window, [Q] leaves close mode, Esc closes the picker; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; then return to previous window; same as D2C [W])
-    [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Q] > AI companion Quick / Fast model (global; resolved companion)
     [Win+Alt+M] > AI companion Deep model (global; resolved companion)
     [Win+Alt+Shift+Q] > Jump mouse on the middle
@@ -1798,10 +1793,10 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · P] tap 1× > Alt+Shift+Q — jump mouse to middle
     [ZMK L0 · P] tap 2× > Ctrl+Alt+Win+Y — PowerToys Command Palette bookmarks (show)
     [ZMK L0 · P] tap 3× > Ctrl+Alt+Win+M — Command Palette bookmark
-    [ZMK L0 · L] hold > Ctrl+Alt+Win+L — {AI_PROVIDER} D2C direct submit (Utils.ahk)
+    [ZMK L0 · L] hold > available (formerly Ctrl+Alt+Win+L)
     [ZMK L0 · L] tap 1× > Win+Alt+Shift+0 — start/stop dictation
-    [ZMK L0 · L] tap 2× > Ctrl+Alt+Win+4 — mark last clip favorite
-    [ZMK L0 · L] tap 3× > Ctrl+Alt+Win+7 — toggle {AI_PROVIDER} tab 1 <-> 2
+    [ZMK L0 · L] tap 2× > Ctrl+Alt+Win+4 — Handy Nemotron Streaming 3.5 (live transcription)
+    [ZMK L0 · L] tap 3× > Ctrl+Alt+Win+7 — Handy Voxtral Mini 3B (accurate translation)
     [ZMK L0 · ;] hold > Ctrl+Shift+V — paste plain text
     [ZMK L0 · ;] tap 1× > Win+Alt+Shift+1 — Clip Angel top item
     [ZMK L0 · ;] tap 2× > Ctrl+Alt+B
@@ -1821,8 +1816,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · X thumb] tap 3× > Ctrl+Alt+Win+U — window tools [2]
     [ZMK L0 · E thumb] hold > Win+Shift+E
     [ZMK L0 · E thumb] tap 1× > Context menu
-    [ZMK L0 · E thumb] tap 2× > Ctrl+Alt+Win+B — Handy Parakeet Unified English
-    [ZMK L0 · E thumb] tap 3× > Ctrl+Alt+Win+9 — Handy Nemotron Streaming Portuguese
+    [ZMK L0 · E thumb] tap 2× > (reassigned to Ctrl+Alt+Win+4)
+    [ZMK L0 · E thumb] tap 3× > (reassigned to Ctrl+Alt+Win+7)
     
     --- ZMK Layer 1 (ONE) — hold left thumb ---
     [ZMK L1 · Esc] > F11

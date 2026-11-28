@@ -14,7 +14,7 @@ global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 programmatically
 global g_ProgrammaticDictationStart := false  ; ~#!+0 after a language switch: force a fresh start
-global g_GeminiToggleTab := 1  ; Last tab chosen by ^!#4 ToggleAICompanionChromeTab (UIA-synced when possible)
+global g_GeminiToggleTab := 1  ; Legacy tab toggle state
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {

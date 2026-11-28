@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: handy_retranscribe_last.ahk
-; Send dictation? [B] — toggle Parakeet/Cohere, History re-transcribe, copy
+; Send dictation? [B] — toggle Nemotron Streaming 3.5 / Voxtral Mini 3B, History re-transcribe, copy
 ; Reuses HandyReplay_* History/click helpers from handy_replay_last.ahk
 ; =============================================================================
 

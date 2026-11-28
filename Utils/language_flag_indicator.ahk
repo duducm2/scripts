@@ -18,18 +18,17 @@ AiModelBanner_Hide() {
 }
 
 ; =============================================================================
-; Language flag images (slot 1 = UK, slot 2 = Brazil, slot 3 = multi)
+; Operating mode indicator images (slot 1 = Live transcription, slot 2 = Accurate translation)
 ; =============================================================================
-; The spoken-language flag is shown only while dictating (DictationFlag_*).
+; The mode icon is shown only while dictating (DictationFlag_*).
 ; Do not pin a chip to the bottom-right of every monitor between takes.
 ; LanguageFlag_GetImagePath is shared with the recording flag.
 ; =============================================================================
 
 LanguageFlag_GetImagePath(slot) {
-    rel := (slot = 1) ? "\assets\images\flags\united-kingdom.png"
-        : (slot = 2) ? "\assets\images\flags\brazil.png"
-            : (slot = 3) ? "\assets\images\flags\brazil-united-kingdom.png"
-                : ""
+    rel := (slot = 1) ? "\assets\images\flags\live-transcription.png"
+        : (slot = 2) ? "\assets\images\flags\accurate-translation.png"
+            : ""
     if (rel = "")
         return ""
     ; Prefer the running script's folder, then the folder that contains Utils.ahk (covers odd layouts).

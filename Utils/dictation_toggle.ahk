@@ -9,7 +9,7 @@
 ; Dictation Indicator - Opaque language flag (no red square)
 ; Top-center of the active window (clamped inside); top-center of every other
 ; monitor's work area. Follows focus/window moves via a short timer.
-; Handy slot 1=EN, 2=PT, 3=EN+PT. Toggles with Win+Alt+Shift+0.
+; Handy slot 1=LIVE (Nemotron Streaming 3.5), 2=TRANS (Voxtral Mini 3B). Toggles with Win+Alt+Shift+0.
 ; =============================================================================
 
 ; Global variables for dictation indicator
@@ -169,7 +169,7 @@ GetDictationActiveWindowRect(&wl, &wt, &wr, &wb) {
 }
 
 DictationFlag_SlotLabel(slot) {
-    return (slot = 1) ? "EN" : (slot = 2) ? "PT" : (slot = 3) ? "EN+PT" : "?"
+    return (slot = 1) ? "LIVE" : (slot = 2) ? "TRANS" : "?"
 }
 
 ; Opaque recording flag. Do not use WS_EX_TRANSPARENT (+E0x20): it suppresses painting.
@@ -291,7 +291,7 @@ DictationFlag_ShowForRecording() {
     ; In-memory slot. The INI is read only on a cache miss, not on every recording poll.
     slot := 0
     try slot := Handy_GetPersistedAiModelSlot()
-    if (slot < 1 || slot > 3)
+    if (slot < 1 || slot > 2)
         slot := 0
 
     monitorCount := MonitorGetCount()
@@ -378,14 +378,14 @@ StopDictationPulseTimer() {
     }
 }
 
-; English / Portuguese use speach-start.wav. Multi-lang (slot 3) uses a different chime.
+; Live transcription (slot 1) uses speach-start.wav. Accurate translation (slot 2) uses dictation-start-multilang.wav.
 Dictation_StartSoundForCurrentModel() {
-    global g_DictationStartSound, g_DictationStartSoundMultilang, HANDY_AI_SLOT_MULTILANG
+    global g_DictationStartSound, g_DictationStartSoundMultilang, HANDY_AI_SLOT_TRANSLATE
     slot := 0
     try slot := Handy_GetPersistedAiModelSlot()
     catch
         slot := 0
-    if (slot = HANDY_AI_SLOT_MULTILANG)
+    if (slot = HANDY_AI_SLOT_TRANSLATE)
         return g_DictationStartSoundMultilang
     return g_DictationStartSound
 }
@@ -636,19 +636,19 @@ Dictation_RecordingWindowExists() {
     return false
 }
 
-; English (slot 1) <-> multi-lang (slot 3) while Handy is recording: stop the session.
+; Live transcription (slot 1) <-> Accurate translation (slot 2) while Handy is recording: stop the session.
 ; The synthetic chord is ignored by ~#!+0 so "Send dictation?" does not open.
 ; Only the dictation owner may inject the chord; other hosts would look like a user stop.
 ; Returns true when a recording was stopped.
 Handy_StopDictationIfEnglishMultilangSwitch(targetSlot) {
-    global g_ProgrammaticDictationStop, g_DictationSuppressCompletion, HANDY_AI_SLOT_ENGLISH, HANDY_AI_SLOT_MULTILANG
+    global g_ProgrammaticDictationStop, g_DictationSuppressCompletion, HANDY_AI_SLOT_LIVE, HANDY_AI_SLOT_TRANSLATE
     if (!Dictation_IsOwnerProcess())
         return false
     current := Handy_GetPersistedAiModelSlot()
     if (current = targetSlot)
         return false
-    crossing := (current = HANDY_AI_SLOT_ENGLISH && targetSlot = HANDY_AI_SLOT_MULTILANG)
-    || (current = HANDY_AI_SLOT_MULTILANG && targetSlot = HANDY_AI_SLOT_ENGLISH)
+    crossing := (current = HANDY_AI_SLOT_LIVE && targetSlot = HANDY_AI_SLOT_TRANSLATE)
+    || (current = HANDY_AI_SLOT_TRANSLATE && targetSlot = HANDY_AI_SLOT_LIVE)
     if (!crossing || !Dictation_RecordingWindowExists())
         return false
     ; Aborted take must not arm a chime, clipboard hook, or Send dictation? banner.

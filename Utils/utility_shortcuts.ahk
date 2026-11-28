@@ -227,53 +227,8 @@ RegisterMacro(MacroStudyLink_OpenFavorite, "❤️ Open favorite", "f")
     mgr.PasteClipboardToVisibleWindow()
 }
 
-; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
-^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
-
-; Ctrl+Alt+Win+7 - toggle Chrome tab 1 <-> 2 on the resolved AI companion
-; (Enterprise / Copilot / consumer Gemini via ResolveGlobalAICompanion).
-^!#7:: ToggleAICompanionChromeTab()
-
-ToggleAICompanionChromeTab() {
-    global g_GeminiToggleTab
-    companion := ResolveGlobalAICompanion()
-    hwnd := 0
-    label := "Gemini"
-    switch companion {
-        case "enterprise":
-            hwnd := AiCompanionMode_IsCDP(companion) ? AiCompanionCDP_FindWindowHwnd(0, companion) : GetGeminiEnterpriseWindowHwnd()
-            label := "Gemini Enterprise"
-        case "copilot":
-            hwnd := GetCopilotWebWindowHwnd()
-            label := "Copilot"
-        default:
-            hwnd := AiCompanionMode_IsCDP(companion) ? AiCompanionCDP_FindWindowHwnd(0, companion) : FindGeminiChromeHwnd()
-            label := "Gemini"
-    }
-    if (!hwnd) {
-        ShowCenteredOverlay_Utils("❌ " . label . " is not open.", 1800, BANNER_ACCENT_ERROR)
-        return
-    }
-    WinActivate("ahk_id " hwnd)
-    if !WinWaitActive("ahk_id " hwnd, , 2) {
-        ShowCenteredOverlay_Utils("❌ Could not activate " . label . ".", 1800, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    ; Prefer UIA: if on tab 1 go to 2, otherwise go to 1. Fall back to remembered flip.
-    targetTab := (g_GeminiToggleTab = 1) ? 2 : 1
-    try {
-        uia := UIA_Browser("ahk_id " hwnd)
-        tabInfo := GetChromeActiveTabIndex(uia)
-        if (tabInfo && tabInfo.index)
-            targetTab := (tabInfo.index = 1) ? 2 : 1
-    } catch {
-    }
-
-    Send("^" . targetTab)
-    Sleep 120
-    g_GeminiToggleTab := targetTab
-}
+; Ctrl+Alt+Win+L removed (available for future use).
+; Ctrl+Alt+Win+7 AI companion tab toggle removed (reassigned to Handy Voxtral Mini 3B).
 
 ; Map ResolveGlobalAICompanion() → AI_COMPANION_* ids for AiCompanionModels_*.
 GlobalAICompanionModelsId() {
@@ -882,23 +837,22 @@ UtilityShortcuts_AICompanionSend(originHwnd := 0) {
 RegisterMacro(UtilityShortcuts_AICompanionPaste, "📋 AI companion paste clipboard", "")
 RegisterMacro(UtilityShortcuts_AICompanionSend, "🚀 AI companion send clipboard (response banner)", "")
 
-; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
+; Ctrl+Alt+Win+2..8 — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
 ; InputLevel 10 + hook so ZMK / firmware chords win over other low-level handlers.
 #InputLevel 10
 #UseHook
 ^!#5:: CleanClipboard()
-^!#4:: MarkLastClipAsFavorite()
-^!#j:: MarkLastClipAsFavorite()
 #UseHook False
 #InputLevel 0
+#!+c:: MarkLastClipAsFavorite()
 ^!#8:: DesktopToRecycle_Trigger()
 ; Win+Alt+Shift+O: 1× cut, 2× open, 3× paste→Desktop (clipboard / Explorer selection / Cursor·Code active file), hold 700ms+ copy path
 #!+o:: DesktopCutNewest_OnHotkey()
-; Ctrl+Alt+Win+9 / +B - Handy Nemotron Portuguese / Parakeet Unified English (slots 2 and 1)
-^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)
-^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
+; Ctrl+Alt+Win+4 / +7 - Handy Nemotron Streaming 3.5 (live transcription) / Voxtral Mini 3B (accurate translation)
+^!#4:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_LIVE)
+^!#7:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_TRANSLATE)
 
 ; $ so the forwarded chord does not re-enter this hotkey and swallow Control's key-up.
 $#^!m::

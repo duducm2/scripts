@@ -882,8 +882,14 @@ Handy_OpenAiModelMenu(hwnd) {
     anchor := 0
     try anchor := el.FindFirst({
         Type: 50000,
-        ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
+        ClassName: "transition-colors disabled:opacity-50 tabular-nums text-ink-2 hover:text-text"
     })
+    if (!anchor) {
+        try anchor := el.FindFirst({
+            Type: 50000,
+            ClassName: "transition-colors disabled:opacity-50 tabular-nums text-text/60 hover:text-text/80"
+        })
+    }
     if (!anchor) {
         try anchor := el.FindFirst({ Type: 50000, Name: "Check for updates" })
     }
@@ -953,6 +959,10 @@ Handy_WaitForAiModelMenuOpen(hwnd, maxWaitMs := 1800) {
                         return true
                 }
             }
+            try {
+                if (el.FindFirst({ Type: 50020, Name: "Active" }))
+                    return true
+            }
         }
         Sleep pollMs
     }
@@ -965,31 +975,38 @@ Handy_ClickAiModel(hwnd, modelName) {
         return false
     }
 
-    ; Model buttons have class containing "w-full px-3 py-2 text-left"
-    ; and names containing the model match string (e.g., "Whisper Large Good accuracy...")
-    ; Try to find by substring name match
     modelBtn := 0
-    buttonCount := 0
-    nameMatchNoClass := ""
 
-    ; Strategy 1: Find button whose Name contains modelName (substring match)
+    ; Strategy 1: Find popup menu button whose Name contains modelName (exclude Delete buttons & header button)
     try {
         buttons := el.FindAll({ Type: 50000 })
         for btn in buttons {
-            buttonCount++
             btnName := ""
             try btnName := btn.Name
-            if (btnName != "" && InStr(btnName, modelName)) {
-                btnClass := ""
-                try btnClass := btn.ClassName
-                ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
-                if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") ||
-                InStr(btnClass, "flex items-center gap-2")) {
-                    modelBtn := btn
+            if (btnName = "" || !InStr(btnName, modelName))
+                continue
+            if (InStr(btnName, "Delete ") = 1 || InStr(btnName, "Excluir ") = 1)
+                continue
+            btnClass := ""
+            try btnClass := btn.ClassName
+            if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start")) {
+                modelBtn := btn
+                break
+            }
+        }
+    }
+
+    ; Strategy 2: Check Models-tab RadioButton (Type 50013) whose Name starts with / contains modelName
+    if (!modelBtn) {
+        try {
+            radios := el.FindAll({ Type: 50013 })
+            for r in radios {
+                rName := ""
+                try rName := r.Name
+                if (rName != "" && InStr(rName, modelName)) {
+                    modelBtn := r
                     break
                 }
-                if (nameMatchNoClass = "")
-                    nameMatchNoClass := btnClass
             }
         }
     }
@@ -1001,7 +1018,7 @@ Handy_ClickAiModel(hwnd, modelName) {
     return Handy_UiaInvokeBackground(modelBtn)
 }
 
-; Active model selector button in Handy header (not menu row).
+; Active model selector button in Handy header/footer (not menu row).
 Handy_FindActiveAiModelButton(el) {
     if !el
         return 0
@@ -1010,7 +1027,19 @@ Handy_FindActiveAiModelButton(el) {
     if saved
         return saved
     try {
-        return el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
+        btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text transition-colors " })
+        if btn
+            return btn
+    } catch {
+    }
+    try {
+        btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
+        if btn
+            return btn
+    } catch {
+    }
+    try {
+        return el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2", matchmode: "Substring" })
     } catch {
         return 0
     }
@@ -1044,20 +1073,103 @@ Handy_VerifyAiModelActive(hwnd, modelName) {
     return InStr(name, modelName)
 }
 
-; Open menu, click model, wait for load — all must succeed.
-; Retries the open+click pair in case window juggling blurs the WebView2 dropdown mid-click.
+; Switch to the Models sidebar tab if not already visible, then click the RadioButton for modelClickName.
+Handy_TrySelectModelViaModelsTab(hwnd, modelClickName) {
+    global UIA
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+
+    ; Check if Speech models RadioButtons are already in the DOM
+    foundRadio := 0
+    try {
+        for r in el.FindAll({ Type: 50013 }) {
+            rn := ""
+            try rn := r.Name
+            if (rn != "" && InStr(rn, modelClickName)) {
+                foundRadio := r
+                break
+            }
+        }
+    } catch {
+    }
+
+    if (!foundRadio) {
+        ; Click "Models" sidebar row (Group with cursor-pointer containing Text "Models")
+        modelsRow := 0
+        try {
+            for grp in el.FindAll({ Type: 50026 }) {
+                cn := ""
+                try cn := grp.ClassName
+                if !(InStr(cn, "cursor-pointer") && InStr(cn, "flex gap-2 items-center"))
+                    continue
+                try {
+                    if (grp.FindFirst({ Type: 50020, Name: "Models" }) || grp.FindFirst({ Type: 50020, Name: "Modelos" })) {
+                        modelsRow := grp
+                        break
+                    }
+                } catch {
+                }
+            }
+        } catch {
+        }
+        if (!modelsRow) {
+            try {
+                txt := el.FindFirst({ Type: 50020, Name: "Models" })
+                if (!txt)
+                    txt := el.FindFirst({ Type: 50020, Name: "Modelos" })
+                if (txt) {
+                    p := txt.GetParentElement()
+                    if (p && p.Type = 50026)
+                        modelsRow := p
+                }
+            } catch {
+            }
+        }
+        if (modelsRow) {
+            Handy_UiaInvokeBackground(modelsRow)
+            Sleep 180
+            el := UIA.ElementFromHandle(hwnd)
+            if (el) {
+                try {
+                    for r in el.FindAll({ Type: 50013 }) {
+                        rn := ""
+                        try rn := r.Name
+                        if (rn != "" && InStr(rn, modelClickName)) {
+                            foundRadio := r
+                            break
+                        }
+                    }
+                } catch {
+                }
+            }
+        }
+    }
+
+    if (!foundRadio)
+        return false
+    return Handy_UiaInvokeBackground(foundRadio)
+}
+
+; Open menu or Models tab, click model, wait for load — all must succeed.
 Handy_TrySelectAiModel(hwnd, modelClickName, maxWaitMs := 20000) {
     picked := false
-    loop 3 {
-        if (A_Index > 1) {
-            Handy_DismissOpenUi(hwnd)
-            Sleep 60
-        }
-        if !Handy_OpenAiModelMenu(hwnd)
-            continue
-        if (Handy_ClickAiModel(hwnd, modelClickName)) {
-            picked := true
-            break
+    ; Fast background-safe path: Models tab RadioButton (persistent DOM node, immune to popup blur)
+    if (Handy_TrySelectModelViaModelsTab(hwnd, modelClickName)) {
+        picked := true
+    } else {
+        ; Fallback: footer popup menu
+        loop 3 {
+            if (A_Index > 1) {
+                Handy_DismissOpenUi(hwnd)
+                Sleep 60
+            }
+            if !Handy_OpenAiModelMenu(hwnd)
+                continue
+            if (Handy_ClickAiModel(hwnd, modelClickName)) {
+                picked := true
+                break
+            }
         }
     }
     if (!picked)
