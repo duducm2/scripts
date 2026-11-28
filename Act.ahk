@@ -149,13 +149,14 @@ Run GetScriptPath("Spotify.ahk")
 ; keyboard hooks (e.g. global Escape) and breaks modals that rely on g_OnEscapePressed / I10 in AppLaunchers.
 ; Dictation (~#!+0 / Send dictation?) is owned only by AppLaunchers (Dictation_IsOwnerProcess).
 Run GetScriptPath("Mousemaster.ahk")
+; Owns #!+r (1x = WhatsApp Jump-to-Chat, 2x = Teams), so launch on personal PCs too.
+Run GetScriptPath("Microsoft Teams.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\Documents\caffeine\caffeine64.exe"
     Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
 
-    Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {
     ; Headset / other endpoints often are not connected yet. Fill a dead input or
